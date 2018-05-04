@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="org.aion.avm.core">
+
+    <property name="dir.build" value="./build"/>
+    <property name="dir.lib" value="../lib"/>
+    <property name="dir.workspace" value="./"/>
+
+
+    <target name="clean_build" depends="clean,build"/>
+
+    <target name="clean">
+        <delete dir="${dir.build}"/>
+    </target>
+
+    <target name="build">
+        <echo message="Building ${ant.project.name}..."/>
+
+        <mkdir dir="${dir.build}"/>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.workspace}"
+               destdir="${dir.build}" includes="src/**/*.java,module-info.java">
+
+            <modulepath>
+                <pathelement location="${dir.lib}/asm-6.1.2-SNAPSHOT.jar"/>
+                <pathelement location="${dir.lib}/asm-tree-6.1.2-SNAPSHOT.jar"/>
+                <pathelement location="${dir.lib}/asm-commons-6.1.2-SNAPSHOT.jar"/>
+                <pathelement location="${dir.lib}/asm-util-6.1.2-SNAPSHOT.jar"/>
+                <pathelement location="${dir.lib}/hamcrest-all-1.3.jar"/>
+                <pathelement location="${dir.lib}/slf4j-api-1.7.25.jar"/>
+                <pathelement location="${dir.lib}/junit-4.12.jar"/>
+            </modulepath>
+        </javac>
+
+        <jar destfile="${dir.build}/${ant.project.name}.jar" filesetmanifest="mergewithoutmain" basedir="${dir.build}"/>
+    </target>
+
+</project>

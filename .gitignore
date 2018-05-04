@@ -7,3 +7,6 @@ out/
 /build/
 /mod/
 /mod*/build/
+
+# ant
+.ant-targets-build.xml

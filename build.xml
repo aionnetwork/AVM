@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="VM">
+    <property name="compile.debug" value="on"/>
+    <property name="dir.build" value="./build"/>
+    <property name="dir.modules" value="./build"/>
+    <property name="dir.workspace" value="./"/>
+
+
+    <target name="clean_build" depends="clean, build"/>
+
+    <target name="build">
+        <echo message="Building ${ant.project.name}..."/>
+        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.core/build.xml" target="clean_build">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
+    </target>
+
+    <target name="clean">
+        <delete dir="${dir.build}"/>
+    </target>
+</project>
