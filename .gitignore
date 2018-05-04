@@ -1,0 +1,8 @@
+# ide
+/.idea/
+*.iml
+
+# build
+/build/
+/mod/
+/mod*/build/
