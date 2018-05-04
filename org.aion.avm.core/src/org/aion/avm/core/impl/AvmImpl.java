@@ -5,9 +5,9 @@ import org.aion.avm.core.AvmClassLoader;
 
 import java.lang.module.ModuleFinder;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static java.lang.String.format;
-import static java.util.Collections.singletonList;
 
 /**
  * @author Roman Katerinenko
@@ -26,8 +26,7 @@ public class AvmImpl implements Avm {
         final var bootLayer = ModuleLayer.boot();
         final var contractModulesFinder = ModuleFinder.of(Paths.get(contractModulesPath));
         final var emptyFinder = ModuleFinder.of();
-        final var contractLayerConfig = bootLayer.configuration().resolve(contractModulesFinder, emptyFinder, singletonList(startModuleName));
-        // todo provide parent layer ? make a test !
+        final var contractLayerConfig = bootLayer.configuration().resolve(contractModulesFinder, emptyFinder, List.of(startModuleName));
         final var contractLayer = bootLayer.defineModulesWithOneLoader(contractLayerConfig, avmClassLoader);
         final var contractModuleClassLoader = contractLayer.findModule(startModuleName).orElseThrow(() -> new Exception("Module not found")).getClassLoader();
         mainContractClass = contractModuleClassLoader.loadClass(fullyQualifiedMainClassName);
