@@ -27,9 +27,7 @@ public class CustomClassLoader extends ClassLoader {
         String file = name.replace('.', File.separatorChar) + ".class";
         try {
             byte[] b = loadClassData(file);
-            Class<?> c = defineClass(name, b, 0, b.length);
-            resolveClass(c);
-            return c;
+            return defineClass(name, b, 0, b.length);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
