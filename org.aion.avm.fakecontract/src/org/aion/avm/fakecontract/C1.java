@@ -1,4 +1,4 @@
-package org.aion.avm.testclasses;
+package org.aion.avm.fakecontract;
 
 /**
  * @author Roman Katerinenko
