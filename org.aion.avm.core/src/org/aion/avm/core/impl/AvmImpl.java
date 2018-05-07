@@ -18,7 +18,7 @@ public class AvmImpl implements Avm {
     private Class mainContractClass;
 
     @Override
-    public void computeContract(String contractModulesPath, String startModuleName, String fullyQualifiedMainClassName) throws Exception {
+    public void computeContract(String contractModulesPath, String startModuleName, String fullyQualifiedMainClassName) {
         loadContract(contractModulesPath, startModuleName, fullyQualifiedMainClassName);
     }
 
