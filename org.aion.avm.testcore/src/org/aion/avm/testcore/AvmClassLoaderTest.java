@@ -13,7 +13,6 @@ import org.junit.Test;
 public class AvmClassLoaderTest {
     @Test
     public void checkAvmClassLoaderIsUsedForAllContractClasses() throws Exception {
-        // todo make a better path
         final var avm = new AvmImpl();
         final var startModuleName = "org.aion.avm.testclasses";
         final var contractModulesPath = "../out/production";
@@ -26,17 +25,12 @@ public class AvmClassLoaderTest {
 
     @Test
     public void checkContractHasAccessToJavaClasses() throws Exception {
-        // todo make a better path
         final var avm = new AvmImpl();
         final var startModuleName = "org.aion.avm.testclasses";
         final var contractModulesPath = "../out/production";
         final var mainClassName = JavaAccessor.class.getName();
-        long t1 = System.currentTimeMillis();
         avm.computeContract(contractModulesPath, startModuleName, mainClassName);
         final var mainClass = avm.getMainContractClass();
-        long t2 = System.currentTimeMillis();
-        System.out.println(t2 - t1);
-
         Assert.assertSame(mainClass.getName(), mainClassName);
         Assert.assertTrue(mainClass.getClassLoader().getParent() instanceof AvmClassLoader);
     }
