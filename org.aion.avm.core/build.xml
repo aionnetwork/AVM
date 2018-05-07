@@ -22,6 +22,7 @@
 
             <modulepath>
                 <pathelement location="${dir.lib}/asm-6.1.2-SNAPSHOT.jar"/>
+                <pathelement location="${dir.lib}/asm-analysis-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.lib}/asm-tree-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.lib}/asm-commons-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.lib}/asm-util-6.1.2-SNAPSHOT.jar"/>
