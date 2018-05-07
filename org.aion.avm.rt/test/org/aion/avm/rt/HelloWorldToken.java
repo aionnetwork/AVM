@@ -1,8 +1,5 @@
 package org.aion.avm.rt;
 
-import org.aion.avm.rt.Context;
-import org.aion.avm.rt.Contract;
-
 public class HelloWorldToken extends Contract {
 
     public void transfer(Context context, byte[] from, byte[] to) {
