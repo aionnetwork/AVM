@@ -2,8 +2,8 @@ package org.aion.avm.testcore;
 
 import org.aion.avm.core.AvmClassLoader;
 import org.aion.avm.core.impl.AvmImpl;
-import org.aion.avm.testclasses.C1;
-import org.aion.avm.testclasses.JavaAccessor;
+import org.aion.avm.fakecontract.C1;
+import org.aion.avm.fakecontract.JavaAccessor;
 import org.junit.Assert;
 import org.junit.Test;
 
