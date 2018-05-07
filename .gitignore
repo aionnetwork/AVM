@@ -1,12 +1,39 @@
-# ide
-/.idea/
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# JVM crash logs
+hs_err_pid*
+
+# Mac
+.DS_Store
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ
+.idea/
 *.iml
-out/
+*.iws
 
 # build
 /build/
 /mod/
 /mod*/build/
+out/
 
 # ant
 .ant-targets-build.xml
