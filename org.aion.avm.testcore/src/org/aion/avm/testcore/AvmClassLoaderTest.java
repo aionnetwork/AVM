@@ -16,7 +16,7 @@ public class AvmClassLoaderTest {
         // todo make a better path
         final var avm = new AvmImpl();
         final var startModuleName = "org.aion.avm.testclasses";
-        final var contractModulesPath = "/home/rom/Code/aion_vm/out/production";
+        final var contractModulesPath = "../out/production";
         final var mainClassName = C1.class.getName();
         avm.computeContract(contractModulesPath, startModuleName, mainClassName);
         final var mainClass = avm.getMainContractClass();
@@ -29,10 +29,14 @@ public class AvmClassLoaderTest {
         // todo make a better path
         final var avm = new AvmImpl();
         final var startModuleName = "org.aion.avm.testclasses";
-        final var contractModulesPath = "/home/rom/Code/aion_vm/out/production";
+        final var contractModulesPath = "../out/production";
         final var mainClassName = JavaAccessor.class.getName();
+        long t1 = System.currentTimeMillis();
         avm.computeContract(contractModulesPath, startModuleName, mainClassName);
         final var mainClass = avm.getMainContractClass();
+        long t2 = System.currentTimeMillis();
+        System.out.println(t2 - t1);
+
         Assert.assertSame(mainClass.getName(), mainClassName);
         Assert.assertTrue(mainClass.getClassLoader().getParent() instanceof AvmClassLoader);
     }
