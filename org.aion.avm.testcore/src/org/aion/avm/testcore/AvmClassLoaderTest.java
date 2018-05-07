@@ -12,7 +12,7 @@ import org.junit.Test;
  */
 public class AvmClassLoaderTest {
     @Test
-    public void checkAvmClassLoaderIsUsedForAllContractClasses() throws Exception {
+    public void checkAvmClassLoaderIsUsedForAllContractClasses() {
         final var avm = new AvmImpl();
         final var startModuleName = "org.aion.avm.testclasses";
         final var contractModulesPath = "../out/production";
@@ -24,7 +24,7 @@ public class AvmClassLoaderTest {
     }
 
     @Test
-    public void checkContractHasAccessToJavaClasses() throws Exception {
+    public void checkContractHasAccessToJavaClasses() {
         final var avm = new AvmImpl();
         final var startModuleName = "org.aion.avm.testclasses";
         final var contractModulesPath = "../out/production";
