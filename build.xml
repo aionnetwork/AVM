@@ -1,30 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="clean_build" name="AVM">
-    <property name="compile.debug" value="on"/>
-    <property name="dir.build" value="./build"/>
-    <property name="dir.workspace" value="."/>
-    <property name="dir.mods" value="${dir.workspace}/mods"/>
+<project basedir="." default="clean_buildmain" name="AVM">
 
-    <target name="clean_build" depends="clean, build"/>
+    <property name="dir.global.workspace" value="."/>
 
-    <target name="build">
+    <target name="clean_buildmain">
         <echo message="Building ${ant.project.name}..."/>
-        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.base/build.xml" target="clean_build">
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.rt/build.xml" target="clean_buildmain">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
-        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.rt/build.xml" target="clean_build">
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.core/build.xml" target="clean_buildmain">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
-        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.examples/build.xml" target="clean_build">
-            <property name="compile.debug" value="${compile.debug}"/>
-        </ant>
-        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.core/build.xml" target="clean_build">
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.examples/build.xml" target="clean_buildmain">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
     </target>
 
-    <target name="clean">
-        <delete dir="${dir.build}"/>
-        <delete dir="${dir.mods}"/>
+    <target name="test">
+        <echo message="Building tests for ${ant.project.name}..."/>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.rt/build.xml" target="test">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.core/build.xml" target="test">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.examples/build.xml" target="test">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
     </target>
+
 </project>

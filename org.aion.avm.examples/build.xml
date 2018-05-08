@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="clean_buildmain" name="org-aion-avm-examples">
+
+    <property name="dir.local.workspace" value="."/>
+    <property name="dir.local.build.main" value="./build/main"/>
+    <property name="dir.local.build.test" value="./build/test"/>
+    <property name="dir.local.src.test" value="${dir.local.workspace}/test"/>
+    <property name="dir.local.src.main" value="${dir.local.workspace}/src"/>
+    <property name="dir.local.testreports" value="${dir.local.workspace}/testreports" />
+    <property name="dir.global.lib" value="../lib"/>
+    <property name="dir.global.build.main" value="../build/main"/>
+    <property name="dir.global.build.test" value="../build/test"/>
+
+    <target name="clean_buildmain" depends="cleanmain">
+        <antcall target="buildmain">
+            <param name="compile.debug" value="${compile.debug}"/>
+        </antcall>
+    </target>
+
+    <target name="cleanmain">
+        <delete dir="${dir.local.build.main}"/>
+    </target>
+
+    <target name="buildmain">
+        <echo message="Building ${ant.project.name}..."/>
+
+        <mkdir dir="${dir.local.build.main}"/>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.local.src.main}"
+               destdir="${dir.local.build.main}" includes="**/*.java,module-info.java">
+            <classpath>
+                <pathelement location="${dir.global.build.main}/org-aion-avm.rt.jar"/>
+            </classpath>
+        </javac>
+
+        <jar destfile="${dir.local.build.main}/${ant.project.name}.jar" filesetmanifest="mergewithoutmain"
+             basedir="${dir.local.build.main}"/>
+
+        <move includeemptydirs="false" todir="${dir.global.build.main}">
+            <file file="${dir.local.build.main}/${ant.project.name}.jar"/>
+        </move>
+    </target>
+
+    <target name="test">
+        <echo message="Building tests for ${ant.project.name}..."/>
+        <echo message="No tests in ${ant.project.name}"/>
+    </target>
+
+</project>

@@ -13,6 +13,7 @@ import static java.lang.String.format;
  * @author Roman Katerinenko
  */
 public class AvmImpl implements Avm {
+    // todo make it null after contract has been executed. To allow classes to be unloaded
     private final AvmClassLoader avmClassLoader = new AvmClassLoader();
 
     private Class mainContractClass;
