@@ -1,6 +1,6 @@
 package org.aion.avm.examples.dummy;
 
-import org.aion.avm.base.Contract;
+import org.aion.avm.rt.Contract;
 import org.aion.avm.rt.BlockchainRuntime;
 
 public class DummyContract extends Contract {

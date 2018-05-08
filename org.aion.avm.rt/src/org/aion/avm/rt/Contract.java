@@ -1,6 +1,4 @@
-package org.aion.avm.base;
-
-import org.aion.avm.rt.BlockchainRuntime;
+package org.aion.avm.rt;
 
 public abstract class Contract {
 

@@ -1,6 +1,6 @@
 package org.aion.avm.examples.token;
 
-import org.aion.avm.base.Contract;
+import org.aion.avm.rt.Contract;
 import org.aion.avm.rt.BlockchainRuntime;
 
 public class SimpleToken extends Contract {
