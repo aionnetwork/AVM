@@ -2,13 +2,13 @@ package org.aion.avm.rt;
 
 public class HelloWorldToken extends Contract {
 
-    public void transfer(Context context, byte[] from, byte[] to) {
+    public void transfer(Runtime context, byte[] from, byte[] to) {
         // dummy balance check
-        context.getStorage(from);
+        context.getStorage().get(from);
 
         // dummy balance update
-        context.putStorage(from, new byte[]{4});
-        context.putStorage(to, new byte[]{2});
+        context.getStorage().put(from, new byte[]{4});
+        context.getStorage().put(to, new byte[]{2});
     }
 
     private byte[] copyOf(byte[] src, int from, int to) {
@@ -20,10 +20,10 @@ public class HelloWorldToken extends Contract {
     }
 
     @Override
-    public byte[] run(byte[] input, Context context) {
+    public byte[] run(byte[] input, Runtime rt) {
         // dummy encoding: method id + abi(input parameters)
         if (input.length == 33 && input[0] == 1) {
-            transfer(context, context.getSender(), copyOf(input, 1, 33));
+            transfer(rt, rt.getSender(), copyOf(input, 1, 33));
         }
 
         return null;

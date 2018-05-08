@@ -1,13 +1,6 @@
 package org.aion.avm.rt;
 
-public interface Context {
-
-    /**
-     * Returns the sender address.
-     *
-     * @return
-     */
-    byte[] getSender();
+public interface Storage {
 
     /**
      * Returns the corresponding value in the storage.
@@ -15,7 +8,7 @@ public interface Context {
      * @param key
      * @return
      */
-    byte[] getStorage(byte[] key);
+    byte[] get(byte[] key);
 
     /**
      * Inserts/updates a key-value pair.
@@ -23,5 +16,5 @@ public interface Context {
      * @param key
      * @param value
      */
-    void putStorage(byte[] key, byte[] value);
+    void put(byte[] key, byte[] value);
 }
