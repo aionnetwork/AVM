@@ -3,7 +3,7 @@ package org.aion.avm.rt;
 /**
  * Represents the hub of AVM runtime.
  */
-public interface Runtime {
+public interface BlockchainRuntime {
 
     /**
      * Returns the sender address.
