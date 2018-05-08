@@ -3,9 +3,9 @@
 
     <property name="dir.build" value="./build"/>
     <property name="dir.lib" value="../lib"/>
-    <property name="dir.workspace" value="./"/>
+    <property name="dir.workspace" value="."/>
     <property name="dir.src" value="${dir.workspace}/src"/>
-    <property name="dir.mods" value="$../mods/"/>
+    <property name="dir.mods" value="../mods"/>
 
     <target name="clean_build" depends="clean">
         <antcall target="build">
@@ -26,10 +26,8 @@
                destdir="${dir.build}" includes="src/**/*.java,module-info.java">
 
             <modulepath>
-                <pathelement location="${dir.lib}/hamcrest-all-1.3.jar"/>
-                <pathelement location="${dir.lib}/junit-4.12.jar"/>
-                <pathelement location="${dir.mods}/org-aion-avm-core.jar"/>
-                <pathelement location="${dir.mods}/org-aion-avm-core-fakecontract.jar"/>
+                <pathelement location="${dir.lib}"/>
+					<pathelement location="${dir.mods}" />
             </modulepath>
 
         </javac>

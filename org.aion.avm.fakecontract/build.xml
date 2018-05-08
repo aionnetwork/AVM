@@ -3,9 +3,9 @@
 
     <property name="dir.build" value="./build"/>
     <property name="dir.lib" value="../lib"/>
-    <property name="dir.workspace" value="./"/>
+    <property name="dir.workspace" value="."/>
     <property name="dir.src" value="${dir.workspace}/src"/>
-    <property name="dir.mods" value="../mods/"/>
+    <property name="dir.mods" value="../mods"/>
 
     <target name="clean_build" depends="clean">
         <antcall target="build">
