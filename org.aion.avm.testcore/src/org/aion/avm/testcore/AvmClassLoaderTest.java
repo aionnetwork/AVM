@@ -14,7 +14,7 @@ public class AvmClassLoaderTest {
     @Test
     public void checkAvmClassLoaderIsUsedForAllContractClasses() {
         final var avm = new AvmImpl();
-        final var startModuleName = "org.aion.avm.testclasses";
+        final var startModuleName = "org.aion.avm.fakecontract";
         final var contractModulesPath = "../out/production";
         final var mainClassName = C1.class.getName();
         avm.computeContract(contractModulesPath, startModuleName, mainClassName);
@@ -26,7 +26,7 @@ public class AvmClassLoaderTest {
     @Test
     public void checkContractHasAccessToJavaClasses() {
         final var avm = new AvmImpl();
-        final var startModuleName = "org.aion.avm.testclasses";
+        final var startModuleName = "org.aion.avm.fakecontract";
         final var contractModulesPath = "../out/production";
         final var mainClassName = JavaAccessor.class.getName();
         avm.computeContract(contractModulesPath, startModuleName, mainClassName);

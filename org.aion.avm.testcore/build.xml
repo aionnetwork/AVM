@@ -27,7 +27,7 @@
 
             <modulepath>
                 <pathelement location="${dir.lib}"/>
-					<pathelement location="${dir.mods}" />
+                <pathelement location="${dir.mods}"/>
             </modulepath>
 
         </javac>
