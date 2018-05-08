@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="clean_build" name="VM">
+<project basedir="." default="clean_build" name="AVM">
     <property name="compile.debug" value="on"/>
     <property name="dir.build" value="./build"/>
     <property name="dir.workspace" value="."/>
@@ -9,16 +9,16 @@
 
     <target name="build">
         <echo message="Building ${ant.project.name}..."/>
-        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.core/build.xml" target="clean_build">
+        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.base/build.xml" target="clean_build">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
         <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.rt/build.xml" target="clean_build">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
-        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.fakecontract/build.xml" target="clean_build">
+        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.examples/build.xml" target="clean_build">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
-        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.testcore/build.xml" target="clean_build">
+        <ant inheritAll="false" antfile="${dir.workspace}/org.aion.avm.core/build.xml" target="clean_build">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
     </target>
