@@ -1,5 +1,7 @@
 package org.aion.avm.base;
 
+import org.aion.avm.rt.BlockchainRuntime;
+
 public abstract class Contract {
 
     /**
@@ -9,5 +11,5 @@ public abstract class Contract {
      * @param rt    the runtime
      * @return the output
      */
-    public abstract byte[] run(byte[] input, Runtime rt);
+    public abstract byte[] run(byte[] input, BlockchainRuntime rt);
 }
