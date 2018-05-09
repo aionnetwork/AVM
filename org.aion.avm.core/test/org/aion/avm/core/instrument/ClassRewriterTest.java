@@ -2,6 +2,7 @@ package org.aion.avm.core.instrument;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Function;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,7 +29,7 @@ public class ClassRewriterTest {
                 visitor.visitEnd();
             }};
         String className = original.getClass().getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, "hashCode", replacer);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, (inputBytes) -> ClassRewriter.rewriteOneMethodInClass(inputBytes, "hashCode", replacer, ClassWriter.COMPUTE_FRAMES));
         Class<?> clazz = loader.loadClass(className);
         Object target = clazz.getConstructor(int.class).newInstance(Integer.valueOf(originalHash));
 
@@ -48,14 +49,12 @@ public class ClassRewriterTest {
      */
     private static class TestClassLoader extends ClassLoader {
         private final String classNameToProvide;
-        private final String methodName;
-        private final ClassRewriter.IMethodReplacer replacer;
-
-        public TestClassLoader(ClassLoader parent, String classNameToProvide, String methodName, ClassRewriter.IMethodReplacer replacer) {
+        private final Function<byte[], byte[]> loadHandler;
+        
+        public TestClassLoader(ClassLoader parent, String classNameToProvide, Function<byte[], byte[]> loadHandler) {
             super(parent);
             this.classNameToProvide = classNameToProvide;
-            this.methodName = methodName;
-            this.replacer = replacer;
+            this.loadHandler = loadHandler;
         }
 
         @Override
@@ -70,7 +69,7 @@ public class ClassRewriterTest {
                     e.printStackTrace();
                     Assert.fail();
                 }
-                byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, this.methodName, this.replacer, ClassWriter.COMPUTE_FRAMES);
+                byte[] rewrittten = this.loadHandler.apply(raw);
                 result = defineClass(name, rewrittten, 0, rewrittten.length);
             } else {
                 result = getParent().loadClass(name);
