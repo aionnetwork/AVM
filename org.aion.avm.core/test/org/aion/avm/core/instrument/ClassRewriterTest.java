@@ -2,8 +2,11 @@ package org.aion.avm.core.instrument;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
+import org.aion.avm.core.instrument.ClassRewriter.BasicBlock;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.*;
@@ -42,6 +45,55 @@ public class ClassRewriterTest {
         Assert.assertEquals(changedHash, target.hashCode());
     }
 
+    /**
+     * Parses a test class into extents.
+     */
+    @Test
+    public void testMethodBlocks() throws Exception {
+        String className = TestResource.class.getCanonicalName();
+        BlockSnooper snooper = new BlockSnooper();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper);
+        loader.loadClass(className);
+        Map<String, List<ClassRewriter.BasicBlock>> resultMap = snooper.resultMap;
+        Assert.assertNotNull(resultMap);
+        List<ClassRewriter.BasicBlock> initBlocks = resultMap.get("<init>(I)V");
+        int[][] expectedInitBlocks = new int[][] {
+            {Opcodes.ALOAD, Opcodes.INVOKESPECIAL},
+            {Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.PUTFIELD},
+            {Opcodes.RETURN}
+        };
+        boolean didMatch = compareBlocks(expectedInitBlocks, initBlocks);
+        Assert.assertTrue(didMatch);
+        List<ClassRewriter.BasicBlock> hashCodeBlocks = resultMap.get("hashCode()I");
+        int[][] expectedHashCodeBlocks = new int[][] {
+            {Opcodes.ALOAD, Opcodes.GETFIELD, Opcodes.IRETURN}
+        };
+        didMatch = compareBlocks(expectedHashCodeBlocks, hashCodeBlocks);
+        Assert.assertTrue(didMatch);
+    }
+
+    private boolean compareBlocks(int[][] expectedBlocks, List<BasicBlock> actualBlocks) {
+        boolean didMatch = true;
+        if (expectedBlocks.length == actualBlocks.size()) {
+            for (int i = 0; didMatch && (i < expectedBlocks.length); ++i) {
+                int[] expectedBytecodes = expectedBlocks[i];
+                List<Integer> actualBytecodes = actualBlocks.get(i).opcodeSequence;
+                if (expectedBytecodes.length == actualBytecodes.size()) {
+                    for (int j = 0; didMatch && (j < expectedBytecodes.length); ++j) {
+                        if (expectedBytecodes[j] != actualBytecodes.get(j)) {
+                            didMatch = false;
+                        }
+                    }
+                } else {
+                    didMatch = false;
+                }
+            }
+        } else {
+            didMatch = false;
+        }
+        return didMatch;
+    }
+
 
     /**
      * We use this classloader, within the test, to get the raw bytes of the test we want to modify and then pass
@@ -76,5 +128,17 @@ public class ClassRewriterTest {
             }
             return result;
         }
+    }
+
+
+    private static class BlockSnooper implements Function<byte[], byte[]> {
+        public Map<String, List<ClassRewriter.BasicBlock>> resultMap;
+        
+        @Override
+        public byte[] apply(byte[] inputBytes) {
+            this.resultMap = ClassRewriter.parseMethodBlocks(inputBytes);
+            return inputBytes;
+        }
+        
     }
 }
