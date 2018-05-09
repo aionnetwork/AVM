@@ -7,7 +7,7 @@ Aion Virtual Machine (AVM) is a Blockchain VM based on Java virtual machine. It 
 
 ```
 JDK 10 or higher
-Apache 1.10 or higher
+Apache Ant 1.10 or higher
 ```
 
 
@@ -19,9 +19,13 @@ ant
 
 
 ## Running the tests
-
 ```
 ant test
+```
+
+## Build and test
+```
+ant clean_buildmain test
 ```
 
 
