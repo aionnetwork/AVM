@@ -2,14 +2,18 @@
 <project basedir="." default="clean_buildmain" name="org-aion-avm-examples">
 
     <property name="dir.local.workspace" value="."/>
-    <property name="dir.local.build.main" value="./build/main"/>
-    <property name="dir.local.build.test" value="./build/test"/>
+    <property name="dir.local.build.main" value="${dir.local.workspace}/build/main"/>
+    <property name="dir.local.build.test" value="${dir.local.workspace}/build/test"/>
     <property name="dir.local.src.test" value="${dir.local.workspace}/test"/>
     <property name="dir.local.src.main" value="${dir.local.workspace}/src"/>
     <property name="dir.local.testreports" value="${dir.local.workspace}/testreports" />
     <property name="dir.global.lib" value="../lib"/>
     <property name="dir.global.build.main" value="../build/main"/>
     <property name="dir.global.build.test" value="../build/test"/>
+
+    <target name="clean" >
+        <antcall target="cleanmain" />
+    </target>
 
     <target name="clean_buildmain" depends="cleanmain">
         <antcall target="buildmain">
@@ -28,9 +32,9 @@
         <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
                srcdir="${dir.local.src.main}"
                destdir="${dir.local.build.main}" includes="**/*.java,module-info.java">
-            <classpath>
-                <pathelement location="${dir.global.build.main}/org-aion-avm.rt.jar"/>
-            </classpath>
+            <modulepath>
+                <pathelement location="${dir.global.build.main}/"/>
+            </modulepath>
         </javac>
 
         <jar destfile="${dir.local.build.main}/${ant.project.name}.jar" filesetmanifest="mergewithoutmain"

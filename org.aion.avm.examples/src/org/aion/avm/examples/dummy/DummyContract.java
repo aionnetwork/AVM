@@ -8,7 +8,7 @@ public class DummyContract extends Contract {
     @Override
     public byte[] run(byte[] input, BlockchainRuntime rt) {
         C1 c = new C1();
-        c.doSomething();
+        c.getC2();
 
         return null;
     }
