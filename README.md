@@ -14,7 +14,7 @@ Apache 1.10 or higher
 ### Building
 
 ```
-ant clean_build
+ant
 ```
 
 
