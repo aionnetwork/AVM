@@ -44,7 +44,7 @@ public class StackWatcher {
         return 0;
     }
 
-    public void abortCurrentContract{
+    public void abortCurrentContract(){
 
     }
 
