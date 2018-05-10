@@ -83,6 +83,7 @@
                 <pathelement location="${dir.global.lib}/asm-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-examples.jar"/>
+                <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
                 <pathelement location="${dir.local.build.test}" />
             </classpath>
             <formatter type="plain" usefile="false" />
