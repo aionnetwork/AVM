@@ -14,6 +14,7 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 
 /**
@@ -68,7 +69,7 @@ public class ClassRewriter {
      */
     public static byte[] rewriteBlocksInClass(String runtimeClassName, byte[] classBytes, Map<String, List<BasicBlock>> methodData) {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        ClassCostVisitor adapter = new ClassCostVisitor(runtimeClassName, cw, methodData);
+        ClassInstrumentationVisitor adapter = new ClassInstrumentationVisitor(runtimeClassName, cw, methodData);
 
         ClassReader cr = new ClassReader(classBytes);
         cr.accept(adapter, ClassReader.SKIP_FRAMES);
@@ -134,12 +135,13 @@ public class ClassRewriter {
 
     /**
      * A helper class used internally, by rewriteOneMethodInClass.
+     * This is the final phase visitor, where bytecodes are updated in the stream.
      */
-    private static class ClassCostVisitor extends ClassVisitor implements Opcodes {
+    private static class ClassInstrumentationVisitor extends ClassVisitor implements Opcodes {
         private final String runtimeClassName;
         private final Map<String, List<BasicBlock>> methodData;
 
-        public ClassCostVisitor(String runtimeClassName, ClassVisitor cv, Map<String, List<BasicBlock>> methodData) {
+        public ClassInstrumentationVisitor(String runtimeClassName, ClassVisitor cv, Map<String, List<BasicBlock>> methodData) {
             super(Opcodes.ASM6, cv);
             this.runtimeClassName = runtimeClassName;
             this.methodData = methodData;
@@ -154,7 +156,7 @@ public class ClassRewriter {
             if (null != blocks) {
                 // We want to rewrite this method, augmenting the blocks in the original by prepending any energy cost.
                 MethodVisitor originalVisitor = super.visitMethod(access, name, descriptor, signature, exceptions);
-                resultantVisitor = new MethodCostVisitor(this.runtimeClassName, originalVisitor, blocks);
+                resultantVisitor = new MethodInstrumentationVisitor(this.runtimeClassName, originalVisitor, blocks);
             } else {
                 // In this case, we basically just want to pass this through.
                 resultantVisitor = super.visitMethod(access, name, descriptor, signature, exceptions);
@@ -165,20 +167,30 @@ public class ClassRewriter {
 
 
     /**
-     * A helper class used internally, by ClassCostVisitor.
-     * This is one of the more complex ASM interactions, so it warrants some explanation:
+     * A helper class used internally, by ClassInstrumentationVisitor.
+     * It is responsible for re-writing the methods with the various call-outs and other manipulations.
+     * 
+     * Prepending instrumentation is one of the more complex ASM interactions, so it warrants some explanation:
      * -we will advance through the block list we were given while walking the blocks, much like BlockMethodReader.
      * -when we reach the beginning of a new block, we will inject the energy accounting helper before passing the
      * method through to the writer.
+     * 
+     * Array allocation replacement is also one the more complex cases, worth explaining:
+     * -newarray - call to special static helpers, based on underlying native:  no change to stack shape
+     * -anewarray - call to special static helper, requires pushing the associated class constant onto the stack
+     * -multianewarray - call to special static helpers, requires pushing the associated class constant onto the stack
+     * Only anewarray is done without argument introspection.  Note that multianewarray can be called for any [2..255]
+     * dimension array.
+     * TODO: Generate the source for these helpers.  For now, we will just define that [2..4] are allowed.
      */
-    private static class MethodCostVisitor extends MethodVisitor implements Opcodes {
+    private static class MethodInstrumentationVisitor extends MethodVisitor implements Opcodes {
         private final String runtimeClassName;
         private final MethodVisitor target;
         private final List<BasicBlock> blocks;
         private boolean scanningToNewBlockStart;
         private int nextBlockIndexToWrite;
 
-        public MethodCostVisitor(String runtimeClassName, MethodVisitor target, List<BasicBlock> blocks) {
+        public MethodInstrumentationVisitor(String runtimeClassName, MethodVisitor target, List<BasicBlock> blocks) {
             super(Opcodes.ASM6, null);
             this.runtimeClassName = runtimeClassName;
             this.target = target;
@@ -264,7 +276,15 @@ public class ClassRewriter {
         @Override
         public void visitTypeInsn(int opcode, String type) {
             checkInject();
-            this.target.visitTypeInsn(opcode, type);
+            // This is where we might see anewarray, so see if we need to replace it with a helper.
+            if (Opcodes.ANEWARRAY == opcode) {
+                // Inject our special idiom:  ldc then invokestatic, finally checkcast.
+                this.target.visitLdcInsn(Type.getObjectType(type));
+                this.target.visitMethodInsn(INVOKESTATIC, this.runtimeClassName, "anewarray", "(ILjava/lang/Class;)[Ljava/lang/Object;", false);
+                this.target.visitTypeInsn(Opcodes.CHECKCAST, "[L" + type + ";");
+            } else {
+                this.target.visitTypeInsn(opcode, type);
+            }
         }
         @Override
         public void visitVarInsn(int opcode, int var) {

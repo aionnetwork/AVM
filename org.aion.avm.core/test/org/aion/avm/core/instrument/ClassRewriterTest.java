@@ -1,5 +1,7 @@
 package org.aion.avm.core.instrument;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -113,6 +115,41 @@ public class ClassRewriterTest {
         Assert.assertEquals(10, TestEnergy.totalCost);
     }
 
+    /**
+     * Tests that we can replace anewarray bytecodes with call-out routines.
+     */
+    @Test
+    public void testAnewarrayCallOut() throws Exception {
+        // Setup and rewrite the class.
+        Function<byte[], byte[]> costBuilder = (inputBytes) -> {
+            // We don't care about cost in this case - we just need to invoke the rewrite path.
+            Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
+            return ClassRewriter.rewriteBlocksInClass(TestEnergy.CLASS_NAME, inputBytes, methodBlocks);
+        };
+        String className = TestResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, costBuilder);
+        Class<?> clazz = loader.loadClass(className);
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Object target = clazz.getConstructor(int.class).newInstance(6);
+        Method buildStringArray = clazz.getMethod("buildStringArray", int.class);
+        
+        // Check that we haven't yet called the TestEnergy to create an array.
+        Assert.assertEquals(0, TestEnergy.totalArrayElements);
+        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
+        
+        // Create an array and make sure it is correct.
+        String[] one = (String[]) buildStringArray.invoke(target, 2);
+        Assert.assertEquals(2, one.length);
+        Assert.assertEquals(2, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+        
+        // Create another.
+        String[] two = (String[]) buildStringArray.invoke(target, 25);
+        Assert.assertEquals(25, two.length);
+        Assert.assertEquals(27, TestEnergy.totalArrayElements);
+        Assert.assertEquals(2, TestEnergy.totalArrayInstances);
+    }
+
 
     private boolean compareBlocks(int[][] expectedBlocks, List<BasicBlock> actualBlocks) {
         boolean didMatch = true;
@@ -155,10 +192,18 @@ public class ClassRewriterTest {
         public static String CLASS_NAME = ClassRewriterTest.class.getCanonicalName().replaceAll("\\.", "/") + "$TestEnergy";
         public static long totalCost;
         public static int totalCharges;
+        public static int totalArrayElements;
+        public static int totalArrayInstances;
 
         public static void chargeEnergy(long cost) {
             TestEnergy.totalCost += cost;
             TestEnergy.totalCharges += 1;
+        }
+
+        public static Object[] anewarray(int len, Class<?> cl) {
+            TestEnergy.totalArrayElements += len;
+            TestEnergy.totalArrayInstances += 1;
+            return (Object[]) Array.newInstance(cl, len);
         }
     }
 }

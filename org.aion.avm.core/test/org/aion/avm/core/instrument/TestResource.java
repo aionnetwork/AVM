@@ -16,4 +16,8 @@ public class TestResource {
         // We will just return the fixed value, here, but change it in some tests, via ASM.
         return this.fixedHashCode;
     }
+
+    public String[] buildStringArray(int length) {
+        return new String[length];
+    }
 }
