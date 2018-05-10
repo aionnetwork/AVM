@@ -237,6 +237,11 @@ public class ClassRewriter {
             this.target.visitLabel(label);
         }
         @Override
+        public void visitLdcInsn(Object value) {
+            checkInject();
+            this.target.visitLdcInsn(value);
+        }
+        @Override
         public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
             checkInject();
             this.target.visitLookupSwitchInsn(dflt, keys, labels);
@@ -382,6 +387,10 @@ public class ClassRewriter {
             }
             // Start the new block.
             this.currentBuildingBlock = new ArrayList<>();
+        }
+        @Override
+        public void visitLdcInsn(Object value) {
+            this.currentBuildingBlock.add(Opcodes.LDC);
         }
         @Override
         public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
