@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.aion.avm.core.util.Assert;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -195,10 +196,7 @@ public class ClassRewriter {
         @Override
         public void visitEnd() {
             // We never have empty blocks, in our implementation, so we should always be done when we reach this point.
-            // TODO: Replace this with a call to an assertion library.
-            if (this.blocks.size() != this.nextBlockIndexToWrite) {
-                throw new AssertionError("Block count mismatch");
-            }
+            Assert.assertTrue(this.blocks.size() == this.nextBlockIndexToWrite);
             // Tell the writer we are done.
             this.target.visitEnd();
         }
@@ -224,8 +222,7 @@ public class ClassRewriter {
         }
         @Override
         public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-            // TODO:  Change this to our eventual filtering mechanism.
-            throw new AssertionError("INVALID BYTECODE (TODO:  Change this to our eventual filtering mechanism)");
+            Assert.unreachable("invokedynamic must be filtered prior to updating basic blocks");
         }
         @Override
         public void visitJumpInsn(int opcode, Label label) {
@@ -317,10 +314,8 @@ public class ClassRewriter {
 
         public void finishMethod(String key, List<BasicBlock> value) {
             List<BasicBlock> previous = this.buildingMap.put(key, value);
-            // TODO:  Generalize this handling into an assertion library.
-            if (null != previous) {
-                throw new AssertionError("Key already present: " + key);
-            }
+            // If we over-wrote something, this is a serious bug.
+            Assert.assertNull(previous);
         }
     }
 
@@ -373,8 +368,7 @@ public class ClassRewriter {
         }
         @Override
         public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-            // TODO:  Change this to our eventual filtering mechanism.
-            throw new AssertionError("INVALID BYTECODE (TODO:  Change this to our eventual filtering mechanism)");
+            Assert.unreachable("invokedynamic must be filtered prior to reading basic blocks");
         }
         @Override
         public void visitJumpInsn(int opcode, Label label) {
