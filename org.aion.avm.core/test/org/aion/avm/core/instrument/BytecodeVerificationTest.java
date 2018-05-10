@@ -87,6 +87,44 @@ public class BytecodeVerificationTest {
         }
     }
 
+
+    @Test
+    public void testMaxStackSizeWithLoop() throws Exception {
+        int originalHash = 1;
+
+        TestResource original = new TestResource(originalHash);
+        ClassRewriter.IMethodReplacer replacer = new ClassRewriter.IMethodReplacer() {
+            @Override
+            public void populatMethod(MethodVisitor visitor) {
+                visitor.visitCode();
+                Label start = new Label();
+                Object[] newstack = new Object[1];
+                newstack[0] = Opcodes.INTEGER;
+
+                visitor.visitLabel(start);
+                //visitor.visitFrame(Opcodes.F_FULL, 0, null, 1, newstack);
+                visitor.visitFrame(Opcodes.F_FULL, 0, null, 0, null);
+                visitor.visitVarInsn(Opcodes.BIPUSH, 0);
+                visitor.visitJumpInsn(Opcodes.GOTO, start);
+                visitor.visitInsn(Opcodes.IRETURN);
+                visitor.visitMaxs(100, 100);
+                visitor.visitEnd();
+            }};
+
+        String className = original.getClass().getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, "hashCode", replacer, 1);
+        Class<?> clazz = loader.loadClass(className);
+
+        try{
+            Object target = clazz.getConstructor(int.class).newInstance(Integer.valueOf(originalHash));
+            target.hashCode();
+            Assert.assertEquals(1,0);
+        }catch (Error e){
+            Boolean expectedError =  e.getMessage().contains("Inconsistent stackmap frames at branch target") ? true : false;
+            Assert.assertEquals(expectedError, true);
+        }
+    }
+
     /**
      * We use this classloader, within the test, to get the raw bytes of the test we want to modify and then pass
      * into the ClassRewriter, for the test.

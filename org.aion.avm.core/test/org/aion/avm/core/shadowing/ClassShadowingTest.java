@@ -26,6 +26,6 @@ public class ClassShadowingTest {
 
         Method method = clazz.getMethod("multi", int.class, int.class);
         Object ret = method.invoke(obj, 1, 2);
-        Assert.assertEquals(Integer.valueOf(0), ret);
+        Assert.assertEquals(0, ret);
     }
 }

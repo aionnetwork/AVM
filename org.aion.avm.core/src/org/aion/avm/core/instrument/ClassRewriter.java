@@ -56,6 +56,25 @@ public class ClassRewriter {
         return reader.getBlockMap();
     }
 
+    /**
+     * Rewrites the given class, taking in a modified structure from parseMethodBlocks(byte[]), above.
+     * Any methods found in that map will be modified, to include the energy consumption prefix, if they were given a non-zero energy cost.
+     *
+     * @param runtimeClassName The name of the class with the "chargeEnergy(J)V" static method.
+     * @param classBytes The raw bytes of the class to modify.
+     * @param methodData The map of method name+descriptors to the list of blocks in a given method (previously returned by parseMethodBlocks(byte[]).
+     * @return The raw bytes of the updated class.
+     */
+    public static byte[] rewriteBlocksInClass(String runtimeClassName, byte[] classBytes, Map<String, List<BasicBlock>> methodData) {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        ClassCostVisitor adapter = new ClassCostVisitor(runtimeClassName, cw, methodData);
+
+        ClassReader cr = new ClassReader(classBytes);
+        cr.accept(adapter, ClassReader.SKIP_FRAMES);
+
+        return cw.toByteArray();
+    }
+
 
     /**
      * A helper class used internally, by rewriteOneMethodInClass.
@@ -113,6 +132,169 @@ public class ClassRewriter {
 
 
     /**
+     * A helper class used internally, by rewriteOneMethodInClass.
+     */
+    private static class ClassCostVisitor extends ClassVisitor implements Opcodes {
+        private final String runtimeClassName;
+        private final Map<String, List<BasicBlock>> methodData;
+
+        public ClassCostVisitor(String runtimeClassName, ClassVisitor cv, Map<String, List<BasicBlock>> methodData) {
+            super(Opcodes.ASM6, cv);
+            this.runtimeClassName = runtimeClassName;
+            this.methodData = methodData;
+        }
+
+        @Override
+        public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+            String methodKey = name + descriptor;
+            List<BasicBlock> blocks = this.methodData.get(methodKey);
+            
+            MethodVisitor resultantVisitor = null;
+            if (null != blocks) {
+                // We want to rewrite this method, augmenting the blocks in the original by prepending any energy cost.
+                MethodVisitor originalVisitor = super.visitMethod(access, name, descriptor, signature, exceptions);
+                resultantVisitor = new MethodCostVisitor(this.runtimeClassName, originalVisitor, blocks);
+            } else {
+                // In this case, we basically just want to pass this through.
+                resultantVisitor = super.visitMethod(access, name, descriptor, signature, exceptions);
+            }
+            return resultantVisitor;
+        }
+    }
+
+
+    /**
+     * A helper class used internally, by ClassCostVisitor.
+     * This is one of the more complex ASM interactions, so it warrants some explanation:
+     * -we will advance through the block list we were given while walking the blocks, much like BlockMethodReader.
+     * -when we reach the beginning of a new block, we will inject the energy accounting helper before passing the
+     * method through to the writer.
+     */
+    private static class MethodCostVisitor extends MethodVisitor implements Opcodes {
+        private final String runtimeClassName;
+        private final MethodVisitor target;
+        private final List<BasicBlock> blocks;
+        private boolean scanningToNewBlockStart;
+        private int nextBlockIndexToWrite;
+
+        public MethodCostVisitor(String runtimeClassName, MethodVisitor target, List<BasicBlock> blocks) {
+            super(Opcodes.ASM6, null);
+            this.runtimeClassName = runtimeClassName;
+            this.target = target;
+            this.blocks = blocks;
+        }
+
+        @Override
+        public void visitCode() {
+            // We initialize the state machine.
+            this.scanningToNewBlockStart = true;
+            this.nextBlockIndexToWrite = 0;
+            // We also need to tell the writer to advance.
+            this.target.visitCode();
+        }
+        @Override
+        public void visitEnd() {
+            // We never have empty blocks, in our implementation, so we should always be done when we reach this point.
+            // TODO: Replace this with a call to an assertion library.
+            if (this.blocks.size() != this.nextBlockIndexToWrite) {
+                throw new AssertionError("Block count mismatch");
+            }
+            // Tell the writer we are done.
+            this.target.visitEnd();
+        }
+        @Override
+        public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+            checkInject();
+            this.target.visitFieldInsn(opcode, owner, name, descriptor);
+        }
+        @Override
+        public void visitIincInsn(int var, int increment) {
+            checkInject();
+            this.target.visitIincInsn(var, increment);
+        }
+        @Override
+        public void visitInsn(int opcode) {
+            checkInject();
+            this.target.visitInsn(opcode);
+        }
+        @Override
+        public void visitIntInsn(int opcode, int operand) {
+            checkInject();
+            this.target.visitIntInsn(opcode, operand);
+        }
+        @Override
+        public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+            // TODO:  Change this to our eventual filtering mechanism.
+            throw new AssertionError("INVALID BYTECODE (TODO:  Change this to our eventual filtering mechanism)");
+        }
+        @Override
+        public void visitJumpInsn(int opcode, Label label) {
+            checkInject();
+            this.target.visitJumpInsn(opcode, label);
+        }
+        @Override
+        public void visitLabel(Label label) {
+            // The label means that we found a new block (although there might be several labels before it actually starts)
+            // so enter the state machine mode where we are looking for that beginning of a block.
+            this.scanningToNewBlockStart = true;
+            this.target.visitLabel(label);
+        }
+        @Override
+        public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
+            checkInject();
+            this.target.visitLookupSwitchInsn(dflt, keys, labels);
+        }
+        @Override
+        public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+            checkInject();
+            this.target.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+        }
+        @Override
+        public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
+            checkInject();
+            this.target.visitMultiANewArrayInsn(descriptor, numDimensions);
+        }
+        @Override
+        public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
+            checkInject();
+            this.target.visitTableSwitchInsn(min, max, dflt, labels);
+        }
+        @Override
+        public void visitTypeInsn(int opcode, String type) {
+            checkInject();
+            this.target.visitTypeInsn(opcode, type);
+        }
+        @Override
+        public void visitVarInsn(int opcode, int var) {
+            checkInject();
+            this.target.visitVarInsn(opcode, var);
+        }
+        @Override
+        public void visitMaxs(int maxStack, int maxLocals) {
+            this.target.visitMaxs(maxStack, maxLocals);
+        }
+        /**
+         * Common state machine advancing call.  Called at every instruction to see if we need to inject and/or advance
+         * the state machine.
+         */
+        private void checkInject() {
+            if (this.scanningToNewBlockStart) {
+                // We were witing for this so see if we have to do anything.
+                BasicBlock currentBlock = this.blocks.get(this.nextBlockIndexToWrite);
+                if (currentBlock.energyCost > 0) {
+                    // Inject the bytecodes.
+                    this.target.visitLdcInsn(Long.valueOf(currentBlock.energyCost));
+                    this.target.visitMethodInsn(INVOKESTATIC, this.runtimeClassName, "chargeEnergy", "(J)V", false);
+                }
+                // Reset the state machine for the next block.
+                this.scanningToNewBlockStart = false;
+                this.nextBlockIndexToWrite += 1;
+            }
+        }
+    }
+
+
+    /**
      * A helper class used internally, by parseMethodBlocks.
      */
     private static class BlockClassReader extends ClassVisitor {
@@ -132,7 +314,7 @@ public class ClassRewriter {
             BlockMethodReader visitor = new BlockMethodReader(this, uniqueName);
             return visitor;
         }
-        
+
         public void finishMethod(String key, List<BasicBlock> value) {
             List<BasicBlock> previous = this.buildingMap.put(key, value);
             // TODO:  Generalize this handling into an assertion library.
@@ -246,13 +428,30 @@ public class ClassRewriter {
 
     /**
      * Describes a single basic block within a method.
-     * Note that this will eventually be amended with write support, exception tracking, etc.
+     * Note that only the opcodeSequence is meant to be immutable.  Other instance variables are mutable, deliberately, to allow for mutation requests.
      */
     public static class BasicBlock {
         public final List<Integer> opcodeSequence;
+        private long energyCost;
         
         public BasicBlock(List<Integer> opcodes) {
             this.opcodeSequence = Collections.unmodifiableList(opcodes);
+        }
+        
+        /**
+         * Sets the cost of the block, so that the accounting idiom will be prepended when the block is next serialized.
+         * @param energyCost The energy cost.
+         */
+        public void setEnergyCost(long energyCost) {
+            this.energyCost = energyCost;
+        }
+        
+        /**
+         * Called when serializing the block to determine if the accounting idiom should be prepended.
+         * @return The energy cost of the block.
+         */
+        public long getEnergyCost() {
+            return this.energyCost;
         }
     }
 }

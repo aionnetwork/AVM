@@ -11,11 +11,12 @@ import java.lang.reflect.Method;
  * @author Roman Katerinenko
  */
 public class AvmClassLoaderTest {
+    private static final String startModuleName = "org.aion.avm.examples";
+    private static final String contractModulesPath = "../build/main";
+
     @Test
     public void checkAvmClassLoaderIsUsedForAllContractClasses() throws Exception {
         final var avm = new AvmImpl();
-        final var startModuleName = "org.aion.avm.examples";
-        final var contractModulesPath = "../build/main";
         final String mainClassName = C1.class.getName();
         avm.computeContract(contractModulesPath, startModuleName, mainClassName);
         Class<?> mainLoadedClass = avm.getMainContractClass();
@@ -31,8 +32,6 @@ public class AvmClassLoaderTest {
     @Test
     public void checkContractHasAccessToJavaClasses() {
         final var avm = new AvmImpl();
-        final var startModuleName = "org.aion.avm.examples";
-        final var contractModulesPath = "../build/main";
         final String mainClassName = JavaAccessor.class.getName();
         avm.computeContract(contractModulesPath, startModuleName, mainClassName);
         Class mainLoadedClass = avm.getMainContractClass();

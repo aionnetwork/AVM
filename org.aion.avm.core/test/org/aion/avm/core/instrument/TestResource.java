@@ -6,6 +6,7 @@ package org.aion.avm.core.instrument;
  */
 public class TestResource {
     private final int fixedHashCode;
+
     public TestResource(int fixedHashCode) {
         this.fixedHashCode = fixedHashCode;
     }
