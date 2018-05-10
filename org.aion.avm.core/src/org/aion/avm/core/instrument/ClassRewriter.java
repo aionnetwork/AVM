@@ -132,7 +132,7 @@ public class ClassRewriter {
             BlockMethodReader visitor = new BlockMethodReader(this, uniqueName);
             return visitor;
         }
-        
+
         public void finishMethod(String key, List<BasicBlock> value) {
             List<BasicBlock> previous = this.buildingMap.put(key, value);
             // TODO:  Generalize this handling into an assertion library.

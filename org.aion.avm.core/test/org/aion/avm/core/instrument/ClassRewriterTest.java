@@ -1,15 +1,16 @@
 package org.aion.avm.core.instrument;
 
+import org.aion.avm.core.instrument.ClassRewriter.BasicBlock;
+import org.junit.Assert;
+import org.junit.Test;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
-import org.aion.avm.core.instrument.ClassRewriter.BasicBlock;
-import org.junit.Assert;
-import org.junit.Test;
-import org.objectweb.asm.*;
 
 
 public class ClassRewriterTest {
@@ -22,19 +23,19 @@ public class ClassRewriterTest {
         int originalHash = 5;
         int changedHash = 42;
         TestResource original = new TestResource(originalHash);
-        ClassRewriter.IMethodReplacer replacer = new ClassRewriter.IMethodReplacer() {
-            @Override
-            public void populatMethod(MethodVisitor visitor) {
-                visitor.visitCode();
-                visitor.visitVarInsn(Opcodes.BIPUSH, changedHash);
-                visitor.visitInsn(Opcodes.IRETURN);
-                visitor.visitMaxs(1, 0);
-                visitor.visitEnd();
-            }};
+        ClassRewriter.IMethodReplacer replacer = visitor -> {
+            visitor.visitCode();
+            visitor.visitVarInsn(Opcodes.BIPUSH, changedHash);
+            visitor.visitInsn(Opcodes.IRETURN);
+            visitor.visitMaxs(1, 0);
+            visitor.visitEnd();
+        };
         String className = original.getClass().getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, (inputBytes) -> ClassRewriter.rewriteOneMethodInClass(inputBytes, "hashCode", replacer, ClassWriter.COMPUTE_FRAMES));
+        Function<byte[], byte[]> rewriterCall = (inputBytes) -> ClassRewriter.
+                rewriteOneMethodInClass(inputBytes, "hashCode", replacer, ClassWriter.COMPUTE_FRAMES);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, rewriterCall);
         Class<?> clazz = loader.loadClass(className);
-        Object target = clazz.getConstructor(int.class).newInstance(Integer.valueOf(originalHash));
+        Object target = clazz.getConstructor(int.class).newInstance(originalHash);
 
         // We expect these to both be the same class name.
         Assert.assertEquals(original.getClass().getCanonicalName(), target.getClass().getCanonicalName());
@@ -57,16 +58,16 @@ public class ClassRewriterTest {
         Map<String, List<ClassRewriter.BasicBlock>> resultMap = snooper.resultMap;
         Assert.assertNotNull(resultMap);
         List<ClassRewriter.BasicBlock> initBlocks = resultMap.get("<init>(I)V");
-        int[][] expectedInitBlocks = new int[][] {
-            {Opcodes.ALOAD, Opcodes.INVOKESPECIAL},
-            {Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.PUTFIELD},
-            {Opcodes.RETURN}
+        int[][] expectedInitBlocks = new int[][]{
+                {Opcodes.ALOAD, Opcodes.INVOKESPECIAL},
+                {Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.PUTFIELD},
+                {Opcodes.RETURN}
         };
         boolean didMatch = compareBlocks(expectedInitBlocks, initBlocks);
         Assert.assertTrue(didMatch);
         List<ClassRewriter.BasicBlock> hashCodeBlocks = resultMap.get("hashCode()I");
-        int[][] expectedHashCodeBlocks = new int[][] {
-            {Opcodes.ALOAD, Opcodes.GETFIELD, Opcodes.IRETURN}
+        int[][] expectedHashCodeBlocks = new int[][]{
+                {Opcodes.ALOAD, Opcodes.GETFIELD, Opcodes.IRETURN}
         };
         didMatch = compareBlocks(expectedHashCodeBlocks, hashCodeBlocks);
         Assert.assertTrue(didMatch);
@@ -102,7 +103,7 @@ public class ClassRewriterTest {
     private static class TestClassLoader extends ClassLoader {
         private final String classNameToProvide;
         private final Function<byte[], byte[]> loadHandler;
-        
+
         public TestClassLoader(ClassLoader parent, String classNameToProvide, Function<byte[], byte[]> loadHandler) {
             super(parent);
             this.classNameToProvide = classNameToProvide;
@@ -133,12 +134,12 @@ public class ClassRewriterTest {
 
     private static class BlockSnooper implements Function<byte[], byte[]> {
         public Map<String, List<ClassRewriter.BasicBlock>> resultMap;
-        
+
         @Override
         public byte[] apply(byte[] inputBytes) {
             this.resultMap = ClassRewriter.parseMethodBlocks(inputBytes);
             return inputBytes;
         }
-        
+
     }
 }
