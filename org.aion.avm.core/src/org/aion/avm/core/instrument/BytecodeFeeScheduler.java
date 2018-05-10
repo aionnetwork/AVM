@@ -122,11 +122,11 @@ public class BytecodeFeeScheduler {
 
             // Load and Store
             // Not in ASM Opcodes but Contants: xLOAD_[0/1/2/3] -- visitor of xLOAD; xSTORE_[0/1/2/3] -- visitor of xSTORE
-            put(Opcodes.ILOAD,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
-            put(Opcodes.LLOAD,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
-            put(Opcodes.FLOAD,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
-            put(Opcodes.DLOAD,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
-            put(Opcodes.ALOAD,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
+            put(Opcodes.ILOAD,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
+            put(Opcodes.LLOAD,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
+            put(Opcodes.FLOAD,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
+            put(Opcodes.DLOAD,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
+            put(Opcodes.ALOAD,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
             put(Opcodes.IALOAD,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
             put(Opcodes.LALOAD,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
             put(Opcodes.FALOAD,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
@@ -135,11 +135,11 @@ public class BytecodeFeeScheduler {
             put(Opcodes.BALOAD,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
             put(Opcodes.CALOAD,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
             put(Opcodes.SALOAD,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
-            put(Opcodes.ISTORE,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 1, 0, 0));
-            put(Opcodes.LSTORE,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 1, 0, 0));
-            put(Opcodes.FSTORE,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 1, 0, 0));
-            put(Opcodes.DSTORE,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 1, 0, 0));
-            put(Opcodes.ASTORE,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 1, 0, 0));
+            put(Opcodes.ISTORE,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 1, 0, 0));
+            put(Opcodes.LSTORE,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 1, 0, 0));
+            put(Opcodes.FSTORE,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 1, 0, 0));
+            put(Opcodes.DSTORE,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 1, 0, 0));
+            put(Opcodes.ASTORE,     new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 1, 0, 0));
             put(Opcodes.IASTORE,    new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 1, 0, 0));
             put(Opcodes.LASTORE,    new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 1, 0, 0));
             put(Opcodes.FASTORE,    new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 1, 0, 0));
