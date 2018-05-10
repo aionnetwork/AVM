@@ -72,6 +72,46 @@ public class ClassRewriterTest {
         Assert.assertTrue(didMatch);
     }
 
+    /**
+     * Tests that we can add a instrumented callout to the beginning of each block.
+     */
+    @Test
+    public void testWrittenBlockPrefix() throws Exception {
+        // Clear the state of our static test class.
+        TestEnergy.totalCost = 0;
+        TestEnergy.totalCharges = 0;
+        // Setup and rewrite the class.
+        String runtimeClassName = ClassRewriterTest.class.getCanonicalName().replaceAll("\\.", "/") + "$TestEnergy";
+        Function<byte[], byte[]> costBuilder = (inputBytes) -> {
+            Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
+            // Just attach some testing cost to all of these.
+            long costToAdd = 1;
+            for (List<ClassRewriter.BasicBlock> list : methodBlocks.values()) {
+                for (ClassRewriter.BasicBlock block : list) {
+                    block.setEnergyCost(costToAdd);
+                    costToAdd += 1;
+                }
+            }
+            // Note that this test assumes that there are 4 blocks so check our next cost is 5.
+            Assert.assertEquals(5, costToAdd);
+            // Re-write the class.
+            return ClassRewriter.rewriteBlocksInClass(runtimeClassName, inputBytes, methodBlocks);
+        };
+        String className = TestResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, costBuilder);
+        Class<?> clazz = loader.loadClass(className);
+        // By this point, we should still have 0 charges.
+        Assert.assertEquals(0, TestEnergy.totalCharges);
+        Object target = clazz.getConstructor(int.class).newInstance(6);
+        // We expect to see 3 charges for init.
+        Assert.assertEquals(3, TestEnergy.totalCharges);
+        target.hashCode();
+        // Now, we should expect to see 4 charges, each of a different value:  1+2+3+4 = 10
+        Assert.assertEquals(4, TestEnergy.totalCharges);
+        Assert.assertEquals(10, TestEnergy.totalCost);
+    }
+
+
     private boolean compareBlocks(int[][] expectedBlocks, List<BasicBlock> actualBlocks) {
         boolean didMatch = true;
         if (expectedBlocks.length == actualBlocks.size()) {
@@ -140,5 +180,19 @@ public class ClassRewriterTest {
             return inputBytes;
         }
         
+    }
+
+
+    /**
+     * NOTE:  This class is used for the "testWrittenBlockPrefix()" test.
+     */
+    public static class TestEnergy {
+        public static long totalCost;
+        public static int totalCharges;
+        
+        public static void chargeEnergy(long cost) {
+            TestEnergy.totalCost += cost;
+            TestEnergy.totalCharges += 1;
+        }
     }
 }
