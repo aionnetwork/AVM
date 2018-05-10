@@ -80,21 +80,24 @@ public class ClassRewriterTest {
         TestEnergy.totalCost = 0;
         TestEnergy.totalCharges = 0;
         // Setup and rewrite the class.
-        String runtimeClassName = ClassRewriterTest.class.getCanonicalName().replaceAll("\\.", "/") + "$TestEnergy";
         Function<byte[], byte[]> costBuilder = (inputBytes) -> {
             Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
             // Just attach some testing cost to all of these.
             long costToAdd = 1;
-            for (List<ClassRewriter.BasicBlock> list : methodBlocks.values()) {
-                for (ClassRewriter.BasicBlock block : list) {
-                    block.setEnergyCost(costToAdd);
-                    costToAdd += 1;
+            for (Map.Entry<String, List<ClassRewriter.BasicBlock>> elt: methodBlocks.entrySet()) {
+                // For now, we only want to worry about the <init> and hashCode, since we don't call the other methods.
+                String method = elt.getKey();
+                if ("<init>(I)V".equals(method) || "hashCode()I".equals(method)) {
+                    for (ClassRewriter.BasicBlock block : elt.getValue()) {
+                        block.setEnergyCost(costToAdd);
+                        costToAdd += 1;
+                    }
                 }
             }
             // Note that this test assumes that there are 4 blocks so check our next cost is 5.
             Assert.assertEquals(5, costToAdd);
             // Re-write the class.
-            return ClassRewriter.rewriteBlocksInClass(runtimeClassName, inputBytes, methodBlocks);
+            return ClassRewriter.rewriteBlocksInClass(TestEnergy.CLASS_NAME, inputBytes, methodBlocks);
         };
         String className = TestResource.class.getCanonicalName();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, costBuilder);
@@ -149,6 +152,7 @@ public class ClassRewriterTest {
      * NOTE:  This class is used for the "testWrittenBlockPrefix()" test.
      */
     public static class TestEnergy {
+        public static String CLASS_NAME = ClassRewriterTest.class.getCanonicalName().replaceAll("\\.", "/") + "$TestEnergy";
         public static long totalCost;
         public static int totalCharges;
 
