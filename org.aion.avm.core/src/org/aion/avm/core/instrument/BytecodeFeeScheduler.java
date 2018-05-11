@@ -298,7 +298,7 @@ public class BytecodeFeeScheduler {
         for (int op : feeScheduleMap.keySet()) {
             BytecodeFeeInfo feeInfo = feeScheduleMap.get(op);
 
-            // believing no overflow here so not casting from int to long during the calculation
+            // believing no overflow here so no need to cast from int to long during the calculation
             long fee = feeInfo.getNrgLvl().getVal() + feeInfo.getExtraNrgLvl().getVal()
                     + BytecodeEnergyLevels.MEMORY.getVal() * Math.max((feeInfo.getAlpha() - feeInfo.getDelta()), 0);
 
