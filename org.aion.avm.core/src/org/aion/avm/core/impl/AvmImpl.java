@@ -1,14 +1,16 @@
 package org.aion.avm.core.impl;
 
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.AvmResult;
 import org.aion.avm.rt.BlockchainRuntime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.module.Configuration;
 import java.lang.module.ModuleFinder;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 
@@ -16,19 +18,19 @@ import static java.lang.String.format;
  * @author Roman Katerinenko
  */
 public class AvmImpl implements Avm {
+    private final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
 
     private Class mainContractClass;
 
-    public void computeContract(String contractModulesPath, String startModuleName, String fullyQualifiedMainClassName) {
-        loadContract(contractModulesPath, startModuleName, fullyQualifiedMainClassName);
-    }
-
-    private void loadContract(String contractModulesPath, String startModuleName, String fullyQualifiedMainClassName) {
+    ClassLoadingResult loadContract(String contractModulesJar, String startModuleName, String fullyQualifiedMainClassName) {
         final ModuleLayer bootLayer = ModuleLayer.boot();
-        final ModuleFinder contractModulesFinder = ModuleFinder.of(Paths.get(contractModulesPath));
+        final ModuleFinder contractModulesFinder = ModuleFinder.of(Paths.get(contractModulesJar));
         final var emptyFinder = ModuleFinder.of();
         final Configuration contractLayerConfig = bootLayer.configuration().resolve(contractModulesFinder, emptyFinder, List.of(startModuleName));
-        final ModuleLayer contractLayer = bootLayer.defineModulesWithOneLoader(contractLayerConfig, new AvmClassLoader());
+        final var avmClassLoader = new AvmClassLoader();
+        avmClassLoader.setModuleFinder(contractModulesFinder);
+        final Function<String, ClassLoader> moduleToLoaderMapper = (name) -> avmClassLoader;
+        final ModuleLayer contractLayer = bootLayer.defineModules(contractLayerConfig, moduleToLoaderMapper);
         try {
             mainContractClass = contractLayer.findModule(startModuleName)
                     .orElseThrow(() -> new Exception("Module not found"))
@@ -36,12 +38,16 @@ public class AvmImpl implements Avm {
                     .loadClass(fullyQualifiedMainClassName);
         } catch (Exception e) {
             final var msg = format("Unable to load contract. Start module:'%s', main class:'%s', module path:'%s'",
-                    startModuleName, fullyQualifiedMainClassName, contractModulesPath);
-            throw new IllegalStateException(msg, e);
+                    startModuleName, fullyQualifiedMainClassName, contractModulesJar);
+            if (logger.isErrorEnabled()) {
+                logger.error(msg, e);
+            }
+            return new ClassLoadingResult().setLoaded(false).setFailDescription(msg);
         }
+        return new ClassLoadingResult().setLoaded(true);
     }
 
-    public Class getMainContractClass() {
+    Class getMainContractClass() {
         return mainContractClass;
     }
 
