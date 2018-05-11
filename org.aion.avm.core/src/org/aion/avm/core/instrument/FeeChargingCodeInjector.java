@@ -5,9 +5,21 @@ import java.util.Map;
 
 public class FeeChargingCodeInjector {
 
+    /**
+     * Constructor.
+     */
+    public FeeChargingCodeInjector() {
+        bytecodeFeeScheduler = new BytecodeFeeScheduler();
+        bytecodeFeeScheduler.initialize();
+    }
 
     private String runtimeClassName = null;
+    private BytecodeFeeScheduler bytecodeFeeScheduler = null;
 
+    /**
+     * Called by the runtime to register the Energy meter class name, which has a static method to charge the Energy.
+     * @param energyMeterClassName
+     */
     public void registerRuntimeEnergyMeter(String energyMeterClassName) {
         runtimeClassName = energyMeterClassName;
     }
@@ -32,13 +44,19 @@ public class FeeChargingCodeInjector {
         return ClassRewriter.rewriteBlocksInClass(runtimeClassName, methodBytecode, methodBlocks);
     }
 
+    /**
+     * Called by injectCodeIntoOneMethod() to calculate the fee of one code block.
+     * @param block A code block.
+     * @return The block fee.
+     */
     private long calculateBlockFee(ClassRewriter.BasicBlock block) {
         long blockFee = 0;
 
         // Sum up the bytecode fee in the code block
+        for (Integer opcode : block.opcodeSequence) {
+            blockFee += bytecodeFeeScheduler.getFee(opcode);
+        }
 
         return blockFee;
     }
-
-
 }
