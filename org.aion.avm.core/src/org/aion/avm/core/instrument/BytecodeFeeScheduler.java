@@ -15,16 +15,22 @@ public class BytecodeFeeScheduler {
      * See {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Java-Bytecode-fee-schedule}
      */
     public enum BytecodeEnergyLevels {
+        // Basic Energy Levels
         ZERO        (0),
         BASE        (2),
         VERYLOW     (3),
         LOW         (5),
         MID         (8),
         HIGH        (10),
-        VERYHIGH    (13),
+        ATHROW      (15),
+        INVOKE      (20),
+
+        // Extra Energy Levels
         MACCESS     (20),
         FLOWCONTROL (40),
         CREATION    (40),
+
+        // Memory Usage Energy Level
         MEMORY      (3);
 
         private final int val;
@@ -283,13 +289,13 @@ public class BytecodeFeeScheduler {
             put(Opcodes.DRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
             put(Opcodes.ARETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
             put(Opcodes.RETURN,             new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 0, 0));
-            put(Opcodes.INVOKEVIRTUAL,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYHIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.INVOKESPECIAL,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYHIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.INVOKESTATIC,       new BytecodeFeeInfo(BytecodeEnergyLevels.VERYHIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.INVOKEINTERFACE,    new BytecodeFeeInfo(BytecodeEnergyLevels.VERYHIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.INVOKEVIRTUAL,      new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.INVOKESPECIAL,      new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.INVOKESTATIC,       new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.INVOKEINTERFACE,    new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
 
             // Throwing Exceptions
-            put(Opcodes.ATHROW,    new BytecodeFeeInfo(BytecodeEnergyLevels.VERYHIGH, BytecodeEnergyLevels.ZERO, 5, 1, 0));
+            put(Opcodes.ATHROW,    new BytecodeFeeInfo(BytecodeEnergyLevels.ATHROW, BytecodeEnergyLevels.ZERO, 5, 1, 0));
 
             // AVM to reject: MONITORENTER, MONITOREXIT
         }};
