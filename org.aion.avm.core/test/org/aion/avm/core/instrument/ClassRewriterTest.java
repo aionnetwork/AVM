@@ -9,11 +9,27 @@ import java.util.function.Function;
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.instrument.ClassRewriter.BasicBlock;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.*;
 
 
 public class ClassRewriterTest {
+    // We keep this here just because a lot of cases want to use this sort of "do no instrumentation" cost builder for testing other rewrites.
+    private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) -> {
+        // We don't care about cost in this case - we just need to invoke the rewrite path.
+        Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
+        return ClassRewriter.rewriteBlocksInClass(TestEnergy.CLASS_NAME, inputBytes, methodBlocks);
+    };
+
+    @Before
+    public void setup() {
+        // Clear the state of our static test class.
+        TestEnergy.totalCost = 0;
+        TestEnergy.totalCharges = 0;
+        TestEnergy.totalArrayElements = 0;
+        TestEnergy.totalArrayInstances = 0;
+    }
     /**
      * We want to prove that we can instantiate one version of the TestResource and see its original implementation
      * and then change it in the custom classloader.
@@ -78,9 +94,6 @@ public class ClassRewriterTest {
      */
     @Test
     public void testWrittenBlockPrefix() throws Exception {
-        // Clear the state of our static test class.
-        TestEnergy.totalCost = 0;
-        TestEnergy.totalCharges = 0;
         // Setup and rewrite the class.
         Function<byte[], byte[]> costBuilder = (inputBytes) -> {
             Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
@@ -121,13 +134,8 @@ public class ClassRewriterTest {
     @Test
     public void testAnewarrayCallOut() throws Exception {
         // Setup and rewrite the class.
-        Function<byte[], byte[]> costBuilder = (inputBytes) -> {
-            // We don't care about cost in this case - we just need to invoke the rewrite path.
-            Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
-            return ClassRewriter.rewriteBlocksInClass(TestEnergy.CLASS_NAME, inputBytes, methodBlocks);
-        };
         String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, costBuilder);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
         Class<?> clazz = loader.loadClass(className);
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
