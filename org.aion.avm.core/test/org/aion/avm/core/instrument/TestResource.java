@@ -20,4 +20,8 @@ public class TestResource {
     public String[] buildStringArray(int length) {
         return new String[length];
     }
+
+    public String[][][] buildMultiStringArray3(int d1, int d2, int d3) {
+        return new String[d1][d2][d3];
+    }
 }

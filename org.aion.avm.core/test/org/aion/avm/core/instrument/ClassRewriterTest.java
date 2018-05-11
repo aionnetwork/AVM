@@ -158,6 +158,41 @@ public class ClassRewriterTest {
         Assert.assertEquals(2, TestEnergy.totalArrayInstances);
     }
 
+    /**
+     * Tests that we can replace anewarray bytecodes with call-out routines.
+     */
+    @Test
+    public void testMultianewarrayCallOut() throws Exception {
+        // Setup and rewrite the class.
+        String className = TestResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        Class<?> clazz = loader.loadClass(className);
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Object target = clazz.getConstructor(int.class).newInstance(6);
+        Method buildMultiStringArray3 = clazz.getMethod("buildMultiStringArray3", int.class, int.class, int.class);
+        
+        // Check that we haven't yet called the TestEnergy to create an array.
+        Assert.assertEquals(0, TestEnergy.totalArrayElements);
+        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
+        
+        // Create an array and make sure it is correct.
+        String[][][] one = (String[][][]) buildMultiStringArray3.invoke(target, 2, 3, 4);
+        Assert.assertEquals(2, one.length);
+        Assert.assertEquals(3, one[0].length);
+        Assert.assertEquals(4, one[0][1].length);
+        Assert.assertEquals(24, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+        
+        // Verify our assumption that this is the same as the original implementation.
+        String[][][] original = new TestResource(5).buildMultiStringArray3(2, 3, 4);
+        Assert.assertEquals(2, original.length);
+        Assert.assertEquals(3, original[0].length);
+        Assert.assertEquals(4, original[0][1].length);
+        // We shouldn't see an energy increase in the original class.
+        Assert.assertEquals(24, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+    }
+
 
     private boolean compareBlocks(int[][] expectedBlocks, List<BasicBlock> actualBlocks) {
         boolean didMatch = true;
@@ -212,6 +247,23 @@ public class ClassRewriterTest {
             TestEnergy.totalArrayElements += len;
             TestEnergy.totalArrayInstances += 1;
             return (Object[]) Array.newInstance(cl, len);
+        }
+
+        public static Object[] multianewarray1(int d1, Class<?> cl) {
+            // Note that this method might not be needed if multianewarray must be dimension >=2.
+            return anewarray(d1, cl);
+        }
+
+        public static Object[][] multianewarray2(int d1, int d2, Class<?> cl) {
+            TestEnergy.totalArrayElements += d1 * d2;
+            TestEnergy.totalArrayInstances += 1;
+            return (Object[][]) Array.newInstance(cl, d1, d2);
+        }
+
+        public static Object[][][] multianewarray3(int d1, int d2, int d3, Class<?> cl) {
+            TestEnergy.totalArrayElements += d1 * d2 * d3;
+            TestEnergy.totalArrayInstances += 1;
+            return (Object[][][]) Array.newInstance(cl, d1, d2, d3);
         }
     }
 }

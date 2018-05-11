@@ -266,7 +266,29 @@ public class ClassRewriter {
         @Override
         public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
             checkInject();
-            this.target.visitMultiANewArrayInsn(descriptor, numDimensions);
+            // We don't actually want to write multianewarray bytecodes, but always replace them with call-outs.
+            if (numDimensions > 3) {
+                // TODO:  Build something to generate the rest of the helpers we may need, here.  We will only go to 3 for the initial tests.
+                Assert.unimplemented("TODO:  Build something to generate the rest of the helpers we may need, here.  We will only go to 3 for the initial tests.");
+            }
+            // TODO:  Can we be certain numDimensions is at least 2 (if it can't be one, we have an unused method in the static)?
+            // This is just like anewarray, except that the invokestatic target differs, based on numDimensions.
+            // The descriptor we are given here is the arrayclass descriptor, along the lines of "[[[Ljava/lang/String;" but our helper
+            // wants to receive the raw class so convert it, here, by pruning "[*L" and ";" from the descriptor.
+            String prunedClassName = descriptor.substring(descriptor.indexOf("L") + 1, descriptor.length() - 1);
+            this.target.visitLdcInsn(Type.getObjectType(prunedClassName));
+            String argList = "(";
+            String returnType = "";
+            for (int i = 0; i < numDimensions; ++i) {
+                argList += "I";
+                returnType += "[";
+            }
+            argList += "Ljava/lang/Class;)";
+            returnType += "Ljava/lang/Object;";
+            String methodName = "multianewarray" + numDimensions;
+            String signature = argList + returnType;
+            this.target.visitMethodInsn(INVOKESTATIC, this.runtimeClassName, methodName, signature, false);
+            this.target.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
         }
         @Override
         public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
