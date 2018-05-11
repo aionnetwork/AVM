@@ -230,7 +230,71 @@ public class ClassRewriter {
         @Override
         public void visitIntInsn(int opcode, int operand) {
             checkInject();
-            this.target.visitIntInsn(opcode, operand);
+            // This is where the newarray bytecode might appear:  the operand is a specially-defined list of primitive types.
+            if (Opcodes.NEWARRAY == opcode) {
+                // We will handle this through the common multianewarray1 helper instead of creating a new helper for every case.
+                String type = null;
+                String descriptor = null;
+                switch (operand) {
+                case 4: {
+                    // boolean
+                    type = "java/lang/Boolean";
+                    descriptor = "[Z";
+                    break;
+                }
+                case 5: {
+                    // char
+                    type = "java/lang/Character";
+                    descriptor = "[C";
+                    break;
+                }
+                case 6: {
+                    // float
+                    type = "java/lang/Float";
+                    descriptor = "[F";
+                    break;
+                }
+                case 7: {
+                    // double
+                    type = "java/lang/Double";
+                    descriptor = "[D";
+                    break;
+                }
+                case 8: {
+                    // byte
+                    type = "java/lang/Byte";
+                    descriptor = "[B";
+                    break;
+                }
+                case 9: {
+                    // short
+                    type = "java/lang/Short";
+                    descriptor = "[S";
+                    break;
+                }
+                case 10: {
+                    // int
+                    type = "java/lang/Integer";
+                    descriptor = "[I";
+                    break;
+                }
+                case 11: {
+                    // long
+                    type = "java/lang/Long";
+                    descriptor = "[J";
+                    break;
+                }
+                default:
+                    Assert.unreachable("Unknown newarray operand: " + operand);
+                }
+                this.target.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
+                String methodName = "multianewarray1";
+                String signature = "(ILjava/lang/Class;)Ljava/lang/Object;";
+                this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, signature, false);
+                this.target.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
+            } else {
+                this.target.visitIntInsn(opcode, operand);
+            }
         }
         @Override
         public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {

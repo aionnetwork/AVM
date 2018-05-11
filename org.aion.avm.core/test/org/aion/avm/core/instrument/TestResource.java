@@ -28,4 +28,8 @@ public class TestResource {
     public Object buildLongArray2(int d1, int d2) {
         return new long[d1][d2];
     }
+
+    public Object buildCharArray(int d1) {
+        return new char[d1];
+    }
 }

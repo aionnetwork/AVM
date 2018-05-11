@@ -226,6 +226,37 @@ public class ClassRewriterTest {
         Assert.assertEquals(1, TestEnergy.totalArrayInstances);
     }
 
+    /**
+     * Tests that we can replace primitive newarray bytecodes with call-out routines.
+     */
+    @Test
+    public void testNewarrayChar() throws Exception {
+        // Setup and rewrite the class.
+        String className = TestResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        Class<?> clazz = loader.loadClass(className);
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Object target = clazz.getConstructor(int.class).newInstance(6);
+        Method buildCharArray = clazz.getMethod("buildCharArray", int.class);
+        
+        // Check that we haven't yet called the TestEnergy to create an array.
+        Assert.assertEquals(0, TestEnergy.totalArrayElements);
+        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
+        
+        // Create an array and make sure it is correct.
+        char[] one = (char[]) buildCharArray.invoke(target, 2);
+        Assert.assertEquals(2, one.length);
+        Assert.assertEquals(2, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+        
+        // Verify our assumption that this is the same as the original implementation.
+        char[] original = (char[]) new TestResource(5).buildCharArray(2);
+        Assert.assertEquals(2, original.length);
+        // We shouldn't see an energy increase in the original class.
+        Assert.assertEquals(2, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+    }
+
 
     private boolean compareBlocks(int[][] expectedBlocks, List<BasicBlock> actualBlocks) {
         boolean didMatch = true;
