@@ -15,17 +15,17 @@ public class BytecodeFeeScheduler {
      * See {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Java-Bytecode-fee-schedule}
      */
     public enum BytecodeEnergyLevels {
-        ZERO(0),
-        BASE(2),
-        VERYLOW(3),
-        LOW(5),
-        MID(8),
-        HIGH(10),
-        VERYHIGH(13),
-        MACCESS(20),
-        FLOWCONTROL(40),
-        CREATION(40),
-        MEMORY(3);
+        ZERO        (0),
+        BASE        (2),
+        VERYLOW     (3),
+        LOW         (5),
+        MID         (8),
+        HIGH        (10),
+        VERYHIGH    (13),
+        MACCESS     (20),
+        FLOWCONTROL (40),
+        CREATION    (40),
+        MEMORY      (3);
 
         private final int val;
 
@@ -46,7 +46,7 @@ public class BytecodeFeeScheduler {
         BytecodeEnergyLevels extraNrgLvl;
         int delta;    // number of the items removed from the stack
         int alpha;    // number of the additional items placed on the stack
-        int fee;      // the static fee of this bytecode, generally including the computation cost and stack memory cost, assuming that the heap memory cost is added dynamically.
+        long fee;     // the static fee of this bytecode, generally including the computation cost and stack memory cost, assuming that the heap memory cost is added dynamically.
 
         private BytecodeFeeInfo(BytecodeEnergyLevels nrgLvl,
                                 BytecodeEnergyLevels extraNrgLvl,
@@ -90,11 +90,11 @@ public class BytecodeFeeScheduler {
         /**
          * return the fee.
          */
-        public int getFee() {
+        public long getFee() {
             return fee;
         }
 
-        private void setFee(int fee) {
+        private void setFee(long fee) {
             this.fee = fee;
         }
     }
@@ -297,7 +297,9 @@ public class BytecodeFeeScheduler {
         // calculate the static fee for each bytecode.
         for (int op : feeScheduleMap.keySet()) {
             BytecodeFeeInfo feeInfo = feeScheduleMap.get(op);
-            int fee = feeInfo.getNrgLvl().getVal() + feeInfo.getExtraNrgLvl().getVal()
+
+            // believing no overflow here so not casting from int to long during the calculation
+            long fee = feeInfo.getNrgLvl().getVal() + feeInfo.getExtraNrgLvl().getVal()
                     + BytecodeEnergyLevels.MEMORY.getVal() * Math.max((feeInfo.getAlpha() - feeInfo.getDelta()), 0);
 
             feeInfo.setFee(fee);
@@ -307,7 +309,7 @@ public class BytecodeFeeScheduler {
     /**
      * return the bytecode fee.
      */
-    public int getFee(int op) {
+    public long getFee(int op) {
         if (feeScheduleMap.containsKey(op)) {
             return feeScheduleMap.get(op).getFee();
         } else {
