@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.aion.avm.core.util.Assert;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -13,6 +14,7 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 
 /**
@@ -67,7 +69,7 @@ public class ClassRewriter {
      */
     public static byte[] rewriteBlocksInClass(String runtimeClassName, byte[] classBytes, Map<String, List<BasicBlock>> methodData) {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        ClassCostVisitor adapter = new ClassCostVisitor(runtimeClassName, cw, methodData);
+        ClassInstrumentationVisitor adapter = new ClassInstrumentationVisitor(runtimeClassName, cw, methodData);
 
         ClassReader cr = new ClassReader(classBytes);
         cr.accept(adapter, ClassReader.SKIP_FRAMES);
@@ -133,12 +135,13 @@ public class ClassRewriter {
 
     /**
      * A helper class used internally, by rewriteOneMethodInClass.
+     * This is the final phase visitor, where bytecodes are updated in the stream.
      */
-    private static class ClassCostVisitor extends ClassVisitor implements Opcodes {
+    private static class ClassInstrumentationVisitor extends ClassVisitor implements Opcodes {
         private final String runtimeClassName;
         private final Map<String, List<BasicBlock>> methodData;
 
-        public ClassCostVisitor(String runtimeClassName, ClassVisitor cv, Map<String, List<BasicBlock>> methodData) {
+        public ClassInstrumentationVisitor(String runtimeClassName, ClassVisitor cv, Map<String, List<BasicBlock>> methodData) {
             super(Opcodes.ASM6, cv);
             this.runtimeClassName = runtimeClassName;
             this.methodData = methodData;
@@ -153,7 +156,7 @@ public class ClassRewriter {
             if (null != blocks) {
                 // We want to rewrite this method, augmenting the blocks in the original by prepending any energy cost.
                 MethodVisitor originalVisitor = super.visitMethod(access, name, descriptor, signature, exceptions);
-                resultantVisitor = new MethodCostVisitor(this.runtimeClassName, originalVisitor, blocks);
+                resultantVisitor = new MethodInstrumentationVisitor(this.runtimeClassName, originalVisitor, blocks);
             } else {
                 // In this case, we basically just want to pass this through.
                 resultantVisitor = super.visitMethod(access, name, descriptor, signature, exceptions);
@@ -164,20 +167,30 @@ public class ClassRewriter {
 
 
     /**
-     * A helper class used internally, by ClassCostVisitor.
-     * This is one of the more complex ASM interactions, so it warrants some explanation:
+     * A helper class used internally, by ClassInstrumentationVisitor.
+     * It is responsible for re-writing the methods with the various call-outs and other manipulations.
+     * 
+     * Prepending instrumentation is one of the more complex ASM interactions, so it warrants some explanation:
      * -we will advance through the block list we were given while walking the blocks, much like BlockMethodReader.
      * -when we reach the beginning of a new block, we will inject the energy accounting helper before passing the
      * method through to the writer.
+     * 
+     * Array allocation replacement is also one the more complex cases, worth explaining:
+     * -newarray - call to special static helpers, based on underlying native:  no change to stack shape
+     * -anewarray - call to special static helper, requires pushing the associated class constant onto the stack
+     * -multianewarray - call to special static helpers, requires pushing the associated class constant onto the stack
+     * Only anewarray is done without argument introspection.  Note that multianewarray can be called for any [2..255]
+     * dimension array.
+     * TODO: Generate the source for these helpers.  For now, we will just define that [2..4] are allowed.
      */
-    private static class MethodCostVisitor extends MethodVisitor implements Opcodes {
+    private static class MethodInstrumentationVisitor extends MethodVisitor implements Opcodes {
         private final String runtimeClassName;
         private final MethodVisitor target;
         private final List<BasicBlock> blocks;
         private boolean scanningToNewBlockStart;
         private int nextBlockIndexToWrite;
 
-        public MethodCostVisitor(String runtimeClassName, MethodVisitor target, List<BasicBlock> blocks) {
+        public MethodInstrumentationVisitor(String runtimeClassName, MethodVisitor target, List<BasicBlock> blocks) {
             super(Opcodes.ASM6, null);
             this.runtimeClassName = runtimeClassName;
             this.target = target;
@@ -195,10 +208,7 @@ public class ClassRewriter {
         @Override
         public void visitEnd() {
             // We never have empty blocks, in our implementation, so we should always be done when we reach this point.
-            // TODO: Replace this with a call to an assertion library.
-            if (this.blocks.size() != this.nextBlockIndexToWrite) {
-                throw new AssertionError("Block count mismatch");
-            }
+            Assert.assertTrue(this.blocks.size() == this.nextBlockIndexToWrite);
             // Tell the writer we are done.
             this.target.visitEnd();
         }
@@ -220,12 +230,75 @@ public class ClassRewriter {
         @Override
         public void visitIntInsn(int opcode, int operand) {
             checkInject();
-            this.target.visitIntInsn(opcode, operand);
+            // This is where the newarray bytecode might appear:  the operand is a specially-defined list of primitive types.
+            if (Opcodes.NEWARRAY == opcode) {
+                // We will handle this through the common multianewarray1 helper instead of creating a new helper for every case.
+                String type = null;
+                String descriptor = null;
+                switch (operand) {
+                case 4: {
+                    // boolean
+                    type = "java/lang/Boolean";
+                    descriptor = "[Z";
+                    break;
+                }
+                case 5: {
+                    // char
+                    type = "java/lang/Character";
+                    descriptor = "[C";
+                    break;
+                }
+                case 6: {
+                    // float
+                    type = "java/lang/Float";
+                    descriptor = "[F";
+                    break;
+                }
+                case 7: {
+                    // double
+                    type = "java/lang/Double";
+                    descriptor = "[D";
+                    break;
+                }
+                case 8: {
+                    // byte
+                    type = "java/lang/Byte";
+                    descriptor = "[B";
+                    break;
+                }
+                case 9: {
+                    // short
+                    type = "java/lang/Short";
+                    descriptor = "[S";
+                    break;
+                }
+                case 10: {
+                    // int
+                    type = "java/lang/Integer";
+                    descriptor = "[I";
+                    break;
+                }
+                case 11: {
+                    // long
+                    type = "java/lang/Long";
+                    descriptor = "[J";
+                    break;
+                }
+                default:
+                    Assert.unreachable("Unknown newarray operand: " + operand);
+                }
+                this.target.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
+                String methodName = "multianewarray1";
+                String signature = "(ILjava/lang/Class;)Ljava/lang/Object;";
+                this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, signature, false);
+                this.target.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
+            } else {
+                this.target.visitIntInsn(opcode, operand);
+            }
         }
         @Override
         public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-            // TODO:  Change this to our eventual filtering mechanism.
-            throw new AssertionError("INVALID BYTECODE (TODO:  Change this to our eventual filtering mechanism)");
+            Assert.unreachable("invokedynamic must be filtered prior to updating basic blocks");
         }
         @Override
         public void visitJumpInsn(int opcode, Label label) {
@@ -240,6 +313,11 @@ public class ClassRewriter {
             this.target.visitLabel(label);
         }
         @Override
+        public void visitLdcInsn(Object value) {
+            checkInject();
+            this.target.visitLdcInsn(value);
+        }
+        @Override
         public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
             checkInject();
             this.target.visitLookupSwitchInsn(dflt, keys, labels);
@@ -252,7 +330,80 @@ public class ClassRewriter {
         @Override
         public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
             checkInject();
-            this.target.visitMultiANewArrayInsn(descriptor, numDimensions);
+            // We don't actually want to write multianewarray bytecodes, but always replace them with call-outs.
+            if (numDimensions > 3) {
+                // TODO:  Build something to generate the rest of the helpers we may need, here.  We will only go to 3 for the initial tests.
+                Assert.unimplemented("TODO:  Build something to generate the rest of the helpers we may need, here.  We will only go to 3 for the initial tests.");
+            }
+            // TODO:  Can we be certain numDimensions is at least 2 (if it can't be one, we have an unused method in the static)?
+            // This is just like anewarray, except that the invokestatic target differs, based on numDimensions.
+            
+            // NOTE:  This bytecode is also used for primitive multi-arrays which DO NOT have "L" or ";" in their descriptors.
+            // For example, "long[][]" is "[[J" so we need to handle those a little differently.
+            // Also note that primitive array construction is done very oddly:  since primitives don't have classes, a placeholder is loaded from
+            // the corresponding capital wrapper class, as a static.  We need to generate those special-cases here.
+            
+            int indexOfL = descriptor.indexOf("L");
+            boolean isObjectType = (-1 != indexOfL);
+            // Note that we load class references via ldc but primitive types via getstatic.
+            if (isObjectType) {
+                // The descriptor we are given here is the arrayclass descriptor, along the lines of "[[[Ljava/lang/String;" but our helper
+                // wants to receive the raw class so convert it, here, by pruning "[*L" and ";" from the descriptor.
+                String prunedClassName = descriptor.substring(indexOfL + 1, descriptor.length() - 1);
+                this.target.visitLdcInsn(Type.getObjectType(prunedClassName));
+            } else {
+                // java/lang/Long.TYPE:Ljava/lang/Class;
+                String typeName = descriptor.replaceAll("\\[", "");
+                // We expect that this is only 1 char (or we parsed this wrong or were passed something we couldn't interpret).
+                Assert.assertTrue(1 == typeName.length());
+                String type = null;
+                switch (typeName.charAt(0)) {
+                case 'Z': {
+                    type = "java/lang/Boolean";
+                    break;
+                }
+                case 'B': {
+                    type = "java/lang/Byte";
+                    break;
+                }
+                case 'C': {
+                    type = "java/lang/Char";
+                    break;
+                }
+                case 'S': {
+                    type = "java/lang/Short";
+                    break;
+                }
+                case 'I': {
+                    type = "java/lang/Integer";
+                    break;
+                }
+                case 'J': {
+                    type = "java/lang/Long";
+                    break;
+                }
+                case 'F': {
+                    type = "java/lang/Float";
+                    break;
+                }
+                case 'D': {
+                    type = "java/lang/Double";
+                    break;
+                }
+                default:
+                    Assert.unreachable("Unknown primitive type: \"" + typeName + "\"");
+                }
+                this.target.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
+            }
+            String argList = "(";
+            for (int i = 0; i < numDimensions; ++i) {
+                argList += "I";
+            }
+            argList += "Ljava/lang/Class;)";
+            String methodName = "multianewarray" + numDimensions;
+            String signature = argList + "Ljava/lang/Object;";
+            this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, signature, false);
+            this.target.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
         }
         @Override
         public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
@@ -262,7 +413,16 @@ public class ClassRewriter {
         @Override
         public void visitTypeInsn(int opcode, String type) {
             checkInject();
-            this.target.visitTypeInsn(opcode, type);
+            // This is where we might see anewarray, so see if we need to replace it with a helper.
+            if (Opcodes.ANEWARRAY == opcode) {
+                // Inject our special idiom:  ldc then invokestatic, finally checkcast.
+                this.target.visitLdcInsn(Type.getObjectType(type));
+                // We just use the common multianewarray1 helper, since it can cover the common 1-dimensional cases for both objects and primitives.
+                this.target.visitMethodInsn(INVOKESTATIC, this.runtimeClassName, "multianewarray1", "(ILjava/lang/Class;)Ljava/lang/Object;", false);
+                this.target.visitTypeInsn(Opcodes.CHECKCAST, "[L" + type + ";");
+            } else {
+                this.target.visitTypeInsn(opcode, type);
+            }
         }
         @Override
         public void visitVarInsn(int opcode, int var) {
@@ -317,10 +477,8 @@ public class ClassRewriter {
 
         public void finishMethod(String key, List<BasicBlock> value) {
             List<BasicBlock> previous = this.buildingMap.put(key, value);
-            // TODO:  Generalize this handling into an assertion library.
-            if (null != previous) {
-                throw new AssertionError("Key already present: " + key);
-            }
+            // If we over-wrote something, this is a serious bug.
+            Assert.assertNull(previous);
         }
     }
 
@@ -373,8 +531,7 @@ public class ClassRewriter {
         }
         @Override
         public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-            // TODO:  Change this to our eventual filtering mechanism.
-            throw new AssertionError("INVALID BYTECODE (TODO:  Change this to our eventual filtering mechanism)");
+            Assert.unreachable("invokedynamic must be filtered prior to reading basic blocks");
         }
         @Override
         public void visitJumpInsn(int opcode, Label label) {
@@ -388,6 +545,10 @@ public class ClassRewriter {
             }
             // Start the new block.
             this.currentBuildingBlock = new ArrayList<>();
+        }
+        @Override
+        public void visitLdcInsn(Object value) {
+            this.currentBuildingBlock.add(Opcodes.LDC);
         }
         @Override
         public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {

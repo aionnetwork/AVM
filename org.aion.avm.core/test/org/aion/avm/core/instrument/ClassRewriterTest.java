@@ -1,19 +1,35 @@
 package org.aion.avm.core.instrument;
 
-import org.aion.avm.core.instrument.ClassRewriter.BasicBlock;
-import org.junit.Assert;
-import org.junit.Test;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
-
-import java.io.IOException;
-import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.core.instrument.ClassRewriter.BasicBlock;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.objectweb.asm.*;
+
 
 public class ClassRewriterTest {
+    // We keep this here just because a lot of cases want to use this sort of "do no instrumentation" cost builder for testing other rewrites.
+    private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) -> {
+        // We don't care about cost in this case - we just need to invoke the rewrite path.
+        Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
+        return ClassRewriter.rewriteBlocksInClass(TestEnergy.CLASS_NAME, inputBytes, methodBlocks);
+    };
+
+    @Before
+    public void setup() {
+        // Clear the state of our static test class.
+        TestEnergy.totalCost = 0;
+        TestEnergy.totalCharges = 0;
+        TestEnergy.totalArrayElements = 0;
+        TestEnergy.totalArrayInstances = 0;
+    }
     /**
      * We want to prove that we can instantiate one version of the TestResource and see its original implementation
      * and then change it in the custom classloader.
@@ -78,25 +94,25 @@ public class ClassRewriterTest {
      */
     @Test
     public void testWrittenBlockPrefix() throws Exception {
-        // Clear the state of our static test class.
-        TestEnergy.totalCost = 0;
-        TestEnergy.totalCharges = 0;
         // Setup and rewrite the class.
-        String runtimeClassName = ClassRewriterTest.class.getCanonicalName().replaceAll("\\.", "/") + "$TestEnergy";
         Function<byte[], byte[]> costBuilder = (inputBytes) -> {
             Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
             // Just attach some testing cost to all of these.
             long costToAdd = 1;
-            for (List<ClassRewriter.BasicBlock> list : methodBlocks.values()) {
-                for (ClassRewriter.BasicBlock block : list) {
-                    block.setEnergyCost(costToAdd);
-                    costToAdd += 1;
+            for (Map.Entry<String, List<ClassRewriter.BasicBlock>> elt: methodBlocks.entrySet()) {
+                // For now, we only want to worry about the <init> and hashCode, since we don't call the other methods.
+                String method = elt.getKey();
+                if ("<init>(I)V".equals(method) || "hashCode()I".equals(method)) {
+                    for (ClassRewriter.BasicBlock block : elt.getValue()) {
+                        block.setEnergyCost(costToAdd);
+                        costToAdd += 1;
+                    }
                 }
             }
             // Note that this test assumes that there are 4 blocks so check our next cost is 5.
             Assert.assertEquals(5, costToAdd);
             // Re-write the class.
-            return ClassRewriter.rewriteBlocksInClass(runtimeClassName, inputBytes, methodBlocks);
+            return ClassRewriter.rewriteBlocksInClass(TestEnergy.CLASS_NAME, inputBytes, methodBlocks);
         };
         String className = TestResource.class.getCanonicalName();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, costBuilder);
@@ -110,6 +126,135 @@ public class ClassRewriterTest {
         // Now, we should expect to see 4 charges, each of a different value:  1+2+3+4 = 10
         Assert.assertEquals(4, TestEnergy.totalCharges);
         Assert.assertEquals(10, TestEnergy.totalCost);
+    }
+
+    /**
+     * Tests that we can replace anewarray bytecodes with call-out routines.
+     */
+    @Test
+    public void testAnewarrayCallOut() throws Exception {
+        // Setup and rewrite the class.
+        String className = TestResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        Class<?> clazz = loader.loadClass(className);
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Object target = clazz.getConstructor(int.class).newInstance(6);
+        Method buildStringArray = clazz.getMethod("buildStringArray", int.class);
+        
+        // Check that we haven't yet called the TestEnergy to create an array.
+        Assert.assertEquals(0, TestEnergy.totalArrayElements);
+        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
+        
+        // Create an array and make sure it is correct.
+        String[] one = (String[]) buildStringArray.invoke(target, 2);
+        Assert.assertEquals(2, one.length);
+        Assert.assertEquals(2, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+        
+        // Create another.
+        String[] two = (String[]) buildStringArray.invoke(target, 25);
+        Assert.assertEquals(25, two.length);
+        Assert.assertEquals(27, TestEnergy.totalArrayElements);
+        Assert.assertEquals(2, TestEnergy.totalArrayInstances);
+    }
+
+    /**
+     * Tests that we can replace multianewarray bytecodes with call-out routines.
+     */
+    @Test
+    public void testMultianewarrayCallOut() throws Exception {
+        // Setup and rewrite the class.
+        String className = TestResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        Class<?> clazz = loader.loadClass(className);
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Object target = clazz.getConstructor(int.class).newInstance(6);
+        Method buildMultiStringArray3 = clazz.getMethod("buildMultiStringArray3", int.class, int.class, int.class);
+        
+        // Check that we haven't yet called the TestEnergy to create an array.
+        Assert.assertEquals(0, TestEnergy.totalArrayElements);
+        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
+        
+        // Create an array and make sure it is correct.
+        String[][][] one = (String[][][]) buildMultiStringArray3.invoke(target, 2, 3, 4);
+        Assert.assertEquals(2, one.length);
+        Assert.assertEquals(3, one[0].length);
+        Assert.assertEquals(4, one[0][1].length);
+        Assert.assertEquals(24, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+        
+        // Verify our assumption that this is the same as the original implementation.
+        String[][][] original = new TestResource(5).buildMultiStringArray3(2, 3, 4);
+        Assert.assertEquals(2, original.length);
+        Assert.assertEquals(3, original[0].length);
+        Assert.assertEquals(4, original[0][1].length);
+        // We shouldn't see an energy increase in the original class.
+        Assert.assertEquals(24, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+    }
+
+    /**
+     * Tests that we can replace primitive multianewarray bytecodes with call-out routines.
+     */
+    @Test
+    public void testMultianewarrayPrimitive() throws Exception {
+        // Setup and rewrite the class.
+        String className = TestResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        Class<?> clazz = loader.loadClass(className);
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Object target = clazz.getConstructor(int.class).newInstance(6);
+        Method buildLongArray2 = clazz.getMethod("buildLongArray2", int.class, int.class);
+        
+        // Check that we haven't yet called the TestEnergy to create an array.
+        Assert.assertEquals(0, TestEnergy.totalArrayElements);
+        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
+        
+        // Create an array and make sure it is correct.
+        long[][] one = (long[][]) buildLongArray2.invoke(target, 2, 3);
+        Assert.assertEquals(2, one.length);
+        Assert.assertEquals(3, one[0].length);
+        Assert.assertEquals(6, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+        
+        // Verify our assumption that this is the same as the original implementation.
+        long[][] original = (long[][]) new TestResource(5).buildLongArray2(2, 3);
+        Assert.assertEquals(2, original.length);
+        Assert.assertEquals(3, original[0].length);
+        // We shouldn't see an energy increase in the original class.
+        Assert.assertEquals(6, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+    }
+
+    /**
+     * Tests that we can replace primitive newarray bytecodes with call-out routines.
+     */
+    @Test
+    public void testNewarrayChar() throws Exception {
+        // Setup and rewrite the class.
+        String className = TestResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        Class<?> clazz = loader.loadClass(className);
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Object target = clazz.getConstructor(int.class).newInstance(6);
+        Method buildCharArray = clazz.getMethod("buildCharArray", int.class);
+        
+        // Check that we haven't yet called the TestEnergy to create an array.
+        Assert.assertEquals(0, TestEnergy.totalArrayElements);
+        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
+        
+        // Create an array and make sure it is correct.
+        char[] one = (char[]) buildCharArray.invoke(target, 2);
+        Assert.assertEquals(2, one.length);
+        Assert.assertEquals(2, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+        
+        // Verify our assumption that this is the same as the original implementation.
+        char[] original = (char[]) new TestResource(5).buildCharArray(2);
+        Assert.assertEquals(2, original.length);
+        // We shouldn't see an energy increase in the original class.
+        Assert.assertEquals(2, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
     }
 
 
@@ -135,43 +280,6 @@ public class ClassRewriterTest {
         return didMatch;
     }
 
-
-    /**
-     * We use this classloader, within the test, to get the raw bytes of the test we want to modify and then pass
-     * into the ClassRewriter, for the test.
-     */
-    private static class TestClassLoader extends ClassLoader {
-        private final String classNameToProvide;
-        private final Function<byte[], byte[]> loadHandler;
-
-        public TestClassLoader(ClassLoader parent, String classNameToProvide, Function<byte[], byte[]> loadHandler) {
-            super(parent);
-            this.classNameToProvide = classNameToProvide;
-            this.loadHandler = loadHandler;
-        }
-
-        @Override
-        public Class<?> loadClass(String name) throws ClassNotFoundException {
-            Class<?> result = null;
-            if (this.classNameToProvide.equals(name)) {
-                InputStream stream = getParent().getResourceAsStream(name.replaceAll("\\.", "/") + ".class");
-                byte[] raw = null;
-                try {
-                    raw = stream.readAllBytes();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Assert.fail();
-                }
-                byte[] rewrittten = this.loadHandler.apply(raw);
-                result = defineClass(name, rewrittten, 0, rewrittten.length);
-            } else {
-                result = getParent().loadClass(name);
-            }
-            return result;
-        }
-    }
-
-
     private static class BlockSnooper implements Function<byte[], byte[]> {
         public Map<String, List<ClassRewriter.BasicBlock>> resultMap;
 
@@ -188,12 +296,33 @@ public class ClassRewriterTest {
      * NOTE:  This class is used for the "testWrittenBlockPrefix()" test.
      */
     public static class TestEnergy {
+        public static String CLASS_NAME = ClassRewriterTest.class.getCanonicalName().replaceAll("\\.", "/") + "$TestEnergy";
         public static long totalCost;
         public static int totalCharges;
-        
+        public static int totalArrayElements;
+        public static int totalArrayInstances;
+
         public static void chargeEnergy(long cost) {
             TestEnergy.totalCost += cost;
             TestEnergy.totalCharges += 1;
+        }
+
+        public static Object multianewarray1(int d1, Class<?> cl) {
+            TestEnergy.totalArrayElements += d1;
+            TestEnergy.totalArrayInstances += 1;
+            return Array.newInstance(cl, d1);
+        }
+
+        public static Object multianewarray2(int d1, int d2, Class<?> cl) {
+            TestEnergy.totalArrayElements += d1 * d2;
+            TestEnergy.totalArrayInstances += 1;
+            return Array.newInstance(cl, d1, d2);
+        }
+
+        public static Object multianewarray3(int d1, int d2, int d3, Class<?> cl) {
+            TestEnergy.totalArrayElements += d1 * d2 * d3;
+            TestEnergy.totalArrayInstances += 1;
+            return Array.newInstance(cl, d1, d2, d3);
         }
     }
 }

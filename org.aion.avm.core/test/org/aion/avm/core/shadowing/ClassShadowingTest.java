@@ -1,30 +1,31 @@
 package org.aion.avm.core.shadowing;
 
+import org.aion.avm.core.TestClassLoader;
+import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ClassShadowingTest {
 
-    private static byte[] readClassFile(String name) throws IOException {
-        InputStream in = ClassShadowing.class.getResourceAsStream("/" + name.replaceAll("\\.", File.separator) + ".class");
-        return in.readAllBytes();
-    }
-
     @Test
-    public void testReplaceJavaLang() throws IOException {
+    public void testReplaceJavaLang() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Map<String, String> map = new HashMap<>();
         map.put("java/lang/Object", "org/aion/avm/java/lang/Object");
         map.put("java/lang/Math", "org/aion/avm/java/lang/Math");
 
-        byte[] source = readClassFile("org.aion.avm.core.shadowing.TestResource");
-        byte[] result = ClassShadowing.replaceInvoke(source, map);
+        String name = "org.aion.avm.core.shadowing.TestResource";
 
-        System.out.println(source.length);
-        System.out.println(result.length);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), name, (inputBytes) -> ClassShadowing.replaceClassRef(inputBytes, map));
+        Class<?> clazz = loader.loadClass(name);
+        Object obj = clazz.getConstructor().newInstance();
+
+        Method method = clazz.getMethod("multi", int.class, int.class);
+        Object ret = method.invoke(obj, 1, 2);
+        Assert.assertEquals(0, ret);
     }
 }
