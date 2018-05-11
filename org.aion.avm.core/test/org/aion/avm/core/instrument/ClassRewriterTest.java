@@ -257,6 +257,26 @@ public class ClassRewriterTest {
         Assert.assertEquals(1, TestEnergy.totalArrayInstances);
     }
 
+    /**
+     * Tests that we can successfully walk allocation sites.
+     */
+    @Test
+    public void testAllocationTypes() throws Exception {
+        String className = TestResource.class.getCanonicalName();
+        BlockSnooper snooper = new BlockSnooper();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper);
+        loader.loadClass(className);
+        Map<String, List<ClassRewriter.BasicBlock>> resultMap = snooper.resultMap;
+        List<ClassRewriter.BasicBlock> factoryBlocks = resultMap.get("testFactory()Lorg/aion/avm/core/instrument/TestResource;");
+        // We expect this case to have a single block.
+        Assert.assertEquals(1, factoryBlocks.size());
+        // With a single allocation.
+        ClassRewriter.BasicBlock block = factoryBlocks.get(0);
+        Assert.assertEquals(1, block.allocatedTypes.size());
+        // Of our TestResource type.
+        Assert.assertEquals(TestResource.class.getCanonicalName(), block.allocatedTypes.get(0).replaceAll("/", "."));
+    }
+
 
     private boolean compareBlocks(int[][] expectedBlocks, List<BasicBlock> actualBlocks) {
         boolean didMatch = true;

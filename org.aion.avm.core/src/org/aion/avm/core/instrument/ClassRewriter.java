@@ -491,6 +491,7 @@ public class ClassRewriter {
         private final String uniqueKey;
         private final List<BasicBlock> buildingList;
         private List<Integer> currentBuildingBlock;
+        private List<String> currentAllocationList;
         
         public BlockMethodReader(BlockClassReader parent, String uniqueKey) {
             super(Opcodes.ASM6);
@@ -502,13 +503,15 @@ public class ClassRewriter {
         public void visitCode() {
             // This is just useful for internal sanity checking.
             this.currentBuildingBlock = new ArrayList<>();
+            this.currentAllocationList = new ArrayList<>();
         }
         @Override
         public void visitEnd() {
             // This is called after all the code has been walked, so seal the final block.
             if (!this.currentBuildingBlock.isEmpty()) {
-                this.buildingList.add(new BasicBlock(this.currentBuildingBlock));
+                this.buildingList.add(new BasicBlock(this.currentBuildingBlock, this.currentAllocationList));
                 this.currentBuildingBlock = null;
+                this.currentAllocationList = null;
             }
             // And write-back our result;
             this.parent.finishMethod(this.uniqueKey, this.buildingList);
@@ -541,10 +544,11 @@ public class ClassRewriter {
         public void visitLabel(Label label) {
             // Seal the previous block (avoid the case where the block is empty).
             if (!this.currentBuildingBlock.isEmpty()) {
-                this.buildingList.add(new BasicBlock(this.currentBuildingBlock));
+                this.buildingList.add(new BasicBlock(this.currentBuildingBlock, this.currentAllocationList));
             }
             // Start the new block.
             this.currentBuildingBlock = new ArrayList<>();
+            this.currentAllocationList = new ArrayList<>();
         }
         @Override
         public void visitLdcInsn(Object value) {
@@ -569,6 +573,10 @@ public class ClassRewriter {
         @Override
         public void visitTypeInsn(int opcode, String type) {
             this.currentBuildingBlock.add(opcode);
+            // If this is a new, att the type to the allocation list for the block.
+            if (Opcodes.NEW == opcode) {
+                this.currentAllocationList.add(type);
+            }
         }
         @Override
         public void visitVarInsn(int opcode, int var) {
@@ -589,14 +597,17 @@ public class ClassRewriter {
 
     /**
      * Describes a single basic block within a method.
-     * Note that only the opcodeSequence is meant to be immutable.  Other instance variables are mutable, deliberately, to allow for mutation requests.
+     * Note that only the opcodeSequence and allocatedTypes are meant to be immutable.
+     * The variable energyCost is mutable, deliberately, to allow for mutation requests.
      */
     public static class BasicBlock {
         public final List<Integer> opcodeSequence;
+        public final List<String> allocatedTypes;
         private long energyCost;
         
-        public BasicBlock(List<Integer> opcodes) {
+        public BasicBlock(List<Integer> opcodes, List<String> allocatedTypes) {
             this.opcodeSequence = Collections.unmodifiableList(opcodes);
+            this.allocatedTypes = Collections.unmodifiableList(allocatedTypes);
         }
         
         /**

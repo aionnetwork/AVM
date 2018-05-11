@@ -32,4 +32,8 @@ public class TestResource {
     public Object buildCharArray(int d1) {
         return new char[d1];
     }
+
+    public static TestResource testFactory() {
+        return new TestResource(5);
+    }
 }
