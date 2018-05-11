@@ -417,7 +417,8 @@ public class ClassRewriter {
             if (Opcodes.ANEWARRAY == opcode) {
                 // Inject our special idiom:  ldc then invokestatic, finally checkcast.
                 this.target.visitLdcInsn(Type.getObjectType(type));
-                this.target.visitMethodInsn(INVOKESTATIC, this.runtimeClassName, "anewarray", "(ILjava/lang/Class;)Ljava/lang/Object;", false);
+                // We just use the common multianewarray1 helper, since it can cover the common 1-dimensional cases for both objects and primitives.
+                this.target.visitMethodInsn(INVOKESTATIC, this.runtimeClassName, "multianewarray1", "(ILjava/lang/Class;)Ljava/lang/Object;", false);
                 this.target.visitTypeInsn(Opcodes.CHECKCAST, "[L" + type + ";");
             } else {
                 this.target.visitTypeInsn(opcode, type);

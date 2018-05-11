@@ -307,15 +307,10 @@ public class ClassRewriterTest {
             TestEnergy.totalCharges += 1;
         }
 
-        public static Object anewarray(int len, Class<?> cl) {
-            TestEnergy.totalArrayElements += len;
-            TestEnergy.totalArrayInstances += 1;
-            return Array.newInstance(cl, len);
-        }
-
         public static Object multianewarray1(int d1, Class<?> cl) {
-            // Note that this method might not be needed if multianewarray must be dimension >=2.
-            return anewarray(d1, cl);
+            TestEnergy.totalArrayElements += d1;
+            TestEnergy.totalArrayInstances += 1;
+            return Array.newInstance(cl, d1);
         }
 
         public static Object multianewarray2(int d1, int d2, Class<?> cl) {
