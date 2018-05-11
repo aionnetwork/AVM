@@ -5,6 +5,9 @@ import java.util.Map;
 
 public class FeeChargingCodeInjector {
 
+    private String runtimeClassName = null;
+    private BytecodeFeeScheduler bytecodeFeeScheduler = null;
+
     /**
      * Constructor.
      */
@@ -12,9 +15,6 @@ public class FeeChargingCodeInjector {
         bytecodeFeeScheduler = new BytecodeFeeScheduler();
         bytecodeFeeScheduler.initialize();
     }
-
-    private String runtimeClassName = null;
-    private BytecodeFeeScheduler bytecodeFeeScheduler = null;
 
     /**
      * Called by the runtime to register the Energy meter class name, which has a static method to charge the Energy.
@@ -30,7 +30,6 @@ public class FeeChargingCodeInjector {
      * @return Instrumented bytecode stream of the method, with the fee charging bytecode added to every code block.
      */
     public byte[] injectCodeIntoOneMethod(byte[] methodBytecode) {
-
         Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(methodBytecode);
         for (List<ClassRewriter.BasicBlock> list : methodBlocks.values()) {
             for (ClassRewriter.BasicBlock block : list) {
