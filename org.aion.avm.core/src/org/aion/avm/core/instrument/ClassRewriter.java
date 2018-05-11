@@ -273,10 +273,64 @@ public class ClassRewriter {
             }
             // TODO:  Can we be certain numDimensions is at least 2 (if it can't be one, we have an unused method in the static)?
             // This is just like anewarray, except that the invokestatic target differs, based on numDimensions.
-            // The descriptor we are given here is the arrayclass descriptor, along the lines of "[[[Ljava/lang/String;" but our helper
-            // wants to receive the raw class so convert it, here, by pruning "[*L" and ";" from the descriptor.
-            String prunedClassName = descriptor.substring(descriptor.indexOf("L") + 1, descriptor.length() - 1);
-            this.target.visitLdcInsn(Type.getObjectType(prunedClassName));
+            
+            // NOTE:  This bytecode is also used for primitive multi-arrays which DO NOT have "L" or ";" in their descriptors.
+            // For example, "long[][]" is "[[J" so we need to handle those a little differently.
+            // Also note that primitive array construction is done very oddly:  since primitives don't have classes, a placeholder is loaded from
+            // the corresponding capital wrapper class, as a static.  We need to generate those special-cases here.
+            
+            int indexOfL = descriptor.indexOf("L");
+            boolean isObjectType = (-1 != indexOfL);
+            // Note that we load class references via ldc but primitive types via getstatic.
+            if (isObjectType) {
+                // The descriptor we are given here is the arrayclass descriptor, along the lines of "[[[Ljava/lang/String;" but our helper
+                // wants to receive the raw class so convert it, here, by pruning "[*L" and ";" from the descriptor.
+                String prunedClassName = descriptor.substring(indexOfL + 1, descriptor.length() - 1);
+                this.target.visitLdcInsn(Type.getObjectType(prunedClassName));
+            } else {
+                // java/lang/Long.TYPE:Ljava/lang/Class;
+                String typeName = descriptor.replaceAll("\\[", "");
+                // We expect that this is only 1 char (or we parsed this wrong or were passed something we couldn't interpret).
+                Assert.assertTrue(1 == typeName.length());
+                String type = null;
+                switch (typeName.charAt(0)) {
+                case 'Z': {
+                    type = "java/lang/Boolean";
+                    break;
+                }
+                case 'B': {
+                    type = "java/lang/Byte";
+                    break;
+                }
+                case 'C': {
+                    type = "java/lang/Char";
+                    break;
+                }
+                case 'S': {
+                    type = "java/lang/Short";
+                    break;
+                }
+                case 'I': {
+                    type = "java/lang/Integer";
+                    break;
+                }
+                case 'J': {
+                    type = "java/lang/Long";
+                    break;
+                }
+                case 'F': {
+                    type = "java/lang/Float";
+                    break;
+                }
+                case 'D': {
+                    type = "java/lang/Double";
+                    break;
+                }
+                default:
+                    Assert.unreachable("Unknown primitive type: \"" + typeName + "\"");
+                }
+                this.target.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
+            }
             String argList = "(";
             for (int i = 0; i < numDimensions; ++i) {
                 argList += "I";

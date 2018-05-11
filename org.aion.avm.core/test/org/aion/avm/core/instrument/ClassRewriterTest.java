@@ -193,6 +193,39 @@ public class ClassRewriterTest {
         Assert.assertEquals(1, TestEnergy.totalArrayInstances);
     }
 
+    /**
+     * Tests that we can replace primitive multianewarray bytecodes with call-out routines.
+     */
+    @Test
+    public void testMultianewarrayPrimitive() throws Exception {
+        // Setup and rewrite the class.
+        String className = TestResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        Class<?> clazz = loader.loadClass(className);
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Object target = clazz.getConstructor(int.class).newInstance(6);
+        Method buildLongArray2 = clazz.getMethod("buildLongArray2", int.class, int.class);
+        
+        // Check that we haven't yet called the TestEnergy to create an array.
+        Assert.assertEquals(0, TestEnergy.totalArrayElements);
+        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
+        
+        // Create an array and make sure it is correct.
+        long[][] one = (long[][]) buildLongArray2.invoke(target, 2, 3);
+        Assert.assertEquals(2, one.length);
+        Assert.assertEquals(3, one[0].length);
+        Assert.assertEquals(6, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+        
+        // Verify our assumption that this is the same as the original implementation.
+        long[][] original = (long[][]) new TestResource(5).buildLongArray2(2, 3);
+        Assert.assertEquals(2, original.length);
+        Assert.assertEquals(3, original[0].length);
+        // We shouldn't see an energy increase in the original class.
+        Assert.assertEquals(6, TestEnergy.totalArrayElements);
+        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
+    }
+
 
     private boolean compareBlocks(int[][] expectedBlocks, List<BasicBlock> actualBlocks) {
         boolean didMatch = true;

@@ -24,4 +24,8 @@ public class TestResource {
     public String[][][] buildMultiStringArray3(int d1, int d2, int d3) {
         return new String[d1][d2][d3];
     }
+
+    public Object buildLongArray2(int d1, int d2) {
+        return new long[d1][d2];
+    }
 }
