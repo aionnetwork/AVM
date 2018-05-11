@@ -278,16 +278,13 @@ public class ClassRewriter {
             String prunedClassName = descriptor.substring(descriptor.indexOf("L") + 1, descriptor.length() - 1);
             this.target.visitLdcInsn(Type.getObjectType(prunedClassName));
             String argList = "(";
-            String returnType = "";
             for (int i = 0; i < numDimensions; ++i) {
                 argList += "I";
-                returnType += "[";
             }
             argList += "Ljava/lang/Class;)";
-            returnType += "Ljava/lang/Object;";
             String methodName = "multianewarray" + numDimensions;
-            String signature = argList + returnType;
-            this.target.visitMethodInsn(INVOKESTATIC, this.runtimeClassName, methodName, signature, false);
+            String signature = argList + "Ljava/lang/Object;";
+            this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, signature, false);
             this.target.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
         }
         @Override
@@ -302,7 +299,7 @@ public class ClassRewriter {
             if (Opcodes.ANEWARRAY == opcode) {
                 // Inject our special idiom:  ldc then invokestatic, finally checkcast.
                 this.target.visitLdcInsn(Type.getObjectType(type));
-                this.target.visitMethodInsn(INVOKESTATIC, this.runtimeClassName, "anewarray", "(ILjava/lang/Class;)[Ljava/lang/Object;", false);
+                this.target.visitMethodInsn(INVOKESTATIC, this.runtimeClassName, "anewarray", "(ILjava/lang/Class;)Ljava/lang/Object;", false);
                 this.target.visitTypeInsn(Opcodes.CHECKCAST, "[L" + type + ";");
             } else {
                 this.target.visitTypeInsn(opcode, type);

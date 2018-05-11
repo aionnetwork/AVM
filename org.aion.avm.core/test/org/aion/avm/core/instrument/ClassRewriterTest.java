@@ -159,7 +159,7 @@ public class ClassRewriterTest {
     }
 
     /**
-     * Tests that we can replace anewarray bytecodes with call-out routines.
+     * Tests that we can replace multianewarray bytecodes with call-out routines.
      */
     @Test
     public void testMultianewarrayCallOut() throws Exception {
@@ -243,27 +243,27 @@ public class ClassRewriterTest {
             TestEnergy.totalCharges += 1;
         }
 
-        public static Object[] anewarray(int len, Class<?> cl) {
+        public static Object anewarray(int len, Class<?> cl) {
             TestEnergy.totalArrayElements += len;
             TestEnergy.totalArrayInstances += 1;
-            return (Object[]) Array.newInstance(cl, len);
+            return Array.newInstance(cl, len);
         }
 
-        public static Object[] multianewarray1(int d1, Class<?> cl) {
+        public static Object multianewarray1(int d1, Class<?> cl) {
             // Note that this method might not be needed if multianewarray must be dimension >=2.
             return anewarray(d1, cl);
         }
 
-        public static Object[][] multianewarray2(int d1, int d2, Class<?> cl) {
+        public static Object multianewarray2(int d1, int d2, Class<?> cl) {
             TestEnergy.totalArrayElements += d1 * d2;
             TestEnergy.totalArrayInstances += 1;
-            return (Object[][]) Array.newInstance(cl, d1, d2);
+            return Array.newInstance(cl, d1, d2);
         }
 
-        public static Object[][][] multianewarray3(int d1, int d2, int d3, Class<?> cl) {
+        public static Object multianewarray3(int d1, int d2, int d3, Class<?> cl) {
             TestEnergy.totalArrayElements += d1 * d2 * d3;
             TestEnergy.totalArrayInstances += 1;
-            return (Object[][][]) Array.newInstance(cl, d1, d2, d3);
+            return Array.newInstance(cl, d1, d2, d3);
         }
     }
 }
