@@ -6,4 +6,15 @@ public class TestResource {
         return Math.multiplyExact(a + 1, b + 1);
     }
 
+    public String[] newarray(int sz) {
+        return new String[sz];
+    }
+
+    public String returnString() {
+        return "hello";
+    }
+
+    public String callToString() {
+        return new TestResource().toString();
+    }
 }

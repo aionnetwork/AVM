@@ -1,7 +1,7 @@
 package org.aion.avm.java.lang;
 
-public class Math {
-    public static int multiplyExact(int x, int y) {
+public class Math extends Object {
+    public static int avm_multiplyExact(int x, int y) {
         return 0;
     }
 }

@@ -2,7 +2,6 @@ package org.aion.avm.core.shadowing;
 
 import org.objectweb.asm.*;
 
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -11,9 +10,94 @@ import java.util.stream.Stream;
  */
 public class ClassShadowing {
 
-    public static byte[] replaceClassRef(byte[] classFile, Map<String, String> map) {
+    private static final String JAVA_LANG = "java/lang";
+    private static final String JAVA_LANG_SHADOW = "org/aion/avm/java/lang";
+
+    private static final String METHOD_PREFIX = "avm_";
+
+    /**
+     * Modify the class reference if the type starts with {@link #JAVA_LANG}.
+     *
+     * @param type
+     * @return
+     */
+    private static String replaceType(String type) {
+        return type.startsWith(JAVA_LANG) ? JAVA_LANG_SHADOW + type.substring(JAVA_LANG.length()) : type;
+    }
+
+    /**
+     * Modify the method reference if the owner type starts with {@link #JAVA_LANG}.
+     *
+     * @param type
+     * @return
+     */
+    private static String replaceMethodName(String type, String methodName) {
+        if (type.startsWith(JAVA_LANG)) {
+            return methodName.equals("<init>") ? methodName : METHOD_PREFIX + methodName;
+        } else {
+            return methodName;
+        }
+    }
+
+    /**
+     * Modify the method descriptor if it uses any type that starts with {@link #JAVA_LANG}
+     *
+     * @param methodDescriptor
+     * @return
+     */
+    private static String replaceMethodDescriptor(String methodDescriptor) {
+        StringBuilder sb = new StringBuilder();
+
+        int from = 0;
+        while (from < methodDescriptor.length()) {
+            from = readType(sb, methodDescriptor, from);
+        }
+
+        return sb.toString();
+    }
+
+    private static int readType(StringBuilder sb, String methodDescriptor, int from) {
+        char c = methodDescriptor.charAt(from);
+
+        switch (c) {
+            case 'B':
+            case 'C':
+            case 'D':
+            case 'F':
+            case 'I':
+            case 'J':
+            case 'S':
+            case 'Z':
+            case 'V':
+                sb.append(c);
+                return from + 1;
+            case 'L': {
+                sb.append(c);
+                int idx = methodDescriptor.indexOf(';', from);
+                sb.append(replaceType(methodDescriptor.substring(from + 1, idx)));
+                sb.append(';');
+                return idx + 1;
+            }
+            case '[': {
+                sb.append(c);
+                return readType(sb, methodDescriptor, from + 1);
+            }
+            case '(': {
+                sb.append(c);
+                int idx = methodDescriptor.indexOf(')', from);
+                sb.append(replaceMethodDescriptor(methodDescriptor.substring(from + 1, idx)));
+                sb.append(')');
+                return idx + 1;
+            }
+            default:
+                throw new RuntimeException("Failed to parse type: descriptor = " + methodDescriptor + ", from = " + from);
+        }
+    }
+
+
+    public static byte[] replaceJavaLang(byte[] classFile) {
         ClassReader in = new ClassReader(classFile);
-        ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
         ClassVisitor visitor = new ClassVisitor(Opcodes.ASM6, out) {
 
@@ -25,10 +109,11 @@ public class ClassShadowing {
                     final String signature,
                     final String superName,
                     final String[] interfaces) {
-                System.out.println("class: " + name + " extends " + superName);
 
-                String newSuperName = map.containsKey(superName) ? map.get(superName) : superName;
-                String[] newInterfaces = Stream.of(interfaces).map(i -> map.containsKey(i) ? map.get(i) : i).collect(Collectors.toList()).stream().toArray(String[]::new);
+                assert (!name.startsWith(JAVA_LANG));
+
+                String newSuperName = replaceType(superName);
+                String[] newInterfaces = Stream.of(interfaces).map(i -> replaceType(i)).collect(Collectors.toList()).stream().toArray(String[]::new);
                 out.visit(version, access, name, signature, newSuperName, newInterfaces);
             }
 
@@ -39,8 +124,8 @@ public class ClassShadowing {
                     final String descriptor,
                     final String signature,
                     final String[] exceptions) {
-                System.out.println("method: " + name + " " + descriptor);
-                MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
+
+                MethodVisitor mv = super.visitMethod(access, name, replaceMethodDescriptor(descriptor), signature, exceptions);
 
                 return new MethodVisitor(Opcodes.ASM6, mv) {
                     @Override
@@ -50,8 +135,26 @@ public class ClassShadowing {
                             final String name,
                             final String descriptor,
                             final boolean isInterface) {
-                        System.out.println("invoke: " + owner + " " + name + " " + descriptor);
-                        mv.visitMethodInsn(opcode, map.containsKey(owner) ? map.get(owner) : owner, name, descriptor, isInterface);
+                        mv.visitMethodInsn(opcode, replaceType(owner), replaceMethodName(owner, name), replaceMethodDescriptor(descriptor), isInterface);
+                    }
+
+                    @Override
+                    public void visitTypeInsn(final int opcode, final String type) {
+                        mv.visitTypeInsn(opcode, replaceType(type));
+                    }
+
+                    @Override
+                    public void visitLdcInsn(final Object value) {
+                        if (value instanceof Type) {
+                            Type type = (Type) value;
+                            // TODO: how to deal with METHOD and HANDLE?
+                            if (type.getSort() == Type.ARRAY || type.getSort() == Type.OBJECT) {
+                                mv.visitLdcInsn(Type.getType(replaceMethodDescriptor(type.getDescriptor())));
+                                return;
+                            }
+                        }
+
+                        mv.visitLdcInsn(value);
                     }
                 };
             }
