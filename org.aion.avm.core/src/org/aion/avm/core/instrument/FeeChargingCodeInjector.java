@@ -1,9 +1,18 @@
 package org.aion.avm.core.instrument;
 
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+
 import java.util.List;
 import java.util.Map;
 
-public class FeeChargingCodeInjector {
+public class FeeChargingCodeInjector extends MethodVisitor {
+
+    public FeeChargingCodeInjector(MethodVisitor visitor) {
+        super(Opcodes.ASM6, visitor);
+
+        // TODO: Nancy, refactor this class using method visitor
+    }
 
     private String runtimeClassName = null;
     private BytecodeFeeScheduler bytecodeFeeScheduler = null;
@@ -12,6 +21,8 @@ public class FeeChargingCodeInjector {
      * Constructor.
      */
     public FeeChargingCodeInjector() {
+        super(Opcodes.ASM6, null); // FIXME
+
         bytecodeFeeScheduler = new BytecodeFeeScheduler();
         bytecodeFeeScheduler.initialize();
     }

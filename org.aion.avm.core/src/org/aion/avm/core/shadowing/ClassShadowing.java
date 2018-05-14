@@ -9,12 +9,16 @@ import java.util.stream.Stream;
 /**
  * Utility for replacing class refs
  */
-public class ClassShadowing {
+public class ClassShadowing extends ClassVisitor {
 
     private static final String JAVA_LANG = "java/lang";
     private static final String JAVA_LANG_SHADOW = "org/aion/avm/java/lang";
 
     private static final String METHOD_PREFIX = "avm_";
+
+    public ClassShadowing(ClassVisitor visitor) {
+        super(Opcodes.ASM6, visitor);
+    }
 
     /**
      * Modify the class reference if the type starts with {@link #JAVA_LANG}.
