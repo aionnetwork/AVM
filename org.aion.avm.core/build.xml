@@ -69,6 +69,7 @@
                 <pathelement location="${dir.global.lib}/junit-4.12.jar"/>
                 <pathelement location="${dir.global.lib}/asm-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
+                <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
             </classpath>
         </javac>
     </target>
