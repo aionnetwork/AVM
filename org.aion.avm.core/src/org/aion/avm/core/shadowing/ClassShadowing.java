@@ -1,5 +1,6 @@
 package org.aion.avm.core.shadowing;
 
+import org.aion.avm.core.util.Assert;
 import org.objectweb.asm.*;
 
 import java.util.stream.Collectors;
@@ -95,7 +96,7 @@ public class ClassShadowing {
     }
 
 
-    public static byte[] replaceJavaLang(byte[] classFile) {
+    public static byte[] replaceJavaLang(String runtimeClassName, byte[] classFile) {
         ClassReader in = new ClassReader(classFile);
         ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
@@ -145,16 +146,66 @@ public class ClassShadowing {
 
                     @Override
                     public void visitLdcInsn(final Object value) {
+                        // We will default to passing the value through since only 1 case does anything different.
+                        Object valueToWrite = value;
+                        boolean shouldWrapAsString = false;
+                        boolean shouldWrapAsClass = false;
+                        
                         if (value instanceof Type) {
                             Type type = (Type) value;
                             // TODO: how to deal with METHOD and HANDLE?
-                            if (type.getSort() == Type.ARRAY || type.getSort() == Type.OBJECT) {
-                                mv.visitLdcInsn(Type.getType(replaceMethodDescriptor(type.getDescriptor())));
-                                return;
+                            switch (type.getSort()) {
+                                case Type.ARRAY: {
+                                    Assert.unimplemented("Array type sort doesn't seem to appear in this usage.");
+                                    break;
+                                }
+                                case Type.BOOLEAN: 
+                                case Type.BYTE:
+                                case Type.CHAR:
+                                case Type.DOUBLE:
+                                case Type.FLOAT:
+                                case Type.INT:
+                                case Type.LONG:
+                                case Type.SHORT: {
+                                    // These primitive require no special handling - just emit the instruction.
+                                    break;
+                                }
+                                case Type.METHOD: {
+                                    // The method constant sort should only show up related to either invokedynamic or reflection and we don't support those cases.
+                                    Assert.unreachable("Method constants cannot be loaded should have been filtered earlier.");
+                                    break;
+                                }
+                                case Type.OBJECT: {
+                                    // This is the interesting case where we might need to replace the descriptor.
+                                    valueToWrite = Type.getType(replaceMethodDescriptor(type.getDescriptor()));
+                                    // This is also the case where we want to wrap this as a class (since strings go through their own path).
+                                    shouldWrapAsClass = true;
+                                    break;
+                                }
+                                case Type.VOID: {
+                                    Assert.unreachable("Void constants cannot be loaded.");
+                                    break;
+                                }
+                                default:
+                                    Assert.unreachable("Unknown type: " + type.getSort());
                             }
+                        } else if (value instanceof String) {
+                            shouldWrapAsString = true;
                         }
-
-                        mv.visitLdcInsn(value);
+                        
+                        // All paths emit the instruction.
+                        mv.visitLdcInsn(valueToWrite);
+                        
+                        // If we need to wrap this, call out to our static helper.
+                        if (shouldWrapAsString) {
+                            String methodName = "wrapAsString";
+                            String signature = "(Ljava/lang/String;)Lorg/aion/avm/java/lang/String;";
+                            mv.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, signature, false);
+                        } else if (shouldWrapAsClass) {
+                            String methodName = "wrapAsClass";
+                            String signature = "(Ljava/lang/Class;)Lorg/aion/avm/java/lang/Class;";
+                            mv.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, signature, false);
+                        }
                     }
                 };
             }
