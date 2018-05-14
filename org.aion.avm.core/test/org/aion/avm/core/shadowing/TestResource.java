@@ -14,6 +14,10 @@ public class TestResource {
         return "hello";
     }
 
+    public Class<?> returnClass() {
+        return String.class;
+    }
+
     public String callToString() {
         return new TestResource().toString();
     }
