@@ -22,7 +22,6 @@ public class BytecodeFeeScheduler {
         LOW         (5),
         MID         (8),
         HIGH        (10),
-        ATHROW      (15),
         INVOKE      (20),
 
         // Extra Energy Levels
@@ -295,7 +294,7 @@ public class BytecodeFeeScheduler {
             put(Opcodes.INVOKEINTERFACE,    new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
 
             // Throwing Exceptions
-            put(Opcodes.ATHROW,    new BytecodeFeeInfo(BytecodeEnergyLevels.ATHROW, BytecodeEnergyLevels.ZERO, 5, 1, 0));
+            put(Opcodes.ATHROW,    new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 5, 1, 0));
 
             // AVM to reject: MONITORENTER, MONITOREXIT
         }};
