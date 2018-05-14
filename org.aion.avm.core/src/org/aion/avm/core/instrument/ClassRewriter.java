@@ -96,7 +96,8 @@ public class ClassRewriter {
             MethodVisitor resultantVisitor = null;
             if (this.methodName.equals(name)) {
                 // This is the method we want to replace.
-                MethodVisitor originalVisitor = super.visitMethod(access & ~ACC_NATIVE, name, descriptor, signature, exceptions);
+                // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
+                MethodVisitor originalVisitor = super.visitMethod(access & ~ACC_NATIVE, name, descriptor, null, exceptions);
                 ReplacedMethodVisitor replacedVisitor = new ReplacedMethodVisitor(originalVisitor, this.replacer);
 
                 // Note that we need to explicitly call the visitCode on the replaced visitory if we have converted it from native to bytecode.
@@ -106,7 +107,8 @@ public class ClassRewriter {
                 resultantVisitor = replacedVisitor;
             } else {
                 // In this case, we basically just want to pass this through.
-                resultantVisitor = super.visitMethod(access, name, descriptor, signature, exceptions);
+                // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
+                resultantVisitor = super.visitMethod(access, name, descriptor, null, exceptions);
             }
             return resultantVisitor;
         }
@@ -155,11 +157,13 @@ public class ClassRewriter {
             MethodVisitor resultantVisitor = null;
             if (null != blocks) {
                 // We want to rewrite this method, augmenting the blocks in the original by prepending any energy cost.
-                MethodVisitor originalVisitor = super.visitMethod(access, name, descriptor, signature, exceptions);
+                // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
+                MethodVisitor originalVisitor = super.visitMethod(access, name, descriptor, null, exceptions);
                 resultantVisitor = new MethodInstrumentationVisitor(this.runtimeClassName, originalVisitor, blocks);
             } else {
                 // In this case, we basically just want to pass this through.
-                resultantVisitor = super.visitMethod(access, name, descriptor, signature, exceptions);
+                // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
+                resultantVisitor = super.visitMethod(access, name, descriptor, null, exceptions);
             }
             return resultantVisitor;
         }
@@ -289,8 +293,8 @@ public class ClassRewriter {
                 }
                 this.target.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
                 String methodName = "multianewarray1";
-                String signature = "(ILjava/lang/Class;)Ljava/lang/Object;";
-                this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, signature, false);
+                String methodDescriptor = "(ILjava/lang/Class;)Ljava/lang/Object;";
+                this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, methodDescriptor, false);
                 this.target.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
             } else {
                 this.target.visitIntInsn(opcode, operand);
@@ -401,8 +405,8 @@ public class ClassRewriter {
             }
             argList += "Ljava/lang/Class;)";
             String methodName = "multianewarray" + numDimensions;
-            String signature = argList + "Ljava/lang/Object;";
-            this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, signature, false);
+            String methodDescriptor = argList + "Ljava/lang/Object;";
+            this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, methodDescriptor, false);
             this.target.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
         }
         @Override

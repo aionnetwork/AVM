@@ -115,7 +115,8 @@ public class ClassShadowing {
 
                 String newSuperName = replaceType(superName);
                 String[] newInterfaces = Stream.of(interfaces).map(i -> replaceType(i)).collect(Collectors.toList()).stream().toArray(String[]::new);
-                out.visit(version, access, name, signature, newSuperName, newInterfaces);
+                // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
+                out.visit(version, access, name, null, newSuperName, newInterfaces);
             }
 
             @Override
@@ -126,7 +127,8 @@ public class ClassShadowing {
                     final String signature,
                     final String[] exceptions) {
 
-                MethodVisitor mv = super.visitMethod(access, name, replaceMethodDescriptor(descriptor), signature, exceptions);
+                // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
+                MethodVisitor mv = super.visitMethod(access, name, replaceMethodDescriptor(descriptor), null, exceptions);
 
                 return new MethodVisitor(Opcodes.ASM6, mv) {
                     @Override
@@ -199,12 +201,12 @@ public class ClassShadowing {
                         // If we need to wrap this, call out to our static helper.
                         if (shouldWrapAsString) {
                             String methodName = "wrapAsString";
-                            String signature = "(Ljava/lang/String;)Lorg/aion/avm/java/lang/String;";
-                            mv.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, signature, false);
+                            String methodDescriptor = "(Ljava/lang/String;)Lorg/aion/avm/java/lang/String;";
+                            mv.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
                         } else if (shouldWrapAsClass) {
                             String methodName = "wrapAsClass";
-                            String signature = "(Ljava/lang/Class;)Lorg/aion/avm/java/lang/Class;";
-                            mv.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, signature, false);
+                            String methodDescriptor = "(Ljava/lang/Class;)Lorg/aion/avm/java/lang/Class;";
+                            mv.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
                         }
                     }
                 };
