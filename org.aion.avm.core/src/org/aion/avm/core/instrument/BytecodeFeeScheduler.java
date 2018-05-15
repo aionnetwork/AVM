@@ -100,7 +100,12 @@ public class BytecodeFeeScheduler {
         }
 
         private void setFee(long fee) {
-            this.fee = fee;
+            if (fee >= 0) {
+                this.fee = fee;
+            }
+            else {
+                throw new IllegalArgumentException("Bytecode fee cannot be negative.");
+            }
         }
     }
 
@@ -318,7 +323,7 @@ public class BytecodeFeeScheduler {
         if (feeScheduleMap.containsKey(op)) {
             return feeScheduleMap.get(op).getFee();
         } else {
-            return -1; // deal with this error code later
+            throw new IllegalArgumentException("This bytecode is not in the fee schedule.");
         }
     }
 }
