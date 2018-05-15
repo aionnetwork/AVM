@@ -22,14 +22,7 @@ import org.objectweb.asm.Type;
  *
  * This class has no explicit design, as it is still evolving.
  */
-public class ClassRewriter extends ClassVisitor {
-
-    public ClassRewriter(ClassVisitor cv) {
-        super(Opcodes.ASM6, cv);
-
-        // TODO: Jeff, chain the instrumentation injector and  stack wathce
-    }
-
+public class ClassRewriter  {
     /**
      * Rewrites the given class, changing the named method by calling replacer.  Note that this will still succeed
      * even if the method is not found.

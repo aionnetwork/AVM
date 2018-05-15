@@ -1,6 +1,6 @@
 package org.aion.kernel;
 
-import org.aion.avm.core.impl.AvmImpl;
+import org.aion.avm.core.AvmImpl;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.aion.avm.rt.EnergyMeter;
 import org.aion.avm.rt.OutOfEnergyException;

@@ -11,6 +11,8 @@ import java.util.stream.Stream;
  */
 public class ClassShadowing extends ClassVisitor {
 
+    // TODO: Yulong, refactor this class to implement class visitor chain
+
     private static final String JAVA_LANG = "java/lang";
     private static final String JAVA_LANG_SHADOW = "org/aion/avm/java/lang";
 

@@ -1,4 +1,4 @@
-package org.aion.avm.core.impl;
+package org.aion.avm.core.classloading;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
