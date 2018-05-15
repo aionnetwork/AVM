@@ -11,6 +11,7 @@ import org.objectweb.asm.ClassWriter;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class AvmImpl implements Avm {
@@ -66,13 +67,29 @@ public class AvmImpl implements Avm {
     }
 
     /**
+     * Computes the object size of runtime classes
+     *
+     * @return
+     */
+    public Map<String, Integer> computeRuntimeObjectSizes() {
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        map.put("java/lang/Object", 4);
+        map.put("java/lang/Class", 4);
+        map.put("java/lang/Math", 4);
+        map.put("java/lang/String", 4);
+
+        return Collections.unmodifiableMap(map);
+    }
+
+    /**
      * Returns the sizes of all the classes provided.
      *
-     * @param classes        the class of DApp
-     * @param classHierarchy the class hierarchy
+     * @param classes            the class of DApp
+     * @param classHierarchy     the class hierarchy
+     * @param runtimeObjectSizes the object size of runtime classes
      * @return a mapping between class name and object size
      */
-    public Map<String, Integer> calculateObjectSize(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy) {
+    public Map<String, Integer> computeObjectSizes(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
 
         // TODO: Nancy
 
@@ -87,7 +104,7 @@ public class AvmImpl implements Avm {
      * @param objectSizes    the sizes of object
      * @return the classes after
      */
-    public Map<String, byte[]> analyzeClasses(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> objectSizes ) {
+    public Map<String, byte[]> analyzeClasses(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> objectSizes) {
 
         // TODO: Yulong
 
