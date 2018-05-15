@@ -26,12 +26,10 @@ public class ClassMetering extends ClassVisitor {
             final String signature,
             final String[] exceptions) {
 
-        super.visitMethod(access, name, descriptor, signature, exceptions);
+        MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
 
-        // TODO: Jeff, move the stackwatcher to this package, and plug into this method somehow.
-        // Feel free to change the package/class name.
-        // Be sure to properly delegate visits to upstream MethodVisitor
-
-        return null;
+        return new MethodVisitor(Opcodes.ASM6, mv) {
+            // TODO: Jeff
+        };
     }
 }

@@ -17,12 +17,10 @@ public class StackTracking extends ClassVisitor {
             final String signature,
             final String[] exceptions) {
 
-        super.visitMethod(access, name, descriptor, signature, exceptions);
+        MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
 
-        // TODO: Junhan, move the stackwatcher to this package, and plug into this method somehow.
-        // TODO: Feel free to change the package/class name.
-        // TODO: Be sure to properly delegate visits to upstream MethodVisitor
-
-        return null;
+        return new MethodVisitor(Opcodes.ASM6, mv) {
+            // TODO: Junhan, move the stackwatcher to this package, and plug into this method somehow.
+        };
     }
 }
