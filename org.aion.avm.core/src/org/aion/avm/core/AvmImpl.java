@@ -106,25 +106,29 @@ public class AvmImpl implements Avm {
      */
     public Map<String, byte[]> analyzeClasses(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> objectSizes) {
 
-        // TODO: Yulong
+        Map<String, byte[]> processedClasses = new HashMap<>();
+        Map<String, byte[]> generatedClasses = new HashMap<>();
 
         for (String name : classes.keySet()) {
-
             ClassReader in = new ClassReader(classes.get(name));
 
             // in reverse order
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            StackTracking stackTracking = new StackTracking(out);
-            ExceptionWrapping exceptionHandling = new ExceptionWrapping(stackTracking);
-            ClassShadowing classShadowing = new ClassShadowing(exceptionHandling);
+            ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, classHierarchy, generatedClasses);
+            StackTracking stackTracking = new StackTracking(exceptionHandling);
+            ClassShadowing classShadowing = new ClassShadowing(stackTracking);
             ClassMetering classMetering = new ClassMetering(classShadowing, classHierarchy, objectSizes);
 
             // traverse
             in.accept(classMetering, ClassReader.SKIP_DEBUG);
+
+            // emit bytecode
+            processedClasses.put(name, out.toByteArray());
         }
 
-
-        return null;
+        // merge the generated classes and processed classes, assuming the package spaces do not conflict.
+        processedClasses.putAll(generatedClasses);
+        return processedClasses;
     }
 
     /**
