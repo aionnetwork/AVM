@@ -119,10 +119,12 @@ public class AvmImpl implements Avm {
             ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, classHierarchy, generatedClasses);
             StackTracking stackTracking = new StackTracking(exceptionHandling);
             ClassShadowing classShadowing = new ClassShadowing(stackTracking, RUNTIME_CLASS_NAME);
-            ClassMetering classMetering = new ClassMetering(classShadowing, classHierarchy, objectSizes);
+            ClassMetering classMetering = new ClassMetering(classShadowing, RUNTIME_CLASS_NAME, classHierarchy, objectSizes);
 
             // traverse
-            in.accept(classMetering, ClassReader.SKIP_DEBUG);
+            // TODO:  Switch all accept calls to ClassReader.SKIP_DEBUG once issue #31 is resolved.
+            // TODO:  ClassReader.EXPAND_FRAMES is needed for stacktracking injector
+            in.accept(classMetering, ClassReader.SKIP_FRAMES);
 
             // emit bytecode
             processedClasses.put(name, out.toByteArray());
