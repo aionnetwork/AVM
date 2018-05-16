@@ -36,6 +36,7 @@ public class ClassHierarchyForest {
 
         for (String parent; (parent = getParent(clazz)) != null; ) {
             list.add(parent);
+            clazz = parent;
         }
 
         return list;
