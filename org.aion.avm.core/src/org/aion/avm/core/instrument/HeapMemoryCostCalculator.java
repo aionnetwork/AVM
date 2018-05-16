@@ -138,6 +138,8 @@ public class HeapMemoryCostCalculator {
                     break;
                 }
                 case '[': {
+                    // Array field; class object creation only allocates a ref in the heap;
+                    // and later the bytecode "NEWARRAY / ANEWARRAY" allocates the memory for each element.
                     heapSize += FieldTypeSizeInBits.OBJECTREF.getVal();
                     break;
                 }
