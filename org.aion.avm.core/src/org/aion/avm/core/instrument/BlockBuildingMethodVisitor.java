@@ -41,11 +41,9 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     @Override
     public void visitEnd() {
         // This is called after all the code has been walked, so seal the final block.
-        if (!this.currentBuildingBlock.isEmpty()) {
-            this.buildingList.add(new BasicBlock(this.currentBuildingBlock, this.currentAllocationList));
-            this.currentBuildingBlock = null;
-            this.currentAllocationList = null;
-        }
+        handleLabel();
+        this.currentBuildingBlock = null;
+        this.currentAllocationList = null;
     }
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
@@ -70,16 +68,13 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     @Override
     public void visitJumpInsn(int opcode, Label label) {
         this.currentBuildingBlock.add(opcode);
+        // Jump is the end of a block so emit the label.
+        // (note that this is also where if statements show up).
+        handleLabel();
     }
     @Override
     public void visitLabel(Label label) {
-        // Seal the previous block (avoid the case where the block is empty).
-        if (!this.currentBuildingBlock.isEmpty()) {
-            this.buildingList.add(new BasicBlock(this.currentBuildingBlock, this.currentAllocationList));
-        }
-        // Start the new block.
-        this.currentBuildingBlock = new ArrayList<>();
-        this.currentAllocationList = new ArrayList<>();
+        handleLabel();
     }
     @Override
     public void visitLdcInsn(Object value) {
@@ -88,6 +83,8 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     @Override
     public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
         this.currentBuildingBlock.add(Opcodes.LOOKUPSWITCH);
+        // Even though every label is given, there could be unreachable code immediately after.
+        handleLabel();
     }
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
@@ -100,6 +97,8 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     @Override
     public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
         this.currentBuildingBlock.add(Opcodes.TABLESWITCH);
+        // Even though every label is given, there could be unreachable code immediately after.
+        handleLabel();
     }
     @Override
     public void visitTypeInsn(int opcode, String type) {
@@ -112,5 +111,20 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     @Override
     public void visitVarInsn(int opcode, int var) {
         this.currentBuildingBlock.add(opcode);
+    }
+
+
+    /**
+     * Called whenever we encounter a label or something we are synthesizing as a label, for block detection purposes.
+     */
+    private void handleLabel() {
+        // Seal the previous block (avoid the case where the block is empty).
+        if (!this.currentBuildingBlock.isEmpty()) {
+            // Add the block to our finished block list.
+            this.buildingList.add(new BasicBlock(this.currentBuildingBlock, this.currentAllocationList));
+            // Start the new block.
+            this.currentBuildingBlock = new ArrayList<>();
+            this.currentAllocationList = new ArrayList<>();
+        }
     }
 }
