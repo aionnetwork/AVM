@@ -41,9 +41,9 @@ public class FeeChargingCodeInjector extends MethodVisitor {
      * @return Instrumented bytecode stream of the method, with the fee charging bytecode added to every code block.
      */
     public byte[] injectCodeIntoOneMethod(byte[] methodBytecode) {
-        Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(methodBytecode);
-        for (List<ClassRewriter.BasicBlock> list : methodBlocks.values()) {
-            for (ClassRewriter.BasicBlock block : list) {
+        Map<String, List<BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(methodBytecode);
+        for (List<BasicBlock> list : methodBlocks.values()) {
+            for (BasicBlock block : list) {
                 long blockCost = calculateBlockFee(block);
 
                 block.setEnergyCost(blockCost);
@@ -59,7 +59,7 @@ public class FeeChargingCodeInjector extends MethodVisitor {
      * @param block A code block.
      * @return The block fee.
      */
-    private long calculateBlockFee(ClassRewriter.BasicBlock block) {
+    private long calculateBlockFee(BasicBlock block) {
         long blockFee = 0;
 
         // Sum up the bytecode fee in the code block

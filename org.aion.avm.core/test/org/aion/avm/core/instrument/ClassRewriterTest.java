@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
-import org.aion.avm.core.instrument.ClassRewriter.BasicBlock;
+import org.aion.avm.core.instrument.BasicBlock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +18,7 @@ public class ClassRewriterTest {
     // We keep this here just because a lot of cases want to use this sort of "do no instrumentation" cost builder for testing other rewrites.
     private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) -> {
         // We don't care about cost in this case - we just need to invoke the rewrite path.
-        Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
+        Map<String, List<BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
         return ClassRewriter.rewriteBlocksInClass(TestEnergy.CLASS_NAME, inputBytes, methodBlocks);
     };
 
@@ -71,9 +71,9 @@ public class ClassRewriterTest {
         BlockSnooper snooper = new BlockSnooper();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper);
         loader.loadClass(className);
-        Map<String, List<ClassRewriter.BasicBlock>> resultMap = snooper.resultMap;
+        Map<String, List<BasicBlock>> resultMap = snooper.resultMap;
         Assert.assertNotNull(resultMap);
-        List<ClassRewriter.BasicBlock> initBlocks = resultMap.get("<init>(I)V");
+        List<BasicBlock> initBlocks = resultMap.get("<init>(I)V");
         int[][] expectedInitBlocks = new int[][]{
                 {Opcodes.ALOAD, Opcodes.INVOKESPECIAL},
                 {Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.PUTFIELD},
@@ -81,7 +81,7 @@ public class ClassRewriterTest {
         };
         boolean didMatch = compareBlocks(expectedInitBlocks, initBlocks);
         Assert.assertTrue(didMatch);
-        List<ClassRewriter.BasicBlock> hashCodeBlocks = resultMap.get("hashCode()I");
+        List<BasicBlock> hashCodeBlocks = resultMap.get("hashCode()I");
         int[][] expectedHashCodeBlocks = new int[][]{
                 {Opcodes.ALOAD, Opcodes.GETFIELD, Opcodes.IRETURN}
         };
@@ -96,14 +96,14 @@ public class ClassRewriterTest {
     public void testWrittenBlockPrefix() throws Exception {
         // Setup and rewrite the class.
         Function<byte[], byte[]> costBuilder = (inputBytes) -> {
-            Map<String, List<ClassRewriter.BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
+            Map<String, List<BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
             // Just attach some testing cost to all of these.
             long costToAdd = 1;
-            for (Map.Entry<String, List<ClassRewriter.BasicBlock>> elt: methodBlocks.entrySet()) {
+            for (Map.Entry<String, List<BasicBlock>> elt: methodBlocks.entrySet()) {
                 // For now, we only want to worry about the <init> and hashCode, since we don't call the other methods.
                 String method = elt.getKey();
                 if ("<init>(I)V".equals(method) || "hashCode()I".equals(method)) {
-                    for (ClassRewriter.BasicBlock block : elt.getValue()) {
+                    for (BasicBlock block : elt.getValue()) {
                         block.setEnergyCost(costToAdd);
                         costToAdd += 1;
                     }
@@ -266,12 +266,12 @@ public class ClassRewriterTest {
         BlockSnooper snooper = new BlockSnooper();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper);
         loader.loadClass(className);
-        Map<String, List<ClassRewriter.BasicBlock>> resultMap = snooper.resultMap;
-        List<ClassRewriter.BasicBlock> factoryBlocks = resultMap.get("testFactory()Lorg/aion/avm/core/instrument/TestResource;");
+        Map<String, List<BasicBlock>> resultMap = snooper.resultMap;
+        List<BasicBlock> factoryBlocks = resultMap.get("testFactory()Lorg/aion/avm/core/instrument/TestResource;");
         // We expect this case to have a single block.
         Assert.assertEquals(1, factoryBlocks.size());
         // With a single allocation.
-        ClassRewriter.BasicBlock block = factoryBlocks.get(0);
+        BasicBlock block = factoryBlocks.get(0);
         Assert.assertEquals(1, block.allocatedTypes.size());
         // Of our TestResource type.
         Assert.assertEquals(TestResource.class.getCanonicalName(), block.allocatedTypes.get(0).replaceAll("/", "."));
@@ -301,7 +301,7 @@ public class ClassRewriterTest {
     }
 
     private static class BlockSnooper implements Function<byte[], byte[]> {
-        public Map<String, List<ClassRewriter.BasicBlock>> resultMap;
+        public Map<String, List<BasicBlock>> resultMap;
 
         @Override
         public byte[] apply(byte[] inputBytes) {
