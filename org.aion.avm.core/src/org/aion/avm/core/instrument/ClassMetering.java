@@ -8,13 +8,14 @@ import org.objectweb.asm.Opcodes;
 import java.util.Map;
 
 public class ClassMetering extends ClassVisitor {
-
+    private final String runtimeClassName;
     private ClassHierarchyForest classHierarchy;
     private Map<String, Integer> objectSizes;
 
-    public ClassMetering(ClassVisitor visitor, ClassHierarchyForest classHierarchy, Map<String, Integer> objectSizes) {
+    public ClassMetering(ClassVisitor visitor, String runtimeClassName, ClassHierarchyForest classHierarchy, Map<String, Integer> objectSizes) {
         super(Opcodes.ASM6, visitor);
 
+        this.runtimeClassName = runtimeClassName;
         this.classHierarchy = classHierarchy;
         this.objectSizes = objectSizes;
     }

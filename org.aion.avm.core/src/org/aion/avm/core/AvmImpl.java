@@ -119,7 +119,7 @@ public class AvmImpl implements Avm {
             ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, classHierarchy, generatedClasses);
             StackTracking stackTracking = new StackTracking(exceptionHandling);
             ClassShadowing classShadowing = new ClassShadowing(stackTracking, RUNTIME_CLASS_NAME);
-            ClassMetering classMetering = new ClassMetering(classShadowing, classHierarchy, objectSizes);
+            ClassMetering classMetering = new ClassMetering(classShadowing, RUNTIME_CLASS_NAME, classHierarchy, objectSizes);
 
             // traverse
             in.accept(classMetering, ClassReader.SKIP_DEBUG);
