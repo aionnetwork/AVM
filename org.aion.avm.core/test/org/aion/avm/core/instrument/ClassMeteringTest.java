@@ -23,7 +23,7 @@ public class ClassMeteringTest {
         ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         
         ClassMetering classMetering = new ClassMetering(out, TestEnergy.CLASS_NAME, null, null);
-        in.accept(classMetering, ClassReader.SKIP_FRAMES);
+        in.accept(classMetering, ClassReader.SKIP_DEBUG);
         
         return out.toByteArray();
     };
@@ -50,9 +50,7 @@ public class ClassMeteringTest {
         Assert.assertNotNull(resultMap);
         List<BasicBlock> initBlocks = resultMap.get("<init>(I)V");
         int[][] expectedInitBlocks = new int[][]{
-                {Opcodes.ALOAD, Opcodes.INVOKESPECIAL},
-                {Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.PUTFIELD},
-                {Opcodes.RETURN}
+                {Opcodes.ALOAD, Opcodes.INVOKESPECIAL, Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.PUTFIELD, Opcodes.RETURN}
         };
         boolean didMatch = compareBlocks(expectedInitBlocks, initBlocks);
         Assert.assertTrue(didMatch);
@@ -76,8 +74,8 @@ public class ClassMeteringTest {
         // By this point, we should still have 0 charges.
         Assert.assertEquals(0, TestEnergy.totalCharges);
         Object target = clazz.getConstructor(int.class).newInstance(6);
-        // We expect to see 3 charges for init - the 3 blocks.
-        Assert.assertEquals(3, TestEnergy.totalCharges);
+        // We expect to see 1 charge for init - it is only 1 block.
+        Assert.assertEquals(1, TestEnergy.totalCharges);
         long expectedCost = getFees(
                 Opcodes.ALOAD
                 , Opcodes.INVOKESPECIAL
@@ -89,7 +87,7 @@ public class ClassMeteringTest {
         Assert.assertEquals(expectedCost, TestEnergy.totalCost);
         target.hashCode();
         // Now, we should see the additional charge for the hashcode block.
-        Assert.assertEquals(4, TestEnergy.totalCharges);
+        Assert.assertEquals(2, TestEnergy.totalCharges);
         expectedCost += getFees(
                 Opcodes.ALOAD
                 , Opcodes.GETFIELD
@@ -315,7 +313,7 @@ public class ClassMeteringTest {
                     };
                 }
             };
-            in.accept(reader, ClassReader.SKIP_FRAMES);
+            in.accept(reader, ClassReader.SKIP_DEBUG);
             
             this.resultMap = result;
             return inputBytes;

@@ -79,7 +79,7 @@ public class HeapMemoryCostCalculator {
         // read in, build the classNode
         ClassNode classNode = new ClassNode();
         ClassReader cr = new ClassReader(classBytes);
-        cr.accept(classNode, 0);
+        cr.accept(classNode, ClassReader.SKIP_DEBUG);
 
         // read the class name; check if it is already in the classHeapInfoMap
         if (classHeapSizeMap.containsKey(classNode.name)) {

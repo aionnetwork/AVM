@@ -27,7 +27,7 @@ public class ClassRewriter  {
         FullClassVisitor adapter = new FullClassVisitor(cw, methodName, replacer);
 
         ClassReader cr = new ClassReader(classBytes);
-        cr.accept(adapter, ClassReader.SKIP_FRAMES);
+        cr.accept(adapter, ClassReader.SKIP_DEBUG);
 
         return cw.toByteArray();
     }
