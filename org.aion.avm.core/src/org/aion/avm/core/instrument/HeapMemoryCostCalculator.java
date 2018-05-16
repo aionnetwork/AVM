@@ -1,9 +1,12 @@
 package org.aion.avm.core.instrument;
 
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Heap memory is allocated at the new object creation. This class provides a map of every class' instance size.
@@ -71,7 +74,7 @@ public class HeapMemoryCostCalculator {
          * 3. If the parent has one field that has the same name but different descriptor, that one is hided by the
          *    current one, so the memory size needs to re-calculated -- minus the old one's size and add the new one's.
          */
-        private HashMap<String, String> fieldsMap;
+        private HashMap<String, Type> fieldsMap;
 
         /**
          * Constructor.
@@ -94,17 +97,6 @@ public class HeapMemoryCostCalculator {
         }
 
         /**
-         * Modify the heapSize by adding it with the input size. This method is used during the calculation of heapSize.
-         * @param size the size to modify with. It can be positive or negative.
-         */
-        public void modifyHeapSize(long size) {
-            heapSize += size;
-            if (heapSize < 0) {
-                throw new IllegalStateException("The heapSize cannot be negative. Calculation is wrong.");
-            }
-        }
-
-        /**
          * Get the heapSize value of the class.
          * @return the heapSize of the class.
          */
@@ -117,7 +109,7 @@ public class HeapMemoryCostCalculator {
          * @param fieldName A String of the field's name.
          * @param fieldType A String of the field's descriptor.
          */
-        public void addToFieldsMap(String fieldName, String fieldType) {
+        public void addToFieldsMap(String fieldName, Type fieldType) {
             if (fieldsMap == null) {
                 throw new IllegalStateException("HeapMemoryInfo does not have the fieldsMap.");
             }
@@ -139,6 +131,20 @@ public class HeapMemoryCostCalculator {
      */
     public HeapMemoryCostCalculator() {
         classHeapInfoMap = new HashMap<>();
+    }
+
+    /**
+     *
+     */
+    private void copyFields(HeapMemoryInfo parentClassInfo, HeapMemoryInfo childClassInfo) {
+        if (parentClassInfo == null || childClassInfo == null
+                || parentClassInfo.fieldsMap == null || childClassInfo.fieldsMap == null) {
+            throw new IllegalStateException("copyFields without the parent or child's fieldsMap set up.");
+        }
+
+        for (String fieldName : parentClassInfo.fieldsMap.keySet()) {
+            childClassInfo.fieldsMap.put(fieldName, parentClassInfo.fieldsMap.get(fieldName));
+        }
     }
 
     /**
@@ -164,13 +170,84 @@ public class HeapMemoryCostCalculator {
         }
 
         // calculate it if not in the classHeapInfoMap
-        HeapMemoryInfo heapMemoryInfo = new HeapMemoryInfo();
+        HeapMemoryInfo curHeapInfo = new HeapMemoryInfo();
 
-        // get the parent classes, combine the fields and copy to heapMemoryInfo.fieldsMap (check the hiding, dups, etc)
+        // get the parent classes, copy the fieldsMap
+        if (classHeapInfoMap.containsKey(classNode.superName)) {
+            HeapMemoryInfo parentHeapInfo = classHeapInfoMap.get(classNode.superName);
+            copyFields(parentHeapInfo, curHeapInfo);
+        }
+        else {
+            throw new IllegalStateException("A parent class is not processed by HeapMemoryCostCalculator.");
+        }
+
+        // read the declared fields in the current class, check the duplicates, hiding, etc, and update the fieldMap
+        List<FieldNode> fieldNodes = classNode.fields;
+        for (FieldNode fieldNode : fieldNodes) {
+            /**
+             * 1. parent does not have it, add to the fieldMap;
+             * 2. parent has it but with a different descriptor. The parent one is hid in this case. Replace it with the new one in fieldMap.
+             * 3. parent has it and the descriptor is also the same. It is a duplicated declaration. Do nothing to the fieldMap.
+             */
+            if (!(curHeapInfo.fieldsMap.containsKey(fieldNode.name)) ||
+                    (curHeapInfo.fieldsMap.get(fieldNode.name) != Type.getType(fieldNode.desc))) {
+                curHeapInfo.addToFieldsMap(fieldNode.name, Type.getType(fieldNode.desc));
+            }
+        }
 
         // walk the fields and sum up the size
-        //heapMemoryInfo.fieldsMap.get("a");
+        long heapSize = 0;
+        for (String fieldName : curHeapInfo.fieldsMap.keySet()) {
+            String fieldDesc = curHeapInfo.fieldsMap.get(fieldName).getDescriptor();
+            switch (fieldDesc.charAt(0)) {
+                case 'Z' : {
+                    heapSize += FieldTypeSizeInBits.BOOLEAN.getVal();
+                    break;
+                }
+                case 'B': {
+                    heapSize += FieldTypeSizeInBits.BYTE.getVal();
+                    break;
+                }
+                case 'C': {
+                    heapSize += FieldTypeSizeInBits.CHAR.getVal();
+                    break;
+                }
+                case 'S': {
+                    heapSize += FieldTypeSizeInBits.SHORT.getVal();
+                    break;
+                }
+                case 'I': {
+                    heapSize += FieldTypeSizeInBits.INT.getVal();
+                    break;
+                }
+                case 'J': {
+                    heapSize += FieldTypeSizeInBits.LONG.getVal();
+                    break;
+                }
+                case 'F': {
+                    heapSize += FieldTypeSizeInBits.FLOAT.getVal();
+                    break;
+                }
+                case 'D': {
+                    heapSize += FieldTypeSizeInBits.DOUBLE.getVal();
+                    break;
+                }
+                case 'L': {
+                    heapSize += FieldTypeSizeInBits.OBJECTREF.getVal();
+                    break;
+                }
+                case '[': {
+                    heapSize += FieldTypeSizeInBits.OBJECTREF.getVal();
+                    break;
+                }
+                default: {
+                    throw new IllegalStateException("field has an invalid d");
+                }
+            }
 
+            // convert to byte counts and record it
+            curHeapInfo.setHeapSize(heapSize /= 8);
+        }
     }
 
     /**
@@ -186,7 +263,7 @@ public class HeapMemoryCostCalculator {
 
         InheritanceHierarchyBuilder.buildHierarchy();
 
-        // pop from the stack and call calcInstanceSizeOfOneClass
+        // To-do - pop from the stack and call calcInstanceSizeOfOneClass
         byte[] classBytes = null;
         calcInstanceSizeOfOneClass(classBytes);
     }
