@@ -2,7 +2,7 @@ module org.aion.avm.core {
     requires org.aion.avm.rt;
 
     exports org.aion.avm.core;
-    exports org.aion.avm.core.classloading;
+    exports org.aion.avm.core.dapploading;
 
     // external modules
     requires slf4j.api;

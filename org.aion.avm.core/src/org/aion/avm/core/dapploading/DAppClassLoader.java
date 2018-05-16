@@ -1,4 +1,4 @@
-package org.aion.avm.core.classloading;
+package org.aion.avm.core.dapploading;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,13 +13,13 @@ import java.util.Optional;
 /**
  * @author Roman Katerinenko
  */
-class AvmClassLoader extends ClassLoader {
-    private final Logger logger = LoggerFactory.getLogger(AvmClassLoader.class);
+class DAppClassLoader extends ClassLoader {
+    private final Logger logger = LoggerFactory.getLogger(DAppClassLoader.class);
 
     private ModuleFinder moduleFinder;
 
-    AvmClassLoader() {
-        super("AVM Class loader", ClassLoader.getSystemClassLoader());
+    DAppClassLoader() {
+        super("dApp Class loader", ClassLoader.getSystemClassLoader());
     }
 
     void setModuleFinder(ModuleFinder moduleFinder) {

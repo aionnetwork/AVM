@@ -1,4 +1,4 @@
-package org.aion.avm.core.classloading;
+package org.aion.avm.core.dapploading;
 
 /**
  * @author Roman Katerinenko
