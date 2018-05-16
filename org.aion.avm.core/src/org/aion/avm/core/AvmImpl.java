@@ -123,6 +123,7 @@ public class AvmImpl implements Avm {
 
             // traverse
             // TODO:  Switch all accept calls to ClassReader.SKIP_DEBUG once issue #31 is resolved.
+            // TODO:  ClassReader.EXPAND_FRAMES is needed for stacktracking injector
             in.accept(classMetering, ClassReader.SKIP_FRAMES);
 
             // emit bytecode
