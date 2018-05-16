@@ -19,18 +19,12 @@ import org.objectweb.asm.Opcodes;
  * Note that this was adapted from the ClassRewriter.BlockMethodReader.
  */
 public class BlockBuildingMethodVisitor extends MethodVisitor {
-    private final ClassRewriter.BlockClassReader parent;
-    private final String uniqueKey;
-
     private final List<BasicBlock> buildingList;
     private List<Integer> currentBuildingBlock;
     private List<String> currentAllocationList;
 
-    // TODO:  Remove these arguments once we are no longer dependent on the ClassRewriter structure (this is just a stop-gap).
-    public BlockBuildingMethodVisitor(ClassRewriter.BlockClassReader parent, String uniqueKey) {
+    public BlockBuildingMethodVisitor() {
         super(Opcodes.ASM6);
-        this.parent = parent;
-        this.uniqueKey = uniqueKey;
         this.buildingList = new ArrayList<>();
     }
 
@@ -52,8 +46,6 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
             this.currentBuildingBlock = null;
             this.currentAllocationList = null;
         }
-        // And write-back our result (TODO:  Remove this once ClassRewriter changes).
-        this.parent.finishMethod(this.uniqueKey, this.buildingList);
     }
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
