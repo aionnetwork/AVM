@@ -97,20 +97,16 @@ public class ClassRewriterTest {
         // Setup and rewrite the class.
         Function<byte[], byte[]> costBuilder = (inputBytes) -> {
             Map<String, List<BasicBlock>> methodBlocks = ClassRewriter.parseMethodBlocks(inputBytes);
-            // Just attach some testing cost to all of these.
-            long costToAdd = 1;
+            
+            // Process every block with the injector - note that these have a mutable fee, read by the rewriter.
+            FeeChargingCodeInjector injector = new FeeChargingCodeInjector();
             for (Map.Entry<String, List<BasicBlock>> elt: methodBlocks.entrySet()) {
-                // For now, we only want to worry about the <init> and hashCode, since we don't call the other methods.
-                String method = elt.getKey();
-                if ("<init>(I)V".equals(method) || "hashCode()I".equals(method)) {
-                    for (BasicBlock block : elt.getValue()) {
-                        block.setEnergyCost(costToAdd);
-                        costToAdd += 1;
-                    }
+                List<BasicBlock> list = elt.getValue();
+                for (BasicBlock block : list) {
+                    block.setEnergyCost(injector.calculateBlockFee(block));
                 }
             }
-            // Note that this test assumes that there are 4 blocks so check our next cost is 5.
-            Assert.assertEquals(5, costToAdd);
+            
             // Re-write the class.
             return ClassRewriter.rewriteBlocksInClass(TestEnergy.CLASS_NAME, inputBytes, methodBlocks);
         };
@@ -120,12 +116,26 @@ public class ClassRewriterTest {
         // By this point, we should still have 0 charges.
         Assert.assertEquals(0, TestEnergy.totalCharges);
         Object target = clazz.getConstructor(int.class).newInstance(6);
-        // We expect to see 3 charges for init.
+        // We expect to see 3 charges for init - the 3 blocks.
         Assert.assertEquals(3, TestEnergy.totalCharges);
+        long expectedCost = getFees(
+                Opcodes.ALOAD
+                , Opcodes.INVOKESPECIAL
+                , Opcodes.ALOAD
+                , Opcodes.ILOAD
+                , Opcodes.PUTFIELD
+                , Opcodes.RETURN
+        );
+        Assert.assertEquals(expectedCost, TestEnergy.totalCost);
         target.hashCode();
-        // Now, we should expect to see 4 charges, each of a different value:  1+2+3+4 = 10
+        // Now, we should see the additional charge for the hashcode block.
         Assert.assertEquals(4, TestEnergy.totalCharges);
-        Assert.assertEquals(10, TestEnergy.totalCost);
+        expectedCost += getFees(
+                Opcodes.ALOAD
+                , Opcodes.GETFIELD
+                , Opcodes.IRETURN
+        );
+        Assert.assertEquals(expectedCost, TestEnergy.totalCost);
     }
 
     /**
@@ -299,6 +309,18 @@ public class ClassRewriterTest {
         }
         return didMatch;
     }
+
+    private long getFees(int... opcodes) {
+        long total = 0;
+        
+        BytecodeFeeScheduler fees = new BytecodeFeeScheduler();
+        fees.initialize();
+        for (int opcode : opcodes) {
+            total += fees.getFee(opcode);
+        }
+        return total;
+    }
+
 
     private static class BlockSnooper implements Function<byte[], byte[]> {
         public Map<String, List<BasicBlock>> resultMap;
