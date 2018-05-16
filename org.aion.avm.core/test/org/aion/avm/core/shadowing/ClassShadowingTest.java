@@ -3,6 +3,8 @@ package org.aion.avm.core.shadowing;
 import org.aion.avm.core.TestClassLoader;
 import org.junit.Assert;
 import org.junit.Test;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,7 +25,13 @@ public class ClassShadowingTest {
     public void testReplaceJavaLang() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         String name = "org.aion.avm.core.shadowing.TestResource";
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), name, (inputBytes) -> {
-            byte[] transformed = ClassShadowing.replaceJavaLang(Testing.CLASS_NAME, inputBytes);
+            ClassReader in = new ClassReader(inputBytes);
+            ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+
+            ClassShadowing cs = new ClassShadowing(out, Testing.CLASS_NAME);
+            in.accept(cs, ClassReader.SKIP_DEBUG);
+
+            byte[] transformed = out.toByteArray();
             writeBytesToFile(transformed, "output.class");
             return transformed;
         });
