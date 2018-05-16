@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class AvmImpl implements Avm {
 
-    private static final String RUNTIME_CLASS_NAME = "org/aion/avm/rt/Contract";
+    private static final String RUNTIME_CLASS_NAME = "org/aion/avm/internal/Helper";
 
     /**
      * Extracts the DApp module in compressed format into the designated folder.
