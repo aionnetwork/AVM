@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
+import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.ClassHierarchyForest;
@@ -92,10 +93,12 @@ public class AvmImpl implements Avm {
      * @return a mapping between class name and object size
      */
     public Map<String, Integer> computeObjectSizes(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
+        HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
 
-        // TODO: Nancy
+        // compute the object size of every one in 'classes'
+        objectSizeCalculator.calcClassesInstanceSize(classes, classHierarchy, runtimeObjectSizes);
 
-        return Collections.emptyMap();
+        return objectSizeCalculator.getClassHeapSizeMap();
     }
 
     /**

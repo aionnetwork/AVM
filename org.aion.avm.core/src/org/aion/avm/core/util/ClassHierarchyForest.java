@@ -158,9 +158,7 @@ public class ClassHierarchyForest {
             treeRoots.add(parentNode);
         }
         // if the childNode is in the treeRoots, remove it
-        if (treeRoots.contains(childNode)) {
-            treeRoots.remove(childNode); // There should be no duplicates in the treeRoots list; removing once should work.
-        }
+        treeRoots.remove(childNode); // There should be no duplicates in the treeRoots list; removing once should work.
     }
 
     /**

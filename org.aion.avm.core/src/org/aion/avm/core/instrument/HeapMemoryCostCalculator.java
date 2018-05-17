@@ -1,9 +1,11 @@
 package org.aion.avm.core.instrument;
 
+import org.aion.avm.core.util.ClassHierarchyForest;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
+import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
@@ -55,13 +57,21 @@ public class HeapMemoryCostCalculator {
      * Key - class name
      * Value - the heapMemoryInfo of the class
      */
-    private HashMap<String, Integer> classHeapSizeMap;
+    private Map<String, Integer> classHeapSizeMap;
 
     /**
      * Constructor
      */
     public HeapMemoryCostCalculator() {
         classHeapSizeMap = new HashMap<>();
+    }
+
+    /**
+     * return the map of class name to its instance size
+     * @return the hash map that stores the calculated instance sizes of classes
+     */
+    public Map<String, Integer> getClassHeapSizeMap() {
+        return classHeapSizeMap;
     }
 
     /**
@@ -163,12 +173,20 @@ public class HeapMemoryCostCalculator {
      * 2. when runtime starts, apply this method to the runtime classes;
      * 3. at the deployment of a smart contract, apply this method to all the classes of the contract.
      */
-    public void calcClassesInstanceSize() {
+    public void calcClassesInstanceSize(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
 
+        List<String> rootClasses = classHierarchy.getTreeRoots();
 
+        for (String rootClass : rootClasses) {
+            // rootClass is one of the runtime or java.lang.* classes, and runtimeObjectSizes map has its size.
+            // copy rootClass size to classHeapSizeMap
+            classHeapSizeMap.put(rootClass, runtimeObjectSizes.get(rootClass));
 
-        // To-do - pop from the stack and call calcInstanceSizeOfOneClass
-        byte[] classBytes = null;
-        calcInstanceSizeOfOneClass(classBytes);
+            // TODO - traverse the tree and calculate the instance size of each class; breadth first traverse
+
+            // call calcInstanceSizeOfOneClass
+            byte[] classBytes = null;
+            calcInstanceSizeOfOneClass(classBytes);
+        }
     }
 }
