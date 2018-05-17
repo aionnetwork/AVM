@@ -45,6 +45,8 @@ public class StackWatcherTest {
         clazz = loader.loadClass(name);
     }
 
+
+
     @Test
     public void testDepthOverflow() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         StackWatcher.reset();
@@ -84,17 +86,44 @@ public class StackWatcherTest {
     }
 
     @Test
-    public void testLocalTryCatch(){
+    public void testStackTrackingConsistency() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        StackWatcher.reset();
+        StackWatcher.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
+        StackWatcher.setMaxStackDepth(200);
+        StackWatcher.setMaxStackSize(20000);
 
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testStackTrackingConsistency");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
     }
 
     @Test
-    public void testRemoteTryCatch(){
+    public void testLocalTryCatch() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        StackWatcher.reset();
+        StackWatcher.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
+        StackWatcher.setMaxStackDepth(200);
+        StackWatcher.setMaxStackSize(20000);
 
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testLocalTryCatch");
+
+        Object ret = method.invoke(obj);
+        //Assert.assertEquals(ret, true);
     }
 
     @Test
-    public void testFinally(){
+    public void testRemoteTryCatch() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        StackWatcher.reset();
+        StackWatcher.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
+        StackWatcher.setMaxStackDepth(200);
+        StackWatcher.setMaxStackSize(20000);
 
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testRemoteTryCatch");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
     }
 }
