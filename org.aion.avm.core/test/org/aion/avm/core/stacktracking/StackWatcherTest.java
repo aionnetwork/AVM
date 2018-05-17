@@ -27,13 +27,12 @@ public class StackWatcherTest {
     }
 
     @Before
+    // We only need to load the instrumented class once.
     public void getInstructmentedClass()throws IOException, ClassNotFoundException{
         String name = "org.aion.avm.core.stacktracking.TestResource";
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), name, (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-
-            //ClassShadowing cs = new ClassShadowing(out, Testing.CLASS_NAME);
 
             StackWatcherClassAdapter swc = new StackWatcherClassAdapter(out);
             in.accept(swc, ClassReader.EXPAND_FRAMES);
@@ -52,7 +51,7 @@ public class StackWatcherTest {
     public void testDepthOverflow() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         StackWatcher.reset();
         StackWatcher.setPolicy(StackWatcher.POLICY_DEPTH);
-        StackWatcher.setMaxStackDepth(200);
+        StackWatcher.setMaxStackDepth(500);
         StackWatcher.setMaxStackSize(20000);
 
         Object obj = clazz.getConstructor().newInstance();
@@ -70,7 +69,7 @@ public class StackWatcherTest {
     public void testSizeOverflow() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         StackWatcher.reset();
         StackWatcher.setPolicy(StackWatcher.POLICY_SIZE);
-        StackWatcher.setMaxStackDepth(200);
+        StackWatcher.setMaxStackDepth(500);
         StackWatcher.setMaxStackSize(20000);
 
         Object obj = clazz.getConstructor().newInstance();
@@ -80,8 +79,6 @@ public class StackWatcherTest {
             Object ret = method.invoke(obj);
         }catch(InvocationTargetException e){
             Boolean expectedError =  e.getCause().getMessage().contains("AVM stack overflow") ? true : false;
-            //System.out.println(StackWatcher.getCurStackDepth());
-            //System.out.println(StackWatcher.getCurStackSize());
             Assert.assertEquals(expectedError, true);
         }
     }
