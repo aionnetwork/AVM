@@ -1,4 +1,4 @@
-package org.aion.avm.core.dapploading;
+package org.aion.avm.core.dappreading;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ class DAppClassLoader extends ClassLoader {
 
     // todo try contact without modules
     // todo try class with empty package
-    // todo it's extremely inneficient
+    // todo it's extremely inefficient
     private Path findFileFor(String qualifiedClassName) {
         final String targetPackageName = getPackageNameOf(qualifiedClassName);
         final String localFilePath = toFilePath(qualifiedClassName);

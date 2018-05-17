@@ -1,4 +1,4 @@
-package org.aion.avm.examples.token;
+package org.aion.avm.core.examples.token;
 
 import org.aion.avm.rt.Contract;
 import org.aion.avm.rt.BlockchainRuntime;

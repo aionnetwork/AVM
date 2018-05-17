@@ -1,4 +1,4 @@
-package org.aion.avm.core.dapploading;
+package org.aion.avm.core.dappreading;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

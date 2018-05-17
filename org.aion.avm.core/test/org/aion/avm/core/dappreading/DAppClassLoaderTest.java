@@ -1,4 +1,4 @@
-package org.aion.avm.core.dapploading;
+package org.aion.avm.core.dappreading;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,14 +9,14 @@ import java.lang.reflect.Method;
  * @author Roman Katerinenko
  */
 public class DAppClassLoaderTest {
-    private static final String startModuleName = "org.aion.avm.examples";
-    private static final String contractModulesPath = "../build/main";
+    private static final String startModuleName = "org.aion.avm.core.examples";
+    private static final String dAppModulesPath = "../build/main";
 
     @Test
-    public void checkAvmClassLoaderIsUsedForAllContractClasses() throws Exception {
+    public void checkAvmClassLoaderIsUsedForAllDAppClasses() throws Exception {
         final var avm = new DAppLoader();
-        final var mainClassName = "org.aion.avm.testcontracts.C1";
-        ClassLoadingResult result = avm.loadDAppIntoNewLayer(contractModulesPath, startModuleName, mainClassName);
+        final var mainClassName = "org.aion.avm.core.testdapps.C1";
+        ClassLoadingResult result = avm.loadDAppIntoNewLayer(dAppModulesPath, startModuleName, mainClassName);
         Assert.assertTrue(result.isLoaded());
         Class<?> mainLoadedClass = avm.getDAppMainClass();
         Assert.assertSame(mainLoadedClass.getName(), mainClassName);
@@ -29,10 +29,10 @@ public class DAppClassLoaderTest {
     }
 
     @Test
-    public void checkContractHasAccessToJavaClasses() {
+    public void checkDAppHasAccessToJavaClasses() {
         final var avm = new DAppLoader();
-        final var mainClassName = "org.aion.avm.testcontracts.JavaAccessor";
-        ClassLoadingResult result = avm.loadDAppIntoNewLayer(contractModulesPath, startModuleName, mainClassName);
+        final var mainClassName = "org.aion.avm.core.testdapps.JavaAccessor";
+        ClassLoadingResult result = avm.loadDAppIntoNewLayer(dAppModulesPath, startModuleName, mainClassName);
         Assert.assertTrue(result.isLoaded());
         Class mainLoadedClass = avm.getDAppMainClass();
         Assert.assertSame(mainLoadedClass.getName(), mainClassName);

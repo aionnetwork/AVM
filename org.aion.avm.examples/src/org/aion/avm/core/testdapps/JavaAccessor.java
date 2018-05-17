@@ -1,4 +1,4 @@
-package org.aion.avm.testcontracts;
+package org.aion.avm.core.testdapps;
 
 /**
  * @author Roman Katerinenko

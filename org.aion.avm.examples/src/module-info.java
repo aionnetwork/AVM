@@ -1,5 +1,5 @@
-module org.aion.avm.examples {
+module org.aion.avm.core.examples {
     requires org.aion.avm.rt;
 
-    exports org.aion.avm.testcontracts;
+    exports org.aion.avm.core.testdapps;
 }

@@ -1,4 +1,4 @@
-package org.aion.avm.examples.helloworld;
+package org.aion.avm.core.examples.helloworld;
 
 import org.aion.avm.rt.Contract;
 import org.aion.avm.rt.BlockchainRuntime;

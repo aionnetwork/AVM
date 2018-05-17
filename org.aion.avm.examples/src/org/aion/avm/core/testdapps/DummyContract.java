@@ -1,4 +1,4 @@
-package org.aion.avm.testcontracts;
+package org.aion.avm.core.testdapps;
 
 import org.aion.avm.rt.Contract;
 import org.aion.avm.rt.BlockchainRuntime;

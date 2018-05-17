@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="clean_buildmain" name="org-aion-avm-examples">
+    <!-- adding contrib lib for 'foreach' target-->
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="../lib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
 
     <property name="dir.local.workspace" value="."/>
     <property name="dir.local.build.main" value="${dir.local.workspace}/build/main"/>
@@ -10,6 +16,7 @@
     <property name="dir.global.lib" value="../lib"/>
     <property name="dir.global.build.main" value="../build/main"/>
     <property name="dir.global.build.test" value="../build/test"/>
+    <property name="separatejars.local.path" value="org/aion/avm/separatejars"/>
 
     <target name="clean" >
         <antcall target="cleanmain" />
@@ -19,10 +26,6 @@
         <antcall target="buildmain">
             <param name="compile.debug" value="${compile.debug}"/>
         </antcall>
-    </target>
-
-    <target name="cleanmain">
-        <delete dir="${dir.local.build.main}"/>
     </target>
 
     <target name="buildmain">
@@ -38,10 +41,36 @@
         </javac>
 
         <jar destfile="${dir.local.build.main}/${ant.project.name}.jar" filesetmanifest="mergewithoutmain"
-             basedir="${dir.local.build.main}"/>
+             basedir="${dir.local.build.main}"
+             excludes="${separatejars.local.path}/**/*.class">
+        </jar>
 
         <move includeemptydirs="false" todir="${dir.global.build.main}">
             <file file="${dir.local.build.main}/${ant.project.name}.jar"/>
+        </move>
+
+        <!--  Compile dirs to a separate jars -->
+        <foreach target="buildjar" param="rootForJar">
+            <path>
+                <dirset dir="${dir.local.build.main}/${separatejars.local.path}" casesensitive="yes">
+                    <include name="*"/>
+                </dirset>
+            </path>
+        </foreach>
+    </target>
+
+    <target name="cleanmain">
+        <delete dir="${dir.local.build.main}"/>
+    </target>
+
+    <target name="buildjar">
+        <propertyregex property="rootForJarWithoutBasedir" input="${rootForJar}" regexp="${dir.local.build.main}/(.*)" select="\1"/>
+        <propertyregex property="rootDirName" input="${rootForJar}" regexp=".*/(.*)" select="\1"/>
+        <jar destfile="${dir.local.build.main}/${ant.project.name}-${rootDirName}.jar" filesetmanifest="mergewithoutmain"
+             basedir="${dir.local.build.main}" includes="${separatejars.local.path}/${rootDirName}/**/*.*"/>
+
+        <move includeemptydirs="false" todir="${dir.global.build.main}">
+            <file file="${dir.local.build.main}/${ant.project.name}-${rootDirName}.jar"/>
         </move>
     </target>
 
