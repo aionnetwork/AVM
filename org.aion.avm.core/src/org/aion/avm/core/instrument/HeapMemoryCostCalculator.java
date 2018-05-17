@@ -5,9 +5,9 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Heap memory is allocated at the new object creation. This class provides a map of every class' instance size.
@@ -81,7 +81,7 @@ public class HeapMemoryCostCalculator {
      * Note, this method is called from the top to bottom of the class inheritance hierarchy. Such that, it can
      * be assumed that the parent classes' heap size is already in the map.
      */
-    public void calcInstanceSizeOfOneClass(byte[] classBytes) {
+    private void calcInstanceSizeOfOneClass(byte[] classBytes) {
         if (classHeapSizeMap == null) {
             throw new IllegalStateException("HeapMemoryCostCalculator does not have the classHeapSizeMap.");
         }
@@ -174,19 +174,22 @@ public class HeapMemoryCostCalculator {
      * 3. at the deployment of a smart contract, apply this method to all the classes of the contract.
      */
     public void calcClassesInstanceSize(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
-
+        // get the root nodes list of the class hierarchy
         List<String> rootClasses = classHierarchy.getTreeRoots();
 
+        // calculate for each tree in the class hierarchy
         for (String rootClass : rootClasses) {
-            // rootClass is one of the runtime or java.lang.* classes, and runtimeObjectSizes map has its size.
+            // rootClass is one of the runtime or java.lang.* classes and 'runtimeObjectSizes' map already has its size.
             // copy rootClass size to classHeapSizeMap
             classHeapSizeMap.put(rootClass, runtimeObjectSizes.get(rootClass));
 
-            // TODO - traverse the tree and calculate the instance size of each class; breadth first traverse
+            // traverse the tree and calculate the instance size of each class; breadth first traverse
+            List<String> classList = classHierarchy.breadthFirstTraverse(rootClass);
 
-            // call calcInstanceSizeOfOneClass
-            byte[] classBytes = null;
-            calcInstanceSizeOfOneClass(classBytes);
+            // call calcInstanceSizeOfOneClass on each class in the tree traverse list
+            for (String clazz : classList) {
+                calcInstanceSizeOfOneClass(classes.get(clazz));
+            }
         }
     }
 }

@@ -1,9 +1,6 @@
 package org.aion.avm.core.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A helper which maintain te class inheritance relations.
@@ -173,5 +170,38 @@ public class ClassHierarchyForest {
             rootClassNames.add(rootNode.className);
         }
         return rootClassNames;
+    }
+
+    /**
+     * traverse a tree, breadth first
+     * The tree is part of this hierarchy, so every node is in the searchMap, too.
+     * @param rootClassName the class name of the root node of the tree
+     * @return a class name list of all classes nodes in the tree
+     */
+    public List<String> breadthFirstTraverse(String rootClassName) {
+        List<String> results = new ArrayList<>();
+
+        Queue<TreeNode> queue = new LinkedList<>();
+
+        queue.offer(searchMap.get(rootClassName));
+
+        // traverse level by level; from top to bottom
+        while (!queue.isEmpty()) {
+            int levelSize = queue.size();
+
+            for (int i = 0; i < levelSize; i++) {
+                TreeNode curNode = queue.poll();
+
+                if (curNode != null) {
+                    results.add(curNode.className);
+
+                    for (TreeNode childNode : curNode.childNodes) {
+                        queue.offer(childNode);
+                    }
+                }
+            }
+        }
+
+        return results;
     }
 }
