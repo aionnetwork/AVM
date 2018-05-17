@@ -2,7 +2,6 @@ package org.aion.avm.core.classloading;
 
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.rt.BlockchainRuntime;
-import org.aion.avm.rt.EnergyMeter;
 import org.aion.avm.rt.Storage;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -94,8 +93,8 @@ public class DummyClassLoader extends ClassLoader {
             }
 
             @Override
-            public EnergyMeter getEnergyMeter() {
-                return null;
+            public long getEnergyLimit() {
+                return 1000000;
             }
         });
         System.out.println(new String((byte[])ret));
