@@ -16,6 +16,8 @@ import java.util.Map;
 
 public class AvmImpl implements Avm {
 
+    private static final String RUNTIME_CLASS_NAME = "org/aion/avm/internal/Helper";
+
     /**
      * Extracts the DApp module in compressed format into the designated folder.
      *
@@ -116,10 +118,11 @@ public class AvmImpl implements Avm {
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
             ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, classHierarchy, generatedClasses);
             StackTracking stackTracking = new StackTracking(exceptionHandling);
-            ClassShadowing classShadowing = new ClassShadowing(stackTracking);
-            ClassMetering classMetering = new ClassMetering(classShadowing, classHierarchy, objectSizes);
+            ClassShadowing classShadowing = new ClassShadowing(stackTracking, RUNTIME_CLASS_NAME);
+            ClassMetering classMetering = new ClassMetering(classShadowing, RUNTIME_CLASS_NAME, classHierarchy, objectSizes);
 
             // traverse
+            // TODO:  ClassReader.EXPAND_FRAMES is needed for stacktracking injector
             in.accept(classMetering, ClassReader.SKIP_DEBUG);
 
             // emit bytecode

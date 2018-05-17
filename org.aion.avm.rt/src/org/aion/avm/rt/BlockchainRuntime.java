@@ -20,16 +20,16 @@ public interface BlockchainRuntime {
     byte[] getAddress();
 
     /**
+     * Returns the energy limit.
+     *
+     * @return
+     */
+    long getEnergyLimit();
+
+    /**
      * Returns the storage of the executing account.
      *
      * @return
      */
     Storage getStorage();
-
-    /**
-     * Returns the energy meter.
-     *
-     * @return
-     */
-    EnergyMeter getEnergyMeter();
 }
