@@ -5,14 +5,18 @@ public class TestResource {
     int depth = 0;
 
     public static void main(String[] args) {
-        AVMStackWatcher.setPolicy(AVMStackWatcher.POLICY_DEPTH);
-        AVMStackWatcher.setMaxStackDepth(50);
+        //StackWatcher.setPolicy(StackWatcher.POLICY_DEPTH);
+        //StackWatcher.setMaxStackDepth(50);
         TestResource tb = new TestResource();
         try{
             tb.deep();
         }catch (Exception e){
             System.out.println("We should not reach here");
         }
+    }
+
+    public void testStackOverflow(){
+        testStackOverflow();
     }
 
     public void deep() throws Exception{
