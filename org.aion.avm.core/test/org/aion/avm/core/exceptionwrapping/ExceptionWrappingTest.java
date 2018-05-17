@@ -1,5 +1,8 @@
 package org.aion.avm.core.exceptionwrapping;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.function.Function;
@@ -30,6 +33,7 @@ public class ExceptionWrappingTest {
     @Before
     public void setup() {
         TestHelpers.didUnwrap = false;
+        TestHelpers.didWrap = false;
     }
 
 
@@ -52,14 +56,45 @@ public class ExceptionWrappingTest {
         Assert.assertEquals(3, result);
     }
 
+    /**
+     * Tests that a manually creating and throwing a java/lang/* exception type works correctly.
+     */
+    @Test
+    public void testmSimpleManuallyThrowNull() throws Exception {
+        String className = TestExceptionResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder);
+        Class<?> clazz = loader.loadClass(className);
+        
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Method manuallyThrowNull = clazz.getMethod("manuallyThrowNull");
+        
+        // Create an array and make sure it is correct.
+        Assert.assertFalse(TestHelpers.didWrap);
+        boolean didCatch = false;
+        try {
+            manuallyThrowNull.invoke(null);
+        } catch (InvocationTargetException e) {
+            didCatch = e.getCause() instanceof NullPointerException;
+        }
+        Assert.assertTrue(TestHelpers.didWrap);
+        Assert.assertTrue(didCatch);
+    }
+
 
     public static class TestHelpers{
         public static final String CLASS_NAME = ExceptionWrappingTest.class.getCanonicalName().replaceAll("\\.", "/") + "$TestHelpers";
         public static boolean didUnwrap = false;
+        public static boolean didWrap = false;
         
         public static Object unwrapThrowable(Throwable t) {
             didUnwrap = true;
             return t;
+        }
+        
+        public static Throwable wrapAsThrowable(Object arg) {
+            didWrap = true;
+            // In our test, we are assume that this actually _is_ a throwable.
+            return (Throwable)arg;
         }
     }
 }

@@ -75,13 +75,31 @@ public class ExceptionWrapping extends ClassVisitor {
                 }
                 this.isTargetFrame = false;
             }
-
             @Override
             public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
                 super.visitTryCatchBlock(start, end, handler, type);
                 
                 // We just want to record the handler label so we know it is a catch block, in visitLabel, above.
                 this.catchTargets.add(handler);
+            }
+            @Override
+            public void visitInsn(int opcode) {
+                // If this is athrow, we need to wrap whatever we had with an actual exception (after shadowing, nothing we get here will be an
+                // actual exception - even java/lang exceptions will be exposed to the user's code as some sort of stub object from our domain).
+                // This must happen BEFORE the athrow opcode is emitted, for obvious reasons.
+                if (Opcodes.ATHROW == opcode) {
+                    String methodName = "wrapAsThrowable";
+                    
+                    // SHADOW NOTES:
+                    // Note that this java/lang/Throwable MUST NOT be rewritten as another type since that is literally what must be on the
+                    // operand stack when we call athrow.
+                    // On the other hand, the java/lang/Object _should_ be rewritten as the shadow type, but we are safe if it isn't.
+                    String methodDescriptor = "(Ljava/lang/Object;)Ljava/lang/Throwable;";
+                    
+                    // The call-out will actually return the base object class in our environment so we need to cast.
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, ExceptionWrapping.this.runtimeClassName, methodName, methodDescriptor, false);
+                }
+                super.visitInsn(opcode);
             }
         };
     }

@@ -20,4 +20,8 @@ public class TestExceptionResource {
         }
         return r;
     }
+
+    public static void manuallyThrowNull() {
+        throw new NullPointerException("faked");
+    }
 }
