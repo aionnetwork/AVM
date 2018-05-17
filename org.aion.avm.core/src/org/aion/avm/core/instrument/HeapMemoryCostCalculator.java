@@ -97,10 +97,11 @@ public class HeapMemoryCostCalculator {
             throw new IllegalStateException("A parent class is not processed by HeapMemoryCostCalculator.");
         }
 
-        // read the declared fields in the current class, add the size of each.
+        // read the declared fields in the current class, add the size of each according to the FieldType
         List<FieldNode> fieldNodes = classNode.fields;
         for (FieldNode fieldNode : fieldNodes) {
             switch (fieldNode.desc.charAt(0)) {
+                // FieldType -- BasicType, ObjectType, ArrayType
                 case 'Z' : {
                     heapSize += FieldTypeSizeInBits.BOOLEAN.getVal();
                     break;
@@ -134,17 +135,18 @@ public class HeapMemoryCostCalculator {
                     break;
                 }
                 case 'L': {
+                    // ObjectType
                     heapSize += FieldTypeSizeInBits.OBJECTREF.getVal();
                     break;
                 }
                 case '[': {
-                    // Array field; class object creation only allocates a ref in the heap;
+                    // ArrayType; class object creation only allocates a ref in the heap;
                     // and later the bytecode "NEWARRAY / ANEWARRAY" allocates the memory for each element.
                     heapSize += FieldTypeSizeInBits.OBJECTREF.getVal();
                     break;
                 }
                 default: {
-                    throw new IllegalStateException("field has an invalid d");
+                    throw new IllegalStateException("field has an invalid FieldType");
                 }
             }
         }
@@ -164,25 +166,9 @@ public class HeapMemoryCostCalculator {
     public void calcClassesInstanceSize() {
 
 
-        InheritanceHierarchyBuilder.buildHierarchy();
 
         // To-do - pop from the stack and call calcInstanceSizeOfOneClass
         byte[] classBytes = null;
         calcInstanceSizeOfOneClass(classBytes);
     }
-
-
-    /**
-     * A helper class that builds the hierarchy tree of the classes.
-     */
-    private static class InheritanceHierarchyBuilder {
-
-        /**
-         * build a stack of classes, in which the top ones should not be derived from the bottom ones.
-         */
-        private static void buildHierarchy() {
-
-        }
-    }
-
 }
