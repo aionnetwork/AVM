@@ -119,7 +119,7 @@ public class AvmImpl implements Avm {
 
             // in reverse order
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, classHierarchy, generatedClasses);
+            ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, RUNTIME_CLASS_NAME, classHierarchy, generatedClasses);
             StackWatcherClassAdapter stackTracking = new StackWatcherClassAdapter(exceptionHandling);
             ClassShadowing classShadowing = new ClassShadowing(stackTracking, RUNTIME_CLASS_NAME);
             ClassMetering classMetering = new ClassMetering(classShadowing, RUNTIME_CLASS_NAME, classHierarchy, objectSizes);
