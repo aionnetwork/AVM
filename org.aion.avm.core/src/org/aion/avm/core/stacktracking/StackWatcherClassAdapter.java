@@ -2,36 +2,15 @@ package org.aion.avm.core.stacktracking;
 
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.commons.AdviceAdapter;
-import org.objectweb.asm.commons.LocalVariablesSorter;
-import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.commons.Method;
+import org.objectweb.asm.commons.*;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-public class AVMStackWatcherInjector {
-    //TODO: Remove/Move this test routine
-    public static void main(final String args[]) throws Exception {
-        FileInputStream is = new FileInputStream(args[0]);
-        byte[] b;
-
-        ClassReader cr = new ClassReader(is);
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        ClassVisitor cv = new AVMStackWatcherClassAdapter(cw);
-        cr.accept(cv, ClassReader.EXPAND_FRAMES);
-        b = cw.toByteArray();
-
-        FileOutputStream fos = new FileOutputStream(args[1]);
-        fos.write(b);
-        fos.close();
-    }
-}
-
-class AVMStackWatcherClassAdapter extends ClassVisitor implements Opcodes{
-    public AVMStackWatcherClassAdapter(final ClassVisitor cv) {
+class StackWatcherClassAdapter extends ClassVisitor implements Opcodes{
+    public StackWatcherClassAdapter(final ClassVisitor cv) {
         super(Opcodes.ASM6, cv);
     }
 
@@ -41,7 +20,7 @@ class AVMStackWatcherClassAdapter extends ClassVisitor implements Opcodes{
     {
         MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
         GeneratorAdapter ga = new GeneratorAdapter(mv, access, name, desc);
-        AVMStackWatcherMethodAdapter ma = new AVMStackWatcherMethodAdapter(ga, access, name, desc);
+        StackWatcherMethodAdapter ma = new StackWatcherMethodAdapter(ga, access, name, desc);
 
         // Wrap the method adapter into a method node to access method informaton
         return new MethodNode(Opcodes.ASM6, access, name, desc, signature, exceptions)
@@ -56,7 +35,7 @@ class AVMStackWatcherClassAdapter extends ClassVisitor implements Opcodes{
     }
 }
 
-class AVMStackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
+class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
 
     private int idxDep = -1;    //LVT index of stack depth
     private int idxSize = -1;   //LVT index of stack size
@@ -69,9 +48,9 @@ class AVMStackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
 
     //JAVA asm Type for later use.
     private org.objectweb.asm.Type typeInt = Type.getType(int.class);
-    private org.objectweb.asm.Type typeAVMSW = Type.getType(AVMStackWatcher.class);
+    private org.objectweb.asm.Type typeAVMSW = Type.getType(StackWatcher.class);
 
-    public AVMStackWatcherMethodAdapter(final GeneratorAdapter mv,
+    public StackWatcherMethodAdapter(final GeneratorAdapter mv,
             final int access, final String name, final String desc)
     {
         super(Opcodes.ASM6, mv, access, name, desc);

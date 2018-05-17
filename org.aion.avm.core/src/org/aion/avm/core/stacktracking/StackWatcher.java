@@ -1,6 +1,6 @@
 package org.aion.avm.core.stacktracking;
 
-public class AVMStackWatcher {
+public class StackWatcher {
 
     /* StackWacher policy:
     *  POLICY_DEPTH will keep JVM stack within depth of maxStackDepth.
@@ -32,6 +32,11 @@ public class AVMStackWatcher {
     public static void setPolicy(int policy){
         checkDepth = (policy & POLICY_DEPTH) == 1;
         checkSize  = (policy & POLICY_SIZE)  == 2;
+    }
+
+    public static void reset(){
+        curDepth = 0;
+        curSize = 0;
     }
 
     /**

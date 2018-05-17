@@ -67,7 +67,10 @@
                destdir="${dir.local.build.test}" includes="**/*.java,module-info.java">
             <classpath>
                 <pathelement location="${dir.global.lib}/junit-4.12.jar"/>
+                <pathelement location="${dir.global.lib}/slf4j-api-1.7.25.jar"/>
+                <pathelement location="${dir.global.lib}/slf4j-simple-1.7.25.jar"/>
                 <pathelement location="${dir.global.lib}/asm-6.1.2-SNAPSHOT.jar"/>
+                <pathelement location="${dir.global.lib}/asm-commons-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.lib}/asm-tree-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
@@ -82,7 +85,9 @@
                 <pathelement location="${dir.global.lib}/junit-4.12.jar"/>
                 <pathelement location="${dir.global.lib}/hamcrest-all-1.3.jar"/>
                 <pathelement location="${dir.global.lib}/slf4j-api-1.7.25.jar"/>
+                <pathelement location="${dir.global.lib}/slf4j-simple-1.7.25.jar"/>
                 <pathelement location="${dir.global.lib}/asm-6.1.2-SNAPSHOT.jar"/>
+                <pathelement location="${dir.global.lib}/asm-commons-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.lib}/asm-tree-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>

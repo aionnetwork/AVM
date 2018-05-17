@@ -53,6 +53,14 @@ public class BytecodeFeeScheduler {
         int alpha;    // number of the additional items placed on the stack
         long fee;     // the static fee of this bytecode, generally including the computation cost and stack memory cost, assuming that the heap memory cost is added dynamically.
 
+        /**
+         * Constructor.
+         * @param nrgLvl a BytecodeEnergyLevels enum regarding the basic Energy level
+         * @param extraNrgLvl a BytecodeEnergyLevels enum regarding the extra Energy level
+         * @param delta number of the items this bytecode removes from the stack
+         * @param alpha number of the additional items this bytecode places on the stack
+         * @param fee the static fee of this bytecode
+         */
         private BytecodeFeeInfo(BytecodeEnergyLevels nrgLvl,
                                 BytecodeEnergyLevels extraNrgLvl,
                                 int delta,
@@ -78,6 +86,7 @@ public class BytecodeFeeScheduler {
         public BytecodeEnergyLevels getExtraNrgLvl() {
             return extraNrgLvl;
         }
+
         /**
          * return the Delta.
          */
