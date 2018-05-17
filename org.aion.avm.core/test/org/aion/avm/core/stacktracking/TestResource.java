@@ -2,7 +2,8 @@ package org.aion.avm.core.stacktracking;
 
 public class TestResource {
 
-    int depth = 0;
+    public int depth = 0;
+    public int upCounter = 0;
 
     private void countDown(int i){
         if (i > 0){
@@ -20,6 +21,11 @@ public class TestResource {
         }
     }
 
+    private void countUp(){
+        this.upCounter++;
+        countUp();
+    }
+
     private void throwCDE() throws Exception{
         throw new Exception("CDE");
     }
@@ -27,6 +33,11 @@ public class TestResource {
 
     public void testStackOverflow(){
         testStackOverflow();
+    }
+
+    public void testStackOverflowConsistency()
+    {
+        countUp();
     }
 
     public boolean testStackTrackingConsistency(){
