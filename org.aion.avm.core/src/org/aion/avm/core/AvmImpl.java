@@ -1,16 +1,15 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.dappreading.DAppReaderWriter;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.shadowing.ClassShadowing;
-import org.aion.avm.core.stacktracking.StackTracking;
+import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.ClassHierarchyForest;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import java.io.IOException;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,9 +18,33 @@ public class AvmImpl implements Avm {
 
     private static final String RUNTIME_CLASS_NAME = "org/aion/avm/internal/Helper";
 
-    public Map<String, byte[]> readClassesFromJar(String pathToJar) throws IOException {
-        return new DAppReaderWriter().readClassesFromJar(pathToJar);
+    /**
+     * Extracts the DApp module in compressed format into the designated folder.
+     *
+     * @param module     the DApp module in JAR format
+     * @param tempFolder the temporary folder where bytecode should be stored
+     * @return the main class name if this operation is successful, otherwise null
+     */
+    public String extract(byte[] module, File tempFolder) {
+
+        // TODO: Rom
+
+        return null;
     }
+
+    /**
+     * Loads the module into memory.
+     *
+     * @param tempFolder the temporary folder containing all the classes
+     * @return a map between class name and bytecode
+     */
+    public Map<String, byte[]> load(File tempFolder) {
+
+        // TODO: Rom
+
+        return null;
+    }
+
 
     /**
      * Validates all classes, including but not limited to:
@@ -94,13 +117,13 @@ public class AvmImpl implements Avm {
             // in reverse order
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
             ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, classHierarchy, generatedClasses);
-            StackTracking stackTracking = new StackTracking(exceptionHandling);
+            StackWatcherClassAdapter stackTracking = new StackWatcherClassAdapter(exceptionHandling);
             ClassShadowing classShadowing = new ClassShadowing(stackTracking, RUNTIME_CLASS_NAME);
             ClassMetering classMetering = new ClassMetering(classShadowing, RUNTIME_CLASS_NAME, classHierarchy, objectSizes);
 
             // traverse
             // TODO:  ClassReader.EXPAND_FRAMES is needed for stacktracking injector
-            in.accept(classMetering, ClassReader.SKIP_DEBUG);
+            in.accept(classMetering, ClassReader.EXPAND_FRAMES);
 
             // emit bytecode
             processedClasses.put(name, out.toByteArray());

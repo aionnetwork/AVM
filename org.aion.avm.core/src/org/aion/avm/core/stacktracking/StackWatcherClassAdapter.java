@@ -9,7 +9,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-class StackWatcherClassAdapter extends ClassVisitor implements Opcodes{
+public class StackWatcherClassAdapter extends ClassVisitor implements Opcodes{
     public StackWatcherClassAdapter(final ClassVisitor cv) {
         super(Opcodes.ASM6, cv);
     }
