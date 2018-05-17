@@ -14,9 +14,7 @@ import java.util.Map;
  * Every time an object is created by the "new" instruction, a piece of heap memory of this size is allocated.
  * The accordingly memory usage cost is then charged on the Energy meter.
  *
- * The hashmap stores one instance's heap allocation size of every classes, including,
- *   1. runtime and shadowing classes, of which the instance sizes are fixed;
- *   2. user's classes, of which the instance sizes are calculated at deployment.
+ * The hashmap stores one instance's heap allocation size of every class.
  *
  * Every instance has a copy of the class fields allocated in the heap.
  * The class fields include the ones declared in this class and its all superclasses.
@@ -53,9 +51,9 @@ public class HeapMemoryCostCalculator {
     }
 
     /**
-     * A hashmap that stores the instance size of every classes.
+     * A map that stores the instance size of every class.
      * Key - class name
-     * Value - the heapMemoryInfo of the class
+     * Value - the instance/heap size of the class
      */
     private Map<String, Integer> classHeapSizeMap;
 
@@ -67,15 +65,15 @@ public class HeapMemoryCostCalculator {
     }
 
     /**
-     * return the map of class name to its instance size
-     * @return the hash map that stores the calculated instance sizes of classes
+     * return the map of the class names to their instance sizes
+     * @return the hash map that stores the calculated instance sizes of the classes
      */
     public Map<String, Integer> getClassHeapSizeMap() {
         return classHeapSizeMap;
     }
 
     /**
-     * Calculate the instance size of one class and record it in the "classHeapSizeMap".
+     * A helper method that calculates the instance size of one class and record it in the "classHeapSizeMap".
      * @param classBytes input class bytecode stream.
      *
      * Note, this method is called from the top to bottom of the class inheritance hierarchy. Such that, it can
@@ -166,12 +164,11 @@ public class HeapMemoryCostCalculator {
     }
 
     /**
-     * Calculate the instance sizes of classes and record them in the "classHeapInfoMap", as long as their fields.
-     *
-     * This method is applied with all the classes that may be instantiated during the execution of a smart contract,
-     * 1. when JVM starts, apply this method to the java.lang.* classes;
-     * 2. when runtime starts, apply this method to the runtime classes;
-     * 3. at the deployment of a smart contract, apply this method to all the classes of the contract.
+     * Calculate the instance sizes of classes and record them in the "classHeapInfoMap".
+     * This method is called to calculate the heap size of classes that belong to one Dapp, at the deployment time.
+     * @param classes the map of the class names to their bytecode
+     * @param classHierarchy the pre-constructed class hierarchy forest
+     * @param runtimeObjectSizes the pre-constructed map of the runtime and java.lang.* classes to their instance size
      */
     public void calcClassesInstanceSize(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
         // get the root nodes list of the class hierarchy
