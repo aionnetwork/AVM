@@ -33,7 +33,7 @@ public class ArrayWrappingTest {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
-            ArrayWrapping cs = new ArrayWrapping(out, Testing.CLASS_NAME);
+            ArrayWrappingClassAdapter cs = new ArrayWrappingClassAdapter(out, Testing.CLASS_NAME);
             in.accept(cs, ClassReader.SKIP_DEBUG);
 
             byte[] transformed = out.toByteArray();
