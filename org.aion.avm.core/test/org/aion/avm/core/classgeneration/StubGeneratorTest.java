@@ -11,6 +11,7 @@ import org.junit.Test;
 
 public class StubGeneratorTest {
     private static final String kShadowClassLibraryPrefix = "org.aion.avm.";
+    private static final String kWrapperClassLibraryPrefix = "org.aion.avm.exceptionwrapper.";
 
     @Test
     public void testBasics() throws Exception {
@@ -103,7 +104,7 @@ public class StubGeneratorTest {
         final String dAppModulesPath = "/dev/null";
         final DAppLoader avm = new DAppLoader(dAppRuntimePath, dAppModulesPath);
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
-        Class<?> aioobe = generateExceptionShadows(avm, kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
+        Class<?> aioobe = generateExceptionShadowsAndWrappers(avm, kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
         Assert.assertNotNull(aioobe);
         Assert.assertEquals(kShadowClassLibraryPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getCanonicalName());
@@ -126,7 +127,38 @@ public class StubGeneratorTest {
         Assert.assertNotNull(expected);
     }
 
-    private static Class<?> generateExceptionShadows(DAppLoader avm, String testClassName) throws Exception {
+    /**
+     * This is must like above except we are interested in the generated wrappers _of_ the generated shadows for the built-in types
+     */
+    @Test
+    public void testGenerateExceptionWrappers() throws Exception {
+        final String dAppRuntimePath = "/dev/null";
+        final String dAppModulesPath = "/dev/null";
+        final DAppLoader avm = new DAppLoader(dAppRuntimePath, dAppModulesPath);
+        // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
+        Class<?> aioobe = generateExceptionShadowsAndWrappers(avm, kWrapperClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
+        
+        // The interesting thing about the wrappers is that they are actually real Throwables.
+        Assert.assertNotNull(aioobe);
+        Assert.assertEquals(kWrapperClassLibraryPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getCanonicalName());
+        Assert.assertEquals(kWrapperClassLibraryPrefix + "java.lang.RuntimeException", aioobe.getSuperclass().getSuperclass().getCanonicalName());
+        Assert.assertEquals(kWrapperClassLibraryPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
+        Assert.assertEquals(kWrapperClassLibraryPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
+        Assert.assertEquals("java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
+        
+        // Create an instance and prove that we can interact with it.
+        Constructor<?> con = aioobe.getConstructor(Object.class);
+        String contents = "one";
+        Object instance = con.newInstance(contents);
+        org.aion.avm.exceptionwrapper.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.java.lang.Throwable)instance;
+        // We can just unwrap this one.
+        Assert.assertEquals(wrapper.unwrap(), contents);
+        // Also, make sure that it is safe to cast this to the actual Throwable.
+        Throwable top = (Throwable)wrapper;
+        Assert.assertNotNull(top.toString());
+    }
+
+    private static Class<?> generateExceptionShadowsAndWrappers(DAppLoader avm, String testClassName) throws Exception {
         // There doesn't appear to be any way to enumerate these classes in the existing class loader (even though they are part of java.lang)
         // so we will list the names of all the classes we need and assemble them that way.
         // We should at least be able to use the original Throwable's classloader to look up the subclasses (again, since they are in java.lang).
@@ -191,21 +223,34 @@ public class StubGeneratorTest {
             // We need to look this up to find the superclass.
             String superclassName = Class.forName(className).getSuperclass().getCanonicalName();
             
-            // Generate this.
-            String mappedName = kShadowClassLibraryPrefix + className;
-            String mappedSuperName = kShadowClassLibraryPrefix + superclassName;
+            // Generate the shadow.
+            Class<?> sample = loadClassWithPrefix(kShadowClassLibraryPrefix, avm, className, superclassName, testClassName);
+            if (null != sample) {
+                testClassToReturn = sample;
+            }
             
-            String slashName = mappedName.replaceAll("\\.", "/");
-            String superSlashName = mappedSuperName.replaceAll("\\.", "/");
-            byte[] bytecode = StubGenerator.generateClass(slashName, superSlashName);
-            Class<?> clazz = avm.injectAndLoadClass(mappedName, bytecode);
-            Assert.assertTrue(clazz.getClassLoader() instanceof DAppClassLoader);
-            
-            if (mappedName.equals(testClassName)) {
-                testClassToReturn = clazz;
+            // Generate the wrapper.
+            sample = loadClassWithPrefix(kWrapperClassLibraryPrefix, avm, className, superclassName, testClassName);
+            if (null != sample) {
+                testClassToReturn = sample;
             }
         }
         return testClassToReturn;
+    }
+
+    private static Class<?> loadClassWithPrefix(String packagePrefix, DAppLoader avm, String className, String superclassName, String testClassName) {
+        String mappedName = packagePrefix + className;
+        String mappedSuperName = packagePrefix + superclassName;
+        
+        String slashName = mappedName.replaceAll("\\.", "/");
+        String superSlashName = mappedSuperName.replaceAll("\\.", "/");
+        byte[] bytecode = StubGenerator.generateClass(slashName, superSlashName);
+        Class<?> clazz = avm.injectAndLoadClass(mappedName, bytecode);
+        Assert.assertTrue(clazz.getClassLoader() instanceof DAppClassLoader);
+        
+        return mappedName.equals(testClassName)
+                ? clazz
+                : null;
     }
 
     //Note that class names here are always in the dot style:  "java.lang.Object"
