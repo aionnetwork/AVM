@@ -13,6 +13,7 @@ public class Helper {
     public static void setBlockchainRuntime(BlockchainRuntime rt) {
         blockchainRuntime.set(rt);
         energyLeft.set(new AtomicLong(rt.getEnergyLimit()));
+        StackWatcher.reset();
     }
 
     public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {

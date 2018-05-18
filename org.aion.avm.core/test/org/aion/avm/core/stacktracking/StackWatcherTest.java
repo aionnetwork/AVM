@@ -1,13 +1,13 @@
 package org.aion.avm.core.stacktracking;
 
 import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.internal.OutOfStackError;
+import org.aion.avm.internal.StackWatcher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.objectweb.asm.*;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.commons.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,8 +45,6 @@ public class StackWatcherTest {
         clazz = loader.loadClass(name);
     }
 
-
-
     @Test
     public void testDepthOverflow() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         StackWatcher.reset();
@@ -60,8 +58,7 @@ public class StackWatcherTest {
         try{
             Object ret = method.invoke(obj);
         }catch(InvocationTargetException e){
-            Boolean expectedError =  e.getCause().getMessage().contains("AVM stack overflow") ? true : false;
-            Assert.assertEquals(expectedError, true);
+            Assert.assertTrue(e.getCause() instanceof OutOfStackError);
         }
     }
 
@@ -78,8 +75,7 @@ public class StackWatcherTest {
         try{
             Object ret = method.invoke(obj);
         }catch(InvocationTargetException e){
-            Boolean expectedError =  e.getCause().getMessage().contains("AVM stack overflow") ? true : false;
-            Assert.assertEquals(expectedError, true);
+            Assert.assertTrue(e.getCause() instanceof OutOfStackError);
         }
     }
 
@@ -106,8 +102,7 @@ public class StackWatcherTest {
             try{
                 ret = method.invoke(obj);
             }catch(InvocationTargetException e){
-                expectedError =  e.getCause().getMessage().contains("AVM stack overflow") ? true : false;
-                Assert.assertEquals(expectedError, true);
+                Assert.assertTrue(e.getCause() instanceof OutOfStackError);
                 cur = counter.get(obj);
                 if ((int)prev != -1){
                     Assert.assertEquals(cur, prev);
@@ -128,8 +123,7 @@ public class StackWatcherTest {
             try{
                 ret = method.invoke(obj);
             }catch(InvocationTargetException e){
-                expectedError =  e.getCause().getMessage().contains("AVM stack overflow") ? true : false;
-                Assert.assertEquals(expectedError, true);
+                Assert.assertTrue(e.getCause() instanceof OutOfStackError);
                 cur = counter.get(obj);
                 if ((int)prev != -1){
                     Assert.assertEquals(cur, prev);

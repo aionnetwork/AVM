@@ -1,5 +1,7 @@
 package org.aion.avm.core.stacktracking;
 
+import org.aion.avm.internal.StackWatcher;
+
 public class TestResource {
 
     public int depth = 0;

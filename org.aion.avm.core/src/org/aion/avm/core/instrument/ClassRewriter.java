@@ -8,7 +8,7 @@ import org.objectweb.asm.Opcodes;
 
 
 /**
- * A wrapper over our common ASM routines.
+ * A arraywrapper over our common ASM routines.
  *
  * This class has no explicit design, as it is still evolving.
  */

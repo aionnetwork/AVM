@@ -19,9 +19,9 @@ public class DAppLoader {
 
     private Class dAppMainClass;
 
-    ClassLoadingResult loadDAppIntoNewLayer(String dAppModulesJar, String startModuleName, String fullyQualifiedMainClassName) {
+    ClassLoadingResult loadDAppIntoNewLayer(String dAppRuntimePath, String dAppModulesPath, String startModuleName, String fullyQualifiedMainClassName) {
         final ModuleLayer bootLayer = ModuleLayer.boot();
-        final ModuleFinder dAppModulesFinder = ModuleFinder.of(Paths.get(dAppModulesJar));
+        final ModuleFinder dAppModulesFinder = ModuleFinder.of(Paths.get(dAppModulesPath), Paths.get(dAppRuntimePath));
         final var emptyFinder = ModuleFinder.of();
         final Configuration dAppLayerConfig = bootLayer.configuration().resolve(dAppModulesFinder, emptyFinder, List.of(startModuleName));
         final var avmClassLoader = new DAppClassLoader();
@@ -35,7 +35,7 @@ public class DAppLoader {
                     .loadClass(fullyQualifiedMainClassName);
         } catch (Exception e) {
             final var msg = format("Unable to load dApp. Start module:'%s', main class:'%s', module path:'%s'",
-                    startModuleName, fullyQualifiedMainClassName, dAppModulesJar);
+                    startModuleName, fullyQualifiedMainClassName, dAppModulesPath);
             if (logger.isErrorEnabled()) {
                 logger.error(msg, e);
             }

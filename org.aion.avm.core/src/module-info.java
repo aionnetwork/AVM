@@ -1,8 +1,8 @@
 module org.aion.avm.core {
-    requires org.aion.avm.rt;
-
     exports org.aion.avm.core;
     exports org.aion.avm.core.dappreading;
+
+    requires org.aion.avm.rt;
 
     // external modules
     requires slf4j.api;

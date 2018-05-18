@@ -9,14 +9,15 @@ import java.lang.reflect.Method;
  * @author Roman Katerinenko
  */
 public class DAppClassLoaderTest {
-    private static final String startModuleName = "org.aion.avm.core.examples";
-    private static final String dAppModulesPath = "../build/main";
+    private static final String dAppRuntimePath = "../examples/lib";
+    private static final String dAppModulesPath = "../examples/build";
+    private static final String moduleName = "com.example.twoclasses";
 
     @Test
     public void checkAvmClassLoaderIsUsedForAllDAppClasses() throws Exception {
         final var avm = new DAppLoader();
-        final var mainClassName = "org.aion.avm.core.testdapps.C1";
-        ClassLoadingResult result = avm.loadDAppIntoNewLayer(dAppModulesPath, startModuleName, mainClassName);
+        final var mainClassName = "com.example.twoclasses.C1";
+        ClassLoadingResult result = avm.loadDAppIntoNewLayer(dAppRuntimePath, dAppModulesPath, moduleName, mainClassName);
         Assert.assertTrue(result.isLoaded());
         Class<?> mainLoadedClass = avm.getDAppMainClass();
         Assert.assertSame(mainLoadedClass.getName(), mainClassName);
@@ -31,8 +32,8 @@ public class DAppClassLoaderTest {
     @Test
     public void checkDAppHasAccessToJavaClasses() {
         final var avm = new DAppLoader();
-        final var mainClassName = "org.aion.avm.core.testdapps.JavaAccessor";
-        ClassLoadingResult result = avm.loadDAppIntoNewLayer(dAppModulesPath, startModuleName, mainClassName);
+        final var mainClassName = "com.example.twoclasses.JavaAccessor";
+        ClassLoadingResult result = avm.loadDAppIntoNewLayer(dAppRuntimePath, dAppModulesPath, moduleName, mainClassName);
         Assert.assertTrue(result.isLoaded());
         Class mainLoadedClass = avm.getDAppMainClass();
         Assert.assertSame(mainLoadedClass.getName(), mainClassName);

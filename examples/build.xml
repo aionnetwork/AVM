@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="org-aion-avm-examples">
+
+    <property name="dir.local.workspace" value="."/>
+    <property name="dir.local.build" value="${dir.local.workspace}/build"/>
+    <property name="dir.local.lib" value="${dir.local.workspace}/lib"/>
+    <property name="dir.local.src" value="${dir.local.workspace}/src"/>
+
+
+    <target name="clean">
+        <delete dir="${dir.local.build}"/>
+    </target>
+
+    <target name="build" depends="build_helloworld,build_simpletoken,build_twoclasses"/>
+
+    <!-- TODO: Rom, refactor targets below using foreach -->
+    <target name="build_helloworld">
+        <local name="name"/>
+        <local name="main"/>
+        <property name="name" value="com.example.helloworld"/>
+        <property name="main" value="com.example.helloworld.HelloWorld"/>
+
+        <mkdir dir="${dir.local.build}/${name}"/>
+
+        <echo message="Compiling ${name}..."/>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.local.src}/${name}"
+               destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
+            <modulepath>
+                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+            </modulepath>
+        </javac>
+
+        <echo message="Packing ${name}..."/>
+        <jar destfile="${dir.local.build}/${name}.jar" basedir="${dir.local.build}/${name}">
+            <manifest>
+                <attribute name="Main-Class" value="${main}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build_simpletoken">
+        <local name="name"/>
+        <local name="main"/>
+        <property name="name" value="com.example.simpletoken"/>
+        <property name="main" value="com.example.simpletoken.SimpleToken"/>
+
+        <mkdir dir="${dir.local.build}/${name}"/>
+
+        <echo message="Compiling ${name}..."/>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.local.src}/${name}"
+               destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
+            <modulepath>
+                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+            </modulepath>
+        </javac>
+
+        <echo message="Packing ${name}..."/>
+        <jar destfile="${dir.local.build}/${name}.jar" basedir="${dir.local.build}/${name}">
+            <manifest>
+                <attribute name="Main-Class" value="${main}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build_twoclasses">
+        <local name="name"/>
+        <local name="main"/>
+        <property name="name" value="com.example.twoclasses"/>
+        <property name="main" value="com.example.twoclasses.Main"/>
+
+        <mkdir dir="${dir.local.build}/${name}"/>
+
+        <echo message="Compiling ${name}..."/>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.local.src}/${name}"
+               destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
+            <modulepath>
+                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+            </modulepath>
+        </javac>
+
+        <echo message="Packing ${name}..."/>
+        <jar destfile="${dir.local.build}/${name}.jar" basedir="${dir.local.build}/${name}">
+            <manifest>
+                <attribute name="Main-Class" value="${main}"/>
+            </manifest>
+        </jar>
+    </target>
+</project>

@@ -1,5 +1,7 @@
 package org.aion.avm.rt;
 
+import org.aion.avm.arraywrapper.ByteArray;
+
 /**
  * Represents the hub of AVM runtime.
  */
@@ -10,14 +12,14 @@ public interface BlockchainRuntime {
      *
      * @return
      */
-    byte[] getSender();
+    ByteArray getSender();
 
     /**
      * Returns the address of the executing account.
      *
      * @return
      */
-    byte[] getAddress();
+    ByteArray getAddress();
 
     /**
      * Returns the energy limit.
@@ -27,9 +29,18 @@ public interface BlockchainRuntime {
     long getEnergyLimit();
 
     /**
-     * Returns the storage of the executing account.
+     * Returns the corresponding value in the storage.
      *
+     * @param key
      * @return
      */
-    Storage getStorage();
+    ByteArray getStorage(ByteArray key);
+
+    /**
+     * Inserts/updates a key-value pair.
+     *
+     * @param key
+     * @param value
+     */
+    void putStorage(ByteArray key, ByteArray value);
 }

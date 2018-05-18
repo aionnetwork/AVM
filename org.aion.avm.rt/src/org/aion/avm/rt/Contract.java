@@ -1,7 +1,8 @@
 package org.aion.avm.rt;
 
-public abstract class Contract {
+import org.aion.avm.arraywrapper.ByteArray;
 
+public interface Contract {
     /**
      * Executes this start smart with the given input.
      *
@@ -9,5 +10,5 @@ public abstract class Contract {
      * @param rt    the runtime
      * @return the output
      */
-    public abstract byte[] run(byte[] input, BlockchainRuntime rt);
+    ByteArray run(ByteArray input, BlockchainRuntime rt);
 }

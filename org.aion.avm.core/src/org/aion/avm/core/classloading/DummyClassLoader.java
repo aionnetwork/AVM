@@ -1,8 +1,8 @@
 package org.aion.avm.core.classloading;
 
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.rt.BlockchainRuntime;
-import org.aion.avm.rt.Storage;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -20,10 +20,11 @@ public class DummyClassLoader extends ClassLoader {
     private static final Set<String> WHITELISTED_PACKAGES = new HashSet<>();
 
     static {
+        WHITELISTED_PACKAGES.add("org.aion.avm.arraywrapper.");
+        WHITELISTED_PACKAGES.add("org.aion.avm.exceptionwrapper.");
         WHITELISTED_PACKAGES.add("org.aion.avm.internal.");
         WHITELISTED_PACKAGES.add("org.aion.avm.java.lang.");
         WHITELISTED_PACKAGES.add("org.aion.avm.rt.");
-        WHITELISTED_PACKAGES.add("org.aion.avm.wrapper.");
     }
 
     private Map<String, byte[]> classes;
@@ -79,23 +80,27 @@ public class DummyClassLoader extends ClassLoader {
         Method method = clazz.getMethod("run", byte[].class, BlockchainRuntime.class);
         Object ret = method.invoke(obj, new byte[0], new BlockchainRuntime() {
             @Override
-            public byte[] getSender() {
-                return new byte[0];
+            public ByteArray getSender() {
+                return new ByteArray(new byte[0]);
             }
 
             @Override
-            public byte[] getAddress() {
-                return new byte[0];
-            }
-
-            @Override
-            public Storage getStorage() {
-                return null;
+            public ByteArray getAddress() {
+                return new ByteArray(new byte[0]);
             }
 
             @Override
             public long getEnergyLimit() {
                 return 1000000;
+            }
+
+            @Override
+            public ByteArray getStorage(ByteArray key) {
+                return new ByteArray(new byte[0]);
+            }
+
+            @Override
+            public void putStorage(ByteArray key, ByteArray value) {
             }
         });
         System.out.println(new String((byte[])ret));

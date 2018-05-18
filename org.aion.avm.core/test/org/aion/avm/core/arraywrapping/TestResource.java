@@ -7,6 +7,8 @@ public class TestResource {
 
         arr.hashCode();
 
+        boolean x = arr instanceof Object;
+
         return arr[0];
     }
 }
