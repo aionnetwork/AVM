@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
@@ -160,35 +161,62 @@ public class AvmImpl implements Avm {
      * @param address the address of the DApp
      * @param dapp    the dapp module
      */
-    public void storeTransformedDapp(String address, DappModule dapp) {
+    public void storeTransformedDapp(ByteArray address, DappModule dapp) {
 
         // TODO: Rom
     }
 
-    @Override
-    public boolean deploy(byte[] code) {
-        // STEP-1: compute the hash of the code, which will be used as identifier
+    public DappModule loadTransformedDapp(ByteArray address) {
 
-        // STEP-2: extract the classes to a temporary folder
+        // TODO: Rom
 
-        // STEP-3: walk through all the classes and inject metering code
-
-        // STEP-4: store the instrumented code and metadata(e.g. main class name)
-
-        return false;
+        return null;
     }
 
     @Override
-    public AvmResult run(byte[] codeHash, BlockchainRuntime rt) {
-        // STEP-1: retrieve the instrumented bytecode using the given codeHash
+    public AvmResult deploy(byte[] module, BlockchainRuntime rt) {
 
-        // STEP-2: load the classed. class loading fees should apply during the process
+        try {
+            // read dapp module
+            DappModule app = readDapp(module);
+            if (app == null) {
+                return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
+            }
 
-        // STEP-3: invoke the `run` method of the main class
+            // validate dapp module
+            ClassHierarchyForest hierarchy = validateDapp(app);
+            if (hierarchy == null) {
+                return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
+            }
 
-        // STEP-4: return the DApp output
+            // compute object sizes
+            Map<String, Integer> runtimeObjectSizes = computeRuntimeObjectSizes();
+            Map<String, Integer> objectSizes = computeObjectSizes(hierarchy, runtimeObjectSizes);
+            objectSizes.putAll(runtimeObjectSizes);
 
+            // transform
+            Map<String, byte[]> anlyzedClasses = analyzeClasses(app.getClasses(), hierarchy, objectSizes);
+            app.setClasses(anlyzedClasses);
 
+            // store transformed dapp
+            storeTransformedDapp(rt.getAddress(), app);
+
+            return new AvmResult(AvmResult.Code.SUCCESS, rt.getEnergyLimit()); // TODO: billing
+        } catch (Exception e) {
+            return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
+        }
+    }
+
+    @Override
+    public AvmResult run(BlockchainRuntime rt) {
+        //  retrieve the transformed bytecode
+        DappModule app = loadTransformedDapp(rt.getAddress());
+
+        // TODO: create a class loader and load the main class
+
+        // TODO: create an instance and invoke the `run` method
+
+        // TODO: return the result
         return null;
     }
 }
