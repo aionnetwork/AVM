@@ -186,7 +186,6 @@ public class HeapMemoryCostCalculator {
         final var visitor = new Forest.Visitor<String, byte[]>() {
             @Override
             public void onVisitRoot(Node<String, byte[]> root) {
-                calcInstanceSizeOfOneClass(root.getContent());
             }
 
             @Override
