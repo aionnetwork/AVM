@@ -1,13 +1,10 @@
 package org.aion.avm.core.dappreading;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.TreeSet;
 
 import static java.util.Arrays.sort;
 
@@ -16,9 +13,7 @@ import static java.util.Arrays.sort;
  */
 public class DAppReaderWriterTest {
 
-    // TODO: Rom, verify if this is expected results
     private static final String[] expectedReadClasses = {
-            ".module-info",
             "com.example.twoclasses.C1",
             "com.example.twoclasses.C1$NestedClass",
             "com.example.twoclasses.C1$NestedInterface",
@@ -39,16 +34,8 @@ public class DAppReaderWriterTest {
     @Test
     public void checkExpectedClassesReadFromJar() throws IOException {
         final var module = "com.example.twoclasses";
-        Map<String, byte[]> actualClasses = new DAppReaderWriter().readClassesFromJar(makePathToJarWithName(module));
-        checkIfMatchExpected(actualClasses);
-    }
-
-    @Ignore
-    @Test
-    public void checkExpectedClassesReadFromDir() throws IOException {
-        final var module = "com.example.twoclasses";
-        String dirPath = makePathToFolderWithName(module);
-        Map<String, byte[]> actualClasses = new DAppReaderWriter().readClassesFromDir(dirPath, module);
+        final var pathToJar = String.format("%s/%s.jar", "../examples/build", module);
+        Map<String, byte[]> actualClasses = new DAppReaderWriter().readClassesFromJar(pathToJar);
         checkIfMatchExpected(actualClasses);
     }
 
@@ -57,13 +44,5 @@ public class DAppReaderWriterTest {
         final var actualClassesArray = actual.keySet().toArray();
         sort(actualClassesArray);
         Assert.assertArrayEquals(expectedReadClasses, actualClassesArray);
-    }
-
-    private static String makePathToFolderWithName(String rootDirName) {
-        return String.format("%s/%s", "../examples/build", rootDirName);
-    }
-
-    private static String makePathToJarWithName(String jarNameNoSuffix) {
-        return String.format("%s/%s.jar", "../examples/build", jarNameNoSuffix);
     }
 }

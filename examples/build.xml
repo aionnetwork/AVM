@@ -13,7 +13,6 @@
 
     <target name="build" depends="build_helloworld,build_simpletoken,build_twoclasses"/>
 
-    <!-- TODO: Rom, refactor targets below using foreach -->
     <target name="build_helloworld">
         <local name="name"/>
         <local name="main"/>
