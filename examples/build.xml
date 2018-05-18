@@ -11,9 +11,9 @@
         <delete dir="${dir.local.build}"/>
     </target>
 
-    <target name="build" depends="build_helloworld,build_simpletoken"/>
+    <target name="build" depends="build_helloworld,build_simpletoken,build_twoclasses"/>
 
-    <!-- TODO: refactor targets below using foreach -->
+    <!-- TODO: Rom, refactor targets below using foreach -->
     <target name="build_helloworld">
         <local name="name"/>
         <local name="main"/>
@@ -44,6 +44,31 @@
         <local name="main"/>
         <property name="name" value="com.example.simpletoken"/>
         <property name="main" value="com.example.simpletoken.SimpleToken"/>
+
+        <mkdir dir="${dir.local.build}/${name}"/>
+
+        <echo message="Compiling ${name}..."/>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.local.src}/${name}"
+               destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
+            <modulepath>
+                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+            </modulepath>
+        </javac>
+
+        <echo message="Packing ${name}..."/>
+        <jar destfile="${dir.local.build}/${name}.jar" basedir="${dir.local.build}/${name}">
+            <manifest>
+                <attribute name="Main-Class" value="${main}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build_twoclasses">
+        <local name="name"/>
+        <local name="main"/>
+        <property name="name" value="com.example.twoclasses"/>
+        <property name="main" value="com.example.twoclasses.Main"/>
 
         <mkdir dir="${dir.local.build}/${name}"/>
 

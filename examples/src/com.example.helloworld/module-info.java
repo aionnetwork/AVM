@@ -1,4 +1,4 @@
-module org.aion.avm.core.examples {
+module com.example.helloworld {
     exports com.example.helloworld;
 
     requires org.aion.avm.rt;

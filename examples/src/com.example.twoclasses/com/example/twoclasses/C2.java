@@ -1,4 +1,4 @@
-package org.aion.avm.separatejars.twotestclasses;
+package com.example.twoclasses;
 
 import java.util.function.Function;
 

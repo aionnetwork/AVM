@@ -1,4 +1,4 @@
-package org.aion.avm.separatejars.twotestclasses;
+package com.example.twoclasses;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
