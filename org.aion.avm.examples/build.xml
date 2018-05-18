@@ -12,6 +12,7 @@
     <property name="dir.local.build.test" value="${dir.local.workspace}/build/test"/>
     <property name="dir.local.src.test" value="${dir.local.workspace}/test"/>
     <property name="dir.local.src.main" value="${dir.local.workspace}/src"/>
+    <property name="dir.local.lib" value="${dir.local.workspace}/lib"/>
     <property name="dir.local.testreports" value="${dir.local.workspace}/testreports" />
     <property name="dir.global.lib" value="../lib"/>
     <property name="dir.global.build.main" value="../build/main"/>
@@ -36,7 +37,7 @@
                srcdir="${dir.local.src.main}"
                destdir="${dir.local.build.main}" includes="**/*.java,module-info.java">
             <modulepath>
-                <pathelement location="${dir.global.lib}/org-aion-avm-rt.jar"/>
+                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
             </modulepath>
         </javac>
 

@@ -1,5 +1,6 @@
 package org.aion.avm.core.classloading;
 
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
@@ -79,13 +80,13 @@ public class DummyClassLoader extends ClassLoader {
         Method method = clazz.getMethod("run", byte[].class, BlockchainRuntime.class);
         Object ret = method.invoke(obj, new byte[0], new BlockchainRuntime() {
             @Override
-            public byte[] getSender() {
-                return new byte[0];
+            public ByteArray getSender() {
+                return new ByteArray(new byte[0]);
             }
 
             @Override
-            public byte[] getAddress() {
-                return new byte[0];
+            public ByteArray getAddress() {
+                return new ByteArray(new byte[0]);
             }
 
             @Override
@@ -94,12 +95,12 @@ public class DummyClassLoader extends ClassLoader {
             }
 
             @Override
-            public byte[] getStorage(byte[] key) {
-                return new byte[0];
+            public ByteArray getStorage(ByteArray key) {
+                return new ByteArray(new byte[0]);
             }
 
             @Override
-            public void putStorage(byte[] key, byte[] value) {
+            public void putStorage(ByteArray key, ByteArray value) {
             }
         });
         System.out.println(new String((byte[])ret));
