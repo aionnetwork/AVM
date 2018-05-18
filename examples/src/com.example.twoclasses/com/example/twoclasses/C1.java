@@ -13,4 +13,8 @@ public class C1 {
     interface NestedInterface {
 
     }
+
+    public C2 getC2() {
+        return new C2();
+    }
 }

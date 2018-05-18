@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.TreeSet;
 
 import static java.util.Arrays.sort;
 
@@ -14,9 +15,10 @@ import static java.util.Arrays.sort;
  * @author Roman Katerinenko
  */
 public class DAppReaderWriterTest {
+
+    // TODO: Rom, verify if this is expected results
     private static final String[] expectedReadClasses = {
-            "com.example.twoclasses.Main",
-            "com.example.twoclasses.TestAnnotation",
+            ".module-info",
             "com.example.twoclasses.C1",
             "com.example.twoclasses.C1$NestedClass",
             "com.example.twoclasses.C1$NestedInterface",
@@ -24,6 +26,9 @@ public class DAppReaderWriterTest {
             "com.example.twoclasses.C2",
             "com.example.twoclasses.C2$1",
             "com.example.twoclasses.C2$NestedEnum",
+            "com.example.twoclasses.JavaAccessor",
+            "com.example.twoclasses.Main",
+            "com.example.twoclasses.TestAnnotation",
             "com.example.twoclasses.innerpackage.C3"
     };
 
@@ -31,7 +36,6 @@ public class DAppReaderWriterTest {
         sort(expectedReadClasses);
     }
 
-    @Ignore
     @Test
     public void checkExpectedClassesReadFromJar() throws IOException {
         final var module = "com.example.twoclasses";
