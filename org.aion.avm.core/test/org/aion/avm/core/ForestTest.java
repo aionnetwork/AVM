@@ -3,8 +3,10 @@ package org.aion.avm.core;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Roman Katerinenko
@@ -104,7 +106,76 @@ public class ForestTest {
         }
     }
 
+    @Test
+    public void testVisitorVisitsAllNodes() {
+        final var a = newNode("A");
+        final var ab = newNode("AB");
+        final var abc = newNode("ABC");
+        final var abd = newNode("ABD");
+        final var e = newNode("E");
+        final var ef = newNode("EF");
+        final var forest = new Forest<String, byte[]>();
+        forest.add(a, ab);
+        forest.add(ab, abc);
+        forest.add(ab, abd);
+        forest.add(e, ef);
+        final var visitor = new TestVisitor();
+        forest.walkPreOrder(visitor);
+        String[] expectedPaths = {"A" + "AB" + "ABC" + "ABD",
+                "E" + "EF"
+        };
+        checkPathsEqual(expectedPaths, visitor.getPathsFromRoot());
+        Collection<String> actualRoots = visitor.getVisitedRoots();
+        assertEquals(2, actualRoots.size());
+        assertTrue(actualRoots.contains("A"));
+        assertTrue(actualRoots.contains("E"));
+    }
+
+    private static void checkPathsEqual(String[] expected, Collection<String> actual) {
+        assertEquals(expected.length, actual.size());
+        for (String str : expected) {
+            Assert.assertTrue(actual.contains(str));
+        }
+    }
+
     private static Forest.Node<String, byte[]> newNode(String id) {
         return new Forest.Node<>(id, null);
+    }
+
+    private static class TestVisitor implements Forest.Visitor<String, byte[]> {
+        private final Collection<String> visitedRoots = new ArrayList<>();
+        private final Collection<String> pathsFromRoot = new ArrayList<>();
+
+        private StringBuilder curPath;
+
+        @Override
+        public void onVisitRoot(Forest.Node<String, byte[]> root) {
+            visitedRoots.add(root.getId());
+            if (curPath != null) {
+                pathsFromRoot.add(curPath.toString());
+            }
+            curPath = new StringBuilder();
+            curPath.append(root.getId());
+        }
+
+        @Override
+        public void onVisitNode(Forest.Node<String, byte[]> node) {
+            curPath.append(node.getId());
+        }
+
+        @Override
+        public void afterAllNodesVisited() {
+            if (curPath != null) {
+                pathsFromRoot.add(curPath.toString());
+            }
+        }
+
+        public Collection<String> getVisitedRoots() {
+            return visitedRoots;
+        }
+
+        public Collection<String> getPathsFromRoot() {
+            return pathsFromRoot;
+        }
     }
 }

@@ -13,6 +13,9 @@ public class Forest<I, C> {
     private final Collection<Node<I, C>> roots = new ArrayList<>();
     private final Map<I, Node<I, C>> nodesIndex = new HashMap<>();
 
+    private Visitor<I, C> currentVisitor;
+    private Node<I, C> currentVisitingRoot;
+
     public Collection<Node<I, C>> getRoots() {
         return Collections.unmodifiableCollection(roots);
     }
@@ -54,6 +57,27 @@ public class Forest<I, C> {
         }
         parentCandidate.addChild(childCandidate);
         childCandidate.setParent(parentCandidate);
+    }
+
+    public void walkPreOrder(Visitor<I, C> visitor) {
+        Objects.requireNonNull(visitor);
+        currentVisitor = visitor;
+        for (Node<I, C> root : roots) {
+            currentVisitingRoot = root;
+            walkPreOrderInternal(root);
+        }
+        visitor.afterAllNodesVisited();
+    }
+
+    private void walkPreOrderInternal(Node<I, C> node) {
+        if (node == currentVisitingRoot) {
+            currentVisitor.onVisitRoot(node);
+        } else {
+            currentVisitor.onVisitNode(node);
+        }
+        for (Node<I, C> child : node.getChildren()) {
+            walkPreOrderInternal(child);
+        }
     }
 
     private Node<I, C> lookupExistingFor(Node<I, C> node) {
@@ -107,5 +131,13 @@ public class Forest<I, C> {
         public boolean equals(Object that) {
             return (that instanceof Node) && id.equals(((Node) that).id);
         }
+    }
+
+    public interface Visitor<I, C> {
+        void onVisitRoot(Node<I, C> root);
+
+        void onVisitNode(Node<I, C> node);
+
+        void afterAllNodesVisited();
     }
 }
