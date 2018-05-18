@@ -56,6 +56,38 @@ public class StubGeneratorTest {
         Assert.assertEquals(contents, bar.getContents());
     }
 
+    /**
+     * Tests that we can inject a stubbed class into the DApp loader and then subclass it within the same DApp.
+     */
+    @Test
+    public void testSubclassInDapp() throws Exception {
+        final String dAppRuntimePath = "/dev/null";
+        final String dAppModulesPath = "/dev/null";
+        final DAppLoader avm = new DAppLoader(dAppRuntimePath, dAppModulesPath);
+        
+        // Create the superclass.
+        String slashName = "my/test/ClassName";
+        String dotName = slashName.replaceAll("/", ".");
+        String superName = TestClass.class.getCanonicalName().replaceAll("\\.", "/");
+        byte[] bytecode = StubGenerator.generateClass(slashName, superName);
+        Class<?> superclass = avm.injectAndLoadClass(dotName, bytecode);
+        Assert.assertTrue(superclass.getClassLoader() instanceof DAppClassLoader);
+        
+        // Create the subclass.
+        String subSlashName = "my/test/sub/SubClass";
+        String subDotName = subSlashName.replaceAll("/", ".");
+        byte[] subBytecode = StubGenerator.generateClass(subSlashName, slashName);
+        Class<?> subclass = avm.injectAndLoadClass(subDotName, subBytecode);
+        Assert.assertTrue(subclass.getClassLoader() instanceof DAppClassLoader);
+        Constructor<?> con = subclass.getConstructor(Object.class);
+        String contents = "one";
+        Object foo = con.newInstance(contents);
+        Assert.assertEquals(subDotName, foo.getClass().getName());
+        Assert.assertEquals(dotName, foo.getClass().getSuperclass().getName());
+        TestClass bar = (TestClass)foo;
+        Assert.assertEquals(contents, bar.getContents());
+    }
+
     //Note that class names here are always in the dot style:  "java.lang.Object"
     private static class Loader {
         public static Class<?> loadClassAlone(String topName, byte[] bytecode) throws ClassNotFoundException {
