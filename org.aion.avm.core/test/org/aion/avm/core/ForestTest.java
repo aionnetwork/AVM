@@ -159,7 +159,7 @@ public class ForestTest {
         }
 
         @Override
-        public void onVisitNode(Forest.Node<String, byte[]> node) {
+        public void onVisitNotRootNode(Forest.Node<String, byte[]> node) {
             curPath.append(node.getId());
         }
 

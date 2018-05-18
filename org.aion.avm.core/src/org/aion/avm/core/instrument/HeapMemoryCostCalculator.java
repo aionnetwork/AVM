@@ -1,10 +1,13 @@
 package org.aion.avm.core.instrument;
 
 import org.aion.avm.core.ClassHierarchyForest;
+import org.aion.avm.core.Forest;
+import org.aion.avm.core.Forest.Node;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,27 +169,35 @@ public class HeapMemoryCostCalculator {
     /**
      * Calculate the instance sizes of classes and record them in the "classHeapInfoMap".
      * This method is called to calculate the heap size of classes that belong to one Dapp, at the deployment time.
-     * @param classes the map of the class names to their bytecode
      * @param classHierarchy the pre-constructed class hierarchy forest
      * @param runtimeObjectSizes the pre-constructed map of the runtime and java.lang.* classes to their instance size
      */
-    public void calcClassesInstanceSize(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
+    public void calcClassesInstanceSize(ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
         // get the root nodes list of the class hierarchy
-        List<String> rootClasses = classHierarchy.getTreeRoots();
+        Collection<Node<String, byte[]>> rootClasses = classHierarchy.getRoots();
 
         // calculate for each tree in the class hierarchy
-        for (String rootClass : rootClasses) {
+        for (Node<String, byte[]> rootClass : rootClasses) {
             // rootClass is one of the runtime or java.lang.* classes and 'runtimeObjectSizes' map already has its size.
             // copy rootClass size to classHeapSizeMap
-            classHeapSizeMap.put(rootClass, runtimeObjectSizes.get(rootClass));
-
-            // traverse the tree and calculate the instance size of each class; breadth first traverse
-            List<String> classList = classHierarchy.breadthFirstTraverse(rootClass);
-
-            // call calcInstanceSizeOfOneClass on each class in the tree traverse list
-            for (String clazz : classList) {
-                calcInstanceSizeOfOneClass(classes.get(clazz));
-            }
+            final String qualifiedClassName = rootClass.getId();
+            classHeapSizeMap.put(qualifiedClassName, runtimeObjectSizes.get(qualifiedClassName));
         }
+        final var visitor = new Forest.Visitor<String, byte[]>() {
+            @Override
+            public void onVisitRoot(Node<String, byte[]> root) {
+                calcInstanceSizeOfOneClass(root.getContent());
+            }
+
+            @Override
+            public void onVisitNotRootNode(Node<String, byte[]> node) {
+                calcInstanceSizeOfOneClass(node.getContent());
+            }
+
+            @Override
+            public void afterAllNodesVisited() {
+            }
+        };
+        classHierarchy.walkPreOrder(visitor);
     }
 }

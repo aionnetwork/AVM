@@ -86,16 +86,15 @@ public class AvmImpl implements Avm {
     /**
      * Returns the sizes of all the classes provided.
      *
-     * @param classes            the class of DApp
      * @param classHierarchy     the class hierarchy
      * @param runtimeObjectSizes the object size of runtime classes
      * @return a mapping between class name and object size
      */
-    public Map<String, Integer> computeObjectSizes(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
+    public Map<String, Integer> computeObjectSizes(ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
 
         // compute the object size of every one in 'classes'
-        objectSizeCalculator.calcClassesInstanceSize(classes, classHierarchy, runtimeObjectSizes);
+        objectSizeCalculator.calcClassesInstanceSize(classHierarchy, runtimeObjectSizes);
 
         return objectSizeCalculator.getClassHeapSizeMap();
     }

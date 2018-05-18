@@ -73,7 +73,7 @@ public class Forest<I, C> {
         if (node == currentVisitingRoot) {
             currentVisitor.onVisitRoot(node);
         } else {
-            currentVisitor.onVisitNode(node);
+            currentVisitor.onVisitNotRootNode(node);
         }
         for (Node<I, C> child : node.getChildren()) {
             walkPreOrderInternal(child);
@@ -136,7 +136,7 @@ public class Forest<I, C> {
     public interface Visitor<I, C> {
         void onVisitRoot(Node<I, C> root);
 
-        void onVisitNode(Node<I, C> node);
+        void onVisitNotRootNode(Node<I, C> node);
 
         void afterAllNodesVisited();
     }
