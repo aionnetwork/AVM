@@ -38,7 +38,7 @@ public class StackWatcherTest {
             in.accept(swc, ClassReader.EXPAND_FRAMES);
 
             byte[] transformed = out.toByteArray();
-            writeBytesToFile(transformed, "output.class");
+            writeBytesToFile(transformed, "/tmp/output.class");
             return transformed;
         });
 

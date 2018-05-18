@@ -2,7 +2,7 @@ package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.shadowing.TestResource;
-import org.aion.avm.arraywrapper.IntArray;
+import org.aion.avm.arraywrapper.*;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -34,7 +34,7 @@ public class ArrayWrappingTest {
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
             ArrayWrappingClassAdapter cs = new ArrayWrappingClassAdapter(out, Testing.CLASS_NAME);
-            in.accept(cs, ClassReader.SKIP_DEBUG);
+            in.accept(cs, ClassReader.EXPAND_FRAMES);
 
             byte[] transformed = out.toByteArray();
             writeBytesToFile(transformed, "/tmp/output.class");
