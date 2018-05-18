@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-public class SubGeneratorTest {
+public class StubGeneratorTest {
     @Test
     public void testBasics() throws Exception {
         String slashName = "my/test/ClassName";
