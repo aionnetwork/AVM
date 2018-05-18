@@ -78,7 +78,9 @@ public class ClassMetering extends ClassVisitor {
 
         // Sum up the static allocation size
         for (String allocationType : block.allocatedTypes) {
-            heapSize += objectSizes.get(allocationType);
+            if (this.objectSizes != null) {
+                heapSize += this.objectSizes.get(allocationType);
+            }
         }
         // Apply the heap size cost model (TODO: the heap cost model is linear for now. May revise it later)
         blockFee += heapSize * BytecodeFeeScheduler.BytecodeEnergyLevels.MEMORY.getVal();
