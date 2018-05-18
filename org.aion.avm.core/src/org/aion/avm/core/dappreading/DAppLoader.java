@@ -48,4 +48,8 @@ public class DAppLoader {
             return new ClassLoadingResult().setLoaded(false).setFailDescription(msg);
         }
     }
+
+    public Class<?> injectAndLoadClass(String className, byte[] bytecode) {
+        return this.avmClassLoader.injectAndLoadClass(className, bytecode);
+    }
 }
