@@ -1,4 +1,4 @@
-package org.aion.avm.wrapper;
+package org.aion.avm.arraywrapper;
 
 public class IntArray extends Array {
 

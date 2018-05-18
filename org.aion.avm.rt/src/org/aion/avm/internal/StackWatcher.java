@@ -1,4 +1,4 @@
-package org.aion.avm.core.stacktracking;
+package org.aion.avm.internal;
 
 public class StackWatcher {
 
@@ -88,8 +88,8 @@ public class StackWatcher {
     }
 
     // TODO:Discussion design of AVMStackError
-    private static void abortCurrentContract(){
-        throw new AVMStackError("AVM stack overflow");
+    private static void abortCurrentContract() throws OutOfStackError {
+        throw new OutOfStackError();
     }
 
     /**
@@ -98,7 +98,7 @@ public class StackWatcher {
      * Abort the smart contract in case of overflow.
      * @param frameSize size of the current frame (in number of slots).
      */
-    public static void enterMethod(int frameSize){
+    public static void enterMethod(int frameSize) throws OutOfStackError {
         if (checkDepth && (curDepth++ > maxStackDepth)){
             abortCurrentContract();
         }
@@ -115,7 +115,7 @@ public class StackWatcher {
      * Abort the smart contract in case of underflow.
      * @param frameSize size of the current frame (in number of slots).
      */
-    public static void exitMethod(int frameSize){
+    public static void exitMethod(int frameSize) throws OutOfStackError {
         if (checkDepth && (curDepth-- < 0)){
             abortCurrentContract();
         }
@@ -138,14 +138,4 @@ public class StackWatcher {
             curDepth = depth;
             curSize = size;
     }
-
-
-    public static class AVMStackError extends Error
-    {
-        public AVMStackError(String message)
-        {
-            super(message);
-        }
-    }
-
 }

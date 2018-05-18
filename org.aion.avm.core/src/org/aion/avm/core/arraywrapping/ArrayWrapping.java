@@ -36,7 +36,7 @@ public class ArrayWrapping extends ClassVisitor {
             public void visitInsn(final int opcode) {
                 switch (opcode) {
                     case Opcodes.IALOAD:
-                        this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "org/aion/avm/wrapper/IntArray", "get", "(I)I", false);
+                        this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "org/aion/avm/arraywrapper/IntArray", "get", "(I)I", false);
                         break;
                     default:
                         this.mv.visitInsn(opcode);
@@ -53,7 +53,7 @@ public class ArrayWrapping extends ClassVisitor {
                         case Opcodes.T_INT:
                         case Opcodes.T_LONG:
                             // TODO: wrap based on type
-                            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, helperClass, "newIntArray", "(I)Lorg/aion/avm/wrapper/IntArray;", false);
+                            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, helperClass, "newIntArray", "(I)Lorg/aion/avm/arraywrapper/IntArray;", false);
                     }
                 }
                 switch (opcode) {

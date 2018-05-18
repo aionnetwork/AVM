@@ -1,9 +1,8 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.core.TestClassLoader;
-import org.aion.avm.core.shadowing.ClassShadowingTest;
 import org.aion.avm.core.shadowing.TestResource;
-import org.aion.avm.wrapper.IntArray;
+import org.aion.avm.arraywrapper.IntArray;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;

@@ -186,7 +186,7 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
         // NOTE:  This bytecode is also used for primitive multi-arrays which DO NOT have "L" or ";" in their descriptors.
         // For example, "long[][]" is "[[J" so we need to handle those a little differently.
         // Also note that primitive array construction is done very oddly:  since primitives don't have classes, a placeholder is loaded from
-        // the corresponding capital wrapper class, as a static.  We need to generate those special-cases here.
+        // the corresponding capital arraywrapper class, as a static.  We need to generate those special-cases here.
         
         int indexOfL = descriptor.indexOf("L");
         boolean isObjectType = (-1 != indexOfL);

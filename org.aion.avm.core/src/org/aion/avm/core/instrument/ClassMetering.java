@@ -54,7 +54,7 @@ public class ClassMetering extends ClassVisitor {
                     // TODO:  Apply static allocation-related cost.
                 }
                 
-                // We can now build the wrapper over the real visitor, and accept it in order to add the instrumentation.
+                // We can now build the arraywrapper over the real visitor, and accept it in order to add the instrumentation.
                 BlockInstrumentationVisitor instrumentingVisitor = new BlockInstrumentationVisitor(ClassMetering.this.runtimeClassName, realVisitor, blocks);
                 this.accept(instrumentingVisitor);
             }
