@@ -1,20 +1,20 @@
 package org.aion.avm.core.instrument;
 
+import org.aion.avm.core.util.ClassHierarchyForest;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Heap memory is allocated at the new object creation. This class provides a map of every class' instance size.
  * Every time an object is created by the "new" instruction, a piece of heap memory of this size is allocated.
  * The accordingly memory usage cost is then charged on the Energy meter.
  *
- * The hashmap stores one instance's heap allocation size of every classes, including,
- *   1. runtime and shadowing classes, of which the instance sizes are fixed;
- *   2. user's classes, of which the instance sizes are calculated at deployment.
+ * The hashmap stores one instance's heap allocation size of every class.
  *
  * Every instance has a copy of the class fields allocated in the heap.
  * The class fields include the ones declared in this class and its all superclasses.
@@ -51,11 +51,11 @@ public class HeapMemoryCostCalculator {
     }
 
     /**
-     * A hashmap that stores the instance size of every classes.
+     * A map that stores the instance size of every class.
      * Key - class name
-     * Value - the heapMemoryInfo of the class
+     * Value - the instance/heap size of the class
      */
-    private HashMap<String, Integer> classHeapSizeMap;
+    private Map<String, Integer> classHeapSizeMap;
 
     /**
      * Constructor
@@ -65,13 +65,21 @@ public class HeapMemoryCostCalculator {
     }
 
     /**
-     * Calculate the instance size of one class and record it in the "classHeapSizeMap".
+     * return the map of the class names to their instance sizes
+     * @return the hash map that stores the calculated instance sizes of the classes
+     */
+    public Map<String, Integer> getClassHeapSizeMap() {
+        return classHeapSizeMap;
+    }
+
+    /**
+     * A helper method that calculates the instance size of one class and record it in the "classHeapSizeMap".
      * @param classBytes input class bytecode stream.
      *
      * Note, this method is called from the top to bottom of the class inheritance hierarchy. Such that, it can
      * be assumed that the parent classes' heap size is already in the map.
      */
-    public void calcInstanceSizeOfOneClass(byte[] classBytes) {
+    private void calcInstanceSizeOfOneClass(byte[] classBytes) {
         if (classHeapSizeMap == null) {
             throw new IllegalStateException("HeapMemoryCostCalculator does not have the classHeapSizeMap.");
         }
@@ -156,19 +164,29 @@ public class HeapMemoryCostCalculator {
     }
 
     /**
-     * Calculate the instance sizes of classes and record them in the "classHeapInfoMap", as long as their fields.
-     *
-     * This method is applied with all the classes that may be instantiated during the execution of a smart contract,
-     * 1. when JVM starts, apply this method to the java.lang.* classes;
-     * 2. when runtime starts, apply this method to the runtime classes;
-     * 3. at the deployment of a smart contract, apply this method to all the classes of the contract.
+     * Calculate the instance sizes of classes and record them in the "classHeapInfoMap".
+     * This method is called to calculate the heap size of classes that belong to one Dapp, at the deployment time.
+     * @param classes the map of the class names to their bytecode
+     * @param classHierarchy the pre-constructed class hierarchy forest
+     * @param runtimeObjectSizes the pre-constructed map of the runtime and java.lang.* classes to their instance size
      */
-    public void calcClassesInstanceSize() {
+    public void calcClassesInstanceSize(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
+        // get the root nodes list of the class hierarchy
+        List<String> rootClasses = classHierarchy.getTreeRoots();
 
+        // calculate for each tree in the class hierarchy
+        for (String rootClass : rootClasses) {
+            // rootClass is one of the runtime or java.lang.* classes and 'runtimeObjectSizes' map already has its size.
+            // copy rootClass size to classHeapSizeMap
+            classHeapSizeMap.put(rootClass, runtimeObjectSizes.get(rootClass));
 
+            // traverse the tree and calculate the instance size of each class; breadth first traverse
+            List<String> classList = classHierarchy.breadthFirstTraverse(rootClass);
 
-        // To-do - pop from the stack and call calcInstanceSizeOfOneClass
-        byte[] classBytes = null;
-        calcInstanceSizeOfOneClass(classBytes);
+            // call calcInstanceSizeOfOneClass on each class in the tree traverse list
+            for (String clazz : classList) {
+                calcInstanceSizeOfOneClass(classes.get(clazz));
+            }
+        }
     }
 }

@@ -23,6 +23,7 @@ public class DummyClassLoader extends ClassLoader {
         WHITELISTED_PACKAGES.add("org.aion.avm.internal.");
         WHITELISTED_PACKAGES.add("org.aion.avm.java.lang.");
         WHITELISTED_PACKAGES.add("org.aion.avm.rt.");
+        WHITELISTED_PACKAGES.add("org.aion.avm.wrapper.");
     }
 
     private Map<String, byte[]> classes;

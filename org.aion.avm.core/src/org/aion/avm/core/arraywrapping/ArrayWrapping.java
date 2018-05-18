@@ -1,5 +1,6 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.core.util.Assert;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -31,6 +32,34 @@ public class ArrayWrapping extends ClassVisitor {
 
         return new MethodVisitor(Opcodes.ASM6, mv) {
 
+            @Override
+            public void visitInsn(final int opcode) {
+                switch (opcode) {
+                    case Opcodes.IALOAD:
+                        this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "org/aion/avm/wrapper/IntArray", "get", "(I)I", false);
+                        break;
+                    default:
+                        this.mv.visitInsn(opcode);
+                }
+            }
+
+            @Override
+            public void visitIntInsn(final int opcode, final int operand) {
+                if (opcode == Opcodes.NEWARRAY) {
+                    switch (operand) {
+                        case Opcodes.T_BOOLEAN:
+                        case Opcodes.T_BYTE:
+                        case Opcodes.T_SHORT:
+                        case Opcodes.T_INT:
+                        case Opcodes.T_LONG:
+                            // TODO: wrap based on type
+                            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, helperClass, "newIntArray", "(I)Lorg/aion/avm/wrapper/IntArray;", false);
+                    }
+                }
+                switch (opcode) {
+                    case Opcodes.NEWARRAY:
+                }
+            }
         };
     }
 }

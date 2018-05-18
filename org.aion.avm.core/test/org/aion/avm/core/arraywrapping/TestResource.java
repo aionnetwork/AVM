@@ -2,11 +2,11 @@ package org.aion.avm.core.arraywrapping;
 
 public class TestResource {
 
-    public byte increaseFirstElement(byte[] xx) {
-        if (xx.length > 0) {
-            return xx[0]++;
-        }
+    public int increaseFirstElement() {
+        int[] arr = new int[1];
 
-        return 0;
+        arr.hashCode();
+
+        return arr[0];
     }
 }

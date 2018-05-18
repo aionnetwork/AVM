@@ -32,7 +32,7 @@ public class ClassShadowingTest {
             in.accept(cs, ClassReader.SKIP_DEBUG);
 
             byte[] transformed = out.toByteArray();
-            writeBytesToFile(transformed, "output.class");
+            writeBytesToFile(transformed, "/tmp/output.class");
             return transformed;
         });
         Class<?> clazz = loader.loadClass(name);

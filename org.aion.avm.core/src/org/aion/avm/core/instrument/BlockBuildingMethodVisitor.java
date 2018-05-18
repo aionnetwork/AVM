@@ -56,6 +56,12 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     @Override
     public void visitInsn(int opcode) {
         this.currentBuildingBlock.add(opcode);
+        
+        // Note that this could be an athrow, in which case we should handle this as a label.
+        // (this, like the jump case, shouldn't normally matter since there shouldn't be unreachable code after it).
+        if (Opcodes.ATHROW == opcode) {
+            handleLabel();
+        }
     }
     @Override
     public void visitIntInsn(int opcode, int operand) {
