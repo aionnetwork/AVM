@@ -36,7 +36,7 @@
                srcdir="${dir.local.src.main}"
                destdir="${dir.local.build.main}" includes="**/*.java,module-info.java">
             <modulepath>
-                <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
+                <pathelement location="${dir.global.lib}/org-aion-avm-rt.jar"/>
             </modulepath>
         </javac>
 
