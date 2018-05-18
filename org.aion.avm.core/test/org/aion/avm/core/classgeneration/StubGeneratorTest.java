@@ -10,6 +10,8 @@ import org.junit.Test;
 
 
 public class StubGeneratorTest {
+    private static final String kShadowClassLibraryPrefix = "org.aion.avm.";
+
     @Test
     public void testBasics() throws Exception {
         String slashName = "my/test/ClassName";
@@ -100,10 +102,31 @@ public class StubGeneratorTest {
         final String dAppRuntimePath = "/dev/null";
         final String dAppModulesPath = "/dev/null";
         final DAppLoader avm = new DAppLoader(dAppRuntimePath, dAppModulesPath);
+        // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
+        Class<?> aioobe = generateExceptionShadows(avm, kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
-        // The location where we are writing this will have access to the shadow java.lang and the real one.
-        String shadowClassLibraryPrefix = "org.aion.avm.";
+        Assert.assertNotNull(aioobe);
+        Assert.assertEquals(kShadowClassLibraryPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getCanonicalName());
+        Assert.assertEquals(kShadowClassLibraryPrefix + "java.lang.RuntimeException", aioobe.getSuperclass().getSuperclass().getCanonicalName());
+        Assert.assertEquals(kShadowClassLibraryPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
+        Assert.assertEquals(kShadowClassLibraryPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
         
+        // Create an instance and prove that we can interact with it.
+        Constructor<?> con = aioobe.getConstructor(Object.class);
+        String contents = "one";
+        Object instance = con.newInstance(contents);
+        org.aion.avm.java.lang.Throwable shadow = (org.aion.avm.java.lang.Throwable)instance;
+        // We know that this constructor will create a shadow with a null underlying instance, meaning it will fail on calls (just there for initial testing).
+        NullPointerException expected = null;
+        try {
+            shadow.toString();
+        } catch (NullPointerException e) {
+            expected = e;
+        }
+        Assert.assertNotNull(expected);
+    }
+
+    private static Class<?> generateExceptionShadows(DAppLoader avm, String testClassName) throws Exception {
         // There doesn't appear to be any way to enumerate these classes in the existing class loader (even though they are part of java.lang)
         // so we will list the names of all the classes we need and assemble them that way.
         // We should at least be able to use the original Throwable's classloader to look up the subclasses (again, since they are in java.lang).
@@ -162,16 +185,15 @@ public class StubGeneratorTest {
                 "java.lang.UnsupportedOperationException",
         };
         
-        // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
-        Class<?> aioobe = null;
-        
+        // Capture the class the caller wants to test, if there is one.
+        Class<?> testClassToReturn = null;
         for (String className : exceptionNames) {
             // We need to look this up to find the superclass.
             String superclassName = Class.forName(className).getSuperclass().getCanonicalName();
             
             // Generate this.
-            String mappedName = shadowClassLibraryPrefix + className;
-            String mappedSuperName = shadowClassLibraryPrefix + superclassName;
+            String mappedName = kShadowClassLibraryPrefix + className;
+            String mappedSuperName = kShadowClassLibraryPrefix + superclassName;
             
             String slashName = mappedName.replaceAll("\\.", "/");
             String superSlashName = mappedSuperName.replaceAll("\\.", "/");
@@ -179,30 +201,11 @@ public class StubGeneratorTest {
             Class<?> clazz = avm.injectAndLoadClass(mappedName, bytecode);
             Assert.assertTrue(clazz.getClassLoader() instanceof DAppClassLoader);
             
-            if ("java.lang.ArrayIndexOutOfBoundsException".equals(className)) {
-                aioobe = clazz;
+            if (mappedName.equals(testClassName)) {
+                testClassToReturn = clazz;
             }
         }
-        
-        Assert.assertNotNull(aioobe);
-        Assert.assertEquals(shadowClassLibraryPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getCanonicalName());
-        Assert.assertEquals(shadowClassLibraryPrefix + "java.lang.RuntimeException", aioobe.getSuperclass().getSuperclass().getCanonicalName());
-        Assert.assertEquals(shadowClassLibraryPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
-        Assert.assertEquals(shadowClassLibraryPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
-        
-        // Create an instance and prove that we can interact with it.
-        Constructor<?> con = aioobe.getConstructor(Object.class);
-        String contents = "one";
-        Object instance = con.newInstance(contents);
-        org.aion.avm.java.lang.Throwable shadow = (org.aion.avm.java.lang.Throwable)instance;
-        // We know that this constructor will create a shadow with a null underlying instance, meaning it will fail on calls (just there for initial testing).
-        NullPointerException expected = null;
-        try {
-            shadow.toString();
-        } catch (NullPointerException e) {
-            expected = e;
-        }
-        Assert.assertNotNull(expected);
+        return testClassToReturn;
     }
 
     //Note that class names here are always in the dot style:  "java.lang.Object"
