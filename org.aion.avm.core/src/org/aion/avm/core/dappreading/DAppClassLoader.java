@@ -13,7 +13,7 @@ import java.util.Optional;
 /**
  * @author Roman Katerinenko
  */
-class DAppClassLoader extends ClassLoader {
+public class DAppClassLoader extends ClassLoader {
     private final Logger logger = LoggerFactory.getLogger(DAppClassLoader.class);
 
     private final ModuleFinder moduleFinder;

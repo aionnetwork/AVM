@@ -3,35 +3,35 @@ package org.aion.avm.core.dappreading;
 /**
  * @author Roman Katerinenko
  */
-class ClassLoadingResult {
+public class ClassLoadingResult {
     private boolean loaded;
     private Class<?> loadedClass;
     private String failDescription;
 
-    Class<?> getLoadedClass() {
+    public Class<?> getLoadedClass() {
         return loadedClass;
     }
 
-    ClassLoadingResult setLoadedClass(Class<?> loadedClass) {
+    public ClassLoadingResult setLoadedClass(Class<?> loadedClass) {
         this.loadedClass = loadedClass;
         return this;
     }
 
-    String getFailDescription() {
+    public String getFailDescription() {
         return failDescription;
     }
 
-    ClassLoadingResult setFailDescription(String failDescription) {
+    public ClassLoadingResult setFailDescription(String failDescription) {
         this.failDescription = failDescription;
         return this;
     }
 
-    ClassLoadingResult setLoaded(boolean loaded) {
+    public ClassLoadingResult setLoaded(boolean loaded) {
         this.loaded = loaded;
         return this;
     }
 
-    boolean isLoaded(){
+    public boolean isLoaded(){
         return loaded;
     }
 }

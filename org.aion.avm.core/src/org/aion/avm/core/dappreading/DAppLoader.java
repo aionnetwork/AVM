@@ -27,7 +27,7 @@ public class DAppLoader {
         this.avmClassLoader = new DAppClassLoader(this.dAppModulesFinder);
     }
 
-    ClassLoadingResult loadDAppIntoNewLayer(String startModuleName, String fullyQualifiedMainClassName) {
+    public ClassLoadingResult loadDAppIntoNewLayer(String startModuleName, String fullyQualifiedMainClassName) {
         final ModuleLayer bootLayer = ModuleLayer.boot();
         final var emptyFinder = ModuleFinder.of();
         final Configuration dAppLayerConfig = bootLayer.configuration().resolve(dAppModulesFinder, emptyFinder, List.of(startModuleName));
