@@ -16,13 +16,10 @@ import java.util.Optional;
 class DAppClassLoader extends ClassLoader {
     private final Logger logger = LoggerFactory.getLogger(DAppClassLoader.class);
 
-    private ModuleFinder moduleFinder;
+    private final ModuleFinder moduleFinder;
 
-    DAppClassLoader() {
+    DAppClassLoader(ModuleFinder moduleFinder) {
         super("dApp Class loader", ClassLoader.getSystemClassLoader());
-    }
-
-    void setModuleFinder(ModuleFinder moduleFinder) {
         this.moduleFinder = moduleFinder;
     }
 

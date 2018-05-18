@@ -5,7 +5,17 @@ package org.aion.avm.core.dappreading;
  */
 class ClassLoadingResult {
     private boolean loaded;
+    private Class<?> loadedClass;
     private String failDescription;
+
+    Class<?> getLoadedClass() {
+        return loadedClass;
+    }
+
+    ClassLoadingResult setLoadedClass(Class<?> loadedClass) {
+        this.loadedClass = loadedClass;
+        return this;
+    }
 
     String getFailDescription() {
         return failDescription;

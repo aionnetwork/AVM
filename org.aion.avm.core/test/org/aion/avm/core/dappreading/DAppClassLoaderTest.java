@@ -15,11 +15,11 @@ public class DAppClassLoaderTest {
 
     @Test
     public void checkAvmClassLoaderIsUsedForAllDAppClasses() throws Exception {
-        final var avm = new DAppLoader();
+        final var avm = new DAppLoader(dAppRuntimePath, dAppModulesPath);
         final var mainClassName = "com.example.twoclasses.C1";
-        ClassLoadingResult result = avm.loadDAppIntoNewLayer(dAppRuntimePath, dAppModulesPath, moduleName, mainClassName);
+        ClassLoadingResult result = avm.loadDAppIntoNewLayer(moduleName, mainClassName);
         Assert.assertTrue(result.isLoaded());
-        Class<?> mainLoadedClass = avm.getDAppMainClass();
+        Class<?> mainLoadedClass = result.getLoadedClass();
         Assert.assertSame(mainLoadedClass.getName(), mainClassName);
         Assert.assertTrue(mainLoadedClass.getClassLoader() instanceof DAppClassLoader);
         //
@@ -31,11 +31,11 @@ public class DAppClassLoaderTest {
 
     @Test
     public void checkDAppHasAccessToJavaClasses() {
-        final var avm = new DAppLoader();
+        final var avm = new DAppLoader(dAppRuntimePath, dAppModulesPath);
         final var mainClassName = "com.example.twoclasses.JavaAccessor";
-        ClassLoadingResult result = avm.loadDAppIntoNewLayer(dAppRuntimePath, dAppModulesPath, moduleName, mainClassName);
+        ClassLoadingResult result = avm.loadDAppIntoNewLayer(moduleName, mainClassName);
         Assert.assertTrue(result.isLoaded());
-        Class mainLoadedClass = avm.getDAppMainClass();
+        Class<?> mainLoadedClass = result.getLoadedClass();
         Assert.assertSame(mainLoadedClass.getName(), mainClassName);
         Assert.assertTrue(mainLoadedClass.getClassLoader() instanceof DAppClassLoader);
     }
