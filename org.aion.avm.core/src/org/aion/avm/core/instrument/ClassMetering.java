@@ -1,6 +1,6 @@
 package org.aion.avm.core.instrument;
 
-import org.aion.avm.core.util.ClassHierarchyForest;
+import org.aion.avm.core.ClassHierarchyForest;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

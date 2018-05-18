@@ -5,7 +5,6 @@ import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
-import org.aion.avm.core.util.ClassHierarchyForest;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;

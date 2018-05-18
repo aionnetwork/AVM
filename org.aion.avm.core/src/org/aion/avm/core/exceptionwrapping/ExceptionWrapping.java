@@ -1,6 +1,6 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import org.aion.avm.core.util.ClassHierarchyForest;
+import org.aion.avm.core.ClassHierarchyForest;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;

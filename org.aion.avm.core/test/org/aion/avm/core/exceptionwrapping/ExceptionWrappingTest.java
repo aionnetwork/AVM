@@ -1,14 +1,12 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
-import org.aion.avm.core.util.ClassHierarchyForest;
+import org.aion.avm.core.ClassHierarchyForest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
