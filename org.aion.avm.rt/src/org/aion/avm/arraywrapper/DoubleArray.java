@@ -1,10 +1,10 @@
 package org.aion.avm.arraywrapper;
 
-public class IntArray extends Array {
+public class DoubleArray extends Array {
 
-    private int[] underlying;
+    private double[] underlying;
 
-    public IntArray(int[] underlying) {
+    public DoubleArray(double[] underlying) {
         this.underlying = underlying;
     }
 
@@ -12,11 +12,11 @@ public class IntArray extends Array {
         return this.underlying.length;
     }
 
-    public int get(int idx) {
+    public double get(int idx) {
         return this.underlying[idx];
     }
 
-    public void set(int idx, int val) {
+    public void set(int idx, double val) {
         this.underlying[idx] = val;
     }
 }

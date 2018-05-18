@@ -22,7 +22,7 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
     private ArrayList<Label> catchBlockList = new ArrayList<Label>();
 
     //JAVA asm Type for later use.
-    private org.objectweb.asm.Type typeInt = Type.getType(int.class);
+    private Type typeInt = Type.getType(int.class);
     private Type typeAVMSW = Type.getType(StackWatcher.class);
 
     public StackWatcherMethodAdapter(final GeneratorAdapter mv,
