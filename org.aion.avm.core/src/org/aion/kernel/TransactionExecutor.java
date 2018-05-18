@@ -1,5 +1,6 @@
 package org.aion.kernel;
 
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.rt.BlockchainRuntime;
 
@@ -17,15 +18,14 @@ public class TransactionExecutor {
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, payload, energyLimit);
 
         BlockchainRuntime rt = new BlockchainRuntime() {
-
             @Override
-            public byte[] getSender() {
-                return tx.getFrom();
+            public ByteArray getSender() {
+                return new ByteArray(tx.getFrom());
             }
 
             @Override
-            public byte[] getAddress() {
-                return tx.getTo();
+            public ByteArray getAddress() {
+                return new ByteArray(tx.getTo());
             }
 
             @Override
@@ -34,12 +34,12 @@ public class TransactionExecutor {
             }
 
             @Override
-            public byte[] getStorage(byte[] key) {
-                return new byte[0];
+            public ByteArray getStorage(ByteArray key) {
+                return new ByteArray(new byte[0]);
             }
 
             @Override
-            public void putStorage(byte[] key, byte[] value) {
+            public void putStorage(ByteArray key, ByteArray value) {
             }
         };
 
