@@ -3,7 +3,7 @@ package org.aion.avm.core.examples.helloworld;
 import org.aion.avm.rt.Contract;
 import org.aion.avm.rt.BlockchainRuntime;
 
-public class HelloWorld extends Contract {
+public class HelloWorld implements Contract {
 
     public int foo;
 

@@ -2,7 +2,6 @@ package org.aion.kernel;
 
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.rt.BlockchainRuntime;
-import org.aion.avm.rt.Storage;
 
 public class TransactionExecutor {
 
@@ -19,18 +18,6 @@ public class TransactionExecutor {
 
         BlockchainRuntime rt = new BlockchainRuntime() {
 
-            private Storage storage = new Storage() {
-                @Override
-                public byte[] get(byte[] key) {
-                    return new byte[0];
-                }
-
-                @Override
-                public void put(byte[] key, byte[] value) {
-
-                }
-            };
-
             @Override
             public byte[] getSender() {
                 return tx.getFrom();
@@ -42,13 +29,17 @@ public class TransactionExecutor {
             }
 
             @Override
-            public Storage getStorage() {
-                return storage;
+            public long getEnergyLimit() {
+                return 1000000;
             }
 
             @Override
-            public long getEnergyLimit() {
-                return 1000000;
+            public byte[] getStorage(byte[] key) {
+                return new byte[0];
+            }
+
+            @Override
+            public void putStorage(byte[] key, byte[] value) {
             }
         };
 

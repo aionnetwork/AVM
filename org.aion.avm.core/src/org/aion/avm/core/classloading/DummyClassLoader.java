@@ -2,7 +2,6 @@ package org.aion.avm.core.classloading;
 
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.rt.BlockchainRuntime;
-import org.aion.avm.rt.Storage;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -90,13 +89,17 @@ public class DummyClassLoader extends ClassLoader {
             }
 
             @Override
-            public Storage getStorage() {
-                return null;
+            public long getEnergyLimit() {
+                return 1000000;
             }
 
             @Override
-            public long getEnergyLimit() {
-                return 1000000;
+            public byte[] getStorage(byte[] key) {
+                return new byte[0];
+            }
+
+            @Override
+            public void putStorage(byte[] key, byte[] value) {
             }
         });
         System.out.println(new String((byte[])ret));

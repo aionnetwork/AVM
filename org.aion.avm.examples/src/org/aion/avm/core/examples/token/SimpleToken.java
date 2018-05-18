@@ -3,15 +3,15 @@ package org.aion.avm.core.examples.token;
 import org.aion.avm.rt.Contract;
 import org.aion.avm.rt.BlockchainRuntime;
 
-public class SimpleToken extends Contract {
+public class SimpleToken implements Contract {
 
     public void transfer(BlockchainRuntime rt, byte[] from, byte[] to) {
         // dummy balance check
-        rt.getStorage().get(from);
+        rt.getStorage(from);
 
         // dummy balance update
-        rt.getStorage().put(from, new byte[]{4});
-        rt.getStorage().put(to, new byte[]{2});
+        rt.putStorage(from, new byte[]{4});
+        rt.putStorage(to, new byte[]{2});
     }
 
     private byte[] copyOf(byte[] src, int from, int to) {

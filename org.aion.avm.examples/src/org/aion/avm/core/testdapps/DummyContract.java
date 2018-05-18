@@ -3,7 +3,7 @@ package org.aion.avm.core.testdapps;
 import org.aion.avm.rt.Contract;
 import org.aion.avm.rt.BlockchainRuntime;
 
-public class DummyContract extends Contract {
+public class DummyContract implements Contract {
 
     @Override
     public byte[] run(byte[] input, BlockchainRuntime rt) {
