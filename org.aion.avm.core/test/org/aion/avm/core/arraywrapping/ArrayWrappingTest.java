@@ -33,7 +33,7 @@ public class ArrayWrappingTest {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
-            ArrayWrappingClassAdapter cs = new ArrayWrappingClassAdapter(out, Testing.CLASS_NAME);
+            ArrayWrappingClassAdapter cs = new ArrayWrappingClassAdapter(out);
             in.accept(cs, ClassReader.EXPAND_FRAMES);
 
             byte[] transformed = out.toByteArray();
@@ -46,14 +46,5 @@ public class ArrayWrappingTest {
         Method method = clazz.getMethod("increaseFirstElement");
         Object ret = method.invoke(obj);
         logger.info("Return: {}", ret);
-    }
-
-
-    public static class Testing {
-        public static String CLASS_NAME = ArrayWrappingTest.class.getCanonicalName().replaceAll("\\.", "/") + "$Testing";
-
-        public static IntArray newIntArray(int size) {
-            return new IntArray(new int[size]);
-        }
     }
 }

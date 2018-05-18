@@ -4,6 +4,14 @@ public class IntArray extends Array {
 
     private int[] underlying;
 
+    public static IntArray initArray(int c){
+        return new IntArray(c);
+    }
+
+    public IntArray(int c) {
+        this.underlying = new int[c];
+    }
+
     public IntArray(int[] underlying) {
         this.underlying = underlying;
     }

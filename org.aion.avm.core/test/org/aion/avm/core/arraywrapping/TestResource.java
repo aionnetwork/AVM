@@ -3,7 +3,7 @@ package org.aion.avm.core.arraywrapping;
 public class TestResource {
 
     public int increaseFirstElement() {
-        int[] arr = new int[1];
+        int[] arr = new int[20];
 
         arr.hashCode();
 

@@ -4,6 +4,14 @@ public class LongArray extends Array {
 
     private long[] underlying;
 
+    public static LongArray initArray(int c){
+        return new LongArray(c);
+    }
+
+    public LongArray(int c) {
+        this.underlying = new long[c];
+    }
+
     public LongArray(long[] underlying) {
         this.underlying = underlying;
     }

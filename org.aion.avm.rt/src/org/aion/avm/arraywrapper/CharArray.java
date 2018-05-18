@@ -4,6 +4,14 @@ public class CharArray extends Array {
 
     private char[] underlying;
 
+    public static CharArray initArray(int c){
+        return new CharArray(c);
+    }
+
+    public CharArray(int c) {
+        this.underlying = new char[c];
+    }
+
     public CharArray(char[] underlying) {
         this.underlying = underlying;
     }
