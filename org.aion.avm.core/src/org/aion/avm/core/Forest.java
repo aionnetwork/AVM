@@ -37,9 +37,7 @@ public class Forest<I, C> {
             throw new IllegalArgumentException(format("parent(%s) id must not be equal to child id (%s)", parent.getId(), child.getId()));
         }
         Node<I, C> parentCandidate = lookupExistingFor(parent);
-        boolean parentBecomesRoot = false;
         if (parentCandidate == null) {
-            parentBecomesRoot = true;
             parentCandidate = parent;
             roots.add(parentCandidate);
             nodesIndex.put(parentCandidate.getId(), parentCandidate);
@@ -51,8 +49,7 @@ public class Forest<I, C> {
             childCandidate = child;
             nodesIndex.put(childCandidate.getId(), childCandidate);
         }
-        final var reparanting = parentBecomesRoot && childExisted;
-        if (reparanting) {
+        if (childExisted && roots.contains(childCandidate)) {
             roots.remove(childCandidate);
         }
         parentCandidate.addChild(childCandidate);

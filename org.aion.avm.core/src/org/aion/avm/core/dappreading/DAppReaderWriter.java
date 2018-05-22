@@ -1,6 +1,8 @@
 package org.aion.avm.core.dappreading;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
@@ -17,12 +19,37 @@ public final class DAppReaderWriter {
 
     private Path root;
 
+    // todo close files system?
+    // todo unify both read methods
     public Map<String, byte[]> readClassesFromJar(String pathToJar) throws IOException {
         Objects.requireNonNull(pathToJar);
         final var normalizedPath = Paths.get(pathToJar).toAbsolutePath().normalize();
-        final var fileSystem = FileSystems.newFileSystem(normalizedPath, null);
-        root = fileSystem.getRootDirectories().iterator().next();
+        root = createFSRootDirFor(normalizedPath);
         return walkJarTreeAndFillResult();
+    }
+
+    public Map<String, byte[]> readClassesFromJar(byte[] jar) throws IOException {
+        Objects.requireNonNull(jar);
+        final var normalizedPath = putToTempDir(jar);
+        root = createFSRootDirFor(normalizedPath);
+        return walkJarTreeAndFillResult();
+    }
+
+    private Path createFSRootDirFor(Path pathToJar) throws IOException {
+        final var fileSystem = FileSystems.newFileSystem(pathToJar, null);
+        return fileSystem.getRootDirectories().iterator().next();
+    }
+
+    // todo fix making temp directory
+    private Path putToTempDir(byte[] bytes) throws IOException {
+        Path dstJarPath = Files.createTempDirectory("aiontemp")
+                .resolve("aion-temp-dapp.jar")
+                .toAbsolutePath()
+                .normalize();
+        try (final InputStream in = new ByteArrayInputStream(bytes)) {
+            Files.copy(in, dstJarPath, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return dstJarPath;
     }
 
     private Map<String, byte[]> walkJarTreeAndFillResult() throws IOException {

@@ -55,6 +55,20 @@ public class ForestTest {
     }
 
     @Test
+    public void checkReparanting2() {
+        final var forest = new Forest<String, byte[]>();
+        final var a = newNode("A");
+        final var ab = newNode("AB");
+        final var abc = newNode("ABC");
+        final var abcd = newNode("ABCD");
+        forest.add(a, ab);
+        forest.add(abc, abcd);
+        assertEquals(2, forest.getRoots().size());
+        forest.add(ab, abc);
+        assertEquals(1, forest.getRoots().size());
+    }
+
+    @Test
     public void checkAddingDisjointTree() {
         final var nameA = "A";
         final var nameB = "B";

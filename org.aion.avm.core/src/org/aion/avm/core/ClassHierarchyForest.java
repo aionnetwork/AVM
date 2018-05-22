@@ -1,5 +1,14 @@
 package org.aion.avm.core;
 
+import org.aion.avm.core.dappreading.DAppReaderWriter;
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Opcodes;
+
+import java.io.IOException;
+import java.util.Map;
+
 /**
  * A helper which maintain the class inheritance relations.
  *
@@ -13,10 +22,77 @@ package org.aion.avm.core;
  */
 public final class ClassHierarchyForest extends Forest<String, byte[]> {
 
-    public static ClassHierarchyForest createForest() throws Exception {
-        return new ClassHierarchyForest();
+    private final byte[] jar;
+
+    private String curParentName;
+    private boolean isInterface;
+
+    public static ClassHierarchyForest createForestFrom(byte[] jar) throws IOException {
+        final var forest = new ClassHierarchyForest(jar);
+        forest.createForestInternal();
+        return forest;
     }
 
-    private ClassHierarchyForest() {
+    private ClassHierarchyForest(byte[] jar) {
+        this.jar = jar;
+    }
+
+    private void createForestInternal() throws IOException {
+        Map<String, byte[]> classNameToBytes = new DAppReaderWriter().readClassesFromJar(jar);
+        for (Map.Entry<String, byte[]> entry : classNameToBytes.entrySet()) {
+            final byte[] klass = entry.getValue();
+            analyzeClass(klass);
+            if (!isInterface) {
+                final var parentNode = new Node<>(curParentName, classNameToBytes.get(curParentName));
+                final var childNode = new Node<>(entry.getKey(), klass);
+                add(parentNode, childNode);
+            }
+        }
+    }
+
+    private void analyzeClass(byte[] klass) {
+        ClassReader reader = new ClassReader(klass);
+        final var codeVisitor = new CodeVisitor();
+        reader.accept(codeVisitor, ClassReader.SKIP_FRAMES);
+        curParentName = codeVisitor.getParentQualifiedName();
+        isInterface = codeVisitor.isInterface();
+    }
+
+    private static final class CodeVisitor extends ClassVisitor {
+        private String parentQualifiedName;
+        private boolean isInterface;
+
+        private CodeVisitor() {
+            super(Opcodes.ASM6);
+        }
+
+        // todo check nested parent
+        @Override
+        public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+            parentQualifiedName = toQualifiedName(superName);
+            isInterface = Opcodes.ACC_INTERFACE == (access & Opcodes.ACC_INTERFACE);
+        }
+
+        @Override
+        public void visitSource(String source, String debug) {
+            super.visitSource(source, debug);
+        }
+
+        @Override
+        public void visitAttribute(Attribute attribute) {
+            super.visitAttribute(attribute);
+        }
+
+        private boolean isInterface() {
+            return isInterface;
+        }
+
+        private String getParentQualifiedName() {
+            return parentQualifiedName;
+        }
+
+        private static String toQualifiedName(String internalClassName) {
+            return internalClassName.replaceAll("/", ".");
+        }
     }
 }

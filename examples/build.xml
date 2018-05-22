@@ -11,7 +11,26 @@
         <delete dir="${dir.local.build}"/>
     </target>
 
-    <target name="build" depends="build_helloworld,build_simpletoken,build_twoclasses"/>
+    <target name="build" depends="build_helloworld, build_simpletoken, build_twoclasses, build_foresttest"/>
+
+    <target name="build_foresttest">
+        <local name="name"/>
+        <property name="name" value="com.example.foresttest"/>
+
+        <mkdir dir="${dir.local.build}/${name}"/>
+
+        <echo message="Compiling ${name}..."/>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.local.src}/${name}"
+               destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
+            <modulepath>
+                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+            </modulepath>
+        </javac>
+
+        <echo message="Packing ${name}..."/>
+        <jar destfile="${dir.local.build}/${name}.jar" basedir="${dir.local.build}/${name}"/>
+    </target>
 
     <target name="build_helloworld">
         <local name="name"/>
