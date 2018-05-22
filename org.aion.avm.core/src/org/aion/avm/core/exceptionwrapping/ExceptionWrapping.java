@@ -12,6 +12,8 @@ import java.util.Set;
 
 
 public class ExceptionWrapping extends ClassVisitor {
+    private static final String kWrapperClassLibraryPrefix = "org/aion/avm/exceptionwrapper/";
+
     private final String runtimeClassName;
     private ClassHierarchyForest classHierarchy;
     private Map<String, byte[]> generatedClasses;
@@ -78,6 +80,12 @@ public class ExceptionWrapping extends ClassVisitor {
             @Override
             public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
                 super.visitTryCatchBlock(start, end, handler, type);
+                // If this was trying to catch anything in "java/lang/*", then duplicate it for our wrapper type.
+                if ((null != type) && type.startsWith("java/lang/")) {
+                    String wrapperType = kWrapperClassLibraryPrefix + type;
+                    super.visitTryCatchBlock(start, end, handler, wrapperType);
+                }
+                // TODO: Convert user-defined types to their wrapper types.
                 
                 // We just want to record the handler label so we know it is a catch block, in visitLabel, above.
                 this.catchTargets.add(handler);

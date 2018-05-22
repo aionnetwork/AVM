@@ -21,10 +21,25 @@ import org.objectweb.asm.ClassWriter;
 public class ExceptionWrappingTest {
     private static final String kShadowClassLibraryPrefix = "org.aion.avm.";
     private static final String kWrapperClassLibraryPrefix = "org.aion.avm.exceptionwrapper.";
+    private static final String kSlashWrapperClassLibraryPrefix = kWrapperClassLibraryPrefix.replaceAll("\\.", "/");
 
     private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) -> {
         ClassReader in = new ClassReader(inputBytes);
-        ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS) {
+            @Override
+            protected String getCommonSuperClass(String type1, String type2) {
+                String superclass = null;
+                // TODO:  This implementation is sufficient only for this test but we will need to generalize it.
+                // This implementation assumes that this is only being used because the exception table was duplicated to handle wrapper types
+                // so we only check for those occurrences, then decide the common class must be throwable.
+                if (type1.startsWith(kSlashWrapperClassLibraryPrefix) || type2.startsWith(kSlashWrapperClassLibraryPrefix)) {
+                    superclass = "java/lang/Throwable";
+                } else {
+                    superclass = super.getCommonSuperClass(type1, type2);
+                }
+                return superclass;
+            }
+        };
         
         ClassHierarchyForest classHierarchy = null;
         Map<String, byte[]> generatedClasses = null;
@@ -110,6 +125,28 @@ public class ExceptionWrappingTest {
         Assert.assertFalse(TestHelpers.didUnwrap);
         int result = (Integer) tryMultiCatchFinally.invoke(null);
         Assert.assertTrue(TestHelpers.didUnwrap);
+        Assert.assertEquals(2, result);
+    }
+
+    /**
+     * Tests that we can re-throw VM-generated exceptions and re-catch them.
+     */
+    @Test
+    public void testRecatchCoreException() throws Exception {
+        String className = TestExceptionResource.class.getCanonicalName();
+        Map<String, byte[]> generatedClasses = generateExceptionShadowsAndWrappers();
+        TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
+        TestHelpers.loader = loader;
+        Class<?> clazz = loader.loadClass(className);
+        
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Method outerCatch = clazz.getMethod("outerCatch");
+        
+        // Create an array and make sure it is correct.
+        Assert.assertFalse(TestHelpers.didUnwrap);
+        int result = (Integer) outerCatch.invoke(null);
+        Assert.assertTrue(TestHelpers.didUnwrap);
+        // 3 here will imply that the exception table wasn't re-written (since it only caught at the top-level Throwable).
         Assert.assertEquals(2, result);
     }
 
