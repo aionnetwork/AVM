@@ -10,9 +10,13 @@ public class Throwable extends Object {
     private final java.lang.Throwable underlying;
 
     protected Throwable(java.lang.Object temporary) {
-        this.underlying = null;
         // This is just here as a temporary way to satisfy the creation of these exceptions until we update the StubGenerator to know about the real constructors.
         // This just allows for some easier testing.
+        if (temporary instanceof java.lang.Throwable) {
+            this.underlying = (java.lang.Throwable)temporary;
+        } else {
+            this.underlying = null;
+        }
     }
 
     public Throwable(java.lang.Throwable underlying) {
