@@ -9,8 +9,6 @@ public class TransactionExecutor {
     public static void main(String[] args) {
         // NOTE: not ready yet!
 
-        byte[] codeHash = new byte[32];
-
         byte[] from = new byte[32];
         byte[] to = new byte[32];
         byte[] payload = new byte[512];
@@ -44,6 +42,6 @@ public class TransactionExecutor {
         };
 
         AvmImpl avm = new AvmImpl();
-        avm.run(codeHash, rt);
+        avm.run(rt);
     }
 }

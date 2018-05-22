@@ -4,6 +4,14 @@ public class FloatArray extends Array {
 
     private float[] underlying;
 
+    public static FloatArray initArray(int c){
+        return new FloatArray(c);
+    }
+
+    public FloatArray(int c) {
+        this.underlying = new float[c];
+    }
+
     public FloatArray(float[] underlying) {
         this.underlying = underlying;
     }

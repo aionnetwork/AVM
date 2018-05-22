@@ -4,6 +4,14 @@ public class ByteArray extends Array {
 
     private byte[] underlying;
 
+    public static ByteArray initArray(int c){
+        return new ByteArray(c);
+    }
+
+    public ByteArray(int c) {
+        this.underlying = new byte[c];
+    }
+
     public ByteArray(byte[] underlying) {
         this.underlying = underlying;
     }

@@ -51,7 +51,6 @@ public class ClassMetering extends ClassVisitor {
                 for (BasicBlock block : blocks) {
                     long feeForBlock = calculateBlockFee(block);
                     block.setEnergyCost(feeForBlock);
-                    // TODO:  Apply static allocation-related cost.
                 }
                 
                 // We can now build the arraywrapper over the real visitor, and accept it in order to add the instrumentation.
@@ -70,11 +69,21 @@ public class ClassMetering extends ClassVisitor {
      */
     private long calculateBlockFee(BasicBlock block) {
         long blockFee = 0;
+        long heapSize = 0;
 
         // Sum up the bytecode fee in the code block
         for (Integer opcode : block.opcodeSequence) {
             blockFee += this.bytecodeFeeScheduler.getFee(opcode);
         }
+
+        // Sum up the static allocation size
+        for (String allocationType : block.allocatedTypes) {
+            if (this.objectSizes != null) {
+                heapSize += this.objectSizes.get(allocationType);
+            }
+        }
+        // Apply the heap size cost model (TODO: the heap cost model is linear for now. May revise it later)
+        blockFee += heapSize * BytecodeFeeScheduler.BytecodeEnergyLevels.MEMORY.getVal();
 
         return blockFee;
     }

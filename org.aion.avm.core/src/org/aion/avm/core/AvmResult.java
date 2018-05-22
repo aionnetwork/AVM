@@ -3,7 +3,7 @@ package org.aion.avm.core;
 public class AvmResult {
 
     public enum  Code {
-        SUCCESS, OUT_OF_ENERGY, FAILURE
+        SUCCESS, INVALID_CODE, OUT_OF_ENERGY, FAILURE
     }
 
     /**
@@ -15,4 +15,14 @@ public class AvmResult {
      * Return data.
      */
     byte[] data;
+
+    /**
+     * The remaining energy after execution.
+     */
+    long energyLeft;
+
+    public AvmResult(Code code, long energyLeft) {
+        this.code = code;
+        this.energyLeft = energyLeft;
+    }
 }

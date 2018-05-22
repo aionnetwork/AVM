@@ -13,7 +13,7 @@ public class ArrayWrappingClassAdapter extends ClassVisitor {
 
     private String helperClass;
 
-    public ArrayWrappingClassAdapter(ClassVisitor visitor, String helperClass) {
+    public ArrayWrappingClassAdapter(ClassVisitor visitor) {
         super(Opcodes.ASM6, visitor);
         this.helperClass = helperClass;
     }
@@ -27,8 +27,8 @@ public class ArrayWrappingClassAdapter extends ClassVisitor {
 
         MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
 
-        logger.info("Method: access = {}, name = {}, descriptor = {}, signature = {}, exceptions = {}", access, name, descriptor, signature, exceptions);
+        //logger.info("Method: access = {}, name = {}, descriptor = {}, signature = {}, exceptions = {}", access, name, descriptor, signature, exceptions);
 
-        return new ArrayWrappingMethodAdapter(mv, access, name, descriptor, this.helperClass);
+        return new ArrayWrappingMethodAdapter(mv, access, name, descriptor);
     }
 }

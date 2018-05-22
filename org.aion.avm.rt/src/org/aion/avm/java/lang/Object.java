@@ -49,7 +49,7 @@ public class Object extends java.lang.Object {
 
     }
 
-    protected void avm_finalize() throws Throwable {
+    protected void avm_finalize() throws java.lang.Throwable {
 
     }
 }

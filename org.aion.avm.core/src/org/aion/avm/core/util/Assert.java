@@ -36,4 +36,8 @@ public class Assert {
     public static void unimplemented(String message) {
         throw new AssertionError("Unimplemented path: " + message);
     }
+
+    public static void unexpected(Throwable t) {
+        throw new AssertionError("Unexpected Throwable", t);
+    }
 }

@@ -4,6 +4,14 @@ public class DoubleArray extends Array {
 
     private double[] underlying;
 
+    public static DoubleArray initArray(int c){
+        return new DoubleArray(c);
+    }
+
+    public DoubleArray(int c) {
+        this.underlying = new double[c];
+    }
+
     public DoubleArray(double[] underlying) {
         this.underlying = underlying;
     }

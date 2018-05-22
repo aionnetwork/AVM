@@ -4,6 +4,14 @@ public class ShortArray extends Array {
 
     private short[] underlying;
 
+    public static ShortArray initArray(int c){
+        return new ShortArray(c);
+    }
+
+    public ShortArray(int c) {
+        this.underlying = new short[c];
+    }
+
     public ShortArray(short[] underlying) {
         this.underlying = underlying;
     }
