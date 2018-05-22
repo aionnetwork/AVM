@@ -2,12 +2,11 @@ package org.aion.avm.core.exceptionwrapping;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
-import org.aion.avm.core.classgeneration.StubGenerator;
+import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.ClassHierarchyForest;
 import org.junit.Assert;
@@ -18,10 +17,6 @@ import org.objectweb.asm.ClassWriter;
 
 
 public class ExceptionWrappingTest {
-    private static final String kShadowClassLibraryPrefix = "org.aion.avm.";
-    private static final String kWrapperClassLibraryPrefix = "org.aion.avm.exceptionwrapper.";
-    private static final String kSlashWrapperClassLibraryPrefix = kWrapperClassLibraryPrefix.replaceAll("\\.", "/");
-
     private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) -> {
         ClassReader in = new ClassReader(inputBytes);
         ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS) {
@@ -31,7 +26,7 @@ public class ExceptionWrappingTest {
                 // TODO:  This implementation is sufficient only for this test but we will need to generalize it.
                 // This implementation assumes that this is only being used because the exception table was duplicated to handle wrapper types
                 // so we only check for those occurrences, then decide the common class must be throwable.
-                if (type1.startsWith(kSlashWrapperClassLibraryPrefix) || type2.startsWith(kSlashWrapperClassLibraryPrefix)) {
+                if (type1.startsWith(CommonGenerators.kSlashWrapperClassLibraryPrefix) || type2.startsWith(CommonGenerators.kSlashWrapperClassLibraryPrefix)) {
                     superclass = "java/lang/Throwable";
                 } else {
                     superclass = super.getCommonSuperClass(type1, type2);
@@ -63,7 +58,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchFinally() throws Exception {
         String className = TestExceptionResource.class.getCanonicalName();
-        Map<String, byte[]> generatedClasses = generateExceptionShadowsAndWrappers();
+        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
         TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
         TestHelpers.loader = loader;
         Class<?> clazz = loader.loadClass(className);
@@ -84,7 +79,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testmSimpleManuallyThrowNull() throws Exception {
         String className = TestExceptionResource.class.getCanonicalName();
-        Map<String, byte[]> generatedClasses = generateExceptionShadowsAndWrappers();
+        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
         TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
         TestHelpers.loader = loader;
         Class<?> clazz = loader.loadClass(className);
@@ -112,7 +107,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchInteraction() throws Exception {
         String className = TestExceptionResource.class.getCanonicalName();
-        Map<String, byte[]> generatedClasses = generateExceptionShadowsAndWrappers();
+        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
         TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
         TestHelpers.loader = loader;
         Class<?> clazz = loader.loadClass(className);
@@ -133,7 +128,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testRecatchCoreException() throws Exception {
         String className = TestExceptionResource.class.getCanonicalName();
-        Map<String, byte[]> generatedClasses = generateExceptionShadowsAndWrappers();
+        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
         TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
         TestHelpers.loader = loader;
         Class<?> clazz = loader.loadClass(className);
@@ -193,8 +188,8 @@ public class ExceptionWrappingTest {
                 // In this case, we just want to look up the appropriate wrapper (using reflection) and instantiate a wrapper for this.
                 String objectClass = arg.getClass().getCanonicalName();
                 // We know that this MUST be one of our shadow objects.
-                org.aion.avm.core.util.Assert.assertTrue(objectClass.startsWith(kShadowClassLibraryPrefix));
-                String wrapperClassName = kWrapperClassLibraryPrefix + objectClass.substring(kShadowClassLibraryPrefix.length());
+                org.aion.avm.core.util.Assert.assertTrue(objectClass.startsWith(CommonGenerators.kShadowClassLibraryPrefix));
+                String wrapperClassName = CommonGenerators.kWrapperClassLibraryPrefix + objectClass.substring(CommonGenerators.kShadowClassLibraryPrefix.length());
                 Class<?> wrapperClass = loader.loadClass(wrapperClassName);
                 result = (Throwable)wrapperClass.getConstructor(Object.class).newInstance(arg);
                 didWrap = true;
@@ -217,99 +212,9 @@ public class ExceptionWrappingTest {
             
             // Then, use reflection to find the appropriate wrapper.
             String throwableName = t.getClass().getCanonicalName();
-            Class<?> shadowClass = loader.loadClass(kShadowClassLibraryPrefix + throwableName);
+            Class<?> shadowClass = loader.loadClass(CommonGenerators.kShadowClassLibraryPrefix + throwableName);
             return (org.aion.avm.java.lang.Throwable)shadowClass.getConstructor(org.aion.avm.java.lang.String.class, org.aion.avm.java.lang.Throwable.class).newInstance(message, cause);
         }
     }
 
-    private static Map<String, byte[]> generateExceptionShadowsAndWrappers() throws Exception {
-        // There doesn't appear to be any way to enumerate these classes in the existing class loader (even though they are part of java.lang)
-        // so we will list the names of all the classes we need and assemble them that way.
-        // We should at least be able to use the original Throwable's classloader to look up the subclasses (again, since they are in java.lang).
-        String[] exceptionNames = new String[] {
-                "java.lang.Error",
-                "java.lang.AssertionError",
-                "java.lang.LinkageError",
-                "java.lang.BootstrapMethodError",
-                "java.lang.ClassCircularityError",
-                "java.lang.ClassFormatError",
-                "java.lang.UnsupportedClassVersionError",
-                "java.lang.ExceptionInInitializerError",
-                "java.lang.IncompatibleClassChangeError",
-                "java.lang.AbstractMethodError",
-                "java.lang.IllegalAccessError",
-                "java.lang.InstantiationError",
-                "java.lang.NoSuchFieldError",
-                "java.lang.NoSuchMethodError",
-                "java.lang.NoClassDefFoundError",
-                "java.lang.UnsatisfiedLinkError",
-                "java.lang.VerifyError",
-                "java.lang.ThreadDeath",
-                "java.lang.VirtualMachineError",
-                "java.lang.InternalError",
-                "java.lang.OutOfMemoryError",
-                "java.lang.StackOverflowError",
-                "java.lang.UnknownError",
-                "java.lang.Exception",
-                "java.lang.CloneNotSupportedException",
-                "java.lang.InterruptedException",
-                "java.lang.ReflectiveOperationException",
-                "java.lang.ClassNotFoundException",
-                "java.lang.IllegalAccessException",
-                "java.lang.InstantiationException",
-                "java.lang.NoSuchFieldException",
-                "java.lang.NoSuchMethodException",
-                "java.lang.RuntimeException",
-                "java.lang.ArithmeticException",
-                "java.lang.ArrayStoreException",
-                "java.lang.ClassCastException",
-                "java.lang.EnumConstantNotPresentException",
-                "java.lang.IllegalArgumentException",
-                "java.lang.IllegalThreadStateException",
-                "java.lang.NumberFormatException",
-                "java.lang.IllegalCallerException",
-                "java.lang.IllegalMonitorStateException",
-                "java.lang.IllegalStateException",
-                "java.lang.IndexOutOfBoundsException",
-                "java.lang.ArrayIndexOutOfBoundsException",
-                "java.lang.StringIndexOutOfBoundsException",
-                "java.lang.LayerInstantiationException",
-                "java.lang.NegativeArraySizeException",
-                "java.lang.NullPointerException",
-                "java.lang.SecurityException",
-                "java.lang.TypeNotPresentException",
-                "java.lang.UnsupportedOperationException",
-        };
-        
-        Map<String, byte[]> generatedClasses = new HashMap<>();
-        for (String className : exceptionNames) {
-            // We need to look this up to find the superclass.
-            String superclassName = Class.forName(className).getSuperclass().getCanonicalName();
-            
-            // Generate the shadow.
-            String shadowName = kShadowClassLibraryPrefix + className;
-            String shadowSuperName = kShadowClassLibraryPrefix + superclassName;
-            byte[] shadowBytes = generateExceptionClass(shadowName, shadowSuperName);
-            generatedClasses.put(shadowName, shadowBytes);
-            
-            // Generate the wrapper.
-            String wrapperName = kWrapperClassLibraryPrefix + className;
-            String wrapperSuperName = kWrapperClassLibraryPrefix + superclassName;
-            byte[] wrapperBytes = generateWrapperClass(wrapperName, wrapperSuperName);
-            generatedClasses.put(wrapperName, wrapperBytes);
-        }
-        return generatedClasses;
-    }
-
-    private static byte[] generateWrapperClass(String mappedName, String mappedSuperName) {
-        String slashName = mappedName.replaceAll("\\.", "/");
-        String superSlashName = mappedSuperName.replaceAll("\\.", "/");
-        return StubGenerator.generateWrapperClass(slashName, superSlashName);
-    }
-
-    private static byte[] generateExceptionClass(String mappedName, String mappedSuperName) {
-        String slashName = mappedName.replaceAll("\\.", "/");
-        String superSlashName = mappedSuperName.replaceAll("\\.", "/");
-        return StubGenerator.generateExceptionClass(slashName, superSlashName);
-    }
 }
