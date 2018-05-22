@@ -14,6 +14,7 @@ public class CommonGenerators {
     // There doesn't appear to be any way to enumerate these classes in the existing class loader (even though they are part of java.lang)
     // so we will list the names of all the classes we need and assemble them that way.
     // We should at least be able to use the original Throwable's classloader to look up the subclasses (again, since they are in java.lang).
+    // TODO:  A few of these actually need to be hand-coded (see issue-39).
     public static final String[] kExceptionClassNames = new String[] {
             "java.lang.Error",
             "java.lang.AssertionError",
