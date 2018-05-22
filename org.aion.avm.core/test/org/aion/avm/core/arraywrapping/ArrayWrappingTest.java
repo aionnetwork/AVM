@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 
 public class ArrayWrappingTest {
 
@@ -42,7 +43,7 @@ public class ArrayWrappingTest {
             byte[] transformed = out.toByteArray();
             writeBytesToFile(transformed, "/tmp/output.class");
             return transformed;
-        });
+        }, Collections.emptyMap());
 
         clazz = loader.loadClass(name);
     }
@@ -122,6 +123,16 @@ public class ArrayWrappingTest {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testShortArray");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testObjectArray() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testObjectArray");
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);

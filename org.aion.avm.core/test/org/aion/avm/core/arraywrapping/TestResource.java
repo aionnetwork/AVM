@@ -2,16 +2,6 @@ package org.aion.avm.core.arraywrapping;
 
 public class TestResource {
 
-    public int increaseFirstElement() {
-        int[] arr = new int[20];
-
-        arr.hashCode();
-
-        boolean x = arr instanceof Object;
-
-        return arr[0];
-    }
-
     public boolean testBasic(){
         boolean res = true;
         int[] arr = new int[20];
@@ -187,5 +177,60 @@ public class TestResource {
         }
         return res;
     }
+
+    public boolean testObjectArray(){
+        boolean res = true;
+        int count = 0;
+        int i = 0;
+
+        //newarray for long
+        Object[] a = new Object[2];
+        Object[] b = new Object[64];
+        Object[] c = new Object[1024];
+
+        //LASTORE
+        for (i = 0; i < 1024; i++){
+            c[i] = new Object();
+        }
+
+        //LALOAD
+        for (i = 0; i < 1024; i++){
+            count = count + c[i].hashCode();
+        }
+
+        System.out.println(count);
+
+        res = (count != 0);
+
+        return res;
+    }
+
+    // public boolean testStringArray(){
+    //     boolean res = true;
+    //     int count = 0;
+    //     int i = 0;
+
+    //     //newarray for long
+    //     String[] a = new String[2];
+    //     String[] b = new String[64];
+    //     String[] c = new String[1024];
+
+    //     //LASTORE
+    //     for (i = 0; i < 1024; i++){
+    //         c[i] = new String(Integer.toString(i));
+    //     }
+
+    //     //LALOAD
+    //     for (i = 0; i < 1024; i++){
+    //         //count = count + c[i].indexOf('1');
+    //         count = count + c[i].hashCode();
+    //     }
+
+    //     System.out.println(count);
+
+    //     res = (count != 0);
+
+    //     return res;
+    // }
 
 }

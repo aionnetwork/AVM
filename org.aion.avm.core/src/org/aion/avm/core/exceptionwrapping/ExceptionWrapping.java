@@ -12,6 +12,8 @@ import java.util.Set;
 
 
 public class ExceptionWrapping extends ClassVisitor {
+    private static final String kWrapperClassLibraryPrefix = "org/aion/avm/exceptionwrapper/";
+
     private final String runtimeClassName;
     private ClassHierarchyForest classHierarchy;
     private Map<String, byte[]> generatedClasses;
@@ -64,7 +66,7 @@ public class ExceptionWrapping extends ClassVisitor {
                     // Note that this java/lang/Throwable MUST not be rewritten as another type since that is literally what is on the operand
                     // stack at the beginning of an exception handler.
                     // On the other hand, the returned java/lang/Object _should_ be rewritten as the shadow type, but we are safe if it isn't.
-                    String methodDescriptor = "(Ljava/lang/Throwable;)Ljava/lang/Object;";
+                    String methodDescriptor = "(Ljava/lang/Throwable;)Lorg/aion/avm/java/lang/Object;";
                     
                     // The call-out will actually return the base object class in our environment so we need to cast.
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, ExceptionWrapping.this.runtimeClassName, methodName, methodDescriptor, false);
@@ -78,6 +80,12 @@ public class ExceptionWrapping extends ClassVisitor {
             @Override
             public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
                 super.visitTryCatchBlock(start, end, handler, type);
+                // If this was trying to catch anything in "java/lang/*", then duplicate it for our wrapper type.
+                if ((null != type) && type.startsWith("java/lang/")) {
+                    String wrapperType = kWrapperClassLibraryPrefix + type;
+                    super.visitTryCatchBlock(start, end, handler, wrapperType);
+                }
+                // TODO: Convert user-defined types to their wrapper types.
                 
                 // We just want to record the handler label so we know it is a catch block, in visitLabel, above.
                 this.catchTargets.add(handler);
@@ -94,7 +102,7 @@ public class ExceptionWrapping extends ClassVisitor {
                     // Note that this java/lang/Throwable MUST NOT be rewritten as another type since that is literally what must be on the
                     // operand stack when we call athrow.
                     // On the other hand, the java/lang/Object _should_ be rewritten as the shadow type, but we are safe if it isn't.
-                    String methodDescriptor = "(Ljava/lang/Object;)Ljava/lang/Throwable;";
+                    String methodDescriptor = "(Lorg/aion/avm/java/lang/Object;)Ljava/lang/Throwable;";
                     
                     // The call-out will actually return the base object class in our environment so we need to cast.
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, ExceptionWrapping.this.runtimeClassName, methodName, methodDescriptor, false);

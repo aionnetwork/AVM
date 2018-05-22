@@ -1,5 +1,6 @@
 package org.aion.avm.core.instrument;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class BlockBuildingMethodVisitorTest {
         // All of these cases are about cracking the same test class so just get the common data we all need.
         String className = BlockTestResource.class.getCanonicalName();
         BlockSnooper snooper = new BlockSnooper();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper, Collections.emptyMap());
         loader.loadClass(className);
         BlockBuildingMethodVisitorTest.METHOD_BLOCKS = snooper.resultMap;
         Assert.assertNotNull(BlockBuildingMethodVisitorTest.METHOD_BLOCKS);

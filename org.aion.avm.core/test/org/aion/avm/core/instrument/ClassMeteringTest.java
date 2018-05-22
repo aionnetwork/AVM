@@ -2,6 +2,7 @@ package org.aion.avm.core.instrument;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class ClassMeteringTest {
     public void testMethodBlocks() throws Exception {
         String className = TestResource.class.getCanonicalName();
         BlockSnooper snooper = new BlockSnooper();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper, Collections.emptyMap());
         loader.loadClass(className);
         Map<String, List<BasicBlock>> resultMap = snooper.resultMap;
         Assert.assertNotNull(resultMap);
@@ -69,7 +70,7 @@ public class ClassMeteringTest {
     public void testWrittenBlockPrefix() throws Exception {
         // Setup and rewrite the class.
         String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
         Class<?> clazz = loader.loadClass(className);
         // By this point, we should still have 0 charges.
         Assert.assertEquals(0, TestEnergy.totalCharges);
@@ -103,7 +104,7 @@ public class ClassMeteringTest {
     public void testAnewarrayCallOut() throws Exception {
         // Setup and rewrite the class.
         String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
         Class<?> clazz = loader.loadClass(className);
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
@@ -133,7 +134,7 @@ public class ClassMeteringTest {
     public void testMultianewarrayCallOut() throws Exception {
         // Setup and rewrite the class.
         String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
         Class<?> clazz = loader.loadClass(className);
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
@@ -168,7 +169,7 @@ public class ClassMeteringTest {
     public void testMultianewarrayPrimitive() throws Exception {
         // Setup and rewrite the class.
         String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
         Class<?> clazz = loader.loadClass(className);
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
@@ -201,7 +202,7 @@ public class ClassMeteringTest {
     public void testNewarrayChar() throws Exception {
         // Setup and rewrite the class.
         String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
         Class<?> clazz = loader.loadClass(className);
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
@@ -232,7 +233,7 @@ public class ClassMeteringTest {
     public void testAllocationTypes() throws Exception {
         String className = TestResource.class.getCanonicalName();
         BlockSnooper snooper = new BlockSnooper();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper, Collections.emptyMap());
         loader.loadClass(className);
         Map<String, List<BasicBlock>> resultMap = snooper.resultMap;
         List<BasicBlock> factoryBlocks = resultMap.get("testFactory()Lorg/aion/avm/core/instrument/TestResource;");

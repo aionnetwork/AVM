@@ -4,6 +4,9 @@ import org.junit.Assert;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -13,11 +16,15 @@ import java.util.function.Function;
 public class TestClassLoader extends ClassLoader {
     private final String classNameToProvide;
     private final Function<byte[], byte[]> loadHandler;
+    private final Map<String, byte[]> injectedClasses;
+    private final Map<String, Class<?>> cache;
 
-    public TestClassLoader(ClassLoader parent, String classNameToProvide, Function<byte[], byte[]> loadHandler) {
+    public TestClassLoader(ClassLoader parent, String classNameToProvide, Function<byte[], byte[]> loadHandler, Map<String, byte[]> injectedClasses) {
         super(parent);
         this.classNameToProvide = classNameToProvide;
         this.loadHandler = loadHandler;
+        this.injectedClasses = Collections.unmodifiableMap(injectedClasses);
+        this.cache = new HashMap<>();
     }
 
     @Override
@@ -34,6 +41,15 @@ public class TestClassLoader extends ClassLoader {
             }
             byte[] rewrittten = this.loadHandler.apply(raw);
             result = defineClass(name, rewrittten, 0, rewrittten.length);
+        } else if (this.injectedClasses.containsKey(name)) {
+            Class<?> cached = this.cache.get(name);
+            if (null == cached) {
+                byte[] prepared = this.injectedClasses.get(name);
+                result = defineClass(name, prepared, 0, prepared.length);
+                this.cache.put(name, result);
+            } else {
+                result = cached;
+            }
         } else {
             result = getParent().loadClass(name);
         }

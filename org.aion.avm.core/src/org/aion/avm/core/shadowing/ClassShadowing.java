@@ -60,7 +60,13 @@ public class ClassShadowing extends ClassVisitor {
                     final String name,
                     final String descriptor,
                     final boolean isInterface) {
-                mv.visitMethodInsn(opcode, replaceType(owner), replaceMethodName(owner, name), replaceMethodDescriptor(descriptor), isInterface);
+                // Note that it is possible we will see calls from other phases in the chain and we don't want to re-write them
+                // (often, they _are_ the bridging code).
+                if ((Opcodes.INVOKESTATIC == opcode) && runtimeClassName.equals(owner)) {
+                    mv.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+                } else {
+                    mv.visitMethodInsn(opcode, replaceType(owner), replaceMethodName(owner, name), replaceMethodDescriptor(descriptor), isInterface);
+                }
             }
 
             @Override
