@@ -1,5 +1,6 @@
 package org.aion.avm.core.instrument;
 
+import java.util.Collections;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
@@ -28,7 +29,7 @@ public class ClassRewriterTest {
         String className = original.getClass().getCanonicalName();
         Function<byte[], byte[]> rewriterCall = (inputBytes) -> ClassRewriter.
                 rewriteOneMethodInClass(inputBytes, "hashCode", replacer, ClassWriter.COMPUTE_FRAMES);
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, rewriterCall);
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, rewriterCall, Collections.emptyMap());
         Class<?> clazz = loader.loadClass(className);
         Object target = clazz.getConstructor(int.class).newInstance(originalHash);
 

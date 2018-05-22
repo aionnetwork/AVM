@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.lang.reflect.Field;
 
 public class StackWatcherTest {
@@ -40,7 +41,7 @@ public class StackWatcherTest {
             byte[] transformed = out.toByteArray();
             writeBytesToFile(transformed, "/tmp/output.class");
             return transformed;
-        });
+        }, Collections.emptyMap());
 
         clazz = loader.loadClass(name);
     }

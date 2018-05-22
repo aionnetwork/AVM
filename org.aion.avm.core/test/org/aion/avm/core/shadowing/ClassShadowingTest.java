@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 
 public class ClassShadowingTest {
 
@@ -34,7 +35,7 @@ public class ClassShadowingTest {
             byte[] transformed = out.toByteArray();
             writeBytesToFile(transformed, "/tmp/output.class");
             return transformed;
-        });
+        }, Collections.emptyMap());
         Class<?> clazz = loader.loadClass(name);
         Object obj = clazz.getConstructor().newInstance();
 

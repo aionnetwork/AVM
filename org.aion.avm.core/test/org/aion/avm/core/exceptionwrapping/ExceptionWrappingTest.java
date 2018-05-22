@@ -2,6 +2,7 @@ package org.aion.avm.core.exceptionwrapping;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -41,7 +42,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchFinally() throws Exception {
         String className = TestExceptionResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder);
+        TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
         Class<?> clazz = loader.loadClass(className);
         
         // We need to use reflection to call this, since the class was loaded by this other classloader.
@@ -60,7 +61,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testmSimpleManuallyThrowNull() throws Exception {
         String className = TestExceptionResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder);
+        TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
         Class<?> clazz = loader.loadClass(className);
         
         // We need to use reflection to call this, since the class was loaded by this other classloader.
