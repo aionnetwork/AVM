@@ -12,7 +12,6 @@ import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.ClassHierarchyForest;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -82,8 +81,6 @@ public class ExceptionWrappingTest {
     /**
      * Tests that a manually creating and throwing a java/lang/* exception type works correctly.
      */
-    // TODO:  Re-enable this test when we have fleshed out the other constructors for the generated exception stubs.
-    @Ignore
     @Test
     public void testmSimpleManuallyThrowNull() throws Exception {
         String className = TestExceptionResource.class.getCanonicalName();
@@ -101,7 +98,9 @@ public class ExceptionWrappingTest {
         try {
             manuallyThrowNull.invoke(null);
         } catch (InvocationTargetException e) {
-            didCatch = e.getCause() instanceof NullPointerException;
+            // Make sure that this is the wrapper type that we normally expect to see.
+            Class<?> compare = loader.loadClass("org.aion.avm.exceptionwrapper.java.lang.NullPointerException");
+            didCatch = e.getCause().getClass() == compare;
         }
         Assert.assertTrue(TestHelpers.didWrap);
         Assert.assertTrue(didCatch);
@@ -174,9 +173,8 @@ public class ExceptionWrappingTest {
                 // We need to wrap the java.lang instance in a shadow and unwrap the other case to return the shadow.
                 String throwableName = t.getClass().getCanonicalName();
                 if (throwableName.startsWith("java.lang.")) {
-                    // This is VM-generated - use reflection to find the appropriate wrapper.
-                    Class<?> shadowClass = loader.loadClass(kShadowClassLibraryPrefix + throwableName);
-                    shadow = (org.aion.avm.java.lang.Object)shadowClass.getConstructor(Object.class).newInstance(t);
+                    // This is VM-generated - we will have to instantiate a shadow, directly.
+                    shadow = convertVmGeneratedException(t);
                 } else {
                     // This is one of our wrappers.
                     org.aion.avm.exceptionwrapper.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.java.lang.Throwable)t;
@@ -205,6 +203,22 @@ public class ExceptionWrappingTest {
                 org.aion.avm.core.util.Assert.unexpected(err);
             } 
             return result;
+        }
+        private static org.aion.avm.java.lang.Throwable convertVmGeneratedException(Throwable t) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+            // First step is to convert the message and cause into shadow objects, as well.
+            String originalMessage = t.getMessage();
+            org.aion.avm.java.lang.String message = (null != originalMessage)
+                    ? wrapAsString(originalMessage)
+                    : null;
+            Throwable originalCause = t.getCause();
+            org.aion.avm.java.lang.Throwable cause = (null != originalCause)
+                    ? convertVmGeneratedException(originalCause)
+                    : null;
+            
+            // Then, use reflection to find the appropriate wrapper.
+            String throwableName = t.getClass().getCanonicalName();
+            Class<?> shadowClass = loader.loadClass(kShadowClassLibraryPrefix + throwableName);
+            return (org.aion.avm.java.lang.Throwable)shadowClass.getConstructor(org.aion.avm.java.lang.String.class, org.aion.avm.java.lang.Throwable.class).newInstance(message, cause);
         }
     }
 
@@ -275,21 +289,27 @@ public class ExceptionWrappingTest {
             // Generate the shadow.
             String shadowName = kShadowClassLibraryPrefix + className;
             String shadowSuperName = kShadowClassLibraryPrefix + superclassName;
-            byte[] shadowBytes = generateClass(shadowName, shadowSuperName);
+            byte[] shadowBytes = generateExceptionClass(shadowName, shadowSuperName);
             generatedClasses.put(shadowName, shadowBytes);
             
             // Generate the wrapper.
             String wrapperName = kWrapperClassLibraryPrefix + className;
             String wrapperSuperName = kWrapperClassLibraryPrefix + superclassName;
-            byte[] wrapperBytes = generateClass(wrapperName, wrapperSuperName);
+            byte[] wrapperBytes = generateWrapperClass(wrapperName, wrapperSuperName);
             generatedClasses.put(wrapperName, wrapperBytes);
         }
         return generatedClasses;
     }
 
-    private static byte[] generateClass(String mappedName, String mappedSuperName) {
+    private static byte[] generateWrapperClass(String mappedName, String mappedSuperName) {
         String slashName = mappedName.replaceAll("\\.", "/");
         String superSlashName = mappedSuperName.replaceAll("\\.", "/");
-        return StubGenerator.generateClass(slashName, superSlashName);
+        return StubGenerator.generateWrapperClass(slashName, superSlashName);
+    }
+
+    private static byte[] generateExceptionClass(String mappedName, String mappedSuperName) {
+        String slashName = mappedName.replaceAll("\\.", "/");
+        String superSlashName = mappedSuperName.replaceAll("\\.", "/");
+        return StubGenerator.generateExceptionClass(slashName, superSlashName);
     }
 }

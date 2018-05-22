@@ -18,7 +18,7 @@ public class StubGeneratorTest {
         String slashName = "my/test/ClassName";
         String dotName = slashName.replaceAll("/", ".");
         String superName = TestClass.class.getCanonicalName().replaceAll("\\.", "/");
-        byte[] bytecode = StubGenerator.generateClass(slashName, superName);
+        byte[] bytecode = StubGenerator.generateWrapperClass(slashName, superName);
         Class<?> clazz = Loader.loadClassAlone(dotName, bytecode);
         Constructor<?> con = clazz.getConstructor(Object.class);
         String contents = "one";
@@ -48,7 +48,7 @@ public class StubGeneratorTest {
         String slashName = "my/test/ClassName";
         String dotName = slashName.replaceAll("/", ".");
         String superName = TestClass.class.getCanonicalName().replaceAll("\\.", "/");
-        byte[] bytecode = StubGenerator.generateClass(slashName, superName);
+        byte[] bytecode = StubGenerator.generateWrapperClass(slashName, superName);
         Class<?> clazz = avm.injectAndLoadClass(dotName, bytecode);
         Assert.assertTrue(clazz.getClassLoader() instanceof DAppClassLoader);
         Constructor<?> con = clazz.getConstructor(Object.class);
@@ -72,14 +72,14 @@ public class StubGeneratorTest {
         String slashName = "my/test/ClassName";
         String dotName = slashName.replaceAll("/", ".");
         String superName = TestClass.class.getCanonicalName().replaceAll("\\.", "/");
-        byte[] bytecode = StubGenerator.generateClass(slashName, superName);
+        byte[] bytecode = StubGenerator.generateWrapperClass(slashName, superName);
         Class<?> superclass = avm.injectAndLoadClass(dotName, bytecode);
         Assert.assertTrue(superclass.getClassLoader() instanceof DAppClassLoader);
         
         // Create the subclass.
         String subSlashName = "my/test/sub/SubClass";
         String subDotName = subSlashName.replaceAll("/", ".");
-        byte[] subBytecode = StubGenerator.generateClass(subSlashName, slashName);
+        byte[] subBytecode = StubGenerator.generateWrapperClass(subSlashName, slashName);
         Class<?> subclass = avm.injectAndLoadClass(subDotName, subBytecode);
         Assert.assertTrue(subclass.getClassLoader() instanceof DAppClassLoader);
         Constructor<?> con = subclass.getConstructor(Object.class);
@@ -113,18 +113,12 @@ public class StubGeneratorTest {
         Assert.assertEquals(kShadowClassLibraryPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
         
         // Create an instance and prove that we can interact with it.
-        Constructor<?> con = aioobe.getConstructor(Object.class);
-        String contents = "one";
+        Constructor<?> con = aioobe.getConstructor(org.aion.avm.java.lang.String.class);
+        org.aion.avm.java.lang.String contents = new org.aion.avm.java.lang.String("one");
         Object instance = con.newInstance(contents);
         org.aion.avm.java.lang.Throwable shadow = (org.aion.avm.java.lang.Throwable)instance;
-        // We know that this constructor will create a shadow with a null underlying instance, meaning it will fail on calls (just there for initial testing).
-        NullPointerException expected = null;
-        try {
-            shadow.toString();
-        } catch (NullPointerException e) {
-            expected = e;
-        }
-        Assert.assertNotNull(expected);
+        // Ask for the toString (our internal version) since we know what that should look like.
+        Assert.assertEquals("org.aion.avm.java.lang.ArrayIndexOutOfBoundsException: one", shadow.toString());
     }
 
     /**
@@ -224,13 +218,13 @@ public class StubGeneratorTest {
             String superclassName = Class.forName(className).getSuperclass().getCanonicalName();
             
             // Generate the shadow.
-            Class<?> sample = loadClassWithPrefix(kShadowClassLibraryPrefix, avm, className, superclassName, testClassName);
+            Class<?> sample = loadExceptionWithPrefix(kShadowClassLibraryPrefix, avm, className, superclassName, testClassName);
             if (null != sample) {
                 testClassToReturn = sample;
             }
             
             // Generate the wrapper.
-            sample = loadClassWithPrefix(kWrapperClassLibraryPrefix, avm, className, superclassName, testClassName);
+            sample = loadWrapperWithPrefix(kWrapperClassLibraryPrefix, avm, className, superclassName, testClassName);
             if (null != sample) {
                 testClassToReturn = sample;
             }
@@ -238,13 +232,28 @@ public class StubGeneratorTest {
         return testClassToReturn;
     }
 
-    private static Class<?> loadClassWithPrefix(String packagePrefix, DAppLoader avm, String className, String superclassName, String testClassName) {
+    private static Class<?> loadWrapperWithPrefix(String packagePrefix, DAppLoader avm, String className, String superclassName, String testClassName) {
         String mappedName = packagePrefix + className;
         String mappedSuperName = packagePrefix + superclassName;
         
         String slashName = mappedName.replaceAll("\\.", "/");
         String superSlashName = mappedSuperName.replaceAll("\\.", "/");
-        byte[] bytecode = StubGenerator.generateClass(slashName, superSlashName);
+        byte[] bytecode = StubGenerator.generateWrapperClass(slashName, superSlashName);
+        Class<?> clazz = avm.injectAndLoadClass(mappedName, bytecode);
+        Assert.assertTrue(clazz.getClassLoader() instanceof DAppClassLoader);
+        
+        return mappedName.equals(testClassName)
+                ? clazz
+                : null;
+    }
+
+    private static Class<?> loadExceptionWithPrefix(String packagePrefix, DAppLoader avm, String className, String superclassName, String testClassName) {
+        String mappedName = packagePrefix + className;
+        String mappedSuperName = packagePrefix + superclassName;
+        
+        String slashName = mappedName.replaceAll("\\.", "/");
+        String superSlashName = mappedSuperName.replaceAll("\\.", "/");
+        byte[] bytecode = StubGenerator.generateExceptionClass(slashName, superSlashName);
         Class<?> clazz = avm.injectAndLoadClass(mappedName, bytecode);
         Assert.assertTrue(clazz.getClassLoader() instanceof DAppClassLoader);
         

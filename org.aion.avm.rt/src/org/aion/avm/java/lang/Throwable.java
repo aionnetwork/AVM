@@ -4,46 +4,52 @@ package org.aion.avm.java.lang;
 /**
  * Our shadow implementation of java.lang.Throwable.
  * TODO:  Determine how to handle the calls that don't make sense in this environment or depend on types we aren't including.
- * See also the "WARNING", below, regarding re-wrapping underlying objects.
+ * 
+ * NOTE:  Instances of this class never actually touch the underlying VM-generated exception.
+ * If we want to carry that information around, we will need a new constructor, an addition to the generated stubs, and a sense of how to use it.
+ * Avoiding carrying those instances around means that this implementation becomes very safely defined.
+ * It does, however, mean that we can't expose stack traces since those are part of the VM-generated exceptions.
  */
 public class Throwable extends Object {
-    private final java.lang.Throwable underlying;
+    private final String message;
+    private Throwable cause;
 
-    protected Throwable(java.lang.Object temporary) {
-        // This is just here as a temporary way to satisfy the creation of these exceptions until we update the StubGenerator to know about the real constructors.
-        // This just allows for some easier testing.
-        if (temporary instanceof java.lang.Throwable) {
-            this.underlying = (java.lang.Throwable)temporary;
-        } else {
-            this.underlying = null;
-        }
+    public Throwable() {
+        this(null, null);
     }
 
-    public Throwable(java.lang.Throwable underlying) {
-        this.underlying = underlying;
+    public Throwable(String message) {
+        this(message, null);
+    }
+
+    public Throwable(String message, Throwable cause) {
+        this.message = message;
+        this.cause = cause;
+    }
+
+    public Throwable(Throwable cause) {
+        this(null, cause);
     }
 
     public String avm_getMessage() {
-        return new String(this.underlying.getMessage());
+        return this.message;
     }
 
     public String avm_getLocalizedMessage() {
-        return new String(this.underlying.getLocalizedMessage());
+        return this.message;
     }
 
     public Throwable avm_getCause() {
-        // WARNING:  We are going to recreate this on every call.  If the user code is expecting this to always be the same instance, we might have to
-        // itern these, somewhere (as even caching it still means we might not know if someone else already created a wrapper).
-        return wrapInner(this.underlying.getCause());
+        return this.cause;
     }
 
     public Throwable avm_initCause(Throwable cause) {
-        this.underlying.initCause(cause.underlying);
+        this.cause = cause;
         return this;
     }
 
     public String avm_toString() {
-        return new String(this.underlying.toString());
+        return this.message;
     }
 
     // TODO:  Determine if we should throw/fail when something calls a method which doesn't make sense in this environment.
@@ -69,7 +75,7 @@ public class Throwable extends Object {
 //    }
 
     public Throwable avm_fillInStackTrace() {
-        this.underlying.fillInStackTrace();
+        // We don't expose stack traces.
         return this;
     }
 
@@ -81,29 +87,17 @@ public class Throwable extends Object {
 //    }
 
     public void avm_addSuppressed(Throwable exception) {
-        this.underlying.addSuppressed(exception.underlying);
+        // TODO:  Does suppression make sense for this?
     }
 
     public Throwable[] avm_getSuppressed() {
-        // WARNING:  We are going to recreate this on every call.  If the user code is expecting this to always be the same instance, we might have to
-        // itern these, somewhere (as even caching it still means we might not know if someone else already created a wrapper).
-        java.lang.Throwable[] real = this.underlying.getSuppressed();
-        Throwable[] wrapped = new Throwable[real.length];
-        for (int i = 0; i < real.length; ++i) {
-            wrapped[i] = wrapInner(real[i]);
-        }
-        return wrapped;
+        // TODO:  Does suppression make sense for this?
+        return null;
     }
 
     // NOTE:  This toString() cannot be called by the contract code (it will call avm_toString()) but our runtime and test code can call this.
     @Override
     public java.lang.String toString() {
-        return this.underlying.toString();
-    }
-
-    // WARNING:  We are going to recreate this on every call.  If the user code is expecting this to always be the same instance, we might have to
-    // itern these, somewhere (as even caching it still means we might not know if someone else already created a wrapper).
-    private static Throwable wrapInner(java.lang.Throwable underlying) {
-        return new Throwable(underlying);
+        return getClass().getCanonicalName() + ": " + this.message;
     }
 }
