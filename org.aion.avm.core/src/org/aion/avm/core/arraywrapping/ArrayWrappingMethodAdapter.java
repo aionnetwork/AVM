@@ -18,6 +18,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     private Type typeFA = Type.getType(FloatArray.class);
     private Type typeIA = Type.getType(IntArray.class);
     private Type typeLA = Type.getType(LongArray.class);
+    private Type typeOA = Type.getType(ObjectArray.class);
     private Type typeSA = Type.getType(ShortArray.class);
 
 
@@ -91,9 +92,13 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
                 break;
 
             case Opcodes.AALOAD:
+                m = Method.getMethod("Object get(int)");
+                invokeVirtual(typeOA, m);
                 break;
 
             case Opcodes.AASTORE:
+                m = Method.getMethod("void set(int, Object)");
+                invokeVirtual(typeOA, m);
                 break;
 
             case Opcodes.ARRAYLENGTH:
@@ -146,6 +151,18 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             }
         }else{
             this.mv.visitIntInsn(opcode, operand);
+        }
+    }
+
+    @Override
+    public void visitTypeInsn(int opcode, java.lang.String type){
+        Method m;
+        
+        if (opcode == Opcodes.ANEWARRAY){
+            m = Method.getMethod("org.aion.avm.arraywrapper.ObjectArray initArray(int)");
+            invokeStatic(typeOA, m);
+        }else{
+            this.mv.visitTypeInsn(opcode, type);
         }
     }
 }
