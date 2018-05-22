@@ -1,11 +1,10 @@
 package org.aion.avm.core.stacktracking;
 
-import org.aion.avm.internal.StackWatcher;
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.commons.*;
-
-import java.util.ArrayList;
 
 public class StackWatcherClassAdapter extends ClassVisitor implements Opcodes{
     public StackWatcherClassAdapter(final ClassVisitor cv) {

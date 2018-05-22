@@ -6,14 +6,14 @@ import org.aion.avm.internal.StackWatcher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Field;
 
 public class StackWatcherTest {
     private Class<?> clazz;
@@ -28,7 +28,7 @@ public class StackWatcherTest {
 
     @Before
     // We only need to load the instrumented class once.
-    public void getInstructmentedClass()throws IOException, ClassNotFoundException{
+    public void getInstructmentedClass() throws ClassNotFoundException {
         String name = "org.aion.avm.core.stacktracking.TestResource";
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), name, (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
@@ -46,7 +46,7 @@ public class StackWatcherTest {
     }
 
     @Test
-    public void testDepthOverflow() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testDepthOverflow() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         StackWatcher.reset();
         StackWatcher.setPolicy(StackWatcher.POLICY_DEPTH);
         StackWatcher.setMaxStackDepth(500);
@@ -56,14 +56,15 @@ public class StackWatcherTest {
         Method method = clazz.getMethod("testStackOverflow");
 
         try{
-            Object ret = method.invoke(obj);
+            method.invoke(obj);
+            Assert.fail();
         }catch(InvocationTargetException e){
             Assert.assertTrue(e.getCause() instanceof OutOfStackError);
         }
     }
 
     @Test
-    public void testSizeOverflow() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testSizeOverflow() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         StackWatcher.reset();
         StackWatcher.setPolicy(StackWatcher.POLICY_SIZE);
         StackWatcher.setMaxStackDepth(500);
@@ -73,14 +74,15 @@ public class StackWatcherTest {
         Method method = clazz.getMethod("testStackOverflow");
 
         try{
-            Object ret = method.invoke(obj);
+            method.invoke(obj);
+            Assert.fail();
         }catch(InvocationTargetException e){
             Assert.assertTrue(e.getCause() instanceof OutOfStackError);
         }
     }
 
     @Test
-    public void testStackOverflowConsistency() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
+    public void testStackOverflowConsistency() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
         StackWatcher.reset();
         StackWatcher.setPolicy(StackWatcher.POLICY_SIZE);
         StackWatcher.setMaxStackDepth(600);
@@ -158,7 +160,7 @@ public class StackWatcherTest {
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testLocalTryCatch");
 
-        Object ret = method.invoke(obj);
+        method.invoke(obj);
         //Assert.assertEquals(ret, true);
     }
 

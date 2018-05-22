@@ -8,7 +8,7 @@ public class StackWatcher {
     *  frame slots) of maxStackSize. With Java 10 each slot is 8 bytes.
     *  (POLICY_DEPTH | POLICY_SIZE) will enforce both policy
     */
-    public static final int POLICY_DEPTH = 1 << 0;
+    public static final int POLICY_DEPTH = 1;
     public static final int POLICY_SIZE  = 1 << 1;
 
     // Reserved stack frame slot for AVM internal use
@@ -30,8 +30,8 @@ public class StackWatcher {
      * @param policy A policy mask. See AVMStackWatcher.POLICY_DEPTH and AVMStackWatcher.POLICY_Size.
      */
     public static void setPolicy(int policy){
-        checkDepth = (policy & POLICY_DEPTH) == 1;
-        checkSize  = (policy & POLICY_SIZE)  == 2;
+        checkDepth = (policy & POLICY_DEPTH) == POLICY_DEPTH;
+        checkSize  = (policy & POLICY_SIZE)  == POLICY_SIZE;
     }
 
     public static void reset(){
