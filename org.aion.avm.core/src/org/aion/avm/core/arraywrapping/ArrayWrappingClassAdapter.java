@@ -3,19 +3,14 @@ package org.aion.avm.core.arraywrapping;
 import org.aion.avm.core.util.Assert;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.objectweb.asm.signature.*;
+import org.objectweb.asm.util.*;
 
 
 public class ArrayWrappingClassAdapter extends ClassVisitor {
 
-    private Logger logger = LoggerFactory.getLogger(ArrayWrappingClassAdapter.class);
-
-    private String helperClass;
-
     public ArrayWrappingClassAdapter(ClassVisitor visitor) {
         super(Opcodes.ASM6, visitor);
-        this.helperClass = helperClass;
     }
 
     public MethodVisitor visitMethod(
@@ -24,6 +19,11 @@ public class ArrayWrappingClassAdapter extends ClassVisitor {
             final String descriptor,
             final String signature,
             final String[] exceptions) {
+        //System.out.println(descriptor);
+        //System.out.println(ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor));
+        //System.out.println("**************************************");
+
+        //updateMethodDescriptor(descriptor);
 
         MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
 
@@ -31,4 +31,6 @@ public class ArrayWrappingClassAdapter extends ClassVisitor {
 
         return new ArrayWrappingMethodAdapter(mv, access, name, descriptor);
     }
+
+
 }

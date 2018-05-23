@@ -12,10 +12,6 @@ public class FloatArray extends Array {
         this.underlying = new float[c];
     }
 
-    public FloatArray(float[] underlying) {
-        this.underlying = underlying;
-    }
-
     public int length() {
         return this.underlying.length;
     }

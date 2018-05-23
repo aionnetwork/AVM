@@ -1,4 +1,5 @@
 package org.aion.avm.core.arraywrapping;
+import org.aion.avm.arraywrapper.ByteArray;
 
 public class TestResource {
 
@@ -8,6 +9,55 @@ public class TestResource {
         int b = arr[2];
         arr[2] = 4;
         return res;
+    }
+
+    // public boolean testSignature(){
+    //     boolean[] a = new boolean[2];
+    //     boolean[] b = testBooleanSignature(a);
+    //     return true;
+    // }
+
+    public boolean[] testBooleanSignature(boolean[] in){
+        return in;
+    }
+
+    public byte[] testByteSignature(byte[] in){
+        return in;
+    }
+
+    public char[] testCharSignature(char[] in){
+        return in;
+    }
+
+    public double[] testDoubleSignature(double[] in){
+        return in;
+    }
+
+    public float[] testFloatSignature(float[] in){
+        return in;
+    }
+
+    public int[] testIntSignature(int[] in){
+        return in;
+    }
+
+    public long[] testLongSignature(long[] in){
+        return in;
+    }
+
+    // public Object[] testObjectSignature(Object[] in){
+    //     return in;
+    // }
+
+    public short[] testShortSignature(short[] in){
+        return in;
+    }
+
+    public boolean[] testMixedSignature(boolean[] in1, byte[] in2, char[] in3,
+                                        double[] in4, float[] in5, int[] in6,
+                                        long[] in7, short[] in8)
+    {
+        return in1;
     }
 
     public boolean testBooleanArray(){
@@ -197,8 +247,6 @@ public class TestResource {
         for (i = 0; i < 1024; i++){
             count = count + c[i].hashCode();
         }
-
-        System.out.println(count);
 
         res = (count != 0);
 

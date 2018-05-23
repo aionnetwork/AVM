@@ -12,10 +12,6 @@ public class IntArray extends Array {
         this.underlying = new int[c];
     }
 
-    public IntArray(int[] underlying) {
-        this.underlying = underlying;
-    }
-
     public int length() {
         return this.underlying.length;
     }
