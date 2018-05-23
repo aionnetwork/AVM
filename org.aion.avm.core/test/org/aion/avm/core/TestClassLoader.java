@@ -1,17 +1,19 @@
 package org.aion.avm.core;
 
-import org.junit.Assert;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.aion.avm.core.util.Assert;
+
+
 /**
- * We use this classloader, within the test, to get the raw bytes of the test we want to modify and then pass
- * into the ClassRewriter, for the test.
+ * We are slowly evolving this class loader into one we will likely use for the rest of the system, though it
+ * was originally used only in tests.
+ * This allows a bytecode transformer to be provided and then class bytecode can be injected for both classes
+ * which can be rewritten (with the transformer) or loaded as-is.
  */
 public class TestClassLoader extends ClassLoader {
     private final Map<String, byte[]> classesToRewrite;
@@ -19,22 +21,30 @@ public class TestClassLoader extends ClassLoader {
     private final Map<String, byte[]> injectedClasses;
     private final Map<String, Class<?>> cache;
 
-    public TestClassLoader(ClassLoader parent, String classNameToProvide, Function<byte[], byte[]> loadHandler, Map<String, byte[]> injectedClasses) {
+    public TestClassLoader(ClassLoader parent, Function<byte[], byte[]> loadHandler) {
         super(parent);
         this.classesToRewrite = new HashMap<>();
-        InputStream stream = getParent().getResourceAsStream(classNameToProvide.replaceAll("\\.", "/") + ".class");
+        this.loadHandler = loadHandler;
+        this.injectedClasses = new HashMap<>();
+        this.cache = new HashMap<>();
+    }
+
+    /**
+     * A helper which will attempt to load the given resource path as bytes.
+     * Any failure in the load is considered fatal.
+     * 
+     * @param resourcePath The path to this resource, within the parent class loader.
+     * @return The bytes
+     */
+    public byte[] loadRequiredResourceAsBytes(String resourcePath) {
+        InputStream stream = getParent().getResourceAsStream(resourcePath);
         byte[] raw = null;
         try {
             raw = stream.readAllBytes();
         } catch (IOException e) {
-            e.printStackTrace();
-            Assert.fail();
+            Assert.unexpected(e);
         }
-        this.classesToRewrite.put(classNameToProvide, raw);
-        
-        this.loadHandler = loadHandler;
-        this.injectedClasses = Collections.unmodifiableMap(injectedClasses);
-        this.cache = new HashMap<>();
+        return raw;
     }
 
     /**
@@ -43,8 +53,18 @@ public class TestClassLoader extends ClassLoader {
      * @param classNameToProvide The name of the class to load (in the style of "org.test.Class$Inner").
      * @param raw The raw bytecode of the class.
      */
-    public void addClass(String classNameToProvide, byte[] raw) {
+    public void addClassForRewrite(String classNameToProvide, byte[] raw) {
         this.classesToRewrite.put(classNameToProvide, raw);
+    }
+
+    /**
+     * Adds another class to be loaded as-is.
+     * 
+     * @param classNameToProvide The name of the class to load (in the style of "org.test.Class$Inner").
+     * @param raw The raw bytecode of the class.
+     */
+    public void addClassDirectLoad(String classNameToProvide, byte[] raw) {
+        this.injectedClasses.put(classNameToProvide, raw);
     }
 
     @Override

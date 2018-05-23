@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 
 
 public class StackWatcherTest {
@@ -23,7 +22,7 @@ public class StackWatcherTest {
     // We only need to load the instrumented class once.
     public void getInstructmentedClass() throws ClassNotFoundException {
         String className = "org.aion.avm.core.stacktracking.TestResource";
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, (inputBytes) -> {
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
@@ -32,7 +31,9 @@ public class StackWatcherTest {
 
             byte[] transformed = out.toByteArray();
             return transformed;
-        }, Collections.emptyMap());
+        });
+        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        loader.addClassForRewrite(className, raw);
 
         clazz = loader.loadClass(className);
     }

@@ -9,14 +9,13 @@ import org.objectweb.asm.ClassWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 
 
 public class ClassShadowingTest {
     @Test
     public void testReplaceJavaLang() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         String className = "org.aion.avm.core.shadowing.TestResource";
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, (inputBytes) -> {
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
@@ -25,7 +24,9 @@ public class ClassShadowingTest {
 
             byte[] transformed = out.toByteArray();
             return transformed;
-        }, Collections.emptyMap());
+        });
+        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        loader.addClassForRewrite(className, raw);
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
 

@@ -2,7 +2,6 @@ package org.aion.avm.core.instrument;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
@@ -36,7 +35,9 @@ public class ClassMeteringTest {
 
         // Setup and rewrite the class.
         String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), this.commonCostBuilder);
+        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        loader.addClassForRewrite(className, raw);
         this.clazz = loader.loadClass(className);
     }
 

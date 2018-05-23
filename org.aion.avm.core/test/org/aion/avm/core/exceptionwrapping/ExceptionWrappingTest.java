@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -67,21 +66,25 @@ public class ExceptionWrappingTest {
         String slashName = wrapperName.replaceAll("\\.", "/");
         String superSlashName = wrapperSuperName.replaceAll("\\.", "/");
         byte[] wrapperBytes = StubGenerator.generateWrapperClass(slashName, superSlashName);
-        Map<String, byte[]> allGenerated = new HashMap<>(generatedClasses);
-        allGenerated.put(wrapperName, wrapperBytes);
-        this.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, allGenerated);
+        this.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), this.commonCostBuilder);
+        byte[] raw = this.loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        this.loader.addClassForRewrite(className, raw);
+        this.loader.addClassDirectLoad(wrapperName, wrapperBytes);
+        for (Map.Entry<String, byte[]> elt : generatedClasses.entrySet()) {
+            this.loader.addClassDirectLoad(elt.getKey(), elt.getValue());
+        }
         
         String resourceName = className.replaceAll("\\.", "/") + "$UserDefinedException.class";
         InputStream stream = this.loader.getParent().getResourceAsStream(resourceName);
-        byte[] raw = null;
+        byte[] exceptionBytes = null;
         try {
-            raw = stream.readAllBytes();
+            exceptionBytes = stream.readAllBytes();
         } catch (IOException e) {
             e.printStackTrace();
             Assert.fail();
         }
         String exceptionName = className + "$UserDefinedException";
-        this.loader.addClass(exceptionName, raw);
+        this.loader.addClassForRewrite(exceptionName, exceptionBytes);
         
         TestHelpers.loader = this.loader;
         this.testClass = this.loader.loadClass(className);

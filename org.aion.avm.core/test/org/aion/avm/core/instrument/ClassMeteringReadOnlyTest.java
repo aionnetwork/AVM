@@ -1,6 +1,5 @@
 package org.aion.avm.core.instrument;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,9 @@ public class ClassMeteringReadOnlyTest {
         // Setup and rewrite the class.
         String className = TestResource.class.getCanonicalName();
         this.snooper = new BlockSnooper();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.snooper, Collections.emptyMap());
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), this.snooper);
+        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        loader.addClassForRewrite(className, raw);
         loader.loadClass(className);
     }
 
