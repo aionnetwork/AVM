@@ -49,7 +49,6 @@ public class ExceptionWrappingTest {
     };
 
     private Class<?> testClass;
-    private TestClassLoader loader;
 
     @Before
     public void setup() throws Exception {
@@ -66,16 +65,16 @@ public class ExceptionWrappingTest {
         String slashName = wrapperName.replaceAll("\\.", "/");
         String superSlashName = wrapperSuperName.replaceAll("\\.", "/");
         byte[] wrapperBytes = StubGenerator.generateWrapperClass(slashName, superSlashName);
-        this.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), this.commonCostBuilder);
-        byte[] raw = this.loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        this.loader.addClassForRewrite(className, raw);
-        this.loader.addClassDirectLoad(wrapperName, wrapperBytes);
+        TestHelpers.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), this.commonCostBuilder);
+        byte[] raw = TestHelpers.loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        TestHelpers.loader.addClassForRewrite(className, raw);
+        TestHelpers.loader.addClassDirectLoad(wrapperName, wrapperBytes);
         for (Map.Entry<String, byte[]> elt : generatedClasses.entrySet()) {
-            this.loader.addClassDirectLoad(elt.getKey(), elt.getValue());
+            TestHelpers.loader.addClassDirectLoad(elt.getKey(), elt.getValue());
         }
         
         String resourceName = className.replaceAll("\\.", "/") + "$UserDefinedException.class";
-        InputStream stream = this.loader.getParent().getResourceAsStream(resourceName);
+        InputStream stream = TestHelpers.loader.getParent().getResourceAsStream(resourceName);
         byte[] exceptionBytes = null;
         try {
             exceptionBytes = stream.readAllBytes();
@@ -84,10 +83,9 @@ public class ExceptionWrappingTest {
             Assert.fail();
         }
         String exceptionName = className + "$UserDefinedException";
-        this.loader.addClassForRewrite(exceptionName, exceptionBytes);
+        TestHelpers.loader.addClassForRewrite(exceptionName, exceptionBytes);
         
-        TestHelpers.loader = this.loader;
-        this.testClass = this.loader.loadClass(className);
+        this.testClass = TestHelpers.loader.loadClass(className);
     }
 
 
@@ -121,7 +119,7 @@ public class ExceptionWrappingTest {
             manuallyThrowNull.invoke(null);
         } catch (InvocationTargetException e) {
             // Make sure that this is the wrapper type that we normally expect to see.
-            Class<?> compare = this.loader.loadClass("org.aion.avm.exceptionwrapper.java.lang.NullPointerException");
+            Class<?> compare = TestHelpers.loader.loadClass("org.aion.avm.exceptionwrapper.java.lang.NullPointerException");
             didCatch = e.getCause().getClass() == compare;
         }
         Assert.assertTrue(TestHelpers.didWrap);
