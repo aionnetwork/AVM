@@ -31,4 +31,12 @@ public class AvmResult {
         this.energyLeft = energyLeft;
         this.returnData = returnData;
     }
+
+    @Override
+    public String toString() {
+        return "AvmResult{" +
+                "code=" + code +
+                ", energyLeft=" + energyLeft +
+                '}';
+    }
 }

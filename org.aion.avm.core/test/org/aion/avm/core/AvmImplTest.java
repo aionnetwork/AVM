@@ -1,5 +1,8 @@
 package org.aion.avm.core;
 
+import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.util.Helpers;
+import org.aion.avm.rt.BlockchainRuntime;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -27,5 +30,45 @@ public class AvmImplTest {
         assertEquals(1, classes.size());
         final var expectedSizeOfFile = 424;
         assertEquals(expectedSizeOfFile, classes.get(mainClassName).length);
+    }
+
+
+    @Test
+    public void testDeploy() {
+        byte[] sender = Helpers.randomBytes(32);
+        byte[] address = Helpers.randomBytes(32);
+        long energyLimit = 1000000;
+
+        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
+        BlockchainRuntime rt = new BlockchainRuntime() {
+            @Override
+            public ByteArray getSender() {
+                return new ByteArray(sender);
+            }
+
+            @Override
+            public ByteArray getAddress() {
+                return new ByteArray(address);
+            }
+
+            @Override
+            public long getEnergyLimit() {
+                return energyLimit;
+            }
+
+            @Override
+            public ByteArray getStorage(ByteArray key) {
+                return null;
+            }
+
+            @Override
+            public void putStorage(ByteArray key, ByteArray value) {
+
+            }
+        };
+        AvmImpl avm = new AvmImpl();
+        AvmResult result = avm.deploy(jar, rt);
+
+        System.out.println(result);
     }
 }

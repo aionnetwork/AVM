@@ -7,12 +7,14 @@ import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -28,6 +30,11 @@ import static org.aion.avm.core.FileUtils.putToTempDir;
 public class AvmImpl implements Avm {
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
     private static final String HELPER_CLASS = "org/aion/avm/internal/Helper";
+    private static final File DAPPS_DIR = new File("../dapps");
+
+    static {
+        DAPPS_DIR.mkdirs();
+    }
 
     /**
      * Extracts the DApp module in compressed format into the designated folder.
@@ -142,30 +149,83 @@ public class AvmImpl implements Avm {
         return processedClasses;
     }
 
+    private final static char[] hexArray = "0123456789abcdef".toCharArray();
+
+    private String byteArrayToString(ByteArray bytes) {
+        int length = bytes.length();
+
+        char[] hexChars = new char[length * 2];
+        for (int i = 0; i < length; i++) {
+            int v = bytes.get(i) & 0xFF;
+            hexChars[i * 2] = hexArray[v >>> 4];
+            hexChars[i * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
     /**
      * Stores the instrumented bytecode into database.
+     *
+     * TODO: re-design this dummy implementation
      *
      * @param address the address of the DApp
      * @param dapp    the dapp module
      */
     public void storeTransformedDapp(ByteArray address, DappModule dapp) {
+        String id = byteArrayToString(address);
+        File dir = new File(DAPPS_DIR, id);
+        dir.mkdir();
 
-        // TODO: Rom
+        // store main class
+        File main = new File(dir, "MAIN");
+        Helpers.writeBytesToFile(dapp.getMainClass().getBytes(), main.getAbsolutePath());
+
+        // store bytecode
+        Map<String, byte[]> classes = dapp.getClasses();
+        for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
+            File file = new File(dir, entry + ".class");
+            Helpers.writeBytesToFile(entry.getValue(), file.getAbsolutePath());
+        }
     }
 
+    /**
+     * Loads the transformed bytecode.
+     *
+     * TODO: re-design this dummy implementation
+     *
+     * @param address
+     * @return
+     */
     public DappModule loadTransformedDapp(ByteArray address) {
+        String id = byteArrayToString(address);
+        File dir = new File(DAPPS_DIR, id);
+        if (!dir.exists()) {
+            return null;
+        }
 
-        // TODO: Rom
+        // store main class
+        File file = new File(dir, "MAIN");
+        String mainClass = new String(Helpers.readFileToBytes(file.getAbsolutePath()));
 
-        return null;
+        // store bytecode
+        Map<String, byte[]> classes = new HashMap<>();
+        for (String fileName : dir.list()) {
+            if (fileName.endsWith(".class")) {
+                String name = fileName.substring(0, fileName.length() - 6);
+                byte[] bytes = Helpers.readFileToBytes(new File(dir, fileName).getAbsolutePath());
+                classes.put(name, bytes);
+            }
+        }
+
+        return new DappModule(classes, mainClass);
     }
 
     @Override
-    public AvmResult deploy(byte[] module, BlockchainRuntime rt) {
+    public AvmResult deploy(byte[] jar, BlockchainRuntime rt) {
 
         try {
             // read dapp module
-            DappModule app = readDapp(module);
+            DappModule app = readDapp(jar);
             if (app == null) {
                 return new AvmResult(AvmResult.Code.INVALID_JAR, 0);
             }
@@ -255,6 +315,10 @@ public class AvmImpl implements Avm {
                 logger.debug(String.format("Can't find property %s in jar %s", propertyKey, file));
             }
             return null;
+        }
+
+        private DappModule(Map<String, byte[]> classes, String mainClass) {
+            this(classes, mainClass, null);
         }
 
         private DappModule(Map<String, byte[]> classes, String mainClass, ClassHierarchyForest classHierarchyForest) {

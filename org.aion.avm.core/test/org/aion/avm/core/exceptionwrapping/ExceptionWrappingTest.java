@@ -161,7 +161,7 @@ public class ExceptionWrappingTest {
 
 
     public static class TestHelpers{
-        public static final String CLASS_NAME = ExceptionWrappingTest.class.getCanonicalName().replaceAll("\\.", "/") + "$TestHelpers";
+        public static final String CLASS_NAME = ExceptionWrappingTest.class.getCanonicalName().replaceAll("\\.", "/") + "$Helpers";
         public static int countWrappedClasses;
         public static int countWrappedStrings;
         public static boolean didUnwrap = false;
