@@ -28,30 +28,45 @@ public class TestClassLoader extends ClassLoader {
     }
 
     @Override
-    public Class<?> loadClass(String name) throws ClassNotFoundException {
+    public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        // NOTE:  We override this, instead of findClass, since we want to circumvent the normal delegation process of class loaders.
         Class<?> result = null;
-        if (this.classNameToProvide.equals(name)) {
-            InputStream stream = getParent().getResourceAsStream(name.replaceAll("\\.", "/") + ".class");
-            byte[] raw = null;
-            try {
-                raw = stream.readAllBytes();
-            } catch (IOException e) {
-                e.printStackTrace();
-                Assert.fail();
-            }
-            byte[] rewrittten = this.loadHandler.apply(raw);
-            result = defineClass(name, rewrittten, 0, rewrittten.length);
-        } else if (this.injectedClasses.containsKey(name)) {
-            Class<?> cached = this.cache.get(name);
-            if (null == cached) {
+        boolean shouldResolve = resolve;
+        
+        // Since we are using our own loadClass, we need our own cache.
+        Class<?> cached = this.cache.get(name);
+        if (null == cached) {
+            if (this.classNameToProvide.equals(name)) {
+                InputStream stream = getParent().getResourceAsStream(name.replaceAll("\\.", "/") + ".class");
+                byte[] raw = null;
+                try {
+                    raw = stream.readAllBytes();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Assert.fail();
+                }
+                byte[] rewrittten = this.loadHandler.apply(raw);
+                result = defineClass(name, rewrittten, 0, rewrittten.length);
+            } else if (this.injectedClasses.containsKey(name)) {
                 byte[] prepared = this.injectedClasses.get(name);
                 result = defineClass(name, prepared, 0, prepared.length);
-                this.cache.put(name, result);
             } else {
-                result = cached;
+                result = getParent().loadClass(name);
+                // We got this from the parent so don't resolve.
+                shouldResolve = false;
+            }
+            
+            if (null != result) {
+                this.cache.put(name, result);
             }
         } else {
-            result = getParent().loadClass(name);
+            result = cached;
+            // We got this from the cache so don't resolve.
+            shouldResolve = false;
+        }
+        
+        if ((null != result) && shouldResolve) {
+            resolveClass(result);
         }
         return result;
     }

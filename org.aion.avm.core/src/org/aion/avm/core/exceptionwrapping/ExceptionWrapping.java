@@ -85,7 +85,7 @@ public class ExceptionWrapping extends ClassVisitor {
                     String wrapperType = kWrapperClassLibraryPrefix + type;
                     super.visitTryCatchBlock(start, end, handler, wrapperType);
                 }
-                // TODO: Convert user-defined types to their wrapper types.
+                // TODO: Convert user-defined types to their wrapper types (this will be handled under issue-17).
                 
                 // We just want to record the handler label so we know it is a catch block, in visitLabel, above.
                 this.catchTargets.add(handler);
