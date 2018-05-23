@@ -279,7 +279,7 @@ public class AvmImpl implements Avm {
             ByteArray ret = (ByteArray) method.invoke(obj, rt.getData(), rt);
 
             // TODO: energy left
-            return new AvmResult(AvmResult.Code.SUCCESS, 0, ret.getUnderlying());
+            return new AvmResult(AvmResult.Code.SUCCESS, Helper.energyLeft(), ret.getUnderlying());
         } catch (Exception e) {
             e.printStackTrace();
 

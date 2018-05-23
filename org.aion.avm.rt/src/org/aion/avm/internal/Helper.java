@@ -30,6 +30,10 @@ public class Helper {
         }
     }
 
+    public static long energyLeft() {
+        return energyLeft.get().get();
+    }
+
     public static Object multianewarray1(int d1, Class<?> cl) {
         return Array.newInstance(cl, d1);
     }

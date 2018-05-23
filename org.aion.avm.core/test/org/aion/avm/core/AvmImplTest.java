@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.rt.BlockchainRuntime;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -79,6 +80,7 @@ public class AvmImplTest {
         assertEquals(AvmResult.Code.SUCCESS, result.code);
     }
 
+    @Ignore
     @Test
     public void testDeployAndRun() {
         testDeploy();

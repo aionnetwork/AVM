@@ -1,15 +1,5 @@
 package org.aion.avm.core.classloading;
 
-import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.core.shadowing.ClassShadowing;
-import org.aion.avm.rt.BlockchainRuntime;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 
