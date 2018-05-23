@@ -9,6 +9,7 @@ import java.util.function.Function;
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.instrument.BasicBlock;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.MethodNode;
@@ -18,15 +19,22 @@ import org.objectweb.asm.tree.MethodNode;
  * Split from ClassMeteringTest to handle the read-only testing, to keep things simpler.
  */
 public class ClassMeteringReadOnlyTest {
+    private BlockSnooper snooper;
+
+    @Before
+    public void setup() throws Exception {
+        // Setup and rewrite the class.
+        String className = TestResource.class.getCanonicalName();
+        this.snooper = new BlockSnooper();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.snooper, Collections.emptyMap());
+        loader.loadClass(className);
+    }
+
     /**
      * Parses a test class into extents.
      */
     @Test
     public void testMethodBlocks() throws Exception {
-        String className = TestResource.class.getCanonicalName();
-        BlockSnooper snooper = new BlockSnooper();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper, Collections.emptyMap());
-        loader.loadClass(className);
         Map<String, List<BasicBlock>> resultMap = snooper.resultMap;
         Assert.assertNotNull(resultMap);
         List<BasicBlock> initBlocks = resultMap.get("<init>(I)V");
@@ -48,10 +56,6 @@ public class ClassMeteringReadOnlyTest {
      */
     @Test
     public void testAllocationTypes() throws Exception {
-        String className = TestResource.class.getCanonicalName();
-        BlockSnooper snooper = new BlockSnooper();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, snooper, Collections.emptyMap());
-        loader.loadClass(className);
         Map<String, List<BasicBlock>> resultMap = snooper.resultMap;
         List<BasicBlock> factoryBlocks = resultMap.get("testFactory()Lorg/aion/avm/core/instrument/TestResource;");
         // We expect this case to have a single block.

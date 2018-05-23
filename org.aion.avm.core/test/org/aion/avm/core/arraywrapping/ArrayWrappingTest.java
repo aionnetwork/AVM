@@ -1,7 +1,6 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.core.TestClassLoader;
-import org.aion.avm.core.TestHelpers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,8 +19,8 @@ public class ArrayWrappingTest {
     @Before
     // We only need to load the instrumented class once.
     public void getInstructmentedClass()throws IOException, ClassNotFoundException{
-        String name = "org.aion.avm.core.arraywrapping.TestResource";
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), name, (inputBytes) -> {
+        String className = "org.aion.avm.core.arraywrapping.TestResource";
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
@@ -29,11 +28,10 @@ public class ArrayWrappingTest {
             in.accept(swc, ClassReader.EXPAND_FRAMES);
 
             byte[] transformed = out.toByteArray();
-            TestHelpers.writeBytesToFile(transformed, "/tmp/output.class");
             return transformed;
         }, Collections.emptyMap());
 
-        clazz = loader.loadClass(name);
+        clazz = loader.loadClass(className);
     }
 
     @Test

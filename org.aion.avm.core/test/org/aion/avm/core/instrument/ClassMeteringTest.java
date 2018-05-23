@@ -24,13 +24,20 @@ public class ClassMeteringTest {
         return out.toByteArray();
     };
 
+    private Class<?> clazz;
+
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         // Clear the state of our static test class.
         TestEnergy.totalCost = 0;
         TestEnergy.totalCharges = 0;
         TestEnergy.totalArrayElements = 0;
         TestEnergy.totalArrayInstances = 0;
+
+        // Setup and rewrite the class.
+        String className = TestResource.class.getCanonicalName();
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
+        this.clazz = loader.loadClass(className);
     }
 
     /**
@@ -38,10 +45,6 @@ public class ClassMeteringTest {
      */
     @Test
     public void testWrittenBlockPrefix() throws Exception {
-        // Setup and rewrite the class.
-        String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
-        Class<?> clazz = loader.loadClass(className);
         // By this point, we should still have 0 charges.
         Assert.assertEquals(0, TestEnergy.totalCharges);
         Object target = clazz.getConstructor(int.class).newInstance(6);
@@ -72,10 +75,6 @@ public class ClassMeteringTest {
      */
     @Test
     public void testAnewarrayCallOut() throws Exception {
-        // Setup and rewrite the class.
-        String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
-        Class<?> clazz = loader.loadClass(className);
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
         Method buildStringArray = clazz.getMethod("buildStringArray", int.class);
@@ -102,10 +101,6 @@ public class ClassMeteringTest {
      */
     @Test
     public void testMultianewarrayCallOut() throws Exception {
-        // Setup and rewrite the class.
-        String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
-        Class<?> clazz = loader.loadClass(className);
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
         Method buildMultiStringArray3 = clazz.getMethod("buildMultiStringArray3", int.class, int.class, int.class);
@@ -137,10 +132,6 @@ public class ClassMeteringTest {
      */
     @Test
     public void testMultianewarrayPrimitive() throws Exception {
-        // Setup and rewrite the class.
-        String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
-        Class<?> clazz = loader.loadClass(className);
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
         Method buildLongArray2 = clazz.getMethod("buildLongArray2", int.class, int.class);
@@ -170,10 +161,6 @@ public class ClassMeteringTest {
      */
     @Test
     public void testNewarrayChar() throws Exception {
-        // Setup and rewrite the class.
-        String className = TestResource.class.getCanonicalName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, this.commonCostBuilder, Collections.emptyMap());
-        Class<?> clazz = loader.loadClass(className);
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
         Method buildCharArray = clazz.getMethod("buildCharArray", int.class);

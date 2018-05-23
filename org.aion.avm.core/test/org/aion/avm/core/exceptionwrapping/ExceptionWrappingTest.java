@@ -1,6 +1,5 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;

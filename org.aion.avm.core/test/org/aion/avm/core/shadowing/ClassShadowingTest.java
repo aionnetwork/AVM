@@ -1,7 +1,6 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.TestClassLoader;
-import org.aion.avm.core.TestHelpers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -16,8 +15,8 @@ import java.util.Collections;
 public class ClassShadowingTest {
     @Test
     public void testReplaceJavaLang() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        String name = "org.aion.avm.core.shadowing.TestResource";
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), name, (inputBytes) -> {
+        String className = "org.aion.avm.core.shadowing.TestResource";
+        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
@@ -25,10 +24,9 @@ public class ClassShadowingTest {
             in.accept(cs, ClassReader.SKIP_DEBUG);
 
             byte[] transformed = out.toByteArray();
-            TestHelpers.writeBytesToFile(transformed, "/tmp/output.class");
             return transformed;
         }, Collections.emptyMap());
-        Class<?> clazz = loader.loadClass(name);
+        Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
 
         Method method = clazz.getMethod("multi", int.class, int.class);
