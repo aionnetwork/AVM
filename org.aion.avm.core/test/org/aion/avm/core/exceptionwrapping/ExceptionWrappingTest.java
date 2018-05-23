@@ -60,7 +60,30 @@ public class ExceptionWrappingTest {
         
         String className = TestExceptionResource.class.getCanonicalName();
         Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
-        this.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
+        
+        // As a first cut, we will generate the wrapper out here but this needs to be folded into ExceptionWrapping, later.
+        // TODO:  Generalize this into ExceptionWrapping (may require class hierarchy or we do it lazily based on throw/catch usage).
+        String wrapperName = CommonGenerators.kWrapperClassLibraryPrefix + className + "$UserDefinedException";
+        String wrapperSuperName = CommonGenerators.kWrapperClassLibraryPrefix + Throwable.class.getCanonicalName();
+        String slashName = wrapperName.replaceAll("\\.", "/");
+        String superSlashName = wrapperSuperName.replaceAll("\\.", "/");
+        byte[] wrapperBytes = StubGenerator.generateWrapperClass(slashName, superSlashName);
+        Map<String, byte[]> allGenerated = new HashMap<>(generatedClasses);
+        allGenerated.put(wrapperName, wrapperBytes);
+        this.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, allGenerated);
+        
+        String resourceName = className.replaceAll("\\.", "/") + "$UserDefinedException.class";
+        InputStream stream = this.loader.getParent().getResourceAsStream(resourceName);
+        byte[] raw = null;
+        try {
+            raw = stream.readAllBytes();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+        String exceptionName = className + "$UserDefinedException";
+        this.loader.addClass(exceptionName, raw);
+        
         TestHelpers.loader = this.loader;
         this.testClass = this.loader.loadClass(className);
     }

@@ -73,4 +73,25 @@ public class TestExceptionResource {
     public static void manuallyThrowNull() {
         throw new NullPointerException("faked");
     }
+
+    public static String userDefinedCatch() {
+        String result = "one";
+        try {
+            userDefinedThrow("two");
+        } catch (UserDefinedException e) {
+            result = e.getMessage();
+        }
+        return result;
+    }
+
+    public static void userDefinedThrow(String message) throws UserDefinedException {
+        throw new UserDefinedException(message);
+    }
+
+    public static class UserDefinedException extends Throwable {
+        private static final long serialVersionUID = 1L;
+        public UserDefinedException(String message) {
+            super(message);
+        }
+    }
 }

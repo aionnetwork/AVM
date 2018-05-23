@@ -79,15 +79,24 @@ public class ExceptionWrapping extends ClassVisitor {
             }
             @Override
             public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-                super.visitTryCatchBlock(start, end, handler, type);
-                // If this was trying to catch anything in "java/lang/*", then duplicate it for our wrapper type.
-                if ((null != type) && type.startsWith("java/lang/")) {
-                    String wrapperType = kWrapperClassLibraryPrefix + type;
-                    super.visitTryCatchBlock(start, end, handler, wrapperType);
+                // Our special-handling is only for non-finally blocks.
+                if (null != type) {
+                    if (type.startsWith("java/lang/")) {
+                        // If this was trying to catch anything in "java/lang/*", then duplicate it for our wrapper type.
+                        super.visitTryCatchBlock(start, end, handler, type);
+                        String wrapperType = kWrapperClassLibraryPrefix + type;
+                        super.visitTryCatchBlock(start, end, handler, wrapperType);
+                    } else {
+                        // This is user-defined (or should have been stripped, earlier) so replace it with the appropriate wrapper type.
+                        String wrapperType = kWrapperClassLibraryPrefix + type;
+                        super.visitTryCatchBlock(start, end, handler, wrapperType);
+                    }
+                } else {
+                    // Finally, just pass through.
+                    super.visitTryCatchBlock(start, end, handler, type);
                 }
-                // TODO: Convert user-defined types to their wrapper types (this will be handled under issue-17).
                 
-                // We just want to record the handler label so we know it is a catch block, in visitLabel, above.
+                // We also need to record the handler label so we know it is a catch block, in visitLabel, above.
                 this.catchTargets.add(handler);
             }
             @Override
