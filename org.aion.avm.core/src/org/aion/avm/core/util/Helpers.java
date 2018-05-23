@@ -3,8 +3,6 @@ package org.aion.avm.core.util;
 import java.io.*;
 import java.security.SecureRandom;
 
-import org.aion.avm.core.util.Assert;
-
 
 /**
  * Common utilities we often want to use in various tests (either temporarily or permanently).
@@ -14,9 +12,9 @@ public class Helpers {
     /**
      * Writes the given bytes to the file at the given path.
      * This is effective for dumping re-written bytecode to file for offline analysis.
-     * 
+     *
      * @param bytes The bytes to write.
-     * @param file The path where the file should be written.
+     * @param file  The path where the file should be written.
      */
     public static void writeBytesToFile(byte[] bytes, String file) {
         try (FileOutputStream fos = new FileOutputStream(file)) {
@@ -35,9 +33,9 @@ public class Helpers {
      */
     public static byte[] readFileToBytes(String path) {
         File f = new File(path);
-        byte[] b = new byte[(int)f.length()];
+        byte[] b = new byte[(int) f.length()];
 
-        try (DataInputStream  in = new DataInputStream(new FileInputStream(f))){
+        try (DataInputStream in = new DataInputStream(new FileInputStream(f))) {
             in.readFully(b);
         } catch (IOException e) {
             Assert.unexpected(e);
@@ -62,12 +60,22 @@ public class Helpers {
     }
 
     /**
-     * Converts a fully qualified name into it's JVM internal form.
+     * Converts a fully qualified class name into it's JVM internal form.
      *
      * @param fullyQualifiedName
      * @return
      */
     public static String fulllyQualifiedNameToInternalName(String fullyQualifiedName) {
         return fullyQualifiedName.replaceAll("\\.", "/");
+    }
+
+    /**
+     * Converts a JVM internal class name into a fully qualified name.
+     *
+     * @param internalName
+     * @return
+     */
+    public static String internalNameToFulllyQualifiedName(String internalName) {
+        return internalName.replaceAll("/", ".");
     }
 }
