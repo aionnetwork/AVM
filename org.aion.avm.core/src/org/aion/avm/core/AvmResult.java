@@ -3,7 +3,7 @@ package org.aion.avm.core;
 public class AvmResult {
 
     public enum  Code {
-        SUCCESS, INVALID_CODE, OUT_OF_ENERGY, FAILURE
+        SUCCESS, INVALID_JAR, INVALID_CODE, OUT_OF_ENERGY, FAILURE
     }
 
     /**

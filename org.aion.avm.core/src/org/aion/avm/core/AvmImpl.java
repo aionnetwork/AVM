@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
@@ -31,12 +32,12 @@ public class AvmImpl implements Avm {
     /**
      * Extracts the DApp module in compressed format into the designated folder.
      *
-     * @param module the DApp module in JAR format
+     * @param jar the DApp module in JAR format
      * @return the parsed DApp module if this operation is successful, otherwise null
      */
-    static DappModule readDapp(byte[] module) throws IOException {
-        Objects.requireNonNull(module);
-        return DappModule.readFromJar(module);
+    static DappModule readDapp(byte[] jar) throws IOException {
+        Objects.requireNonNull(jar);
+        return DappModule.readFromJar(jar);
     }
 
     /**
@@ -48,17 +49,18 @@ public class AvmImpl implements Avm {
      * <li>no invalid opcode</li>
      * <li>package name does not start with <code>org.aion</code></li>
      * <li>main class is a <code>Contract</code></li>
+     * <li>any assumptions that the class transformation has made</li>
      * <li>TODO: add more</li>
      * </ul>
      *
      * @param dapp the classes of DApp
-     * @return the class hierarchy if the classes are valid, otherwise null
+     * @return true if the DApp is valid, otherwise false
      */
-    public ClassHierarchyForest validateDapp(DappModule dapp) {
+    public boolean validateDapp(DappModule dapp) {
 
-        // TODO: Rom
+        // TODO: Rom, complete module validation
 
-        return null;
+        return true;
     }
 
     /**
@@ -104,9 +106,9 @@ public class AvmImpl implements Avm {
      * @param classes        the class of DApp
      * @param classHierarchy the class hierarchy
      * @param objectSizes    the sizes of object
-     * @return the classes after
+     * @return the transformed classes and any generated classes
      */
-    public Map<String, byte[]> analyzeClasses(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> objectSizes) {
+    public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> objectSizes) {
 
         Map<String, byte[]> processedClasses = new HashMap<>();
         Map<String, byte[]> generatedClasses = new HashMap<>();
@@ -114,12 +116,17 @@ public class AvmImpl implements Avm {
         for (String name : classes.keySet()) {
             ClassReader in = new ClassReader(classes.get(name));
 
+            /*
+             * CLASS_READER => CLASS_METERING => STACK_TRACKING => CLASS_SHADOWING => EXCEPTION_WRAPPING => ARRAY_WRAPPING => CLASS_WRITER
+             */
+
             // in reverse order
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, HELPER_CLASS, classHierarchy, generatedClasses);
-            StackWatcherClassAdapter stackTracking = new StackWatcherClassAdapter(exceptionHandling);
-            ClassShadowing classShadowing = new ClassShadowing(stackTracking, HELPER_CLASS);
-            ClassMetering classMetering = new ClassMetering(classShadowing, HELPER_CLASS, classHierarchy, objectSizes);
+            ArrayWrappingClassAdapter arrayWrapping = new ArrayWrappingClassAdapter(out);
+            ExceptionWrapping exceptionHandling = new ExceptionWrapping(arrayWrapping, HELPER_CLASS, classHierarchy, generatedClasses);
+            ClassShadowing classShadowing = new ClassShadowing(exceptionHandling, HELPER_CLASS);
+            StackWatcherClassAdapter stackTracking = new StackWatcherClassAdapter(classShadowing);
+            ClassMetering classMetering = new ClassMetering(stackTracking, HELPER_CLASS, classHierarchy, objectSizes);
 
             // traverse
             // TODO:  ClassReader.EXPAND_FRAMES is needed for stacktracking injector
@@ -131,6 +138,7 @@ public class AvmImpl implements Avm {
 
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         processedClasses.putAll(generatedClasses);
+
         return processedClasses;
     }
 
@@ -159,28 +167,29 @@ public class AvmImpl implements Avm {
             // read dapp module
             DappModule app = readDapp(module);
             if (app == null) {
-                return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
+                return new AvmResult(AvmResult.Code.INVALID_JAR, 0);
             }
 
             // validate dapp module
-            ClassHierarchyForest hierarchy = validateDapp(app);
-            if (hierarchy == null) {
+            if (!validateDapp(app)) {
                 return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
             }
 
             // compute object sizes
             Map<String, Integer> runtimeObjectSizes = computeRuntimeObjectSizes();
-            Map<String, Integer> objectSizes = computeObjectSizes(hierarchy, runtimeObjectSizes);
+            Map<String, Integer> objectSizes = computeObjectSizes(app.getClassHierarchyForest(), runtimeObjectSizes);
             objectSizes.putAll(runtimeObjectSizes);
 
             // transform
-            Map<String, byte[]> anlyzedClasses = analyzeClasses(app.getClasses(), hierarchy, objectSizes);
-            app.setClasses(anlyzedClasses);
+            Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), app.getClassHierarchyForest(), objectSizes);
+            app.setClasses(transformedClasses);
 
             // store transformed dapp
             storeTransformedDapp(rt.getAddress(), app);
 
-            return new AvmResult(AvmResult.Code.SUCCESS, rt.getEnergyLimit()); // TODO: billing
+            // TODO: billing
+
+            return new AvmResult(AvmResult.Code.SUCCESS, rt.getEnergyLimit());
         } catch (Exception e) {
             return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
         }
@@ -196,6 +205,7 @@ public class AvmImpl implements Avm {
         // TODO: create an instance and invoke the `run` method
 
         // TODO: return the result
+
         return null;
     }
 
@@ -207,9 +217,14 @@ public class AvmImpl implements Avm {
 
         private Map<String, byte[]> classes;
 
+        private ClassHierarchyForest classHierarchyForest;
+
         private static DappModule readFromJar(byte[] jar) throws IOException {
-            Map<String, byte[]> classes = ClassHierarchyForest.createForestFrom(jar).toFlatMapWithoutRoots();
-            return new DappModule(classes, readMainClassQualifiedNameFrom(jar));
+            ClassHierarchyForest forest = ClassHierarchyForest.createForestFrom(jar);
+            Map<String, byte[]> classes = forest.toFlatMapWithoutRoots();
+            String mainClass = readMainClassQualifiedNameFrom(jar);
+
+            return new DappModule(classes, mainClass, forest);
         }
 
         private static String readMainClassQualifiedNameFrom(byte[] jar) throws IOException {
@@ -242,9 +257,10 @@ public class AvmImpl implements Avm {
             return null;
         }
 
-        private DappModule(Map<String, byte[]> classes, String mainClass) {
+        private DappModule(Map<String, byte[]> classes, String mainClass, ClassHierarchyForest classHierarchyForest) {
             this.classes = classes;
             this.mainClass = mainClass;
+            this.classHierarchyForest = classHierarchyForest;
         }
 
         Map<String, byte[]> getClasses() {
@@ -253,6 +269,10 @@ public class AvmImpl implements Avm {
 
         String getMainClass() {
             return mainClass;
+        }
+
+        ClassHierarchyForest getClassHierarchyForest() {
+            return classHierarchyForest;
         }
 
         private void setClasses(Map<String, byte[]> classes) {
