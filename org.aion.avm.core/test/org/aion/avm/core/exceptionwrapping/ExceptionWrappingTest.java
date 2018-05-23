@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
-import org.aion.avm.core.classgeneration.StubGenerator;
 import org.aion.avm.core.shadowing.ClassShadowing;
-import org.aion.avm.core.ClassHierarchyForest;
+import org.aion.avm.core.Forest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,11 +38,28 @@ public class ExceptionWrappingTest {
             }
         };
         
-        ClassHierarchyForest classHierarchy = null;
-        Map<String, byte[]> generatedClasses = null;
+        // We know that we have an exception, in this test, but the forest normally needs to be populated from a jar so manually assemble it.
+        String exceptionClassSlashName = TestExceptionResource.UserDefinedException.class.getName();
+        Forest<String, byte[]> classHierarchy = new Forest<>();
+        Forest.Node<String, byte[]> root = new Forest.Node<>("java.lang.Object", null);
+        Forest.Node<String, byte[]> parent = new Forest.Node<>("java.lang.Throwable", null);
+        classHierarchy.add(root, parent);
+        Forest.Node<String, byte[]> child = new Forest.Node<>(exceptionClassSlashName, null);
+        classHierarchy.add(parent, child);
+        Forest.Node<String, byte[]> testResource = new Forest.Node<>("org.aion.avm.core.exceptionwrapping.TestExceptionResource", null);
+        classHierarchy.add(root, testResource);
+        
+        Map<String, byte[]> generatedClasses = new HashMap<>();
         ClassShadowing cs = new ClassShadowing(out, TestHelpers.CLASS_NAME);
         ExceptionWrapping wrapping = new ExceptionWrapping(cs, TestHelpers.CLASS_NAME, classHierarchy, generatedClasses);
         in.accept(wrapping, ClassReader.SKIP_DEBUG);
+        
+        // WARNING:  We are using this TestHelpers.loader as a way of injecting the code we want to generate back into the TestClassLoader.
+        // TODO:  Change the contract with the TestClassLoader to allow us to more easily push these in.
+        // (within the shape of this unit test, we can't do much better)
+        for (Map.Entry<String, byte[]> elt : generatedClasses.entrySet()) {
+            TestHelpers.loader.addClassDirectLoad(elt.getKey().replaceAll("/", "."), elt.getValue());
+        }
         
         byte[] transformed = out.toByteArray();
         return transformed;
@@ -58,17 +75,9 @@ public class ExceptionWrappingTest {
         String className = TestExceptionResource.class.getCanonicalName();
         Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
         
-        // As a first cut, we will generate the wrapper out here but this needs to be folded into ExceptionWrapping, later.
-        // TODO:  Generalize this into ExceptionWrapping (may require class hierarchy or we do it lazily based on throw/catch usage).
-        String wrapperName = CommonGenerators.kWrapperClassLibraryPrefix + className + "$UserDefinedException";
-        String wrapperSuperName = CommonGenerators.kWrapperClassLibraryPrefix + Throwable.class.getCanonicalName();
-        String slashName = wrapperName.replaceAll("\\.", "/");
-        String superSlashName = wrapperSuperName.replaceAll("\\.", "/");
-        byte[] wrapperBytes = StubGenerator.generateWrapperClass(slashName, superSlashName);
         TestHelpers.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), this.commonCostBuilder);
         byte[] raw = TestHelpers.loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         TestHelpers.loader.addClassForRewrite(className, raw);
-        TestHelpers.loader.addClassDirectLoad(wrapperName, wrapperBytes);
         for (Map.Entry<String, byte[]> elt : generatedClasses.entrySet()) {
             TestHelpers.loader.addClassDirectLoad(elt.getKey(), elt.getValue());
         }
@@ -84,6 +93,9 @@ public class ExceptionWrappingTest {
         }
         String exceptionName = className + "$UserDefinedException";
         TestHelpers.loader.addClassForRewrite(exceptionName, exceptionBytes);
+        // Note that we need to eagerly load all the classes provided by the user since some may cause us to generate wrappers which will be loaded
+        // by other classes.
+        TestHelpers.loader.loadClass(exceptionName);
         
         this.testClass = TestHelpers.loader.loadClass(className);
     }

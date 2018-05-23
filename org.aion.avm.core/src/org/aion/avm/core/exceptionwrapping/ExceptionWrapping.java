@@ -1,6 +1,8 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import org.aion.avm.core.ClassHierarchyForest;
+import org.aion.avm.core.Forest;
+import org.aion.avm.core.classgeneration.StubGenerator;
+import org.aion.avm.core.util.Assert;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -15,15 +17,76 @@ public class ExceptionWrapping extends ClassVisitor {
     private static final String kWrapperClassLibraryPrefix = "org/aion/avm/exceptionwrapper/";
 
     private final String runtimeClassName;
-    private ClassHierarchyForest classHierarchy;
-    private Map<String, byte[]> generatedClasses;
+    private final ParentPointers pointers;
+    private final Map<String, byte[]> out_generatedClasses;
 
-    public ExceptionWrapping(ClassVisitor visitor, String runtimeClassName, ClassHierarchyForest classHierarchy, Map<String, byte[]> generatedClasses) {
+    public ExceptionWrapping(ClassVisitor visitor, String runtimeClassName, Forest<String, byte[]> classHierarchy, Map<String, byte[]> generatedClasses) {
         super(Opcodes.ASM6, visitor);
 
         this.runtimeClassName = runtimeClassName;
-        this.classHierarchy = classHierarchy;
-        this.generatedClasses = generatedClasses;
+        this.pointers = new ParentPointers(classHierarchy);
+        this.out_generatedClasses = generatedClasses;
+    }
+
+    @Override
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        super.visit(version, access, name, signature, superName, interfaces);
+        
+        // Note that we want to decide whether or not to generate a wrapper for this class (added to the "generatedClasses" out parameter), at this point.
+        // We do this by walking the hierarchy backward until we get to the java.lang and then seeing if we walk to "java.lang.Throwable" before
+        // "java.lang.Object".
+        String thisClass = name.replaceAll("/", ".");
+        boolean isThrowable = false;
+        while (!isThrowable && !"java.lang.Object".equals(thisClass)) {
+            if ("java.lang.Throwable".equals(thisClass)) {
+                isThrowable = true;
+            } else {
+                // We assume that we can only descend from objects already in the ClassHierarchyForest or in "java/lang".
+                String superClass = this.pointers.getSuperClassName(thisClass);
+                if (null == superClass) {
+                    // We will try to load this from the default class loader and ask its parent.
+                    // (we can only land outside if we fell into the java.lang package, which is a problem we should have filtered, earlier)
+                    Assert.assertTrue(thisClass.startsWith("java.lang"));
+                    try {
+                        Class<?> clazz = Class.forName(thisClass);
+                        superClass = clazz.getName();
+                    } catch (ClassNotFoundException e) {
+                        // This is something we should have caught earlier so this is a hard failure.
+                        Assert.unexpected(e);
+                    }
+                }
+                thisClass = superClass;
+            }
+        }
+        if (isThrowable) {
+            // Generate our handler for this.
+            String reparentedName = kWrapperClassLibraryPrefix + name;
+            String reparentedSuperName = kWrapperClassLibraryPrefix + superName;
+            byte[] wrapperBytes = StubGenerator.generateWrapperClass(reparentedName, reparentedSuperName);
+            out_generatedClasses.put(reparentedName, wrapperBytes);
+        }
+    }
+
+
+    /**
+     * Just a utility to simplify interactions with ClassHierarchyForest.
+     * NOTE:  The class names here are the ".-style"
+     */
+    private static class ParentPointers {
+        private final Forest<String, byte[]> classHierarchy;
+        public ParentPointers(Forest<String, byte[]> classHierarchy) {
+            this.classHierarchy = classHierarchy;
+        }
+        public String getSuperClassName(String className) {
+            // NOTE:  These are ".-style" names.
+            Assert.assertTrue(-1 == className.indexOf("/"));
+            String superClassName = null;
+            Forest.Node<String, byte[]> node = classHierarchy.getNodeById(className);
+            if (null != node) {
+                superClassName = node.getParent().getId();
+            }
+            return superClassName;
+        }
     }
 
     public MethodVisitor visitMethod(
