@@ -1,12 +1,17 @@
 package org.aion.avm.core.exceptionwrapping;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classgeneration.StubGenerator;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.ClassHierarchyForest;
 import org.junit.Assert;
@@ -45,10 +50,19 @@ public class ExceptionWrappingTest {
         return transformed;
     };
 
+    private Class<?> testClass;
+    private TestClassLoader loader;
+
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         TestHelpers.didUnwrap = false;
         TestHelpers.didWrap = false;
+        
+        String className = TestExceptionResource.class.getCanonicalName();
+        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
+        this.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
+        TestHelpers.loader = this.loader;
+        this.testClass = this.loader.loadClass(className);
     }
 
 
@@ -57,14 +71,8 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testSimpleTryMultiCatchFinally() throws Exception {
-        String className = TestExceptionResource.class.getCanonicalName();
-        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
-        TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
-        TestHelpers.loader = loader;
-        Class<?> clazz = loader.loadClass(className);
-        
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method tryMultiCatchFinally = clazz.getMethod("tryMultiCatchFinally");
+        Method tryMultiCatchFinally = this.testClass.getMethod("tryMultiCatchFinally");
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
@@ -78,14 +86,8 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testmSimpleManuallyThrowNull() throws Exception {
-        String className = TestExceptionResource.class.getCanonicalName();
-        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
-        TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
-        TestHelpers.loader = loader;
-        Class<?> clazz = loader.loadClass(className);
-        
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method manuallyThrowNull = clazz.getMethod("manuallyThrowNull");
+        Method manuallyThrowNull = this.testClass.getMethod("manuallyThrowNull");
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didWrap);
@@ -94,7 +96,7 @@ public class ExceptionWrappingTest {
             manuallyThrowNull.invoke(null);
         } catch (InvocationTargetException e) {
             // Make sure that this is the wrapper type that we normally expect to see.
-            Class<?> compare = loader.loadClass("org.aion.avm.exceptionwrapper.java.lang.NullPointerException");
+            Class<?> compare = this.loader.loadClass("org.aion.avm.exceptionwrapper.java.lang.NullPointerException");
             didCatch = e.getCause().getClass() == compare;
         }
         Assert.assertTrue(TestHelpers.didWrap);
@@ -106,14 +108,8 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testSimpleTryMultiCatchInteraction() throws Exception {
-        String className = TestExceptionResource.class.getCanonicalName();
-        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
-        TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
-        TestHelpers.loader = loader;
-        Class<?> clazz = loader.loadClass(className);
-        
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method tryMultiCatchFinally = clazz.getMethod("tryMultiCatch");
+        Method tryMultiCatchFinally = this.testClass.getMethod("tryMultiCatch");
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
@@ -127,14 +123,8 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testRecatchCoreException() throws Exception {
-        String className = TestExceptionResource.class.getCanonicalName();
-        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
-        TestClassLoader loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), className, this.commonCostBuilder, generatedClasses);
-        TestHelpers.loader = loader;
-        Class<?> clazz = loader.loadClass(className);
-        
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method outerCatch = clazz.getMethod("outerCatch");
+        Method outerCatch = this.testClass.getMethod("outerCatch");
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
