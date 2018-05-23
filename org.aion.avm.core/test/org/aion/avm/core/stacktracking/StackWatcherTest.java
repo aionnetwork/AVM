@@ -1,6 +1,7 @@
 package org.aion.avm.core.stacktracking;
 
 import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.core.TestHelpers;
 import org.aion.avm.internal.OutOfStackError;
 import org.aion.avm.internal.StackWatcher;
 import org.junit.Assert;
@@ -9,23 +10,15 @@ import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 
+
 public class StackWatcherTest {
     private Class<?> clazz;
-
-    private static void writeBytesToFile(byte[] bytes, String file) {
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            fos.write(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Before
     // We only need to load the instrumented class once.
@@ -39,7 +32,7 @@ public class StackWatcherTest {
             in.accept(swc, ClassReader.EXPAND_FRAMES);
 
             byte[] transformed = out.toByteArray();
-            writeBytesToFile(transformed, "/tmp/output.class");
+            TestHelpers.writeBytesToFile(transformed, "/tmp/output.class");
             return transformed;
         }, Collections.emptyMap());
 
