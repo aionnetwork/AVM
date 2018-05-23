@@ -11,7 +11,30 @@
         <delete dir="${dir.local.build}"/>
     </target>
 
-    <target name="build" depends="build_helloworld, build_simpletoken, build_twoclasses, build_foresttest"/>
+    <target name="build"
+            depends="build_helloworld, build_simpletoken, build_twoclasses, build_foresttest, build_avmstartuptest"/>
+
+    <target name="build_avmstartuptest">
+        <local name="main"/>
+        <local name="name"/>
+        <property name="main" value="com.example.avmstartuptest.MainClass"/>
+        <property name="name" value="com.example.avmstartuptest"/>
+
+        <mkdir dir="${dir.local.build}/${name}"/>
+
+        <echo message="Compiling ${name}..."/>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.local.src}/${name}"
+               destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
+        </javac>
+
+        <echo message="Packing ${name}..."/>
+        <jar destfile="${dir.local.build}/${name}.jar" basedir="${dir.local.build}/${name}">
+            <manifest>
+                <attribute name="Main-Class" value="${main}"/>
+            </manifest>
+        </jar>
+    </target>
 
     <target name="build_foresttest">
         <local name="name"/>

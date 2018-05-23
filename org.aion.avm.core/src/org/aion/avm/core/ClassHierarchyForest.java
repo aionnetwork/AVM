@@ -7,6 +7,8 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,6 +28,12 @@ public final class ClassHierarchyForest extends Forest<String, byte[]> {
 
     private String curParentName;
     private boolean isInterface;
+
+    public Map<String, byte[]> toFlatMapWithoutRoots() {
+        final var collector = new FlatMapCollector(getNodesCount());
+        walkPreOrder(collector);
+        return collector.getMap();
+    }
 
     public static ClassHierarchyForest createForestFrom(byte[] jar) throws IOException {
         final var forest = new ClassHierarchyForest(jar);
@@ -94,6 +102,23 @@ public final class ClassHierarchyForest extends Forest<String, byte[]> {
 
         private static String toQualifiedName(String internalClassName) {
             return internalClassName.replaceAll("/", ".");
+        }
+    }
+
+    private static final class FlatMapCollector extends VisitorAdapter<String, byte[]> {
+        private final Map<String, byte[]> map;
+
+        private FlatMapCollector(int size) {
+            map = new HashMap<>(size);
+        }
+
+        @Override
+        public void onVisitNotRootNode(Node<String, byte[]> node) {
+            map.put(node.getId(), node.getContent());
+        }
+
+        private Map<String, byte[]> getMap() {
+            return Collections.unmodifiableMap(map);
         }
     }
 }

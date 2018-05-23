@@ -20,6 +20,10 @@ public class Forest<I, C> {
         return Collections.unmodifiableCollection(roots);
     }
 
+    public int getNodesCount() {
+        return nodesIndex.size();
+    }
+
     public Node<I, C> getNodeById(I id) {
         Objects.requireNonNull(id);
         return nodesIndex.get(id);
@@ -136,5 +140,19 @@ public class Forest<I, C> {
         void onVisitNotRootNode(Node<I, C> node);
 
         void afterAllNodesVisited();
+    }
+
+    public static class VisitorAdapter<I, C> implements Visitor<I, C> {
+        @Override
+        public void onVisitRoot(Node<I, C> root) {
+        }
+
+        @Override
+        public void onVisitNotRootNode(Node<I, C> node) {
+        }
+
+        @Override
+        public void afterAllNodesVisited() {
+        }
     }
 }

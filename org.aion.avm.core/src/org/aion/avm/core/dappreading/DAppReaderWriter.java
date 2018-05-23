@@ -1,13 +1,15 @@
 package org.aion.avm.core.dappreading;
 
-import java.io.ByteArrayInputStream;
+import org.aion.avm.core.FileUtils;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.aion.avm.core.FileUtils.putToTempDir;
 
 /**
  * @author Roman Katerinenko
@@ -24,32 +26,16 @@ public final class DAppReaderWriter {
     public Map<String, byte[]> readClassesFromJar(String pathToJar) throws IOException {
         Objects.requireNonNull(pathToJar);
         final var normalizedPath = Paths.get(pathToJar).toAbsolutePath().normalize();
-        root = createFSRootDirFor(normalizedPath);
+        root = FileUtils.getFSRootDirFor(normalizedPath);
         return walkJarTreeAndFillResult();
     }
 
     public Map<String, byte[]> readClassesFromJar(byte[] jar) throws IOException {
         Objects.requireNonNull(jar);
-        final var normalizedPath = putToTempDir(jar);
-        root = createFSRootDirFor(normalizedPath);
+        // todo fix making temp directory
+        final var normalizedPath = putToTempDir(jar, "aiontemp", "aion-temp-dapp.jar");
+        root = FileUtils.getFSRootDirFor(normalizedPath);
         return walkJarTreeAndFillResult();
-    }
-
-    private Path createFSRootDirFor(Path pathToJar) throws IOException {
-        final var fileSystem = FileSystems.newFileSystem(pathToJar, null);
-        return fileSystem.getRootDirectories().iterator().next();
-    }
-
-    // todo fix making temp directory
-    private Path putToTempDir(byte[] bytes) throws IOException {
-        Path dstJarPath = Files.createTempDirectory("aiontemp")
-                .resolve("aion-temp-dapp.jar")
-                .toAbsolutePath()
-                .normalize();
-        try (final InputStream in = new ByteArrayInputStream(bytes)) {
-            Files.copy(in, dstJarPath, StandardCopyOption.REPLACE_EXISTING);
-        }
-        return dstJarPath;
     }
 
     private Map<String, byte[]> walkJarTreeAndFillResult() throws IOException {
