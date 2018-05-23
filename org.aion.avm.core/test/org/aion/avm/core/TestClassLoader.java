@@ -14,17 +14,37 @@ import java.util.function.Function;
  * into the ClassRewriter, for the test.
  */
 public class TestClassLoader extends ClassLoader {
-    private final String classNameToProvide;
+    private final Map<String, byte[]> classesToRewrite;
     private final Function<byte[], byte[]> loadHandler;
     private final Map<String, byte[]> injectedClasses;
     private final Map<String, Class<?>> cache;
 
     public TestClassLoader(ClassLoader parent, String classNameToProvide, Function<byte[], byte[]> loadHandler, Map<String, byte[]> injectedClasses) {
         super(parent);
-        this.classNameToProvide = classNameToProvide;
+        this.classesToRewrite = new HashMap<>();
+        InputStream stream = getParent().getResourceAsStream(classNameToProvide.replaceAll("\\.", "/") + ".class");
+        byte[] raw = null;
+        try {
+            raw = stream.readAllBytes();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+        this.classesToRewrite.put(classNameToProvide, raw);
+        
         this.loadHandler = loadHandler;
         this.injectedClasses = Collections.unmodifiableMap(injectedClasses);
         this.cache = new HashMap<>();
+    }
+
+    /**
+     * Adds another class to be loaded through the re-writing path.
+     * 
+     * @param classNameToProvide The name of the class to load (in the style of "org.test.Class$Inner").
+     * @param raw The raw bytecode of the class.
+     */
+    public void addClass(String classNameToProvide, byte[] raw) {
+        this.classesToRewrite.put(classNameToProvide, raw);
     }
 
     @Override
@@ -36,15 +56,8 @@ public class TestClassLoader extends ClassLoader {
         // Since we are using our own loadClass, we need our own cache.
         Class<?> cached = this.cache.get(name);
         if (null == cached) {
-            if (this.classNameToProvide.equals(name)) {
-                InputStream stream = getParent().getResourceAsStream(name.replaceAll("\\.", "/") + ".class");
-                byte[] raw = null;
-                try {
-                    raw = stream.readAllBytes();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Assert.fail();
-                }
+            byte[] raw = this.classesToRewrite.get(name);
+            if (null != raw) {
                 byte[] rewrittten = this.loadHandler.apply(raw);
                 result = defineClass(name, rewrittten, 0, rewrittten.length);
             } else if (this.injectedClasses.containsKey(name)) {
