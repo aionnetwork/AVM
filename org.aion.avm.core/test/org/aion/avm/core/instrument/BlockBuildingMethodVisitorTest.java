@@ -81,7 +81,21 @@ public class BlockBuildingMethodVisitorTest {
                 {Opcodes.ICONST_0, Opcodes.ISTORE},
                 {Opcodes.ILOAD, Opcodes.IRETURN},
         };
+        int[][] expectedSwitchCounts = new int[][]{
+            {4},
+            {},
+            {},
+            {},
+            {},
+            {},
+        };
+        
+        // Verify the shape of the blocks.
         boolean didMatch = compareBlocks(expectedHashCodeBlocks, hashCodeBlocks);
+        Assert.assertTrue(didMatch);
+        
+        // Verify the switch option value.
+        didMatch = compareSwitches(expectedSwitchCounts, hashCodeBlocks);
         Assert.assertTrue(didMatch);
     }
 
@@ -96,7 +110,21 @@ public class BlockBuildingMethodVisitorTest {
                 {Opcodes.ICONST_0, Opcodes.ISTORE},
                 {Opcodes.ILOAD, Opcodes.IRETURN},
         };
+        int[][] expectedSwitchCounts = new int[][]{
+            {4},
+            {},
+            {},
+            {},
+            {},
+            {},
+        };
+        
+        // Verify the shape of the blocks.
         boolean didMatch = compareBlocks(expectedHashCodeBlocks, hashCodeBlocks);
+        Assert.assertTrue(didMatch);
+        
+        // Verify the switch option value.
+        didMatch = compareSwitches(expectedSwitchCounts, hashCodeBlocks);
         Assert.assertTrue(didMatch);
     }
 
@@ -124,6 +152,28 @@ public class BlockBuildingMethodVisitorTest {
                 if (expectedBytecodes.length == actualBytecodes.size()) {
                     for (int j = 0; didMatch && (j < expectedBytecodes.length); ++j) {
                         if (expectedBytecodes[j] != actualBytecodes.get(j)) {
+                            didMatch = false;
+                        }
+                    }
+                } else {
+                    didMatch = false;
+                }
+            }
+        } else {
+            didMatch = false;
+        }
+        return didMatch;
+    }
+
+    private boolean compareSwitches(int[][] expectedSwitches, List<BasicBlock> actualBlocks) {
+        boolean didMatch = true;
+        if (expectedSwitches.length == actualBlocks.size()) {
+            for (int i = 0; didMatch && (i < expectedSwitches.length); ++i) {
+                int[] expectedCases = expectedSwitches[i];
+                List<Integer> actualCases = actualBlocks.get(i).switchCases;
+                if (expectedCases.length == actualCases.size()) {
+                    for (int j = 0; didMatch && (j < expectedCases.length); ++j) {
+                        if (expectedCases[j] != actualCases.get(j)) {
                             didMatch = false;
                         }
                     }

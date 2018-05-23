@@ -6,16 +6,22 @@ import java.util.List;
 
 /**
  * Describes a single basic block within a method.
- * Note that only the opcodeSequence and allocatedTypes are meant to be immutable.
+ * Note that only the opcodeSequence, switchCounts, and allocatedTypes are meant to be immutable.
  * The variable energyCost is mutable, deliberately, to allow for mutation requests.
  */
 public class BasicBlock {
     public final List<Integer> opcodeSequence;
+    /**
+     * Corresponds to the number of switch cases (including default) included in each switch within the block.
+     * Note that these are per-switch, NOT per-opcode.  Hence, a block with 10 opcodes, 2 being switches, will only have 2 entries in this list.
+     */
+    public final List<Integer> switchCases;
     public final List<String> allocatedTypes;
     private long energyCost;
 
-    public BasicBlock(List<Integer> opcodes, List<String> allocatedTypes) {
+    public BasicBlock(List<Integer> opcodes, List<Integer> switchCases, List<String> allocatedTypes) {
         this.opcodeSequence = Collections.unmodifiableList(opcodes);
+        this.switchCases = Collections.unmodifiableList(switchCases);
         this.allocatedTypes = Collections.unmodifiableList(allocatedTypes);
     }
 

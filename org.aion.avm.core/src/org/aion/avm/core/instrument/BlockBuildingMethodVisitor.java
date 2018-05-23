@@ -13,14 +13,14 @@ import org.objectweb.asm.Opcodes;
 
 /**
  * Collects information regarding BasicBlocks within a method.
- * Specifically, this refers to the opcodes and allocated types within a given block.
- * TODO:  Expose the number of options in the switch opcodes within this.
+ * Specifically, this refers to the opcodes, switch cases, and allocated types within a given block.
  * 
  * Note that this was adapted from the ClassRewriter.BlockMethodReader.
  */
 public class BlockBuildingMethodVisitor extends MethodVisitor {
     private final List<BasicBlock> buildingList;
     private List<Integer> currentBuildingBlock;
+    private List<Integer> currentBlockSwitches;
     private List<String> currentAllocationList;
 
     public BlockBuildingMethodVisitor() {
@@ -36,6 +36,7 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     public void visitCode() {
         // This is just useful for internal sanity checking.
         this.currentBuildingBlock = new ArrayList<>();
+        this.currentBlockSwitches = new ArrayList<>();
         this.currentAllocationList = new ArrayList<>();
     }
     @Override
@@ -43,6 +44,7 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
         // This is called after all the code has been walked, so seal the final block.
         handleLabel();
         this.currentBuildingBlock = null;
+        this.currentBlockSwitches = null;
         this.currentAllocationList = null;
     }
     @Override
@@ -89,6 +91,9 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     @Override
     public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
         this.currentBuildingBlock.add(Opcodes.LOOKUPSWITCH);
+        // Count the number of labels plus the default.
+        this.currentBlockSwitches.add(labels.length + 1);
+        
         // Even though every label is given, there could be unreachable code immediately after.
         handleLabel();
     }
@@ -103,6 +108,9 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     @Override
     public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
         this.currentBuildingBlock.add(Opcodes.TABLESWITCH);
+        // Count the number of labels plus the default.
+        this.currentBlockSwitches.add(labels.length + 1);
+        
         // Even though every label is given, there could be unreachable code immediately after.
         handleLabel();
     }
@@ -127,9 +135,10 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
         // Seal the previous block (avoid the case where the block is empty).
         if (!this.currentBuildingBlock.isEmpty()) {
             // Add the block to our finished block list.
-            this.buildingList.add(new BasicBlock(this.currentBuildingBlock, this.currentAllocationList));
+            this.buildingList.add(new BasicBlock(this.currentBuildingBlock, this.currentBlockSwitches, this.currentAllocationList));
             // Start the new block.
             this.currentBuildingBlock = new ArrayList<>();
+            this.currentBlockSwitches = new ArrayList<>();
             this.currentAllocationList = new ArrayList<>();
         }
     }
