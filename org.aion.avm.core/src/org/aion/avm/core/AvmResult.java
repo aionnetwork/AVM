@@ -7,22 +7,28 @@ public class AvmResult {
     }
 
     /**
-     * Return code.
+     * The execution result code.
      */
     Code code;
-
-    /**
-     * Return data.
-     */
-    byte[] data;
 
     /**
      * The remaining energy after execution.
      */
     long energyLeft;
 
+    /**
+     * Return data.
+     */
+    byte[] returnData;
+
     public AvmResult(Code code, long energyLeft) {
         this.code = code;
         this.energyLeft = energyLeft;
+    }
+
+    public AvmResult(Code code, long energyLeft, byte[] returnData) {
+        this.code = code;
+        this.energyLeft = energyLeft;
+        this.returnData = returnData;
     }
 }
