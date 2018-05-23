@@ -10,6 +10,8 @@ import org.aion.avm.rt.BlockchainRuntime;
  */
 public interface Avm {
 
+    // TODO: refactor, merge the following two methods
+
     /**
      * Deploys a DApp. This allows the VM to prepare/instrument the classes.
      *

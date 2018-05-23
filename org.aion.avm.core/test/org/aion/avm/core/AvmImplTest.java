@@ -33,11 +33,13 @@ public class AvmImplTest {
     }
 
 
+    private byte[] sender = Helpers.randomBytes(32);
+    private byte[] address = Helpers.randomBytes(32);
+    private long energyLimit = 1000000;
+
+
     @Test
     public void testDeploy() {
-        byte[] sender = Helpers.randomBytes(32);
-        byte[] address = Helpers.randomBytes(32);
-        long energyLimit = 1000000;
 
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
         BlockchainRuntime rt = new BlockchainRuntime() {
@@ -57,6 +59,11 @@ public class AvmImplTest {
             }
 
             @Override
+            public ByteArray getData() {
+                return null;
+            }
+
+            @Override
             public ByteArray getStorage(ByteArray key) {
                 return null;
             }
@@ -68,6 +75,47 @@ public class AvmImplTest {
         };
         AvmImpl avm = new AvmImpl();
         AvmResult result = avm.deploy(jar, rt);
+
+        assertEquals(AvmResult.Code.SUCCESS, result.code);
+    }
+
+    @Test
+    public void testDeployAndRun() {
+        testDeploy();
+
+        BlockchainRuntime rt = new BlockchainRuntime() {
+            @Override
+            public ByteArray getSender() {
+                return new ByteArray(sender);
+            }
+
+            @Override
+            public ByteArray getAddress() {
+                return new ByteArray(address);
+            }
+
+            @Override
+            public long getEnergyLimit() {
+                return energyLimit;
+            }
+
+            @Override
+            public ByteArray getData() {
+                return null;
+            }
+
+            @Override
+            public ByteArray getStorage(ByteArray key) {
+                return null;
+            }
+
+            @Override
+            public void putStorage(ByteArray key, ByteArray value) {
+
+            }
+        };
+        AvmImpl avm = new AvmImpl();
+        AvmResult result = avm.run(rt);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
     }

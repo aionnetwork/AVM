@@ -29,6 +29,12 @@ public interface BlockchainRuntime {
     long getEnergyLimit();
 
     /**
+     * Returns the transaction data.
+     * @return
+     */
+    ByteArray getData();
+
+    /**
      * Returns the corresponding value in the storage.
      *
      * @param key

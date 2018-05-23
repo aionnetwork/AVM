@@ -27,4 +27,9 @@ public class ByteArray extends Array {
     public void set(int idx, byte val) {
         this.underlying[idx] = val;
     }
+
+
+    public byte[] getUnderlying() {
+        return underlying;
+    }
 }

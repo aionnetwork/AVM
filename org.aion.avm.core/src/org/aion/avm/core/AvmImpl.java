@@ -2,12 +2,14 @@ package org.aion.avm.core;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.Helper;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -17,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,7 +57,8 @@ public class AvmImpl implements Avm {
      * <li>class format (hash, version, etc.)</li>
      * <li>no native method</li>
      * <li>no invalid opcode</li>
-     * <li>package name does not start with <code>org.aion</code></li>
+     * <li>package name does not start with <code>org.aion.avm</code></li>
+     * <li>no access to any <code>org.aion.avm</code> packages but the <code>org.aion.avm.rt</code> package</li>
      * <li>main class is a <code>Contract</code></li>
      * <li>any assumptions that the class transformation has made</li>
      * <li>TODO: add more</li>
@@ -250,7 +254,7 @@ public class AvmImpl implements Avm {
 
             return new AvmResult(AvmResult.Code.SUCCESS, rt.getEnergyLimit());
         } catch (Exception e) {
-            return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
+            return new AvmResult(AvmResult.Code.FAILURE, 0);
         }
     }
 
@@ -259,13 +263,28 @@ public class AvmImpl implements Avm {
         //  retrieve the transformed bytecode
         DappModule app = loadTransformedDapp(rt.getAddress());
 
-        // TODO: create a class loader and load the main class
+        // construct class loader
+        AvmClassLoader classLoader = new AvmClassLoader(app.classes);
 
-        // TODO: create an instance and invoke the `run` method
+        // reset helper
+        Helper.setBlockchainRuntime(rt);
 
-        // TODO: return the result
+        // load class
+        try {
+            Class<?> clazz = classLoader.loadClass(app.mainClass);
+            // TODO: how we decide which constructor to invoke
+            Object obj = clazz.getConstructor().newInstance();
 
-        return null;
+            Method method = clazz.getMethod("run", ByteArray.class, BlockchainRuntime.class);
+            ByteArray ret = (ByteArray) method.invoke(obj, rt.getData(), rt);
+
+            // TODO: energy left
+            return new AvmResult(AvmResult.Code.SUCCESS, 0, ret.getUnderlying());
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return new AvmResult(AvmResult.Code.FAILURE, 0);
+        }
     }
 
     /**

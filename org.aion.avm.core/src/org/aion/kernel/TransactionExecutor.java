@@ -32,6 +32,11 @@ public class TransactionExecutor {
             }
 
             @Override
+            public ByteArray getData() {
+                return null;
+            }
+
+            @Override
             public ByteArray getStorage(ByteArray key) {
                 return new ByteArray(new byte[0]);
             }
