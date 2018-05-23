@@ -69,6 +69,6 @@ public class AvmImplTest {
         AvmImpl avm = new AvmImpl();
         AvmResult result = avm.deploy(jar, rt);
 
-        System.out.println(result);
+        assertEquals(AvmResult.Code.SUCCESS, result.code);
     }
 }

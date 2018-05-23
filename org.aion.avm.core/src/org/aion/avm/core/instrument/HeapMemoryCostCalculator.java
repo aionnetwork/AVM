@@ -3,6 +3,7 @@ package org.aion.avm.core.instrument;
 import org.aion.avm.core.ClassHierarchyForest;
 import org.aion.avm.core.Forest;
 import org.aion.avm.core.Forest.Node;
+import org.aion.avm.core.util.Helpers;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -180,8 +181,8 @@ public class HeapMemoryCostCalculator {
         for (Node<String, byte[]> rootClass : rootClasses) {
             // rootClass is one of the runtime or java.lang.* classes and 'runtimeObjectSizes' map already has its size.
             // copy rootClass size to classHeapSizeMap
-            final String qualifiedClassName = rootClass.getId();
-            classHeapSizeMap.put(qualifiedClassName, runtimeObjectSizes.get(qualifiedClassName));
+            final String splashName = Helpers.fulllyQualifiedNameToInternalName(rootClass.getId());
+            classHeapSizeMap.put(splashName, runtimeObjectSizes.get(splashName));
         }
         final var visitor = new Forest.Visitor<String, byte[]>() {
             @Override

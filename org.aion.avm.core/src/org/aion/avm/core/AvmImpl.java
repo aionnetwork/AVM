@@ -183,7 +183,7 @@ public class AvmImpl implements Avm {
         // store bytecode
         Map<String, byte[]> classes = dapp.getClasses();
         for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
-            File file = new File(dir, entry + ".class");
+            File file = new File(dir, entry.getKey() + ".class");
             Helpers.writeBytesToFile(entry.getValue(), file.getAbsolutePath());
         }
     }
@@ -237,11 +237,10 @@ public class AvmImpl implements Avm {
 
             // compute object sizes
             Map<String, Integer> runtimeObjectSizes = computeRuntimeObjectSizes();
-            Map<String, Integer> objectSizes = computeObjectSizes(app.getClassHierarchyForest(), runtimeObjectSizes);
-            objectSizes.putAll(runtimeObjectSizes);
+            Map<String, Integer> allObjectSizes = computeObjectSizes(app.getClassHierarchyForest(), runtimeObjectSizes);
 
             // transform
-            Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), app.getClassHierarchyForest(), objectSizes);
+            Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), app.getClassHierarchyForest(), allObjectSizes);
             app.setClasses(transformedClasses);
 
             // store transformed dapp

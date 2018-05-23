@@ -27,6 +27,12 @@ public class Helpers {
         }
     }
 
+    /**
+     * Reads file as a byte array.
+     *
+     * @param path
+     * @return
+     */
     public static byte[] readFileToBytes(String path) {
         File f = new File(path);
         byte[] b = new byte[(int)f.length()];
@@ -42,10 +48,26 @@ public class Helpers {
 
     private static SecureRandom secureRandom = new SecureRandom();
 
+    /**
+     * Generate random byte array of the specified length.
+     *
+     * @param n
+     * @return
+     */
     public static byte[] randomBytes(int n) {
         byte[] bytes = new byte[n];
         secureRandom.nextBytes(bytes);
 
         return bytes;
+    }
+
+    /**
+     * Converts a fully qualified name into it's JVM internal form.
+     *
+     * @param fullyQualifiedName
+     * @return
+     */
+    public static String fulllyQualifiedNameToInternalName(String fullyQualifiedName) {
+        return fullyQualifiedName.replaceAll("\\.", "/");
     }
 }
