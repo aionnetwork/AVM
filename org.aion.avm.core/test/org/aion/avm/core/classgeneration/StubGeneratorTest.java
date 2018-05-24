@@ -147,6 +147,26 @@ public class StubGeneratorTest {
         Assert.assertNotNull(top.toString());
     }
 
+    /**
+     * We want to verify that a generated shadow with a hand-written super-class has the correct classloaders through its hierarchy.
+     */
+    @Test
+    public void getGeneratedShadowWithHandWrittenSuper() throws Exception {
+        ClassLoader handWritten = TestClassLoader.class.getClassLoader();
+        TestClassLoader generated = new TestClassLoader(handWritten, identity -> identity);
+        // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and is partially hand-written.
+        Class<?> aioobe = generateExceptionShadowsAndWrappers(handWritten, generated, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
+        
+        // We want to make sure that each class loader is what we expect.
+        Assert.assertNotNull(aioobe);
+        Assert.assertEquals(generated, aioobe.getClassLoader()); // java.lang.ArrayIndexOutOfBoundsException
+        Assert.assertEquals(generated, aioobe.getSuperclass().getClassLoader()); // java.lang.IndexOutOfBoundsException
+        Assert.assertEquals(handWritten, aioobe.getSuperclass().getSuperclass().getClassLoader()); // java.lang.RuntimeException
+        Assert.assertEquals(handWritten, aioobe.getSuperclass().getSuperclass().getSuperclass().getClassLoader()); // java.lang.Exception
+        Assert.assertEquals(handWritten, aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getClassLoader()); // java.lang.Throwable
+        Assert.assertEquals(handWritten, aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getSuperclass().getClassLoader()); // java.lang.Object
+    }
+
 
     private static Class<?> generateExceptionShadowsAndWrappers(ClassLoader parent, TestClassLoader loader, String testClassName) throws Exception {
         // Get the generated classes.
@@ -162,10 +182,20 @@ public class StubGeneratorTest {
         for (String name : CommonGenerators.kExceptionClassNames) {
             String shadowName = CommonGenerators.kShadowClassLibraryPrefix + name;
             byte[] shadowBytes = allGenerated.get(shadowName);
-            Assert.assertNotNull(shadowBytes);
-            loader.addClassDirectLoad(shadowName, shadowBytes);
-            Class<?> shadowClass = loader.loadClass(shadowName);
-            Assert.assertEquals(loader, shadowClass.getClassLoader());
+            // Note that not all shadow exceptions are generated.
+            Class<?> shadowClass = null;
+            if (null != shadowBytes) {
+                // If this was generated, it better not be part of the non-generated set.
+                Assert.assertTrue(!CommonGenerators.kHandWrittenExceptionClassNames.contains(name));
+                loader.addClassDirectLoad(shadowName, shadowBytes);
+                shadowClass = loader.loadClass(shadowName);
+                Assert.assertEquals(loader, shadowClass.getClassLoader());
+            } else {
+                // This must be hand-written.
+                Assert.assertTrue(CommonGenerators.kHandWrittenExceptionClassNames.contains(name));
+                shadowClass = Class.forName(shadowName);
+                Assert.assertEquals(parent, shadowClass.getClassLoader());
+            }
             if (testClassName.equals(shadowName)) {
                 found = shadowClass;
             }

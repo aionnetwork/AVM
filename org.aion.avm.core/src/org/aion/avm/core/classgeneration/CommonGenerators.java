@@ -2,6 +2,8 @@ package org.aion.avm.core.classgeneration;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+
 
 /**
  * Contains some of the common constants and code-generation idioms used in various tests and/or across the system, in general.
@@ -70,6 +72,14 @@ public class CommonGenerators {
             "java.lang.UnsupportedOperationException",
     };
 
+    // We don't generate the shadows for these ones since we have hand-written them (but wrappers are still required).
+    public static final Set<String> kHandWrittenExceptionClassNames = Set.of(new String[] {
+            "java.lang.Exception",
+            "java.lang.RuntimeException",
+            "java.lang.EnumConstantNotPresentException",
+            "java.lang.TypeNotPresentException",
+    });
+
     public static Map<String, byte[]> generateExceptionShadowsAndWrappers() throws Exception {
         Map<String, byte[]> generatedClasses = new HashMap<>();
         for (String className : kExceptionClassNames) {
@@ -77,10 +87,12 @@ public class CommonGenerators {
             String superclassName = Class.forName(className).getSuperclass().getCanonicalName();
             
             // Generate the shadow.
-            String shadowName = kShadowClassLibraryPrefix + className;
-            String shadowSuperName = kShadowClassLibraryPrefix + superclassName;
-            byte[] shadowBytes = generateExceptionClass(shadowName, shadowSuperName);
-            generatedClasses.put(shadowName, shadowBytes);
+            if (!kHandWrittenExceptionClassNames.contains(className)) {
+                String shadowName = kShadowClassLibraryPrefix + className;
+                String shadowSuperName = kShadowClassLibraryPrefix + superclassName;
+                byte[] shadowBytes = generateExceptionClass(shadowName, shadowSuperName);
+                generatedClasses.put(shadowName, shadowBytes);
+            }
             
             // Generate the wrapper.
             String wrapperName = kWrapperClassLibraryPrefix + className;
