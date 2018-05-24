@@ -77,7 +77,9 @@ public class AvmImpl implements Avm {
     /**
      * Computes the object size of runtime classes
      *
-     * @return
+     * @return a mapping between class name and object size
+     *
+     * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
     public Map<String, Integer> computeRuntimeObjectSizes() {
         Map<String, Integer> map = new HashMap<String, Integer>();
@@ -95,6 +97,8 @@ public class AvmImpl implements Avm {
      * @param classHierarchy     the class hierarchy
      * @param runtimeObjectSizes the object size of runtime classes
      * @return a mapping between class name and object size, for all classes, including the runtime ones from "runtimeObjectSizes"; and the DApp ones passed-in with "classes".
+     *
+     * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
     public Map<String, Integer> computeObjectSizes(ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();

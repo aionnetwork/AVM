@@ -78,7 +78,7 @@ public class HeapMemoryCostCalculator {
 
     /**
      * add a class name and heap size pair to the internal map
-     * @param className the internal name of a class
+     * @param className the JVM internal name of a class, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      * @param heapSize the heap size of the class
      */
     public void addClassHeapSizeToMap(String className, Integer heapSize) {
