@@ -9,8 +9,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 
 public class ExceptionWrapping extends ClassVisitor {
@@ -18,14 +18,14 @@ public class ExceptionWrapping extends ClassVisitor {
 
     private final String runtimeClassName;
     private final ParentPointers pointers;
-    private final Map<String, byte[]> out_generatedClasses;
+    private final BiConsumer<String, byte[]> generatedClassesSink;
 
-    public ExceptionWrapping(ClassVisitor visitor, String runtimeClassName, Forest<String, byte[]> classHierarchy, Map<String, byte[]> generatedClasses) {
+    public ExceptionWrapping(ClassVisitor visitor, String runtimeClassName, Forest<String, byte[]> classHierarchy, BiConsumer<String, byte[]> generatedClassesSink) {
         super(Opcodes.ASM6, visitor);
 
         this.runtimeClassName = runtimeClassName;
         this.pointers = new ParentPointers(classHierarchy);
-        this.out_generatedClasses = generatedClasses;
+        this.generatedClassesSink = generatedClassesSink;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ExceptionWrapping extends ClassVisitor {
             String reparentedName = kWrapperClassLibraryPrefix + name;
             String reparentedSuperName = kWrapperClassLibraryPrefix + superName;
             byte[] wrapperBytes = StubGenerator.generateWrapperClass(reparentedName, reparentedSuperName);
-            out_generatedClasses.put(reparentedName, wrapperBytes);
+            generatedClassesSink.accept(reparentedName, wrapperBytes);
         }
     }
 

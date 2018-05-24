@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
@@ -49,17 +49,13 @@ public class ExceptionWrappingTest {
         Forest.Node<String, byte[]> testResource = new Forest.Node<>("org.aion.avm.core.exceptionwrapping.TestExceptionResource", null);
         classHierarchy.add(root, testResource);
         
-        Map<String, byte[]> generatedClasses = new HashMap<>();
-        ClassShadowing cs = new ClassShadowing(out, TestHelpers.CLASS_NAME);
-        ExceptionWrapping wrapping = new ExceptionWrapping(cs, TestHelpers.CLASS_NAME, classHierarchy, generatedClasses);
-        in.accept(wrapping, ClassReader.SKIP_DEBUG);
-        
         // WARNING:  We are using this TestHelpers.loader as a way of injecting the code we want to generate back into the TestClassLoader.
         // TODO:  Change the contract with the TestClassLoader to allow us to more easily push these in.
         // (within the shape of this unit test, we can't do much better)
-        for (Map.Entry<String, byte[]> elt : generatedClasses.entrySet()) {
-            TestHelpers.loader.addClassDirectLoad(elt.getKey().replaceAll("/", "."), elt.getValue());
-        }
+        BiConsumer<String, byte[]> generatedClassesSink = (classSlashName, bytecode) -> TestHelpers.loader.addClassDirectLoad(classSlashName.replaceAll("/", "."), bytecode);
+        ClassShadowing cs = new ClassShadowing(out, TestHelpers.CLASS_NAME);
+        ExceptionWrapping wrapping = new ExceptionWrapping(cs, TestHelpers.CLASS_NAME, classHierarchy, generatedClassesSink);
+        in.accept(wrapping, ClassReader.SKIP_DEBUG);
         
         byte[] transformed = out.toByteArray();
         return transformed;

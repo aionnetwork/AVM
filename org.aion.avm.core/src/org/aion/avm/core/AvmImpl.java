@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 import static org.aion.avm.core.FileUtils.getFSRootDirFor;
 import static org.aion.avm.core.FileUtils.putToTempDir;
@@ -126,7 +127,8 @@ public class AvmImpl implements Avm {
     public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> objectSizes) {
 
         Map<String, byte[]> processedClasses = new HashMap<>();
-        Map<String, byte[]> generatedClasses = new HashMap<>();
+        // merge the generated classes and processed classes, assuming the package spaces do not conflict.
+        BiConsumer<String, byte[]> generatedClassesSink = (classSlashName, bytecode) -> processedClasses.put(classSlashName, bytecode);
 
         for (String name : classes.keySet()) {
             ClassReader in = new ClassReader(classes.get(name));
@@ -138,7 +140,7 @@ public class AvmImpl implements Avm {
             // in reverse order
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
             ArrayWrappingClassAdapter arrayWrapping = new ArrayWrappingClassAdapter(out);
-            ExceptionWrapping exceptionHandling = new ExceptionWrapping(arrayWrapping, HELPER_CLASS, classHierarchy, generatedClasses);
+            ExceptionWrapping exceptionHandling = new ExceptionWrapping(arrayWrapping, HELPER_CLASS, classHierarchy, generatedClassesSink);
             ClassShadowing classShadowing = new ClassShadowing(exceptionHandling, HELPER_CLASS);
             StackWatcherClassAdapter stackTracking = new StackWatcherClassAdapter(classShadowing);
             ClassMetering classMetering = new ClassMetering(stackTracking, HELPER_CLASS, classHierarchy, objectSizes);
@@ -150,9 +152,6 @@ public class AvmImpl implements Avm {
             // emit bytecode
             processedClasses.put(name, out.toByteArray());
         }
-
-        // merge the generated classes and processed classes, assuming the package spaces do not conflict.
-        processedClasses.putAll(generatedClasses);
 
         return processedClasses;
     }
