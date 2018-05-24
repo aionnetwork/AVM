@@ -6,10 +6,12 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
+import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -177,8 +179,10 @@ public class AvmImpl implements Avm {
      *
      * @param address the address of the DApp
      * @param dapp    the dapp module
+     * @return the stored bytecode size
      */
-    public void storeTransformedDapp(ByteArray address, DappModule dapp) {
+    public long storeTransformedDapp(ByteArray address, DappModule dapp) {
+        long size = 0;
         String id = byteArrayToString(address);
         File dir = new File(DAPPS_DIR, id);
         dir.mkdir();
@@ -186,13 +190,17 @@ public class AvmImpl implements Avm {
         // store main class
         File main = new File(dir, "MAIN");
         Helpers.writeBytesToFile(dapp.getMainClass().getBytes(), main.getAbsolutePath());
+        size += dapp.getMainClass().getBytes().length;
 
         // store bytecode
         Map<String, byte[]> classes = dapp.getClasses();
         for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
             File file = new File(dir, entry.getKey() + ".class");
             Helpers.writeBytesToFile(entry.getValue(), file.getAbsolutePath());
+            size += entry.getValue().length;
         }
+
+        return size;
     }
 
     /**
@@ -230,11 +238,22 @@ public class AvmImpl implements Avm {
     @Override
     public AvmResult deploy(byte[] jar, BlockchainRuntime rt) {
 
+        // reset helper; Energy limit is set
+        Helper.setBlockchainRuntime(rt);
+
         try {
             // read dapp module
             DappModule app = readDapp(jar);
             if (app == null) {
                 return new AvmResult(AvmResult.Code.INVALID_JAR, 0);
+            }
+
+            // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
+            try {
+                Helper.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
+                                    + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * app.bytecodeSize * (1 + app.numberOfClasses) / 10);
+            } catch (OutOfEnergyError e) {
+                return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
             }
 
             // validate dapp module
@@ -250,10 +269,17 @@ public class AvmImpl implements Avm {
             Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), app.getClassHierarchyForest(), allObjectSizes);
             app.setClasses(transformedClasses);
 
-            // store transformed dapp
-            storeTransformedDapp(rt.getAddress(), app);
+            // TODO: execute main-class contractCreation(), and do not include it in the stored bytecode
 
-            // TODO: billing
+            // store transformed dapp
+            long storedSize = storeTransformedDapp(rt.getAddress(), app);
+
+            // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
+            try {
+                Helper.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * storedSize);
+            } catch (OutOfEnergyError e) {
+                return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
+            }
 
             return new AvmResult(AvmResult.Code.SUCCESS, rt.getEnergyLimit());
         } catch (Exception e) {
@@ -300,12 +326,16 @@ public class AvmImpl implements Avm {
 
         private ClassHierarchyForest classHierarchyForest;
 
+        // For billing purpose
+        final long bytecodeSize;
+        final long numberOfClasses;
+
         private static DappModule readFromJar(byte[] jar) throws IOException {
             ClassHierarchyForest forest = ClassHierarchyForest.createForestFrom(jar);
             Map<String, byte[]> classes = forest.toFlatMapWithoutRoots();
             String mainClass = readMainClassQualifiedNameFrom(jar);
 
-            return new DappModule(classes, mainClass, forest);
+            return new DappModule(classes, mainClass, forest, jar.length, classes.size());
         }
 
         private static String readMainClassQualifiedNameFrom(byte[] jar) throws IOException {
@@ -339,13 +369,15 @@ public class AvmImpl implements Avm {
         }
 
         private DappModule(Map<String, byte[]> classes, String mainClass) {
-            this(classes, mainClass, null);
+            this(classes, mainClass, null, 0, 0);
         }
 
-        private DappModule(Map<String, byte[]> classes, String mainClass, ClassHierarchyForest classHierarchyForest) {
+        private DappModule(Map<String, byte[]> classes, String mainClass, ClassHierarchyForest classHierarchyForest, long bytecodeSize, long numberOfClasses) {
             this.classes = classes;
             this.mainClass = mainClass;
             this.classHierarchyForest = classHierarchyForest;
+            this.bytecodeSize = bytecodeSize;
+            this.numberOfClasses = numberOfClasses;
         }
 
         Map<String, byte[]> getClasses() {

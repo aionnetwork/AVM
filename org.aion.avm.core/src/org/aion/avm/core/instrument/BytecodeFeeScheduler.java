@@ -30,7 +30,12 @@ public class BytecodeFeeScheduler {
         CREATION    (40),
 
         // Memory Usage Energy Level
-        MEMORY      (3);
+        MEMORY      (3),
+
+        // Deployment Energy levels
+        PROCESS      (32000),
+        PROCESSDATA     (10),
+        CODEDEPOSIT    (200);
 
         private final int val;
 
