@@ -77,6 +77,19 @@ public class HeapMemoryCostCalculator {
     }
 
     /**
+     * add a class name and heap size pair to the internal map
+     * @param className the internal name of a class
+     * @param heapSize the heap size of the class
+     */
+    public void addClassHeapSizeToMap(String className, Integer heapSize) {
+        if (classHeapSizeMap == null) {
+            throw new IllegalStateException("HeapMemoryCostCalculator does not have the classHeapSizeMap.");
+        }
+
+        classHeapSizeMap.put(className, heapSize);
+    }
+
+    /**
      * A helper method that calculates the instance size of one class and record it in the "classHeapSizeMap".
      * @param classBytes input class bytecode stream.
      *
