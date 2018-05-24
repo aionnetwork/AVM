@@ -1,5 +1,6 @@
 package org.aion.avm.core.classgeneration;
 
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -76,8 +77,58 @@ public class StubGenerator {
         String[] interfaces = new String[0];
         out.visit(CLASS_VERSION, access, name, signature, superName, interfaces);
         
-        MethodVisitor methodVisitor = null;
+        // Generate the constructors.
+        populateExceptionConstructors(out, superName);
         
+        // Finish this and dump the bytes.
+        out.visitEnd();
+        return out.toByteArray();
+    }
+    
+    /**
+     * Generates and returns the bytecode for a "legacy-style" exception class.  That is, the kind which have their own getCause and getException implementations.
+     * In our implementation, we will strictly wrap the super-class, and append a getException method.
+     * 
+     * @param name The name of the class to generate.
+     * @param superName The name of the superclass.
+     * @return The bytecode for the new class.
+     */
+    public static byte[] generateLegacyExceptionClass(String name, String superName) {
+        ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        
+        // This class only exists to be a type - the superclasses always do everything.
+        // (common access for all classes we generate - public and "super", meaning post-1.1 invokestatic).
+        int access = Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER;
+        // We ignore generics, so null signature.
+        String signature = null;
+        // We implement no interfaces.
+        String[] interfaces = new String[0];
+        out.visit(CLASS_VERSION, access, name, signature, superName, interfaces);
+        
+        // Generate the constructors.
+        populateExceptionConstructors(out, superName);
+        
+        // Generate the getException method.
+        {
+            // NOTE:  These methods need to exist with the "avm_" prefixes, since the shadow library is post-shadow.
+            String returnThrowable = "()Lorg/aion/avm/java/lang/Throwable;";
+            MethodVisitor methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, "avm_getException", returnThrowable, null, null);
+            methodVisitor.visitCode();
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, name, "avm_getCause", returnThrowable, false);
+            methodVisitor.visitInsn(Opcodes.ARETURN);
+            methodVisitor.visitMaxs(1, 1);
+            methodVisitor.visitEnd();
+        }
+        
+        // Finish this and dump the bytes.
+        out.visitEnd();
+        return out.toByteArray();
+    }
+    
+    
+    private static void populateExceptionConstructors(ClassVisitor out, String superName) {
+        MethodVisitor methodVisitor = null;
         // Generate the () constructor.
         {
             String noArgDescriptor = "()V";
@@ -129,9 +180,5 @@ public class StubGenerator {
             methodVisitor.visitMaxs(2, 2);
             methodVisitor.visitEnd();
         }
-        
-        // Finish this and dump the bytes.
-        out.visitEnd();
-        return out.toByteArray();
     }
 }

@@ -1,6 +1,7 @@
 package org.aion.avm.core.classgeneration;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.aion.avm.core.TestClassLoader;
@@ -165,6 +166,50 @@ public class StubGeneratorTest {
         Assert.assertEquals(handWritten, aioobe.getSuperclass().getSuperclass().getSuperclass().getClassLoader()); // java.lang.Exception
         Assert.assertEquals(handWritten, aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getClassLoader()); // java.lang.Throwable
         Assert.assertEquals(handWritten, aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getSuperclass().getClassLoader()); // java.lang.Object
+    }
+
+    /**
+     * Make sure that the "legacy" exceptions work properly (generated, but generated differently than the other cases).
+     */
+    @Test
+    public void testGenerateLegacyExceptionShadows() throws Exception {
+        ClassLoader handWritten = TestClassLoader.class.getClassLoader();
+        TestClassLoader generated = new TestClassLoader(handWritten, identity -> identity);
+        // We specifically want to look at the hierarchy of java.lang.ClassNotFoundException, since it is deep and the legacy style.
+        Class<?> notFound = generateExceptionShadowsAndWrappers(handWritten, generated, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException");
+        Assert.assertNotNull(notFound);
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException", notFound.getCanonicalName());
+        Assert.assertEquals(generated, notFound.getClassLoader());
+        
+        Class<?> reflectiveOperationException = notFound.getSuperclass();
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ReflectiveOperationException", reflectiveOperationException.getCanonicalName());
+        Assert.assertEquals(generated, reflectiveOperationException.getClassLoader());
+        
+        Class<?> exception = reflectiveOperationException.getSuperclass();
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Exception", exception.getCanonicalName());
+        Assert.assertEquals(handWritten, exception.getClassLoader());
+        
+        Class<?> throwable = exception.getSuperclass();
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Throwable", throwable.getCanonicalName());
+        Assert.assertEquals(handWritten, throwable.getClassLoader());
+        
+        Class<?> object = throwable.getSuperclass();
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Object", object.getCanonicalName());
+        Assert.assertEquals(handWritten, object.getClassLoader());
+        
+        
+        // Create an instance and prove that we can interact with it.
+        Constructor<?> con = notFound.getConstructor(org.aion.avm.java.lang.String.class, org.aion.avm.java.lang.Throwable.class);
+        org.aion.avm.java.lang.String contents = new org.aion.avm.java.lang.String("one");
+        org.aion.avm.java.lang.Throwable cause = new org.aion.avm.java.lang.Throwable();
+        
+        Object instance = con.newInstance(contents, cause);
+        org.aion.avm.java.lang.Throwable shadow = (org.aion.avm.java.lang.Throwable)instance;
+        
+        // Call our getException and make sure it is the cause.
+        Method getException = notFound.getMethod("avm_getException");
+        Object result = getException.invoke(shadow);
+        Assert.assertTrue(result == cause);
     }
 
 

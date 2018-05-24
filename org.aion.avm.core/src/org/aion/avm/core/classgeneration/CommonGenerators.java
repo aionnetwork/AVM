@@ -80,6 +80,12 @@ public class CommonGenerators {
             "java.lang.TypeNotPresentException",
     });
 
+    // We generate "legacy-style exception" shadows for these ones (and wrappers are still required).
+    public static final Set<String> kLegacyExceptionClassNames = Set.of(new String[] {
+            "java.lang.ExceptionInInitializerError",
+            "java.lang.ClassNotFoundException",
+    });
+
     public static Map<String, byte[]> generateExceptionShadowsAndWrappers() throws Exception {
         Map<String, byte[]> generatedClasses = new HashMap<>();
         for (String className : kExceptionClassNames) {
@@ -90,7 +96,15 @@ public class CommonGenerators {
             if (!kHandWrittenExceptionClassNames.contains(className)) {
                 String shadowName = kShadowClassLibraryPrefix + className;
                 String shadowSuperName = kShadowClassLibraryPrefix + superclassName;
-                byte[] shadowBytes = generateExceptionClass(shadowName, shadowSuperName);
+                byte[] shadowBytes = null;
+                if (kLegacyExceptionClassNames.contains(className)) {
+                    // "Legacy" exception.
+                    shadowBytes = generateLegacyExceptionClass(shadowName, shadowSuperName);
+                } else {
+                    // "Standard" exception.
+                    shadowBytes = generateExceptionClass(shadowName, shadowSuperName);
+                }
+                
                 generatedClasses.put(shadowName, shadowBytes);
             }
             
@@ -113,5 +127,11 @@ public class CommonGenerators {
         String slashName = mappedName.replaceAll("\\.", "/");
         String superSlashName = mappedSuperName.replaceAll("\\.", "/");
         return StubGenerator.generateExceptionClass(slashName, superSlashName);
+    }
+
+    private static byte[] generateLegacyExceptionClass(String mappedName, String mappedSuperName) {
+        String slashName = mappedName.replaceAll("\\.", "/");
+        String superSlashName = mappedSuperName.replaceAll("\\.", "/");
+        return StubGenerator.generateLegacyExceptionClass(slashName, superSlashName);
     }
 }
