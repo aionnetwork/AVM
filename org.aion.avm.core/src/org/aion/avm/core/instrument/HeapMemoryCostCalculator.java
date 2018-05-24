@@ -116,7 +116,12 @@ public class HeapMemoryCostCalculator {
 
         // get the parent classes, copy the fieldsMap
         if (classHeapSizeMap.containsKey(classNode.superName)) {
-            heapSize += classHeapSizeMap.get(classNode.superName);
+            if (classHeapSizeMap.get(classNode.superName) != null) {
+                heapSize += classHeapSizeMap.get(classNode.superName) * 8; // convert back to number of bits
+            }
+            else {
+                throw new IllegalStateException("A parent class does not have the size in HeapMemoryCostCalculator.");
+            }
         }
         else {
             throw new IllegalStateException("A parent class is not processed by HeapMemoryCostCalculator.");
