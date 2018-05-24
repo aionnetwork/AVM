@@ -3,6 +3,7 @@ package org.aion.avm.core.classgeneration;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 
+import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.dappreading.ClassLoadingResult;
 import org.aion.avm.core.dappreading.DAppClassLoader;
 import org.aion.avm.core.dappreading.DAppLoader;
@@ -93,16 +94,13 @@ public class StubGeneratorTest {
      * Tests that our approach for generating all the exception shadows is correct.
      * The approach here is to find the original and shadow "java.lang.Throwable", walk the original, building a parallel tree in the shadow.
      * NOTE:  This test is really just a temporary landing zone for some generation code until its real location is ready, in the core.
-     * TODO:  We probably want to use a slightly different StubGenerator routine for this since these shadows technically have 4 constructors.
-     * TODO:  We need to add handling for the hand-coded classes which had their own method support (and potentially their superclasses).
      */
     @Test
     public void testGenerateExceptionShadows() throws Exception {
-        final String dAppRuntimePath = "/dev/null";
-        final String dAppModulesPath = "/dev/null";
-        final DAppLoader avm = new DAppLoader(dAppRuntimePath, dAppModulesPath);
+        ClassLoader parent = TestClassLoader.class.getClassLoader();
+        TestClassLoader loader = new TestClassLoader(parent, identity -> identity);
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
-        Class<?> aioobe = generateExceptionShadowsAndWrappers(avm, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
+        Class<?> aioobe = generateExceptionShadowsAndWrappers(parent, loader, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
         Assert.assertNotNull(aioobe);
         Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getCanonicalName());
@@ -124,11 +122,10 @@ public class StubGeneratorTest {
      */
     @Test
     public void testGenerateExceptionWrappers() throws Exception {
-        final String dAppRuntimePath = "/dev/null";
-        final String dAppModulesPath = "/dev/null";
-        final DAppLoader avm = new DAppLoader(dAppRuntimePath, dAppModulesPath);
+        ClassLoader parent = TestClassLoader.class.getClassLoader();
+        TestClassLoader loader = new TestClassLoader(parent, identity -> identity);
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
-        Class<?> aioobe = generateExceptionShadowsAndWrappers(avm, CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
+        Class<?> aioobe = generateExceptionShadowsAndWrappers(parent, loader, CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
         // The interesting thing about the wrappers is that they are actually real Throwables.
         Assert.assertNotNull(aioobe);
@@ -150,7 +147,8 @@ public class StubGeneratorTest {
         Assert.assertNotNull(top.toString());
     }
 
-    private static Class<?> generateExceptionShadowsAndWrappers(DAppLoader avm, String testClassName) throws Exception {
+
+    private static Class<?> generateExceptionShadowsAndWrappers(ClassLoader parent, TestClassLoader loader, String testClassName) throws Exception {
         // Get the generated classes.
         Map<String, byte[]> allGenerated = CommonGenerators.generateExceptionShadowsAndWrappers();
         
@@ -164,16 +162,20 @@ public class StubGeneratorTest {
         for (String name : CommonGenerators.kExceptionClassNames) {
             String shadowName = CommonGenerators.kShadowClassLibraryPrefix + name;
             byte[] shadowBytes = allGenerated.get(shadowName);
-            Class<?> shadowClass = avm.injectAndLoadClass(shadowName, shadowBytes);
-            Assert.assertTrue(shadowClass.getClassLoader() instanceof DAppClassLoader);
+            Assert.assertNotNull(shadowBytes);
+            loader.addClassDirectLoad(shadowName, shadowBytes);
+            Class<?> shadowClass = loader.loadClass(shadowName);
+            Assert.assertEquals(loader, shadowClass.getClassLoader());
             if (testClassName.equals(shadowName)) {
                 found = shadowClass;
             }
             
             String wrapperName = CommonGenerators.kWrapperClassLibraryPrefix + name;
             byte[] wrapperBytes = allGenerated.get(wrapperName);
-            Class<?> wrapperClass = avm.injectAndLoadClass(wrapperName, wrapperBytes);
-            Assert.assertTrue(wrapperClass.getClassLoader() instanceof DAppClassLoader);
+            Assert.assertNotNull(wrapperBytes);
+            loader.addClassDirectLoad(wrapperName, wrapperBytes);
+            Class<?> wrapperClass = loader.loadClass(wrapperName);
+            Assert.assertEquals(loader, wrapperClass.getClassLoader());
             if (testClassName.equals(wrapperName)) {
                 found = wrapperClass;
             }
