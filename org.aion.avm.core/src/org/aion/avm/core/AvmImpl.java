@@ -143,7 +143,7 @@ public class AvmImpl implements Avm {
             ExceptionWrapping exceptionHandling = new ExceptionWrapping(arrayWrapping, HELPER_CLASS, classHierarchy, generatedClassesSink);
             ClassShadowing classShadowing = new ClassShadowing(exceptionHandling, HELPER_CLASS);
             StackWatcherClassAdapter stackTracking = new StackWatcherClassAdapter(classShadowing);
-            ClassMetering classMetering = new ClassMetering(stackTracking, HELPER_CLASS, classHierarchy, objectSizes);
+            ClassMetering classMetering = new ClassMetering(stackTracking, HELPER_CLASS, objectSizes);
 
             // traverse
             // TODO:  ClassReader.EXPAND_FRAMES is needed for stacktracking injector

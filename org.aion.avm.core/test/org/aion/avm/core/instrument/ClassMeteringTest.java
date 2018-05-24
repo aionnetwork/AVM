@@ -17,7 +17,7 @@ public class ClassMeteringTest {
         ClassReader in = new ClassReader(inputBytes);
         ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         
-        ClassMetering classMetering = new ClassMetering(out, TestEnergy.CLASS_NAME, null, null);
+        ClassMetering classMetering = new ClassMetering(out, TestEnergy.CLASS_NAME, null);
         in.accept(classMetering, ClassReader.SKIP_DEBUG);
         
         return out.toByteArray();

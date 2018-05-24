@@ -1,6 +1,5 @@
 package org.aion.avm.core.instrument;
 
-import org.aion.avm.core.ClassHierarchyForest;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -11,15 +10,13 @@ import java.util.Map;
 
 public class ClassMetering extends ClassVisitor {
     private final String runtimeClassName;
-    private ClassHierarchyForest classHierarchy;
     private Map<String, Integer> objectSizes;
     private final BytecodeFeeScheduler bytecodeFeeScheduler;
 
-    public ClassMetering(ClassVisitor visitor, String runtimeClassName, ClassHierarchyForest classHierarchy, Map<String, Integer> objectSizes) {
+    public ClassMetering(ClassVisitor visitor, String runtimeClassName, Map<String, Integer> objectSizes) {
         super(Opcodes.ASM6, visitor);
 
         this.runtimeClassName = runtimeClassName;
-        this.classHierarchy = classHierarchy;
         this.objectSizes = objectSizes;
         
         // Note that we construct the fee scheduler, internally.
