@@ -4,13 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.aion.avm.internal.PackageConstants;
+
 
 /**
  * Contains some of the common constants and code-generation idioms used in various tests and/or across the system, in general.
  */
 public class CommonGenerators {
-    public static final String kShadowClassLibraryPrefix = "org.aion.avm.";
-    public static final String kWrapperClassLibraryPrefix = "org.aion.avm.exceptionwrapper.";
+    public static final String kShadowClassLibraryPrefix = PackageConstants.kTopLevelDotPrefix;
+    public static final String kWrapperClassLibraryPrefix = PackageConstants.kExceptionWrapperDotPrefix;
     public static final String kSlashWrapperClassLibraryPrefix = kWrapperClassLibraryPrefix.replaceAll("\\.", "/");
 
     // There doesn't appear to be any way to enumerate these classes in the existing class loader (even though they are part of java.lang)
