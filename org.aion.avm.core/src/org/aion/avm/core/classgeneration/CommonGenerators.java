@@ -90,7 +90,7 @@ public class CommonGenerators {
         Map<String, byte[]> generatedClasses = new HashMap<>();
         for (String className : kExceptionClassNames) {
             // We need to look this up to find the superclass.
-            String superclassName = Class.forName(className).getSuperclass().getCanonicalName();
+            String superclassName = Class.forName(className).getSuperclass().getName();
             
             // Generate the shadow.
             if (!kHandWrittenExceptionClassNames.contains(className)) {

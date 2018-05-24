@@ -34,7 +34,7 @@ public class ClassMeteringTest {
         TestEnergy.totalArrayInstances = 0;
 
         // Setup and rewrite the class.
-        String className = TestResource.class.getCanonicalName();
+        String className = TestResource.class.getName();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), this.commonCostBuilder);
         byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         loader.addClassForRewrite(className, raw);
@@ -201,7 +201,7 @@ public class ClassMeteringTest {
      * NOTE:  This class is used for the "testWrittenBlockPrefix()" test.
      */
     public static class TestEnergy {
-        public static String CLASS_NAME = ClassMeteringTest.class.getCanonicalName().replaceAll("\\.", "/") + "$TestEnergy";
+        public static String CLASS_NAME = TestEnergy.class.getName().replaceAll("\\.", "/");
         public static long totalCost;
         public static int totalCharges;
         public static int totalArrayElements;

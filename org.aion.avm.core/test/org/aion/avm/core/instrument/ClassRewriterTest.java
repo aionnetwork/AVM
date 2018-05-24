@@ -25,7 +25,7 @@ public class ClassRewriterTest {
             visitor.visitMaxs(1, 0);
             visitor.visitEnd();
         };
-        String className = original.getClass().getCanonicalName();
+        String className = original.getClass().getName();
         Function<byte[], byte[]> rewriterCall = (inputBytes) -> ClassRewriter.
                 rewriteOneMethodInClass(inputBytes, "hashCode", replacer, ClassWriter.COMPUTE_FRAMES);
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), rewriterCall);
@@ -35,7 +35,7 @@ public class ClassRewriterTest {
         Object target = clazz.getConstructor(int.class).newInstance(originalHash);
 
         // We expect these to both be the same class name.
-        Assert.assertEquals(original.getClass().getCanonicalName(), target.getClass().getCanonicalName());
+        Assert.assertEquals(original.getClass().getName(), target.getClass().getName());
         // But be different actual class instances.
         Assert.assertNotEquals(original.getClass(), target.getClass());
         // Verify that the hashcode response changed.

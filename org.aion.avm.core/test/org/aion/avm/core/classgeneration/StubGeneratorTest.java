@@ -17,7 +17,7 @@ public class StubGeneratorTest {
     public void testBasics() throws Exception {
         String slashName = "my/test/ClassName";
         String dotName = slashName.replaceAll("/", ".");
-        String superName = TestClass.class.getCanonicalName().replaceAll("\\.", "/");
+        String superName = TestClass.class.getName().replaceAll("\\.", "/");
         byte[] bytecode = StubGenerator.generateWrapperClass(slashName, superName);
         Class<?> clazz = Loader.loadClassAlone(dotName, bytecode);
         Constructor<?> con = clazz.getConstructor(Object.class);
@@ -47,7 +47,7 @@ public class StubGeneratorTest {
         
         String slashName = "my/test/ClassName";
         String dotName = slashName.replaceAll("/", ".");
-        String superName = TestClass.class.getCanonicalName().replaceAll("\\.", "/");
+        String superName = TestClass.class.getName().replaceAll("\\.", "/");
         byte[] bytecode = StubGenerator.generateWrapperClass(slashName, superName);
         Class<?> clazz = avm.injectAndLoadClass(dotName, bytecode);
         Assert.assertTrue(clazz.getClassLoader() instanceof DAppClassLoader);
@@ -71,7 +71,7 @@ public class StubGeneratorTest {
         // Create the superclass.
         String slashName = "my/test/ClassName";
         String dotName = slashName.replaceAll("/", ".");
-        String superName = TestClass.class.getCanonicalName().replaceAll("\\.", "/");
+        String superName = TestClass.class.getName().replaceAll("\\.", "/");
         byte[] bytecode = StubGenerator.generateWrapperClass(slashName, superName);
         Class<?> superclass = avm.injectAndLoadClass(dotName, bytecode);
         Assert.assertTrue(superclass.getClassLoader() instanceof DAppClassLoader);
@@ -104,10 +104,10 @@ public class StubGeneratorTest {
         Class<?> aioobe = generateExceptionShadowsAndWrappers(parent, loader, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
         Assert.assertNotNull(aioobe);
-        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getCanonicalName());
-        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.RuntimeException", aioobe.getSuperclass().getSuperclass().getCanonicalName());
-        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
-        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getName());
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.RuntimeException", aioobe.getSuperclass().getSuperclass().getName());
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getName());
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getName());
         
         // Create an instance and prove that we can interact with it.
         Constructor<?> con = aioobe.getConstructor(org.aion.avm.java.lang.String.class);
@@ -130,11 +130,11 @@ public class StubGeneratorTest {
         
         // The interesting thing about the wrappers is that they are actually real Throwables.
         Assert.assertNotNull(aioobe);
-        Assert.assertEquals(CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getCanonicalName());
-        Assert.assertEquals(CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.RuntimeException", aioobe.getSuperclass().getSuperclass().getCanonicalName());
-        Assert.assertEquals(CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
-        Assert.assertEquals(CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
-        Assert.assertEquals("java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getSuperclass().getCanonicalName());
+        Assert.assertEquals(CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getName());
+        Assert.assertEquals(CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.RuntimeException", aioobe.getSuperclass().getSuperclass().getName());
+        Assert.assertEquals(CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getName());
+        Assert.assertEquals(CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getName());
+        Assert.assertEquals("java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getSuperclass().getName());
         
         // Create an instance and prove that we can interact with it.
         Constructor<?> con = aioobe.getConstructor(Object.class);
@@ -178,23 +178,23 @@ public class StubGeneratorTest {
         // We specifically want to look at the hierarchy of java.lang.ClassNotFoundException, since it is deep and the legacy style.
         Class<?> notFound = generateExceptionShadowsAndWrappers(handWritten, generated, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException");
         Assert.assertNotNull(notFound);
-        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException", notFound.getCanonicalName());
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException", notFound.getName());
         Assert.assertEquals(generated, notFound.getClassLoader());
         
         Class<?> reflectiveOperationException = notFound.getSuperclass();
-        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ReflectiveOperationException", reflectiveOperationException.getCanonicalName());
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ReflectiveOperationException", reflectiveOperationException.getName());
         Assert.assertEquals(generated, reflectiveOperationException.getClassLoader());
         
         Class<?> exception = reflectiveOperationException.getSuperclass();
-        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Exception", exception.getCanonicalName());
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Exception", exception.getName());
         Assert.assertEquals(handWritten, exception.getClassLoader());
         
         Class<?> throwable = exception.getSuperclass();
-        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Throwable", throwable.getCanonicalName());
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Throwable", throwable.getName());
         Assert.assertEquals(handWritten, throwable.getClassLoader());
         
         Class<?> object = throwable.getSuperclass();
-        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Object", object.getCanonicalName());
+        Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Object", object.getName());
         Assert.assertEquals(handWritten, object.getClassLoader());
         
         

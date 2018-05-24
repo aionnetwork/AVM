@@ -98,6 +98,6 @@ public class Throwable extends Object {
     // NOTE:  This toString() cannot be called by the contract code (it will call avm_toString()) but our runtime and test code can call this.
     @Override
     public java.lang.String toString() {
-        return getClass().getCanonicalName() + ": " + this.message;
+        return getClass().getName() + ": " + this.message;
     }
 }

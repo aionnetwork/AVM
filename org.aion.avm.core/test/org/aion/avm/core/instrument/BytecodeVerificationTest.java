@@ -34,7 +34,7 @@ public class BytecodeVerificationTest {
                 visitor.visitEnd();
             }};
 
-        String className = original.getClass().getCanonicalName();
+        String className = original.getClass().getName();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, "hashCode", replacer, 0);
         Class<?> clazz = loader.loadClass(className);
 
@@ -73,7 +73,7 @@ public class BytecodeVerificationTest {
                 visitor.visitEnd();
             }};
 
-        String className = original.getClass().getCanonicalName();
+        String className = original.getClass().getName();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, "hashCode", replacer, 0);
         Class<?> clazz = loader.loadClass(className);
 
@@ -111,7 +111,7 @@ public class BytecodeVerificationTest {
                 visitor.visitEnd();
             }};
 
-        String className = original.getClass().getCanonicalName();
+        String className = original.getClass().getName();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, "hashCode", replacer, 1);
         Class<?> clazz = loader.loadClass(className);
 

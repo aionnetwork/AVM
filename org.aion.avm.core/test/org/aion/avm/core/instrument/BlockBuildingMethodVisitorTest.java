@@ -23,7 +23,7 @@ public class BlockBuildingMethodVisitorTest {
     @BeforeClass
     public static void setup() throws Exception {
         // All of these cases are about cracking the same test class so just get the common data we all need.
-        String className = BlockTestResource.class.getCanonicalName();
+        String className = BlockTestResource.class.getName();
         BlockSnooper snooper = new BlockSnooper();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), snooper);
         byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");

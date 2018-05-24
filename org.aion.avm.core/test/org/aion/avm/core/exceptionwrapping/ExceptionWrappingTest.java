@@ -68,7 +68,7 @@ public class ExceptionWrappingTest {
         TestHelpers.didUnwrap = false;
         TestHelpers.didWrap = false;
         
-        String className = TestExceptionResource.class.getCanonicalName();
+        String className = TestExceptionResource.class.getName();
         Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
         
         TestHelpers.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), this.commonCostBuilder);
@@ -167,7 +167,7 @@ public class ExceptionWrappingTest {
 
 
     public static class TestHelpers {
-        public static final String CLASS_NAME = ExceptionWrappingTest.class.getCanonicalName().replaceAll("\\.", "/") + "$TestHelpers";
+        public static final String CLASS_NAME = TestHelpers.class.getName().replaceAll("\\.", "/");
         public static int countWrappedClasses;
         public static int countWrappedStrings;
         public static boolean didUnwrap = false;
@@ -187,7 +187,7 @@ public class ExceptionWrappingTest {
             try {
                 // NOTE:  This is called for both the cases where the throwable is a VM-generated "java.lang" exception or one of our wrappers.
                 // We need to wrap the java.lang instance in a shadow and unwrap the other case to return the shadow.
-                String throwableName = t.getClass().getCanonicalName();
+                String throwableName = t.getClass().getName();
                 if (throwableName.startsWith("java.lang.")) {
                     // This is VM-generated - we will have to instantiate a shadow, directly.
                     shadow = convertVmGeneratedException(t);
@@ -207,7 +207,7 @@ public class ExceptionWrappingTest {
             Throwable result = null;
             try {
                 // In this case, we just want to look up the appropriate wrapper (using reflection) and instantiate a wrapper for this.
-                String objectClass = arg.getClass().getCanonicalName();
+                String objectClass = arg.getClass().getName();
                 // We know that this MUST be one of our shadow objects.
                 org.aion.avm.core.util.Assert.assertTrue(objectClass.startsWith(CommonGenerators.kShadowClassLibraryPrefix));
                 String wrapperClassName = CommonGenerators.kWrapperClassLibraryPrefix + objectClass.substring(CommonGenerators.kShadowClassLibraryPrefix.length());
@@ -232,7 +232,7 @@ public class ExceptionWrappingTest {
                     : null;
             
             // Then, use reflection to find the appropriate wrapper.
-            String throwableName = t.getClass().getCanonicalName();
+            String throwableName = t.getClass().getName();
             Class<?> shadowClass = loader.loadClass(CommonGenerators.kShadowClassLibraryPrefix + throwableName);
             return (org.aion.avm.java.lang.Throwable)shadowClass.getConstructor(org.aion.avm.java.lang.String.class, org.aion.avm.java.lang.Throwable.class).newInstance(message, cause);
         }

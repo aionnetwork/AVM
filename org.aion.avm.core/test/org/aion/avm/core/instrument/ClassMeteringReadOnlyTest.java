@@ -23,7 +23,7 @@ public class ClassMeteringReadOnlyTest {
     @Before
     public void setup() throws Exception {
         // Setup and rewrite the class.
-        String className = TestResource.class.getCanonicalName();
+        String className = TestResource.class.getName();
         this.snooper = new BlockSnooper();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), this.snooper);
         byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
@@ -65,7 +65,7 @@ public class ClassMeteringReadOnlyTest {
         BasicBlock block = factoryBlocks.get(0);
         Assert.assertEquals(1, block.allocatedTypes.size());
         // Of our TestResource type.
-        Assert.assertEquals(TestResource.class.getCanonicalName(), block.allocatedTypes.get(0).replaceAll("/", "."));
+        Assert.assertEquals(TestResource.class.getName(), block.allocatedTypes.get(0).replaceAll("/", "."));
     }
 
 

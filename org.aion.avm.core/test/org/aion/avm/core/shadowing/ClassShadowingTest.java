@@ -51,7 +51,7 @@ public class ClassShadowingTest {
 
 
     public static class Testing {
-        public static String CLASS_NAME = ClassShadowingTest.class.getCanonicalName().replaceAll("\\.", "/") + "$Testing";
+        public static String CLASS_NAME = Testing.class.getName().replaceAll("\\.", "/");
         public static int countWrappedClasses;
         public static int countWrappedStrings;
         
