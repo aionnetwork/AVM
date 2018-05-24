@@ -2,6 +2,8 @@ package org.aion.avm.core;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.AvmException;
+import org.aion.avm.internal.JvmError;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -120,5 +122,18 @@ public class AvmImplTest {
         AvmResult result = avm.run(rt);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
+    }
+
+    @Test
+    public void testJvmError() {
+        // Note that we eventually need to test how this interacts with AvmImpl's contract entry-point but this at least proves
+        // that the hierarchy is correctly put together.
+        String result = null;
+        try {
+            throw new JvmError(new UnknownError("testing"));
+        } catch (AvmException e) {
+            result = e.getMessage();
+        }
+        assertEquals("java.lang.UnknownError: testing", result);
     }
 }
