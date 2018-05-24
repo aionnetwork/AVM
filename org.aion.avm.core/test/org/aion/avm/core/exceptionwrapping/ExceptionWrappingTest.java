@@ -11,8 +11,10 @@ import java.util.function.Function;
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.shadowing.ClassShadowing;
+import org.aion.avm.internal.Helper;
 import org.aion.avm.core.Forest;
 import org.junit.Assert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -72,6 +74,7 @@ public class ExceptionWrappingTest {
         Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
         
         TestHelpers.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), this.commonCostBuilder);
+        Helper.setLateClassLoader(TestHelpers.loader);
         byte[] raw = TestHelpers.loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         TestHelpers.loader.addClassForRewrite(className, raw);
         for (Map.Entry<String, byte[]> elt : generatedClasses.entrySet()) {
@@ -94,6 +97,11 @@ public class ExceptionWrappingTest {
         TestHelpers.loader.loadClass(exceptionName);
         
         this.testClass = TestHelpers.loader.loadClass(className);
+    }
+
+    @After
+    public void teardown() throws Exception {
+        Helper.clearLateClassLoader();
     }
 
 
@@ -166,76 +174,30 @@ public class ExceptionWrappingTest {
     }
 
 
+    // Note that we will delegate to the common Helper class to ensure that we maintain overall correctness.
     public static class TestHelpers {
         public static final String CLASS_NAME = TestHelpers.class.getName().replaceAll("\\.", "/");
         public static int countWrappedClasses;
         public static int countWrappedStrings;
         public static boolean didUnwrap = false;
         public static boolean didWrap = false;
-        public static TestClassLoader loader = null;
+        public static TestClassLoader loader;
         
         public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {
             countWrappedClasses += 1;
-            return new org.aion.avm.java.lang.Class<T>(input);
+            return Helper.wrapAsClass(input);
         }
         public static org.aion.avm.java.lang.String wrapAsString(String input) {
             countWrappedStrings += 1;
-            return new org.aion.avm.java.lang.String(input);
+            return Helper.wrapAsString(input);
         }
         public static org.aion.avm.java.lang.Object unwrapThrowable(Throwable t) {
-            org.aion.avm.java.lang.Object shadow = null;
-            try {
-                // NOTE:  This is called for both the cases where the throwable is a VM-generated "java.lang" exception or one of our wrappers.
-                // We need to wrap the java.lang instance in a shadow and unwrap the other case to return the shadow.
-                String throwableName = t.getClass().getName();
-                if (throwableName.startsWith("java.lang.")) {
-                    // This is VM-generated - we will have to instantiate a shadow, directly.
-                    shadow = convertVmGeneratedException(t);
-                } else {
-                    // This is one of our wrappers.
-                    org.aion.avm.exceptionwrapper.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.java.lang.Throwable)t;
-                    shadow = (org.aion.avm.java.lang.Object)wrapper.unwrap();
-                }
-                didUnwrap = true;
-            } catch (Throwable err) {
-                // Unrecoverable internal error.
-                org.aion.avm.core.util.Assert.unexpected(err);
-            }
-            return shadow;
+            didUnwrap = true;
+            return Helper.unwrapThrowable(t);
         }
         public static Throwable wrapAsThrowable(org.aion.avm.java.lang.Object arg) {
-            Throwable result = null;
-            try {
-                // In this case, we just want to look up the appropriate wrapper (using reflection) and instantiate a wrapper for this.
-                String objectClass = arg.getClass().getName();
-                // We know that this MUST be one of our shadow objects.
-                org.aion.avm.core.util.Assert.assertTrue(objectClass.startsWith(CommonGenerators.kShadowClassLibraryPrefix));
-                String wrapperClassName = CommonGenerators.kWrapperClassLibraryPrefix + objectClass.substring(CommonGenerators.kShadowClassLibraryPrefix.length());
-                Class<?> wrapperClass = loader.loadClass(wrapperClassName);
-                result = (Throwable)wrapperClass.getConstructor(Object.class).newInstance(arg);
-                didWrap = true;
-            } catch (Throwable err) {
-                // Unrecoverable internal error.
-                org.aion.avm.core.util.Assert.unexpected(err);
-            } 
-            return result;
-        }
-        private static org.aion.avm.java.lang.Throwable convertVmGeneratedException(Throwable t) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-            // First step is to convert the message and cause into shadow objects, as well.
-            String originalMessage = t.getMessage();
-            org.aion.avm.java.lang.String message = (null != originalMessage)
-                    ? wrapAsString(originalMessage)
-                    : null;
-            Throwable originalCause = t.getCause();
-            org.aion.avm.java.lang.Throwable cause = (null != originalCause)
-                    ? convertVmGeneratedException(originalCause)
-                    : null;
-            
-            // Then, use reflection to find the appropriate wrapper.
-            String throwableName = t.getClass().getName();
-            Class<?> shadowClass = loader.loadClass(CommonGenerators.kShadowClassLibraryPrefix + throwableName);
-            return (org.aion.avm.java.lang.Throwable)shadowClass.getConstructor(org.aion.avm.java.lang.String.class, org.aion.avm.java.lang.Throwable.class).newInstance(message, cause);
+            didWrap = true;
+            return Helper.wrapAsThrowable(arg);
         }
     }
-
 }
