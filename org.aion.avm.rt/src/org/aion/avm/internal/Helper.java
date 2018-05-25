@@ -10,6 +10,7 @@ public class Helper {
     private static ThreadLocal<BlockchainRuntime> blockchainRuntime = new ThreadLocal<>();
     private static ThreadLocal<AtomicLong> energyLeft = new ThreadLocal<>();
     private static ClassLoader lateLoader;
+    private static int nextHashCode;
 
     // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
     private static AvmException forceExitState;
@@ -18,6 +19,7 @@ public class Helper {
         blockchainRuntime.set(rt);
         energyLeft.set(new AtomicLong(rt.getEnergyLimit()));
         StackWatcher.reset();
+        nextHashCode = 1;
     }
 
     public static void setLateClassLoader(ClassLoader loader) {
@@ -121,6 +123,9 @@ public class Helper {
         return Array.newInstance(cl, d1, d2, d3);
     }
 
+    public static int getNextHashCode() {
+        return nextHashCode++;
+    }
 
     // Private helpers used internally.
     private static org.aion.avm.java.lang.Throwable convertVmGeneratedException(Throwable t) throws Exception {

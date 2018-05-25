@@ -23,7 +23,7 @@ public class TestExceptionResource {
 
     /**
      * This method tests that we actually did go into the exception hander.
-     * The result will be 2+ exception hashcode (just to ensure that we called it).
+     * The result will be 2.
      */
     public static int tryMultiCatch() {
         int r = 0;
@@ -34,7 +34,7 @@ public class TestExceptionResource {
         } catch (NullPointerException | IllegalArgumentException e) {
             // Make sure that we call something which only an exception could have.
             e.getCause();
-            r = 2 + e.hashCode();
+            r = 2;
         }
         return r;
     }
@@ -49,10 +49,10 @@ public class TestExceptionResource {
             result = 1;
         } catch (NullPointerException | IllegalArgumentException e) {
             // We expect this.
-            result = 2 + e.hashCode();
+            result = 2;
         } catch (Throwable t) {
             // We shouldn't end up here.
-            result = 3 + t.hashCode();
+            result = 3;
         }
         return result;
     }
