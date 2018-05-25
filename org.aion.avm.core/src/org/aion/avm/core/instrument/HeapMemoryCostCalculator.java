@@ -191,7 +191,7 @@ public class HeapMemoryCostCalculator {
      * @param classHierarchy the pre-constructed class hierarchy forest
      * @param runtimeObjectSizes the pre-constructed map of the runtime and java.lang.* classes to their instance size
      */
-    public void calcClassesInstanceSize(ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
+    public void calcClassesInstanceSize(Forest<String, byte[]> classHierarchy, Map<String, Integer> runtimeObjectSizes) {
         // get the root nodes list of the class hierarchy
         Collection<Node<String, byte[]>> rootClasses = classHierarchy.getRoots();
 

@@ -105,7 +105,7 @@ public class AvmImpl implements Avm {
      *
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    public Map<String, Integer> computeObjectSizes(ClassHierarchyForest classHierarchy, Map<String, Integer> runtimeObjectSizes) {
+    public Map<String, Integer> computeObjectSizes(Forest<String, byte[]> classHierarchy, Map<String, Integer> runtimeObjectSizes) {
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
 
         // copy over the runtime classes sizes
@@ -128,7 +128,7 @@ public class AvmImpl implements Avm {
      * @param objectSizes    the sizes of object
      * @return the transformed classes and any generated classes
      */
-    public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, ClassHierarchyForest classHierarchy, Map<String, Integer> objectSizes) {
+    public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> classHierarchy, Map<String, Integer> objectSizes) {
 
         Map<String, byte[]> processedClasses = new HashMap<>();
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
