@@ -16,4 +16,8 @@ public class HashCodeTestTarget {
     public static String getStringConstant() {
         return "single string constant";
     }
+    
+    public static int getStringHash() {
+        return getStringConstant().hashCode();
+    }
 }

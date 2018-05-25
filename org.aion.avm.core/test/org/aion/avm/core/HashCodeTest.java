@@ -68,6 +68,24 @@ public class HashCodeTest {
         Assert.assertTrue(instance1 == instance2);
     }
 
+    /**
+     * Tests that the string hashcode of our wrapper gives us the actual string's hashcode.
+     */
+    @Test
+    public void testStringHashCode() throws Exception {
+        Class<?> clazz = commonLoadTestClass();
+        Assert.assertNotNull(clazz);
+        Method getStringConstant = clazz.getMethod("getStringConstant");
+        Method getStringHash = clazz.getMethod("getStringHash");
+        
+        Object instance1 = getStringConstant.invoke(null);
+        Object hash = getStringHash.invoke(null);
+        // Make sure that the hashcode, as seen within the contract is correct.
+        Assert.assertTrue(instance1.toString().hashCode() == ((Integer)hash).intValue());
+        // Make sure that the hashcode, as seen within the our runtime is correct.
+        Assert.assertTrue(instance1.hashCode() == ((Integer)hash).intValue());
+    }
+
 
     private Class<?> commonLoadTestClass() throws ClassNotFoundException {
         ClassLoader parentLoader = HashCodeTest.class.getClassLoader();
