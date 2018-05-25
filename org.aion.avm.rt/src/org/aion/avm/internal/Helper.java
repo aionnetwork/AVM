@@ -18,6 +18,7 @@ public class Helper {
      * It would probably be a good idea build an implementation of this which has WeakReference keys so we don't keep around unreachable wrappers.
      */
     private static IdentityHashMap<String, org.aion.avm.java.lang.String> internedStringWrappers;
+    private static IdentityHashMap<Class<?>, org.aion.avm.java.lang.Class<?>> internedClassWrappers;
 
     // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
     private static AvmException forceExitState;
@@ -30,6 +31,7 @@ public class Helper {
         
         // Reset our interning state.
         internedStringWrappers = new IdentityHashMap<String, org.aion.avm.java.lang.String>();
+        internedClassWrappers = new IdentityHashMap<Class<?>, org.aion.avm.java.lang.Class<?>>();
     }
 
     public static void setLateClassLoader(ClassLoader loader) {
@@ -47,7 +49,13 @@ public class Helper {
     }
 
     public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {
-        return new org.aion.avm.java.lang.Class<T>(input);
+        @SuppressWarnings("unchecked")
+        org.aion.avm.java.lang.Class<T> wrapper = (org.aion.avm.java.lang.Class<T>) internedClassWrappers.get(input);
+        if (null == wrapper) {
+            wrapper = new org.aion.avm.java.lang.Class<T>(input);
+            internedClassWrappers.put(input, wrapper);
+        }
+        return wrapper;
     }
 
     public static org.aion.avm.java.lang.String wrapAsString(String input) {

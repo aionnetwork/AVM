@@ -20,4 +20,8 @@ public class HashCodeTestTarget {
     public static int getStringHash() {
         return getStringConstant().hashCode();
     }
+    
+    public static Class<?> getClassConstant() {
+        return HashCodeTestTarget.class;
+    }
 }

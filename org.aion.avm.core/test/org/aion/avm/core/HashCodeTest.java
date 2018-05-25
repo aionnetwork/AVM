@@ -86,6 +86,20 @@ public class HashCodeTest {
         Assert.assertTrue(instance1.hashCode() == ((Integer)hash).intValue());
     }
 
+    /**
+     * Tests that requesting the same class constant, more than once, returns the same instance.
+     */
+    @Test
+    public void testClassConstant() throws Exception {
+        Class<?> clazz = commonLoadTestClass();
+        Assert.assertNotNull(clazz);
+        Method getClassConstant = clazz.getMethod("getClassConstant");
+        
+        Object instance1 = getClassConstant.invoke(null);
+        Object instance2 = getClassConstant.invoke(null);
+        Assert.assertTrue(instance1 == instance2);
+    }
+
 
     private Class<?> commonLoadTestClass() throws ClassNotFoundException {
         ClassLoader parentLoader = HashCodeTest.class.getClassLoader();
