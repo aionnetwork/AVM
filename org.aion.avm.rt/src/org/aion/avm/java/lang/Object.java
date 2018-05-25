@@ -1,12 +1,16 @@
 package org.aion.avm.java.lang;
 
+import org.aion.avm.internal.Helper;
+
+
 /**
  * The shadow implementation of the {@link java.lang.Object}.
  */
 public class Object extends java.lang.Object {
+    private final int hashCode;
 
     public Object() {
-
+        this.hashCode = Helper.getNextHashCode();
     }
 
     Class<?> avm_getClass() {
@@ -14,7 +18,7 @@ public class Object extends java.lang.Object {
     }
 
     public int avm_hashCode() {
-        return 0;
+        return this.hashCode;
     }
 
     public boolean avm_equals(Object obj) {
