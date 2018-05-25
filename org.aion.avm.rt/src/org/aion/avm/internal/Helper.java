@@ -3,6 +3,7 @@ package org.aion.avm.internal;
 import org.aion.avm.rt.BlockchainRuntime;
 
 import java.lang.reflect.Array;
+import java.util.IdentityHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Helper {
@@ -12,6 +13,12 @@ public class Helper {
     private static ClassLoader lateLoader;
     private static int nextHashCode;
 
+    /**
+     * We can't return a different wrapper for the same string instance so we need to intern these mappings to give back the same wrapper, each time.
+     * It would probably be a good idea build an implementation of this which has WeakReference keys so we don't keep around unreachable wrappers.
+     */
+    private static IdentityHashMap<String, org.aion.avm.java.lang.String> internedStringWrappers;
+
     // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
     private static AvmException forceExitState;
 
@@ -20,6 +27,9 @@ public class Helper {
         energyLeft.set(new AtomicLong(rt.getEnergyLimit()));
         StackWatcher.reset();
         nextHashCode = 1;
+        
+        // Reset our interning state.
+        internedStringWrappers = new IdentityHashMap<String, org.aion.avm.java.lang.String>();
     }
 
     public static void setLateClassLoader(ClassLoader loader) {
@@ -41,7 +51,12 @@ public class Helper {
     }
 
     public static org.aion.avm.java.lang.String wrapAsString(String input) {
-        return new org.aion.avm.java.lang.String(input);
+        org.aion.avm.java.lang.String wrapper = internedStringWrappers.get(input);
+        if (null == wrapper) {
+            wrapper = new org.aion.avm.java.lang.String(input);
+            internedStringWrappers.put(input, wrapper);
+        }
+        return wrapper;
     }
 
     public static org.aion.avm.java.lang.Object unwrapThrowable(Throwable t) {

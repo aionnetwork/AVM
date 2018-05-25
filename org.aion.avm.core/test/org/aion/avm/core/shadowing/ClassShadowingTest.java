@@ -1,5 +1,6 @@
 package org.aion.avm.core.shadowing;
 
+import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.internal.Helper;
 import org.junit.Assert;
@@ -15,6 +16,9 @@ import java.lang.reflect.Method;
 public class ClassShadowingTest {
     @Test
     public void testReplaceJavaLang() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        // We don't really need the runtime but we do need the intern map initialized.
+        Helper.setBlockchainRuntime(new SimpleRuntime(null, null, 0));
+        
         String className = "org.aion.avm.core.shadowing.TestResource";
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
@@ -26,7 +30,7 @@ public class ClassShadowingTest {
             byte[] transformed = out.toByteArray();
             return transformed;
         });
-        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         loader.addClassForRewrite(className, raw);
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
@@ -48,6 +52,8 @@ public class ClassShadowingTest {
         // Verify that we see wrapped instances.
         Assert.assertEquals(1, Testing.countWrappedClasses);
         Assert.assertEquals(1, Testing.countWrappedClasses);
+        
+        Helper.clearTestingState();
     }
 
 

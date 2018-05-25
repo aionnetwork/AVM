@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
@@ -42,14 +43,29 @@ public class HashCodeTest {
     public void testCommonHash() throws Exception {
         Class<?> clazz = commonLoadTestClass();
         Assert.assertNotNull(clazz);
+        Method getOneHashCode = clazz.getMethod("getOneHashCode");
         
-        Object result = clazz.getMethod("getOneHashCode").invoke(null);
+        Object result = getOneHashCode.invoke(null);
         Assert.assertEquals(1, ((Integer)result).intValue());
-        result = clazz.getMethod("getOneHashCode").invoke(null);
+        result = getOneHashCode.invoke(null);
         Assert.assertEquals(2, ((Integer)result).intValue());
         clazz.getConstructor().newInstance();
-        result = clazz.getMethod("getOneHashCode").invoke(null);
+        result = getOneHashCode.invoke(null);
         Assert.assertEquals(4, ((Integer)result).intValue());
+    }
+
+    /**
+     * Tests that requesting the same string constant, more than once, returns the same instance.
+     */
+    @Test
+    public void testStringConstant() throws Exception {
+        Class<?> clazz = commonLoadTestClass();
+        Assert.assertNotNull(clazz);
+        Method getStringConstant = clazz.getMethod("getStringConstant");
+        
+        Object instance1 = getStringConstant.invoke(null);
+        Object instance2 = getStringConstant.invoke(null);
+        Assert.assertTrue(instance1 == instance2);
     }
 
 

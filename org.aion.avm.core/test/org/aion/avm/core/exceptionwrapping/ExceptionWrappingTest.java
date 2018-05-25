@@ -14,6 +14,7 @@ import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.core.Forest;
 import org.aion.avm.core.HierarchyTreeBuilder;
+import org.aion.avm.core.SimpleRuntime;
 import org.junit.Assert;
 import org.junit.After;
 import org.junit.Before;
@@ -94,6 +95,9 @@ public class ExceptionWrappingTest {
         TestHelpers.loader.loadClass(exceptionName);
         
         this.testClass = TestHelpers.loader.loadClass(className);
+        
+        // We don't really need the runtime but we do need the intern map initialized.
+        Helper.setBlockchainRuntime(new SimpleRuntime(null, null, 0));
     }
 
     @After
