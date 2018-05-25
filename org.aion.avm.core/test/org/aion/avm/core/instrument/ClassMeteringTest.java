@@ -3,10 +3,9 @@ package org.aion.avm.core.instrument;
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
-import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.rt.BlockchainRuntime;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,36 +43,7 @@ public class ClassMeteringTest {
         this.clazz = loader.loadClass(className);
         
         // We only need to install a BlockchainRuntime which can afford our energy.
-        Helper.setBlockchainRuntime(new BlockchainRuntime() {
-            @Override
-            public ByteArray getSender() {
-                Assert.fail("This implementation doesn't handle this");
-                return null;
-            }
-            @Override
-            public ByteArray getAddress() {
-                Assert.fail("This implementation doesn't handle this");
-                return null;
-            }
-            @Override
-            public long getEnergyLimit() {
-                return 1000;
-            }
-            @Override
-            public ByteArray getData() {
-                Assert.fail("This implementation doesn't handle this");
-                return null;
-            }
-            @Override
-            public ByteArray getStorage(ByteArray key) {
-                Assert.fail("This implementation doesn't handle this");
-                return null;
-            }
-            @Override
-            public void putStorage(ByteArray key, ByteArray value) {
-                Assert.fail("This implementation doesn't handle this");
-            }
-        });
+        Helper.setBlockchainRuntime(new SimpleRuntime(null, null, 1000));
     }
 
     @After
