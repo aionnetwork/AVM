@@ -48,21 +48,27 @@ public class Helper {
         forceExitState = null;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {
-        @SuppressWarnings("unchecked")
-        org.aion.avm.java.lang.Class<T> wrapper = (org.aion.avm.java.lang.Class<T>) internedClassWrappers.get(input);
-        if (null == wrapper) {
-            wrapper = new org.aion.avm.java.lang.Class<T>(input);
-            internedClassWrappers.put(input, wrapper);
+        org.aion.avm.java.lang.Class<T> wrapper = null;
+        if (null != input) {
+            wrapper = (org.aion.avm.java.lang.Class<T>) internedClassWrappers.get(input);
+            if (null == wrapper) {
+                wrapper = new org.aion.avm.java.lang.Class<T>(input);
+                internedClassWrappers.put(input, wrapper);
+            }
         }
         return wrapper;
     }
 
     public static org.aion.avm.java.lang.String wrapAsString(String input) {
-        org.aion.avm.java.lang.String wrapper = internedStringWrappers.get(input);
-        if (null == wrapper) {
-            wrapper = new org.aion.avm.java.lang.String(input);
-            internedStringWrappers.put(input, wrapper);
+        org.aion.avm.java.lang.String wrapper = null;
+        if (null != input) {
+            wrapper = internedStringWrappers.get(input);
+            if (null == wrapper) {
+                wrapper = new org.aion.avm.java.lang.String(input);
+                internedStringWrappers.put(input, wrapper);
+            }
         }
         return wrapper;
     }
