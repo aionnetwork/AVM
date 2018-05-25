@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.tree.ClassNode;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -25,6 +26,12 @@ public class ArrayWrappingTest {
 
             ArrayWrappingClassAdapter swc = new ArrayWrappingClassAdapter(out);
             in.accept(swc, ClassReader.EXPAND_FRAMES);
+
+            ClassNode classNode = new ClassNode();
+            in.accept(classNode, ClassReader.EXPAND_FRAMES);
+
+            ArrayWrappingInjector awi = new ArrayWrappingInjector(classNode);
+            awi.injectClass();
 
             byte[] transformed = out.toByteArray();
             return transformed;

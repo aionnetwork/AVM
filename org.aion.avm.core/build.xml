@@ -73,6 +73,7 @@
                 <pathelement location="${dir.global.lib}/asm-commons-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.lib}/asm-tree-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.lib}/asm-util-6.1.2-SNAPSHOT.jar"/>
+                <pathelement location="${dir.global.lib}/asm-analysis-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
             </classpath>
@@ -91,6 +92,7 @@
                 <pathelement location="${dir.global.lib}/asm-commons-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.lib}/asm-tree-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.lib}/asm-util-6.1.2-SNAPSHOT.jar"/>
+                <pathelement location="${dir.global.lib}/asm-analysis-6.1.2-SNAPSHOT.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
                 <pathelement location="${dir.local.build.test}" />

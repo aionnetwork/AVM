@@ -44,6 +44,9 @@ public class ArrayWrappingBytecodeFactory {
         // Parse return type is there is any
         if (endIndex < (desc.length() - 1)){
             String ret = desc.substring(endIndex + 1);
+            if (ret.equals("V")){
+                sb.append(ret);
+            }
             Matcher retMatcher = pattern.matcher(ret);
             if (retMatcher.find()){
                 wrappedDesc = wrapTypeDesc(retMatcher.group());
@@ -71,7 +74,8 @@ public class ArrayWrappingBytecodeFactory {
     //TODO:: is this enough?
     public static String genArrayName(String desc){
         StringBuilder sb = new StringBuilder();
-        sb.append("Lorg.aion.avm.arraywrapper.");
+        sb.append("Lorg/aion/avm/arraywrapper/");
+
         sb.append(desc.replace('[', '$'));
         sb.append(";");
         return sb.toString();
