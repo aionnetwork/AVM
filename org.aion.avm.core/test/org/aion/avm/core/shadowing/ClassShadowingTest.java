@@ -1,6 +1,7 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.internal.Helper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -57,11 +58,11 @@ public class ClassShadowingTest {
         
         public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {
             countWrappedClasses += 1;
-            return new org.aion.avm.java.lang.Class<T>(input);
+            return Helper.wrapAsClass(input);
         }
         public static org.aion.avm.java.lang.String wrapAsString(String input) {
             countWrappedStrings += 1;
-            return new org.aion.avm.java.lang.String(input);
+            return Helper.wrapAsString(input);
         }
     }
 }
