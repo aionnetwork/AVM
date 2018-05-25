@@ -3,8 +3,10 @@ package org.aion.avm.core;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.AvmException;
+import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.rt.BlockchainRuntime;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,6 +24,11 @@ import static org.junit.Assert.assertEquals;
  * @author Roman Katerinenko
  */
 public class AvmImplTest {
+    @After
+    public void teardown() throws Exception {
+        Helper.clearTestingState();
+    }
+
     @Test
     public void checkMainClassHasProperName() throws IOException {
         final var module = "com.example.avmstartuptest";

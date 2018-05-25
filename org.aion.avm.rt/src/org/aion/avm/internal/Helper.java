@@ -24,8 +24,9 @@ public class Helper {
         lateLoader = loader;
     }
 
-    public static void clearLateClassLoader() {
-        // This is primarily just used for testing.
+    public static void clearTestingState() {
+        // Currently intended only for use in testing since we expect the real deployment to load this in the DApp class
+        // loader and discard after the call completes.
         lateLoader = null;
     }
 

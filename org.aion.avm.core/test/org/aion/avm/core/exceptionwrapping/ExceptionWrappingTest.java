@@ -101,7 +101,7 @@ public class ExceptionWrappingTest {
 
     @After
     public void teardown() throws Exception {
-        Helper.clearLateClassLoader();
+        Helper.clearTestingState();
     }
 
 
