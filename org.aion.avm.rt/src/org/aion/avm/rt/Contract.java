@@ -3,6 +3,7 @@ package org.aion.avm.rt;
 import org.aion.avm.arraywrapper.ByteArray;
 
 public interface Contract {
+    // TODO - design the Contract interface to provide entry points at deployment and contract calls
     /**
      * Entry point of execution at deployment with the given input.
      *
@@ -13,7 +14,7 @@ public interface Contract {
      * @param rt    the runtime
      * @return the output
      */
-    ByteArray contractCreation(ByteArray input, BlockchainRuntime rt);
+    // ByteArray contractCreation(ByteArray input, BlockchainRuntime rt);
 
     /**
      * Entry point of execution at every call to this smart contract with the given input.
