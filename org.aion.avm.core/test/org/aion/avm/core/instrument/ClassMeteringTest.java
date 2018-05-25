@@ -39,7 +39,7 @@ public class ClassMeteringTest {
         // Setup and rewrite the class.
         String className = TestResource.class.getName();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), this.commonCostBuilder);
-        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         loader.addClassForRewrite(className, raw);
         this.clazz = loader.loadClass(className);
         

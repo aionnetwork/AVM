@@ -29,7 +29,7 @@ public class ArrayWrappingTest {
             byte[] transformed = out.toByteArray();
             return transformed;
         });
-        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         loader.addClassForRewrite(className, raw);
 
         clazz = loader.loadClass(className);

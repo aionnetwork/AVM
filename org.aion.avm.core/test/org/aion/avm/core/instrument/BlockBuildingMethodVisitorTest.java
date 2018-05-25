@@ -26,7 +26,7 @@ public class BlockBuildingMethodVisitorTest {
         String className = BlockTestResource.class.getName();
         BlockSnooper snooper = new BlockSnooper();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), snooper);
-        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         loader.addClassForRewrite(className, raw);
         loader.loadClass(className);
         BlockBuildingMethodVisitorTest.METHOD_BLOCKS = snooper.resultMap;

@@ -26,7 +26,7 @@ public class ClassMeteringReadOnlyTest {
         String className = TestResource.class.getName();
         this.snooper = new BlockSnooper();
         TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), this.snooper);
-        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         loader.addClassForRewrite(className, raw);
         loader.loadClass(className);
     }

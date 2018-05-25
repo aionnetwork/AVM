@@ -36,8 +36,8 @@ public class TestClassLoader extends ClassLoader {
      * @param resourcePath The path to this resource, within the parent class loader.
      * @return The bytes
      */
-    public byte[] loadRequiredResourceAsBytes(String resourcePath) {
-        InputStream stream = getParent().getResourceAsStream(resourcePath);
+    public static byte[] loadRequiredResourceAsBytes(String resourcePath) {
+        InputStream stream = TestClassLoader.class.getClassLoader().getResourceAsStream(resourcePath);
         byte[] raw = null;
         try {
             raw = stream.readAllBytes();
