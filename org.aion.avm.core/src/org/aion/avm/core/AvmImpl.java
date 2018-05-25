@@ -10,6 +10,8 @@ import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.AvmException;
+import org.aion.avm.internal.FatalAvmError;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.rt.BlockchainRuntime;
@@ -275,15 +277,26 @@ public class AvmImpl implements Avm {
             long storedSize = storeTransformedDapp(rt.getAddress(), app);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            try {
-                Helper.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * storedSize);
-            } catch (OutOfEnergyError e) {
-                return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
-            }
+            Helper.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * storedSize);
 
             return new AvmResult(AvmResult.Code.SUCCESS, rt.getEnergyLimit());
-        } catch (Exception e) {
+        } catch (FatalAvmError e) {
+            // These are unrecoverable errors (either a bug in our code or a lower-level error reported by the JVM).
+            // (for now, we System.exit(-1), since this is what ethereumj does, but we may want a more graceful shutdown in the future)
+            e.printStackTrace();
+            System.exit(-1);
+            return null;
+        } catch (OutOfEnergyError e) {
+            return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
+        } catch (AvmException e) {
+            // We handle the generic AvmException as some failure within the contract.
             return new AvmResult(AvmResult.Code.FAILURE, 0);
+        } catch (Throwable t) {
+            // There should be no other reachable kind of exception.  If we reached this point, something very strange is happening so log
+            // this and bring us down.
+            t.printStackTrace();
+            System.exit(1);
+            return null;
         }
     }
 
