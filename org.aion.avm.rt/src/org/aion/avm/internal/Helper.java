@@ -11,6 +11,9 @@ public class Helper {
     private static ThreadLocal<AtomicLong> energyLeft = new ThreadLocal<>();
     private static ClassLoader lateLoader;
 
+    // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
+    private static AvmException forceExitState;
+
     public static void setBlockchainRuntime(BlockchainRuntime rt) {
         blockchainRuntime.set(rt);
         energyLeft.set(new AtomicLong(rt.getEnergyLimit()));
@@ -28,6 +31,7 @@ public class Helper {
         // Currently intended only for use in testing since we expect the real deployment to load this in the DApp class
         // loader and discard after the call completes.
         lateLoader = null;
+        forceExitState = null;
     }
 
     public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {
@@ -45,6 +49,16 @@ public class Helper {
             // We need to wrap the java.lang instance in a shadow and unwrap the other case to return the shadow.
             String throwableName = t.getClass().getName();
             if (throwableName.startsWith("java.lang.")) {
+                // Note that there are 2 cases of VM-generated exceptions:  the kind we wrap for the user and the kind we interpret as a fatal node error.
+                if (t instanceof VirtualMachineError) {
+                    // This is a fatal node error:
+                    // -create our fatal exception
+                    JvmError error = new JvmError((VirtualMachineError)t);
+                    // -store it in forceExitState
+                    forceExitState = error;
+                    // -throw it
+                    throw error;
+                }
                 // This is VM-generated - we will have to instantiate a shadow, directly.
                 shadow = convertVmGeneratedException(t);
             } else {
@@ -77,8 +91,17 @@ public class Helper {
     }
 
     public static void chargeEnergy(long cost) throws OutOfEnergyError {
+        // This is called at the beginning of a block so see if we are being asked to exit.
+        if (null != forceExitState) {
+            throw forceExitState;
+        }
+        
+        // Bill for the block.
         if (energyLeft.get().addAndGet(-cost) < 0) {
-            throw new OutOfEnergyError();
+            // Note that this is a reason to force the exit so set this.
+            OutOfEnergyError error = new OutOfEnergyError();
+            forceExitState = error;
+            throw error;
         }
     }
 
