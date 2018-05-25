@@ -1,10 +1,13 @@
 package org.aion.avm.core.instrument;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.internal.Helper;
+import org.aion.avm.rt.BlockchainRuntime;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +42,43 @@ public class ClassMeteringTest {
         byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         loader.addClassForRewrite(className, raw);
         this.clazz = loader.loadClass(className);
+        
+        // We only need to install a BlockchainRuntime which can afford our energy.
+        Helper.setBlockchainRuntime(new BlockchainRuntime() {
+            @Override
+            public ByteArray getSender() {
+                Assert.fail("This implementation doesn't handle this");
+                return null;
+            }
+            @Override
+            public ByteArray getAddress() {
+                Assert.fail("This implementation doesn't handle this");
+                return null;
+            }
+            @Override
+            public long getEnergyLimit() {
+                return 1000;
+            }
+            @Override
+            public ByteArray getData() {
+                Assert.fail("This implementation doesn't handle this");
+                return null;
+            }
+            @Override
+            public ByteArray getStorage(ByteArray key) {
+                Assert.fail("This implementation doesn't handle this");
+                return null;
+            }
+            @Override
+            public void putStorage(ByteArray key, ByteArray value) {
+                Assert.fail("This implementation doesn't handle this");
+            }
+        });
+    }
+
+    @After
+    public void teardown() throws Exception {
+        Helper.clearTestingState();
     }
 
     /**
@@ -210,24 +250,25 @@ public class ClassMeteringTest {
         public static void chargeEnergy(long cost) {
             TestEnergy.totalCost += cost;
             TestEnergy.totalCharges += 1;
+            Helper.chargeEnergy(cost);
         }
 
         public static Object multianewarray1(int d1, Class<?> cl) {
             TestEnergy.totalArrayElements += d1;
             TestEnergy.totalArrayInstances += 1;
-            return Array.newInstance(cl, d1);
+            return Helper.multianewarray1(d1, cl);
         }
 
         public static Object multianewarray2(int d1, int d2, Class<?> cl) {
             TestEnergy.totalArrayElements += d1 * d2;
             TestEnergy.totalArrayInstances += 1;
-            return Array.newInstance(cl, d1, d2);
+            return Helper.multianewarray2(d1, d2, cl);
         }
 
         public static Object multianewarray3(int d1, int d2, int d3, Class<?> cl) {
             TestEnergy.totalArrayElements += d1 * d2 * d3;
             TestEnergy.totalArrayInstances += 1;
-            return Array.newInstance(cl, d1, d2, d3);
+            return Helper.multianewarray3(d1, d2, d3, cl);
         }
     }
 }
