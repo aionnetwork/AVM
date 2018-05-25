@@ -5,6 +5,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.rt.BlockchainRuntime;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -45,37 +46,7 @@ public class AvmImplTest {
     public void testDeploy() {
 
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
-        BlockchainRuntime rt = new BlockchainRuntime() {
-            @Override
-            public ByteArray getSender() {
-                return new ByteArray(sender);
-            }
-
-            @Override
-            public ByteArray getAddress() {
-                return new ByteArray(address);
-            }
-
-            @Override
-            public long getEnergyLimit() {
-                return energyLimit;
-            }
-
-            @Override
-            public ByteArray getData() {
-                return null;
-            }
-
-            @Override
-            public ByteArray getStorage(ByteArray key) {
-                return null;
-            }
-
-            @Override
-            public void putStorage(ByteArray key, ByteArray value) {
-
-            }
-        };
+        BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit);
         AvmImpl avm = new AvmImpl();
         AvmResult result = avm.deploy(jar, rt);
 
@@ -87,37 +58,7 @@ public class AvmImplTest {
     public void testDeployAndRun() {
         testDeploy();
 
-        BlockchainRuntime rt = new BlockchainRuntime() {
-            @Override
-            public ByteArray getSender() {
-                return new ByteArray(sender);
-            }
-
-            @Override
-            public ByteArray getAddress() {
-                return new ByteArray(address);
-            }
-
-            @Override
-            public long getEnergyLimit() {
-                return energyLimit;
-            }
-
-            @Override
-            public ByteArray getData() {
-                return null;
-            }
-
-            @Override
-            public ByteArray getStorage(ByteArray key) {
-                return null;
-            }
-
-            @Override
-            public void putStorage(ByteArray key, ByteArray value) {
-
-            }
-        };
+        BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit);
         AvmImpl avm = new AvmImpl();
         AvmResult result = avm.run(rt);
 
@@ -135,5 +76,44 @@ public class AvmImplTest {
             result = e.getMessage();
         }
         assertEquals("java.lang.UnknownError: testing", result);
+    }
+
+
+    private static class SimpleRuntime implements BlockchainRuntime {
+        private final byte[] sender;
+        private final byte[] address;
+        private final long energyLimit;
+
+        public SimpleRuntime(byte[] sender, byte[] address, long energyLimit) {
+            this.sender = sender;
+            this.address = address;
+            this.energyLimit = energyLimit;
+        }
+        @Override
+        public ByteArray getSender() {
+            return new ByteArray(this.sender);
+        }
+        @Override
+        public ByteArray getAddress() {
+            return new ByteArray(this.address);
+        }
+        @Override
+        public long getEnergyLimit() {
+            return this.energyLimit;
+        }
+        @Override
+        public ByteArray getData() {
+            Assert.fail("This implementation doesn't handle this");
+            return null;
+        }
+        @Override
+        public ByteArray getStorage(ByteArray key) {
+            Assert.fail("This implementation doesn't handle this");
+            return null;
+        }
+        @Override
+        public void putStorage(ByteArray key, ByteArray value) {
+            Assert.fail("This implementation doesn't handle this");
+        }
     }
 }
