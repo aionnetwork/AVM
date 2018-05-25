@@ -13,6 +13,7 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.core.Forest;
+import org.aion.avm.core.HierarchyTreeBuilder;
 import org.junit.Assert;
 import org.junit.After;
 import org.junit.Before;
@@ -42,14 +43,10 @@ public class ExceptionWrappingTest {
         
         // We know that we have an exception, in this test, but the forest normally needs to be populated from a jar so manually assemble it.
         String exceptionClassSlashName = TestExceptionResource.UserDefinedException.class.getName();
-        Forest<String, byte[]> classHierarchy = new Forest<>();
-        Forest.Node<String, byte[]> root = new Forest.Node<>("java.lang.Object", null);
-        Forest.Node<String, byte[]> parent = new Forest.Node<>("java.lang.Throwable", null);
-        classHierarchy.add(root, parent);
-        Forest.Node<String, byte[]> child = new Forest.Node<>(exceptionClassSlashName, null);
-        classHierarchy.add(parent, child);
-        Forest.Node<String, byte[]> testResource = new Forest.Node<>("org.aion.avm.core.exceptionwrapping.TestExceptionResource", null);
-        classHierarchy.add(root, testResource);
+        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(exceptionClassSlashName, "java.lang.Throwable", null)
+                .addClass("org.aion.avm.core.exceptionwrapping.TestExceptionResource", "java.lang.Object", null)
+                .asMutableForest();
         
         // WARNING:  We are using this TestHelpers.loader as a way of injecting the code we want to generate back into the TestClassLoader.
         // TODO:  Change the contract with the TestClassLoader to allow us to more easily push these in.
