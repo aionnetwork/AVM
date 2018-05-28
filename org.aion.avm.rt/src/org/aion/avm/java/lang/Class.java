@@ -1,5 +1,8 @@
 package org.aion.avm.java.lang;
 
+import org.aion.avm.internal.Helper;
+
+
 public class Class<T> extends Object {
     private final java.lang.Class<T> underlying;
 
@@ -8,7 +11,8 @@ public class Class<T> extends Object {
     }
 
     public String avm_getName() {
-        return new String(underlying.getName());
+        // Note that the class name is a constant so use the wrapper which will intern the instance.
+        return Helper.wrapAsString(underlying.getName());
     }
 
     // NOTE:  This toString() cannot be called by the contract code (it will call avm_toString()) but our runtime and test code can call this.

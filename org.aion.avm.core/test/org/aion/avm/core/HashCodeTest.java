@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
-import org.aion.avm.core.exceptionwrapping.ExceptionWrappingTest.TestHelpers;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
@@ -114,6 +112,21 @@ public class HashCodeTest {
         
         Object instance1 = matchRethrowVmException.invoke(null);
         Assert.assertTrue(((Boolean)instance1).booleanValue());
+    }
+
+    /**
+     * Tests that Class.getName() instance return behaviour is consistent between normal Java and our contract environment.
+     */
+    @Test
+    public void testClassGetName() throws Exception {
+        Class<?> clazz = commonLoadTestClass();
+        Assert.assertNotNull(clazz);
+        Method compareClassName = clazz.getMethod("compareClassName");
+        
+        Object instance1 = compareClassName.invoke(null);
+        boolean didMatchInContract = ((Boolean)instance1).booleanValue();
+        boolean didMatchInJava = HashCodeTestTarget.compareClassName();
+        Assert.assertEquals(didMatchInJava, didMatchInContract);
     }
 
 

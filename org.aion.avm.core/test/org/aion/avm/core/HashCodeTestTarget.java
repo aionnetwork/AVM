@@ -44,4 +44,10 @@ public class HashCodeTestTarget {
             throw e;
         }
     }
+    
+    public static boolean compareClassName() {
+        String name1 = HashCodeTestTarget.class.getName();
+        String name2 = HashCodeTestTarget.class.getName();
+        return name1 == name2;
+    }
 }
