@@ -3,7 +3,6 @@ package org.aion.avm.core.instrument;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
@@ -12,25 +11,26 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.*;
-import org.objectweb.asm.tree.MethodNode;
 
 
 /**
  * Split from ClassMeteringTest to handle the read-only testing, to keep things simpler.
  */
 public class ClassMeteringReadOnlyTest {
-    private BlockSnooper snooper;
+    private static Map<String, List<BasicBlock>> METHOD_BLOCKS;
 
     @Before
     public void setup() throws Exception {
         // Setup and rewrite the class.
         String className = TestResource.class.getName();
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        this.snooper = new BlockSnooper();
+        BlockSnooper snooper = new BlockSnooper();
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
-        classes.put(className, this.snooper.apply(raw));
+        classes.put(className, snooper.apply(raw));
         TestClassLoader loader = new TestClassLoader(classes);
         loader.loadClass(className);
+        ClassMeteringReadOnlyTest.METHOD_BLOCKS = snooper.resultMap;
+        Assert.assertNotNull(ClassMeteringReadOnlyTest.METHOD_BLOCKS);
     }
 
     /**
@@ -38,15 +38,13 @@ public class ClassMeteringReadOnlyTest {
      */
     @Test
     public void testMethodBlocks() throws Exception {
-        Map<String, List<BasicBlock>> resultMap = snooper.resultMap;
-        Assert.assertNotNull(resultMap);
-        List<BasicBlock> initBlocks = resultMap.get("<init>(I)V");
+        List<BasicBlock> initBlocks = METHOD_BLOCKS.get("<init>(I)V");
         int[][] expectedInitBlocks = new int[][]{
                 {Opcodes.ALOAD, Opcodes.INVOKESPECIAL, Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.PUTFIELD, Opcodes.RETURN}
         };
         boolean didMatch = compareBlocks(expectedInitBlocks, initBlocks);
         Assert.assertTrue(didMatch);
-        List<BasicBlock> hashCodeBlocks = resultMap.get("hashCode()I");
+        List<BasicBlock> hashCodeBlocks = METHOD_BLOCKS.get("hashCode()I");
         int[][] expectedHashCodeBlocks = new int[][]{
                 {Opcodes.ALOAD, Opcodes.GETFIELD, Opcodes.IRETURN}
         };
@@ -59,8 +57,7 @@ public class ClassMeteringReadOnlyTest {
      */
     @Test
     public void testAllocationTypes() throws Exception {
-        Map<String, List<BasicBlock>> resultMap = snooper.resultMap;
-        List<BasicBlock> factoryBlocks = resultMap.get("testFactory()Lorg/aion/avm/core/instrument/TestResource;");
+        List<BasicBlock> factoryBlocks = METHOD_BLOCKS.get("testFactory()Lorg/aion/avm/core/instrument/TestResource;");
         // We expect this case to have a single block.
         Assert.assertEquals(1, factoryBlocks.size());
         // With a single allocation.
@@ -91,46 +88,5 @@ public class ClassMeteringReadOnlyTest {
             didMatch = false;
         }
         return didMatch;
-    }
-
-
-    /**
-     * This function changes nothing but does read the allocation and opcode data from the class.
-     */
-    private static class BlockSnooper implements Function<byte[], byte[]> {
-        public Map<String, List<BasicBlock>> resultMap;
-
-        @Override
-        public byte[] apply(byte[] inputBytes) {
-            ClassReader in = new ClassReader(inputBytes);
-            Map<String, List<BasicBlock>> result = new HashMap<>();
-            
-            ClassVisitor reader = new ClassVisitor(Opcodes.ASM6) {
-                public MethodVisitor visitMethod(
-                        final int access,
-                        final String name,
-                        final String descriptor,
-                        final String signature,
-                        final String[] exceptions) {
-                    return new MethodNode(Opcodes.ASM6, access, name, descriptor, signature, exceptions) {
-                        @Override
-                        public void visitEnd() {
-                            // Let the superclass do what it wants to finish this.
-                            super.visitEnd();
-                            
-                            // Create the read-only visitor and use it to extract the block data.
-                            BlockBuildingMethodVisitor readingVisitor = new BlockBuildingMethodVisitor();
-                            this.accept(readingVisitor);
-                            List<BasicBlock> blocks = readingVisitor.getBlockList();
-                            result.put(name + descriptor, blocks);
-                        }
-                    };
-                }
-            };
-            in.accept(reader, ClassReader.SKIP_DEBUG);
-            
-            this.resultMap = result;
-            return inputBytes;
-        }
     }
 }
