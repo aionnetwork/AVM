@@ -249,6 +249,7 @@ public class BytecodeFeeScheduler {
 
             // Operand Stack Management
             // Not in ASM Opcodes but Contants: LDC_W and LDC2_w -- visitor of LDC
+            put(Opcodes.ACONST_NULL,  new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
             put(Opcodes.ICONST_M1,  new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
             put(Opcodes.ICONST_0,   new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
             put(Opcodes.ICONST_1,   new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
