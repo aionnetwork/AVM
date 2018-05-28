@@ -24,4 +24,24 @@ public class HashCodeTestTarget {
     public static Class<?> getClassConstant() {
         return HashCodeTestTarget.class;
     }
+    
+    private static NullPointerException initialVmThrow;
+    public static boolean matchRethrowVmException() {
+        boolean didMatch = false;
+        try {
+            innerCallThrow();
+        } catch (NullPointerException e) {
+            didMatch = (initialVmThrow == e);
+        }
+        return didMatch;
+    }
+    
+    private static int innerCallThrow() {
+        try {
+            return ((Object)null).hashCode();
+        } catch (NullPointerException e) {
+            initialVmThrow = e;
+            throw e;
+        }
+    }
 }

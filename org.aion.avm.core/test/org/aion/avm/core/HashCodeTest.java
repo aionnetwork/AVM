@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.exceptionwrapping.ExceptionWrappingTest.TestHelpers;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
@@ -100,6 +103,19 @@ public class HashCodeTest {
         Assert.assertTrue(instance1 == instance2);
     }
 
+    /**
+     * Tests that re-throwing a VM-generated exception results in the same contract-visible exception instance.
+     */
+    @Test
+    public void testVmExceptionInstancePreserved() throws Exception {
+        Class<?> clazz = commonLoadTestClass();
+        Assert.assertNotNull(clazz);
+        Method matchRethrowVmException = clazz.getMethod("matchRethrowVmException");
+        
+        Object instance1 = matchRethrowVmException.invoke(null);
+        Assert.assertTrue(((Boolean)instance1).booleanValue());
+    }
+
 
     private Class<?> commonLoadTestClass() throws ClassNotFoundException {
         ClassLoader parentLoader = HashCodeTest.class.getClassLoader();
@@ -117,9 +133,14 @@ public class HashCodeTest {
             return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
         };
         TestClassLoader loader = new TestClassLoader(parentLoader, transformer);
+        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
+        for (Map.Entry<String, byte[]> generated : generatedClasses.entrySet()) {
+            loader.addClassDirectLoad(generated.getKey(), generated.getValue());
+        }
         loader.addClassForRewrite(className, raw);
         Class<?> clazz = loader.loadClass(className);
         Assert.assertEquals(loader, clazz.getClassLoader());
+        Helper.setLateClassLoader(loader);
         return clazz;
     }
 }
