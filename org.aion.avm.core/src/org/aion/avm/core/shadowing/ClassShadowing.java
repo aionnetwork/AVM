@@ -38,7 +38,7 @@ public class ClassShadowing extends ClassVisitor {
         String[] newInterfaces = Stream.of(interfaces).map(i -> replaceType(i)).collect(Collectors.toList()).stream().toArray(String[]::new);
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
-        this.cv.visit(version, access, name, null, newSuperName, newInterfaces);
+        super.visit(version, access, name, null, newSuperName, newInterfaces);
     }
 
     @Override
@@ -63,15 +63,15 @@ public class ClassShadowing extends ClassVisitor {
                 // Note that it is possible we will see calls from other phases in the chain and we don't want to re-write them
                 // (often, they _are_ the bridging code).
                 if ((Opcodes.INVOKESTATIC == opcode) && runtimeClassName.equals(owner)) {
-                    mv.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+                    super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
                 } else {
-                    mv.visitMethodInsn(opcode, replaceType(owner), replaceMethodName(owner, name), replaceMethodDescriptor(descriptor), isInterface);
+                    super.visitMethodInsn(opcode, replaceType(owner), replaceMethodName(owner, name), replaceMethodDescriptor(descriptor), isInterface);
                 }
             }
 
             @Override
             public void visitTypeInsn(final int opcode, final String type) {
-                mv.visitTypeInsn(opcode, replaceType(type));
+                super.visitTypeInsn(opcode, replaceType(type));
             }
 
             @Override
@@ -79,7 +79,7 @@ public class ClassShadowing extends ClassVisitor {
                 String newDescriptor = replaceMethodDescriptor(descriptor);
 
                 // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
-                mv.visitFieldInsn(opcode, owner, name, newDescriptor);
+                super.visitFieldInsn(opcode, owner, name, newDescriptor);
             }
 
             @Override
@@ -132,17 +132,17 @@ public class ClassShadowing extends ClassVisitor {
                 }
 
                 // All paths emit the instruction.
-                mv.visitLdcInsn(valueToWrite);
+                super.visitLdcInsn(valueToWrite);
 
                 // If we need to wrap this, call out to our static helper.
                 if (shouldWrapAsString) {
                     String methodName = "wrapAsString";
                     String methodDescriptor = "(Ljava/lang/String;)Lorg/aion/avm/java/lang/String;";
-                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
                 } else if (shouldWrapAsClass) {
                     String methodName = "wrapAsClass";
                     String methodDescriptor = "(Ljava/lang/Class;)Lorg/aion/avm/java/lang/Class;";
-                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
                 }
             }
         };
@@ -153,7 +153,7 @@ public class ClassShadowing extends ClassVisitor {
         String newDescriptor = replaceMethodDescriptor(descriptor);
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
-        return this.cv.visitField(access, name, newDescriptor, null, value);
+        return super.visitField(access, name, newDescriptor, null, value);
     }
 
     /**
