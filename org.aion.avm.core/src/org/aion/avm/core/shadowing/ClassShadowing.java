@@ -75,6 +75,14 @@ public class ClassShadowing extends ClassVisitor {
             }
 
             @Override
+            public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+                String newDescriptor = replaceMethodDescriptor(descriptor);
+
+                // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
+                mv.visitFieldInsn(opcode, owner, name, newDescriptor);
+            }
+
+            @Override
             public void visitLdcInsn(final Object value) {
                 // We will default to passing the value through since only 1 case does anything different.
                 Object valueToWrite = value;
@@ -138,6 +146,14 @@ public class ClassShadowing extends ClassVisitor {
                 }
             }
         };
+    }
+
+    @Override
+    public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+        String newDescriptor = replaceMethodDescriptor(descriptor);
+
+        // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
+        return this.cv.visitField(access, name, newDescriptor, null, value);
     }
 
     /**
