@@ -3,7 +3,6 @@ package org.aion.avm.core.instrument;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.aion.avm.core.instrument.BasicBlock;
 import org.objectweb.asm.ClassReader;
@@ -14,13 +13,12 @@ import org.objectweb.asm.tree.MethodNode;
 
 
 /**
- * Used by a few of the instrumentation tests to 
+ * Used by a few of the instrumentation tests to directly extract the BasicBlocks, per-method, from a class.
  */
-public class BlockSnooper implements Function<byte[], byte[]> {
+public class BlockSnooper {
     public Map<String, List<BasicBlock>> resultMap;
-    
-    @Override
-    public byte[] apply(byte[] inputBytes) {
+
+    public static Map<String, List<BasicBlock>> findPerMethodBlocksFor(byte[] inputBytes) {
         ClassReader in = new ClassReader(inputBytes);
         Map<String, List<BasicBlock>> result = new HashMap<>();
         
@@ -48,8 +46,6 @@ public class BlockSnooper implements Function<byte[], byte[]> {
             }
         };
         in.accept(reader, ClassReader.SKIP_DEBUG);
-        
-        this.resultMap = result;
-        return inputBytes;
+        return result;
     }
 }

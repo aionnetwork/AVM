@@ -21,12 +21,11 @@ public class BlockBuildingMethodVisitorTest {
         // All of these cases are about cracking the same test class so just get the common data we all need.
         String className = BlockTestResource.class.getName();
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        BlockSnooper snooper = new BlockSnooper();
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
-        classes.put(className, snooper.apply(raw));
+        classes.put(className, raw);
         TestClassLoader loader = new TestClassLoader(classes);
         loader.loadClass(className);
-        BlockBuildingMethodVisitorTest.METHOD_BLOCKS = snooper.resultMap;
+        BlockBuildingMethodVisitorTest.METHOD_BLOCKS = BlockSnooper.findPerMethodBlocksFor(raw);
         Assert.assertNotNull(BlockBuildingMethodVisitorTest.METHOD_BLOCKS);
     }
 

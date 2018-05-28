@@ -24,12 +24,11 @@ public class ClassMeteringReadOnlyTest {
         // Setup and rewrite the class.
         String className = TestResource.class.getName();
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        BlockSnooper snooper = new BlockSnooper();
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
-        classes.put(className, snooper.apply(raw));
+        classes.put(className, raw);
         TestClassLoader loader = new TestClassLoader(classes);
         loader.loadClass(className);
-        ClassMeteringReadOnlyTest.METHOD_BLOCKS = snooper.resultMap;
+        ClassMeteringReadOnlyTest.METHOD_BLOCKS = BlockSnooper.findPerMethodBlocksFor(raw);
         Assert.assertNotNull(ClassMeteringReadOnlyTest.METHOD_BLOCKS);
     }
 
