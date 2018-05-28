@@ -9,6 +9,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.internal.Helper;
@@ -26,21 +27,7 @@ import org.objectweb.asm.ClassWriter;
 public class ExceptionWrappingTest {
     private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) -> {
         ClassReader in = new ClassReader(inputBytes);
-        ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS) {
-            @Override
-            protected String getCommonSuperClass(String type1, String type2) {
-                String superclass = null;
-                // TODO:  This implementation is sufficient only for this test but we will need to generalize it.
-                // This implementation assumes that this is only being used because the exception table was duplicated to handle wrapper types
-                // so we only check for those occurrences, then decide the common class must be throwable.
-                if (type1.startsWith(CommonGenerators.kSlashWrapperClassLibraryPrefix) || type2.startsWith(CommonGenerators.kSlashWrapperClassLibraryPrefix)) {
-                    superclass = "java/lang/Throwable";
-                } else {
-                    superclass = super.getCommonSuperClass(type1, type2);
-                }
-                return superclass;
-            }
-        };
+        ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         
         // We know that we have an exception, in this test, but the forest normally needs to be populated from a jar so manually assemble it.
         String exceptionClassSlashName = TestExceptionResource.UserDefinedException.class.getName();

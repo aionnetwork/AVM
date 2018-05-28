@@ -142,7 +142,7 @@ public class AvmImpl implements Avm {
              */
 
             // in reverse order
-            ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+            ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
             ArrayWrappingClassAdapter arrayWrapping = new ArrayWrappingClassAdapter(out);
             ExceptionWrapping exceptionHandling = new ExceptionWrapping(arrayWrapping, HELPER_CLASS, classHierarchy, generatedClassesSink);
             ClassShadowing classShadowing = new ClassShadowing(exceptionHandling, HELPER_CLASS);
