@@ -5,8 +5,24 @@ package org.aion.avm.core;
  * The test class loaded by HashCodeTest.
  */
 public class HashCodeTestTarget {
+    // If this is 0, we will use the built-in hashcode.  Otherwise, we will use this value.
+    private final int hashCode;
+    
     public HashCodeTestTarget() {
         // Empty instance - we just create these for their hashcodes.
+        this.hashCode = 0;
+    }
+    
+    public HashCodeTestTarget(int hashCode) {
+        // Set this override.
+        this.hashCode = hashCode;
+    }
+    
+    @Override
+    public int hashCode() {
+        return (0 == this.hashCode)
+                ? super.hashCode()
+                : this.hashCode;
     }
     
     public static int getOneHashCode() {
@@ -56,5 +72,9 @@ public class HashCodeTestTarget {
         String name1 = testing.toString();
         String name2 = testing.toString();
         return name1 == name2;
+    }
+    
+    public static int getOverrideHashCode(int override) {
+        return new HashCodeTestTarget(override).hashCode();
     }
 }

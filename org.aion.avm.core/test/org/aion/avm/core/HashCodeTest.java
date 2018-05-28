@@ -144,6 +144,21 @@ public class HashCodeTest {
         Assert.assertEquals(didMatchInJava, didMatchInContract);
     }
 
+    /**
+     * Tests that an override of hashCode() is called.
+     */
+    @Test
+    public void testOverrideHashcode() throws Exception {
+        Class<?> clazz = commonLoadTestClass();
+        Assert.assertNotNull(clazz);
+        Method getOverrideHashCode = clazz.getMethod("getOverrideHashCode", int.class);
+        
+        int override = 5;
+        Object instance1 = getOverrideHashCode.invoke(null, Integer.valueOf(override));
+        int result = ((Integer)instance1).intValue();
+        Assert.assertEquals(override, result);
+    }
+
 
     private Class<?> commonLoadTestClass() throws ClassNotFoundException {
         ClassLoader parentLoader = HashCodeTest.class.getClassLoader();
