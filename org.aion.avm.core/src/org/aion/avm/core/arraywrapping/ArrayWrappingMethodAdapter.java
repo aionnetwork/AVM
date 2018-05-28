@@ -172,4 +172,16 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
         this.mv.visitMethodInsn(opcode, owner, name, desc, isInterface);
     }
 
+    @Override
+    public void visitLocalVariable(java.lang.String name,
+                               java.lang.String descriptor,
+                               java.lang.String signature,
+                               Label start,
+                               Label end,
+                               int index)
+    {
+        String desc = ArrayWrappingBytecodeFactory.getWrapperDesc(descriptor);
+        this.mv.visitLocalVariable(name, desc, signature, start, end, index);
+    }
+
 }
