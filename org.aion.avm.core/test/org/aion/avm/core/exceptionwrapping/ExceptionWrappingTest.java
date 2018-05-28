@@ -2,10 +2,10 @@ package org.aion.avm.core.exceptionwrapping;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.TypeAwareClassWriter;
@@ -24,30 +24,7 @@ import org.objectweb.asm.ClassWriter;
 
 
 public class ExceptionWrappingTest {
-    /**
-     * Note that this is a short-term work-around to how the tests in this suite interact with the commonCostbuilder.
-     */
-    private static BiConsumer<String, byte[]> outOfBandGeneratedClassSink;
-
-    private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) -> {
-        ClassReader in = new ClassReader(inputBytes);
-        ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        
-        // We know that we have an exception, in this test, but the forest normally needs to be populated from a jar so manually assemble it.
-        String exceptionClassSlashName = TestExceptionResource.UserDefinedException.class.getName();
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(exceptionClassSlashName, "java.lang.Throwable", null)
-                .addClass("org.aion.avm.core.exceptionwrapping.TestExceptionResource", "java.lang.Object", null)
-                .asMutableForest();
-        
-        ClassShadowing cs = new ClassShadowing(out, TestHelpers.CLASS_NAME);
-        ExceptionWrapping wrapping = new ExceptionWrapping(cs, TestHelpers.CLASS_NAME, classHierarchy, outOfBandGeneratedClassSink);
-        in.accept(wrapping, ClassReader.SKIP_DEBUG);
-        
-        byte[] transformed = out.toByteArray();
-        return transformed;
-    };
-
+    private TestClassLoader loader;
     private Class<?> testClass;
 
     @Before
@@ -55,26 +32,30 @@ public class ExceptionWrappingTest {
         TestHelpers.didUnwrap = false;
         TestHelpers.didWrap = false;
         
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
-        ExceptionWrappingTest.outOfBandGeneratedClassSink = (name, bytes) -> classes.put(name.replaceAll("/", "."), bytes);
+        // We know that we have an exception, in this test, but the forest normally needs to be populated from a jar so manually assemble it.
+        String exceptionClassSlashName = TestExceptionResource.UserDefinedException.class.getName();
+        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(exceptionClassSlashName, "java.lang.Throwable", null)
+                .addClass("org.aion.avm.core.exceptionwrapping.TestExceptionResource", "java.lang.Object", null)
+                .asMutableForest();
+        LazyWrappingTransformer transformer = new LazyWrappingTransformer(classHierarchy);
         
         String className = TestExceptionResource.class.getName();
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        classes.put(className, this.commonCostBuilder.apply(raw));
+        transformer.transformClass(className, raw);
         
         String resourceName = className.replaceAll("\\.", "/") + "$UserDefinedException.class";
         String exceptionName = className + "$UserDefinedException";
         byte[] exceptionBytes = TestClassLoader.loadRequiredResourceAsBytes(resourceName);
-        classes.put(exceptionName, this.commonCostBuilder.apply(exceptionBytes));
+        transformer.transformClass(exceptionName, exceptionBytes);
         
-        TestHelpers.loader = new TestClassLoader(classes);
-        Helper.setLateClassLoader(TestHelpers.loader);
+        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        classes.putAll(transformer.getLateGeneratedClasses());
         
-        // Note that we need to eagerly load all the classes provided by the user since some may cause us to generate wrappers which will be loaded
-        // by other classes.
-        TestHelpers.loader.loadClass(exceptionName);
+        this.loader = new TestClassLoader(classes);
+        Helper.setLateClassLoader(this.loader);
         
-        this.testClass = TestHelpers.loader.loadClass(className);
+        this.testClass = this.loader.loadClass(className);
         
         // We don't really need the runtime but we do need the intern map initialized.
         Helper.setBlockchainRuntime(new SimpleRuntime(null, null, 0));
@@ -116,7 +97,7 @@ public class ExceptionWrappingTest {
             manuallyThrowNull.invoke(null);
         } catch (InvocationTargetException e) {
             // Make sure that this is the wrapper type that we normally expect to see.
-            Class<?> compare = TestHelpers.loader.loadClass("org.aion.avm.exceptionwrapper.java.lang.NullPointerException");
+            Class<?> compare = this.loader.loadClass("org.aion.avm.exceptionwrapper.java.lang.NullPointerException");
             didCatch = e.getCause().getClass() == compare;
         }
         Assert.assertTrue(TestHelpers.didWrap);
@@ -162,7 +143,6 @@ public class ExceptionWrappingTest {
         public static int countWrappedStrings;
         public static boolean didUnwrap = false;
         public static boolean didWrap = false;
-        public static TestClassLoader loader;
         
         public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {
             countWrappedClasses += 1;
@@ -179,6 +159,38 @@ public class ExceptionWrappingTest {
         public static Throwable wrapAsThrowable(org.aion.avm.java.lang.Object arg) {
             didWrap = true;
             return Helper.wrapAsThrowable(arg);
+        }
+    }
+
+
+    /**
+     * Allows us to build an incremental class loader, which is able to dynamically generate and load its own classes,
+     * if it wishes to, such that we can request the final map of classes once everything has been loaded/generated.
+     */
+    private static class LazyWrappingTransformer {
+        private final Forest<String, byte[]> classHierarchy;
+        private final Map<String, byte[]> transformedClasses;
+        
+        public LazyWrappingTransformer(Forest<String, byte[]> classHierarchy) {
+            this.classHierarchy = classHierarchy;
+            this.transformedClasses = new HashMap<>();
+        }
+        
+        public void transformClass(String name, byte[] inputBytes) {
+            ClassReader in = new ClassReader(inputBytes);
+            ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+            
+            BiConsumer<String, byte[]> generatedClassesSink = (slashName, bytes) -> LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes); 
+            ClassShadowing cs = new ClassShadowing(out, TestHelpers.CLASS_NAME);
+            ExceptionWrapping wrapping = new ExceptionWrapping(cs, TestHelpers.CLASS_NAME, this.classHierarchy, generatedClassesSink);
+            in.accept(wrapping, ClassReader.SKIP_DEBUG);
+            
+            byte[] transformed = out.toByteArray();
+            this.transformedClasses.put(name, transformed);
+        }
+        
+        public Map<String, byte[]> getLateGeneratedClasses() {
+            return Collections.unmodifiableMap(this.transformedClasses);
         }
     }
 }
