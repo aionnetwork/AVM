@@ -36,7 +36,7 @@ public class ArrayWrappingBytecodeFactory {
 
         while(paraMatcher.find())
         {
-            wrappedDesc = wrapTypeDesc(paraMatcher.group());
+            wrappedDesc = getWrapperDesc(paraMatcher.group());
             sb.append(wrappedDesc);
         }
         sb.append(')');
@@ -49,7 +49,7 @@ public class ArrayWrappingBytecodeFactory {
             }
             Matcher retMatcher = pattern.matcher(ret);
             if (retMatcher.find()){
-                wrappedDesc = wrapTypeDesc(retMatcher.group());
+                wrappedDesc = getWrapperDesc(retMatcher.group());
                 sb.append(wrappedDesc);
             }
         }
@@ -57,7 +57,8 @@ public class ArrayWrappingBytecodeFactory {
         return sb.toString();
     }
 
-    public static String wrapTypeDesc(String desc){
+    // Return the wrapper descriptor of an array
+    public static String getWrapperDesc(String desc){
         String ret;
         // We dont wrap non array in this pass
         if (desc.charAt(0) != '['){
@@ -79,5 +80,17 @@ public class ArrayWrappingBytecodeFactory {
         sb.append(desc.replace('[', '$'));
         sb.append(";");
         return sb.toString();
+    }
+
+    // Return the element descriptor of an array
+    public static String getElementDesc(String desc){
+        String ret = desc.substring(1);
+        return ret;
+    }
+
+    // Return the element descriptor of an array
+    public static String getElementType(String desc){
+        String ret = desc.substring(2, desc.length() - 1);
+        return ret;
     }
 }

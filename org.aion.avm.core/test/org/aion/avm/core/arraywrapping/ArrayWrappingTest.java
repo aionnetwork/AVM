@@ -1,6 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,6 +10,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.IOException;
+import java.io.FileOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -25,15 +27,14 @@ public class ArrayWrappingTest {
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
             ArrayWrappingClassAdapter swc = new ArrayWrappingClassAdapter(out);
-            in.accept(swc, ClassReader.EXPAND_FRAMES);
+            ArrayWrappingClassAdapterRef swcRef = new ArrayWrappingClassAdapterRef(swc);
 
-            ClassNode classNode = new ClassNode();
-            in.accept(classNode, ClassReader.EXPAND_FRAMES);
-
-            ArrayWrappingInjector awi = new ArrayWrappingInjector(classNode);
-            awi.injectClass();
+            in.accept(swcRef, ClassReader.EXPAND_FRAMES);
 
             byte[] transformed = out.toByteArray();
+
+            Helpers.writeBytesToFile(transformed,"/tmp/wrapped.class");
+
             return transformed;
         });
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");

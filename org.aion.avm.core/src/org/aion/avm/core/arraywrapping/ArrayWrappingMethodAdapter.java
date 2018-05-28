@@ -92,9 +92,8 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
                 break;
 
             case Opcodes.AALOAD:
-                m = Method.getMethod("Object get(int)");
-                invokeVirtual(typeOA, m);
-                break;
+                // We shall see no aaload here since they are all replaced.
+                throw new AssertionError();
 
             case Opcodes.AASTORE:
                 m = Method.getMethod("void set(int, Object)");
@@ -157,7 +156,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     @Override
     public void visitTypeInsn(int opcode, java.lang.String type){
         Method m;
-        
+
         if (opcode == Opcodes.ANEWARRAY){
             m = Method.getMethod("org.aion.avm.arraywrapper.ObjectArray initArray(int)");
             invokeStatic(typeOA, m);
@@ -165,4 +164,5 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             this.mv.visitTypeInsn(opcode, type);
         }
     }
+
 }

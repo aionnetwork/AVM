@@ -5,11 +5,12 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.commons.*;
 import org.objectweb.asm.signature.*;
 import org.objectweb.asm.util.*;
+import org.objectweb.asm.tree.analysis.*;
 
 
-public class ArrayWrappingClassAdapter extends ClassVisitor {
+public class ArrayWrappingClassAdapterRef extends ClassVisitor {
 
-    public ArrayWrappingClassAdapter(ClassVisitor visitor) {
+    public ArrayWrappingClassAdapterRef(ClassVisitor visitor) {
         super(Opcodes.ASM6, visitor);
     }
 
@@ -22,15 +23,12 @@ public class ArrayWrappingClassAdapter extends ClassVisitor {
         //System.out.println(descriptor);
         //System.out.println(ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor));
         //System.out.println("**************************************");
-
-        //updateMethodDescriptor(descriptor);
-        //System.out.println("Prim visitor");
+        //logger.info("Method: access = {}, name = {}, descriptor = {}, signature = {}, exceptions = {}", access, name, descriptor, signature, exceptions);
+        //System.out.println("Ref visitor");
 
         MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
 
-        //logger.info("Method: access = {}, name = {}, descriptor = {}, signature = {}, exceptions = {}", access, name, descriptor, signature, exceptions);
-
-        return new ArrayWrappingMethodAdapter(mv, access, name, descriptor);
+        return new ArrayWrappingMethodAdapterRef(access, name, descriptor, signature, exceptions, mv);
     }
 
 
