@@ -30,15 +30,13 @@ import org.objectweb.asm.Type;
  */
 public class BlockInstrumentationVisitor extends MethodVisitor {
     private final String runtimeClassName;
-    private final MethodVisitor target;
     private final List<BasicBlock> blocks;
     private boolean scanningToNewBlockStart;
     private int nextBlockIndexToWrite;
 
     public BlockInstrumentationVisitor(String runtimeClassName, MethodVisitor target, List<BasicBlock> blocks) {
-        super(Opcodes.ASM6, null);
+        super(Opcodes.ASM6, target);
         this.runtimeClassName = runtimeClassName;
-        this.target = target;
         this.blocks = blocks;
     }
 
@@ -48,29 +46,29 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
         this.scanningToNewBlockStart = true;
         this.nextBlockIndexToWrite = 0;
         // We also need to tell the writer to advance.
-        this.target.visitCode();
+        super.visitCode();
     }
     @Override
     public void visitEnd() {
         // We never have empty blocks, in our implementation, so we should always be done when we reach this point.
         Assert.assertTrue(this.blocks.size() == this.nextBlockIndexToWrite);
         // Tell the writer we are done.
-        this.target.visitEnd();
+        super.visitEnd();
     }
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
         checkInject();
-        this.target.visitFieldInsn(opcode, owner, name, descriptor);
+        super.visitFieldInsn(opcode, owner, name, descriptor);
     }
     @Override
     public void visitIincInsn(int var, int increment) {
         checkInject();
-        this.target.visitIincInsn(var, increment);
+        super.visitIincInsn(var, increment);
     }
     @Override
     public void visitInsn(int opcode) {
         checkInject();
-        this.target.visitInsn(opcode);
+        super.visitInsn(opcode);
     }
     @Override
     public void visitIntInsn(int opcode, int operand) {
@@ -132,13 +130,13 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
             default:
                 Assert.unreachable("Unknown newarray operand: " + operand);
             }
-            this.target.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
+            super.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
             String methodName = "multianewarray1";
             String methodDescriptor = "(ILjava/lang/Class;)Ljava/lang/Object;";
-            this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, methodDescriptor, false);
-            this.target.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, methodDescriptor, false);
+            super.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
         } else {
-            this.target.visitIntInsn(opcode, operand);
+            super.visitIntInsn(opcode, operand);
         }
     }
     @Override
@@ -148,29 +146,29 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
     @Override
     public void visitJumpInsn(int opcode, Label label) {
         checkInject();
-        this.target.visitJumpInsn(opcode, label);
+        super.visitJumpInsn(opcode, label);
     }
     @Override
     public void visitLabel(Label label) {
         // The label means that we found a new block (although there might be several labels before it actually starts)
         // so enter the state machine mode where we are looking for that beginning of a block.
         this.scanningToNewBlockStart = true;
-        this.target.visitLabel(label);
+        super.visitLabel(label);
     }
     @Override
     public void visitLdcInsn(Object value) {
         checkInject();
-        this.target.visitLdcInsn(value);
+        super.visitLdcInsn(value);
     }
     @Override
     public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
         checkInject();
-        this.target.visitLookupSwitchInsn(dflt, keys, labels);
+        super.visitLookupSwitchInsn(dflt, keys, labels);
     }
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         checkInject();
-        this.target.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
     }
     @Override
     public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
@@ -195,7 +193,7 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
             // The descriptor we are given here is the arrayclass descriptor, along the lines of "[[[Ljava/lang/String;" but our helper
             // wants to receive the raw class so convert it, here, by pruning "[*L" and ";" from the descriptor.
             String prunedClassName = descriptor.substring(indexOfL + 1, descriptor.length() - 1);
-            this.target.visitLdcInsn(Type.getObjectType(prunedClassName));
+            super.visitLdcInsn(Type.getObjectType(prunedClassName));
         } else {
             // java/lang/Long.TYPE:Ljava/lang/Class;
             String typeName = descriptor.replaceAll("\\[", "");
@@ -238,7 +236,7 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
             default:
                 Assert.unreachable("Unknown primitive type: \"" + typeName + "\"");
             }
-            this.target.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
+            super.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
         }
         String argList = "(";
         for (int i = 0; i < numDimensions; ++i) {
@@ -247,13 +245,13 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
         argList += "Ljava/lang/Class;)";
         String methodName = "multianewarray" + numDimensions;
         String methodDescriptor = argList + "Ljava/lang/Object;";
-        this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, methodDescriptor, false);
-        this.target.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, methodDescriptor, false);
+        super.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
     }
     @Override
     public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
         checkInject();
-        this.target.visitTableSwitchInsn(min, max, dflt, labels);
+        super.visitTableSwitchInsn(min, max, dflt, labels);
     }
     @Override
     public void visitTypeInsn(int opcode, String type) {
@@ -261,22 +259,22 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
         // This is where we might see anewarray, so see if we need to replace it with a helper.
         if (Opcodes.ANEWARRAY == opcode) {
             // Inject our special idiom:  ldc then invokestatic, finally checkcast.
-            this.target.visitLdcInsn(Type.getObjectType(type));
+            super.visitLdcInsn(Type.getObjectType(type));
             // We just use the common multianewarray1 helper, since it can cover the common 1-dimensional cases for both objects and primitives.
-            this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, "multianewarray1", "(ILjava/lang/Class;)Ljava/lang/Object;", false);
-            this.target.visitTypeInsn(Opcodes.CHECKCAST, "[L" + type + ";");
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, "multianewarray1", "(ILjava/lang/Class;)Ljava/lang/Object;", false);
+            super.visitTypeInsn(Opcodes.CHECKCAST, "[L" + type + ";");
         } else {
-            this.target.visitTypeInsn(opcode, type);
+            super.visitTypeInsn(opcode, type);
         }
     }
     @Override
     public void visitVarInsn(int opcode, int var) {
         checkInject();
-        this.target.visitVarInsn(opcode, var);
+        super.visitVarInsn(opcode, var);
     }
     @Override
     public void visitMaxs(int maxStack, int maxLocals) {
-        this.target.visitMaxs(maxStack, maxLocals);
+        super.visitMaxs(maxStack, maxLocals);
     }
     /**
      * Common state machine advancing call.  Called at every instruction to see if we need to inject and/or advance
@@ -288,8 +286,8 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
             BasicBlock currentBlock = this.blocks.get(this.nextBlockIndexToWrite);
             if (currentBlock.getEnergyCost() > 0) {
                 // Inject the bytecodes.
-                this.target.visitLdcInsn(Long.valueOf(currentBlock.getEnergyCost()));
-                this.target.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, "chargeEnergy", "(J)V", false);
+                super.visitLdcInsn(Long.valueOf(currentBlock.getEnergyCost()));
+                super.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, "chargeEnergy", "(J)V", false);
             }
             // Reset the state machine for the next block.
             this.scanningToNewBlockStart = false;
