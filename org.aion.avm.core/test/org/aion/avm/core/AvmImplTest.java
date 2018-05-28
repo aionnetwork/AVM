@@ -66,7 +66,16 @@ public class AvmImplTest {
     public void testDeployAndRun() {
         testDeploy();
 
-        BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit);
+        BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
+            @Override
+            public ByteArray getData() {
+                return new ByteArray(new byte[0]);
+            }
+            @Override
+            public ByteArray getStorage(ByteArray key) {
+                return null;
+            }
+        };
         AvmImpl avm = new AvmImpl();
         AvmResult result = avm.run(rt);
 
