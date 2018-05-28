@@ -3,9 +3,9 @@ package org.aion.avm.core.instrument;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.*;
@@ -38,7 +38,7 @@ public class BytecodeVerificationTest {
             }};
 
         String className = original.getClass().getName();
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
         
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
@@ -82,7 +82,7 @@ public class BytecodeVerificationTest {
             }};
 
         String className = original.getClass().getName();
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
         
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
@@ -125,7 +125,7 @@ public class BytecodeVerificationTest {
             }};
 
         String className = original.getClass().getName();
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
         
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());

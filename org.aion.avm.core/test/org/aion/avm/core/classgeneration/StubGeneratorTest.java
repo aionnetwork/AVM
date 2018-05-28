@@ -4,7 +4,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.ClassLoadingResult;
 import org.aion.avm.core.dappreading.DAppClassLoader;
@@ -99,7 +98,7 @@ public class StubGeneratorTest {
      */
     @Test
     public void testGenerateExceptionShadows() throws Exception {
-        ClassLoader parent = TestClassLoader.class.getClassLoader();
+        ClassLoader parent = StubGeneratorTest.class.getClassLoader();
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
         AvmClassLoader loader = generateExceptionShadowsAndWrappers(parent);
         Class<?> aioobe = loader.loadClass(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
@@ -124,7 +123,7 @@ public class StubGeneratorTest {
      */
     @Test
     public void testGenerateExceptionWrappers() throws Exception {
-        ClassLoader parent = TestClassLoader.class.getClassLoader();
+        ClassLoader parent = StubGeneratorTest.class.getClassLoader();
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
         AvmClassLoader loader = generateExceptionShadowsAndWrappers(parent);
         Class<?> aioobe = loader.loadClass(CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
@@ -154,7 +153,7 @@ public class StubGeneratorTest {
      */
     @Test
     public void getGeneratedShadowWithHandWrittenSuper() throws Exception {
-        ClassLoader handWritten = TestClassLoader.class.getClassLoader();
+        ClassLoader handWritten = StubGeneratorTest.class.getClassLoader();
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and is partially hand-written.
         AvmClassLoader generated = generateExceptionShadowsAndWrappers(handWritten);
         Class<?> aioobe = generated.loadClass(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
@@ -174,7 +173,7 @@ public class StubGeneratorTest {
      */
     @Test
     public void testGenerateLegacyExceptionShadows() throws Exception {
-        ClassLoader handWritten = TestClassLoader.class.getClassLoader();
+        ClassLoader handWritten = StubGeneratorTest.class.getClassLoader();
         // We specifically want to look at the hierarchy of java.lang.ClassNotFoundException, since it is deep and the legacy style.
         AvmClassLoader generated = generateExceptionShadowsAndWrappers(handWritten);
         Class<?> notFound = generated.loadClass(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException");

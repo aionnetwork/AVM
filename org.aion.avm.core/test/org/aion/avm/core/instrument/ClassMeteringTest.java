@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.SimpleRuntime;
-import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
@@ -41,7 +41,7 @@ public class ClassMeteringTest {
 
         // Setup and rewrite the class.
         String className = TestResource.class.getName();
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
         classes.put(className, this.commonCostBuilder.apply(raw));
         AvmClassLoader loader = new AvmClassLoader(classes);

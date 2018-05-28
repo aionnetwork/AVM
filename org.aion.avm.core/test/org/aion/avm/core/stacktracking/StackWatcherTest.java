@@ -1,8 +1,8 @@
 package org.aion.avm.core.stacktracking;
 
-import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.OutOfStackError;
 import org.aion.avm.internal.StackWatcher;
 import org.junit.Assert;
@@ -27,7 +27,7 @@ public class StackWatcherTest {
     // We only need to load the instrumented class once.
     public void getInstructmentedClass() throws ClassNotFoundException {
         String className = "org.aion.avm.core.stacktracking.TestResource";
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES);

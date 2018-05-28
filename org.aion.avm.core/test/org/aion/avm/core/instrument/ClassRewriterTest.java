@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.*;
@@ -30,7 +30,7 @@ public class ClassRewriterTest {
             visitor.visitEnd();
         };
         String className = original.getClass().getName();
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> rewriterCall = (inputBytes) -> ClassRewriter.
                 rewriteOneMethodInClass(inputBytes, "hashCode", replacer, ClassWriter.COMPUTE_FRAMES);
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());

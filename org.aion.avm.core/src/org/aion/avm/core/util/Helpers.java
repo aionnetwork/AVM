@@ -44,6 +44,24 @@ public class Helpers {
         return b;
     }
 
+    /**
+     * A helper which will attempt to load the given resource path as bytes.
+     * Any failure in the load is considered fatal.
+     * 
+     * @param resourcePath The path to this resource, within the parent class loader.
+     * @return The bytes
+     */
+    public static byte[] loadRequiredResourceAsBytes(String resourcePath) {
+        InputStream stream = Helpers.class.getClassLoader().getResourceAsStream(resourcePath);
+        byte[] raw = null;
+        try {
+            raw = stream.readAllBytes();
+        } catch (IOException e) {
+            Assert.unexpected(e);
+        }
+        return raw;
+    }
+
     private static SecureRandom secureRandom = new SecureRandom();
 
     /**

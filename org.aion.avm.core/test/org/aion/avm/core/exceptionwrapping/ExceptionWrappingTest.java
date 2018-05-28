@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.shadowing.ClassShadowing;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.core.Forest;
 import org.aion.avm.core.HierarchyTreeBuilder;
@@ -42,12 +42,12 @@ public class ExceptionWrappingTest {
         LazyWrappingTransformer transformer = new LazyWrappingTransformer(classHierarchy);
         
         String className = TestExceptionResource.class.getName();
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         transformer.transformClass(className, raw);
         
         String resourceName = className.replaceAll("\\.", "/") + "$UserDefinedException.class";
         String exceptionName = className + "$UserDefinedException";
-        byte[] exceptionBytes = TestClassLoader.loadRequiredResourceAsBytes(resourceName);
+        byte[] exceptionBytes = Helpers.loadRequiredResourceAsBytes(resourceName);
         transformer.transformClass(exceptionName, exceptionBytes);
         
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());

@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
@@ -164,7 +165,7 @@ public class HashCodeTest {
 
     private Class<?> commonLoadTestClass() throws ClassNotFoundException {
         String className = HashCodeTestTarget.class.getName();
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         
         Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", raw)

@@ -1,9 +1,9 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.SimpleRuntime;
-import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,7 +25,7 @@ public class ClassShadowingTest {
         Helper.setBlockchainRuntime(new SimpleRuntime(null, null, 0));
         
         String className = "org.aion.avm.core.shadowing.TestResource";
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);

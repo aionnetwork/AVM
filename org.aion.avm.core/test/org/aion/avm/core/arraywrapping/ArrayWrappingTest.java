@@ -1,6 +1,5 @@
 package org.aion.avm.core.arraywrapping;
 
-import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
@@ -41,7 +40,7 @@ public class ArrayWrappingTest {
 
             return transformed;
         };
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         classes.put(className, transformer.apply(raw));
         AvmClassLoader loader = new AvmClassLoader(classes);
 
