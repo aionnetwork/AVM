@@ -20,7 +20,7 @@ public class ClassShadowingTest {
         Helper.setBlockchainRuntime(new SimpleRuntime(null, null, 0));
         
         String className = "org.aion.avm.core.shadowing.TestResource";
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), (inputBytes) -> {
+        TestClassLoader loader = new TestClassLoader((inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 

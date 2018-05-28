@@ -99,7 +99,7 @@ public class StubGeneratorTest {
     @Test
     public void testGenerateExceptionShadows() throws Exception {
         ClassLoader parent = TestClassLoader.class.getClassLoader();
-        TestClassLoader loader = new TestClassLoader(parent, identity -> identity);
+        TestClassLoader loader = new TestClassLoader(identity -> identity);
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
         Class<?> aioobe = generateExceptionShadowsAndWrappers(parent, loader, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
@@ -124,7 +124,7 @@ public class StubGeneratorTest {
     @Test
     public void testGenerateExceptionWrappers() throws Exception {
         ClassLoader parent = TestClassLoader.class.getClassLoader();
-        TestClassLoader loader = new TestClassLoader(parent, identity -> identity);
+        TestClassLoader loader = new TestClassLoader(identity -> identity);
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
         Class<?> aioobe = generateExceptionShadowsAndWrappers(parent, loader, CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
@@ -154,7 +154,7 @@ public class StubGeneratorTest {
     @Test
     public void getGeneratedShadowWithHandWrittenSuper() throws Exception {
         ClassLoader handWritten = TestClassLoader.class.getClassLoader();
-        TestClassLoader generated = new TestClassLoader(handWritten, identity -> identity);
+        TestClassLoader generated = new TestClassLoader(identity -> identity);
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and is partially hand-written.
         Class<?> aioobe = generateExceptionShadowsAndWrappers(handWritten, generated, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
@@ -174,7 +174,7 @@ public class StubGeneratorTest {
     @Test
     public void testGenerateLegacyExceptionShadows() throws Exception {
         ClassLoader handWritten = TestClassLoader.class.getClassLoader();
-        TestClassLoader generated = new TestClassLoader(handWritten, identity -> identity);
+        TestClassLoader generated = new TestClassLoader(identity -> identity);
         // We specifically want to look at the hierarchy of java.lang.ClassNotFoundException, since it is deep and the legacy style.
         Class<?> notFound = generateExceptionShadowsAndWrappers(handWritten, generated, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException");
         Assert.assertNotNull(notFound);

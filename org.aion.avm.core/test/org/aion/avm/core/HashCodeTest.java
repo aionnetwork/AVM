@@ -161,7 +161,6 @@ public class HashCodeTest {
 
 
     private Class<?> commonLoadTestClass() throws ClassNotFoundException {
-        ClassLoader parentLoader = HashCodeTest.class.getClassLoader();
         String className = HashCodeTestTarget.class.getName();
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         
@@ -175,7 +174,7 @@ public class HashCodeTest {
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
         };
-        TestClassLoader loader = new TestClassLoader(parentLoader, transformer);
+        TestClassLoader loader = new TestClassLoader(transformer);
         Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
         for (Map.Entry<String, byte[]> generated : generatedClasses.entrySet()) {
             loader.addClassDirectLoad(generated.getKey(), generated.getValue());

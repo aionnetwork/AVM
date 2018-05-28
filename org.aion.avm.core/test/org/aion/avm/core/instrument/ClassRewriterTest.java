@@ -28,8 +28,8 @@ public class ClassRewriterTest {
         String className = original.getClass().getName();
         Function<byte[], byte[]> rewriterCall = (inputBytes) -> ClassRewriter.
                 rewriteOneMethodInClass(inputBytes, "hashCode", replacer, ClassWriter.COMPUTE_FRAMES);
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), rewriterCall);
-        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        TestClassLoader loader = new TestClassLoader(rewriterCall);
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         loader.addClassForRewrite(className, raw);
         Class<?> clazz = loader.loadClass(className);
         Object target = clazz.getConstructor(int.class).newInstance(originalHash);

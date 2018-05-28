@@ -21,8 +21,7 @@ public class TestClassLoader extends ClassLoader {
     private final Map<String, byte[]> injectedClasses;
     private final Map<String, Class<?>> cache;
 
-    public TestClassLoader(ClassLoader parent, Function<byte[], byte[]> loadHandler) {
-        super(parent);
+    public TestClassLoader(Function<byte[], byte[]> loadHandler) {
         this.classesToRewrite = new HashMap<>();
         this.loadHandler = loadHandler;
         this.injectedClasses = new HashMap<>();

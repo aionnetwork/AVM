@@ -58,7 +58,7 @@ public class ExceptionWrappingTest {
         String className = TestExceptionResource.class.getName();
         Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
         
-        TestHelpers.loader = new TestClassLoader(TestExceptionResource.class.getClassLoader(), this.commonCostBuilder);
+        TestHelpers.loader = new TestClassLoader(this.commonCostBuilder);
         Helper.setLateClassLoader(TestHelpers.loader);
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         TestHelpers.loader.addClassForRewrite(className, raw);

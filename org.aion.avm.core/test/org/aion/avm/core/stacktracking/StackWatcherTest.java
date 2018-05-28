@@ -22,7 +22,7 @@ public class StackWatcherTest {
     // We only need to load the instrumented class once.
     public void getInstructmentedClass() throws ClassNotFoundException {
         String className = "org.aion.avm.core.stacktracking.TestResource";
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), (inputBytes) -> {
+        TestClassLoader loader = new TestClassLoader((inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
@@ -32,7 +32,7 @@ public class StackWatcherTest {
             byte[] transformed = out.toByteArray();
             return transformed;
         });
-        byte[] raw = loader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         loader.addClassForRewrite(className, raw);
 
         clazz = loader.loadClass(className);
