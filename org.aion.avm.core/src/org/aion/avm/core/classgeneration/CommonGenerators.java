@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 
 /**
@@ -88,11 +89,17 @@ public class CommonGenerators {
             "java.lang.ClassNotFoundException",
     });
 
-    public static Map<String, byte[]> generateExceptionShadowsAndWrappers() throws Exception {
+    public static Map<String, byte[]> generateExceptionShadowsAndWrappers() {
         Map<String, byte[]> generatedClasses = new HashMap<>();
         for (String className : kExceptionClassNames) {
             // We need to look this up to find the superclass.
-            String superclassName = Class.forName(className).getSuperclass().getName();
+            String superclassName = null;
+            try {
+                superclassName = Class.forName(className).getSuperclass().getName();
+            } catch (ClassNotFoundException e) {
+                // We are operating on built-in exception classes so, if these are missing, there is something wrong with the JDK.
+                RuntimeAssertionError.unexpected(e);
+            }
             
             // Generate the shadow.
             if (!kHandWrittenExceptionClassNames.contains(className)) {
