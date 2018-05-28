@@ -50,4 +50,11 @@ public class HashCodeTestTarget {
         String name2 = HashCodeTestTarget.class.getName();
         return name1 == name2;
     }
+    
+    public static boolean compareStringString() {
+        String testing = "string constant";
+        String name1 = testing.toString();
+        String name2 = testing.toString();
+        return name1 == name2;
+    }
 }

@@ -18,7 +18,7 @@ public class String extends Object {
     }
 
     public String avm_toString() {
-        return new String(underlying.toString());
+        return this;
     }
 
     @Override

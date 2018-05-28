@@ -129,6 +129,21 @@ public class HashCodeTest {
         Assert.assertEquals(didMatchInJava, didMatchInContract);
     }
 
+    /**
+     * Tests that String.toString() instance return behaviour is consistent between normal Java and our contract environment.
+     */
+    @Test
+    public void testStringToString() throws Exception {
+        Class<?> clazz = commonLoadTestClass();
+        Assert.assertNotNull(clazz);
+        Method compareStringString = clazz.getMethod("compareStringString");
+        
+        Object instance1 = compareStringString.invoke(null);
+        boolean didMatchInContract = ((Boolean)instance1).booleanValue();
+        boolean didMatchInJava = HashCodeTestTarget.compareStringString();
+        Assert.assertEquals(didMatchInJava, didMatchInContract);
+    }
+
 
     private Class<?> commonLoadTestClass() throws ClassNotFoundException {
         ClassLoader parentLoader = HashCodeTest.class.getClassLoader();
