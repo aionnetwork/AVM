@@ -10,7 +10,19 @@ import java.util.regex.*;
 
 public class ArrayWrappingBytecodeFactory {
 
-    static private HashMap<String, String> awMap = new HashMap<String, String>();
+    static private HashMap<String, String> arrayWrapperMap = new HashMap<String, String>();
+
+    static{
+        arrayWrapperMap.put("[I", "Lorg/aion/avm/arraywrapper/IntArray;");
+        arrayWrapperMap.put("[B", "Lorg/aion/avm/arraywrapper/ByteArray;");
+        arrayWrapperMap.put("[Z", "Lorg/aion/avm/arraywrapper/ByteArray;");
+        arrayWrapperMap.put("[C", "Lorg/aion/avm/arraywrapper/CharArray;");
+        arrayWrapperMap.put("[F", "Lorg/aion/avm/arraywrapper/FloatArray;");
+        arrayWrapperMap.put("[S", "Lorg/aion/avm/arraywrapper/ShortArray;");
+        arrayWrapperMap.put("[J", "Lorg/aion/avm/arraywrapper/LongArray;");
+        arrayWrapperMap.put("[D", "Lorg/aion/avm/arraywrapper/DoubleArray;");
+        arrayWrapperMap.put("[Ljava/lang/Object;", "Lorg/aion/avm/arraywrapper/ObjectArray;");
+    }
 
     public static String updateMethodDesc(String desc) {
         //\[*L[^;]+;|\[[ZBCSIFDJ]|[ZBCSIFDJ]
@@ -53,33 +65,44 @@ public class ArrayWrappingBytecodeFactory {
                 sb.append(wrappedDesc);
             }
         }
-        System.out.println(sb.toString());
+        //System.out.println(sb.toString());
         return sb.toString();
     }
 
     // Return the wrapper descriptor of an array
     public static String getWrapperDesc(String desc){
         String ret;
-        // We dont wrap non array in this pass
         if (desc.charAt(0) != '['){
             ret = desc;
-        }else if (awMap.containsKey(desc)){
-            ret = awMap.get(desc);
+        }else if (arrayWrapperMap.containsKey(desc)){
+            ret = arrayWrapperMap.get(desc);
         }else{
-            awMap.put(desc, genArrayName(desc));
-            ret = awMap.get(desc);
+            arrayWrapperMap.put(desc, genWrapperName(desc));
+            ret = arrayWrapperMap.get(desc);
         }
         return ret;
     }
 
     //TODO:: is this enough?
-    public static String genArrayName(String desc){
+    public static String genWrapperName(String desc){
+        System.out.println(desc);
         StringBuilder sb = new StringBuilder();
         sb.append("Lorg/aion/avm/arraywrapper/");
 
-        sb.append(desc.replace('[', '$'));
-        sb.append(";");
+        //Check if the desc is a ref array
+        if((desc.charAt(1) == 'L') || (desc.charAt(1) == '[')){
+            sb.append(getRefWrapperName(desc));
+        }else{
+            Assert.unreachable("genWrapperName :" + desc);
+        }
+
         return sb.toString();
+    }
+
+    // Return the element descriptor of an array
+    public static String getRefWrapperName(String desc){
+        String ret = desc.replace('[', '$');
+        return ret;
     }
 
     // Return the element descriptor of an array
@@ -89,6 +112,7 @@ public class ArrayWrappingBytecodeFactory {
     }
 
     // Return the element descriptor of an array
+    // 1D Primitive array will not be called with this method since there will be no aaload
     public static String getElementType(String desc){
         String ret = desc.substring(2, desc.length() - 1);
         return ret;

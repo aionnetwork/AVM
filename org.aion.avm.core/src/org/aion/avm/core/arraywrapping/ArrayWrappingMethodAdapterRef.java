@@ -24,10 +24,10 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
         this.mv = mv;
     }
 
-
     @Override
     @SuppressWarnings("unchecked")
     public void visitEnd(){
+
         Frame[] frames = null;
         if (instructions.size() > 0) {
             try{
@@ -35,7 +35,8 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 analyzer.analyze(this.className, this);
                 frames = analyzer.getFrames();
             }catch (AnalyzerException e){
-                System.out.println("Analyzer fail");
+                System.out.println("Analyzer fail :" + this.className);
+                System.out.println(e.getMessage());
             }
         }
 
@@ -53,9 +54,7 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 BasicValue t = (BasicValue) (f.getStack(1));
                 String targetDesc = t.toString();
                 String wrapperDesc = ArrayWrappingBytecodeFactory.getWrapperDesc(targetDesc);
-                String elementDesc = ArrayWrappingBytecodeFactory.getElementType(targetDesc);
-
-                //System.out.println(targetDesc);
+                String elementType = ArrayWrappingBytecodeFactory.getElementType(targetDesc);
 
                 MethodInsnNode invokeVNode =
                     new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
@@ -66,12 +65,11 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
 
                 TypeInsnNode checkcastNode =
                     new TypeInsnNode(Opcodes.CHECKCAST,
-                                        elementDesc);
+                                        elementType);
 
                 instructions.insert(insn, checkcastNode);
                 instructions.insert(insn, invokeVNode);
                 instructions.remove(insn);
-
             }
         }
         accept(mv);

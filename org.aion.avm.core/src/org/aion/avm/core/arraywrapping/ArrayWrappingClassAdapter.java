@@ -13,6 +13,7 @@ public class ArrayWrappingClassAdapter extends ClassVisitor {
         super(Opcodes.ASM6, visitor);
     }
 
+    @Override
     public MethodVisitor visitMethod(
             final int access,
             final String name,
@@ -23,15 +24,12 @@ public class ArrayWrappingClassAdapter extends ClassVisitor {
         //System.out.println(ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor));
         //System.out.println("**************************************");
 
-        //updateMethodDescriptor(descriptor);
-        //System.out.println("Prim visitor");
+        String desc = descriptor;
+        desc = ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor);
 
-        MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
+        MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 
-        //logger.info("Method: access = {}, name = {}, descriptor = {}, signature = {}, exceptions = {}", access, name, descriptor, signature, exceptions);
-
-        return new ArrayWrappingMethodAdapter(mv, access, name, descriptor);
+        return new ArrayWrappingMethodAdapter(mv, access, name, desc);
     }
-
 
 }

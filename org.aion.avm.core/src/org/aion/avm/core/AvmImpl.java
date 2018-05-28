@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
@@ -143,18 +144,24 @@ public class AvmImpl implements Avm {
 
             // in reverse order
             ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            ArrayWrappingClassAdapter arrayWrapping = new ArrayWrappingClassAdapter(out);
-            ExceptionWrapping exceptionHandling = new ExceptionWrapping(arrayWrapping, HELPER_CLASS, classHierarchy, generatedClassesSink);
+            ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, HELPER_CLASS, classHierarchy, generatedClassesSink);
             ClassShadowing classShadowing = new ClassShadowing(exceptionHandling, HELPER_CLASS);
             StackWatcherClassAdapter stackTracking = new StackWatcherClassAdapter(classShadowing);
-            ClassMetering classMetering = new ClassMetering(stackTracking, HELPER_CLASS, objectSizes);
+            ClassMetering classMetering = new ClassMetering(classShadowing, HELPER_CLASS, objectSizes);
 
             // traverse
-            // TODO:  ClassReader.EXPAND_FRAMES is needed for stacktracking injector
             in.accept(classMetering, ClassReader.EXPAND_FRAMES);
 
+            //TODO: Can we do it in one pass?
+            ClassReader ain = new ClassReader(out.toByteArray());
+            ClassWriter aout = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+            ArrayWrappingClassAdapter arrayWrapping = new ArrayWrappingClassAdapter(aout);
+            ArrayWrappingClassAdapterRef arrayWrappingRef = new ArrayWrappingClassAdapterRef(arrayWrapping);
+
+            ain.accept(arrayWrappingRef, ClassReader.EXPAND_FRAMES);
+
             // emit bytecode
-            processedClasses.put(name, out.toByteArray());
+            processedClasses.put(name, aout.toByteArray());
         }
 
         return processedClasses;

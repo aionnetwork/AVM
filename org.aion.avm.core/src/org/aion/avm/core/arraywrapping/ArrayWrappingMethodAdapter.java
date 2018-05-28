@@ -92,8 +92,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
                 break;
 
             case Opcodes.AALOAD:
-                // We shall see no aaload here since they are all replaced.
-                throw new AssertionError();
+                Assert.unreachable("Primitive array wrapping adapter catch AALOAD");
 
             case Opcodes.AASTORE:
                 m = Method.getMethod("void set(int, Object)");
@@ -163,6 +162,14 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
         }else{
             this.mv.visitTypeInsn(opcode, type);
         }
+    }
+
+    @Override
+    //TODO: invokedynamic?
+    public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        String desc = descriptor;
+        desc = ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor);
+        this.mv.visitMethodInsn(opcode, owner, name, desc, isInterface);
     }
 
 }

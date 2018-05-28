@@ -8,16 +8,13 @@ import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.*;
 
 public class ArrayWrappingInterpreter extends BasicInterpreter{
-    /**
-     * Constructs a new {@link BasicInterpreter} for the latest ASM API version. <i>Subclasses must
-     * not use this constructor</i>. Instead, they must use the {@link #BasicInterpreter(int)}
-     * version.
-     */
+
     public ArrayWrappingInterpreter() {
       super(Opcodes.ASM6);
     }
 
     @Override
+    // Override this method to get unmasked type from BasicInterpreter
     public BasicValue newValue(final Type type) {
       if (type == null) {
         return BasicValue.UNINITIALIZED_VALUE;

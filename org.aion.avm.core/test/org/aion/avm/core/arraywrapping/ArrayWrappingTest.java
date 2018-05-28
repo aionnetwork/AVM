@@ -136,4 +136,15 @@ public class ArrayWrappingTest {
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
     }
+
+
+    @Test
+    public void testSignature() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testSignature");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
 }

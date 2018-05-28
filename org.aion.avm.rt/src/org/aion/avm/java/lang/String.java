@@ -1,8 +1,9 @@
 package org.aion.avm.java.lang;
+import org.aion.avm.arraywrapper.ByteArray;
 
 public class String extends Object {
     private final java.lang.String underlying;
-    
+
     public String(java.lang.String underlying) {
         this.underlying = underlying;
     }
@@ -12,9 +13,9 @@ public class String extends Object {
         return this.underlying.hashCode();
     }
 
-    public byte[] avm_getBytes() {
-        // TODO: this is wrong, the byte[] object is a source of non-determinism.
-        return underlying.getBytes();
+    public ByteArray avm_getBytes() {
+        // TODO: Add shadow underlying
+        return new ByteArray(underlying.getBytes());
     }
 
     public String avm_toString() {

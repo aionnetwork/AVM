@@ -11,11 +11,25 @@ public class TestResource {
         return res;
     }
 
-    // public boolean testSignature(){
-    //     boolean[] a = new boolean[2];
-    //     boolean[] b = testBooleanSignature(a);
-    //     return true;
-    // }
+    public boolean testSignature(){
+        boolean[]   a = new boolean[42];
+        byte[]      b = new byte[42];
+        char[]      c = new char[42];
+        double[]    d = new double[42];
+        float[]     e = new float[42];
+        int[]       f = new int[42];
+        long[]      g = new long[42];
+        short[]     h = new short[42];
+        Object[]    i = new Object[42];
+        return a == this.testMixedSignature(a, b, c, d, e, f, g, h, i);
+    }
+
+    public boolean[] testMixedSignature(boolean[] in1, byte[] in2, char[] in3,
+                                        double[] in4, float[] in5, int[] in6,
+                                        long[] in7, short[] in8, Object[] in9)
+    {
+        return in1;
+    }
 
     public boolean[] testBooleanSignature(boolean[] in){
         return in;
@@ -45,20 +59,15 @@ public class TestResource {
         return in;
     }
 
-    // public Object[] testObjectSignature(Object[] in){
-    //     return in;
-    // }
+    public Object[] testObjectSignature(Object[] in){
+         return in;
+    }
 
     public short[] testShortSignature(short[] in){
         return in;
     }
 
-    public boolean[] testMixedSignature(boolean[] in1, byte[] in2, char[] in3,
-                                        double[] in4, float[] in5, int[] in6,
-                                        long[] in7, short[] in8)
-    {
-        return in1;
-    }
+
 
     public boolean testBooleanArray(){
         boolean res = true;

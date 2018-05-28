@@ -31,4 +31,3 @@ public class StackWatcherClassAdapter extends ClassVisitor implements Opcodes{
         };
     }
 }
-

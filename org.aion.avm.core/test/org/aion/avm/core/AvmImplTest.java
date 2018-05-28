@@ -49,7 +49,6 @@ public class AvmImplTest {
     private byte[] address = Helpers.randomBytes(32);
     private long energyLimit = 1000000;
 
-
     @Test
     public void testDeploy() {
 
@@ -61,7 +60,6 @@ public class AvmImplTest {
         assertEquals(AvmResult.Code.SUCCESS, result.code);
     }
 
-    @Ignore
     @Test
     public void testDeployAndRun() {
         testDeploy();
@@ -103,11 +101,11 @@ public class AvmImplTest {
         // Set up the runtime.
         BlockchainRuntime rt = new SimpleRuntime(null, null, 5);
         Helper.setBlockchainRuntime(rt);
-        
+
         // Prove that we can charge 0 without issue.
         Helper.chargeEnergy(0);
         assertEquals(5, Helper.energyLeft());
-        
+
         // Run the test.
         int catchCount = 0;
         OutOfEnergyError error = null;
@@ -126,7 +124,7 @@ public class AvmImplTest {
             assertEquals(error, e);
         }
         assertEquals(2, catchCount);
-        
+
         // Cleanup.
         Helper.clearTestingState();
     }
