@@ -1,8 +1,10 @@
 package org.aion.avm.core.instrument;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.*;
@@ -35,7 +37,12 @@ public class BytecodeVerificationTest {
             }};
 
         String className = original.getClass().getName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, "hashCode", replacer, 0);
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
+        
+        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        classes.put(className, rewrittten);
+        TestClassLoader loader = new TestClassLoader(classes);
         Class<?> clazz = loader.loadClass(className);
 
         try{
@@ -74,7 +81,12 @@ public class BytecodeVerificationTest {
             }};
 
         String className = original.getClass().getName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, "hashCode", replacer, 0);
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
+        
+        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        classes.put(className, rewrittten);
+        TestClassLoader loader = new TestClassLoader(classes);
         Class<?> clazz = loader.loadClass(className);
 
         try{
@@ -112,7 +124,12 @@ public class BytecodeVerificationTest {
             }};
 
         String className = original.getClass().getName();
-        TestClassLoader loader = new TestClassLoader(TestResource.class.getClassLoader(), className, "hashCode", replacer, 1);
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
+        
+        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        classes.put(className, rewrittten);
+        TestClassLoader loader = new TestClassLoader(classes);
         Class<?> clazz = loader.loadClass(className);
 
         try{
@@ -122,45 +139,6 @@ public class BytecodeVerificationTest {
         }catch (Error e){
             Boolean expectedError =  e.getMessage().contains("Inconsistent stackmap frames at branch target") ? true : false;
             Assert.assertEquals(expectedError, true);
-        }
-    }
-
-    /**
-     * We use this classloader, within the test, to get the raw bytes of the test we want to modify and then pass
-     * into the ClassRewriter, for the test.
-     */
-    private static class TestClassLoader extends ClassLoader {
-        private final String classNameToProvide;
-        private final String methodName;
-        private final ClassRewriter.IMethodReplacer replacer;
-        private final int computeFrameFlag;
-
-        public TestClassLoader(ClassLoader parent, String classNameToProvide, String methodName, ClassRewriter.IMethodReplacer replacer, int computeFrameFlag) {
-            super(parent);
-            this.classNameToProvide = classNameToProvide;
-            this.methodName = methodName;
-            this.replacer = replacer;
-            this.computeFrameFlag = computeFrameFlag;
-        }
-
-        @Override
-        public Class<?> loadClass(String name) throws ClassNotFoundException {
-            Class<?> result = null;
-            if (this.classNameToProvide.equals(name)) {
-                InputStream stream = getParent().getResourceAsStream(name.replaceAll("\\.", "/") + ".class");
-                byte[] raw = null;
-                try {
-                    raw = stream.readAllBytes();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Assert.fail();
-                }
-                byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, this.methodName, this.replacer, 0);
-                result = defineClass(name, rewrittten, 0, rewrittten.length);
-            } else {
-                result = getParent().loadClass(name);
-            }
-            return result;
         }
     }
 }
