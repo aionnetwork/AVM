@@ -3,6 +3,7 @@ package org.aion.avm.core.shadowing;
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.internal.Helper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,7 +38,7 @@ public class ClassShadowingTest {
         };
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
         classes.put(className, transformer.apply(raw));
-        TestClassLoader loader = new TestClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(classes);
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
 

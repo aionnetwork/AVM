@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
@@ -177,7 +178,7 @@ public class HashCodeTest {
         };
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
         classes.put(className, transformer.apply(raw));
-        TestClassLoader loader = new TestClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(classes);
         Class<?> clazz = loader.loadClass(className);
         Assert.assertEquals(loader, clazz.getClassLoader());
         Helper.setLateClassLoader(loader);

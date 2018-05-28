@@ -10,6 +10,7 @@ import java.util.function.BiConsumer;
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.core.Forest;
@@ -24,7 +25,7 @@ import org.objectweb.asm.ClassWriter;
 
 
 public class ExceptionWrappingTest {
-    private TestClassLoader loader;
+    private AvmClassLoader loader;
     private Class<?> testClass;
 
     @Before
@@ -52,7 +53,7 @@ public class ExceptionWrappingTest {
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
         classes.putAll(transformer.getLateGeneratedClasses());
         
-        this.loader = new TestClassLoader(classes);
+        this.loader = new AvmClassLoader(classes);
         Helper.setLateClassLoader(this.loader);
         
         this.testClass = this.loader.loadClass(className);

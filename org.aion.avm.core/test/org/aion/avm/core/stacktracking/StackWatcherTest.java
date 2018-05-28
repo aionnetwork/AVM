@@ -2,6 +2,7 @@ package org.aion.avm.core.stacktracking;
 
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.internal.OutOfStackError;
 import org.aion.avm.internal.StackWatcher;
 import org.junit.Assert;
@@ -39,7 +40,7 @@ public class StackWatcherTest {
         };
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
         classes.put(className, transformer.apply(raw));
-        TestClassLoader loader = new TestClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(classes);
         clazz = loader.loadClass(className);
     }
 

@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.*;
@@ -34,7 +35,7 @@ public class ClassRewriterTest {
                 rewriteOneMethodInClass(inputBytes, "hashCode", replacer, ClassWriter.COMPUTE_FRAMES);
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
         classes.put(className, rewriterCall.apply(raw));
-        TestClassLoader loader = new TestClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(classes);
         Class<?> clazz = loader.loadClass(className);
         Object target = clazz.getConstructor(int.class).newInstance(originalHash);
 

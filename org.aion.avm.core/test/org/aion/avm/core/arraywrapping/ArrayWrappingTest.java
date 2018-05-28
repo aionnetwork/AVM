@@ -2,6 +2,7 @@ package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,7 +43,7 @@ public class ArrayWrappingTest {
         };
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         classes.put(className, transformer.apply(raw));
-        TestClassLoader loader = new TestClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(classes);
 
         clazz = loader.loadClass(className);
     }

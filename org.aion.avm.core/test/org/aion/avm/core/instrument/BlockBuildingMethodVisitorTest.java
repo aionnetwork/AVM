@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.aion.avm.core.TestClassLoader;
 import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.instrument.BasicBlock;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -23,7 +24,7 @@ public class BlockBuildingMethodVisitorTest {
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
         classes.put(className, raw);
-        TestClassLoader loader = new TestClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(classes);
         loader.loadClass(className);
         BlockBuildingMethodVisitorTest.METHOD_BLOCKS = BlockSnooper.findPerMethodBlocksFor(raw);
         Assert.assertNotNull(BlockBuildingMethodVisitorTest.METHOD_BLOCKS);
