@@ -136,7 +136,12 @@ public class ExceptionWrapping extends ClassVisitor {
                     
                     // The cast will give us exactly what the previous path thought was the common class of any multi-catch options.
                     // (without this, the verifier will complain about the operand stack containing the wrong type when used).
-                    super.visitTypeInsn(Opcodes.CHECKCAST, castType);
+                    // Note that this type also needs to be translated into our namespace, since we won't be giving the user direct access to
+                    // real exceptions.
+                    String mappedCastType = castType.startsWith("java/lang/")
+                            ? "org/aion/avm/" + castType
+                            : castType;
+                    super.visitTypeInsn(Opcodes.CHECKCAST, mappedCastType);
                 }
                 this.isTargetFrame = false;
             }
