@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -174,12 +175,9 @@ public class HashCodeTest {
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
         };
-        TestClassLoader loader = new TestClassLoader(transformer);
-        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
-        for (Map.Entry<String, byte[]> generated : generatedClasses.entrySet()) {
-            loader.addClassDirectLoad(generated.getKey(), generated.getValue());
-        }
-        loader.addClassForRewrite(className, raw);
+        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        classes.put(className, transformer.apply(raw));
+        TestClassLoader loader = new TestClassLoader(classes);
         Class<?> clazz = loader.loadClass(className);
         Assert.assertEquals(loader, clazz.getClassLoader());
         Helper.setLateClassLoader(loader);

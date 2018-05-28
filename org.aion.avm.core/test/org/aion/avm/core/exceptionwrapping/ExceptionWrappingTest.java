@@ -1,9 +1,8 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -25,6 +24,11 @@ import org.objectweb.asm.ClassWriter;
 
 
 public class ExceptionWrappingTest {
+    /**
+     * Note that this is a short-term work-around to how the tests in this suite interact with the commonCostbuilder.
+     */
+    private static BiConsumer<String, byte[]> outOfBandGeneratedClassSink;
+
     private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) -> {
         ClassReader in = new ClassReader(inputBytes);
         ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
@@ -36,12 +40,8 @@ public class ExceptionWrappingTest {
                 .addClass("org.aion.avm.core.exceptionwrapping.TestExceptionResource", "java.lang.Object", null)
                 .asMutableForest();
         
-        // WARNING:  We are using this TestHelpers.loader as a way of injecting the code we want to generate back into the TestClassLoader.
-        // TODO:  Change the contract with the TestClassLoader to allow us to more easily push these in.
-        // (within the shape of this unit test, we can't do much better)
-        BiConsumer<String, byte[]> generatedClassesSink = (classSlashName, bytecode) -> TestHelpers.loader.addClassDirectLoad(classSlashName.replaceAll("/", "."), bytecode);
         ClassShadowing cs = new ClassShadowing(out, TestHelpers.CLASS_NAME);
-        ExceptionWrapping wrapping = new ExceptionWrapping(cs, TestHelpers.CLASS_NAME, classHierarchy, generatedClassesSink);
+        ExceptionWrapping wrapping = new ExceptionWrapping(cs, TestHelpers.CLASS_NAME, classHierarchy, outOfBandGeneratedClassSink);
         in.accept(wrapping, ClassReader.SKIP_DEBUG);
         
         byte[] transformed = out.toByteArray();
@@ -55,28 +55,21 @@ public class ExceptionWrappingTest {
         TestHelpers.didUnwrap = false;
         TestHelpers.didWrap = false;
         
-        String className = TestExceptionResource.class.getName();
-        Map<String, byte[]> generatedClasses = CommonGenerators.generateExceptionShadowsAndWrappers();
+        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        ExceptionWrappingTest.outOfBandGeneratedClassSink = (name, bytes) -> classes.put(name.replaceAll("/", "."), bytes);
         
-        TestHelpers.loader = new TestClassLoader(this.commonCostBuilder);
-        Helper.setLateClassLoader(TestHelpers.loader);
+        String className = TestExceptionResource.class.getName();
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        TestHelpers.loader.addClassForRewrite(className, raw);
-        for (Map.Entry<String, byte[]> elt : generatedClasses.entrySet()) {
-            TestHelpers.loader.addClassDirectLoad(elt.getKey(), elt.getValue());
-        }
+        classes.put(className, this.commonCostBuilder.apply(raw));
         
         String resourceName = className.replaceAll("\\.", "/") + "$UserDefinedException.class";
-        InputStream stream = TestHelpers.loader.getParent().getResourceAsStream(resourceName);
-        byte[] exceptionBytes = null;
-        try {
-            exceptionBytes = stream.readAllBytes();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Assert.fail();
-        }
         String exceptionName = className + "$UserDefinedException";
-        TestHelpers.loader.addClassForRewrite(exceptionName, exceptionBytes);
+        byte[] exceptionBytes = TestClassLoader.loadRequiredResourceAsBytes(resourceName);
+        classes.put(exceptionName, this.commonCostBuilder.apply(exceptionBytes));
+        
+        TestHelpers.loader = new TestClassLoader(classes);
+        Helper.setLateClassLoader(TestHelpers.loader);
+        
         // Note that we need to eagerly load all the classes provided by the user since some may cause us to generate wrappers which will be loaded
         // by other classes.
         TestHelpers.loader.loadClass(exceptionName);

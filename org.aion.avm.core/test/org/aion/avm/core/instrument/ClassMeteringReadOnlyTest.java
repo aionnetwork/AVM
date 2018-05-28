@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.instrument.BasicBlock;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,10 +25,11 @@ public class ClassMeteringReadOnlyTest {
     public void setup() throws Exception {
         // Setup and rewrite the class.
         String className = TestResource.class.getName();
-        this.snooper = new BlockSnooper();
-        TestClassLoader loader = new TestClassLoader(this.snooper);
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        loader.addClassForRewrite(className, raw);
+        this.snooper = new BlockSnooper();
+        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        classes.put(className, this.snooper.apply(raw));
+        TestClassLoader loader = new TestClassLoader(classes);
         loader.loadClass(className);
     }
 

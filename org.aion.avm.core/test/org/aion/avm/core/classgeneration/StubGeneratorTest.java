@@ -99,9 +99,9 @@ public class StubGeneratorTest {
     @Test
     public void testGenerateExceptionShadows() throws Exception {
         ClassLoader parent = TestClassLoader.class.getClassLoader();
-        TestClassLoader loader = new TestClassLoader(identity -> identity);
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
-        Class<?> aioobe = generateExceptionShadowsAndWrappers(parent, loader, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
+        TestClassLoader loader = generateExceptionShadowsAndWrappers(parent);
+        Class<?> aioobe = loader.loadClass(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
         Assert.assertNotNull(aioobe);
         Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getName());
@@ -124,9 +124,9 @@ public class StubGeneratorTest {
     @Test
     public void testGenerateExceptionWrappers() throws Exception {
         ClassLoader parent = TestClassLoader.class.getClassLoader();
-        TestClassLoader loader = new TestClassLoader(identity -> identity);
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
-        Class<?> aioobe = generateExceptionShadowsAndWrappers(parent, loader, CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
+        TestClassLoader loader = generateExceptionShadowsAndWrappers(parent);
+        Class<?> aioobe = loader.loadClass(CommonGenerators.kWrapperClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
         // The interesting thing about the wrappers is that they are actually real Throwables.
         Assert.assertNotNull(aioobe);
@@ -154,9 +154,9 @@ public class StubGeneratorTest {
     @Test
     public void getGeneratedShadowWithHandWrittenSuper() throws Exception {
         ClassLoader handWritten = TestClassLoader.class.getClassLoader();
-        TestClassLoader generated = new TestClassLoader(identity -> identity);
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and is partially hand-written.
-        Class<?> aioobe = generateExceptionShadowsAndWrappers(handWritten, generated, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
+        TestClassLoader generated = generateExceptionShadowsAndWrappers(handWritten);
+        Class<?> aioobe = generated.loadClass(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
         // We want to make sure that each class loader is what we expect.
         Assert.assertNotNull(aioobe);
@@ -174,9 +174,10 @@ public class StubGeneratorTest {
     @Test
     public void testGenerateLegacyExceptionShadows() throws Exception {
         ClassLoader handWritten = TestClassLoader.class.getClassLoader();
-        TestClassLoader generated = new TestClassLoader(identity -> identity);
         // We specifically want to look at the hierarchy of java.lang.ClassNotFoundException, since it is deep and the legacy style.
-        Class<?> notFound = generateExceptionShadowsAndWrappers(handWritten, generated, CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException");
+        TestClassLoader generated = generateExceptionShadowsAndWrappers(handWritten);
+        Class<?> notFound = generated.loadClass(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException");
+        
         Assert.assertNotNull(notFound);
         Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException", notFound.getName());
         Assert.assertEquals(generated, notFound.getClassLoader());
@@ -213,9 +214,10 @@ public class StubGeneratorTest {
     }
 
 
-    private static Class<?> generateExceptionShadowsAndWrappers(ClassLoader parent, TestClassLoader loader, String testClassName) throws Exception {
+    private static TestClassLoader generateExceptionShadowsAndWrappers(ClassLoader parent) throws Exception {
         // Get the generated classes.
         Map<String, byte[]> allGenerated = CommonGenerators.generateExceptionShadowsAndWrappers();
+        TestClassLoader loader = new TestClassLoader(allGenerated);
         
         // NOTE:  Given that we can only inject individual classes, we need to add them in the right order.
         // See ExceptionWrappingTest for an example of how this can be fully loaded into the classloader in such a way that the
@@ -223,7 +225,6 @@ public class StubGeneratorTest {
         // For now, for this test case, we will just load them in a hard-coded topological order (since we will probably use a
         // different loader, eventually).
         // (note that the CommonGenerators constant happens to be in a safe order so we will use that).
-        Class<?> found = null;
         for (String name : CommonGenerators.kExceptionClassNames) {
             String shadowName = CommonGenerators.kShadowClassLibraryPrefix + name;
             byte[] shadowBytes = allGenerated.get(shadowName);
@@ -232,7 +233,6 @@ public class StubGeneratorTest {
             if (null != shadowBytes) {
                 // If this was generated, it better not be part of the non-generated set.
                 Assert.assertTrue(!CommonGenerators.kHandWrittenExceptionClassNames.contains(name));
-                loader.addClassDirectLoad(shadowName, shadowBytes);
                 shadowClass = loader.loadClass(shadowName);
                 Assert.assertEquals(loader, shadowClass.getClassLoader());
             } else {
@@ -241,21 +241,14 @@ public class StubGeneratorTest {
                 shadowClass = Class.forName(shadowName);
                 Assert.assertEquals(parent, shadowClass.getClassLoader());
             }
-            if (testClassName.equals(shadowName)) {
-                found = shadowClass;
-            }
             
             String wrapperName = CommonGenerators.kWrapperClassLibraryPrefix + name;
             byte[] wrapperBytes = allGenerated.get(wrapperName);
             Assert.assertNotNull(wrapperBytes);
-            loader.addClassDirectLoad(wrapperName, wrapperBytes);
             Class<?> wrapperClass = loader.loadClass(wrapperName);
             Assert.assertEquals(loader, wrapperClass.getClassLoader());
-            if (testClassName.equals(wrapperName)) {
-                found = wrapperClass;
-            }
         }
-        return found;
+        return loader;
     }
 
     //Note that class names here are always in the dot style:  "java.lang.Object"

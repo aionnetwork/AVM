@@ -2,9 +2,9 @@ package org.aion.avm.core;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.aion.avm.core.util.Assert;
 
@@ -16,15 +16,11 @@ import org.aion.avm.core.util.Assert;
  * which can be rewritten (with the transformer) or loaded as-is.
  */
 public class TestClassLoader extends ClassLoader {
-    private final Map<String, byte[]> classesToRewrite;
-    private final Function<byte[], byte[]> loadHandler;
     private final Map<String, byte[]> injectedClasses;
     private final Map<String, Class<?>> cache;
 
-    public TestClassLoader(Function<byte[], byte[]> loadHandler) {
-        this.classesToRewrite = new HashMap<>();
-        this.loadHandler = loadHandler;
-        this.injectedClasses = new HashMap<>();
+    public TestClassLoader(Map<String, byte[]> injectedClasses) {
+        this.injectedClasses = Collections.unmodifiableMap(injectedClasses);
         this.cache = new HashMap<>();
     }
 
@@ -46,26 +42,6 @@ public class TestClassLoader extends ClassLoader {
         return raw;
     }
 
-    /**
-     * Adds another class to be loaded through the re-writing path.
-     * 
-     * @param classNameToProvide The name of the class to load (in the style of "org.test.Class$Inner").
-     * @param raw The raw bytecode of the class.
-     */
-    public void addClassForRewrite(String classNameToProvide, byte[] raw) {
-        this.classesToRewrite.put(classNameToProvide, raw);
-    }
-
-    /**
-     * Adds another class to be loaded as-is.
-     * 
-     * @param classNameToProvide The name of the class to load (in the style of "org.test.Class$Inner").
-     * @param raw The raw bytecode of the class.
-     */
-    public void addClassDirectLoad(String classNameToProvide, byte[] raw) {
-        this.injectedClasses.put(classNameToProvide, raw);
-    }
-
     @Override
     public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         // NOTE:  We override this, instead of findClass, since we want to circumvent the normal delegation process of class loaders.
@@ -75,13 +51,9 @@ public class TestClassLoader extends ClassLoader {
         // Since we are using our own loadClass, we need our own cache.
         Class<?> cached = this.cache.get(name);
         if (null == cached) {
-            byte[] raw = this.classesToRewrite.get(name);
-            if (null != raw) {
-                byte[] rewrittten = this.loadHandler.apply(raw);
-                result = defineClass(name, rewrittten, 0, rewrittten.length);
-            } else if (this.injectedClasses.containsKey(name)) {
-                byte[] prepared = this.injectedClasses.get(name);
-                result = defineClass(name, prepared, 0, prepared.length);
+            byte[] injected = this.injectedClasses.get(name);
+            if (null != injected) {
+                result = defineClass(name, injected, 0, injected.length);
             } else {
                 result = getParent().loadClass(name);
                 // We got this from the parent so don't resolve.

@@ -2,6 +2,7 @@ package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.internal.Helper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,6 +12,9 @@ import org.objectweb.asm.ClassWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 
 public class ClassShadowingTest {
@@ -20,7 +24,8 @@ public class ClassShadowingTest {
         Helper.setBlockchainRuntime(new SimpleRuntime(null, null, 0));
         
         String className = "org.aion.avm.core.shadowing.TestResource";
-        TestClassLoader loader = new TestClassLoader((inputBytes) -> {
+        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        Function<byte[], byte[]> transformer = (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
@@ -29,9 +34,10 @@ public class ClassShadowingTest {
 
             byte[] transformed = out.toByteArray();
             return transformed;
-        });
-        byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        loader.addClassForRewrite(className, raw);
+        };
+        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        classes.put(className, transformer.apply(raw));
+        TestClassLoader loader = new TestClassLoader(classes);
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
 

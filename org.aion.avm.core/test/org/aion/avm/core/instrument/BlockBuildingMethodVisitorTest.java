@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.instrument.BasicBlock;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -24,10 +25,11 @@ public class BlockBuildingMethodVisitorTest {
     public static void setup() throws Exception {
         // All of these cases are about cracking the same test class so just get the common data we all need.
         String className = BlockTestResource.class.getName();
-        BlockSnooper snooper = new BlockSnooper();
-        TestClassLoader loader = new TestClassLoader(snooper);
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        loader.addClassForRewrite(className, raw);
+        BlockSnooper snooper = new BlockSnooper();
+        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        classes.put(className, snooper.apply(raw));
+        TestClassLoader loader = new TestClassLoader(classes);
         loader.loadClass(className);
         BlockBuildingMethodVisitorTest.METHOD_BLOCKS = snooper.resultMap;
         Assert.assertNotNull(BlockBuildingMethodVisitorTest.METHOD_BLOCKS);

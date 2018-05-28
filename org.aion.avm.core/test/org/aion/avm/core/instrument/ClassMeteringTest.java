@@ -1,10 +1,13 @@
 package org.aion.avm.core.instrument;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.TestClassLoader;
+import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
@@ -37,9 +40,10 @@ public class ClassMeteringTest {
 
         // Setup and rewrite the class.
         String className = TestResource.class.getName();
-        TestClassLoader loader = new TestClassLoader(this.commonCostBuilder);
         byte[] raw = TestClassLoader.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        loader.addClassForRewrite(className, raw);
+        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        classes.put(className, this.commonCostBuilder.apply(raw));
+        TestClassLoader loader = new TestClassLoader(classes);
         this.clazz = loader.loadClass(className);
         
         // We only need to install a BlockchainRuntime which can afford our energy.
