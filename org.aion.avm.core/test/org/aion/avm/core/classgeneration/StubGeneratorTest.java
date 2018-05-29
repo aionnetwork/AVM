@@ -5,12 +5,16 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
 
+import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.ClassLoadingResult;
 import org.aion.avm.core.dappreading.DAppClassLoader;
 import org.aion.avm.core.dappreading.DAppLoader;
+import org.aion.avm.internal.Helper;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -21,6 +25,17 @@ public class StubGeneratorTest {
     @BeforeClass
     public static void setupClass() throws Exception {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
+    @Before
+    public void setup()throws ClassNotFoundException{
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, Collections.emptyMap());
+        new Helper(loader, new SimpleRuntime(null, null, 0));
+    }
+
+    @After
+    public void teardown() throws Exception {
+        Helper.clearTestingState();
     }
 
     @Test

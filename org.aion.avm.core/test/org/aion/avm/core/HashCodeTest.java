@@ -51,9 +51,9 @@ public class HashCodeTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         this.clazz = loader.loadClass(className);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
-        Helper.setLateClassLoader(loader);
+        
         SimpleRuntime rt = new SimpleRuntime(null, null, 10000);
-        Helper.setBlockchainRuntime(rt);
+        new Helper(loader, rt);
     }
 
     @After

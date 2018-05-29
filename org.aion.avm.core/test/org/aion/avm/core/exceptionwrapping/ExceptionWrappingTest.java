@@ -63,12 +63,10 @@ public class ExceptionWrappingTest {
         classes.putAll(transformer.getLateGeneratedClasses());
         
         this.loader = new AvmClassLoader(sharedClassLoader, classes);
-        Helper.setLateClassLoader(this.loader);
-        
         this.testClass = this.loader.loadClass(className);
         
         // We don't really need the runtime but we do need the intern map initialized.
-        Helper.setBlockchainRuntime(new SimpleRuntime(null, null, 0));
+        new Helper(this.loader, new SimpleRuntime(null, null, 0));
     }
 
     @After

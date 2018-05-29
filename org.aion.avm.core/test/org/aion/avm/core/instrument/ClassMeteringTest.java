@@ -57,7 +57,7 @@ public class ClassMeteringTest {
         this.clazz = loader.loadClass(className);
         
         // We only need to install a BlockchainRuntime which can afford our energy.
-        Helper.setBlockchainRuntime(new SimpleRuntime(null, null, 1000));
+        new Helper(loader, new SimpleRuntime(null, null, 1000));
     }
 
     @After

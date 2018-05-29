@@ -22,7 +22,12 @@ public class Helper {
     // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
     private static AvmException forceExitState;
 
-    public static void setBlockchainRuntime(BlockchainRuntime rt) {
+    private static void initializeStaticState(ClassLoader loader, BlockchainRuntime rt) {
+        // If we set the lateLoader twice, there is a serious problem in our configuration.
+        RuntimeAssertionError.assertTrue(null == lateLoader);
+        RuntimeAssertionError.assertTrue(null != loader);
+        lateLoader = loader;
+        
         blockchainRuntime = rt;
         energyLeft = rt.getEnergyLimit();
         StackWatcher.reset();
@@ -31,13 +36,6 @@ public class Helper {
         // Reset our interning state.
         internedStringWrappers = new IdentityHashMap<String, org.aion.avm.java.lang.String>();
         internedClassWrappers = new IdentityHashMap<Class<?>, org.aion.avm.java.lang.Class<?>>();
-    }
-
-    public static void setLateClassLoader(ClassLoader loader) {
-        // If we set the lateLoader twice, there is a serious problem in our configuration.
-        RuntimeAssertionError.assertTrue(null == lateLoader);
-        RuntimeAssertionError.assertTrue(null != loader);
-        lateLoader = loader;
     }
 
     public static void clearTestingState() {
@@ -154,6 +152,11 @@ public class Helper {
 
     public static int getNextHashCode() {
         return nextHashCode++;
+    }
+
+    public Helper(ClassLoader contractLoader, BlockchainRuntime runtime) {
+        // We don't use these within the instance state but it is a convenient initialization point.
+        Helper.initializeStaticState(contractLoader, runtime);
     }
 
     // Private helpers used internally.

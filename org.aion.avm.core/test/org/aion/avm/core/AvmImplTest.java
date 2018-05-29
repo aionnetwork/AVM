@@ -1,6 +1,9 @@
 package org.aion.avm.core;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.Helper;
@@ -9,6 +12,7 @@ import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -16,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -25,6 +30,13 @@ import static org.junit.Assert.assertEquals;
  * @author Roman Katerinenko
  */
 public class AvmImplTest {
+    private static AvmSharedClassLoader sharedClassLoader;
+
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
     @After
     public void teardown() throws Exception {
         Helper.clearTestingState();
@@ -63,6 +75,8 @@ public class AvmImplTest {
     @Test
     public void testDeployAndRun() {
         testDeploy();
+        // TODO:  This is a temporary work-around while we change how the AvmImpl loads its Helper class.
+        Helper.clearTestingState();
 
         BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
             @Override
@@ -100,7 +114,7 @@ public class AvmImplTest {
     public void testPersistentEnergyLimit() {
         // Set up the runtime.
         BlockchainRuntime rt = new SimpleRuntime(null, null, 5);
-        Helper.setBlockchainRuntime(rt);
+        new Helper(new AvmClassLoader(sharedClassLoader, Collections.emptyMap()), rt);
 
         // Prove that we can charge 0 without issue.
         Helper.chargeEnergy(0);

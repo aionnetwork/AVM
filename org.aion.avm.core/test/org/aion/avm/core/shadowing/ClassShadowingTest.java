@@ -30,9 +30,6 @@ public class ClassShadowingTest {
 
     @Test
     public void testReplaceJavaLang() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        // We don't really need the runtime but we do need the intern map initialized.
-        Helper.setBlockchainRuntime(new SimpleRuntime(null, null, 0));
-        
         String className = "org.aion.avm.core.shadowing.TestResource";
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) -> {
@@ -48,6 +45,10 @@ public class ClassShadowingTest {
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, transformer.apply(raw));
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        
+        // We don't really need the runtime but we do need the intern map initialized.
+        new Helper(loader, new SimpleRuntime(null, null, 0));
+        
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
 

@@ -255,8 +255,11 @@ public class AvmImpl implements Avm {
     @Override
     public AvmResult deploy(byte[] jar, BlockchainRuntime rt) {
 
+        // TODO: Replace this with a load that actually uses the classes in the jar when we get closer to actually executing this.
+        AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, Collections.emptyMap());
+
         // reset helper; Energy limit is set
-        Helper.setBlockchainRuntime(rt);
+        new Helper(classLoader, rt);
 
         try {
             // read dapp module
@@ -324,7 +327,7 @@ public class AvmImpl implements Avm {
         AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, app.classes);
 
         // reset helper
-        Helper.setBlockchainRuntime(rt);
+        new Helper(classLoader, rt);
 
         // load class
         try {
