@@ -124,6 +124,7 @@ public class ArrayWrappingBytecodeFactory {
         return ret;
     }
 
+    //TODO: Ugly
     // Return the element descriptor of an array
     // 1D Primitive array will not be called with this method since there will be no aaload
     public static String getElementType(String desc){

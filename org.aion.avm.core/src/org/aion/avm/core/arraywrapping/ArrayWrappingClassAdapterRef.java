@@ -24,8 +24,6 @@ public class ArrayWrappingClassAdapterRef extends ClassNode {
             final String descriptor,
             final String signature,
             final String[] exceptions) {
-        //System.out.println(ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor));
-        //System.out.println("**************************************");
 
         MethodVisitor mv = super.visitMethod(access, mname, descriptor, signature, exceptions);
 

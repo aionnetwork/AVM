@@ -14,15 +14,29 @@ public class ArrayWrappingClassAdapter extends ClassVisitor {
     }
 
     @Override
+    public FieldVisitor visitField(int access,
+            java.lang.String name,
+            java.lang.String descriptor,
+            java.lang.String signature,
+            java.lang.Object value)
+    {
+        String desc = ArrayWrappingBytecodeFactory.getWrapperName(descriptor);
+
+        if (desc.startsWith("L")){
+            desc = desc + ";";
+        }
+
+        return super.visitField(access, name, desc, signature, value);
+    }
+
+    @Override
     public MethodVisitor visitMethod(
             final int access,
             final String name,
             final String descriptor,
             final String signature,
-            final String[] exceptions) {
-        //System.out.println(descriptor);
-        //System.out.println(ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor));
-        //System.out.println("**************************************");
+            final String[] exceptions)
+    {
 
         String desc = descriptor;
         desc = ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor);

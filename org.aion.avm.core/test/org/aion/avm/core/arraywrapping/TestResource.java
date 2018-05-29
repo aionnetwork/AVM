@@ -3,6 +3,10 @@ import org.aion.avm.arraywrapper.ByteArray;
 
 public class TestResource {
 
+    private Object[] oa;
+    private int[] oi;
+    public static int[] ois;
+
     public boolean testBasic(){
         boolean res = true;
         int[] arr = new int[20];
@@ -314,6 +318,18 @@ public class TestResource {
         int[] c = (int[]) b;
 
         return (c instanceof int[]) && (c instanceof java.lang.Object);
+    }
+
+    public boolean testClassField(){
+        oi = new int[50];
+        oi[20] = 1;
+        int a = oi[20];
+
+        ois = new int[50];
+        ois[20] = 1;
+        int b = ois[20];
+
+        return (a == 1) && (oi instanceof int[]) && (b == 1) && (ois instanceof int[]);
     }
 
 }
