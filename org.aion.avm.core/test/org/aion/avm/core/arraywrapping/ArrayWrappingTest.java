@@ -156,4 +156,14 @@ public class ArrayWrappingTest {
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
     }
+
+    @Test
+    public void testVarargs() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testVarargs");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
 }

@@ -290,4 +290,22 @@ public class TestResource {
     //     return res;
     // }
 
+
+    public boolean testVarargs(){
+        int a = varargsHelper(1);
+        int b = varargsHelper(1,2,3,4,5,6,7,8,9,10);
+        int c = varargsHelper();
+
+        boolean res = ((a == 1) && (b == 55) && (c == 0));
+        return res;
+    }
+
+    private int varargsHelper(int ...a){
+        int c = 0;
+        for (int i:a){
+            c = c + i;
+        }
+        return c;
+    }
+
 }
