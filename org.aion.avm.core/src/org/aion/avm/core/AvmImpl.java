@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
+import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
@@ -41,6 +42,12 @@ public class AvmImpl implements Avm {
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
     private static final String HELPER_CLASS = "org/aion/avm/internal/Helper";
     private static final File DAPPS_DIR = new File("../dapps");
+
+    /**
+     * We will re-use this top-level class loader for all contracts as the classes within it are state-less and have no dependencies on a contract.
+     * NOTE:  We may make this an instance variable if we decide to re-use the common AvmImpl instance for all transactions.
+     */
+    private static final AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
 
     static {
         DAPPS_DIR.mkdirs();
@@ -312,9 +319,6 @@ public class AvmImpl implements Avm {
     public AvmResult run(BlockchainRuntime rt) {
         //  retrieve the transformed bytecode
         DappModule app = loadTransformedDapp(rt.getAddress());
-
-        // TODO:  Put this shared class loader at a higher level.
-        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(Collections.emptyMap());
 
         // construct class loader
         AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, app.classes);
