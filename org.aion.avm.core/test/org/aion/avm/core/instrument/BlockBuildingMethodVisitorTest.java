@@ -9,16 +9,17 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.instrument.BasicBlock;
 import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.Opcodes;
 
 
 public class BlockBuildingMethodVisitorTest {
-    private static Map<String, List<BasicBlock>> METHOD_BLOCKS;
+    private Map<String, List<BasicBlock>> METHOD_BLOCKS;
 
-    @BeforeClass
-    public static void setup() throws Exception {
+    @Before
+    public void setup() throws Exception {
         // All of these cases are about cracking the same test class so just get the common data we all need.
         String className = BlockTestResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
@@ -26,8 +27,8 @@ public class BlockBuildingMethodVisitorTest {
         classes.put(className, raw);
         AvmClassLoader loader = new AvmClassLoader(classes);
         loader.loadClass(className);
-        BlockBuildingMethodVisitorTest.METHOD_BLOCKS = BlockSnooper.findPerMethodBlocksFor(raw);
-        Assert.assertNotNull(BlockBuildingMethodVisitorTest.METHOD_BLOCKS);
+        this.METHOD_BLOCKS = BlockSnooper.findPerMethodBlocksFor(raw);
+        Assert.assertNotNull(this.METHOD_BLOCKS);
     }
 
     @Test
@@ -128,7 +129,7 @@ public class BlockBuildingMethodVisitorTest {
 
     // This method is provided here for debugging, etc, but normally isn't used.
     @SuppressWarnings("unused")
-    private static void writeAllBlocks() {
+    private void writeAllBlocks() {
         for (Map.Entry<String, List<BasicBlock>> entry : METHOD_BLOCKS.entrySet()) {
             System.out.println(entry.getKey());
             for (BasicBlock block : entry.getValue()) {
