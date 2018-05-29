@@ -4,12 +4,11 @@ import org.aion.avm.rt.BlockchainRuntime;
 
 import java.lang.reflect.Array;
 import java.util.IdentityHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+
 
 public class Helper {
-
-    private static ThreadLocal<BlockchainRuntime> blockchainRuntime = new ThreadLocal<>();
-    private static ThreadLocal<AtomicLong> energyLeft = new ThreadLocal<>();
+    private static BlockchainRuntime blockchainRuntime;
+    private static long energyLeft;
     private static ClassLoader lateLoader;
     private static int nextHashCode;
 
@@ -24,8 +23,8 @@ public class Helper {
     private static AvmException forceExitState;
 
     public static void setBlockchainRuntime(BlockchainRuntime rt) {
-        blockchainRuntime.set(rt);
-        energyLeft.set(new AtomicLong(rt.getEnergyLimit()));
+        blockchainRuntime = rt;
+        energyLeft = rt.getEnergyLimit();
         StackWatcher.reset();
         nextHashCode = 1;
         
@@ -128,7 +127,8 @@ public class Helper {
         }
         
         // Bill for the block.
-        if (energyLeft.get().addAndGet(-cost) < 0) {
+        energyLeft -= cost;
+        if (energyLeft < 0) {
             // Note that this is a reason to force the exit so set this.
             OutOfEnergyError error = new OutOfEnergyError();
             forceExitState = error;
@@ -137,7 +137,7 @@ public class Helper {
     }
 
     public static long energyLeft() {
-        return energyLeft.get().get();
+        return energyLeft;
     }
 
     public static Object multianewarray1(int d1, Class<?> cl) {
