@@ -308,4 +308,12 @@ public class TestResource {
         return c;
     }
 
+    public boolean testTypeChecking(){
+        int[] a = new int[10];
+        Object b = (Object) a;
+        int[] c = (int[]) b;
+
+        return (c instanceof int[]) && (c instanceof java.lang.Object);
+    }
+
 }

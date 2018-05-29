@@ -155,12 +155,21 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     @Override
     public void visitTypeInsn(int opcode, java.lang.String type){
         Method m;
-
-        if (opcode == Opcodes.ANEWARRAY){
-            m = Method.getMethod("org.aion.avm.arraywrapper.ObjectArray initArray(int)");
-            invokeStatic(typeOA, m);
-        }else{
-            this.mv.visitTypeInsn(opcode, type);
+        switch(opcode){
+            case Opcodes.ANEWARRAY:
+                m = Method.getMethod("org.aion.avm.arraywrapper.ObjectArray initArray(int)");
+                invokeStatic(typeOA, m);
+                break;
+            case Opcodes.CHECKCAST:
+            case Opcodes.INSTANCEOF:
+                String wName = ArrayWrappingBytecodeFactory.getWrapperName(type);
+                if (wName.startsWith("L")){
+                    wName = wName.substring(1);
+                }
+                this.mv.visitTypeInsn(opcode, wName);
+                break;
+            default:
+                this.mv.visitTypeInsn(opcode, type);
         }
     }
 
@@ -180,8 +189,19 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
                                Label end,
                                int index)
     {
-        String desc = ArrayWrappingBytecodeFactory.getWrapperDesc(descriptor);
+        String desc = ArrayWrappingBytecodeFactory.getWrapperName(descriptor);
+
+        if (desc.startsWith("L")){
+            desc = desc + ";";
+        }
+
         this.mv.visitLocalVariable(name, desc, signature, start, end, index);
     }
+
+    // @Override
+    // void visitMultiANewArrayInsn(java.lang.String descriptor, int d){
+    //
+    // }
+
 
 }

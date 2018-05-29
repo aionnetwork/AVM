@@ -53,7 +53,6 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 //we peek the second slot on stack
                 BasicValue t = (BasicValue) (f.getStack(1));
                 String targetDesc = t.toString();
-                String wrapperDesc = ArrayWrappingBytecodeFactory.getWrapperDesc(targetDesc);
                 String elementType = ArrayWrappingBytecodeFactory.getElementType(targetDesc);
 
                 MethodInsnNode invokeVNode =

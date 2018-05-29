@@ -13,15 +13,15 @@ public class ArrayWrappingBytecodeFactory {
     static private HashMap<String, String> arrayWrapperMap = new HashMap<String, String>();
 
     static{
-        arrayWrapperMap.put("[I", "Lorg/aion/avm/arraywrapper/IntArray;");
-        arrayWrapperMap.put("[B", "Lorg/aion/avm/arraywrapper/ByteArray;");
-        arrayWrapperMap.put("[Z", "Lorg/aion/avm/arraywrapper/ByteArray;");
-        arrayWrapperMap.put("[C", "Lorg/aion/avm/arraywrapper/CharArray;");
-        arrayWrapperMap.put("[F", "Lorg/aion/avm/arraywrapper/FloatArray;");
-        arrayWrapperMap.put("[S", "Lorg/aion/avm/arraywrapper/ShortArray;");
-        arrayWrapperMap.put("[J", "Lorg/aion/avm/arraywrapper/LongArray;");
-        arrayWrapperMap.put("[D", "Lorg/aion/avm/arraywrapper/DoubleArray;");
-        arrayWrapperMap.put("[Ljava/lang/Object;", "Lorg/aion/avm/arraywrapper/ObjectArray;");
+        arrayWrapperMap.put("[I", "Lorg/aion/avm/arraywrapper/IntArray");
+        arrayWrapperMap.put("[B", "Lorg/aion/avm/arraywrapper/ByteArray");
+        arrayWrapperMap.put("[Z", "Lorg/aion/avm/arraywrapper/ByteArray");
+        arrayWrapperMap.put("[C", "Lorg/aion/avm/arraywrapper/CharArray");
+        arrayWrapperMap.put("[F", "Lorg/aion/avm/arraywrapper/FloatArray");
+        arrayWrapperMap.put("[S", "Lorg/aion/avm/arraywrapper/ShortArray");
+        arrayWrapperMap.put("[J", "Lorg/aion/avm/arraywrapper/LongArray");
+        arrayWrapperMap.put("[D", "Lorg/aion/avm/arraywrapper/DoubleArray");
+        arrayWrapperMap.put("[Ljava/lang/Object", "Lorg/aion/avm/arraywrapper/ObjectArray");
     }
 
     public static String updateMethodDesc(String desc) {
@@ -48,12 +48,15 @@ public class ArrayWrappingBytecodeFactory {
 
         while(paraMatcher.find())
         {
-            wrappedDesc = getWrapperDesc(paraMatcher.group());
+            wrappedDesc = getWrapperName(paraMatcher.group());
+            if (wrappedDesc.startsWith("L")){
+                wrappedDesc = wrappedDesc + ";";
+            }
             sb.append(wrappedDesc);
         }
         sb.append(')');
 
-        // Parse return type is there is any
+        // Parse return type if there is any
         if (endIndex < (desc.length() - 1)){
             String ret = desc.substring(endIndex + 1);
             if (ret.equals("V")){
@@ -61,7 +64,10 @@ public class ArrayWrappingBytecodeFactory {
             }
             Matcher retMatcher = pattern.matcher(ret);
             if (retMatcher.find()){
-                wrappedDesc = getWrapperDesc(retMatcher.group());
+                wrappedDesc = getWrapperName(retMatcher.group());
+                if (wrappedDesc.startsWith("L")){
+                    wrappedDesc = wrappedDesc + ";";
+                }
                 sb.append(wrappedDesc);
             }
         }
@@ -70,22 +76,28 @@ public class ArrayWrappingBytecodeFactory {
     }
 
     // Return the wrapper descriptor of an array
-    public static String getWrapperDesc(String desc){
+    public static String getWrapperName(String desc){
+        if (desc.endsWith(";")){
+            desc = desc.substring(0, desc.length() - 1);
+        }
+
         String ret;
         if (desc.charAt(0) != '['){
             ret = desc;
         }else if (arrayWrapperMap.containsKey(desc)){
             ret = arrayWrapperMap.get(desc);
         }else{
-            arrayWrapperMap.put(desc, genWrapperName(desc));
+            arrayWrapperMap.put(desc, newWrapperName(desc));
             ret = arrayWrapperMap.get(desc);
         }
+
+        //System.out.println("Wrapper name : " + ret);
         return ret;
     }
 
     //TODO:: is this enough?
-    public static String genWrapperName(String desc){
-        System.out.println(desc);
+    private static String newWrapperName(String desc){
+        //System.out.println(desc);
         StringBuilder sb = new StringBuilder();
         sb.append("Lorg/aion/avm/arraywrapper/");
 
@@ -104,6 +116,7 @@ public class ArrayWrappingBytecodeFactory {
         String ret = desc.replace('[', '$');
         return ret;
     }
+
 
     // Return the element descriptor of an array
     public static String getElementDesc(String desc){

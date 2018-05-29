@@ -166,4 +166,16 @@ public class ArrayWrappingTest {
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
     }
+
+    @Test
+    public void testTypeChecking() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testTypeChecking");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+
 }
