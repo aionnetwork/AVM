@@ -29,8 +29,29 @@ public class HashCodeTest {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
     }
 
+    private Class<?> clazz;
+
     @Before
     public void setup() throws Exception {
+        String className = HashCodeTestTarget.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        
+        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(className, "java.lang.Object", raw)
+                .asMutableForest();
+        
+        AvmImpl avm = new AvmImpl();
+        Map<String, Integer> runtimeObjectSizes = avm.computeRuntimeObjectSizes();
+        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
+        Function<byte[], byte[]> transformer = (inputBytes) -> {
+            return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
+        };
+        Map<String, byte[]> classes = new HashMap<>();
+        classes.put(className, transformer.apply(raw));
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        this.clazz = loader.loadClass(className);
+        Assert.assertEquals(loader, this.clazz.getClassLoader());
+        Helper.setLateClassLoader(loader);
         SimpleRuntime rt = new SimpleRuntime(null, null, 10000);
         Helper.setBlockchainRuntime(rt);
     }
@@ -48,13 +69,11 @@ public class HashCodeTest {
      */
     @Test
     public void testBasicTranslation() throws Exception {
-        Class<?> clazz = commonLoadTestClass();
         Assert.assertNotNull(clazz);
     }
 
     @Test
     public void testCommonHash() throws Exception {
-        Class<?> clazz = commonLoadTestClass();
         Assert.assertNotNull(clazz);
         Method getOneHashCode = clazz.getMethod("getOneHashCode");
         
@@ -72,7 +91,6 @@ public class HashCodeTest {
      */
     @Test
     public void testStringConstant() throws Exception {
-        Class<?> clazz = commonLoadTestClass();
         Assert.assertNotNull(clazz);
         Method getStringConstant = clazz.getMethod("getStringConstant");
         
@@ -86,7 +104,6 @@ public class HashCodeTest {
      */
     @Test
     public void testStringHashCode() throws Exception {
-        Class<?> clazz = commonLoadTestClass();
         Assert.assertNotNull(clazz);
         Method getStringConstant = clazz.getMethod("getStringConstant");
         Method getStringHash = clazz.getMethod("getStringHash");
@@ -104,7 +121,6 @@ public class HashCodeTest {
      */
     @Test
     public void testClassConstant() throws Exception {
-        Class<?> clazz = commonLoadTestClass();
         Assert.assertNotNull(clazz);
         Method getClassConstant = clazz.getMethod("getClassConstant");
         
@@ -118,7 +134,6 @@ public class HashCodeTest {
      */
     @Test
     public void testVmExceptionInstancePreserved() throws Exception {
-        Class<?> clazz = commonLoadTestClass();
         Assert.assertNotNull(clazz);
         Method matchRethrowVmException = clazz.getMethod("matchRethrowVmException");
         
@@ -131,7 +146,6 @@ public class HashCodeTest {
      */
     @Test
     public void testClassGetName() throws Exception {
-        Class<?> clazz = commonLoadTestClass();
         Assert.assertNotNull(clazz);
         Method compareClassName = clazz.getMethod("compareClassName");
         
@@ -146,7 +160,6 @@ public class HashCodeTest {
      */
     @Test
     public void testStringToString() throws Exception {
-        Class<?> clazz = commonLoadTestClass();
         Assert.assertNotNull(clazz);
         Method compareStringString = clazz.getMethod("compareStringString");
         
@@ -161,7 +174,6 @@ public class HashCodeTest {
      */
     @Test
     public void testOverrideHashcode() throws Exception {
-        Class<?> clazz = commonLoadTestClass();
         Assert.assertNotNull(clazz);
         Method getOverrideHashCode = clazz.getMethod("getOverrideHashCode", int.class);
         
@@ -208,29 +220,5 @@ public class HashCodeTest {
         Class<?> match1 = loader1.loadClass(classToLoad);
         Class<?> match2 = loader2.loadClass(classToLoad);
         Assert.assertTrue(match1 == match2);
-    }
-
-
-    private Class<?> commonLoadTestClass() throws ClassNotFoundException {
-        String className = HashCodeTestTarget.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", raw)
-                .asMutableForest();
-        
-        AvmImpl avm = new AvmImpl();
-        Map<String, Integer> runtimeObjectSizes = avm.computeRuntimeObjectSizes();
-        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
-        Function<byte[], byte[]> transformer = (inputBytes) -> {
-            return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
-        };
-        Map<String, byte[]> classes = new HashMap<>();
-        classes.put(className, transformer.apply(raw));
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
-        Class<?> clazz = loader.loadClass(className);
-        Assert.assertEquals(loader, clazz.getClassLoader());
-        Helper.setLateClassLoader(loader);
-        return clazz;
     }
 }
