@@ -28,7 +28,6 @@ public class ByteArray extends Array {
         this.underlying[idx] = val;
     }
 
-
     public byte[] getUnderlying() {
         return underlying;
     }
