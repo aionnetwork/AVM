@@ -1,6 +1,6 @@
 package org.aion.avm.java.lang;
 
-import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.IHelper;
 
 
 /**
@@ -10,7 +10,7 @@ public class Object extends java.lang.Object {
     private final int hashCode;
 
     public Object() {
-        this.hashCode = Helper.getNextHashCode();
+        this.hashCode = IHelper.currentContractHelper.get().externalGetNextHashCode();
     }
 
     Class<?> avm_getClass() {

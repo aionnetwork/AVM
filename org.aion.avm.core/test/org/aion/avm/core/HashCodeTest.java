@@ -11,6 +11,8 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.IHelper;
+import org.aion.avm.rt.BlockchainRuntime;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -193,14 +195,7 @@ public class HashCodeTest {
         
         // Load the testing class.
         String className = HashCodeTestTarget.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        AvmImpl avm = new AvmImpl();
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", raw)
-                .asMutableForest();
-        Map<String, Integer> runtimeObjectSizes = avm.computeRuntimeObjectSizes();
-        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
-        byte[] transformed = avm.transformClasses(Collections.singletonMap(className, raw), classHierarchy, allObjectSizes).get(className);
+        byte[] transformed = getTransformedTestClass(className);
         Map<String, byte[]> classes = Collections.singletonMap(className, transformed);
         
         // Create 2 instances of the contract-specific loaders, each with the same class, and prove that we get 2 instances.
@@ -220,5 +215,73 @@ public class HashCodeTest {
         Class<?> match1 = loader1.loadClass(classToLoad);
         Class<?> match2 = loader2.loadClass(classToLoad);
         Assert.assertTrue(match1 == match2);
+    }
+
+    /**
+     * Tests that we can load 2 contracts, execute a bunch of code in them, and see their implications, independently.
+     * To avoid needing to manage threads, we will test these, sequentially.
+     */
+    @Test
+    public void testTwoIsolatedContracts() throws Exception {
+        // Create the shared instance with the reusable classes.
+        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        
+        // Load the testing class and the Helper.
+        String targetClassName = HashCodeTestTarget.class.getName();
+        byte[] transformedTarget = getTransformedTestClass(targetClassName);
+        String helperClassName = Helper.class.getName();
+        byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
+        Map<String, byte[]> classes = new HashMap<>();
+        classes.put(targetClassName, transformedTarget);
+        classes.put(helperClassName, helperBytes);
+        
+        // We need a common runtime.
+        SimpleRuntime commonRuntime = new SimpleRuntime(null, null, 10000);
+        
+        // Now, we will create 2 class loaders with the same classes:  these will be contract-level loaders.
+        AvmClassLoader loader1 = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader2 = new AvmClassLoader(sharedClassLoader, classes);
+        
+        // First, run some tests in helper1.
+        IHelper helper1 = loadHelperInstanceInLoader(helperClassName, commonRuntime, loader1);
+        Class<?> clazz1 = loader1.loadClass(targetClassName);
+        Method getOneHashCode1 = clazz1.getMethod("getOneHashCode");
+        Object result = getOneHashCode1.invoke(null);
+        Assert.assertEquals(1, ((Integer)result).intValue());
+        result = getOneHashCode1.invoke(null);
+        Assert.assertEquals(2, ((Integer)result).intValue());
+        Assert.assertEquals(3, helper1.externalGetNextHashCode());
+        
+        // Now, create the helper2, show that it is independent, and run a test in that.
+        IHelper helper2 = loadHelperInstanceInLoader(helperClassName, commonRuntime, loader2);
+        Class<?> clazz2 = loader2.loadClass(targetClassName);
+        Method getOneHashCode2 = clazz2.getMethod("getOneHashCode");
+        Assert.assertEquals(1, helper2.externalGetNextHashCode());
+        result = getOneHashCode2.invoke(null);
+        Assert.assertEquals(2, ((Integer)result).intValue());
+    }
+
+
+    private IHelper loadHelperInstanceInLoader(String helperClassName, SimpleRuntime runtime, AvmClassLoader loader) {
+        IHelper helper = null;
+        try {
+            Class<?> helperClass = loader.loadClass(helperClassName);
+            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, BlockchainRuntime.class).newInstance(loader, runtime);
+        } catch (Throwable t) {
+            Assert.fail(t.getMessage());
+        }
+        return helper;
+    }
+
+    private byte[] getTransformedTestClass(String className) {
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        AvmImpl avm = new AvmImpl();
+        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(className, "java.lang.Object", raw)
+                .asMutableForest();
+        Map<String, Integer> runtimeObjectSizes = avm.computeRuntimeObjectSizes();
+        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
+        byte[] transformed = avm.transformClasses(Collections.singletonMap(className, raw), classHierarchy, allObjectSizes).get(className);
+        return transformed;
     }
 }

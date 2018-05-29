@@ -75,8 +75,6 @@ public class AvmImplTest {
     @Test
     public void testDeployAndRun() {
         testDeploy();
-        // TODO:  This is a temporary work-around while we change how the AvmImpl loads its Helper class.
-        Helper.clearTestingState();
 
         BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
             @Override

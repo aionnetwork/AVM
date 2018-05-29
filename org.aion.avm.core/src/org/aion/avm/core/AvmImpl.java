@@ -16,7 +16,9 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.FatalAvmError;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -254,13 +256,6 @@ public class AvmImpl implements Avm {
 
     @Override
     public AvmResult deploy(byte[] jar, BlockchainRuntime rt) {
-
-        // TODO: Replace this with a load that actually uses the classes in the jar when we get closer to actually executing this.
-        AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, Collections.emptyMap());
-
-        // reset helper; Energy limit is set
-        new Helper(classLoader, rt);
-
         try {
             // read dapp module
             DappModule app = readDapp(jar);
@@ -268,9 +263,26 @@ public class AvmImpl implements Avm {
                 return new AvmResult(AvmResult.Code.INVALID_JAR, 0);
             }
 
+            // As per usual, we need to get the special Helper class for each contract loader.
+            String helperClassName = Helper.class.getName();
+            byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
+            Map<String, byte[]> allClasses = new HashMap<>(app.classes);
+            allClasses.put(helperClassName, helperBytes);
+            
+            // Construct the per-contract class loader and access the per-contract IHelper instance.
+            AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, allClasses);
+            IHelper helper = null;
+            try {
+                Class<?> helperClass = classLoader.loadClass(helperClassName);
+                helper = (IHelper) helperClass.getConstructor(ClassLoader.class, BlockchainRuntime.class).newInstance(classLoader, rt);
+            } catch (Throwable t) {
+                // Errors at this point imply something wrong with the installation so fail.
+                RuntimeAssertionError.unexpected(t);
+            }
+
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             try {
-                Helper.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
+                helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
                                     + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * app.bytecodeSize * (1 + app.numberOfClasses) / 10);
             } catch (OutOfEnergyError e) {
                 return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
@@ -295,7 +307,7 @@ public class AvmImpl implements Avm {
             long storedSize = storeTransformedDapp(rt.getAddress(), app);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            Helper.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * storedSize);
+            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * storedSize);
 
             return new AvmResult(AvmResult.Code.SUCCESS, rt.getEnergyLimit());
         } catch (FatalAvmError e) {
@@ -323,11 +335,22 @@ public class AvmImpl implements Avm {
         //  retrieve the transformed bytecode
         DappModule app = loadTransformedDapp(rt.getAddress());
 
-        // construct class loader
-        AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, app.classes);
-
-        // reset helper
-        new Helper(classLoader, rt);
+        // As per usual, we need to get the special Helper class for each contract loader.
+        String helperClassName = Helper.class.getName();
+        byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
+        Map<String, byte[]> allClasses = new HashMap<>(app.classes);
+        allClasses.put(helperClassName, helperBytes);
+        
+        // Construct the per-contract class loader and access the per-contract IHelper instance.
+        AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, allClasses);
+        IHelper helper = null;
+        try {
+            Class<?> helperClass = classLoader.loadClass(helperClassName);
+            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, BlockchainRuntime.class).newInstance(classLoader, rt);
+        } catch (Throwable t) {
+            // Errors at this point imply something wrong with the installation so fail.
+            RuntimeAssertionError.unexpected(t);
+        }
 
         // load class
         try {
@@ -339,7 +362,7 @@ public class AvmImpl implements Avm {
             ByteArray ret = (ByteArray) method.invoke(obj, rt.getData(), rt);
 
             // TODO: energy left
-            return new AvmResult(AvmResult.Code.SUCCESS, Helper.energyLeft(), ret.getUnderlying());
+            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret.getUnderlying());
         } catch (Exception e) {
             e.printStackTrace();
 

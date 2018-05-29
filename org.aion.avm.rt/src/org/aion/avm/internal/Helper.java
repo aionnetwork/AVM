@@ -6,7 +6,7 @@ import java.lang.reflect.Array;
 import java.util.IdentityHashMap;
 
 
-public class Helper {
+public class Helper implements IHelper {
     private static BlockchainRuntime blockchainRuntime;
     private static long energyLeft;
     private static ClassLoader lateLoader;
@@ -154,10 +154,29 @@ public class Helper {
         return nextHashCode++;
     }
 
+    // Note that there are a few methods implementing the IHelper interface for calls coming from outside our loader.
     public Helper(ClassLoader contractLoader, BlockchainRuntime runtime) {
         // We don't use these within the instance state but it is a convenient initialization point.
         Helper.initializeStaticState(contractLoader, runtime);
+        IHelper.currentContractHelper.set(this);
     }
+    @Override
+    public void externalChargeEnergy(long cost) {
+        Helper.chargeEnergy(cost);
+    }
+    @Override
+    public long externalGetEnergyRemaining() {
+        return Helper.energyLeft();
+    }
+    @Override
+    public org.aion.avm.java.lang.String externalWrapAsString(String input) {
+        return Helper.wrapAsString(input);
+    }
+    @Override
+    public int externalGetNextHashCode() {
+        return Helper.getNextHashCode();
+    }
+
 
     // Private helpers used internally.
     private static org.aion.avm.java.lang.Throwable convertVmGeneratedException(Throwable t) throws Exception {
