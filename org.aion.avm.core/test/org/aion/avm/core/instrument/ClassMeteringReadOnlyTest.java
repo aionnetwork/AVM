@@ -6,10 +6,12 @@ import java.util.Map;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.instrument.BasicBlock;
 import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.*;
 
@@ -18,6 +20,13 @@ import org.objectweb.asm.*;
  * Split from ClassMeteringTest to handle the read-only testing, to keep things simpler.
  */
 public class ClassMeteringReadOnlyTest {
+    private static AvmSharedClassLoader sharedClassLoader;
+
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
     private static Map<String, List<BasicBlock>> METHOD_BLOCKS;
 
     @Before
@@ -25,9 +34,9 @@ public class ClassMeteringReadOnlyTest {
         // Setup and rewrite the class.
         String className = TestResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, raw);
-        AvmClassLoader loader = new AvmClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         loader.loadClass(className);
         ClassMeteringReadOnlyTest.METHOD_BLOCKS = BlockSnooper.findPerMethodBlocksFor(raw);
         Assert.assertNotNull(ClassMeteringReadOnlyTest.METHOD_BLOCKS);

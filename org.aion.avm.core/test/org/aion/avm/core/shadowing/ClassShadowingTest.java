@@ -3,9 +3,11 @@ package org.aion.avm.core.shadowing;
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -19,6 +21,13 @@ import java.util.function.Function;
 
 
 public class ClassShadowingTest {
+    private static AvmSharedClassLoader sharedClassLoader;
+
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
     @Test
     public void testReplaceJavaLang() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         // We don't really need the runtime but we do need the intern map initialized.
@@ -36,9 +45,9 @@ public class ClassShadowingTest {
             byte[] transformed = out.toByteArray();
             return transformed;
         };
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, transformer.apply(raw));
-        AvmClassLoader loader = new AvmClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
 

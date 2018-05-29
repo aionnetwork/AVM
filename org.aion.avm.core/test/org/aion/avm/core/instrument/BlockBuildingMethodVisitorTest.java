@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.instrument.BasicBlock;
 import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
@@ -16,6 +17,13 @@ import org.objectweb.asm.Opcodes;
 
 
 public class BlockBuildingMethodVisitorTest {
+    private static AvmSharedClassLoader sharedClassLoader;
+
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
     private Map<String, List<BasicBlock>> METHOD_BLOCKS;
 
     @Before
@@ -23,9 +31,9 @@ public class BlockBuildingMethodVisitorTest {
         // All of these cases are about cracking the same test class so just get the common data we all need.
         String className = BlockTestResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, raw);
-        AvmClassLoader loader = new AvmClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         loader.loadClass(className);
         this.METHOD_BLOCKS = BlockSnooper.findPerMethodBlocksFor(raw);
         Assert.assertNotNull(this.METHOD_BLOCKS);

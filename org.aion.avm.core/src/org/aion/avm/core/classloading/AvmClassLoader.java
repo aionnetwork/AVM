@@ -20,17 +20,19 @@ public class AvmClassLoader extends ClassLoader {
     /**
      * Constructs a new AVM class loader.
      *
+     * @param parent The explicitly required parent for the contract-namespace code which is shared across all contracts.
      * @param classes the transformed bytecode
      * @param handlers a list of handlers which can generate byte code for the given name.
      */
-    public AvmClassLoader(Map<String, byte[]> classes, List<Function<String, byte[]>> handlers) {
+    public AvmClassLoader(AvmSharedClassLoader parent, Map<String, byte[]> classes, List<Function<String, byte[]>> handlers) {
+        super(parent);
         this.classes = classes;
         this.handlers = handlers;
         this.cache = new HashMap<>();
     }
 
-    public AvmClassLoader(Map<String, byte[]> classes) {
-        this(classes, Collections.emptyList());
+    public AvmClassLoader(AvmSharedClassLoader parent, Map<String, byte[]> classes) {
+        this(parent, classes, Collections.emptyList());
     }
 
     @Override

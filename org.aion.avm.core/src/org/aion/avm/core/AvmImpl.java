@@ -4,6 +4,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
@@ -312,8 +313,11 @@ public class AvmImpl implements Avm {
         //  retrieve the transformed bytecode
         DappModule app = loadTransformedDapp(rt.getAddress());
 
+        // TODO:  Put this shared class loader at a higher level.
+        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(Collections.emptyMap());
+
         // construct class loader
-        AvmClassLoader classLoader = new AvmClassLoader(app.classes);
+        AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, app.classes);
 
         // reset helper
         Helper.setBlockchainRuntime(rt);

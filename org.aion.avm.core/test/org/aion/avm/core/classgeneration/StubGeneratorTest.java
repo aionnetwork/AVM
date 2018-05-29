@@ -2,17 +2,27 @@ package org.aion.avm.core.classgeneration;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Map;
 
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.ClassLoadingResult;
 import org.aion.avm.core.dappreading.DAppClassLoader;
 import org.aion.avm.core.dappreading.DAppLoader;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 
 public class StubGeneratorTest {
+    private static AvmSharedClassLoader sharedClassLoader;
+
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
     @Test
     public void testBasics() throws Exception {
         String slashName = "my/test/ClassName";
@@ -160,8 +170,8 @@ public class StubGeneratorTest {
         
         // We want to make sure that each class loader is what we expect.
         Assert.assertNotNull(aioobe);
-        Assert.assertEquals(generated, aioobe.getClassLoader()); // java.lang.ArrayIndexOutOfBoundsException
-        Assert.assertEquals(generated, aioobe.getSuperclass().getClassLoader()); // java.lang.IndexOutOfBoundsException
+        Assert.assertEquals(sharedClassLoader, aioobe.getClassLoader()); // java.lang.ArrayIndexOutOfBoundsException
+        Assert.assertEquals(sharedClassLoader, aioobe.getSuperclass().getClassLoader()); // java.lang.IndexOutOfBoundsException
         Assert.assertEquals(handWritten, aioobe.getSuperclass().getSuperclass().getClassLoader()); // java.lang.RuntimeException
         Assert.assertEquals(handWritten, aioobe.getSuperclass().getSuperclass().getSuperclass().getClassLoader()); // java.lang.Exception
         Assert.assertEquals(handWritten, aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getClassLoader()); // java.lang.Throwable
@@ -180,11 +190,11 @@ public class StubGeneratorTest {
         
         Assert.assertNotNull(notFound);
         Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ClassNotFoundException", notFound.getName());
-        Assert.assertEquals(generated, notFound.getClassLoader());
+        Assert.assertEquals(sharedClassLoader, notFound.getClassLoader());
         
         Class<?> reflectiveOperationException = notFound.getSuperclass();
         Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.ReflectiveOperationException", reflectiveOperationException.getName());
-        Assert.assertEquals(generated, reflectiveOperationException.getClassLoader());
+        Assert.assertEquals(sharedClassLoader, reflectiveOperationException.getClassLoader());
         
         Class<?> exception = reflectiveOperationException.getSuperclass();
         Assert.assertEquals(CommonGenerators.kShadowClassLibraryPrefix + "java.lang.Exception", exception.getName());
@@ -217,7 +227,8 @@ public class StubGeneratorTest {
     private static AvmClassLoader generateExceptionShadowsAndWrappers(ClassLoader parent) throws Exception {
         // Get the generated classes.
         Map<String, byte[]> allGenerated = CommonGenerators.generateExceptionShadowsAndWrappers();
-        AvmClassLoader loader = new AvmClassLoader(allGenerated);
+        // This test now falls back to the sharedClassLoader, which makes it kind of redundant, but it at least proves it is working as expected.
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, Collections.emptyMap());
         
         // NOTE:  Given that we can only inject individual classes, we need to add them in the right order.
         // See ExceptionWrappingTest for an example of how this can be fully loaded into the classloader in such a way that the
@@ -231,10 +242,10 @@ public class StubGeneratorTest {
             // Note that not all shadow exceptions are generated.
             Class<?> shadowClass = null;
             if (null != shadowBytes) {
-                // If this was generated, it better not be part of the non-generated set.
+                // Verify that these are being served by the shared loader (since these are the statically generated - shared loader).
                 Assert.assertTrue(!CommonGenerators.kHandWrittenExceptionClassNames.contains(name));
                 shadowClass = loader.loadClass(shadowName);
-                Assert.assertEquals(loader, shadowClass.getClassLoader());
+                Assert.assertEquals(sharedClassLoader, shadowClass.getClassLoader());
             } else {
                 // This must be hand-written.
                 Assert.assertTrue(CommonGenerators.kHandWrittenExceptionClassNames.contains(name));
@@ -246,7 +257,7 @@ public class StubGeneratorTest {
             byte[] wrapperBytes = allGenerated.get(wrapperName);
             Assert.assertNotNull(wrapperBytes);
             Class<?> wrapperClass = loader.loadClass(wrapperName);
-            Assert.assertEquals(loader, wrapperClass.getClassLoader());
+            Assert.assertEquals(sharedClassLoader, wrapperClass.getClassLoader());
         }
         return loader;
     }

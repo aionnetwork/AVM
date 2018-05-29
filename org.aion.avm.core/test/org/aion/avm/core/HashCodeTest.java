@@ -8,11 +8,13 @@ import java.util.function.Function;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 
@@ -20,6 +22,13 @@ import org.junit.Test;
  * Tests the hashCode behaviour of the contract code.  Includes a tests that our helpers/instrumentation don't invalidate Java assumptions.
  */
 public class HashCodeTest {
+    private static AvmSharedClassLoader sharedClassLoader;
+
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
     @Before
     public void setup() throws Exception {
         SimpleRuntime rt = new SimpleRuntime(null, null, 10000);
@@ -162,6 +171,45 @@ public class HashCodeTest {
         Assert.assertEquals(override, result);
     }
 
+    /**
+     * Tests the difference in behaviour between the shared loader and the per-contract loader.
+     */
+    @Test
+    public void testTwoLevelClassLoading() throws Exception {
+        // Create the shared instance with the reusable classes.
+        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        
+        // Load the testing class.
+        String className = HashCodeTestTarget.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        AvmImpl avm = new AvmImpl();
+        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(className, "java.lang.Object", raw)
+                .asMutableForest();
+        Map<String, Integer> runtimeObjectSizes = avm.computeRuntimeObjectSizes();
+        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
+        byte[] transformed = avm.transformClasses(Collections.singletonMap(className, raw), classHierarchy, allObjectSizes).get(className);
+        Map<String, byte[]> classes = Collections.singletonMap(className, transformed);
+        
+        // Create 2 instances of the contract-specific loaders, each with the same class, and prove that we get 2 instances.
+        AvmClassLoader loader1 = new AvmClassLoader(sharedClassLoader, classes);
+        Class<?> clazz1 = loader1.loadClass(className);
+        Assert.assertEquals(loader1, clazz1.getClassLoader());
+        AvmClassLoader loader2 = new AvmClassLoader(sharedClassLoader, classes);
+        Class<?> clazz2 = loader2.loadClass(className);
+        Assert.assertEquals(loader2, clazz2.getClassLoader());
+        // -not the same instances.
+        Assert.assertFalse(clazz1 == clazz2);
+        // -but reloading one of them gives us the same one back.
+        Assert.assertTrue(loader2.loadClass(className) == clazz2);
+        
+        // Load a shared class, via each contract-specific loader, and ensure that we get the same instance.
+        String classToLoad = "org.aion.avm.java.lang.Error";
+        Class<?> match1 = loader1.loadClass(classToLoad);
+        Class<?> match2 = loader2.loadClass(classToLoad);
+        Assert.assertTrue(match1 == match2);
+    }
+
 
     private Class<?> commonLoadTestClass() throws ClassNotFoundException {
         String className = HashCodeTestTarget.class.getName();
@@ -177,9 +225,9 @@ public class HashCodeTest {
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
         };
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, transformer.apply(raw));
-        AvmClassLoader loader = new AvmClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         Class<?> clazz = loader.loadClass(className);
         Assert.assertEquals(loader, clazz.getClassLoader());
         Helper.setLateClassLoader(loader);

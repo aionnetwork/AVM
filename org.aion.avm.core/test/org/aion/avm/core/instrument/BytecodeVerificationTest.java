@@ -5,8 +5,10 @@ import java.util.Map;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.*;
 
@@ -17,6 +19,13 @@ import org.objectweb.asm.*;
 *
 */
 public class BytecodeVerificationTest {
+    private static AvmSharedClassLoader sharedClassLoader;
+
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
 
     @Test
     public void testMaxStackSize() throws Exception {
@@ -41,9 +50,9 @@ public class BytecodeVerificationTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
         
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, rewrittten);
-        AvmClassLoader loader = new AvmClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         Class<?> clazz = loader.loadClass(className);
 
         try{
@@ -85,9 +94,9 @@ public class BytecodeVerificationTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
         
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, rewrittten);
-        AvmClassLoader loader = new AvmClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         Class<?> clazz = loader.loadClass(className);
 
         try{
@@ -128,9 +137,9 @@ public class BytecodeVerificationTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
         
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, rewrittten);
-        AvmClassLoader loader = new AvmClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         Class<?> clazz = loader.loadClass(className);
 
         try{

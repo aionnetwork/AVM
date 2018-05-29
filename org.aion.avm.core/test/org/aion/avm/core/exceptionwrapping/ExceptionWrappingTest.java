@@ -10,6 +10,7 @@ import java.util.function.BiConsumer;
 import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
@@ -19,12 +20,20 @@ import org.aion.avm.core.SimpleRuntime;
 import org.junit.Assert;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 
 public class ExceptionWrappingTest {
+    private static AvmSharedClassLoader sharedClassLoader;
+
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
     private AvmClassLoader loader;
     private Class<?> testClass;
 
@@ -50,10 +59,10 @@ public class ExceptionWrappingTest {
         byte[] exceptionBytes = Helpers.loadRequiredResourceAsBytes(resourceName);
         transformer.transformClass(exceptionName, exceptionBytes);
         
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        Map<String, byte[]> classes = new HashMap<>();
         classes.putAll(transformer.getLateGeneratedClasses());
         
-        this.loader = new AvmClassLoader(classes);
+        this.loader = new AvmClassLoader(sharedClassLoader, classes);
         Helper.setLateClassLoader(this.loader);
         
         this.testClass = this.loader.loadClass(className);

@@ -8,16 +8,25 @@ import java.util.function.Function;
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.*;
 
 
 public class ClassMeteringTest {
+    private static AvmSharedClassLoader sharedClassLoader;
+
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
     // We keep this here just because a lot of cases want to use this sort of "do no instrumentation" cost builder for testing other rewrites.
     private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) -> {
         ClassReader in = new ClassReader(inputBytes);
@@ -42,9 +51,9 @@ public class ClassMeteringTest {
         // Setup and rewrite the class.
         String className = TestResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, this.commonCostBuilder.apply(raw));
-        AvmClassLoader loader = new AvmClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         this.clazz = loader.loadClass(className);
         
         // We only need to install a BlockchainRuntime which can afford our energy.

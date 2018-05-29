@@ -2,9 +2,11 @@ package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -18,13 +20,20 @@ import java.util.function.Function;
 
 
 public class ArrayWrappingTest {
+    private static AvmSharedClassLoader sharedClassLoader;
+
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
     private Class<?> clazz;
 
     @Before
     // We only need to load the instrumented class once.
     public void getInstructmentedClass()throws IOException, ClassNotFoundException{
         String className = "org.aion.avm.core.arraywrapping.TestResource";
-        Map<String, byte[]> classes = new HashMap<>(CommonGenerators.generateExceptionShadowsAndWrappers());
+        Map<String, byte[]> classes = new HashMap<>();
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -42,7 +51,7 @@ public class ArrayWrappingTest {
         };
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         classes.put(className, transformer.apply(raw));
-        AvmClassLoader loader = new AvmClassLoader(classes);
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         clazz = loader.loadClass(className);
     }
