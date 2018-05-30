@@ -1,5 +1,5 @@
 package org.aion.avm.core.arraywrapping;
-import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.arraywrapper.*;
 
 public class TestResource {
 
@@ -262,6 +262,32 @@ public class TestResource {
         }
 
         res = (count != 0);
+
+        return res;
+    }
+
+    public boolean testObjectArrayTemplate(){
+        boolean res = true;
+        int count = 0;
+        int i = 0;
+
+        //newarray for long
+        $MyObj a = $MyObj.initArray(2);
+        $MyObj b = $MyObj.initArray(64);
+        $MyObj c = $MyObj.initArray(1024);
+
+        //LASTORE
+        for (i = 0; i < 1024; i++){
+            c.set(i, new Object());
+        }
+
+        //LALOAD
+        for (i = 0; i < 1024; i++){
+            count = count + c.get(i).hashCode();
+        }
+
+        res = (count != 0);
+        res = res && (c.length() == 1024);
 
         return res;
     }
