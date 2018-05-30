@@ -185,10 +185,12 @@ public class ExceptionWrappingTest {
         
         public void transformClass(String name, byte[] inputBytes) {
             ClassReader in = new ClassReader(inputBytes);
-            ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+            HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
+            TypeAwareClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, this.classHierarchy, dynamicHierarchyBuilder);
             
             ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (slashSuperName, slashName, bytes) -> {
                 LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes);
+                dynamicHierarchyBuilder.addClass(slashName, slashSuperName, bytes);
             };
             ClassShadowing cs = new ClassShadowing(out, TestHelpers.CLASS_NAME);
             ExceptionWrapping wrapping = new ExceptionWrapping(cs, TestHelpers.CLASS_NAME, this.classHierarchy, generatedClassesSink);

@@ -142,9 +142,13 @@ public class AvmImpl implements Avm {
     public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> classHierarchy, Map<String, Integer> objectSizes) {
 
         Map<String, byte[]> processedClasses = new HashMap<>();
+        // WARNING:  This dynamicHierarchyBuilder is both mutable and shared by TypeAwareClassWriter instances.
+        HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
+        // We also want to expose this type to the class writer so it can compute common superclasses.
         ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (superClassSlashName, classSlashName, bytecode) -> {
             processedClasses.put(classSlashName, bytecode);
+            dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
         };
 
         for (String name : classes.keySet()) {
@@ -155,7 +159,7 @@ public class AvmImpl implements Avm {
              */
 
             // in reverse order
-            ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+            ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, classHierarchy, dynamicHierarchyBuilder);
             ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, HELPER_CLASS, classHierarchy, generatedClassesSink);
             ClassShadowing classShadowing = new ClassShadowing(exceptionHandling, HELPER_CLASS);
             StackWatcherClassAdapter stackTracking = new StackWatcherClassAdapter(classShadowing);
@@ -166,7 +170,7 @@ public class AvmImpl implements Avm {
 
             //TODO: Can we do it in one pass?
             ClassReader ain = new ClassReader(out.toByteArray());
-            ClassWriter aout = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+            ClassWriter aout = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, classHierarchy, dynamicHierarchyBuilder);
             ArrayWrappingClassAdapter arrayWrapping = new ArrayWrappingClassAdapter(aout);
             ArrayWrappingClassAdapterRef arrayWrappingRef = new ArrayWrappingClassAdapterRef(arrayWrapping);
 
