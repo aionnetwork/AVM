@@ -3,7 +3,6 @@ package org.aion.avm.core;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
-import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
@@ -15,10 +14,8 @@ import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.FatalAvmError;
-import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -47,9 +44,9 @@ public class AvmImpl implements Avm {
 
     /**
      * We will re-use this top-level class loader for all contracts as the classes within it are state-less and have no dependencies on a contract.
-     * NOTE:  We may make this an instance variable if we decide to re-use the common AvmImpl instance for all transactions.
+     * It is provided by the caller of our constructor, meaning it gets to decide if the same AvmImpl is reused, or not.
      */
-    private static final AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    private final AvmSharedClassLoader sharedClassLoader;
 
     static {
         DAPPS_DIR.mkdirs();
@@ -64,6 +61,10 @@ public class AvmImpl implements Avm {
     static DappModule readDapp(byte[] jar) throws IOException {
         Objects.requireNonNull(jar);
         return DappModule.readFromJar(jar);
+    }
+
+    public AvmImpl(AvmSharedClassLoader sharedClassLoader) {
+        this.sharedClassLoader = sharedClassLoader;
     }
 
     /**
@@ -267,7 +268,7 @@ public class AvmImpl implements Avm {
             Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
             
             // Construct the per-contract class loader and access the per-contract IHelper instance.
-            AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, allClasses);
+            AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
             IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
@@ -329,7 +330,7 @@ public class AvmImpl implements Avm {
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
         
         // Construct the per-contract class loader and access the per-contract IHelper instance.
-        AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, allClasses);
+        AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
         IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
         // load class
