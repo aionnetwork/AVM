@@ -38,18 +38,18 @@ public class ClassMetering extends ClassVisitor {
             public void visitEnd() {
                 // Let the superclass do what it wants to finish this.
                 super.visitEnd();
-                
+
                 // Create the read-only visitor and use it to extract the block data.
                 BlockBuildingMethodVisitor readingVisitor = new BlockBuildingMethodVisitor();
                 this.accept(readingVisitor);
                 List<BasicBlock> blocks = readingVisitor.getBlockList();
-                
+
                 // Apply the block fee for the bytecodes it contains.
                 for (BasicBlock block : blocks) {
                     long feeForBlock = calculateBlockFee(block);
                     block.setEnergyCost(feeForBlock);
                 }
-                
+
                 // We can now build the arraywrapper over the real visitor, and accept it in order to add the instrumentation.
                 BlockInstrumentationVisitor instrumentingVisitor = new BlockInstrumentationVisitor(ClassMetering.this.runtimeClassName, realVisitor, blocks);
                 this.accept(instrumentingVisitor);

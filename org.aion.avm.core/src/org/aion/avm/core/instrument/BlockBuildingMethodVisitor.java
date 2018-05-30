@@ -1,14 +1,13 @@
 package org.aion.avm.core.instrument;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.aion.avm.core.util.Assert;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -71,7 +70,7 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     }
     @Override
     public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-        Assert.unreachable("invokedynamic must be filtered prior to reading basic blocks");
+        this.currentBuildingBlock.add(Opcodes.INVOKEDYNAMIC);
     }
     @Override
     public void visitJumpInsn(int opcode, Label label) {

@@ -301,7 +301,6 @@ public class BytecodeFeeScheduler {
             put(Opcodes.IFNONNULL,    new BytecodeFeeInfo(BytecodeEnergyLevels.BASE, BytecodeEnergyLevels.FLOWCONTROL,    1, 0, 0));
 
             // Method Invocation and Return
-            // AVM to reject: INVOKEDYNAMIC
             put(Opcodes.IRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
             put(Opcodes.LRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
             put(Opcodes.FRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
@@ -312,6 +311,7 @@ public class BytecodeFeeScheduler {
             put(Opcodes.INVOKESPECIAL,      new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
             put(Opcodes.INVOKESTATIC,       new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
             put(Opcodes.INVOKEINTERFACE,    new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.INVOKEDYNAMIC,    new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
 
             // Throwing Exceptions
             put(Opcodes.ATHROW,    new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 5, 1, 0));

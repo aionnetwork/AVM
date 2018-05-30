@@ -1,5 +1,7 @@
 package org.aion.avm.core.instrument;
 
+import org.objectweb.asm.util.Printer;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -39,5 +41,13 @@ public class BasicBlock {
      */
     public long getEnergyCost() {
         return this.energyCost;
+    }
+
+    @Override
+    public String toString() {
+        final var builder = new StringBuilder("BasicBlock{");
+        opcodeSequence.stream().map(i -> Printer.OPCODES[i]).forEach(s -> builder.append(s).append('\n'));
+        builder.append('}');
+        return builder.toString();
     }
 }

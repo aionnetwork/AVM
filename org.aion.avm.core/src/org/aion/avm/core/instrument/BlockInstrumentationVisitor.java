@@ -145,10 +145,7 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
             super.visitIntInsn(opcode, operand);
         }
     }
-    @Override
-    public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-        Assert.unreachable("invokedynamic must be filtered prior to updating basic blocks");
-    }
+
     @Override
     public void visitJumpInsn(int opcode, Label label) {
         checkInject();
