@@ -5,8 +5,6 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -54,17 +52,13 @@ public class ArrayWrappingTest {
         };
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         classes.put(className, transformer.apply(raw));
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        Map<String, byte[]> finalClasses = Helpers.mapIncludingHelperBytecode(classes);
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, finalClasses);
 
         // We don't really need the runtime but we do need to initialize the Helper.
-        new Helper(loader, new SimpleRuntime(null, null, 0));
+        Helpers.instantiateHelper(loader, new SimpleRuntime(null, null, 0));
 
         clazz = loader.loadClass(className);
-    }
-
-    @After
-    public void teardown() throws Exception {
-        Helper.clearTestingState();
     }
 
     @Test

@@ -2,7 +2,6 @@ package org.aion.avm.core;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -10,10 +9,7 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
-import org.aion.avm.rt.BlockchainRuntime;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -48,19 +44,13 @@ public class HashCodeTest {
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
         };
-        Map<String, byte[]> classes = new HashMap<>();
-        classes.put(className, transformer.apply(raw));
+        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(className, transformer.apply(raw)));
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         this.clazz = loader.loadClass(className);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
         
         SimpleRuntime rt = new SimpleRuntime(null, null, 10000);
-        new Helper(loader, rt);
-    }
-
-    @After
-    public void teardown() throws Exception {
-        Helper.clearTestingState();
+        Helpers.instantiateHelper(loader, rt);
     }
 
     /**
@@ -229,11 +219,7 @@ public class HashCodeTest {
         // Load the testing class and the Helper.
         String targetClassName = HashCodeTestTarget.class.getName();
         byte[] transformedTarget = getTransformedTestClass(targetClassName);
-        String helperClassName = Helper.class.getName();
-        byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
-        Map<String, byte[]> classes = new HashMap<>();
-        classes.put(targetClassName, transformedTarget);
-        classes.put(helperClassName, helperBytes);
+        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(targetClassName, transformedTarget));
         
         // We need a common runtime.
         SimpleRuntime commonRuntime = new SimpleRuntime(null, null, 10000);
@@ -243,7 +229,7 @@ public class HashCodeTest {
         AvmClassLoader loader2 = new AvmClassLoader(sharedClassLoader, classes);
         
         // First, run some tests in helper1.
-        IHelper helper1 = loadHelperInstanceInLoader(helperClassName, commonRuntime, loader1);
+        IHelper helper1 = Helpers.instantiateHelper(loader1, commonRuntime);
         Class<?> clazz1 = loader1.loadClass(targetClassName);
         Method getOneHashCode1 = clazz1.getMethod("getOneHashCode");
         Object result = getOneHashCode1.invoke(null);
@@ -253,7 +239,7 @@ public class HashCodeTest {
         Assert.assertEquals(3, helper1.externalGetNextHashCode());
         
         // Now, create the helper2, show that it is independent, and run a test in that.
-        IHelper helper2 = loadHelperInstanceInLoader(helperClassName, commonRuntime, loader2);
+        IHelper helper2 = Helpers.instantiateHelper(loader2, commonRuntime);
         Class<?> clazz2 = loader2.loadClass(targetClassName);
         Method getOneHashCode2 = clazz2.getMethod("getOneHashCode");
         Assert.assertEquals(1, helper2.externalGetNextHashCode());
@@ -261,17 +247,6 @@ public class HashCodeTest {
         Assert.assertEquals(2, ((Integer)result).intValue());
     }
 
-
-    private IHelper loadHelperInstanceInLoader(String helperClassName, SimpleRuntime runtime, AvmClassLoader loader) {
-        IHelper helper = null;
-        try {
-            Class<?> helperClass = loader.loadClass(helperClassName);
-            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, BlockchainRuntime.class).newInstance(loader, runtime);
-        } catch (Throwable t) {
-            Assert.fail(t.getMessage());
-        }
-        return helper;
-    }
 
     private byte[] getTransformedTestClass(String className) {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");

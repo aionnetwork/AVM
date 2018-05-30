@@ -6,14 +6,11 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.AvmException;
-import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.rt.BlockchainRuntime;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -35,11 +32,6 @@ public class AvmImplTest {
     @BeforeClass
     public static void setupClass() throws Exception {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
-    }
-
-    @After
-    public void teardown() throws Exception {
-        Helper.clearTestingState();
     }
 
     @Test
@@ -112,32 +104,30 @@ public class AvmImplTest {
     public void testPersistentEnergyLimit() {
         // Set up the runtime.
         BlockchainRuntime rt = new SimpleRuntime(null, null, 5);
-        new Helper(new AvmClassLoader(sharedClassLoader, Collections.emptyMap()), rt);
+        Map<String, byte[]> contractClasses = Helpers.mapIncludingHelperBytecode(Collections.emptyMap());
+        IHelper helper = Helpers.instantiateHelper(new AvmClassLoader(sharedClassLoader, contractClasses), rt);
 
         // Prove that we can charge 0 without issue.
-        Helper.chargeEnergy(0);
-        assertEquals(5, Helper.energyLeft());
+        helper.externalChargeEnergy(0);
+        assertEquals(5, helper.externalGetEnergyRemaining());
 
         // Run the test.
         int catchCount = 0;
         OutOfEnergyError error = null;
         try {
-            Helper.chargeEnergy(10);
+            helper.externalChargeEnergy(10);
         } catch (OutOfEnergyError e) {
             catchCount += 1;
             error = e;
         }
         // We didn't reset the state so this should still fail.
         try {
-            Helper.chargeEnergy(0);
+            helper.externalChargeEnergy(0);
         } catch (OutOfEnergyError e) {
             catchCount += 1;
             // And have the same exception.
             assertEquals(error, e);
         }
         assertEquals(2, catchCount);
-
-        // Cleanup.
-        Helper.clearTestingState();
     }
 }
