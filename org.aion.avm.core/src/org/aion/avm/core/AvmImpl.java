@@ -264,21 +264,11 @@ public class AvmImpl implements Avm {
             }
 
             // As per usual, we need to get the special Helper class for each contract loader.
-            String helperClassName = Helper.class.getName();
-            byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
-            Map<String, byte[]> allClasses = new HashMap<>(app.classes);
-            allClasses.put(helperClassName, helperBytes);
+            Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
             
             // Construct the per-contract class loader and access the per-contract IHelper instance.
             AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, allClasses);
-            IHelper helper = null;
-            try {
-                Class<?> helperClass = classLoader.loadClass(helperClassName);
-                helper = (IHelper) helperClass.getConstructor(ClassLoader.class, BlockchainRuntime.class).newInstance(classLoader, rt);
-            } catch (Throwable t) {
-                // Errors at this point imply something wrong with the installation so fail.
-                RuntimeAssertionError.unexpected(t);
-            }
+            IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             try {
@@ -336,21 +326,11 @@ public class AvmImpl implements Avm {
         DappModule app = loadTransformedDapp(rt.getAddress());
 
         // As per usual, we need to get the special Helper class for each contract loader.
-        String helperClassName = Helper.class.getName();
-        byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
-        Map<String, byte[]> allClasses = new HashMap<>(app.classes);
-        allClasses.put(helperClassName, helperBytes);
+        Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
         
         // Construct the per-contract class loader and access the per-contract IHelper instance.
         AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, allClasses);
-        IHelper helper = null;
-        try {
-            Class<?> helperClass = classLoader.loadClass(helperClassName);
-            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, BlockchainRuntime.class).newInstance(classLoader, rt);
-        } catch (Throwable t) {
-            // Errors at this point imply something wrong with the installation so fail.
-            RuntimeAssertionError.unexpected(t);
-        }
+        IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
         // load class
         try {

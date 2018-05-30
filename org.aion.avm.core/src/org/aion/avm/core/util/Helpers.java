@@ -2,6 +2,14 @@ package org.aion.avm.core.util;
 
 import java.io.*;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.rt.BlockchainRuntime;
 
 
 /**
@@ -95,5 +103,41 @@ public class Helpers {
      */
     public static String internalNameToFulllyQualifiedName(String internalName) {
         return internalName.replaceAll("/", ".");
+    }
+
+    /**
+     * A common helper used to construct a map of visible class bytecode for an AvmClassLoader instance.
+     * Typically, this is used right before "instantiateHelper()", below (this creates/adds the class it loads).
+     * 
+     * @param inputMap The initial map of class names to bytecodes.
+     * @return The inputMap with the Helper bytecode added.
+     */
+    public static Map<String, byte[]> mapIncludingHelperBytecode(Map<String, byte[]> inputMap) {
+        String helperClassName = Helper.class.getName();
+        byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
+        Map<String, byte[]> modifiedMap = new HashMap<>(inputMap);
+        modifiedMap.put(helperClassName, helperBytes);
+        return modifiedMap;
+    }
+
+    /**
+     * Loads and instantiates the IHelper instance to access the "Helper" statics within the given contractLoader.
+     * This "Helper" bytecode is typically added to the classloader using the "mapIncludingHelperBytecode", above.
+     * 
+     * @param contractLoader The loader which will load all the code running within the contract.
+     * @param runtime The runtime which describes the inputs/capabilities of the contract.
+     * @return The instance which will trampoline into the "Helper" statics called by the instrumented code within this contract.
+     */
+    public static IHelper instantiateHelper(AvmClassLoader contractLoader, BlockchainRuntime runtime) {
+        IHelper helper = null;
+        try {
+            String helperClassName = Helper.class.getName();
+            Class<?> helperClass = contractLoader.loadClass(helperClassName);
+            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, BlockchainRuntime.class).newInstance(contractLoader, runtime);
+        } catch (Throwable t) {
+            // Errors at this point imply something wrong with the installation so fail.
+            RuntimeAssertionError.unexpected(t);
+        }
+        return helper;
     }
 }
