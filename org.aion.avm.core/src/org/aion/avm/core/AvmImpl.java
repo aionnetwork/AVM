@@ -32,7 +32,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.function.BiConsumer;
 
 import static org.aion.avm.core.FileUtils.getFSRootDirFor;
 import static org.aion.avm.core.FileUtils.putToTempDir;
@@ -144,7 +143,9 @@ public class AvmImpl implements Avm {
 
         Map<String, byte[]> processedClasses = new HashMap<>();
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
-        BiConsumer<String, byte[]> generatedClassesSink = (classSlashName, bytecode) -> processedClasses.put(classSlashName, bytecode);
+        ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (superClassSlashName, classSlashName, bytecode) -> {
+            processedClasses.put(classSlashName, bytecode);
+        };
 
         for (String name : classes.keySet()) {
             ClassReader in = new ClassReader(classes.get(name));

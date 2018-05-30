@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classgeneration.CommonGenerators;
@@ -188,7 +187,9 @@ public class ExceptionWrappingTest {
             ClassReader in = new ClassReader(inputBytes);
             ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
             
-            BiConsumer<String, byte[]> generatedClassesSink = (slashName, bytes) -> LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes); 
+            ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (slashSuperName, slashName, bytes) -> {
+                LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes);
+            };
             ClassShadowing cs = new ClassShadowing(out, TestHelpers.CLASS_NAME);
             ExceptionWrapping wrapping = new ExceptionWrapping(cs, TestHelpers.CLASS_NAME, this.classHierarchy, generatedClassesSink);
             in.accept(wrapping, ClassReader.SKIP_DEBUG);
