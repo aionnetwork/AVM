@@ -46,6 +46,9 @@ public class StackWatcherTest {
             in.accept(swc, ClassReader.EXPAND_FRAMES);
 
             byte[] transformed = out.toByteArray();
+
+            Helpers.writeBytesToFile(transformed,"/tmp/stackWatched.class");
+
             return transformed;
         };
         Map<String, byte[]> classes = new HashMap<>();
