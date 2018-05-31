@@ -3,7 +3,7 @@ package org.aion.avm.core.instrument;
 import java.util.List;
 
 import org.aion.avm.core.util.Assert;
-import org.objectweb.asm.Handle;
+import org.aion.avm.core.util.DescriptorParser;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -206,43 +206,45 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
             String typeName = descriptor.replaceAll("\\[", "");
             // We expect that this is only 1 char (or we parsed this wrong or were passed something we couldn't interpret).
             Assert.assertTrue(1 == typeName.length());
-            String type = null;
-            switch (typeName.charAt(0)) {
-            case 'Z': {
-                type = "java/lang/Boolean";
-                break;
-            }
-            case 'B': {
-                type = "java/lang/Byte";
-                break;
-            }
-            case 'C': {
-                type = "java/lang/Char";
-                break;
-            }
-            case 'S': {
-                type = "java/lang/Short";
-                break;
-            }
-            case 'I': {
-                type = "java/lang/Integer";
-                break;
-            }
-            case 'J': {
-                type = "java/lang/Long";
-                break;
-            }
-            case 'F': {
-                type = "java/lang/Float";
-                break;
-            }
-            case 'D': {
-                type = "java/lang/Double";
-                break;
-            }
-            default:
-                Assert.unreachable("Unknown primitive type: \"" + typeName + "\"");
-            }
+            String type = DescriptorParser.parse(typeName, new DescriptorParser.TypeOnlyCallbacks<String>() {
+                @Override
+                public String readObject(int arrayDimensions, String type, String userData) {
+                    Assert.unreachable("Objects handled above");
+                    return null;
+                }
+                @Override
+                public String readBoolean(int arrayDimensions, String userData) {
+                    return "java/lang/Boolean";
+                }
+                @Override
+                public String readShort(int arrayDimensions, String userData) {
+                    return "java/lang/Short";
+                }
+                @Override
+                public String readLong(int arrayDimensions, String userData) {
+                    return "java/lang/Long";
+                }
+                @Override
+                public String readInteger(int arrayDimensions, String userData) {
+                    return "java/lang/Integer";
+                }
+                @Override
+                public String readFloat(int arrayDimensions, String userData) {
+                    return "java/lang/Float";
+                }
+                @Override
+                public String readDouble(int arrayDimensions, String userData) {
+                    return "java/lang/Double";
+                }
+                @Override
+                public String readChar(int arrayDimensions, String userData) {
+                    return "java/lang/Char";
+                }
+                @Override
+                public String readByte(int arrayDimensions, String userData) {
+                    return "java/lang/Byte";
+                }
+            }, null);
             super.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
         }
         String argList = "(";

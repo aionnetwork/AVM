@@ -1,16 +1,14 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.core.util.Assert;
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.*;
-import org.objectweb.asm.signature.*;
-import org.objectweb.asm.util.*;
-import java.util.*;
-import java.util.regex.*;
+
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ArrayWrappingBytecodeFactory {
 
-    static private HashMap<String, String> arrayWrapperMap = new HashMap<String, String>();
+    static private HashMap<java.lang.String, java.lang.String> arrayWrapperMap = new HashMap<>();
 
     static{
         arrayWrapperMap.put("[I", "Lorg/aion/avm/arraywrapper/IntArray");
@@ -24,25 +22,25 @@ public class ArrayWrappingBytecodeFactory {
         arrayWrapperMap.put("[Ljava/lang/Object", "Lorg/aion/avm/arraywrapper/ObjectArray");
     }
 
-    public static String updateMethodDesc(String desc) {
+    static java.lang.String updateMethodDesc(java.lang.String desc) {
         //\[*L[^;]+;|\[[ZBCSIFDJ]|[ZBCSIFDJ]
         StringBuilder sb = new StringBuilder();
-        String wrappedDesc;
+        java.lang.String wrappedDesc;
 
         int beginIndex = desc.indexOf('(');
         int endIndex = desc.lastIndexOf(')');
 
         // Method descriptor has to contain () pair
-        if((beginIndex == -1 && endIndex != -1) || (beginIndex != -1 && endIndex == -1) || (beginIndex == -1 && endIndex == -1)) {
+        if(beginIndex == -1 || endIndex == -1) {
             System.err.println(beginIndex);
             System.err.println(endIndex);
             throw new RuntimeException();
         }
-        sb.append(desc.substring(0, beginIndex));
+        sb.append(desc, 0, beginIndex);
         sb.append('(');
 
         // Parse param
-        String para = desc.substring(beginIndex + 1, endIndex);
+        java.lang.String para = desc.substring(beginIndex + 1, endIndex);
         Pattern pattern = Pattern.compile("\\[*L[^;]+;|\\[[ZBCSIFDJ]|[ZBCSIFDJ]");
         Matcher paraMatcher = pattern.matcher(para);
 
@@ -58,7 +56,7 @@ public class ArrayWrappingBytecodeFactory {
 
         // Parse return type if there is any
         if (endIndex < (desc.length() - 1)){
-            String ret = desc.substring(endIndex + 1);
+            java.lang.String ret = desc.substring(endIndex + 1);
             if (ret.equals("V")){
                 sb.append(ret);
             }
@@ -76,12 +74,12 @@ public class ArrayWrappingBytecodeFactory {
     }
 
     // Return the wrapper descriptor of an array
-    public static String getWrapperName(String desc){
+    static java.lang.String getWrapperName(java.lang.String desc){
         if (desc.endsWith(";")){
             desc = desc.substring(0, desc.length() - 1);
         }
 
-        String ret;
+        java.lang.String ret;
         if (desc.charAt(0) != '['){
             ret = desc;
         }else if (arrayWrapperMap.containsKey(desc)){
@@ -96,7 +94,7 @@ public class ArrayWrappingBytecodeFactory {
     }
 
     //TODO:: is this enough?
-    private static String newWrapperName(String desc){
+    private static java.lang.String newWrapperName(java.lang.String desc){
         //System.out.println(desc);
         StringBuilder sb = new StringBuilder();
         sb.append("Lorg/aion/avm/arraywrapper/");
@@ -112,23 +110,20 @@ public class ArrayWrappingBytecodeFactory {
     }
 
     // Return the element descriptor of an array
-    public static String getRefWrapperName(String desc){
-        String ret = desc.replace('[', '$');
-        return ret;
+    private static java.lang.String getRefWrapperName(java.lang.String desc){
+        return desc.replace('[', '$');
     }
 
 
     // Return the element descriptor of an array
-    public static String getElementDesc(String desc){
-        String ret = desc.substring(1);
-        return ret;
+    public static java.lang.String getElementDesc(java.lang.String desc){
+        return desc.substring(1);
     }
 
     //TODO: Ugly
     // Return the element descriptor of an array
     // 1D Primitive array will not be called with this method since there will be no aaload
-    public static String getElementType(String desc){
-        String ret = desc.substring(2, desc.length() - 1);
-        return ret;
+    static java.lang.String getElementType(java.lang.String desc){
+        return desc.substring(2, desc.length() - 1);
     }
 }
