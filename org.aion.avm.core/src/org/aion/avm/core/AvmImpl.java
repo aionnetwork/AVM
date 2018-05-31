@@ -97,7 +97,7 @@ public class AvmImpl implements Avm {
      *
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    public Map<String, Integer> computeRuntimeObjectSizes() {
+    public static Map<String, Integer> computeRuntimeObjectSizes() {
         Map<String, Integer> map = new HashMap<String, Integer>();
         map.put("java/lang/Object", 4);
         map.put("java/lang/Class", 4);
