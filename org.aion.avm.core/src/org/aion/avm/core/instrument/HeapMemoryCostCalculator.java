@@ -1,8 +1,8 @@
 package org.aion.avm.core.instrument;
 
-import org.aion.avm.core.ClassHierarchyForest;
 import org.aion.avm.core.Forest;
 import org.aion.avm.core.Forest.Node;
+import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.core.util.Helpers;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -130,55 +130,62 @@ public class HeapMemoryCostCalculator {
         // read the declared fields in the current class, add the size of each according to the FieldType
         List<FieldNode> fieldNodes = classNode.fields;
         for (FieldNode fieldNode : fieldNodes) {
-            switch (fieldNode.desc.charAt(0)) {
-                // FieldType -- BasicType, ObjectType, ArrayType
-                case 'Z' : {
-                    heapSize += FieldTypeSizeInBits.BOOLEAN.getVal();
-                    break;
+            // ArrayType Note:  class object creation only allocates a ref in the heap;
+            // and later the bytecode "NEWARRAY / ANEWARRAY" allocates the memory for each element.
+            heapSize += DescriptorParser.parse(fieldNode.desc, new DescriptorParser.TypeOnlyCallbacks<Long>() {
+                @Override
+                public Long readObject(int arrayDimensions, String type, Long userData) {
+                    return FieldTypeSizeInBits.OBJECTREF.getVal();
                 }
-                case 'B': {
-                    heapSize += FieldTypeSizeInBits.BYTE.getVal();
-                    break;
+                @Override
+                public Long readBoolean(int arrayDimensions, Long userData) {
+                    return (0 == arrayDimensions)
+                            ? FieldTypeSizeInBits.BOOLEAN.getVal()
+                            : FieldTypeSizeInBits.OBJECTREF.getVal();
                 }
-                case 'C': {
-                    heapSize += FieldTypeSizeInBits.CHAR.getVal();
-                    break;
+                @Override
+                public Long readShort(int arrayDimensions, Long userData) {
+                    return (0 == arrayDimensions)
+                            ? FieldTypeSizeInBits.SHORT.getVal()
+                            : FieldTypeSizeInBits.OBJECTREF.getVal();
                 }
-                case 'S': {
-                    heapSize += FieldTypeSizeInBits.SHORT.getVal();
-                    break;
+                @Override
+                public Long readLong(int arrayDimensions, Long userData) {
+                    return (0 == arrayDimensions)
+                            ? FieldTypeSizeInBits.LONG.getVal()
+                            : FieldTypeSizeInBits.OBJECTREF.getVal();
                 }
-                case 'I': {
-                    heapSize += FieldTypeSizeInBits.INT.getVal();
-                    break;
+                @Override
+                public Long readInteger(int arrayDimensions, Long userData) {
+                    return (0 == arrayDimensions)
+                            ? FieldTypeSizeInBits.INT.getVal()
+                            : FieldTypeSizeInBits.OBJECTREF.getVal();
                 }
-                case 'J': {
-                    heapSize += FieldTypeSizeInBits.LONG.getVal();
-                    break;
+                @Override
+                public Long readFloat(int arrayDimensions, Long userData) {
+                    return (0 == arrayDimensions)
+                            ? FieldTypeSizeInBits.FLOAT.getVal()
+                            : FieldTypeSizeInBits.OBJECTREF.getVal();
                 }
-                case 'F': {
-                    heapSize += FieldTypeSizeInBits.FLOAT.getVal();
-                    break;
+                @Override
+                public Long readDouble(int arrayDimensions, Long userData) {
+                    return (0 == arrayDimensions)
+                            ? FieldTypeSizeInBits.DOUBLE.getVal()
+                            : FieldTypeSizeInBits.OBJECTREF.getVal();
                 }
-                case 'D': {
-                    heapSize += FieldTypeSizeInBits.DOUBLE.getVal();
-                    break;
+                @Override
+                public Long readChar(int arrayDimensions, Long userData) {
+                    return (0 == arrayDimensions)
+                            ? FieldTypeSizeInBits.CHAR.getVal()
+                            : FieldTypeSizeInBits.OBJECTREF.getVal();
                 }
-                case 'L': {
-                    // ObjectType
-                    heapSize += FieldTypeSizeInBits.OBJECTREF.getVal();
-                    break;
+                @Override
+                public Long readByte(int arrayDimensions, Long userData) {
+                    return (0 == arrayDimensions)
+                            ? FieldTypeSizeInBits.BYTE.getVal()
+                            : FieldTypeSizeInBits.OBJECTREF.getVal();
                 }
-                case '[': {
-                    // ArrayType; class object creation only allocates a ref in the heap;
-                    // and later the bytecode "NEWARRAY / ANEWARRAY" allocates the memory for each element.
-                    heapSize += FieldTypeSizeInBits.OBJECTREF.getVal();
-                    break;
-                }
-                default: {
-                    throw new IllegalStateException("field has an invalid FieldType");
-                }
-            }
+            }, null);
         }
 
         // convert the size to number of bytes and add to classHeapSizeMap
