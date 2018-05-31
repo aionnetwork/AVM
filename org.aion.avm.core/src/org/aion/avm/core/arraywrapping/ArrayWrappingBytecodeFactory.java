@@ -11,21 +11,22 @@ public class ArrayWrappingBytecodeFactory {
     static private HashMap<java.lang.String, java.lang.String> arrayWrapperMap = new HashMap<>();
 
     static{
-        arrayWrapperMap.put("[I", "Lorg/aion/avm/arraywrapper/IntArray");
-        arrayWrapperMap.put("[B", "Lorg/aion/avm/arraywrapper/ByteArray");
-        arrayWrapperMap.put("[Z", "Lorg/aion/avm/arraywrapper/ByteArray");
-        arrayWrapperMap.put("[C", "Lorg/aion/avm/arraywrapper/CharArray");
-        arrayWrapperMap.put("[F", "Lorg/aion/avm/arraywrapper/FloatArray");
-        arrayWrapperMap.put("[S", "Lorg/aion/avm/arraywrapper/ShortArray");
-        arrayWrapperMap.put("[J", "Lorg/aion/avm/arraywrapper/LongArray");
-        arrayWrapperMap.put("[D", "Lorg/aion/avm/arraywrapper/DoubleArray");
-        arrayWrapperMap.put("[Ljava/lang/Object", "Lorg/aion/avm/arraywrapper/ObjectArray");
+        arrayWrapperMap.put("[I", "org/aion/avm/arraywrapper/IntArray");
+        arrayWrapperMap.put("[B", "org/aion/avm/arraywrapper/ByteArray");
+        arrayWrapperMap.put("[Z", "org/aion/avm/arraywrapper/ByteArray");
+        arrayWrapperMap.put("[C", "org/aion/avm/arraywrapper/CharArray");
+        arrayWrapperMap.put("[F", "org/aion/avm/arraywrapper/FloatArray");
+        arrayWrapperMap.put("[S", "org/aion/avm/arraywrapper/ShortArray");
+        arrayWrapperMap.put("[J", "org/aion/avm/arraywrapper/LongArray");
+        arrayWrapperMap.put("[D", "org/aion/avm/arraywrapper/DoubleArray");
+        arrayWrapperMap.put("[Ljava/lang/Object", "org/aion/avm/arraywrapper/ObjectArray");
     }
 
     static java.lang.String updateMethodDesc(java.lang.String desc) {
         //\[*L[^;]+;|\[[ZBCSIFDJ]|[ZBCSIFDJ]
         StringBuilder sb = new StringBuilder();
-        java.lang.String wrappedDesc;
+        java.lang.String wrapperName;
+        java.lang.String cur;
 
         int beginIndex = desc.indexOf('(');
         int endIndex = desc.lastIndexOf(')');
@@ -46,11 +47,11 @@ public class ArrayWrappingBytecodeFactory {
 
         while(paraMatcher.find())
         {
-            wrappedDesc = getWrapperName(paraMatcher.group());
-            if (wrappedDesc.startsWith("L")){
-                wrappedDesc = wrappedDesc + ";";
+            cur = paraMatcher.group();
+            if(cur.startsWith("[")) {
+                cur = "L" + getWrapperName(cur) + ";";
             }
-            sb.append(wrappedDesc);
+            sb.append(cur);
         }
         sb.append(')');
 
@@ -62,11 +63,11 @@ public class ArrayWrappingBytecodeFactory {
             }
             Matcher retMatcher = pattern.matcher(ret);
             if (retMatcher.find()){
-                wrappedDesc = getWrapperName(retMatcher.group());
-                if (wrappedDesc.startsWith("L")){
-                    wrappedDesc = wrappedDesc + ";";
+                cur = retMatcher.group();
+                if(cur.startsWith("[")) {
+                    cur = "L" + getWrapperName(cur) + ";";
                 }
-                sb.append(wrappedDesc);
+                sb.append(cur);
             }
         }
         //System.out.println(sb.toString());
@@ -93,11 +94,18 @@ public class ArrayWrappingBytecodeFactory {
         return ret;
     }
 
+    // Return the wrapper descriptor of an array
+    static java.lang.String getWrapperNameFromElement(java.lang.String desc){
+        String wDesc = "[" + desc;
+        //System.out.println("Wrapper name : " + ret);
+        return getWrapperName(wDesc);
+    }
+
     //TODO:: is this enough?
     private static java.lang.String newWrapperName(java.lang.String desc){
         //System.out.println(desc);
         StringBuilder sb = new StringBuilder();
-        sb.append("Lorg/aion/avm/arraywrapper/");
+        sb.append("org/aion/avm/arraywrapper/");
 
         //Check if the desc is a ref array
         if((desc.charAt(1) == 'L') || (desc.charAt(1) == '[')){

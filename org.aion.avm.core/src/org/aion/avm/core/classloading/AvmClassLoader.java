@@ -12,7 +12,7 @@ import java.util.function.Function;
  */
 public class AvmClassLoader extends ClassLoader {
     private Map<String, byte[]> classes;
-    private List<Function<String, byte[]>> handlers;
+    private ArrayList<Function<String, byte[]>> handlers;
 
     // Since we are using our own loadClass, we need our own cache.
     private final Map<String, Class<?>> cache;
@@ -24,7 +24,7 @@ public class AvmClassLoader extends ClassLoader {
      * @param classes the transformed bytecode
      * @param handlers a list of handlers which can generate byte code for the given name.
      */
-    public AvmClassLoader(AvmSharedClassLoader parent, Map<String, byte[]> classes, List<Function<String, byte[]>> handlers) {
+    public AvmClassLoader(AvmSharedClassLoader parent, Map<String, byte[]> classes, ArrayList<Function<String, byte[]>> handlers) {
         super(parent);
         this.classes = classes;
         this.handlers = handlers;
@@ -32,7 +32,11 @@ public class AvmClassLoader extends ClassLoader {
     }
 
     public AvmClassLoader(AvmSharedClassLoader parent, Map<String, byte[]> classes) {
-        this(parent, classes, Collections.emptyList());
+        this(parent, classes, new ArrayList<>());
+    }
+
+    public void addHandler(Function<String, byte[]> h){
+        this.handlers.add(h);
     }
 
     @Override
@@ -55,6 +59,7 @@ public class AvmClassLoader extends ClassLoader {
             result = defineClass(name, injected, 0, injected.length);
             this.cache.put(name, result);
         } else {
+
             // Before falling back to the parent, try the dynamic.
             for (Function<String, byte[]> handler : handlers) {
                 byte[] code = handler.apply(name);
@@ -81,4 +86,6 @@ public class AvmClassLoader extends ClassLoader {
         }
         return result;
     }
+
+
 }

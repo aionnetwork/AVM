@@ -25,12 +25,14 @@ public class TestResource {
         long[]      g = new long[42];
         short[]     h = new short[42];
         Object[]    i = new Object[42];
-        return a == this.testMixedSignature(a, b, c, d, e, f, g, h, i);
+        String[]    j = new String[42];
+        return a == this.testMixedSignature(a, b, c, d, e, f, g, h, i, j);
     }
 
     public boolean[] testMixedSignature(boolean[] in1, byte[] in2, char[] in3,
                                         double[] in4, float[] in5, int[] in6,
-                                        long[] in7, short[] in8, Object[] in9)
+                                        long[] in7, short[] in8, Object[] in9,
+                                        String[] in10)
     {
         return in1;
     }
@@ -292,33 +294,32 @@ public class TestResource {
         return res;
     }
 
-    // public boolean testStringArray(){
-    //     boolean res = true;
-    //     int count = 0;
-    //     int i = 0;
+     public boolean testStringArray(){
+         boolean res = true;
+         int count = 0;
+         int i = 0;
 
-    //     //newarray for long
-    //     String[] a = new String[2];
-    //     String[] b = new String[64];
-    //     String[] c = new String[1024];
+         //newarray for long
+         String[] a = new String[2];
+         String[] b = new String[64];
+         String[] c = new String[1024];
 
-    //     //LASTORE
-    //     for (i = 0; i < 1024; i++){
-    //         c[i] = new String(Integer.toString(i));
-    //     }
+         //LASTORE
+         for (i = 0; i < 1024; i++){
+             c[i] = new String(Integer.toString(i));
+         }
 
-    //     //LALOAD
-    //     for (i = 0; i < 1024; i++){
-    //         //count = count + c[i].indexOf('1');
-    //         count = count + c[i].hashCode();
-    //     }
+         //LALOAD
+         for (i = 0; i < 1024; i++){
+             //count = count + c[i].indexOf('1');
+             count = count + c[i].hashCode();
+         }
 
-    //     System.out.println(count);
 
-    //     res = (count != 0);
+         res = (count != 0);
 
-    //     return res;
-    // }
+         return res;
+     }
 
 
     public boolean testVarargs(){

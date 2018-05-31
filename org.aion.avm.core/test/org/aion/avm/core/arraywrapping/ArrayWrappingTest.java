@@ -51,7 +51,11 @@ public class ArrayWrappingTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         classes.put(className, transformer.apply(raw));
         Map<String, byte[]> finalClasses = Helpers.mapIncludingHelperBytecode(classes);
+
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, finalClasses);
+
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.genWrapperClass(cName);
+        loader.addHandler(wrapperGenerator);
 
         // We don't really need the runtime but we do need to initialize the Helper.
         Helpers.instantiateHelper(loader, new SimpleRuntime(null, null, 0));
@@ -60,7 +64,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testBooleanArray() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testBooleanArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testBooleanArray");
@@ -70,7 +74,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testByteArray() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testByteArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testByteArray");
@@ -80,7 +84,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testCharArray() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testCharArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testCharArray");
@@ -90,7 +94,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testDoubleArray() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testDoubleArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testDoubleArray");
@@ -100,7 +104,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testFloatArray() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testFloatArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testFloatArray");
@@ -110,7 +114,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testIntArray() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testIntArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testIntArray");
@@ -120,7 +124,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testLongArray() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testLongArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testLongArray");
@@ -130,7 +134,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testShortArray() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testShortArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testShortArray");
@@ -140,7 +144,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testObjectArray() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testObjectArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testObjectArray");
@@ -150,7 +154,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testObjectArrayTemplate() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testObjectArrayTemplate() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testObjectArrayTemplate");
@@ -160,7 +164,17 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testSignature() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testStringArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testStringArray");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testSignature() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testSignature");
@@ -170,7 +184,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testVarargs() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testVarargs() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testVarargs");
@@ -180,7 +194,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testTypeChecking() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testTypeChecking() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testTypeChecking");
@@ -190,7 +204,7 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testClassField() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testClassField() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testClassField");
