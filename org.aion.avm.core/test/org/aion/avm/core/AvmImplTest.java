@@ -30,7 +30,7 @@ public class AvmImplTest {
     private static AvmSharedClassLoader sharedClassLoader;
 
     @BeforeClass
-    public static void setupClass() throws Exception {
+    public static void setupClass() {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
     }
 

@@ -1,14 +1,14 @@
 package org.aion.avm.core.stacktracking;
 
-import org.objectweb.asm.ClassVisitor;
+import org.aion.avm.core.ClassToolchain;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.tree.MethodNode;
 
-public class StackWatcherClassAdapter extends ClassVisitor implements Opcodes{
-    public StackWatcherClassAdapter(final ClassVisitor cv) {
-        super(Opcodes.ASM6, cv);
+public class StackWatcherClassAdapter extends ClassToolchain.ToolChainClassVisitor implements Opcodes {
+    public StackWatcherClassAdapter() {
+        super(Opcodes.ASM6);
     }
 
     @Override

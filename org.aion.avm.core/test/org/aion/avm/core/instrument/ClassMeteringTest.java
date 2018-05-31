@@ -1,44 +1,39 @@
 package org.aion.avm.core.instrument;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-
+import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.objectweb.asm.*;
+import org.junit.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 
 public class ClassMeteringTest {
     private static AvmSharedClassLoader sharedClassLoader;
 
+    private Class<?> clazz;
+    // We keep this here just because a lot of cases want to use this sort of "do no instrumentation" cost builder for testing other rewrites.
+    private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) ->
+            new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
+                    .addNextVisitor(new ClassMetering(TestEnergy.CLASS_NAME, null))
+                    .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                    .build()
+                    .runAndGetBytecode();
+
     @BeforeClass
-    public static void setupClass() throws Exception {
+    public static void setupClass() {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
     }
-
-    // We keep this here just because a lot of cases want to use this sort of "do no instrumentation" cost builder for testing other rewrites.
-    private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) -> {
-        ClassReader in = new ClassReader(inputBytes);
-        ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        
-        ClassMetering classMetering = new ClassMetering(out, TestEnergy.CLASS_NAME, null);
-        in.accept(classMetering, ClassReader.SKIP_DEBUG);
-        
-        return out.toByteArray();
-    };
-
-    private Class<?> clazz;
 
     @Before
     public void setup() throws Exception {
@@ -103,7 +98,7 @@ public class ClassMeteringTest {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
         Method buildStringArray = clazz.getMethod("buildStringArray", int.class);
-        
+
         // Check that we haven't yet called the TestEnergy to create an array.
         Assert.assertEquals(0, TestEnergy.totalArrayElements);
         Assert.assertEquals(0, TestEnergy.totalArrayInstances);
@@ -129,7 +124,7 @@ public class ClassMeteringTest {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
         Method buildMultiStringArray3 = clazz.getMethod("buildMultiStringArray3", int.class, int.class, int.class);
-        
+
         // Check that we haven't yet called the TestEnergy to create an array.
         Assert.assertEquals(0, TestEnergy.totalArrayElements);
         Assert.assertEquals(0, TestEnergy.totalArrayInstances);
@@ -160,7 +155,7 @@ public class ClassMeteringTest {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
         Method buildLongArray2 = clazz.getMethod("buildLongArray2", int.class, int.class);
-        
+
         // Check that we haven't yet called the TestEnergy to create an array.
         Assert.assertEquals(0, TestEnergy.totalArrayElements);
         Assert.assertEquals(0, TestEnergy.totalArrayInstances);
@@ -189,7 +184,7 @@ public class ClassMeteringTest {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
         Object target = clazz.getConstructor(int.class).newInstance(6);
         Method buildCharArray = clazz.getMethod("buildCharArray", int.class);
-        
+
         // Check that we haven't yet called the TestEnergy to create an array.
         Assert.assertEquals(0, TestEnergy.totalArrayElements);
         Assert.assertEquals(0, TestEnergy.totalArrayInstances);

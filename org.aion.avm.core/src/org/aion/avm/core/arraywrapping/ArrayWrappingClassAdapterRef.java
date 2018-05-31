@@ -1,21 +1,22 @@
 package org.aion.avm.core.arraywrapping;
 
-import org.aion.avm.core.util.Assert;
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.*;
-import org.objectweb.asm.signature.*;
-import org.objectweb.asm.util.*;
-import org.objectweb.asm.tree.analysis.*;
-import org.objectweb.asm.tree.*;
+import org.aion.avm.core.ClassToolchain;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 
-public class ArrayWrappingClassAdapterRef extends ClassNode {
+public class ArrayWrappingClassAdapterRef extends ClassToolchain.ToolChainClassVisitor {
 
-    ClassVisitor cv;
+    public String className;
 
-    public ArrayWrappingClassAdapterRef(ClassVisitor visitor) {
+    public ArrayWrappingClassAdapterRef() {
         super(Opcodes.ASM6);
-        cv = visitor;
+    }
+
+    @Override
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        className = name;
+        super.visit(version, access, name, signature, superName, interfaces);
     }
 
     public MethodVisitor visitMethod(
@@ -27,12 +28,6 @@ public class ArrayWrappingClassAdapterRef extends ClassNode {
 
         MethodVisitor mv = super.visitMethod(access, mname, descriptor, signature, exceptions);
 
-        return new ArrayWrappingMethodAdapterRef(access, name, descriptor, signature, exceptions, mv);
+        return new ArrayWrappingMethodAdapterRef(access, mname, descriptor, signature, exceptions, mv, className);
     }
-
-    @Override
-    public void visitEnd(){
-            accept(cv);
-    }
-
 }

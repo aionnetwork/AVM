@@ -1,5 +1,6 @@
 package org.aion.avm.core.stacktracking;
 
+import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -13,11 +14,9 @@ import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,7 +26,7 @@ public class StackWatcherTest {
     private static AvmSharedClassLoader sharedClassLoader;
 
     @BeforeClass
-    public static void setupClass() throws Exception {
+    public static void setupClass() {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
     }
 
@@ -35,19 +34,15 @@ public class StackWatcherTest {
 
     @Before
     // We only need to load the instrumented class once.
-    public void getInstructmentedClass() throws ClassNotFoundException {
+    public void getInstrumentedClass() throws ClassNotFoundException {
         String className = "org.aion.avm.core.stacktracking.TestResource";
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        Function<byte[], byte[]> transformer = (inputBytes) -> {
-            ClassReader in = new ClassReader(inputBytes);
-            ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-
-            StackWatcherClassAdapter swc = new StackWatcherClassAdapter(out);
-            in.accept(swc, ClassReader.EXPAND_FRAMES);
-
-            byte[] transformed = out.toByteArray();
-            return transformed;
-        };
+        Function<byte[], byte[]> transformer = (inputBytes) ->
+                new ClassToolchain.Builder(inputBytes, ClassReader.EXPAND_FRAMES)
+                        .addNextVisitor(new StackWatcherClassAdapter())
+                        .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES))
+                        .build()
+                        .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, transformer.apply(raw));
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
@@ -146,7 +141,7 @@ public class StackWatcherTest {
     }
 
     @Test
-    public void testStackTrackingConsistency() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testStackTrackingConsistency() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         StackWatcher.reset();
         StackWatcher.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
         StackWatcher.setMaxStackDepth(200);
@@ -160,7 +155,7 @@ public class StackWatcherTest {
     }
 
     @Test
-    public void testLocalTryCatch() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testLocalTryCatch() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         StackWatcher.reset();
         StackWatcher.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
         StackWatcher.setMaxStackDepth(200);
@@ -174,7 +169,7 @@ public class StackWatcherTest {
     }
 
     @Test
-    public void testRemoteTryCatch() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testRemoteTryCatch() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         StackWatcher.reset();
         StackWatcher.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
         StackWatcher.setMaxStackDepth(200);

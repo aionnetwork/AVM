@@ -1,9 +1,9 @@
 package org.aion.avm.core.exceptionwrapping;
 
+import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.Forest;
 import org.aion.avm.core.classgeneration.StubGenerator;
 import org.aion.avm.core.util.Assert;
-import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -13,16 +13,15 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 
-public class ExceptionWrapping extends ClassVisitor {
+public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
     private static final String kWrapperClassLibraryPrefix = "org/aion/avm/exceptionwrapper/";
 
     private final String runtimeClassName;
     private final ParentPointers pointers;
     private final BiConsumer<String, byte[]> generatedClassesSink;
 
-    public ExceptionWrapping(ClassVisitor visitor, String runtimeClassName, Forest<String, byte[]> classHierarchy, BiConsumer<String, byte[]> generatedClassesSink) {
-        super(Opcodes.ASM6, visitor);
-
+    public ExceptionWrapping(String runtimeClassName, Forest<String, byte[]> classHierarchy, BiConsumer<String, byte[]> generatedClassesSink) {
+        super(Opcodes.ASM6);
         this.runtimeClassName = runtimeClassName;
         this.pointers = new ParentPointers(classHierarchy);
         this.generatedClassesSink = generatedClassesSink;

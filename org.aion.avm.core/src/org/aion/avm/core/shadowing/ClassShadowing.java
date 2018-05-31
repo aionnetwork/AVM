@@ -1,15 +1,18 @@
 package org.aion.avm.core.shadowing;
 
+import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.util.Assert;
-import org.objectweb.asm.*;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Utility for replacing class refs
  */
-public class ClassShadowing extends ClassVisitor {
+public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
     private static final String JAVA_LANG = "java/lang";
     private static final String JAVA_LANG_SHADOW = "org/aion/avm/java/lang";
@@ -18,8 +21,8 @@ public class ClassShadowing extends ClassVisitor {
 
     private String runtimeClassName;
 
-    public ClassShadowing(ClassVisitor visitor, String runtimeClassName) {
-        super(Opcodes.ASM6, visitor);
+    public ClassShadowing(String runtimeClassName) {
+        super(Opcodes.ASM6);
         this.runtimeClassName = runtimeClassName;
     }
 
@@ -35,7 +38,7 @@ public class ClassShadowing extends ClassVisitor {
         assert (!name.startsWith(JAVA_LANG));
 
         String newSuperName = replaceType(superName);
-        String[] newInterfaces = Stream.of(interfaces).map(i -> replaceType(i)).collect(Collectors.toList()).stream().toArray(String[]::new);
+        String[] newInterfaces = Stream.of(interfaces).map(this::replaceType).toArray(String[]::new);
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
         super.visit(version, access, name, null, newSuperName, newInterfaces);

@@ -7,18 +7,16 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
+import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
-import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.FatalAvmError;
-import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -141,39 +139,25 @@ public class AvmImpl implements Avm {
      */
     public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> classHierarchy, Map<String, Integer> objectSizes) {
 
-        Map<String, byte[]> processedClasses = new HashMap<>();
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
-        BiConsumer<String, byte[]> generatedClassesSink = (classSlashName, bytecode) -> processedClasses.put(classSlashName, bytecode);
-
+        Map<String, byte[]> processedClasses = new HashMap<>();
         for (String name : classes.keySet()) {
-            ClassReader in = new ClassReader(classes.get(name));
-
-            /*
-             * CLASS_READER => CLASS_METERING => STACK_TRACKING => CLASS_SHADOWING => EXCEPTION_WRAPPING => ARRAY_WRAPPING => CLASS_WRITER
-             */
-
-            // in reverse order
-            ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            ExceptionWrapping exceptionHandling = new ExceptionWrapping(out, HELPER_CLASS, classHierarchy, generatedClassesSink);
-            ClassShadowing classShadowing = new ClassShadowing(exceptionHandling, HELPER_CLASS);
-            StackWatcherClassAdapter stackTracking = new StackWatcherClassAdapter(classShadowing);
-            ClassMetering classMetering = new ClassMetering(stackTracking, HELPER_CLASS, objectSizes);
-
-            // traverse
-            in.accept(classMetering, ClassReader.EXPAND_FRAMES);
-
-            //TODO: Can we do it in one pass?
-            ClassReader ain = new ClassReader(out.toByteArray());
-            ClassWriter aout = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            ArrayWrappingClassAdapter arrayWrapping = new ArrayWrappingClassAdapter(aout);
-            ArrayWrappingClassAdapterRef arrayWrappingRef = new ArrayWrappingClassAdapterRef(arrayWrapping);
-
-            ain.accept(arrayWrappingRef, ClassReader.EXPAND_FRAMES);
-
-            // emit bytecode
-            processedClasses.put(name, aout.toByteArray());
+            byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
+                    .addNextVisitor(new ClassMetering(HELPER_CLASS, objectSizes))
+                    .addNextVisitor(new StackWatcherClassAdapter())
+                    .addNextVisitor(new ClassShadowing(HELPER_CLASS))
+                    .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, classHierarchy, processedClasses::put))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                    .build()
+                    .runAndGetBytecode();
+            bytecode = new ClassToolchain.Builder(bytecode, ClassReader.EXPAND_FRAMES)
+                    .addNextVisitor(new ArrayWrappingClassAdapterRef())
+                    .addNextVisitor(new ArrayWrappingClassAdapter())
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                    .build()
+                    .runAndGetBytecode();
+            processedClasses.put(name, bytecode);
         }
-
         return processedClasses;
     }
 

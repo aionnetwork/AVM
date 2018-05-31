@@ -1,5 +1,16 @@
 package org.aion.avm.core.exceptionwrapping;
 
+import org.aion.avm.core.*;
+import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.shadowing.ClassShadowing;
+import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.Helper;
+import org.junit.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -7,30 +18,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import org.aion.avm.core.TypeAwareClassWriter;
-import org.aion.avm.core.classgeneration.CommonGenerators;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
-import org.aion.avm.core.shadowing.ClassShadowing;
-import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.core.Forest;
-import org.aion.avm.core.HierarchyTreeBuilder;
-import org.aion.avm.core.SimpleRuntime;
-import org.junit.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-
 
 public class ExceptionWrappingTest {
     private static AvmSharedClassLoader sharedClassLoader;
 
     @BeforeClass
-    public static void setupClass() throws Exception {
+    public static void setupClass() {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
     }
 
@@ -185,16 +178,13 @@ public class ExceptionWrappingTest {
         }
         
         public void transformClass(String name, byte[] inputBytes) {
-            ClassReader in = new ClassReader(inputBytes);
-            ClassWriter out = new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            
-            BiConsumer<String, byte[]> generatedClassesSink = (slashName, bytes) -> LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes); 
-            ClassShadowing cs = new ClassShadowing(out, TestHelpers.CLASS_NAME);
-            ExceptionWrapping wrapping = new ExceptionWrapping(cs, TestHelpers.CLASS_NAME, this.classHierarchy, generatedClassesSink);
-            in.accept(wrapping, ClassReader.SKIP_DEBUG);
-            
-            byte[] transformed = out.toByteArray();
-            this.transformedClasses.put(name, transformed);
+            BiConsumer<String, byte[]> generatedClassesSink = (slashName, bytes) -> LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes);
+            final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
+                    .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, this.classHierarchy, generatedClassesSink))
+                    .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                    .build();
+            this.transformedClasses.put(name, toolchain.runAndGetBytecode());
         }
         
         public Map<String, byte[]> getLateGeneratedClasses() {

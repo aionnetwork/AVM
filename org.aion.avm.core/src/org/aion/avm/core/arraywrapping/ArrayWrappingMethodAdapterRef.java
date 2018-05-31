@@ -1,11 +1,15 @@
 package org.aion.avm.core.arraywrapping;
 
-import org.aion.avm.core.util.Assert;
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.*;
-import org.objectweb.asm.tree.analysis.*;
-import org.objectweb.asm.tree.*;
-import org.objectweb.asm.util.*;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.analysis.Analyzer;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.BasicValue;
+import org.objectweb.asm.tree.analysis.Frame;
 
 class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
 
@@ -13,14 +17,15 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
     private MethodVisitor mv;
 
     public ArrayWrappingMethodAdapterRef(final int access,
-        final String name,
-        final String descriptor,
-        final String signature,
-        final String[] exceptions,
-        MethodVisitor mv)
+                                         final String name,
+                                         final String descriptor,
+                                         final String signature,
+                                         final String[] exceptions,
+                                         MethodVisitor mv,
+                                         String className)
     {
         super(Opcodes.ASM6, access, name, descriptor, signature, exceptions);
-        this.className = name;
+        this.className = className;
         this.mv = mv;
     }
 

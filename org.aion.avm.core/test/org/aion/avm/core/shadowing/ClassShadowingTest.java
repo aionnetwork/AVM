@@ -1,5 +1,6 @@
 package org.aion.avm.core.shadowing;
 
+import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -12,7 +13,6 @@ import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -24,24 +24,20 @@ public class ClassShadowingTest {
     private static AvmSharedClassLoader sharedClassLoader;
 
     @BeforeClass
-    public static void setupClass() throws Exception {
+    public static void setupClass() {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
     }
 
     @Test
-    public void testReplaceJavaLang() throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testReplaceJavaLang() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         String className = "org.aion.avm.core.shadowing.TestResource";
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        Function<byte[], byte[]> transformer = (inputBytes) -> {
-            ClassReader in = new ClassReader(inputBytes);
-            ClassWriter out = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-
-            ClassShadowing cs = new ClassShadowing(out, Testing.CLASS_NAME);
-            in.accept(cs, ClassReader.SKIP_DEBUG);
-
-            byte[] transformed = out.toByteArray();
-            return transformed;
-        };
+        Function<byte[], byte[]> transformer = (inputBytes) ->
+                new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
+                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME))
+                        .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                        .build()
+                        .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, transformer.apply(raw));
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);

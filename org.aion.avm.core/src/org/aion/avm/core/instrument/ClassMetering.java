@@ -1,6 +1,6 @@
 package org.aion.avm.core.instrument;
 
-import org.objectweb.asm.ClassVisitor;
+import org.aion.avm.core.ClassToolchain;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.MethodNode;
@@ -8,13 +8,13 @@ import org.objectweb.asm.tree.MethodNode;
 import java.util.List;
 import java.util.Map;
 
-public class ClassMetering extends ClassVisitor {
+public class ClassMetering extends ClassToolchain.ToolChainClassVisitor {
     private final String runtimeClassName;
     private Map<String, Integer> objectSizes;
     private final BytecodeFeeScheduler bytecodeFeeScheduler;
 
-    public ClassMetering(ClassVisitor visitor, String runtimeClassName, Map<String, Integer> objectSizes) {
-        super(Opcodes.ASM6, visitor);
+    public ClassMetering(String runtimeClassName, Map<String, Integer> objectSizes) {
+        super(Opcodes.ASM6);
 
         this.runtimeClassName = runtimeClassName;
         this.objectSizes = objectSizes;

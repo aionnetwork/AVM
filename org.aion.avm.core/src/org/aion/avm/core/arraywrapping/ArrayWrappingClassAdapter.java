@@ -1,16 +1,15 @@
 package org.aion.avm.core.arraywrapping;
 
-import org.aion.avm.core.util.Assert;
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.*;
-import org.objectweb.asm.signature.*;
-import org.objectweb.asm.util.*;
+import org.aion.avm.core.ClassToolchain;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 
-public class ArrayWrappingClassAdapter extends ClassVisitor {
+public class ArrayWrappingClassAdapter extends ClassToolchain.ToolChainClassVisitor {
 
-    public ArrayWrappingClassAdapter(ClassVisitor visitor) {
-        super(Opcodes.ASM6, visitor);
+    public ArrayWrappingClassAdapter() {
+        super(Opcodes.ASM6);
     }
 
     @Override
@@ -38,8 +37,7 @@ public class ArrayWrappingClassAdapter extends ClassVisitor {
             final String[] exceptions)
     {
 
-        String desc = descriptor;
-        desc = ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor);
+        String desc = ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor);
 
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 
