@@ -2,10 +2,12 @@ package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.core.util.Assert;
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.AdviceAdapter;
+import org.objectweb.asm.commons.Method;
 
 class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
@@ -22,7 +24,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     private Type typeSA = Type.getType(ShortArray.class);
 
 
-    public ArrayWrappingMethodAdapter(final MethodVisitor mv, final int access, final String name, final String desc)
+    ArrayWrappingMethodAdapter(final MethodVisitor mv, final int access, final String name, final String desc)
     {
         super(Opcodes.ASM6, mv, access, name, desc);
     }
@@ -176,8 +178,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     @Override
     //TODO: invokedynamic?
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        String desc = descriptor;
-        desc = ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor);
+        String desc = ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor);
         this.mv.visitMethodInsn(opcode, owner, name, desc, isInterface);
     }
 
