@@ -24,8 +24,10 @@ public class Helpers {
      * @param bytes The bytes to write.
      * @param file  The path where the file should be written.
      */
-    public static void writeBytesToFile(byte[] bytes, String file) {
-        try (FileOutputStream fos = new FileOutputStream(file)) {
+    public static void writeBytesToFile(byte[] bytes, String path) {
+        File f = new File(path);
+        f.getParentFile().mkdirs();
+        try (FileOutputStream fos = new FileOutputStream(f)) {
             fos.write(bytes);
         } catch (IOException e) {
             // This is for tests so we aren't expecting the failure.
@@ -55,7 +57,7 @@ public class Helpers {
     /**
      * A helper which will attempt to load the given resource path as bytes.
      * Any failure in the load is considered fatal.
-     * 
+     *
      * @param resourcePath The path to this resource, within the parent class loader.
      * @return The bytes
      */
@@ -108,7 +110,7 @@ public class Helpers {
     /**
      * A common helper used to construct a map of visible class bytecode for an AvmClassLoader instance.
      * Typically, this is used right before "instantiateHelper()", below (this creates/adds the class it loads).
-     * 
+     *
      * @param inputMap The initial map of class names to bytecodes.
      * @return The inputMap with the Helper bytecode added.
      */
@@ -123,7 +125,7 @@ public class Helpers {
     /**
      * Loads and instantiates the IHelper instance to access the "Helper" statics within the given contractLoader.
      * This "Helper" bytecode is typically added to the classloader using the "mapIncludingHelperBytecode", above.
-     * 
+     *
      * @param contractLoader The loader which will load all the code running within the contract.
      * @param runtime The runtime which describes the inputs/capabilities of the contract.
      * @return The instance which will trampoline into the "Helper" statics called by the instrumented code within this contract.

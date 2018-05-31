@@ -42,7 +42,9 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
     }
 
     @Override
-    protected void onMethodEnter(){
+    public void visitCode(){
+        super.visitCode();
+
         // Push the current stack size to operand stack and invoke AVMStackWatcher.enterMethod(int)
         Method m1 = Method.getMethod("void enterMethod(int)");
         visitLdcInsn(this.maxL + this.maxS);

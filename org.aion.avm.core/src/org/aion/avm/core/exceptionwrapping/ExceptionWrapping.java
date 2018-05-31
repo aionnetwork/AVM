@@ -10,7 +10,6 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
 
 
 public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
@@ -18,9 +17,9 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
 
     private final String runtimeClassName;
     private final ParentPointers pointers;
-    private final BiConsumer<String, byte[]> generatedClassesSink;
+    private final GeneratedClassConsumer generatedClassesSink;
 
-    public ExceptionWrapping(String runtimeClassName, Forest<String, byte[]> classHierarchy, BiConsumer<String, byte[]> generatedClassesSink) {
+    public ExceptionWrapping(String runtimeClassName, Forest<String, byte[]> classHierarchy, GeneratedClassConsumer generatedClassesSink) {
         super(Opcodes.ASM6);
         this.runtimeClassName = runtimeClassName;
         this.pointers = new ParentPointers(classHierarchy);
@@ -62,7 +61,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
             String reparentedName = kWrapperClassLibraryPrefix + name;
             String reparentedSuperName = kWrapperClassLibraryPrefix + superName;
             byte[] wrapperBytes = StubGenerator.generateWrapperClass(reparentedName, reparentedSuperName);
-            generatedClassesSink.accept(reparentedName, wrapperBytes);
+            generatedClassesSink.accept(reparentedSuperName, reparentedName, wrapperBytes);
         }
     }
 
@@ -186,5 +185,20 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                 super.visitInsn(opcode);
             }
         };
+    }
+
+
+    /**
+     * An interface which exists to allow external concerns to be notified when a class is dynamically generated for the purposes of exception wrapping.
+     */
+    public static interface GeneratedClassConsumer {
+        /**
+         * Called when a new class is generated.
+         * 
+         * @param superClassName The name of the super class (in slash form).
+         * @param className The name of the generated class (in slash form).
+         * @param bytecode The bytecode of the generated class.
+         */
+        public void accept(String superClassName, String className, byte[] bytecode);
     }
 }

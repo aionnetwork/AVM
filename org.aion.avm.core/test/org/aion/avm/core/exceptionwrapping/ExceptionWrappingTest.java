@@ -16,8 +16,6 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
-
 
 public class ExceptionWrappingTest {
     private static AvmSharedClassLoader sharedClassLoader;
@@ -178,11 +176,16 @@ public class ExceptionWrappingTest {
         }
         
         public void transformClass(String name, byte[] inputBytes) {
-            BiConsumer<String, byte[]> generatedClassesSink = (slashName, bytes) -> LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes);
+            HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
+            ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (slashSuperName, slashName, bytes) -> {
+                LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes);
+                dynamicHierarchyBuilder.addClass(slashName, slashSuperName, bytes);
+            };
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                     .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, this.classHierarchy, generatedClassesSink))
                     .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME))
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
+                            sharedClassLoader, this.classHierarchy, dynamicHierarchyBuilder))
                     .build();
             this.transformedClasses.put(name, toolchain.runAndGetBytecode());
         }

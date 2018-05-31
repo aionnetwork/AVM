@@ -58,7 +58,7 @@ public class AvmImplTest {
 
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
         BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit);
-        AvmImpl avm = new AvmImpl();
+        AvmImpl avm = new AvmImpl(sharedClassLoader);
         AvmResult result = avm.deploy(jar, rt);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
@@ -78,7 +78,7 @@ public class AvmImplTest {
                 return null;
             }
         };
-        AvmImpl avm = new AvmImpl();
+        AvmImpl avm = new AvmImpl(sharedClassLoader);
         AvmResult result = avm.run(rt);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);

@@ -7,6 +7,10 @@ public class TestResource {
     public int depth = 0;
     public int upCounter = 0;
 
+    public TestResource(){
+        super();
+    }
+
     private void countDown(int i){
         if (i > 0){
             countDown(i - 1);

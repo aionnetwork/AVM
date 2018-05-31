@@ -3,7 +3,6 @@ package org.aion.avm.core;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
-import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
@@ -33,7 +32,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.function.BiConsumer;
 
 import static org.aion.avm.core.FileUtils.getFSRootDirFor;
 import static org.aion.avm.core.FileUtils.putToTempDir;
@@ -45,9 +43,9 @@ public class AvmImpl implements Avm {
 
     /**
      * We will re-use this top-level class loader for all contracts as the classes within it are state-less and have no dependencies on a contract.
-     * NOTE:  We may make this an instance variable if we decide to re-use the common AvmImpl instance for all transactions.
+     * It is provided by the caller of our constructor, meaning it gets to decide if the same AvmImpl is reused, or not.
      */
-    private static final AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    private final AvmSharedClassLoader sharedClassLoader;
 
     static {
         DAPPS_DIR.mkdirs();
@@ -62,6 +60,10 @@ public class AvmImpl implements Avm {
     static DappModule readDapp(byte[] jar) throws IOException {
         Objects.requireNonNull(jar);
         return DappModule.readFromJar(jar);
+    }
+
+    public AvmImpl(AvmSharedClassLoader sharedClassLoader) {
+        this.sharedClassLoader = sharedClassLoader;
     }
 
     /**
@@ -141,19 +143,27 @@ public class AvmImpl implements Avm {
 
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
+        // WARNING:  This dynamicHierarchyBuilder is both mutable and shared by TypeAwareClassWriter instances.
+        HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
+        // merge the generated classes and processed classes, assuming the package spaces do not conflict.
+        // We also want to expose this type to the class writer so it can compute common superclasses.
+        ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (superClassSlashName, classSlashName, bytecode) -> {
+            processedClasses.put(classSlashName, bytecode);
+            dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
+        };
         for (String name : classes.keySet()) {
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, objectSizes))
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ClassShadowing(HELPER_CLASS))
-                    .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, classHierarchy, processedClasses::put))
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                    .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, classHierarchy, generatedClassesSink))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, classHierarchy, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
             bytecode = new ClassToolchain.Builder(bytecode, ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new ArrayWrappingClassAdapterRef())
                     .addNextVisitor(new ArrayWrappingClassAdapter())
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, classHierarchy, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
             processedClasses.put(name, bytecode);
@@ -251,7 +261,7 @@ public class AvmImpl implements Avm {
             Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
             
             // Construct the per-contract class loader and access the per-contract IHelper instance.
-            AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, allClasses);
+            AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
             IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
@@ -313,7 +323,7 @@ public class AvmImpl implements Avm {
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
         
         // Construct the per-contract class loader and access the per-contract IHelper instance.
-        AvmClassLoader classLoader = new AvmClassLoader(sharedClassLoader, allClasses);
+        AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
         IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
         // load class
