@@ -155,7 +155,7 @@ public class AvmImpl implements Avm {
         ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
         for (String name : classes.keySet()) {
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
-                    .addNextVisitor(new RejectionClassVisitor())
+                    .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, objectSizes))
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))

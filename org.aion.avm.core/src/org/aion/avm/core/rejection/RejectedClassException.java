@@ -16,6 +16,10 @@ public class RejectedClassException extends RuntimeException {
         throw new RejectedClassException("Blacklisted Opcode detected: 0x" + Integer.toHexString(opcode));
     }
 
+    public static void nonWhiteListedClass(String className) {
+        throw new RejectedClassException("Class is not on white-list: " + className);
+    }
+
 
     public RejectedClassException(String message) {
         super(message);

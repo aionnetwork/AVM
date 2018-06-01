@@ -6,6 +6,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.ClassWhiteList;
+import org.aion.avm.core.Forest;
+import org.aion.avm.core.HierarchyTreeBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,9 +28,15 @@ public class RejectionClassVisitorTest {
         String className = FilteringResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         
+        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(className, "java.lang.Object", raw)
+                .addClass(className + "$A", "java.lang.Throwable", null)
+                .addClass(className + "$B", className + "$A", null)
+                .asMutableForest();
+        ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
         // We want to prove we can strip out everything so don't use any special parsing options for this visitor.
         byte[] filteredBytes = new ClassToolchain.Builder(raw, 0)
-                .addNextVisitor(new RejectionClassVisitor())
+                .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();
@@ -88,6 +97,13 @@ public class RejectionClassVisitorTest {
         // (interestingly, I over-wrote the goto offset in a path the test doesn't execute so this runs with -Xverify:none)
         // Verify that this fails by throwing.
         commonFilterClass("test/resources/TestClassTemplate_corrupt.class");
+    }
+
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_blocked() throws Exception {
+        // Load the bytes we saved (normal TestClassTemplate we try to call System.out near the end).
+        // Verify that this fails by throwing.
+        commonFilterClass("test/resources/TestClassTemplate_deniedField.class");
     }
 
 
@@ -249,8 +265,12 @@ public class RejectionClassVisitorTest {
     private byte[] commonFilterClass(String path) throws IOException {
         byte[] testBytes = Files.readAllBytes(Paths.get(path));
         
+        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
+                .addClass("TestClassTemplate", "java.lang.Object", testBytes)
+                .asMutableForest();
+        ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
         byte[] filteredBytes = new ClassToolchain.Builder(testBytes, 0)
-                .addNextVisitor(new RejectionClassVisitor())
+                .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();

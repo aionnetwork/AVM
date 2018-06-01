@@ -1,6 +1,7 @@
 package org.aion.avm.core.rejection;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.util.Assert;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -23,8 +24,12 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
     // This will probably change, in the future, but we currently will only parse Java10 (version 54) classes.
     private static final int SUPPORTED_CLASS_VERSION = 54;
 
-    public RejectionClassVisitor() {
+    private final ClassWhiteList classWhiteList;
+
+    public RejectionClassVisitor(ClassWhiteList classWhiteList) {
         super(Opcodes.ASM6);
+        
+        this.classWhiteList = classWhiteList;
     }
 
     @Override
@@ -34,8 +39,15 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
             RejectedClassException.unsupportedClassVersion(version);
         }
         
-        // TODO: Check the superName.
-        // TODO: Check the interfaces.
+        // Check the superName.
+        // The superName either needs to be provided by the user contract or be in "java/lang/".
+        ClassAccessVerifier.checkClassAccessible(this.classWhiteList, superName);
+        
+        // Check the interfaces.
+        // These rules are the same as the superclass.
+        for (String interfaceName : interfaces) {
+            ClassAccessVerifier.checkClassAccessible(this.classWhiteList, interfaceName);
+        }
         
         // Null the signature, since we don't use it and don't want to make sure it is safe.
         super.visit(version, access, name, null, superName, interfaces);
@@ -71,7 +83,8 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
 
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
-        // TODO:Check the descriptor.
+        // Check the descriptor.
+        ClassAccessVerifier.checkDescriptor(this.classWhiteList, descriptor);
         
         // Note that the "value" field is only used for statics and can't be an object other than a String so we are safe with that.
         
@@ -82,7 +95,14 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-        // TODO:Check the descriptor.
+        // Check the descriptor.
+        ClassAccessVerifier.checkDescriptor(this.classWhiteList, descriptor);
+        // Check the exceptions.
+        if (null != exceptions) {
+            for (String exceptionName : exceptions) {
+                ClassAccessVerifier.checkClassAccessible(this.classWhiteList, exceptionName);
+            }
+        }
         
         // Null the signature, since we don't use it and don't want to make sure it is safe.
         MethodVisitor mv = super.visitMethod(access, name, descriptor, null, exceptions);
