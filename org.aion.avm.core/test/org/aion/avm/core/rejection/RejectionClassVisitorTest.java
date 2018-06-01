@@ -100,10 +100,17 @@ public class RejectionClassVisitorTest {
     }
 
     @Test(expected=RejectedClassException.class)
-    public void testRejection_blocked() throws Exception {
-        // Load the bytes we saved (normal TestClassTemplate we try to call System.out near the end).
+    public void testRejection_deniedField() throws Exception {
+        // Load the bytes we saved (normal TestClassTemplate but we include a java/util/Set static field).
         // Verify that this fails by throwing.
         commonFilterClass("test/resources/TestClassTemplate_deniedField.class");
+    }
+
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_deniedMethod() throws Exception {
+        // Load the bytes we saved (normal TestClassTemplate we try to call System.out near the end).
+        // Verify that this fails by throwing.
+        commonFilterClass("test/resources/TestClassTemplate_deniedMethod.class");
     }
 
 

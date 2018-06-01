@@ -1,7 +1,9 @@
 package org.aion.avm.core.rejection;
 
+import org.aion.avm.core.ClassWhiteList;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -17,8 +19,11 @@ import org.objectweb.asm.TypePath;
  * When a violation is detected, throws the RejectedClassException.
  */
 public class RejectionMethodVisitor extends MethodVisitor {
-    public RejectionMethodVisitor(MethodVisitor visitor) {
+    private final ClassWhiteList classWhiteList;
+
+    public RejectionMethodVisitor(MethodVisitor visitor, ClassWhiteList classWhiteList) {
         super(Opcodes.ASM6, visitor);
+        this.classWhiteList = classWhiteList;
     }
 
     @Override
@@ -76,18 +81,22 @@ public class RejectionMethodVisitor extends MethodVisitor {
     @Override
     public void visitTypeInsn(int opcode, String type) {
         checkOpcode(opcode);
+        ClassAccessVerifier.checkClassAccessible(this.classWhiteList, type);
         super.visitTypeInsn(opcode, type);
     }
 
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
         checkOpcode(opcode);
+        ClassAccessVerifier.checkDescriptor(this.classWhiteList, descriptor);
         super.visitFieldInsn(opcode, owner, name, descriptor);
     }
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         checkOpcode(opcode);
+        ClassAccessVerifier.checkClassAccessible(this.classWhiteList, owner);
+        ClassAccessVerifier.checkDescriptor(this.classWhiteList, descriptor);
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
     }
 
@@ -123,6 +132,20 @@ public class RejectionMethodVisitor extends MethodVisitor {
     @Override
     public void visitLineNumber(int line, Label start) {
         // This is debug data, so filter it out.
+    }
+
+    @Override
+    public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+        ClassAccessVerifier.checkDescriptor(this.classWhiteList, descriptor);
+        super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+    }
+
+    @Override
+    public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
+        if (null != type) {
+            ClassAccessVerifier.checkClassAccessible(this.classWhiteList, type);
+        }
+        super.visitTryCatchBlock(start, end, handler, type);
     }
 
 

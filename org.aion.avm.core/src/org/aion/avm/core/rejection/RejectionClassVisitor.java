@@ -106,6 +106,6 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
         
         // Null the signature, since we don't use it and don't want to make sure it is safe.
         MethodVisitor mv = super.visitMethod(access, name, descriptor, null, exceptions);
-        return new RejectionMethodVisitor(mv);
+        return new RejectionMethodVisitor(mv, this.classWhiteList);
     }
 }
