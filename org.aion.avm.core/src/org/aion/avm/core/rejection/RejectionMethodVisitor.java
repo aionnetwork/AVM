@@ -56,6 +56,48 @@ public class RejectionMethodVisitor extends MethodVisitor {
     }
 
     @Override
+    public void visitInsn(int opcode) {
+        checkOpcode(opcode);
+        super.visitInsn(opcode);
+    }
+
+    @Override
+    public void visitIntInsn(int opcode, int operand) {
+        checkOpcode(opcode);
+        super.visitIntInsn(opcode, operand);
+    }
+
+    @Override
+    public void visitVarInsn(int opcode, int var) {
+        checkOpcode(opcode);
+        super.visitVarInsn(opcode, var);
+    }
+
+    @Override
+    public void visitTypeInsn(int opcode, String type) {
+        checkOpcode(opcode);
+        super.visitTypeInsn(opcode, type);
+    }
+
+    @Override
+    public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+        checkOpcode(opcode);
+        super.visitFieldInsn(opcode, owner, name, descriptor);
+    }
+
+    @Override
+    public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        checkOpcode(opcode);
+        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+    }
+
+    @Override
+    public void visitJumpInsn(int opcode, Label label) {
+        checkOpcode(opcode);
+        super.visitJumpInsn(opcode, label);
+    }
+
+    @Override
     public AnnotationVisitor visitInsnAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
         // Filter this.
         return new RejectionAnnotationVisitor();
@@ -81,5 +123,16 @@ public class RejectionMethodVisitor extends MethodVisitor {
     @Override
     public void visitLineNumber(int line, Label start) {
         // This is debug data, so filter it out.
+    }
+
+
+    private void checkOpcode(int opcode) {
+        // For now, we just reject on JSR and RET.
+        if (false
+                || (Opcodes.JSR == opcode)
+                || (Opcodes.RET == opcode)
+        ) {
+            RejectedClassException.blacklistedOpcode(opcode);
+        }
     }
 }

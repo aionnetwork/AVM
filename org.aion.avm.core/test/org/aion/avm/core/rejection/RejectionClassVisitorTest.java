@@ -57,6 +57,30 @@ public class RejectionClassVisitorTest {
         commonFilterClass("test/resources/TestClassTemplate_V9.class");
     }
 
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_jsr() throws Exception {
+        // Load the bytes we saved (normal TestClassTemplate but with an innocuous JSR/RET combo injected into the stream).
+        // ASM snippet to add this (uses local 4 which may need to be changed but this otherwise shouldn't disrupt flow):
+        /*
+    {
+        Label jsr = new Label();
+        Label after = new Label();
+        methodVisitor.visitJumpInsn(Opcodes.JSR, jsr);
+        methodVisitor.visitJumpInsn(Opcodes.GOTO, after);
+        methodVisitor.visitLabel(jsr);
+        methodVisitor.visitVarInsn(ASTORE, 4);
+        methodVisitor.visitVarInsn(RET, 4);
+        methodVisitor.visitLabel(after);
+    }
+         */
+        // NOTE:  Code generated as above will fail verification unless built with a class file version before JDK7.
+        // Beyond that, it _will_ run, but only with -Xverify:none.
+        // (this test uses JDK10 as the version to ensure that we aren't tripped by the version check but actually see the blacklisted opcode)
+        
+        // Verify that this fails by throwing.
+        commonFilterClass("test/resources/TestClassTemplate_jsr.class");
+    }
+
 
     private static void compareClasses(ClassNode inputNode, ClassNode outputNode) {
         // Access is unchanged.

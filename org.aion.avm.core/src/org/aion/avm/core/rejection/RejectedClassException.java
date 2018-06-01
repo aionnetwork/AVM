@@ -12,6 +12,10 @@ public class RejectedClassException extends RuntimeException {
         throw new RejectedClassException("Unsupported class version: " + version);
     }
 
+    public static void blacklistedOpcode(int opcode) {
+        throw new RejectedClassException("Blacklisted Opcode detected: 0x" + Integer.toHexString(opcode));
+    }
+
 
     public RejectedClassException(String message) {
         super(message);
