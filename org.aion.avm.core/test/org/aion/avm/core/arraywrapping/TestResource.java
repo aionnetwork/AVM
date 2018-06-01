@@ -359,4 +359,11 @@ public class TestResource {
         return (a == 1) && (oi instanceof int[]) && (b == 1) && (ois instanceof int[]);
     }
 
+//    public boolean testMulti(){
+//        String[][] i3 = new String[5][4];
+//        String a = i3[1][1];
+//
+//        return true;
+//    }
+
 }

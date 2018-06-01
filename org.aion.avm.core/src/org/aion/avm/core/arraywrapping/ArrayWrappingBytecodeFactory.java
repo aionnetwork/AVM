@@ -3,12 +3,14 @@ package org.aion.avm.core.arraywrapping;
 import org.aion.avm.core.util.Assert;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ArrayWrappingBytecodeFactory {
 
     static private HashMap<java.lang.String, java.lang.String> arrayWrapperMap = new HashMap<>();
+    static private HashMap<java.lang.String, HashSet<Integer>> arrayWrapperMultiMap = new HashMap<>();
 
     static{
         arrayWrapperMap.put("[I", "org/aion/avm/arraywrapper/IntArray");
@@ -128,10 +130,20 @@ public class ArrayWrappingBytecodeFactory {
         return desc.substring(1);
     }
 
-    //TODO: Ugly
-    // Return the element descriptor of an array
+    // Return the element type of an array
     // 1D Primitive array will not be called with this method since there will be no aaload
     static java.lang.String getElementType(java.lang.String desc){
-        return desc.substring(2, desc.length() - 1);
+        //System.out.println("Get element enter : " + desc);
+        Assert.assertTrue(desc.startsWith("["));
+
+        String ret = desc.substring(1);
+
+        if (ret.startsWith("L")){
+            ret = ret.substring(1, ret.length() - 1);
+        }
+
+        //System.out.println("Get element ret : " + ret);
+
+        return ret;
     }
 }

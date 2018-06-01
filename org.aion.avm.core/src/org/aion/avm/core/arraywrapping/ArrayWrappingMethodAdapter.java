@@ -223,10 +223,25 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
         this.mv.visitFieldInsn(opcode, owner, name, desc);
     }
 
-    // @Override
-    // void visitMultiANewArrayInsn(java.lang.String descriptor, int d){
-    //
-    // }
+    @Override
+    public void visitMultiANewArrayInsn(java.lang.String descriptor, int d)
+    {
+//        System.out.println("Multi desc : " + descriptor + "  " + d);
+//
+//        String wName = ArrayWrappingBytecodeFactory.getWrapperName(descriptor);
+//
+//        String facDesc = "(";
+//        for (int i = 0; i < d; i++){
+//            facDesc = facDesc + "I";
+//        }
+//        facDesc = facDesc + ")L";
+//
+//        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc + wName + ";", false);
+//
+//        System.out.println("Multi wrapper name : " + wName);
+
+        this.mv.visitMultiANewArrayInsn(descriptor, d);
+    }
 
 
 }
