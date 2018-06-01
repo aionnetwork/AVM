@@ -81,6 +81,15 @@ public class RejectionClassVisitorTest {
         commonFilterClass("test/resources/TestClassTemplate_jsr.class");
     }
 
+    // TODO:  We probably want to handle these RuntimeExceptions from ASM in a more general way.  For now, we just get whatever it failed on.
+    @Test(expected=ArrayIndexOutOfBoundsException.class)
+    public void testRejection_corrupt() throws Exception {
+        // Load the bytes we saved (normal TestClassTemplate I over-wrote a random byte in the bytecode).
+        // (interestingly, I over-wrote the goto offset in a path the test doesn't execute so this runs with -Xverify:none)
+        // Verify that this fails by throwing.
+        commonFilterClass("test/resources/TestClassTemplate_corrupt.class");
+    }
+
 
     private static void compareClasses(ClassNode inputNode, ClassNode outputNode) {
         // Access is unchanged.
