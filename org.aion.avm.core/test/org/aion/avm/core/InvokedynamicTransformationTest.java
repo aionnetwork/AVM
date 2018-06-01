@@ -60,10 +60,11 @@ public class InvokedynamicTransformationTest {
         HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
         ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (superClassSlashName, classSlashName, bytecode) -> {
         };
+        ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
         byte[] newBytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new ClassMetering(HELPER_CLASS, objectSizes))
                 .addNextVisitor(new StackWatcherClassAdapter())
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS))
+                .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))
                 .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, classHierarchy, generatedClassesSink))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, classHierarchy, dynamicHierarchyBuilder))
                 .build()

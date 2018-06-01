@@ -1,6 +1,7 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -34,7 +35,7 @@ public class ClassShadowingTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME))
+                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, ClassWhiteList.buildForEmptyContract()))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();

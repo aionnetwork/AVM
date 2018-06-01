@@ -1,6 +1,7 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
 import org.objectweb.asm.FieldVisitor;
@@ -21,10 +22,12 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
     private static final String METHOD_PREFIX = "avm_";
 
     private String runtimeClassName;
+    private final ClassWhiteList classWhiteList;
 
-    public ClassShadowing(String runtimeClassName) {
+    public ClassShadowing(String runtimeClassName, ClassWhiteList classWhiteList) {
         super(Opcodes.ASM6);
         this.runtimeClassName = runtimeClassName;
+        this.classWhiteList = classWhiteList;
     }
 
     @Override
@@ -36,7 +39,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
             final String superName,
             final String[] interfaces) {
 
-        assert (!name.startsWith(JAVA_LANG));
+        Assert.assertTrue(!this.classWhiteList.isJdkClass(name));
 
         String newSuperName = replaceType(superName);
         String[] newInterfaces = Stream.of(interfaces).map(this::replaceType).toArray(String[]::new);
@@ -161,23 +164,33 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
     }
 
     /**
-     * Update the class reference if the type starts with {@link #JAVA_LANG}.
+     * Update the class reference if the type is a white-listed JDK class which starts with {@link #JAVA_LANG}.
      *
      * @param type
      * @return
      */
     protected String replaceType(String type) {
-        return type.startsWith(JAVA_LANG) ? JAVA_LANG_SHADOW + type.substring(JAVA_LANG.length()) : type;
+        // Note that this assumes we have an agreement with the ClassWhiteList regarding what the JAVA_LANG prefix is
+        // but this is unavoidable since it is a high-level interface and we are doing low-level string replacement.
+        boolean shouldReplacePrefix = this.classWhiteList.isJdkClass(type);
+        if (shouldReplacePrefix) {
+            // This assertion verifies that these agree (in the future, we probably want to source them from the same place and avoid the direct string manipulation, here).
+            // (technically, the white-list check is more restrictive than this since it can know about sub-packages while this doesn't).
+            Assert.assertTrue(type.startsWith(JAVA_LANG));
+        }
+        return shouldReplacePrefix
+                ? JAVA_LANG_SHADOW + type.substring(JAVA_LANG.length())
+                : type;
     }
 
     /**
-     * Update the method reference if the owner type starts with {@link #JAVA_LANG}.
+     * Update the method reference if the owner type is a white-listed JDK class.
      *
      * @param type
      * @return
      */
     protected String replaceMethodName(String type, String methodName) {
-        if (type.startsWith(JAVA_LANG)) {
+        if (this.classWhiteList.isJdkClass(type)) {
             return methodName.equals("<init>") ? methodName : METHOD_PREFIX + methodName;
         } else {
             return methodName;
@@ -185,7 +198,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
     }
 
     /**
-     * Update the method descriptor if it uses any type that starts with {@link #JAVA_LANG}
+     * Update the method descriptor if it uses any white-listed JDK type.
      *
      * @param methodDescriptor
      * @return

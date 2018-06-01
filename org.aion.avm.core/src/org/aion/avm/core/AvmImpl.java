@@ -151,11 +151,12 @@ public class AvmImpl implements Avm {
             processedClasses.put(classSlashName, bytecode);
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
         };
+        ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
         for (String name : classes.keySet()) {
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, objectSizes))
                     .addNextVisitor(new StackWatcherClassAdapter())
-                    .addNextVisitor(new ClassShadowing(HELPER_CLASS))
+                    .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, classHierarchy, generatedClassesSink))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, classHierarchy, dynamicHierarchyBuilder))
                     .build()
