@@ -20,13 +20,20 @@ import org.objectweb.asm.TypePath;
  * When a violation is detected, throws the RejectedClassException.
  */
 public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor {
+    // This will probably change, in the future, but we currently will only parse Java10 (version 54) classes.
+    private static final int SUPPORTED_CLASS_VERSION = 54;
+
     public RejectionClassVisitor() {
         super(Opcodes.ASM6);
     }
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        // TODO: Make sure that this is the version we can understand.
+        // Make sure that this is the version we can understand.
+        if (SUPPORTED_CLASS_VERSION != version) {
+            RejectedClassException.unsupportedClassVersion(version);
+        }
+        
         // TODO: Check the superName.
         // TODO: Check the interfaces.
         

@@ -50,6 +50,13 @@ public class RejectionClassVisitorTest {
         Assert.assertNotNull(filteredBytes);
     }
 
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_version() throws Exception {
+        // Load the bytes we saved (normal TestClassTemplate but with Java9 version).
+        // Verify that this fails by throwing.
+        commonFilterClass("test/resources/TestClassTemplate_V9.class");
+    }
+
 
     private static void compareClasses(ClassNode inputNode, ClassNode outputNode) {
         // Access is unchanged.
