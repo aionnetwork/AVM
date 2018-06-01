@@ -113,6 +113,14 @@ public class RejectionClassVisitorTest {
         commonFilterClass("test/resources/TestClassTemplate_deniedMethod.class");
     }
 
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_finalize() throws Exception {
+        String className = RejectFinalizeResource.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        // We expect this to fail since we have a finalize() method, which isn't allowed.
+        commonFilterBytes(raw);
+    }
+
 
     private static void compareClasses(ClassNode inputNode, ClassNode outputNode) {
         // Access is unchanged.
@@ -271,7 +279,10 @@ public class RejectionClassVisitorTest {
 
     private byte[] commonFilterClass(String path) throws IOException {
         byte[] testBytes = Files.readAllBytes(Paths.get(path));
-        
+        return commonFilterBytes(testBytes);
+    }
+
+    private byte[] commonFilterBytes(byte[] testBytes) throws IOException {
         Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass("TestClassTemplate", "java.lang.Object", testBytes)
                 .asMutableForest();

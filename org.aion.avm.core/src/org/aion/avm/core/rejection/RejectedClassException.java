@@ -20,6 +20,10 @@ public class RejectedClassException extends RuntimeException {
         throw new RejectedClassException("Class is not on white-list: " + className);
     }
 
+    public static void forbiddenMethodOverride(String methodName) {
+        throw new RejectedClassException("Attempted to override forbidden method: " + methodName);
+    }
+
 
     public RejectedClassException(String message) {
         super(message);

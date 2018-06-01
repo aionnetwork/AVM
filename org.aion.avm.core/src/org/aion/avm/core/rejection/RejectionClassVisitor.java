@@ -104,6 +104,12 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
             }
         }
         
+        // Check that they aren't trying to override a forbidden method.
+        // finalize() is forbidden - should we check only the empty args descriptor or all methods with this name?
+        if ("finalize".equals(name)) {
+            RejectedClassException.forbiddenMethodOverride(name);
+        }
+        
         // Null the signature, since we don't use it and don't want to make sure it is safe.
         MethodVisitor mv = super.visitMethod(access, name, descriptor, null, exceptions);
         return new RejectionMethodVisitor(mv, this.classWhiteList);
