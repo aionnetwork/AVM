@@ -1,5 +1,8 @@
 package org.aion.avm.core.rejection;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.aion.avm.core.ClassToolchain;
@@ -37,6 +40,16 @@ public class RejectionClassVisitorTest {
         
         compareClasses(inputNode, outputNode);
     }
+
+    @Test
+    public void testRejection_control() throws Exception {
+        // This is just to verify that the test classes we are using were made from a test that actually _does_ load.
+        String path = "test/resources/TestClassTemplate_control.class";
+        // This is the untouched input so it should work.
+        byte[] filteredBytes = commonFilterClass(path);
+        Assert.assertNotNull(filteredBytes);
+    }
+
 
     private static void compareClasses(ClassNode inputNode, ClassNode outputNode) {
         // Access is unchanged.
@@ -191,5 +204,16 @@ public class RejectionClassVisitorTest {
         Assert.assertNull(outputMethod.visibleTypeAnnotations);
         
         Assert.assertNull(outputMethod.parameters);
+    }
+
+    private byte[] commonFilterClass(String path) throws IOException {
+        byte[] testBytes = Files.readAllBytes(Paths.get(path));
+        
+        byte[] filteredBytes = new ClassToolchain.Builder(testBytes, 0)
+                .addNextVisitor(new RejectionClassVisitor())
+                .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                .build()
+                .runAndGetBytecode();
+        return filteredBytes;
     }
 }
