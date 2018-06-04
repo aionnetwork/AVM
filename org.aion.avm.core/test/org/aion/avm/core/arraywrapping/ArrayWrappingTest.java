@@ -213,4 +213,74 @@ public class ArrayWrappingTest {
         Assert.assertEquals(ret, true);
     }
 
+    @Test
+    public void testMultiInt() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiInt");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiByte() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiByte");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiChar() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiChar");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiFloat() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiFloat");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiLong() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiLong");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiDouble() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiDouble");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiRef() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiRef");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
 }

@@ -21,7 +21,7 @@ public class ArrayWrappingClassAdapter extends ClassToolchain.ToolChainClassVisi
     {
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingBytecodeFactory.getWrapperName(descriptor) + ";";
+            desc = "L" + ArrayWrappingBytecodeFactory.getWrapper(descriptor) + ";";
         }
 
         return super.visitField(access, name, desc, signature, value);

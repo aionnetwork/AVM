@@ -88,6 +88,7 @@ public class ArrayWrappingInterpreter extends BasicInterpreter{
             case DREM:
                 return BasicValue.DOUBLE_VALUE;
             case AALOAD:
+                //TODO: Double check this
                 return newValue(Type.getType(value1.toString().substring(1)));
             case LCMP:
             case FCMPL:

@@ -6,6 +6,8 @@ public class TestResource {
     private Object[] oa;
     private int[] oi;
     public static int[] ois;
+    public String[][][] fieldMDString;
+    public int[][][] fieldMDInt;
 
     public boolean testBasic(){
         boolean res = true;
@@ -26,13 +28,15 @@ public class TestResource {
         short[]     h = new short[42];
         Object[]    i = new Object[42];
         String[]    j = new String[42];
-        return a == this.testMixedSignature(a, b, c, d, e, f, g, h, i, j);
+        String[][]          k = new String[42][1];
+        String[][][][][]    l = new String[42][1][1][1][1];
+        return a == this.testMixedSignature(a, b, c, d, e, f, g, h, i, j, k, l);
     }
 
     public boolean[] testMixedSignature(boolean[] in1, byte[] in2, char[] in3,
                                         double[] in4, float[] in5, int[] in6,
                                         long[] in7, short[] in8, Object[] in9,
-                                        String[] in10)
+                                        String[] in10, String[][] in11, String[][][][][] in12)
     {
         return in1;
     }
@@ -356,14 +360,159 @@ public class TestResource {
         ois[20] = 1;
         int b = ois[20];
 
-        return (a == 1) && (oi instanceof int[]) && (b == 1) && (ois instanceof int[]);
+        fieldMDInt = new int[10][10][10];
+        fieldMDInt[5][5][5] = 10;
+        int c = fieldMDInt[5][5][5];
+
+        fieldMDString = new String[10][10][10];
+        fieldMDString[5][5][5] = "Bomb";
+        String d = fieldMDString[5][5][5];
+
+        return (a == 1) && (oi instanceof int[]) && (b == 1) && (ois instanceof int[]) && (c == 10) && (d.equals("Bomb"));
     }
 
-//    public boolean testMulti(){
-//        String[][] i3 = new String[5][4];
-//        String a = i3[1][1];
-//
-//        return true;
-//    }
+    public boolean testMultiInt(){
+        boolean ret = true;
+
+        int[][][] i3 = new int[3][3][3];
+        i3[1][1][1] = 1;
+        i3[2][2][2] = 8;
+
+        ret = ret && (i3[1][1][1] == 1);
+        ret = ret && (i3[2][2][2] == 8);
+
+        int[][] i2 = new int[3][3];
+        i2[2][2] = 7;
+        i3[2] = i2;
+        ret = ret && (i3[2][2][2] == 7);
+
+        return ret;
+    }
+
+    public boolean testMultiByte(){
+        boolean ret = true;
+
+        byte[][][] i3 = new byte[3][3][3];
+        i3[1][1][1] = 0xA;
+        i3[2][2][2] = 0XB;
+
+        ret = ret && (i3[1][1][1] == 0xA);
+        ret = ret && (i3[2][2][2] == 0XB);
+
+        byte[][] i2 = new byte[3][3];
+        i2[2][2] = 0XC;
+        i3[2] = i2;
+        ret = ret && (i3[2][2][2] == 0XC);
+
+        return ret;
+    }
+
+    public boolean testMultiChar(){
+        boolean ret = true;
+
+        char[][][] i3 = new char[3][3][3];
+        i3[1][1][1] = 'A';
+        i3[2][2][2] = 'B';
+
+        ret = ret && (i3[1][1][1] == 'A');
+        ret = ret && (i3[2][2][2] == 'B');
+
+        char[][] i2 = new char[3][3];
+        i2[2][2] = 'C';
+        i3[2] = i2;
+        ret = ret && (i3[2][2][2] == 'C');
+
+        return ret;
+    }
+
+    public boolean testMultiDouble(){
+        boolean ret = true;
+
+        double[][][] i3 = new double[3][3][3];
+        i3[1][1][1] = 1 / 3;
+        i3[2][2][2] = 2 / 3;
+
+        ret = ret && (i3[1][1][1] == 1 / 3);
+        ret = ret && (i3[2][2][2] == 2 / 3);
+
+        double[][] i2 = new double[3][3];
+        i2[2][2] = 1 / 3;
+        i3[2] = i2;
+        ret = ret && (i3[2][2][2] == 1 / 3);
+
+        return ret;
+    }
+
+    public boolean testMultiFloat(){
+        boolean ret = true;
+
+        float[][][] i3 = new float[3][3][3];
+        i3[1][1][1] = 1 / 3;
+        i3[2][2][2] = 2 / 3;
+
+        ret = ret && (i3[1][1][1] == 1 / 3);
+        ret = ret && (i3[2][2][2] == 2 / 3);
+
+        float[][] i2 = new float[3][3];
+        i2[2][2] = 1 / 3;
+        i3[2] = i2;
+        ret = ret && (i3[2][2][2] == 1 / 3);
+
+        return ret;
+    }
+
+    public boolean testMultiLong(){
+        boolean ret = true;
+
+        long[][][] i3 = new long[3][3][3];
+        i3[1][1][1] = 111111111;
+        i3[2][2][2] = 222222222;
+
+        ret = ret && (i3[1][1][1] == 111111111);
+        ret = ret && (i3[2][2][2] == 222222222);
+
+        long[][] i2 = new long[3][3];
+        i2[2][2] = 333333333;
+        i3[2] = i2;
+        ret = ret && (i3[2][2][2] == 333333333);
+
+        return ret;
+    }
+
+    public boolean testMultiShort(){
+        boolean ret = true;
+
+        short[][][] i3 = new short[3][3][3];
+        i3[1][1][1] = 1;
+        i3[2][2][2] = 2;
+
+        ret = ret && (i3[1][1][1] == 1);
+        ret = ret && (i3[2][2][2] == 2);
+
+        short[][] i2 = new short[3][3];
+        i2[2][2] = 3;
+        i3[2] = i2;
+        ret = ret && (i3[2][2][2] == 3);
+
+        return ret;
+    }
+
+    public boolean testMultiRef(){
+        boolean ret = true;
+
+        String[][][] s3 = new String[3][3][3];
+        s3[1][1][1] = "Hello";
+        s3[2][2][2] = "World";
+
+        ret = ret && s3[1][1][1].startsWith("Hello");
+        ret = ret && s3[2][2][2].startsWith("World");
+
+        String[][] s2 = new String[3][3];
+        s2[2][2] = "Canada";
+        s3[2] = s2;
+        ret = ret && s3[2][2][2].startsWith("Canada");
+
+        return ret;
+    }
 
 }

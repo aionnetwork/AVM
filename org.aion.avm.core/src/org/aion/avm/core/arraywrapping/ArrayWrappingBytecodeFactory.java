@@ -51,7 +51,7 @@ public class ArrayWrappingBytecodeFactory {
         {
             cur = paraMatcher.group();
             if(cur.startsWith("[")) {
-                cur = "L" + getWrapperName(cur) + ";";
+                cur = "L" + getWrapper(cur) + ";";
             }
             sb.append(cur);
         }
@@ -67,7 +67,7 @@ public class ArrayWrappingBytecodeFactory {
             if (retMatcher.find()){
                 cur = retMatcher.group();
                 if(cur.startsWith("[")) {
-                    cur = "L" + getWrapperName(cur) + ";";
+                    cur = "L" + getWrapper(cur) + ";";
                 }
                 sb.append(cur);
             }
@@ -77,7 +77,7 @@ public class ArrayWrappingBytecodeFactory {
     }
 
     // Return the wrapper descriptor of an array
-    static java.lang.String getWrapperName(java.lang.String desc){
+    static java.lang.String getWrapper(java.lang.String desc){
         if (desc.endsWith(";")){
             desc = desc.substring(0, desc.length() - 1);
         }
@@ -88,7 +88,7 @@ public class ArrayWrappingBytecodeFactory {
         }else if (arrayWrapperMap.containsKey(desc)){
             ret = arrayWrapperMap.get(desc);
         }else{
-            arrayWrapperMap.put(desc, newWrapperName(desc));
+            arrayWrapperMap.put(desc, newWrapper(desc));
             ret = arrayWrapperMap.get(desc);
         }
 
@@ -97,14 +97,15 @@ public class ArrayWrappingBytecodeFactory {
     }
 
     // Return the wrapper descriptor of an array
-    static java.lang.String getWrapperNameFromElement(java.lang.String desc){
-        String wDesc = "[" + desc;
-        //System.out.println("Wrapper name : " + ret);
-        return getWrapperName(wDesc);
+    static java.lang.String getFacDesc(java.lang.String wrapper, int d){
+        String facDesc = new String(new char[d]).replace("\0", "I");
+        facDesc = "(" + facDesc + ")L" + wrapper + ";";
+        return facDesc;
     }
 
+
     //TODO:: is this enough?
-    private static java.lang.String newWrapperName(java.lang.String desc){
+    private static java.lang.String newWrapper(java.lang.String desc){
         //System.out.println(desc);
         StringBuilder sb = new StringBuilder();
         sb.append("org/aion/avm/arraywrapper/");
@@ -141,9 +142,7 @@ public class ArrayWrappingBytecodeFactory {
         if (ret.startsWith("L")){
             ret = ret.substring(1, ret.length() - 1);
         }
-
         //System.out.println("Get element ret : " + ret);
-
         return ret;
     }
 }

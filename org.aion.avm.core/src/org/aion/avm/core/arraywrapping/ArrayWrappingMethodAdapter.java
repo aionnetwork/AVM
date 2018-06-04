@@ -11,8 +11,6 @@ import org.objectweb.asm.commons.Method;
 
 class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
-    private Type typeInt = Type.getType(int.class);
-
     private Type typeA = Type.getType(org.aion.avm.arraywrapper.Array.class);
     private Type typeBA = Type.getType(ByteArray.class);
     private Type typeCA = Type.getType(CharArray.class);
@@ -163,9 +161,9 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
         switch(opcode){
             case Opcodes.ANEWARRAY:
                 if (type.startsWith("[")){
-                    wName = ArrayWrappingBytecodeFactory.getWrapperName("[" + type);
+                    wName = ArrayWrappingBytecodeFactory.getWrapper("[" + type);
                 }else{
-                    wName = ArrayWrappingBytecodeFactory.getWrapperName("[L" + type);
+                    wName = ArrayWrappingBytecodeFactory.getWrapper("[L" + type);
                 }
 
                 this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", "(I)L" + wName + ";", false);
@@ -175,7 +173,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             case Opcodes.INSTANCEOF:
                 wName = type;
                 if (type.startsWith("[")) {
-                    wName = ArrayWrappingBytecodeFactory.getWrapperName(type);
+                    wName = ArrayWrappingBytecodeFactory.getWrapper(type);
                 }
                 this.mv.visitTypeInsn(opcode, wName);
                 break;
@@ -202,7 +200,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     {
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingBytecodeFactory.getWrapperName(descriptor) + ";";
+            desc = "L" + ArrayWrappingBytecodeFactory.getWrapper(descriptor) + ";";
         }
 
         this.mv.visitLocalVariable(name, desc, signature, start, end, index);
@@ -217,7 +215,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingBytecodeFactory.getWrapperName(descriptor) + ";";
+            desc = "L" + ArrayWrappingBytecodeFactory.getWrapper(descriptor) + ";";
         }
 
         this.mv.visitFieldInsn(opcode, owner, name, desc);
@@ -226,21 +224,13 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     @Override
     public void visitMultiANewArrayInsn(java.lang.String descriptor, int d)
     {
-//        System.out.println("Multi desc : " + descriptor + "  " + d);
-//
-//        String wName = ArrayWrappingBytecodeFactory.getWrapperName(descriptor);
-//
-//        String facDesc = "(";
-//        for (int i = 0; i < d; i++){
-//            facDesc = facDesc + "I";
-//        }
-//        facDesc = facDesc + ")L";
-//
-//        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc + wName + ";", false);
-//
-//        System.out.println("Multi wrapper name : " + wName);
+        //System.out.println("Multi bytecode : " + descriptor + "  " + d);
+        String wName = ArrayWrappingBytecodeFactory.getWrapper(descriptor);
+        //System.out.println("Multi wrapper name : " + wName);
+        String facDesc = ArrayWrappingBytecodeFactory.getFacDesc(wName, d);
+        //System.out.println("Multi wrapper desc : " + facDesc);
 
-        this.mv.visitMultiANewArrayInsn(descriptor, d);
+        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc, false);
     }
 
 
