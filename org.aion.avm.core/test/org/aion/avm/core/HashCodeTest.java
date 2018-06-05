@@ -49,7 +49,7 @@ public class HashCodeTest {
         this.clazz = loader.loadClass(className);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
         
-        SimpleRuntime rt = new SimpleRuntime(null, null, 10000);
+        SimpleRuntime rt = new SimpleRuntime(new byte[0], new byte[0], 10000);
         Helpers.instantiateHelper(loader, rt);
     }
 
@@ -222,7 +222,7 @@ public class HashCodeTest {
         Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(targetClassName, transformedTarget));
         
         // We need a common runtime.
-        SimpleRuntime commonRuntime = new SimpleRuntime(null, null, 10000);
+        SimpleRuntime commonRuntime = new SimpleRuntime(new byte[0], new byte[0], 10000);
         
         // Now, we will create 2 class loaders with the same classes:  these will be contract-level loaders.
         AvmClassLoader loader1 = new AvmClassLoader(sharedClassLoader, classes);

@@ -17,16 +17,19 @@ public class TransactionExecutor {
         byte[] payload = new byte[512];
         long energyLimit = 100000;
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, payload, energyLimit);
+        // We will create these up-front since our implementation should return the same instance on every call, where possible.
+        Address sender = new Address(tx.getFrom());
+        Address address = new Address(tx.getTo());
 
         BlockchainRuntime rt = new BlockchainRuntime() {
             @Override
             public Address getSender() {
-                return new Address(tx.getFrom());
+                return sender;
             }
 
             @Override
             public Address getAddress() {
-                return new Address(tx.getTo());
+                return address;
             }
 
             @Override

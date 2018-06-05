@@ -57,7 +57,7 @@ public class ExceptionWrappingTest {
         this.testClass = this.loader.loadClass(className);
         
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(this.loader, new SimpleRuntime(null, null, 0));
+        new Helper(this.loader, new SimpleRuntime(new byte[0], new byte[0], 0));
     }
 
     @After

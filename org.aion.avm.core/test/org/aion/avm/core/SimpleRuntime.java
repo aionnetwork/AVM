@@ -16,9 +16,11 @@ public class SimpleRuntime implements BlockchainRuntime {
     private final long energyLimit;
 
     public SimpleRuntime(byte[] sender, byte[] address, long energyLimit) {
-        // TODO:  Change this handling of null into asserts once our tests pass in real values.
-        this.sender = (null != sender) ? new Address(sender) : null;
-        this.address = (null != address) ? new Address(address) : null;
+        Assert.assertNotNull(sender);
+        Assert.assertNotNull(address);
+        
+        this.sender = new Address(sender);
+        this.address = new Address(address);
         this.energyLimit = energyLimit;
     }
     @Override

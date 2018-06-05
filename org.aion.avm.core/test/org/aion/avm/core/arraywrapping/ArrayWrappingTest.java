@@ -58,7 +58,7 @@ public class ArrayWrappingTest {
         loader.addHandler(wrapperGenerator);
 
         // We don't really need the runtime but we do need to initialize the Helper.
-        Helpers.instantiateHelper(loader, new SimpleRuntime(null, null, 0));
+        Helpers.instantiateHelper(loader, new SimpleRuntime(new byte[0], new byte[0], 0));
 
         clazz = loader.loadClass(className);
     }

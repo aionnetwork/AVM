@@ -103,7 +103,7 @@ public class AvmImplTest {
     @Test
     public void testPersistentEnergyLimit() {
         // Set up the runtime.
-        BlockchainRuntime rt = new SimpleRuntime(null, null, 5);
+        BlockchainRuntime rt = new SimpleRuntime(new byte[0], new byte[0], 5);
         Map<String, byte[]> contractClasses = Helpers.mapIncludingHelperBytecode(Collections.emptyMap());
         IHelper helper = Helpers.instantiateHelper(new AvmClassLoader(sharedClassLoader, contractClasses), rt);
 
