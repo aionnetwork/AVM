@@ -10,8 +10,23 @@ import org.aion.avm.rt.BlockchainRuntime;
  * while we finish our ABI and deployment message design.
  */
 public class BasicAppTestTarget {
+    public static final byte kMethodIdentity = 1;
+
     // NOTE:  Even though this is "byte[]" on the user's side, we will call it from the outside as "ByteArray"
     public static byte[] decode(BlockchainRuntime runtime, byte[] input) {
+        byte instruction = input[0];
+        byte[] output = null;
+        switch (instruction) {
+        case kMethodIdentity:
+            output = identity(runtime, input);
+            break;
+        default:
+            throw new AssertionError("Unknown instruction");
+        }
+        return output;
+    }
+
+    private static byte[] identity(BlockchainRuntime runtime, byte[] input) {
         return input;
     }
 }

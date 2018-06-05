@@ -66,7 +66,7 @@ public class BasicAppTest {
 
     @Test
     public void testIdentity() throws Exception {
-        ByteArray input = new ByteArray(new byte[] {42, 13});
+        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodIdentity, 42, 13});
         ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
         // These should be the same instance.
         Assert.assertEquals(input, output);
