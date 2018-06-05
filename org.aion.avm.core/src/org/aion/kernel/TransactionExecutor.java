@@ -4,6 +4,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 
 public class TransactionExecutor {
@@ -19,13 +20,13 @@ public class TransactionExecutor {
 
         BlockchainRuntime rt = new BlockchainRuntime() {
             @Override
-            public ByteArray getSender() {
-                return new ByteArray(tx.getFrom());
+            public Address getSender() {
+                return new Address(tx.getFrom());
             }
 
             @Override
-            public ByteArray getAddress() {
-                return new ByteArray(tx.getTo());
+            public Address getAddress() {
+                return new Address(tx.getTo());
             }
 
             @Override

@@ -17,6 +17,7 @@ import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.FatalAvmError;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -176,12 +177,13 @@ public class AvmImpl implements Avm {
 
     private final static char[] hexArray = "0123456789abcdef".toCharArray();
 
-    private String byteArrayToString(ByteArray bytes) {
-        int length = bytes.length();
+    private String addressToString(Address address) {
+        byte[] bytes = address.unwrap();
+        int length = bytes.length;
 
         char[] hexChars = new char[length * 2];
         for (int i = 0; i < length; i++) {
-            int v = bytes.get(i) & 0xFF;
+            int v = bytes[i] & 0xFF;
             hexChars[i * 2] = hexArray[v >>> 4];
             hexChars[i * 2 + 1] = hexArray[v & 0x0F];
         }
@@ -197,9 +199,9 @@ public class AvmImpl implements Avm {
      * @param dapp    the dapp module
      * @return the stored bytecode size
      */
-    public long storeTransformedDapp(ByteArray address, DappModule dapp) {
+    public long storeTransformedDapp(Address address, DappModule dapp) {
         long size = 0;
-        String id = byteArrayToString(address);
+        String id = addressToString(address);
         File dir = new File(DAPPS_DIR, id);
         dir.mkdir();
 
@@ -227,8 +229,8 @@ public class AvmImpl implements Avm {
      * @param address
      * @return
      */
-    public DappModule loadTransformedDapp(ByteArray address) {
-        String id = byteArrayToString(address);
+    public DappModule loadTransformedDapp(Address address) {
+        String id = addressToString(address);
         File dir = new File(DAPPS_DIR, id);
         if (!dir.exists()) {
             return null;
