@@ -44,7 +44,7 @@ public class ClassShadowingTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, new SimpleRuntime(null, null, 0));
+        new Helper(loader, new SimpleRuntime(new byte[0], new byte[0], 0));
         
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();

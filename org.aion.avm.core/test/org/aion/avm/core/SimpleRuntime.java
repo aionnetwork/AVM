@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.junit.Assert;
 
@@ -10,22 +11,25 @@ import org.junit.Assert;
  * These provide only the direct inputs, none of the interactive data layer.
  */
 public class SimpleRuntime implements BlockchainRuntime {
-    private final byte[] sender;
-    private final byte[] address;
+    private final Address sender;
+    private final Address address;
     private final long energyLimit;
 
     public SimpleRuntime(byte[] sender, byte[] address, long energyLimit) {
-        this.sender = sender;
-        this.address = address;
+        Assert.assertNotNull(sender);
+        Assert.assertNotNull(address);
+        
+        this.sender = new Address(sender);
+        this.address = new Address(address);
         this.energyLimit = energyLimit;
     }
     @Override
-    public ByteArray getSender() {
-        return new ByteArray(this.sender);
+    public Address getSender() {
+        return this.sender;
     }
     @Override
-    public ByteArray getAddress() {
-        return new ByteArray(this.address);
+    public Address getAddress() {
+        return this.address;
     }
     @Override
     public long getEnergyLimit() {

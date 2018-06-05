@@ -12,14 +12,14 @@ public interface BlockchainRuntime {
      *
      * @return
      */
-    ByteArray getSender();
+    Address getSender();
 
     /**
      * Returns the address of the executing account.
      *
      * @return
      */
-    ByteArray getAddress();
+    Address getAddress();
 
     /**
      * Returns the energy limit.
