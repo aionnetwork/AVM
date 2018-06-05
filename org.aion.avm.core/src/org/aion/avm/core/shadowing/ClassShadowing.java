@@ -83,10 +83,11 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
             @Override
             public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+                String newOwner = replaceType(owner);
                 String newDescriptor = replaceMethodDescriptor(descriptor);
 
                 // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
-                super.visitFieldInsn(opcode, owner, name, newDescriptor);
+                super.visitFieldInsn(opcode, newOwner, name, newDescriptor);
             }
 
             @Override
