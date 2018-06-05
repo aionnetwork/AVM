@@ -79,71 +79,8 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
     @Override
     public void visitIntInsn(int opcode, int operand) {
         checkInject();
-        // This is where the newarray bytecode might appear:  the operand is a specially-defined list of primitive types.
-        if (Opcodes.NEWARRAY == opcode) {
-            // We will handle this through the common multianewarray1 helper instead of creating a new helper for every case.
-            String type = null;
-            String descriptor = null;
-            switch (operand) {
-            case 4: {
-                // boolean
-                type = "java/lang/Boolean";
-                descriptor = "[Z";
-                break;
-            }
-            case 5: {
-                // char
-                type = "java/lang/Character";
-                descriptor = "[C";
-                break;
-            }
-            case 6: {
-                // float
-                type = "java/lang/Float";
-                descriptor = "[F";
-                break;
-            }
-            case 7: {
-                // double
-                type = "java/lang/Double";
-                descriptor = "[D";
-                break;
-            }
-            case 8: {
-                // byte
-                type = "java/lang/Byte";
-                descriptor = "[B";
-                break;
-            }
-            case 9: {
-                // short
-                type = "java/lang/Short";
-                descriptor = "[S";
-                break;
-            }
-            case 10: {
-                // int
-                type = "java/lang/Integer";
-                descriptor = "[I";
-                break;
-            }
-            case 11: {
-                // long
-                type = "java/lang/Long";
-                descriptor = "[J";
-                break;
-            }
-            default:
-                Assert.unreachable("Unknown newarray operand: " + operand);
-            }
-            super.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
-            String methodName = "multianewarray1";
-            String methodDescriptor = "(ILjava/lang/Class;)Ljava/lang/Object;";
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, methodDescriptor, false);
-            super.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
-        } else {
-            super.visitIntInsn(opcode, operand);
-        }
+        super.visitIntInsn(opcode, operand);
+
     }
 
     @Override
@@ -180,82 +117,7 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
     @Override
     public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
         checkInject();
-        // We don't actually want to write multianewarray bytecodes, but always replace them with call-outs.
-        if (numDimensions > 3) {
-            // TODO:  Build something to generate the rest of the helpers we may need, here.  We will only go to 3 for the initial tests.
-            Assert.unimplemented("TODO:  Build something to generate the rest of the helpers we may need, here.  We will only go to 3 for the initial tests.");
-        }
-        // TODO:  Can we be certain numDimensions is at least 2 (if it can't be one, we have an unused method in the static)?
-        // This is just like anewarray, except that the invokestatic target differs, based on numDimensions.
-        
-        // NOTE:  This bytecode is also used for primitive multi-arrays which DO NOT have "L" or ";" in their descriptors.
-        // For example, "long[][]" is "[[J" so we need to handle those a little differently.
-        // Also note that primitive array construction is done very oddly:  since primitives don't have classes, a placeholder is loaded from
-        // the corresponding capital arraywrapper class, as a static.  We need to generate those special-cases here.
-        
-        int indexOfL = descriptor.indexOf("L");
-        boolean isObjectType = (-1 != indexOfL);
-        // Note that we load class references via ldc but primitive types via getstatic.
-        if (isObjectType) {
-            // The descriptor we are given here is the arrayclass descriptor, along the lines of "[[[Ljava/lang/String;" but our helper
-            // wants to receive the raw class so convert it, here, by pruning "[*L" and ";" from the descriptor.
-            String prunedClassName = descriptor.substring(indexOfL + 1, descriptor.length() - 1);
-            super.visitLdcInsn(Type.getObjectType(prunedClassName));
-        } else {
-            // java/lang/Long.TYPE:Ljava/lang/Class;
-            String typeName = descriptor.replaceAll("\\[", "");
-            // We expect that this is only 1 char (or we parsed this wrong or were passed something we couldn't interpret).
-            Assert.assertTrue(1 == typeName.length());
-            String type = DescriptorParser.parse(typeName, new DescriptorParser.TypeOnlyCallbacks<String>() {
-                @Override
-                public String readObject(int arrayDimensions, String type, String userData) {
-                    Assert.unreachable("Objects handled above");
-                    return null;
-                }
-                @Override
-                public String readBoolean(int arrayDimensions, String userData) {
-                    return "java/lang/Boolean";
-                }
-                @Override
-                public String readShort(int arrayDimensions, String userData) {
-                    return "java/lang/Short";
-                }
-                @Override
-                public String readLong(int arrayDimensions, String userData) {
-                    return "java/lang/Long";
-                }
-                @Override
-                public String readInteger(int arrayDimensions, String userData) {
-                    return "java/lang/Integer";
-                }
-                @Override
-                public String readFloat(int arrayDimensions, String userData) {
-                    return "java/lang/Float";
-                }
-                @Override
-                public String readDouble(int arrayDimensions, String userData) {
-                    return "java/lang/Double";
-                }
-                @Override
-                public String readChar(int arrayDimensions, String userData) {
-                    return "java/lang/Char";
-                }
-                @Override
-                public String readByte(int arrayDimensions, String userData) {
-                    return "java/lang/Byte";
-                }
-            }, null);
-            super.visitFieldInsn(Opcodes.GETSTATIC, type, "TYPE", "Ljava/lang/Class;");
-        }
-        String argList = "(";
-        for (int i = 0; i < numDimensions; ++i) {
-            argList += "I";
-        }
-        argList += "Ljava/lang/Class;)";
-        String methodName = "multianewarray" + numDimensions;
-        String methodDescriptor = argList + "Ljava/lang/Object;";
-        super.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, methodName, methodDescriptor, false);
-        super.visitTypeInsn(Opcodes.CHECKCAST, descriptor);
+        super.visitMultiANewArrayInsn(descriptor, numDimensions);
     }
     @Override
     public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
@@ -265,16 +127,8 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
     @Override
     public void visitTypeInsn(int opcode, String type) {
         checkInject();
-        // This is where we might see anewarray, so see if we need to replace it with a helper.
-        if (Opcodes.ANEWARRAY == opcode) {
-            // Inject our special idiom:  ldc then invokestatic, finally checkcast.
-            super.visitLdcInsn(Type.getObjectType(type));
-            // We just use the common multianewarray1 helper, since it can cover the common 1-dimensional cases for both objects and primitives.
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, "multianewarray1", "(ILjava/lang/Class;)Ljava/lang/Object;", false);
-            super.visitTypeInsn(Opcodes.CHECKCAST, "[L" + type + ";");
-        } else {
-            super.visitTypeInsn(opcode, type);
-        }
+        super.visitTypeInsn(opcode, type);
+
     }
     @Override
     public void visitVarInsn(int opcode, int var) {
