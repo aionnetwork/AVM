@@ -4,6 +4,11 @@ import org.aion.avm.arraywrapper.ByteArray;
 public class String extends Object {
     private final java.lang.String underlying;
 
+    public String(String str) {
+        // TODO: is this correct?
+        this.underlying = str.underlying;
+    }
+
     public String(java.lang.String underlying) {
         this.underlying = underlying;
     }
@@ -20,6 +25,10 @@ public class String extends Object {
 
     public String avm_toString() {
         return this;
+    }
+
+    public int avm_length() {
+        return this.underlying.length();
     }
 
     @Override

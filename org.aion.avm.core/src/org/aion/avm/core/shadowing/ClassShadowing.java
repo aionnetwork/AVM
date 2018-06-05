@@ -4,10 +4,7 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 
 import java.util.stream.Stream;
 
@@ -88,6 +85,11 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
                 // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
                 super.visitFieldInsn(opcode, newOwner, name, newDescriptor);
+            }
+
+            @Override
+            public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
+                super.visitLocalVariable(name, replaceMethodDescriptor(descriptor), signature, start, end, index);
             }
 
             @Override

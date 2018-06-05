@@ -8,9 +8,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -29,6 +27,11 @@ public class ClassShadowingTest {
     @BeforeClass
     public static void setupClass() {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+    }
+
+    @After
+    public void clearTestingState() {
+        Helper.clearTestingState();
     }
 
     @Test
@@ -67,8 +70,6 @@ public class ClassShadowingTest {
         // Verify that we see wrapped instances.
         Assert.assertEquals(1, Testing.countWrappedClasses);
         Assert.assertEquals(1, Testing.countWrappedClasses);
-
-        Helper.clearTestingState();
     }
 
     @Test
@@ -76,14 +77,14 @@ public class ClassShadowingTest {
         String className = "org.aion.avm.core.shadowing.TestResource2";
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
-                new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
+                new ClassToolchain.Builder(inputBytes, 0) /* DO NOT SKIP ANYTHING */
                         .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, ClassWhiteList.buildForEmptyContract()))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, transformer.apply(raw));
-
+        Helpers.writeBytesToFile(classes.get(className), "/tmp/dump.class");
 
         Set<String> loadedClasses = new HashSet<>();
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes) {
@@ -99,12 +100,14 @@ public class ClassShadowingTest {
 
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
+
         Method method = clazz.getMethod("getStatic");
         Object ret = method.invoke(obj);
-
         Assert.assertTrue(loadedClasses.contains("org.aion.avm.java.lang.Byte"));
 
-        Helper.clearTestingState();
+        Method method2 = clazz.getMethod("localVariable");
+        Object ret2 = method2.invoke(obj);
+        Assert.assertEquals(Integer.valueOf(3), ret2);
     }
 
     public static class Testing {
