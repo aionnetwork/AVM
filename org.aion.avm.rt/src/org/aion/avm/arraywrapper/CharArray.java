@@ -1,10 +1,13 @@
 package org.aion.avm.arraywrapper;
 
+import org.aion.avm.internal.IHelper;
+
 public class CharArray extends Array {
 
     private char[] underlying;
 
     public static CharArray initArray(int c){
+        IHelper.currentContractHelper.get().externalChargeEnergy(c * 16);
         return new CharArray(c);
     }
 

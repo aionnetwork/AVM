@@ -11,6 +11,7 @@ import java.util.Arrays;
 public class ArrayWrappingClassGenerator implements Opcodes {
 
     static String[] primList = {"I", "J", "Z", "B", "S", "D", "F", "C"};
+    static private String HELPER = "org/aion/avm/internal/Helper";
 
     public static byte[] genWrapperClass(String wName) {
 
@@ -85,6 +86,15 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ILOAD, 0);
         methodVisitor.visitMethodInsn(INVOKESPECIAL, wrapper, "<init>", "(I)V", false);
+
+        // Charge energy
+        methodVisitor.visitVarInsn(ILOAD, 0);
+        //OBJREF size is 64 per slot
+        methodVisitor.visitIntInsn(BIPUSH, 64);
+        methodVisitor.visitInsn(IMUL);
+        methodVisitor.visitInsn(I2L);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, HELPER, "chargeEnergy", "(J)V", false);
+
         methodVisitor.visitInsn(ARETURN);
         methodVisitor.visitMaxs(3, 1);
         methodVisitor.visitEnd();
@@ -111,6 +121,14 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ILOAD, 0);
         methodVisitor.visitMethodInsn(INVOKESPECIAL, wrapper, "<init>", "(I)V", false);
+
+        // Charge energy
+        methodVisitor.visitVarInsn(ILOAD, 0);
+        //OBJREF size is 64 per slot
+        methodVisitor.visitIntInsn(BIPUSH, 64);
+        methodVisitor.visitInsn(IMUL);
+        methodVisitor.visitInsn(I2L);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, HELPER, "chargeEnergy", "(J)V", false);
 
         // Wrapper OBJ to return
         // Now LVT[0] ~ LVT[d-1] hold all dimension data, LVT[d] hold wrapper object.

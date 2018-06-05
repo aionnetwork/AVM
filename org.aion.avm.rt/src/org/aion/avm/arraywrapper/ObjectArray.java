@@ -1,10 +1,13 @@
 package org.aion.avm.arraywrapper;
 
+import org.aion.avm.internal.IHelper;
+
 public class ObjectArray extends Array {
 
     private Object[] underlying;
 
     public static ObjectArray initArray(int c){
+        IHelper.currentContractHelper.get().externalChargeEnergy(c * 64);
         return new ObjectArray(c);
     }
 

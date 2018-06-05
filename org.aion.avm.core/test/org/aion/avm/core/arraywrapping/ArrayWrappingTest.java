@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -58,7 +57,7 @@ public class ArrayWrappingTest {
         loader.addHandler(wrapperGenerator);
 
         // We don't really need the runtime but we do need to initialize the Helper.
-        Helpers.instantiateHelper(loader, new SimpleRuntime(null, null, 0));
+        Helpers.instantiateHelper(loader, new SimpleRuntime(null, null, 1000000));
 
         clazz = loader.loadClass(className);
     }

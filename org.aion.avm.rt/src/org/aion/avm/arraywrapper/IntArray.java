@@ -1,10 +1,13 @@
 package org.aion.avm.arraywrapper;
 
+import org.aion.avm.internal.IHelper;
+
 public class IntArray extends Array {
 
     private int[] underlying;
 
     public static IntArray initArray(int c){
+        IHelper.currentContractHelper.get().externalChargeEnergy(c * 32);
         return new IntArray(c);
     }
 

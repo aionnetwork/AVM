@@ -1,10 +1,13 @@
 package org.aion.avm.arraywrapper;
 
+import org.aion.avm.internal.IHelper;
+
 public class ByteArray extends Array {
 
     private byte[] underlying;
 
     public static ByteArray initArray(int c){
+        IHelper.currentContractHelper.get().externalChargeEnergy(c * 8);
         return new ByteArray(c);
     }
 
