@@ -154,8 +154,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
     @Override
     public void visitTypeInsn(int opcode, java.lang.String type){
-        //System.out.println("Type is " + type);
-        Method m;
+
         String wName;
 
         switch(opcode){

@@ -272,32 +272,6 @@ public class TestResource {
         return res;
     }
 
-    public boolean testObjectArrayTemplate(){
-        boolean res = true;
-        int count = 0;
-        int i = 0;
-
-        //newarray for long
-        $MyObj a = $MyObj.initArray(2);
-        $MyObj b = $MyObj.initArray(64);
-        $MyObj c = $MyObj.initArray(1024);
-
-        //LASTORE
-        for (i = 0; i < 1024; i++){
-            c.set(i, new Object());
-        }
-
-        //LALOAD
-        for (i = 0; i < 1024; i++){
-            count = count + c.get(i).hashCode();
-        }
-
-        res = (count != 0);
-        res = res && (c.length() == 1024);
-
-        return res;
-    }
-
      public boolean testStringArray(){
          boolean res = true;
          int count = 0;
@@ -511,6 +485,34 @@ public class TestResource {
         s2[2][2] = "Canada";
         s3[2] = s2;
         ret = ret && s3[2][2][2].startsWith("Canada");
+
+        return ret;
+    }
+
+    public boolean testHierarachy(){
+        boolean ret = true;
+
+        A[][][] a = new A[5][5][5];
+        a[1][1][1] = new A();
+
+        B[][][] b = new B[5][5][5];
+        b[1][1][1] = new B();
+
+        C[][][] c = new C[5][5][5];
+        c[1][1][1] = new C();
+
+        ret = ret && (c instanceof A[][][]) && (c instanceof B[][][]) && (b instanceof A[][][]);
+        ret = ret && (!(a instanceof C[][][])) && (!(a instanceof B[][][])) && (!(b instanceof C[][][]));
+
+        a = b;
+        a = c;
+        b = c;
+
+        a[1] = b[2];
+        b[1] = c[1];
+
+        a[1][1] = b[2][2];
+        b[1][1] = c[1][1];
 
         return ret;
     }

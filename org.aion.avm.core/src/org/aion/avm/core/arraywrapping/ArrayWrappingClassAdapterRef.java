@@ -21,13 +21,13 @@ public class ArrayWrappingClassAdapterRef extends ClassToolchain.ToolChainClassV
 
     public MethodVisitor visitMethod(
             final int access,
-            final String mname,
+            final String name,
             final String descriptor,
             final String signature,
             final String[] exceptions) {
 
-        MethodVisitor mv = super.visitMethod(access, mname, descriptor, signature, exceptions);
+        MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
 
-        return new ArrayWrappingMethodAdapterRef(access, mname, descriptor, signature, exceptions, mv, className);
+        return new ArrayWrappingMethodAdapterRef(access, name, descriptor, signature, exceptions, mv, className);
     }
 }

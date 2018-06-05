@@ -154,16 +154,6 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testObjectArrayTemplate() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod("testObjectArrayTemplate");
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
-    }
-
-    @Test
     public void testStringArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
@@ -278,6 +268,17 @@ public class ArrayWrappingTest {
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testMultiRef");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+
+    @Test
+    public void testHierarachy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testHierarachy");
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);

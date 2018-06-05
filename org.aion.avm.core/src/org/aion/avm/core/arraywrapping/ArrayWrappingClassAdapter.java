@@ -19,6 +19,7 @@ public class ArrayWrappingClassAdapter extends ClassToolchain.ToolChainClassVisi
             java.lang.String signature,
             java.lang.Object value)
     {
+        // Convert array field to wrapper
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
             desc = "L" + ArrayWrappingBytecodeFactory.getWrapper(descriptor) + ";";

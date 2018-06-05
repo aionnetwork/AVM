@@ -126,23 +126,17 @@ public class ArrayWrappingBytecodeFactory {
     }
 
 
-    // Return the element descriptor of an array
-    public static java.lang.String getElementDesc(java.lang.String desc){
-        return desc.substring(1);
-    }
-
     // Return the element type of an array
     // 1D Primitive array will not be called with this method since there will be no aaload
     static java.lang.String getElementType(java.lang.String desc){
-        //System.out.println("Get element enter : " + desc);
-        Assert.assertTrue(desc.startsWith("["));
 
+        Assert.assertTrue(desc.startsWith("["));
         String ret = desc.substring(1);
 
         if (ret.startsWith("L")){
             ret = ret.substring(1, ret.length() - 1);
         }
-        //System.out.println("Get element ret : " + ret);
+
         return ret;
     }
 }
