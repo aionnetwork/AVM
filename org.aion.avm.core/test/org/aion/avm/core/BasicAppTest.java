@@ -71,4 +71,13 @@ public class BasicAppTest {
         // These should be the same instance.
         Assert.assertEquals(input, output);
     }
+
+    @Test
+    public void testSumInput() throws Exception {
+        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodSum, 42, 13});
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        // Should be just 1 byte, containing the sum.
+        Assert.assertEquals(1, output.length());
+        Assert.assertEquals(BasicAppTestTarget.kMethodSum + 42 + 13, output.get(0));
+    }
 }
