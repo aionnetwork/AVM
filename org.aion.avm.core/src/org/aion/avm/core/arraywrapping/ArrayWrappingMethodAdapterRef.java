@@ -59,7 +59,7 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 f.pop();
                 BasicValue t = (BasicValue) (f.pop());
                 String targetDesc = t.toString();
-                String elementType = ArrayWrappingBytecodeFactory.getElementType(targetDesc);
+                String elementType = ArrayWrappingClassGenerator.getElementType(targetDesc);
 
                 MethodInsnNode invokeVNode =
                     new MethodInsnNode(Opcodes.INVOKEVIRTUAL,

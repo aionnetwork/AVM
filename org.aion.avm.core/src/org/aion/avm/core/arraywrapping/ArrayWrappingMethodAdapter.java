@@ -160,9 +160,9 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
         switch(opcode){
             case Opcodes.ANEWARRAY:
                 if (type.startsWith("[")){
-                    wName = ArrayWrappingBytecodeFactory.getWrapper("[" + type);
+                    wName = ArrayWrappingClassGenerator.getWrapper("[" + type);
                 }else{
-                    wName = ArrayWrappingBytecodeFactory.getWrapper("[L" + type);
+                    wName = ArrayWrappingClassGenerator.getWrapper("[L" + type);
                 }
 
                 this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", "(I)L" + wName + ";", false);
@@ -172,7 +172,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             case Opcodes.INSTANCEOF:
                 wName = type;
                 if (type.startsWith("[")) {
-                    wName = ArrayWrappingBytecodeFactory.getWrapper(type);
+                    wName = ArrayWrappingClassGenerator.getWrapper(type);
                 }
                 this.mv.visitTypeInsn(opcode, wName);
                 break;
@@ -185,7 +185,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     //TODO: invokedynamic?
     //TODO: Do we need to patch owner?
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        String desc = ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor);
+        String desc = ArrayWrappingClassGenerator.updateMethodDesc(descriptor);
         this.mv.visitMethodInsn(opcode, owner, name, desc, isInterface);
     }
 
@@ -199,7 +199,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     {
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingBytecodeFactory.getWrapper(descriptor) + ";";
+            desc = "L" + ArrayWrappingClassGenerator.getWrapper(descriptor) + ";";
         }
 
         this.mv.visitLocalVariable(name, desc, signature, start, end, index);
@@ -214,7 +214,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingBytecodeFactory.getWrapper(descriptor) + ";";
+            desc = "L" + ArrayWrappingClassGenerator.getWrapper(descriptor) + ";";
         }
 
         this.mv.visitFieldInsn(opcode, owner, name, desc);
@@ -223,11 +223,8 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     @Override
     public void visitMultiANewArrayInsn(java.lang.String descriptor, int d)
     {
-        //System.out.println("Multi bytecode : " + descriptor + "  " + d);
-        String wName = ArrayWrappingBytecodeFactory.getWrapper(descriptor);
-        //System.out.println("Multi wrapper name : " + wName);
-        String facDesc = ArrayWrappingBytecodeFactory.getFacDesc(wName, d);
-        //System.out.println("Multi wrapper desc : " + facDesc);
+        String wName = ArrayWrappingClassGenerator.getWrapper(descriptor);
+        String facDesc = ArrayWrappingClassGenerator.getFacDesc(wName, d);
 
         this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc, false);
     }
