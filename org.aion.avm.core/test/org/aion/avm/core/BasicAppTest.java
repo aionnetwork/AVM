@@ -80,4 +80,15 @@ public class BasicAppTest {
         Assert.assertEquals(1, output.length());
         Assert.assertEquals(BasicAppTestTarget.kMethodSum + 42 + 13, output.get(0));
     }
+
+    @Test
+    public void testLowOrderByteArrayHash() throws Exception {
+        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodLowOrderByteArrayHash, 42, 13});
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        // Should be just 1 byte, containing the low hash byte.
+        Assert.assertEquals(1, output.length());
+        byte result = output.get(0);
+        // This should match the input we gave them.
+        Assert.assertEquals(input.avm_hashCode(), result);
+    }
 }

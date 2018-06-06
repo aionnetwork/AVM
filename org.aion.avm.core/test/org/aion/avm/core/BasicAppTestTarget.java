@@ -12,6 +12,7 @@ import org.aion.avm.rt.BlockchainRuntime;
 public class BasicAppTestTarget {
     public static final byte kMethodIdentity = 1;
     public static final byte kMethodSum = 2;
+    public static final byte kMethodLowOrderByteArrayHash = 3;
 
     // NOTE:  Even though this is "byte[]" on the user's side, we will call it from the outside as "ByteArray"
     public static byte[] decode(BlockchainRuntime runtime, byte[] input) {
@@ -23,6 +24,9 @@ public class BasicAppTestTarget {
             break;
         case kMethodSum:
             output = sum(runtime, input);
+            break;
+        case kMethodLowOrderByteArrayHash:
+            output = lowOrderByteArrayHash(runtime, input);
             break;
         default:
             throw new AssertionError("Unknown instruction");
@@ -40,5 +44,9 @@ public class BasicAppTestTarget {
             total += input[i];
         }
         return new byte[] {total};
+    }
+
+    private static byte[] lowOrderByteArrayHash(BlockchainRuntime runtime, byte[] input) {
+        return new byte[] {(byte)(0xff & input.hashCode())};
     }
 }
