@@ -84,7 +84,6 @@ public class ClassShadowingTest {
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, transformer.apply(raw));
-        Helpers.writeBytesToFile(classes.get(className), "/tmp/dump.class");
 
         Set<String> loadedClasses = new HashSet<>();
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes) {
@@ -108,6 +107,32 @@ public class ClassShadowingTest {
         Method method2 = clazz.getMethod("localVariable");
         Object ret2 = method2.invoke(obj);
         Assert.assertEquals(Integer.valueOf(3), ret2);
+    }
+
+    @Test
+    public void testInterfaceHandling() throws Exception {
+        String className = "org.aion.avm.core.shadowing.TestResourceInterface";
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        Function<byte[], byte[]> transformer = (inputBytes) ->
+                new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
+                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, ClassWhiteList.buildForEmptyContract()))
+                        .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                        .build()
+                        .runAndGetBytecode();
+        Map<String, byte[]> classes = new HashMap<>();
+        byte[] transformed = transformer.apply(raw);
+        classes.put(className, transformed);
+
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+
+        // We don't really need the runtime but we do need the intern map initialized.
+        new Helper(loader, new SimpleRuntime(new byte[0], new byte[0], 0));
+        Class<?> clazz = loader.loadClass(className);
+
+        Method method = clazz.getMethod("getStringForNull");
+        Object ret = method.invoke(null);
+        // This helper just returns null since we are really just testing if we were able to load the interface, at all.
+        Assert.assertEquals(null, ret);
     }
 
     public static class Testing {

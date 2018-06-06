@@ -38,7 +38,11 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
         Assert.assertTrue(!this.classWhiteList.isJdkClass(name));
 
-        String newSuperName = replaceType(superName);
+        // Note that we can't change the superName if this is an interface (since those all must specify "java/lang/Object").
+        boolean isInterface = (0 != (Opcodes.ACC_INTERFACE & access));
+        String newSuperName = isInterface
+                ? superName
+                : replaceType(superName);
         String[] newInterfaces = Stream.of(interfaces).map(this::replaceType).toArray(String[]::new);
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
