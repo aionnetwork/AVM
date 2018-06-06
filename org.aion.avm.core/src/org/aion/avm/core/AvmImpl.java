@@ -338,10 +338,17 @@ public class AvmImpl implements Avm {
         classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
+        // TODO: parse the tx data, select the method and get the arguments
+        try {
+
+        } catch (Exception e) {
+            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+        }
+
         // load class
         try {
             Class<?> clazz = classLoader.loadClass(app.mainClass);
-            // TODO: how we decide which constructor to invoke
+            // At a contract call, only choose the one without arguments.
             Object obj = clazz.getConstructor().newInstance();
 
             Method method = clazz.getMethod("run", ByteArray.class, BlockchainRuntime.class);
