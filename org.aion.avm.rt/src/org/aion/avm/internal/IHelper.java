@@ -21,6 +21,8 @@ public interface IHelper {
 
     public void externalChargeEnergy(long cost);
 
+    public void externalSetEnergy(long energy);
+
     public long externalGetEnergyRemaining();
 
     public org.aion.avm.java.lang.String externalWrapAsString(java.lang.String input);

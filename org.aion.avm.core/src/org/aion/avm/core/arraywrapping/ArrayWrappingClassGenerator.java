@@ -89,7 +89,6 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         }
 
         //Constructor
-
         genConstructor(classWriter, superName);
 
         classWriter.visitEnd();

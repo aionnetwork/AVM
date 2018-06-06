@@ -6,6 +6,8 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.OutOfEnergyError;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -29,6 +31,7 @@ public class ArrayWrappingTest {
     }
 
     private Class<?> clazz;
+    private IHelper helper;
 
     @Before
     // We only need to load the instrumented class once.
@@ -57,7 +60,7 @@ public class ArrayWrappingTest {
         loader.addHandler(wrapperGenerator);
 
         // We don't really need the runtime but we do need to initialize the Helper.
-        Helpers.instantiateHelper(loader, new SimpleRuntime(new byte[0], new byte[0], 1000000));
+        helper = Helpers.instantiateHelper(loader, new SimpleRuntime(new byte[0], new byte[0], 1000000));
 
         clazz = loader.loadClass(className);
     }
@@ -281,6 +284,28 @@ public class ArrayWrappingTest {
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testArrayEnergy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testArrayEnergy");
+
+        helper.externalSetEnergy(10000000);
+        try{
+            method.invoke(obj);
+        }catch(InvocationTargetException e){
+            Assert.assertFalse(e.getCause() instanceof OutOfEnergyError);
+        }
+
+        helper.externalSetEnergy(1000);
+        try{
+            method.invoke(obj);
+        }catch(InvocationTargetException e){
+            Assert.assertTrue(e.getCause() instanceof OutOfEnergyError);
+        }
+
     }
 
 }

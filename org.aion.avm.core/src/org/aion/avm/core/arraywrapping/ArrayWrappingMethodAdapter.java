@@ -93,7 +93,6 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
             case Opcodes.AALOAD:
                 Assert.unreachable("Primitive array wrapping adapter catch AALOAD");
-
             case Opcodes.AASTORE:
                 m = Method.getMethod("void set(int, Object)");
                 invokeVirtual(typeOA, m);
@@ -211,7 +210,6 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
                            java.lang.String name,
                            java.lang.String descriptor)
     {
-
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
             desc = "L" + ArrayWrappingClassGenerator.getWrapper(descriptor) + ";";

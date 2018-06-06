@@ -527,4 +527,9 @@ public class TestResource {
         return ret;
     }
 
+    public boolean testArrayEnergy(){
+        int[][][][] s = new int[10][10][10][10];
+        return true;
+    }
+
 }

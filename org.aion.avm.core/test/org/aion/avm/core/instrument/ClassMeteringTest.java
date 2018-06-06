@@ -118,22 +118,5 @@ public class ClassMeteringTest {
             Helper.chargeEnergy(cost);
         }
 
-        public static Object multianewarray1(int d1, Class<?> cl) {
-            TestEnergy.totalArrayElements += d1;
-            TestEnergy.totalArrayInstances += 1;
-            return Helper.multianewarray1(d1, cl);
-        }
-
-        public static Object multianewarray2(int d1, int d2, Class<?> cl) {
-            TestEnergy.totalArrayElements += d1 * d2;
-            TestEnergy.totalArrayInstances += 1;
-            return Helper.multianewarray2(d1, d2, cl);
-        }
-
-        public static Object multianewarray3(int d1, int d2, int d3, Class<?> cl) {
-            TestEnergy.totalArrayElements += d1 * d2 * d3;
-            TestEnergy.totalArrayInstances += 1;
-            return Helper.multianewarray3(d1, d2, d3, cl);
-        }
     }
 }

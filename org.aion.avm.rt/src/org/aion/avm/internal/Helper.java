@@ -138,17 +138,8 @@ public class Helper implements IHelper {
         return energyLeft;
     }
 
-    public static Object multianewarray1(int d1, Class<?> cl) {
-        return Array.newInstance(cl, d1);
-    }
-
-    public static Object multianewarray2(int d1, int d2, Class<?> cl) {
-        return Array.newInstance(cl, d1, d2);
-    }
-
-    public static Object multianewarray3(int d1, int d2, int d3, Class<?> cl) {
-        return Array.newInstance(cl, d1, d2, d3);
-    }
+    // Note that setEnergy is just for internal test purpose.
+    public static void setEnergy(long e) {energyLeft = e;}
 
     public static int getNextHashCode() {
         return nextHashCode++;
@@ -175,6 +166,10 @@ public class Helper implements IHelper {
     @Override
     public int externalGetNextHashCode() {
         return Helper.getNextHashCode();
+    }
+    @Override
+    public void externalSetEnergy(long energy){
+        Helper.setEnergy(energy);
     }
 
 
