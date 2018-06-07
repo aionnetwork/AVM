@@ -113,6 +113,8 @@ public class ClassShadowingTest {
     public void testInterfaceHandling() throws Exception {
         String className = "org.aion.avm.core.shadowing.TestResourceInterface";
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        String innerClassName = className + "$1";
+        byte[] innerRaw = Helpers.loadRequiredResourceAsBytes(innerClassName.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, ClassWhiteList.buildForEmptyContract()))
@@ -122,6 +124,7 @@ public class ClassShadowingTest {
         Map<String, byte[]> classes = new HashMap<>();
         byte[] transformed = transformer.apply(raw);
         classes.put(className, transformed);
+        classes.put(innerClassName, transformer.apply(innerRaw));
 
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
@@ -131,7 +134,7 @@ public class ClassShadowingTest {
 
         Method method = clazz.getMethod("getStringForNull");
         Object ret = method.invoke(null);
-        // This helper just returns null since we are really just testing if we were able to load the interface, at all.
+        // Note that we can't yet override methods in our contracts so the toString returns false, from Object.
         Assert.assertEquals(null, ret);
     }
 
