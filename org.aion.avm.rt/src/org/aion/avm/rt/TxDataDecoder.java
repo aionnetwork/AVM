@@ -142,8 +142,10 @@ public class TxDataDecoder {
                         throw new InvalidTxDataException();
                     }
 
-                    long l = (long) ((txData[start]<<24)&0xFF000000 | (txData[start+1]<<16)&0xFF0000 |
-                                     (txData[start+2]<<8)&0xFF00 | txData[start+3]&0xFF);
+                    long l = ((long)((txData[start]<<24)&0xFF000000 | (txData[start+1]<<16)&0xFF0000 |
+                                    (txData[start+2]<<8)&0xFF00 | txData[start+3]&0xFF) << 32)
+                             + (long)((txData[start+4]<<24)&0xFF000000 | (txData[start+5]<<16)&0xFF0000 |
+                                     (txData[start+6]<<8)&0xFF00 | txData[start+7]&0xFF);
                     args.add(l);
                     start += LONG_SIZE;
                     break;
@@ -170,16 +172,16 @@ public class TxDataDecoder {
 
                     type = argsDescriptor.charAt(idx ++);
 
-                    int m = Integer.parseInt(argsDescriptor.substring(idx, argsDescriptor.indexOf(']', idx)));
+                    int m = Integer.parseInt(argsDescriptor.substring(idx, argsDescriptor.indexOf(ARRAY_E, idx)));
                     idx = argsDescriptor.indexOf(ARRAY_E, idx);
 
                     if (arrayDimension == 1) {
-                        get1DArrayData(txData, start, args, type, m);
+                        start = get1DArrayData(txData, start, args, type, m);
                     }
                     else {
-                        int n = Integer.parseInt(argsDescriptor.substring(idx, argsDescriptor.indexOf(']', idx)));
-                        idx = argsDescriptor.indexOf(ARRAY_E, idx);
-                        get2DArrayData(txData, start, args, type, m, n);
+                        int n = Integer.parseInt(argsDescriptor.substring(idx + 1, argsDescriptor.indexOf(ARRAY_E, idx + 1)));
+                        idx = argsDescriptor.indexOf(ARRAY_E, idx + 1);
+                        start = get2DArrayData(txData, start, args, type, m, n);
                     }
                     break;
                 default:
@@ -190,7 +192,7 @@ public class TxDataDecoder {
         return args;
     }
 
-    private void get1DArrayData(byte[] txData, int start, List<Object> args, char type, int m) throws InvalidTxDataException, UnsupportedEncodingException{
+    private int get1DArrayData(byte[] txData, int start, List<Object> args, char type, int m) throws InvalidTxDataException, UnsupportedEncodingException{
         switch (type) {
             case BYTE:
                 if ((txData.length - start) < BYTE_SIZE * m) {
@@ -293,9 +295,10 @@ public class TxDataDecoder {
                 args.add(argD);
                 break;
         }
+        return start;
     }
 
-    private void get2DArrayData(byte[] txData, int start, List<Object> args, char type, int m, int n) throws InvalidTxDataException, UnsupportedEncodingException{
+    private int get2DArrayData(byte[] txData, int start, List<Object> args, char type, int m, int n) throws InvalidTxDataException, UnsupportedEncodingException{
         switch (type) {
             case BYTE:
                 if ((txData.length - start) < BYTE_SIZE * m * n) {
@@ -332,10 +335,12 @@ public class TxDataDecoder {
                 for (int indexN = 0; indexN < n; indexN ++) {
                     String s;
                     if ((txData.length - start) > CHAR_SIZE_MAX * m) {
-                        s = new String(Arrays.copyOfRange(txData, start, start + CHAR_SIZE_MAX * m), "UTF-8");
+                        s = new String(Arrays.copyOfRange(txData, start, start + CHAR_SIZE_MAX * m), "UTF-8")
+                                .substring(0, m);
                     }
                     else {
-                        s = new String(Arrays.copyOfRange(txData, start, txData.length), "UTF-8");
+                        s = new String(Arrays.copyOfRange(txData, start, txData.length), "UTF-8")
+                                .substring(0, m);
                     }
                     start += s.getBytes("UTF-8").length;
                     argC[indexN] = s;
@@ -412,5 +417,6 @@ public class TxDataDecoder {
                 args.add(argD);
                 break;
         }
+        return start;
     }
 }
