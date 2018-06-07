@@ -104,4 +104,21 @@ public class BasicAppTest {
         // We know that the runtime was the first object we created so its hash will be 1.
         Assert.assertEquals(1, result);
     }
+
+    /**
+     * This test makes multiple calls to the same contract instance, proving that static state survives between the calls.
+     * It is mostly just a test to make sure that this property continues to be true, in the future, once we decide how
+     * to save and resume state.
+     */
+    @Test
+    public void testRepeatedSwaps() throws Exception {
+        ByteArray input1 = new ByteArray(new byte[] {BasicAppTestTarget.kMethodSwapInputsFromLastCall, 1});
+        ByteArray input2 = new ByteArray(new byte[] {BasicAppTestTarget.kMethodSwapInputsFromLastCall, 2});
+        ByteArray output1 = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input1);
+        Assert.assertNull(output1);
+        ByteArray output2 = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input2);
+        Assert.assertEquals(input1.get(1), output2.get(1));
+        ByteArray output3 = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input1);
+        Assert.assertEquals(input2.get(1), output3.get(1));
+    }
 }

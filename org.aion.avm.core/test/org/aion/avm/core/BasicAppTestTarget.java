@@ -14,6 +14,10 @@ public class BasicAppTestTarget {
     public static final byte kMethodSum = 2;
     public static final byte kMethodLowOrderByteArrayHash = 3;
     public static final byte kMethodLowOrderRuntimeHash = 4;
+    public static final byte kMethodSwapInputsFromLastCall = 5;
+
+    // NOTE:  This use of a static is something we will definitely be changing, later on, once we decide how static and instance state interacts with storage.
+    private static byte[] swappingPoint;
 
     // NOTE:  Even though this is "byte[]" on the user's side, we will call it from the outside as "ByteArray"
     public static byte[] decode(BlockchainRuntime runtime, byte[] input) {
@@ -31,6 +35,9 @@ public class BasicAppTestTarget {
             break;
         case kMethodLowOrderRuntimeHash:
             output = lowOrderRuntimeHash(runtime, input);
+            break;
+        case kMethodSwapInputsFromLastCall:
+            output = swapInputs(runtime, input);
             break;
         default:
             throw new AssertionError("Unknown instruction");
@@ -56,5 +63,11 @@ public class BasicAppTestTarget {
 
     private static byte[] lowOrderRuntimeHash(BlockchainRuntime runtime, byte[] input) {
         return new byte[] {(byte)(0xff & runtime.hashCode())};
+    }
+
+    private static byte[] swapInputs(BlockchainRuntime runtime, byte[] input) {
+        byte[] result = swappingPoint;
+        swappingPoint = input;
+        return result;
     }
 }
