@@ -48,7 +48,7 @@ public class BasicAppTest {
                 .asMutableForest();
         
         AvmImpl avm = new AvmImpl(sharedClassLoader);
-        Map<String, Integer> runtimeObjectSizes = avm.computeRuntimeObjectSizes();
+        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
         Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
