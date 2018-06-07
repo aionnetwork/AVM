@@ -31,11 +31,11 @@ public class TxDataDecoderTest {
         //  {123, -1, "hello"} of a Java method, public static void methodA(Integer i, byte b, String s)
 
         TxDataDecoder decoder = new TxDataDecoder();
-        //TxDataDecoder.MethodCaller mc = decoder.decode(txData);
-        //assertEquals("methodA", mc.methodName);
-        //assertEquals(3, mc.arguments.size());
-        //assertEquals(123, mc.arguments.get(0));
-        //assertEquals(-1, mc.arguments.get(1));
-        //assertEquals("hello", mc.arguments.get(2));
+        TxDataDecoder.MethodCaller mc = decoder.decode(txData);
+        assertEquals("methodA", mc.methodName);
+        assertEquals(3, mc.arguments.size());
+        assertEquals(123, mc.arguments.get(0));
+        assertEquals((byte)-1, mc.arguments.get(1));
+        assertEquals("hello", mc.arguments.get(2));
     }
 }
