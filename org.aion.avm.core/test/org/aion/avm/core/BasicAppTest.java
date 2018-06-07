@@ -60,8 +60,10 @@ public class BasicAppTest {
         this.decodeMethod = this.clazz.getMethod("decode", BlockchainRuntime.class, ByteArray.class);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
         
-        this.runtime = new SimpleRuntime(new byte[0], new byte[0], 10000);
-        Helpers.instantiateHelper(loader, this.runtime);
+        BlockchainRuntime externalRuntime = new SimpleRuntime(new byte[0], new byte[0], 10000);
+        Helpers.instantiateHelper(loader, externalRuntime);
+        // Create the wrapper for the runtime object, now that the external one has been used to create the Helper required to instantiate shadow objects.
+        this.runtime = new ContractRuntimeWrapper(externalRuntime);
     }
 
     @Test
@@ -90,5 +92,16 @@ public class BasicAppTest {
         byte result = output.get(0);
         // This should match the input we gave them.
         Assert.assertEquals(input.avm_hashCode(), result);
+    }
+
+    @Test
+    public void testLowOrderRuntimeHash() throws Exception {
+        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodLowOrderRuntimeHash, 42, 13});
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        // Should be just 1 byte, containing the low hash byte.
+        Assert.assertEquals(1, output.length());
+        byte result = output.get(0);
+        // We know that the runtime was the first object we created so its hash will be 1.
+        Assert.assertEquals(1, result);
     }
 }
