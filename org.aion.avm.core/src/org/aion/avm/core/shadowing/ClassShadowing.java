@@ -3,11 +3,9 @@ package org.aion.avm.core.shadowing;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 
+import java.util.ArrayList;
 import java.util.stream.Stream;
 
 /**
@@ -16,15 +14,25 @@ import java.util.stream.Stream;
 public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
     private static final String JAVA_LANG = "java/lang";
+    private static final String JAVA_UTIL = "java/util";
     private static final String JAVA_LANG_SHADOW = "org/aion/avm/java/lang";
 
     private static final String METHOD_PREFIX = "avm_";
 
+    private final String shadowPackage;
+
     private String runtimeClassName;
+
+    public ClassShadowing(String runtimeClassName, String shadowPackage) {
+        super(Opcodes.ASM6);
+        this.runtimeClassName = runtimeClassName;
+        this.shadowPackage = shadowPackage;
+    }
 
     public ClassShadowing(String runtimeClassName) {
         super(Opcodes.ASM6);
         this.runtimeClassName = runtimeClassName;
+        shadowPackage = JAVA_LANG_SHADOW;
     }
 
     @Override
@@ -55,8 +63,47 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
         MethodVisitor mv = super.visitMethod(access, name, replaceMethodDescriptor(descriptor), null, exceptions);
-
         return new MethodVisitor(Opcodes.ASM6, mv) {
+            @Override
+            public void visitInvokeDynamicInsn(String origMethodName, String methodDescriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+                final String newMethodName = replaceMethodName(bootstrapMethodHandle.getOwner(), origMethodName);
+                final String newMethodDescriptor = replaceMethodDescriptor(methodDescriptor);
+                final Handle newHandle = newShadowHandleFrom(bootstrapMethodHandle, false);
+                final Object[] newBootstrapMethodArgs = newShadowArgsFrom(bootstrapMethodArguments);
+                super.visitInvokeDynamicInsn(newMethodName, newMethodDescriptor, newHandle, newBootstrapMethodArgs);
+            }
+
+            private Handle newShadowHandleFrom(Handle origHandle, boolean shadowMethodDescriptor) {
+                final String owner = origHandle.getOwner();
+                final String newOwner = replaceType(owner);
+                final String newMethodName = replaceMethodName(owner, origHandle.getName());
+                final String newMethodDescriptor = shadowMethodDescriptor ? replaceMethodDescriptor(origHandle.getDesc()) : origHandle.getDesc();
+                return new Handle(origHandle.getTag(), newOwner, newMethodName, newMethodDescriptor, origHandle.isInterface());
+            }
+
+            private Object[] newShadowArgsFrom(Object[] origArgs) {
+                final var newArgs = new ArrayList<>(origArgs.length);
+                for (int i = 0; i < origArgs.length; i++) {
+                    final Object origArg = origArgs[i];
+                    final Object newArg;
+                    {
+                        if (origArg instanceof org.objectweb.asm.Type) {
+                            newArg = newMethodTypeFrom((org.objectweb.asm.Type) origArg);
+                        } else if (origArg instanceof org.objectweb.asm.Handle) {
+                            newArg = newShadowHandleFrom((org.objectweb.asm.Handle) origArg, true);
+                        } else {
+                            newArg = origArg;
+                        }
+                    }
+                    newArgs.add(newArg);
+                }
+                return newArgs.toArray();
+            }
+
+            private org.objectweb.asm.Type newMethodTypeFrom(org.objectweb.asm.Type origType) {
+                return org.objectweb.asm.Type.getMethodType(replaceMethodDescriptor(origType.getDescriptor()));
+            }
+
             @Override
             public void visitMethodInsn(
                     final int opcode,
@@ -167,7 +214,11 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
      * @return
      */
     protected String replaceType(String type) {
-        return type.startsWith(JAVA_LANG) ? JAVA_LANG_SHADOW + type.substring(JAVA_LANG.length()) : type;
+        return Stream.of(JAVA_LANG, JAVA_UTIL)
+                .filter(type::startsWith)
+                .findFirst()
+                .map(s -> shadowPackage + type.substring(s.length()))
+                .orElse(type);
     }
 
     /**
@@ -177,11 +228,12 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
      * @return
      */
     protected String replaceMethodName(String type, String methodName) {
-        if (type.startsWith(JAVA_LANG)) {
-            return methodName.equals("<init>") ? methodName : METHOD_PREFIX + methodName;
-        } else {
-            return methodName;
-        }
+        return Stream.of(JAVA_LANG, JAVA_UTIL)
+                .filter(type::startsWith)
+                .findFirst()
+                .filter(s -> !methodName.equals("<init>"))
+                .map(s -> METHOD_PREFIX + methodName)
+                .orElse(methodName);
     }
 
     /**
