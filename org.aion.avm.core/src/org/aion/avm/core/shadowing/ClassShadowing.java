@@ -94,7 +94,6 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
             private Handle newShadowHandleFrom(Handle origHandle, boolean shadowMethodDescriptor) {
                 final String owner = origHandle.getOwner();
-                // todo true of false?
                 final String newOwner = replaceType(owner, true);
                 final String newMethodName = replaceMethodName(owner, origHandle.getName());
                 final String newMethodDescriptor = shadowMethodDescriptor ? replaceMethodDescriptor(origHandle.getDesc()) : origHandle.getDesc();

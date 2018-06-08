@@ -39,8 +39,6 @@ public class InvokedynamicTransformationTest {
         final var className = ParametrizedLambda.class.getName();
         final byte[] origBytecode = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         final byte[] transformedBytecode = transform(origBytecode, className);
-        // todo remove
-        NeverCommitUtils.storeAndJavap(transformedBytecode, "transformed.txt");
         Assert.assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         assertCanInstantiate(transformedBytecode, className);
     }
@@ -76,7 +74,6 @@ public class InvokedynamicTransformationTest {
             assertTrue(actual.avm_valueOfWasCalled);
             assertTrue(org.aion.avm.core.testdoubles.indy.invoke.LambdaMetafactory.avm_metafactoryWasCalled);
         } catch (Exception e) {
-            e.printStackTrace(); // todo remove
             fail(e.getMessage());
         }
     }
