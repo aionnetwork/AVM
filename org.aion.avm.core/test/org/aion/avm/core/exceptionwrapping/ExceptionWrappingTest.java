@@ -96,7 +96,6 @@ public class ExceptionWrappingTest {
         try {
             manuallyThrowNull.invoke(null);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
             // Make sure that this is the wrapper type that we normally expect to see.
             Class<?> compare = this.loader.loadClass("org.aion.avm.exceptionwrapper.java.lang.NullPointerException");
             didCatch = e.getCause().getClass() == compare;
