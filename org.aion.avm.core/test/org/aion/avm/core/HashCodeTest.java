@@ -39,7 +39,7 @@ public class HashCodeTest {
                 .asMutableForest();
         
         AvmImpl avm = new AvmImpl(sharedClassLoader);
-        Map<String, Integer> runtimeObjectSizes = avm.computeRuntimeObjectSizes();
+        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
         Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
@@ -254,7 +254,7 @@ public class HashCodeTest {
         Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", raw)
                 .asMutableForest();
-        Map<String, Integer> runtimeObjectSizes = avm.computeRuntimeObjectSizes();
+        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
         Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
         byte[] transformed = avm.transformClasses(Collections.singletonMap(className, raw), classHierarchy, allObjectSizes).get(className);
         return transformed;
