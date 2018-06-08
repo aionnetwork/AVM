@@ -52,7 +52,7 @@ public class ClassMeteringTest {
         this.clazz = loader.loadClass(className);
         
         // We only need to install a BlockchainRuntime which can afford our energy.
-        new Helper(loader, new SimpleRuntime(null, null, 1000));
+        new Helper(loader, new SimpleRuntime(new byte[0], new byte[0], 1000));
     }
 
     @After
@@ -90,120 +90,6 @@ public class ClassMeteringTest {
         Assert.assertEquals(expectedCost, TestEnergy.totalCost);
     }
 
-    /**
-     * Tests that we can replace anewarray bytecodes with call-out routines.
-     */
-    @Test
-    public void testAnewarrayCallOut() throws Exception {
-        // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Object target = clazz.getConstructor(int.class).newInstance(6);
-        Method buildStringArray = clazz.getMethod("buildStringArray", int.class);
-
-        // Check that we haven't yet called the TestEnergy to create an array.
-        Assert.assertEquals(0, TestEnergy.totalArrayElements);
-        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
-        
-        // Create an array and make sure it is correct.
-        String[] one = (String[]) buildStringArray.invoke(target, 2);
-        Assert.assertEquals(2, one.length);
-        Assert.assertEquals(2, TestEnergy.totalArrayElements);
-        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
-        
-        // Create another.
-        String[] two = (String[]) buildStringArray.invoke(target, 25);
-        Assert.assertEquals(25, two.length);
-        Assert.assertEquals(27, TestEnergy.totalArrayElements);
-        Assert.assertEquals(2, TestEnergy.totalArrayInstances);
-    }
-
-    /**
-     * Tests that we can replace multianewarray bytecodes with call-out routines.
-     */
-    @Test
-    public void testMultianewarrayCallOut() throws Exception {
-        // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Object target = clazz.getConstructor(int.class).newInstance(6);
-        Method buildMultiStringArray3 = clazz.getMethod("buildMultiStringArray3", int.class, int.class, int.class);
-
-        // Check that we haven't yet called the TestEnergy to create an array.
-        Assert.assertEquals(0, TestEnergy.totalArrayElements);
-        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
-        
-        // Create an array and make sure it is correct.
-        String[][][] one = (String[][][]) buildMultiStringArray3.invoke(target, 2, 3, 4);
-        Assert.assertEquals(2, one.length);
-        Assert.assertEquals(3, one[0].length);
-        Assert.assertEquals(4, one[0][1].length);
-        Assert.assertEquals(24, TestEnergy.totalArrayElements);
-        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
-        
-        // Verify our assumption that this is the same as the original implementation.
-        String[][][] original = new TestResource(5).buildMultiStringArray3(2, 3, 4);
-        Assert.assertEquals(2, original.length);
-        Assert.assertEquals(3, original[0].length);
-        Assert.assertEquals(4, original[0][1].length);
-        // We shouldn't see an energy increase in the original class.
-        Assert.assertEquals(24, TestEnergy.totalArrayElements);
-        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
-    }
-
-    /**
-     * Tests that we can replace primitive multianewarray bytecodes with call-out routines.
-     */
-    @Test
-    public void testMultianewarrayPrimitive() throws Exception {
-        // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Object target = clazz.getConstructor(int.class).newInstance(6);
-        Method buildLongArray2 = clazz.getMethod("buildLongArray2", int.class, int.class);
-
-        // Check that we haven't yet called the TestEnergy to create an array.
-        Assert.assertEquals(0, TestEnergy.totalArrayElements);
-        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
-        
-        // Create an array and make sure it is correct.
-        long[][] one = (long[][]) buildLongArray2.invoke(target, 2, 3);
-        Assert.assertEquals(2, one.length);
-        Assert.assertEquals(3, one[0].length);
-        Assert.assertEquals(6, TestEnergy.totalArrayElements);
-        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
-        
-        // Verify our assumption that this is the same as the original implementation.
-        long[][] original = (long[][]) new TestResource(5).buildLongArray2(2, 3);
-        Assert.assertEquals(2, original.length);
-        Assert.assertEquals(3, original[0].length);
-        // We shouldn't see an energy increase in the original class.
-        Assert.assertEquals(6, TestEnergy.totalArrayElements);
-        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
-    }
-
-    /**
-     * Tests that we can replace primitive newarray bytecodes with call-out routines.
-     */
-    @Test
-    public void testNewarrayChar() throws Exception {
-        // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Object target = clazz.getConstructor(int.class).newInstance(6);
-        Method buildCharArray = clazz.getMethod("buildCharArray", int.class);
-
-        // Check that we haven't yet called the TestEnergy to create an array.
-        Assert.assertEquals(0, TestEnergy.totalArrayElements);
-        Assert.assertEquals(0, TestEnergy.totalArrayInstances);
-        
-        // Create an array and make sure it is correct.
-        char[] one = (char[]) buildCharArray.invoke(target, 2);
-        Assert.assertEquals(2, one.length);
-        Assert.assertEquals(2, TestEnergy.totalArrayElements);
-        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
-        
-        // Verify our assumption that this is the same as the original implementation.
-        char[] original = (char[]) new TestResource(5).buildCharArray(2);
-        Assert.assertEquals(2, original.length);
-        // We shouldn't see an energy increase in the original class.
-        Assert.assertEquals(2, TestEnergy.totalArrayElements);
-        Assert.assertEquals(1, TestEnergy.totalArrayInstances);
-    }
-
-
     private long getFees(int... opcodes) {
         long total = 0;
         
@@ -232,22 +118,5 @@ public class ClassMeteringTest {
             Helper.chargeEnergy(cost);
         }
 
-        public static Object multianewarray1(int d1, Class<?> cl) {
-            TestEnergy.totalArrayElements += d1;
-            TestEnergy.totalArrayInstances += 1;
-            return Helper.multianewarray1(d1, cl);
-        }
-
-        public static Object multianewarray2(int d1, int d2, Class<?> cl) {
-            TestEnergy.totalArrayElements += d1 * d2;
-            TestEnergy.totalArrayInstances += 1;
-            return Helper.multianewarray2(d1, d2, cl);
-        }
-
-        public static Object multianewarray3(int d1, int d2, int d3, Class<?> cl) {
-            TestEnergy.totalArrayElements += d1 * d2 * d3;
-            TestEnergy.totalArrayInstances += 1;
-            return Helper.multianewarray3(d1, d2, d3, cl);
-        }
     }
 }

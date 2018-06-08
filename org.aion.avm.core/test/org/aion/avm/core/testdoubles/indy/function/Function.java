@@ -5,6 +5,6 @@ package org.aion.avm.core.testdoubles.indy.function;
  */
 public interface Function {
 
-    org.aion.avm.core.testdoubles.indy.Object avm_apply(org.aion.avm.core.testdoubles.indy.Object t);
+    org.aion.avm.internal.IObject avm_apply(org.aion.avm.internal.IObject t);
 
 }

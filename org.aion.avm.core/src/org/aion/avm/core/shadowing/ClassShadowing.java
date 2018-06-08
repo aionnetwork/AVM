@@ -1,8 +1,11 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
+import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.IObject;
 import org.objectweb.asm.*;
 
 import java.util.ArrayList;
@@ -16,23 +19,28 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
     private static final String JAVA_LANG = "java/lang";
     private static final String JAVA_UTIL = "java/util";
     private static final String JAVA_LANG_SHADOW = "org/aion/avm/java/lang";
+    private static final String JAVA_LANG_OBJECT = "java/lang/Object";
+    private static final String IOBJECT_TYPE = "org/aion/avm/internal/IObject";
 
     private static final String METHOD_PREFIX = "avm_";
 
     private final String shadowPackage;
 
     private String runtimeClassName;
+    private final ClassWhiteList classWhiteList;
 
-    public ClassShadowing(String runtimeClassName, String shadowPackage) {
+    public ClassShadowing(String runtimeClassName, String shadowPackage, ClassWhiteList classWhiteList) {
         super(Opcodes.ASM6);
         this.runtimeClassName = runtimeClassName;
         this.shadowPackage = shadowPackage;
+        this.classWhiteList = classWhiteList;
     }
 
-    public ClassShadowing(String runtimeClassName) {
+    public ClassShadowing(String runtimeClassName, ClassWhiteList classWhiteList) {
         super(Opcodes.ASM6);
         this.runtimeClassName = runtimeClassName;
         shadowPackage = JAVA_LANG_SHADOW;
+        this.classWhiteList = classWhiteList;
     }
 
     @Override
@@ -44,10 +52,21 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
             final String superName,
             final String[] interfaces) {
 
-        assert (!name.startsWith(JAVA_LANG));
+        Assert.assertTrue(!this.classWhiteList.isJdkClass(name));
 
-        String newSuperName = replaceType(superName);
-        String[] newInterfaces = Stream.of(interfaces).map(this::replaceType).toArray(String[]::new);
+        // Note that we can't change the superName if this is an interface (since those all must specify "java/lang/Object").
+        boolean isInterface = (0 != (Opcodes.ACC_INTERFACE & access));
+        String newSuperName = isInterface
+                ? superName
+                : replaceType(superName, false);
+        Stream<String> replacedInterfaces = Stream.of(interfaces).map((oldName) -> replaceType(oldName, true));
+        // If this is an interface, we need to add our "root interface" so that we have a unification point between the interface and our shadow Object.
+        if (isInterface) {
+            String rootInterfaceName = Helpers.fulllyQualifiedNameToInternalName(IObject.class.getName());
+            replacedInterfaces = Stream.concat(replacedInterfaces, Stream.of(rootInterfaceName));
+        }
+
+        String[] newInterfaces = replacedInterfaces.toArray(String[]::new);
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
         super.visit(version, access, name, null, newSuperName, newInterfaces);
@@ -75,7 +94,8 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
             private Handle newShadowHandleFrom(Handle origHandle, boolean shadowMethodDescriptor) {
                 final String owner = origHandle.getOwner();
-                final String newOwner = replaceType(owner);
+                // todo true of false?
+                final String newOwner = replaceType(owner, true);
                 final String newMethodName = replaceMethodName(owner, origHandle.getName());
                 final String newMethodDescriptor = shadowMethodDescriptor ? replaceMethodDescriptor(origHandle.getDesc()) : origHandle.getDesc();
                 return new Handle(origHandle.getTag(), newOwner, newMethodName, newMethodDescriptor, origHandle.isInterface());
@@ -116,21 +136,41 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
                 if ((Opcodes.INVOKESTATIC == opcode) && runtimeClassName.equals(owner)) {
                     super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
                 } else {
-                    super.visitMethodInsn(opcode, replaceType(owner), replaceMethodName(owner, name), replaceMethodDescriptor(descriptor), isInterface);
+                    // Due to our use of the IObject interface at the root of the shadow type hierarchy (issue-80), we may need to replace this invokevirtual
+                    // opcode and/or the owner of the call we are making.
+                    // If this is invokespecial, it is probably something like "super.<init>" so we can't replace the opcode or type.
+                    boolean allowInterfaceReplacement = (Opcodes.INVOKESPECIAL != opcode);
+                    // If this is java/lang/Object, and we aren't in one of those invokespecial cases, we probably need to treat this as an interface.
+                    boolean newIsInterface = JAVA_LANG_OBJECT.equals(owner)
+                            ? allowInterfaceReplacement
+                            : isInterface;
+                    // If we are changing to the interface, change the opcode.
+                    int newOpcode = (newIsInterface && (Opcodes.INVOKEVIRTUAL == opcode))
+                            ? Opcodes.INVOKEINTERFACE
+                            : opcode;
+                    // We need to shadow the owner type, potentially replacing it with the IObject type.
+                    String newOwner = replaceType(owner, allowInterfaceReplacement);
+                    super.visitMethodInsn(newOpcode, newOwner, replaceMethodName(owner, name), replaceMethodDescriptor(descriptor), newIsInterface);
                 }
             }
 
             @Override
             public void visitTypeInsn(final int opcode, final String type) {
-                super.visitTypeInsn(opcode, replaceType(type));
+                super.visitTypeInsn(opcode, replaceType(type, true));
             }
 
             @Override
             public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+                String newOwner = replaceType(owner, true);
                 String newDescriptor = replaceMethodDescriptor(descriptor);
 
                 // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
-                super.visitFieldInsn(opcode, owner, name, newDescriptor);
+                super.visitFieldInsn(opcode, newOwner, name, newDescriptor);
+            }
+
+            @Override
+            public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
+                super.visitLocalVariable(name, replaceMethodDescriptor(descriptor), signature, start, end, index);
             }
 
             @Override
@@ -208,36 +248,62 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
     }
 
     /**
-     * Update the class reference if the type starts with {@link #JAVA_LANG}.
+     * Update the class reference if the type is a white-listed JDK class which starts with {@link #JAVA_LANG}.
      *
      * @param type
+     * @param allowInterfaceReplacement If true, we will use IObject instead of our shadow Object when replacing java/lang/Object
      * @return
      */
-    protected String replaceType(String type) {
-        return Stream.of(JAVA_LANG, JAVA_UTIL)
-                .filter(type::startsWith)
-                .findFirst()
-                .map(s -> shadowPackage + type.substring(s.length()))
-                .orElse(type);
+//    protected String replaceType(String type) {
+//        return Stream.of(JAVA_LANG, JAVA_UTIL)
+//                .filter(type::startsWith)
+//                .findFirst()
+//                .map(s -> shadowPackage + type.substring(s.length()))
+//                .orElse(type);
+//    }
+    protected String replaceType(String type, boolean allowInterfaceReplacement) {
+        // Note that this assumes we have an agreement with the ClassWhiteList regarding what the JAVA_LANG prefix is
+        // but this is unavoidable since it is a high-level interface and we are doing low-level string replacement.
+        boolean shouldReplacePrefix = classWhiteList.isJdkClass(type);
+        if (shouldReplacePrefix) {
+            // This assertion verifies that these agree (in the future, we probably want to source them from the same place and avoid the direct string manipulation, here).
+            // (technically, the white-list check is more restrictive than this since it can know about sub-packages while this doesn't).
+            Assert.assertTrue(type.startsWith(JAVA_LANG) || type.startsWith(JAVA_UTIL));
+        }
+
+        // Handle the 3 relevant cases, independently.
+        boolean isTypeJavaLangObject = JAVA_LANG_OBJECT.equals(type);
+        if (allowInterfaceReplacement && isTypeJavaLangObject) {
+            return IOBJECT_TYPE;
+        } else if (isTypeJavaLangObject) {
+            return JAVA_LANG_SHADOW + type.substring(JAVA_LANG.length());
+        } else if (shouldReplacePrefix) {
+            return Stream.of(JAVA_LANG, JAVA_UTIL)
+                    .filter(type::startsWith)
+                    .findFirst()
+                    .map(s -> shadowPackage + type.substring(s.length()))
+                    .orElse(type);
+        } else {
+            return type;
+        }
     }
 
     /**
-     * Update the method reference if the owner type starts with {@link #JAVA_LANG}.
+     * Update the method reference if the owner type is a white-listed JDK class.
      *
      * @param type
      * @return
      */
     protected String replaceMethodName(String type, String methodName) {
-        return Stream.of(JAVA_LANG, JAVA_UTIL)
-                .filter(type::startsWith)
-                .findFirst()
-                .filter(s -> !methodName.equals("<init>"))
-                .map(s -> METHOD_PREFIX + methodName)
-                .orElse(methodName);
+        if (this.classWhiteList.isJdkClass(type)) {
+            return methodName.equals("<init>") ? methodName : METHOD_PREFIX + methodName;
+        } else {
+            return methodName;
+        }
     }
 
     /**
-     * Update the method descriptor if it uses any type that starts with {@link #JAVA_LANG}
+     * Update the method descriptor if it uses any white-listed JDK type.
      *
      * @param methodDescriptor
      * @return
@@ -248,7 +314,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
             public StringBuilder readObject(int arrayDimensions, String type, StringBuilder userData) {
                 populateArray(userData, arrayDimensions);
                 userData.append(DescriptorParser.OBJECT_START);
-                userData.append(replaceType(type));
+                userData.append(replaceType(type, true));
                 userData.append(DescriptorParser.OBJECT_END);
                 return userData;
             }

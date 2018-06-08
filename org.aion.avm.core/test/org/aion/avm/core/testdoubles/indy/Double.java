@@ -3,7 +3,7 @@ package org.aion.avm.core.testdoubles.indy;
 /**
  * @author Roman Katerinenko
  */
-public class Double extends org.aion.avm.core.testdoubles.indy.Object {
+public class Double extends org.aion.avm.java.lang.Object {
     private double val;
 
     public boolean avm_valueOfWasCalled;

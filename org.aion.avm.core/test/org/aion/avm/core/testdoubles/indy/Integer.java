@@ -3,7 +3,7 @@ package org.aion.avm.core.testdoubles.indy;
 /**
  * @author Roman Katerinenko
  */
-public class Integer extends org.aion.avm.core.testdoubles.indy.Object {
+public class Integer extends org.aion.avm.java.lang.Object {
     private int val;
     private boolean avm_valueOfWasCalled;
 

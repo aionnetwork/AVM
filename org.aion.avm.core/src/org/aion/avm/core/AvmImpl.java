@@ -3,12 +3,14 @@ package org.aion.avm.core;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
+import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Helpers;
@@ -16,6 +18,7 @@ import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.FatalAvmError;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -32,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.function.Function;
 
 import static org.aion.avm.core.FileUtils.getFSRootDirFor;
 import static org.aion.avm.core.FileUtils.putToTempDir;
@@ -104,6 +108,9 @@ public class AvmImpl implements Avm {
         map.put("java/lang/Math", 4);
         map.put("java/lang/String", 4);
 
+        // TODO (issue-79):  Implement the rest of these by walking the runtime, elsewhere (this "4" is probably not right, in most cases).
+        map.put("java/lang/AssertionError", 4);
+
         return Collections.unmodifiableMap(map);
     }
 
@@ -151,11 +158,13 @@ public class AvmImpl implements Avm {
             processedClasses.put(classSlashName, bytecode);
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
         };
+        ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
         for (String name : classes.keySet()) {
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
+                    .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, objectSizes))
                     .addNextVisitor(new StackWatcherClassAdapter())
-                    .addNextVisitor(new ClassShadowing(HELPER_CLASS))
+                    .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, classHierarchy, generatedClassesSink))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, classHierarchy, dynamicHierarchyBuilder))
                     .build()
@@ -173,12 +182,13 @@ public class AvmImpl implements Avm {
 
     private final static char[] hexArray = "0123456789abcdef".toCharArray();
 
-    private String byteArrayToString(ByteArray bytes) {
-        int length = bytes.length();
+    private String addressToString(Address address) {
+        byte[] bytes = address.unwrap();
+        int length = bytes.length;
 
         char[] hexChars = new char[length * 2];
         for (int i = 0; i < length; i++) {
-            int v = bytes.get(i) & 0xFF;
+            int v = bytes[i] & 0xFF;
             hexChars[i * 2] = hexArray[v >>> 4];
             hexChars[i * 2 + 1] = hexArray[v & 0x0F];
         }
@@ -194,9 +204,9 @@ public class AvmImpl implements Avm {
      * @param dapp    the dapp module
      * @return the stored bytecode size
      */
-    public long storeTransformedDapp(ByteArray address, DappModule dapp) {
+    public long storeTransformedDapp(Address address, DappModule dapp) {
         long size = 0;
-        String id = byteArrayToString(address);
+        String id = addressToString(address);
         File dir = new File(DAPPS_DIR, id);
         dir.mkdir();
 
@@ -224,8 +234,8 @@ public class AvmImpl implements Avm {
      * @param address
      * @return
      */
-    public DappModule loadTransformedDapp(ByteArray address) {
-        String id = byteArrayToString(address);
+    public DappModule loadTransformedDapp(Address address) {
+        String id = addressToString(address);
         File dir = new File(DAPPS_DIR, id);
         if (!dir.exists()) {
             return null;
@@ -324,12 +334,21 @@ public class AvmImpl implements Avm {
         
         // Construct the per-contract class loader and access the per-contract IHelper instance.
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.genWrapperClass(cName);
+        classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
+
+        // TODO: parse the tx data, select the method and get the arguments
+        try {
+
+        } catch (Exception e) {
+            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+        }
 
         // load class
         try {
             Class<?> clazz = classLoader.loadClass(app.mainClass);
-            // TODO: how we decide which constructor to invoke
+            // At a contract call, only choose the one without arguments.
             Object obj = clazz.getConstructor().newInstance();
 
             Method method = clazz.getMethod("run", ByteArray.class, BlockchainRuntime.class);

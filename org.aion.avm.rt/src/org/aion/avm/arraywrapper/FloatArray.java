@@ -1,10 +1,13 @@
 package org.aion.avm.arraywrapper;
 
+import org.aion.avm.internal.IHelper;
+
 public class FloatArray extends Array {
 
     private float[] underlying;
 
     public static FloatArray initArray(int c){
+        IHelper.currentContractHelper.get().externalChargeEnergy(c * 32);
         return new FloatArray(c);
     }
 

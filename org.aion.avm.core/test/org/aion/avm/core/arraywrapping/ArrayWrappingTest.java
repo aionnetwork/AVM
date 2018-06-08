@@ -6,6 +6,8 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.OutOfEnergyError;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -13,7 +15,6 @@ import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ public class ArrayWrappingTest {
     }
 
     private Class<?> clazz;
+    private IHelper helper;
 
     @Before
     // We only need to load the instrumented class once.
@@ -58,7 +60,7 @@ public class ArrayWrappingTest {
         loader.addHandler(wrapperGenerator);
 
         // We don't really need the runtime but we do need to initialize the Helper.
-        Helpers.instantiateHelper(loader, new SimpleRuntime(null, null, 0));
+        helper = Helpers.instantiateHelper(loader, new SimpleRuntime(new byte[0], new byte[0], 1000000));
 
         clazz = loader.loadClass(className);
     }
@@ -154,16 +156,6 @@ public class ArrayWrappingTest {
     }
 
     @Test
-    public void testObjectArrayTemplate() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod("testObjectArrayTemplate");
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
-    }
-
-    @Test
     public void testStringArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
@@ -211,6 +203,109 @@ public class ArrayWrappingTest {
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiInt() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiInt");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiByte() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiByte");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiChar() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiChar");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiFloat() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiFloat");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiLong() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiLong");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiDouble() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiDouble");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testMultiRef() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testMultiRef");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+
+    @Test
+    public void testHierarachy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testHierarachy");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testArrayEnergy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testArrayEnergy");
+
+        helper.externalSetEnergy(10000000);
+        try{
+            method.invoke(obj);
+        }catch(InvocationTargetException e){
+            Assert.assertFalse(e.getCause() instanceof OutOfEnergyError);
+        }
+
+        helper.externalSetEnergy(1000);
+        try{
+            method.invoke(obj);
+        }catch(InvocationTargetException e){
+            Assert.assertTrue(e.getCause() instanceof OutOfEnergyError);
+        }
+
     }
 
 }

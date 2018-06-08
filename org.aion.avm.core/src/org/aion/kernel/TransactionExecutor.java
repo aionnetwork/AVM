@@ -4,6 +4,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 
 public class TransactionExecutor {
@@ -16,16 +17,19 @@ public class TransactionExecutor {
         byte[] payload = new byte[512];
         long energyLimit = 100000;
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, payload, energyLimit);
+        // We will create these up-front since our implementation should return the same instance on every call, where possible.
+        Address sender = new Address(tx.getFrom());
+        Address address = new Address(tx.getTo());
 
         BlockchainRuntime rt = new BlockchainRuntime() {
             @Override
-            public ByteArray getSender() {
-                return new ByteArray(tx.getFrom());
+            public Address getSender() {
+                return sender;
             }
 
             @Override
-            public ByteArray getAddress() {
-                return new ByteArray(tx.getTo());
+            public Address getAddress() {
+                return address;
             }
 
             @Override

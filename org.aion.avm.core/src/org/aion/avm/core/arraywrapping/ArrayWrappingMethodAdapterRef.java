@@ -55,10 +55,11 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
             // the log is the following
             // check instruction -> check stack map frame -> replace instruction with invokeV and checkcast
             if (insn.getOpcode() == Opcodes.AALOAD) {
-                //we peek the second slot on stack
-                BasicValue t = (BasicValue) (f.getStack(1));
+                //we pop the second slot on stack
+                f.pop();
+                BasicValue t = (BasicValue) (f.pop());
                 String targetDesc = t.toString();
-                String elementType = ArrayWrappingBytecodeFactory.getElementType(targetDesc);
+                String elementType = ArrayWrappingClassGenerator.getElementType(targetDesc);
 
                 MethodInsnNode invokeVNode =
                     new MethodInsnNode(Opcodes.INVOKEVIRTUAL,

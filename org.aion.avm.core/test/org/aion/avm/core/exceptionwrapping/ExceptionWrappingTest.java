@@ -57,7 +57,7 @@ public class ExceptionWrappingTest {
         this.testClass = this.loader.loadClass(className);
         
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(this.loader, new SimpleRuntime(null, null, 0));
+        new Helper(this.loader, new SimpleRuntime(new byte[0], new byte[0], 0));
     }
 
     @After
@@ -181,9 +181,10 @@ public class ExceptionWrappingTest {
                 LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes);
                 dynamicHierarchyBuilder.addClass(slashName, slashSuperName, bytes);
             };
+            ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(this.classHierarchy);
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                     .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, this.classHierarchy, generatedClassesSink))
-                    .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME))
+                    .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME, classWhiteList))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                             sharedClassLoader, this.classHierarchy, dynamicHierarchyBuilder))
                     .build();

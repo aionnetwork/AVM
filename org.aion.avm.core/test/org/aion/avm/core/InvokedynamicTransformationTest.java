@@ -1,9 +1,11 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.Helper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -12,6 +14,7 @@ import org.objectweb.asm.ClassWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -36,6 +39,8 @@ public class InvokedynamicTransformationTest {
         final var className = ParametrizedLambda.class.getName();
         final byte[] origBytecode = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         final byte[] transformedBytecode = transform(origBytecode, className);
+        // todo remove
+        NeverCommitUtils.storeAndJavap(transformedBytecode, "transformed.txt");
         Assert.assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         assertCanInstantiate(transformedBytecode, className);
     }
@@ -71,17 +76,20 @@ public class InvokedynamicTransformationTest {
             assertTrue(actual.avm_valueOfWasCalled);
             assertTrue(org.aion.avm.core.testdoubles.indy.invoke.LambdaMetafactory.avm_metafactoryWasCalled);
         } catch (Exception e) {
+            e.printStackTrace(); // todo remove
             fail(e.getMessage());
         }
     }
 
     private byte[] transform(byte[] origBytecode, String className) {
         final AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        final var avmClassLoader = new AvmClassLoader(sharedClassLoader, new HashMap<>());
+        new Helper(avmClassLoader, new SimpleRuntime(new byte[0], new byte[0], 0));
         final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS, SHADOW_PACKAGE))
+                .addNextVisitor(new ClassShadowing(HELPER_CLASS, SHADOW_PACKAGE, ClassWhiteList.buildForEmptyContract()))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, classHierarchy, new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();

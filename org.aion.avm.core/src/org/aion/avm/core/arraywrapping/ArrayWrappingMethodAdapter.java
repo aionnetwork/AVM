@@ -11,8 +11,6 @@ import org.objectweb.asm.commons.Method;
 
 class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
-    private Type typeInt = Type.getType(int.class);
-
     private Type typeA = Type.getType(org.aion.avm.arraywrapper.Array.class);
     private Type typeBA = Type.getType(ByteArray.class);
     private Type typeCA = Type.getType(CharArray.class);
@@ -95,7 +93,6 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
             case Opcodes.AALOAD:
                 Assert.unreachable("Primitive array wrapping adapter catch AALOAD");
-
             case Opcodes.AASTORE:
                 m = Method.getMethod("void set(int, Object)");
                 invokeVirtual(typeOA, m);
@@ -156,16 +153,15 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
     @Override
     public void visitTypeInsn(int opcode, java.lang.String type){
-        //System.out.println("Type is " + type);
-        Method m;
+
         String wName;
 
         switch(opcode){
             case Opcodes.ANEWARRAY:
                 if (type.startsWith("[")){
-                    wName = ArrayWrappingBytecodeFactory.getWrapperName("[" + type);
+                    wName = ArrayWrappingClassGenerator.getWrapper("[" + type);
                 }else{
-                    wName = ArrayWrappingBytecodeFactory.getWrapperName("[L" + type);
+                    wName = ArrayWrappingClassGenerator.getWrapper("[L" + type);
                 }
 
                 this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", "(I)L" + wName + ";", false);
@@ -175,7 +171,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             case Opcodes.INSTANCEOF:
                 wName = type;
                 if (type.startsWith("[")) {
-                    wName = ArrayWrappingBytecodeFactory.getWrapperName(type);
+                    wName = ArrayWrappingClassGenerator.getWrapper(type);
                 }
                 this.mv.visitTypeInsn(opcode, wName);
                 break;
@@ -188,7 +184,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     //TODO: invokedynamic?
     //TODO: Do we need to patch owner?
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        String desc = ArrayWrappingBytecodeFactory.updateMethodDesc(descriptor);
+        String desc = ArrayWrappingClassGenerator.updateMethodDesc(descriptor);
         this.mv.visitMethodInsn(opcode, owner, name, desc, isInterface);
     }
 
@@ -202,7 +198,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     {
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingBytecodeFactory.getWrapperName(descriptor) + ";";
+            desc = "L" + ArrayWrappingClassGenerator.getWrapper(descriptor) + ";";
         }
 
         this.mv.visitLocalVariable(name, desc, signature, start, end, index);
@@ -214,19 +210,22 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
                            java.lang.String name,
                            java.lang.String descriptor)
     {
-
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingBytecodeFactory.getWrapperName(descriptor) + ";";
+            desc = "L" + ArrayWrappingClassGenerator.getWrapper(descriptor) + ";";
         }
 
         this.mv.visitFieldInsn(opcode, owner, name, desc);
     }
 
-    // @Override
-    // void visitMultiANewArrayInsn(java.lang.String descriptor, int d){
-    //
-    // }
+    @Override
+    public void visitMultiANewArrayInsn(java.lang.String descriptor, int d)
+    {
+        String wName = ArrayWrappingClassGenerator.getWrapper(descriptor);
+        String facDesc = ArrayWrappingClassGenerator.getFacDesc(wName, d);
+
+        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc, false);
+    }
 
 
 }

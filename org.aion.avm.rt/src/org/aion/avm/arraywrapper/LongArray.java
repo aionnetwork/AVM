@@ -1,10 +1,13 @@
 package org.aion.avm.arraywrapper;
 
+import org.aion.avm.internal.IHelper;
+
 public class LongArray extends Array {
 
     private long[] underlying;
 
     public static LongArray initArray(int c){
+        IHelper.currentContractHelper.get().externalChargeEnergy(c * 64);
         return new LongArray(c);
     }
 
