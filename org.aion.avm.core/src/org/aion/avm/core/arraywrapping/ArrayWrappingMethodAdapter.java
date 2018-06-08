@@ -221,8 +221,13 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     @Override
     public void visitMultiANewArrayInsn(java.lang.String descriptor, int d)
     {
+        int sd = ArrayWrappingClassGenerator.getDimension(descriptor);
+        while (d < sd){
+            this.mv.visitIntInsn(Opcodes.BIPUSH, 0);
+            d++;
+        }
         String wName = ArrayWrappingClassGenerator.getWrapper(descriptor);
-        String facDesc = ArrayWrappingClassGenerator.getFacDesc(wName, d);
+        String facDesc = ArrayWrappingClassGenerator.getFacDesc(wName, sd);
 
         this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc, false);
     }

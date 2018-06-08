@@ -287,6 +287,16 @@ public class ArrayWrappingTest {
     }
 
     @Test
+    public void testIncompleteArrayIni() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testIncompleteArrayIni");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
     public void testArrayEnergy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();

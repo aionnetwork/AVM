@@ -532,4 +532,18 @@ public class TestResource {
         return true;
     }
 
+    public boolean testIncompleteArrayIni(){
+        int[][][][] s;
+        s = new int[10][10][10][];
+        s = new int[10][10][][];
+        s = new int[10][][][];
+
+        String[][][][] ss;
+        ss = new String[10][10][10][];
+        ss = new String[10][10][][];
+        ss = new String[10][][][];
+
+        return true;
+    }
+
 }

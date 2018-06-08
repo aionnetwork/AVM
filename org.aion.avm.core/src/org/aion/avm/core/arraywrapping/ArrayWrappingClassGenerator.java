@@ -79,11 +79,11 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
         classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapper, null, superName, null);
 
-        if (d == 1){
-            //Static factory for one dimensional array
-            genSDFac(classWriter, wrapper, d);
-        }
-        else{
+        // Static factory for one dimensional array
+        // We always generate one D factory for corner case like int[][][][] a = new int[10][][][];
+        genSDFac(classWriter, wrapper, 1);
+
+        if (d > 1) {
             //Static factory for multidimensional array
             genMDFac(classWriter, wrapper, d);
         }
@@ -357,6 +357,14 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     // Return the element descriptor of an array
     private static java.lang.String getRefWrapperName(java.lang.String desc){
         return desc.replace('[', '$');
+    }
+
+    public static int getDimension(java.lang.String desc){
+        int d = 0;
+        while (desc.charAt(d) == '[') {
+            d++;
+        }
+        return d;
     }
 
 
