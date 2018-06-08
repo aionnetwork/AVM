@@ -1,6 +1,7 @@
 package org.aion.avm.rt;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -77,86 +78,53 @@ public class TxDataDecoder {
 
             switch (c) {
                 case BYTE:
-                    if ((txData.length - start) < BYTE_SIZE) {
-                        throw new InvalidTxDataException();
-                    }
+                    checkRemainingDataSize(txData.length - start, BYTE_SIZE);
 
                     args.add(txData[start]);
                     start += BYTE_SIZE;
                     break;
                 case BOOLEAN:
-                    if ((txData.length - start) < BOOLEAN_SIZE) {
-                        throw new InvalidTxDataException();
-                    }
+                    checkRemainingDataSize(txData.length - start, BOOLEAN_SIZE);
 
                     boolean b = (txData[start] != 0);
                     args.add(b);
                     start += BOOLEAN_SIZE;
                     break;
                 case CHAR:
-                    if ((txData.length - start) < CHAR_SIZE_MIN) {
-                        throw new InvalidTxDataException();
-                    }
+                    checkRemainingDataSize(txData.length - start, CHAR_SIZE_MIN);
 
-                    char c1;
-                    if ((txData.length - start) > CHAR_SIZE_MAX) {
-                        c1 = (new String(Arrays.copyOfRange(txData, start, start + 6), "UTF-8")).charAt(0);
-                    }
-                    else {
-                        c1 = (new String(Arrays.copyOfRange(txData, start, txData.length), "UTF-8")).charAt(0);
-                    }
+                    char c1 = getNextString(txData, start, 1).charAt(0);;
                     args.add(c1);
-                    start += "c1".getBytes("UTF-8").length;
+                    start += Character.toString(c1).getBytes("UTF-8").length;
                     break;
                 case SHORT:
-                    if ((txData.length - start) < SHORT_SIZE) {
-                        throw new InvalidTxDataException();
-                    }
+                    checkRemainingDataSize(txData.length - start, SHORT_SIZE);
 
-                    short s = (short)((txData[start]<<8)&0xFF00 | txData[start+1]&0xFF);
-                    args.add(s);
+                    args.add(getNextShort(txData, start));
                     start += SHORT_SIZE;
                     break;
                 case INT:
-                    if ((txData.length - start) < INT_SIZE) {
-                        throw new InvalidTxDataException();
-                    }
+                    checkRemainingDataSize(txData.length - start, INT_SIZE);
 
-                    int i = (txData[start]<<24)&0xFF000000 | (txData[start+1]<<16)&0xFF0000 |
-                            (txData[start+2]<<8)&0xFF00 | txData[start+3]&0xFF;
-                    args.add(i);
+                    args.add(getNextInt(txData, start));
                     start += INT_SIZE;
                     break;
                 case FLOAT:
-                    if ((txData.length - start) < FLOAT_SIZE) {
-                        throw new InvalidTxDataException();
-                    }
+                    checkRemainingDataSize(txData.length - start, FLOAT_SIZE);
 
-                    float f = (float) ((txData[start]<<24)&0xFF000000 | (txData[start+1]<<16)&0xFF0000 |
-                                       (txData[start+2]<<8)&0xFF00 | txData[start+3]&0xFF);
-                    args.add(f);
+                    args.add(getNextFloat(txData, start));
                     start += FLOAT_SIZE;
                     break;
                 case LONG:
-                    if ((txData.length - start) < LONG_SIZE) {
-                        throw new InvalidTxDataException();
-                    }
+                    checkRemainingDataSize(txData.length - start, LONG_SIZE);
 
-                    long l = ((long)((txData[start]<<24)&0xFF000000 | (txData[start+1]<<16)&0xFF0000 |
-                                    (txData[start+2]<<8)&0xFF00 | txData[start+3]&0xFF) << 32)
-                             + (long)((txData[start+4]<<24)&0xFF000000 | (txData[start+5]<<16)&0xFF0000 |
-                                     (txData[start+6]<<8)&0xFF00 | txData[start+7]&0xFF);
-                    args.add(l);
+                    args.add(getNextLong(txData, start));
                     start += LONG_SIZE;
                     break;
                 case DOUBLE:
-                    if ((txData.length - start) < DOUBLE_SIZE) {
-                        throw new InvalidTxDataException();
-                    }
+                    checkRemainingDataSize(txData.length - start, DOUBLE_SIZE);
 
-                    double d = (double) ((txData[start]<<24)&0xFF000000 | (txData[start+1]<<16)&0xFF0000 |
-                                         (txData[start+2]<<8)&0xFF00 | txData[start+3]&0xFF);
-                    args.add(d);
+                    args.add(getNextDouble(txData, start));
                     start += DOUBLE_SIZE;
                     break;
                 case ARRAY_S:
@@ -195,10 +163,7 @@ public class TxDataDecoder {
     private int get1DArrayData(byte[] txData, int start, List<Object> args, char type, int m) throws InvalidTxDataException, UnsupportedEncodingException{
         switch (type) {
             case BYTE:
-                if ((txData.length - start) < BYTE_SIZE * m) {
-                    throw new InvalidTxDataException();
-                }
-
+                checkRemainingDataSize(txData.length - start, BYTE_SIZE * m);
                 byte[] argB = new byte[m];
                 for (int idx = 0; idx < m; idx ++) {
                     argB[idx] = txData[start];
@@ -207,10 +172,7 @@ public class TxDataDecoder {
                 args.add(argB);
                 break;
             case BOOLEAN:
-                if ((txData.length - start) < BOOLEAN_SIZE * m) {
-                    throw new InvalidTxDataException();
-                }
-
+                checkRemainingDataSize(txData.length - start, BOOLEAN_SIZE * m);
                 boolean[] argZ = new boolean[m];
                 for (int idx = 0; idx < m; idx ++) {
                     argZ[idx] = (txData[start] != 0);
@@ -219,77 +181,52 @@ public class TxDataDecoder {
                 args.add(argZ);
                 break;
             case CHAR:
-                if ((txData.length - start) < CHAR_SIZE_MIN * m) {
-                    throw new InvalidTxDataException();
-                }
-
-                String argC;
-                if ((txData.length - start) > CHAR_SIZE_MAX * m) {
-                    argC = (new String(Arrays.copyOfRange(txData, start, start + CHAR_SIZE_MAX * m), "UTF-8"))
-                            .substring(0, m);
-                }
-                else {
-                    argC = (new String(Arrays.copyOfRange(txData, start, txData.length), "UTF-8"))
-                            .substring(0, m);
-                }
+                checkRemainingDataSize(txData.length - start, CHAR_SIZE_MIN * m);
+                String argC = getNextString(txData, start, m);
                 start += argC.getBytes("UTF-8").length;
                 args.add(argC);
                 break;
             case SHORT:
-                if ((txData.length - start) < SHORT_SIZE * m) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, SHORT_SIZE * m);
                 short[] argS = new short[m];
                 for (int idx = 0; idx < m; idx ++) {
-                    argS[idx] = (short) ((txData[start] << 8) & 0xFF00 | txData[start + 1] & 0xFF);
+                    argS[idx] = getNextShort(txData, start);
                     start += SHORT_SIZE;
                 }
                 args.add(argS);
                 break;
             case INT:
-                if ((txData.length - start) < INT_SIZE * m) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, INT_SIZE * m);
                 int[] argI = new int[m];
                 for (int idx = 0; idx < m; idx ++) {
-                    argI[idx] = (txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
-                                (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF;
+                    argI[idx] = getNextInt(txData, start);
                     start += INT_SIZE;
                 }
                 args.add(argI);
                 break;
             case FLOAT:
-                if ((txData.length - start) < FLOAT_SIZE * m) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, FLOAT_SIZE * m);
                 float[] argF = new float[m];
                 for (int idx = 0; idx < m; idx ++) {
-                    argF[idx] = (float) ((txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
-                                         (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF);
+                    argF[idx] = getNextFloat(txData, start);
                     start += FLOAT_SIZE;
                 }
                 args.add(argF);
                 break;
             case LONG:
-                if ((txData.length - start) < LONG_SIZE * m) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, LONG_SIZE * m);
                 long[] argL = new long[m];
                 for (int idx = 0; idx < m; idx ++) {
-                    argL[idx] = (long) ((txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
-                                        (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF);
+                    argL[idx] = getNextLong(txData, start);
                     start += LONG_SIZE;
                 }
                 args.add(argL);
                 break;
             case DOUBLE:
-                if ((txData.length - start) < DOUBLE_SIZE * m) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, DOUBLE_SIZE * m);
                 double[] argD = new double[m];
                 for (int idx = 0; idx < m; idx ++) {
-                    argD[idx] = (double) ((txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
-                                          (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF);
+                    argD[idx] = getNextDouble(txData, start);
                     start += DOUBLE_SIZE;
                 }
                 args.add(argD);
@@ -301,9 +238,7 @@ public class TxDataDecoder {
     private int get2DArrayData(byte[] txData, int start, List<Object> args, char type, int m, int n) throws InvalidTxDataException, UnsupportedEncodingException{
         switch (type) {
             case BYTE:
-                if ((txData.length - start) < BYTE_SIZE * m * n) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, BYTE_SIZE * m * n);
                 byte[][] argB = new byte[m][n];
                 for (int indexN = 0; indexN < n; indexN ++) {
                     for (int indexM = 0; indexM < m; indexM++) {
@@ -314,9 +249,7 @@ public class TxDataDecoder {
                 args.add(argB);
                 break;
             case BOOLEAN:
-                if ((txData.length - start) < BOOLEAN_SIZE * m * n) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, BOOLEAN_SIZE * m * n);
                 boolean[][] argZ = new boolean[m][n];
                 for (int indexN = 0; indexN < n; indexN ++) {
                     for (int indexM = 0; indexM < m; indexM++) {
@@ -327,90 +260,65 @@ public class TxDataDecoder {
                 args.add(argZ);
                 break;
             case CHAR:
-                if ((txData.length - start) < CHAR_SIZE_MIN * m * n) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, CHAR_SIZE_MIN * m * n);
 
                 String[] argC = new String[n];
                 for (int indexN = 0; indexN < n; indexN ++) {
-                    String s;
-                    if ((txData.length - start) > CHAR_SIZE_MAX * m) {
-                        s = new String(Arrays.copyOfRange(txData, start, start + CHAR_SIZE_MAX * m), "UTF-8")
-                                .substring(0, m);
-                    }
-                    else {
-                        s = new String(Arrays.copyOfRange(txData, start, txData.length), "UTF-8")
-                                .substring(0, m);
-                    }
-                    start += s.getBytes("UTF-8").length;
-                    argC[indexN] = s;
+                    argC[indexN] = getNextString(txData, start, m);
+                    start += argC[indexN].getBytes("UTF-8").length;
                 }
                 args.add(argC);
                 break;
             case SHORT:
-                if ((txData.length - start) < SHORT_SIZE * m * n) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, SHORT_SIZE * m * n);
                 short[][] argS = new short[m][n];
                 for (int indexN = 0; indexN < n; indexN ++) {
                     for (int indexM = 0; indexM < m; indexM++) {
-                        argS[indexM][indexN] = (short) ((txData[start] << 8) & 0xFF00 | txData[start + 1] & 0xFF);
+                        argS[indexM][indexN] = getNextShort(txData, start);
                         start += SHORT_SIZE;
                     }
                 }
                 args.add(argS);
                 break;
             case INT:
-                if ((txData.length - start) < INT_SIZE * m * n) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, INT_SIZE * m * n);
                 int[][] argI = new int[m][n];
                 for (int indexN = 0; indexN < n; indexN ++) {
                     for (int indexM = 0; indexM < m; indexM++) {
-                        argI[indexM][indexN] = (txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
-                                               (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF;
+                        argI[indexM][indexN] = getNextInt(txData, start);
                         start += INT_SIZE;
                     }
                 }
                 args.add(argI);
                 break;
             case FLOAT:
-                if ((txData.length - start) < FLOAT_SIZE * m * n) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, FLOAT_SIZE * m * n);
                 float[][] argF = new float[m][n];
                 for (int indexN = 0; indexN < n; indexN ++) {
                     for (int indexM = 0; indexM < m; indexM++) {
-                        argF[indexM][indexN] = (float) ((txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
-                                                        (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF);
+                        argF[indexM][indexN] = getNextFloat(txData, start);
                         start += FLOAT_SIZE;
                     }
                 }
                 args.add(argF);
                 break;
             case LONG:
-                if ((txData.length - start) < LONG_SIZE * m * n) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, LONG_SIZE * m * n);
                 long[][] argL = new long[m][n];
                 for (int indexN = 0; indexN < n; indexN ++) {
                     for (int indexM = 0; indexM < m; indexM++) {
-                        argL[indexM][indexN] = (long) ((txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
-                                                       (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF);
+                        argL[indexM][indexN] = getNextLong(txData, start);
                         start += LONG_SIZE;
                     }
                 }
                 args.add(argL);
                 break;
             case DOUBLE:
-                if ((txData.length - start) < DOUBLE_SIZE * m * n) {
-                    throw new InvalidTxDataException();
-                }
+                checkRemainingDataSize(txData.length - start, DOUBLE_SIZE * m * n);
                 double[][] argD = new double[m][n];
                 for (int indexN = 0; indexN < n; indexN ++) {
                     for (int indexM = 0; indexM < m; indexM++) {
-                        argD[indexM][indexN] = (double) ((txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
-                                                         (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF);
+                        argD[indexM][indexN] = getNextDouble(txData, start);
                         start += DOUBLE_SIZE;
                     }
                 }
@@ -418,5 +326,48 @@ public class TxDataDecoder {
                 break;
         }
         return start;
+    }
+
+    private static short getNextShort(byte[] txData, int start) {
+        return (short)((txData[start] << 8) & 0xFF00 | txData[start + 1] & 0xFF);
+    }
+
+    private static int getNextInt(byte[] txData, int start) {
+        return ((txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
+                (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF);
+    }
+
+    private static long getNextLong(byte[] txData, int start) {
+        return ((long)((txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
+                (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF) << 32)
+                + (long)((txData[start + 4] << 24) & 0xFF000000 | (txData[start + 5] << 16) & 0xFF0000 |
+                (txData[start + 6] << 8) & 0xFF00 | txData[start + 7] & 0xFF);
+    }
+
+    private static float getNextFloat(byte[] txData, int start) {
+        return ByteBuffer.allocate(4).put(Arrays.copyOfRange(txData, start, start + 4)).getFloat(0);
+    }
+
+    private static double getNextDouble(byte[] txData, int start) {
+        return ByteBuffer.allocate(8).put(Arrays.copyOfRange(txData, start, start + 8)).getDouble(0);
+    }
+
+    private static String getNextString(byte[] txData, int start, int m) throws UnsupportedEncodingException {
+        String s;
+        if ((txData.length - start) > CHAR_SIZE_MAX * m) {
+            s = new String(Arrays.copyOfRange(txData, start, start + CHAR_SIZE_MAX * m), "UTF-8")
+                    .substring(0, m);
+        }
+        else {
+            s = new String(Arrays.copyOfRange(txData, start, txData.length), "UTF-8")
+                    .substring(0, m);
+        }
+        return s;
+    }
+
+    private static void checkRemainingDataSize(int remainingDataSize, int minRequiredDataSize) throws InvalidTxDataException {
+        if(remainingDataSize < minRequiredDataSize) {
+            throw new InvalidTxDataException();
+        }
     }
 }
