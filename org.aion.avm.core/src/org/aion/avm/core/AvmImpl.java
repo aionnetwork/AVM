@@ -163,8 +163,8 @@ public class AvmImpl implements Avm {
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, objectSizes))
-                    .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))
+                    .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, classHierarchy, generatedClassesSink))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, classHierarchy, dynamicHierarchyBuilder))
                     .build()
@@ -298,12 +298,12 @@ public class AvmImpl implements Avm {
             // TODO: execute main-class contractCreation(), and do not include it in the stored bytecode
 
             // store transformed dapp
-            long storedSize = storeTransformedDapp(rt.getAddress(), app);
+            long storedSize = storeTransformedDapp(rt.avm_getAddress(), app);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * storedSize);
 
-            return new AvmResult(AvmResult.Code.SUCCESS, rt.getEnergyLimit());
+            return new AvmResult(AvmResult.Code.SUCCESS, rt.avm_getEnergyLimit());
         } catch (FatalAvmError e) {
             // These are unrecoverable errors (either a bug in our code or a lower-level error reported by the JVM).
             // (for now, we System.exit(-1), since this is what ethereumj does, but we may want a more graceful shutdown in the future)
@@ -327,7 +327,7 @@ public class AvmImpl implements Avm {
     @Override
     public AvmResult run(BlockchainRuntime rt) {
         //  retrieve the transformed bytecode
-        DappModule app = loadTransformedDapp(rt.getAddress());
+        DappModule app = loadTransformedDapp(rt.avm_getAddress());
 
         // As per usual, we need to get the special Helper class for each contract loader.
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
@@ -351,8 +351,8 @@ public class AvmImpl implements Avm {
             // At a contract call, only choose the one without arguments.
             Object obj = clazz.getConstructor().newInstance();
 
-            Method method = clazz.getMethod("run", ByteArray.class, BlockchainRuntime.class);
-            ByteArray ret = (ByteArray) method.invoke(obj, rt.getData(), rt);
+            Method method = clazz.getMethod("avm_run", ByteArray.class, BlockchainRuntime.class);
+            ByteArray ret = (ByteArray) method.invoke(obj, rt.avm_getData(), rt);
 
             // TODO: energy left
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret.getUnderlying());

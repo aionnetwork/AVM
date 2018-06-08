@@ -31,6 +31,10 @@ public class String extends Object {
         return this.underlying.length();
     }
 
+    //=======================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
     @Override
     public int hashCode() {
         // We probably want a consistent hashCode answer, for strings, since they are data-defined.

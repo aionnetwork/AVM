@@ -11,6 +11,9 @@ package org.aion.avm.rt;
  * our AVM code than we want to support for the contract.
  */
 public class Address {
+
+    public static final int LENGTH = 32;
+
     private final byte[] underlying;
 
     /**
@@ -20,6 +23,10 @@ public class Address {
      * @param raw The raw bytes representing the address.
      */
     public Address(byte[] raw) {
+        if (raw == null || raw.length != LENGTH) {
+            throw new IllegalArgumentException();
+        }
+
         this.underlying = raw;
     }
 

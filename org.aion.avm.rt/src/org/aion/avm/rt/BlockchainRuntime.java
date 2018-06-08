@@ -12,27 +12,27 @@ public interface BlockchainRuntime {
      *
      * @return
      */
-    Address getSender();
+    Address avm_getSender();
 
     /**
      * Returns the address of the executing account.
      *
      * @return
      */
-    Address getAddress();
+    Address avm_getAddress();
 
     /**
      * Returns the energy limit.
      *
      * @return
      */
-    long getEnergyLimit();
+    long avm_getEnergyLimit();
 
     /**
      * Returns the transaction data.
      * @return
      */
-    ByteArray getData();
+    ByteArray avm_getData();
 
     /**
      * Returns the corresponding value in the storage.
@@ -40,7 +40,7 @@ public interface BlockchainRuntime {
      * @param key
      * @return
      */
-    ByteArray getStorage(ByteArray key);
+    ByteArray avm_getStorage(ByteArray key);
 
     /**
      * Inserts/updates a key-value pair.
@@ -48,5 +48,5 @@ public interface BlockchainRuntime {
      * @param key
      * @param value
      */
-    void putStorage(ByteArray key, ByteArray value);
+    void avm_putStorage(ByteArray key, ByteArray value);
 }

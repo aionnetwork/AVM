@@ -261,5 +261,7 @@ public class Abi {
 
         buffer.putShort((short) bytes.length);
         buffer.put(bytes);
+
+        byte[][] x  = new byte[1][];
     }
 }

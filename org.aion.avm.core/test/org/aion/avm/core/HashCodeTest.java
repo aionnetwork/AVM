@@ -10,6 +10,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.rt.Address;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -49,7 +50,7 @@ public class HashCodeTest {
         this.clazz = loader.loadClass(className);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
         
-        SimpleRuntime rt = new SimpleRuntime(new byte[0], new byte[0], 10000);
+        SimpleRuntime rt = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
         Helpers.instantiateHelper(loader, rt);
     }
 
@@ -67,7 +68,7 @@ public class HashCodeTest {
     @Test
     public void testCommonHash() throws Exception {
         Assert.assertNotNull(clazz);
-        Method getOneHashCode = clazz.getMethod("getOneHashCode");
+        Method getOneHashCode = clazz.getMethod("avm_getOneHashCode");
         
         Object result = getOneHashCode.invoke(null);
         Assert.assertEquals(1, ((Integer)result).intValue());
@@ -84,7 +85,7 @@ public class HashCodeTest {
     @Test
     public void testStringConstant() throws Exception {
         Assert.assertNotNull(clazz);
-        Method getStringConstant = clazz.getMethod("getStringConstant");
+        Method getStringConstant = clazz.getMethod("avm_getStringConstant");
         
         Object instance1 = getStringConstant.invoke(null);
         Object instance2 = getStringConstant.invoke(null);
@@ -97,8 +98,8 @@ public class HashCodeTest {
     @Test
     public void testStringHashCode() throws Exception {
         Assert.assertNotNull(clazz);
-        Method getStringConstant = clazz.getMethod("getStringConstant");
-        Method getStringHash = clazz.getMethod("getStringHash");
+        Method getStringConstant = clazz.getMethod("avm_getStringConstant");
+        Method getStringHash = clazz.getMethod("avm_getStringHash");
         
         Object instance1 = getStringConstant.invoke(null);
         Object hash = getStringHash.invoke(null);
@@ -114,7 +115,7 @@ public class HashCodeTest {
     @Test
     public void testClassConstant() throws Exception {
         Assert.assertNotNull(clazz);
-        Method getClassConstant = clazz.getMethod("getClassConstant");
+        Method getClassConstant = clazz.getMethod("avm_getClassConstant");
         
         Object instance1 = getClassConstant.invoke(null);
         Object instance2 = getClassConstant.invoke(null);
@@ -127,7 +128,7 @@ public class HashCodeTest {
     @Test
     public void testVmExceptionInstancePreserved() throws Exception {
         Assert.assertNotNull(clazz);
-        Method matchRethrowVmException = clazz.getMethod("matchRethrowVmException");
+        Method matchRethrowVmException = clazz.getMethod("avm_matchRethrowVmException");
         
         Object instance1 = matchRethrowVmException.invoke(null);
         Assert.assertTrue(((Boolean)instance1).booleanValue());
@@ -139,7 +140,7 @@ public class HashCodeTest {
     @Test
     public void testClassGetName() throws Exception {
         Assert.assertNotNull(clazz);
-        Method compareClassName = clazz.getMethod("compareClassName");
+        Method compareClassName = clazz.getMethod("avm_compareClassName");
         
         Object instance1 = compareClassName.invoke(null);
         boolean didMatchInContract = ((Boolean)instance1).booleanValue();
@@ -153,7 +154,7 @@ public class HashCodeTest {
     @Test
     public void testStringToString() throws Exception {
         Assert.assertNotNull(clazz);
-        Method compareStringString = clazz.getMethod("compareStringString");
+        Method compareStringString = clazz.getMethod("avm_compareStringString");
         
         Object instance1 = compareStringString.invoke(null);
         boolean didMatchInContract = ((Boolean)instance1).booleanValue();
@@ -167,7 +168,7 @@ public class HashCodeTest {
     @Test
     public void testOverrideHashcode() throws Exception {
         Assert.assertNotNull(clazz);
-        Method getOverrideHashCode = clazz.getMethod("getOverrideHashCode", int.class);
+        Method getOverrideHashCode = clazz.getMethod("avm_getOverrideHashCode", int.class);
         
         int override = 5;
         Object instance1 = getOverrideHashCode.invoke(null, Integer.valueOf(override));
@@ -222,7 +223,7 @@ public class HashCodeTest {
         Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(targetClassName, transformedTarget));
         
         // We need a common runtime.
-        SimpleRuntime commonRuntime = new SimpleRuntime(new byte[0], new byte[0], 10000);
+        SimpleRuntime commonRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
         
         // Now, we will create 2 class loaders with the same classes:  these will be contract-level loaders.
         AvmClassLoader loader1 = new AvmClassLoader(sharedClassLoader, classes);
@@ -231,7 +232,7 @@ public class HashCodeTest {
         // First, run some tests in helper1.
         IHelper helper1 = Helpers.instantiateHelper(loader1, commonRuntime);
         Class<?> clazz1 = loader1.loadClass(targetClassName);
-        Method getOneHashCode1 = clazz1.getMethod("getOneHashCode");
+        Method getOneHashCode1 = clazz1.getMethod("avm_getOneHashCode");
         Object result = getOneHashCode1.invoke(null);
         Assert.assertEquals(1, ((Integer)result).intValue());
         result = getOneHashCode1.invoke(null);
@@ -241,7 +242,7 @@ public class HashCodeTest {
         // Now, create the helper2, show that it is independent, and run a test in that.
         IHelper helper2 = Helpers.instantiateHelper(loader2, commonRuntime);
         Class<?> clazz2 = loader2.loadClass(targetClassName);
-        Method getOneHashCode2 = clazz2.getMethod("getOneHashCode");
+        Method getOneHashCode2 = clazz2.getMethod("avm_getOneHashCode");
         Assert.assertEquals(1, helper2.externalGetNextHashCode());
         result = getOneHashCode2.invoke(null);
         Assert.assertEquals(2, ((Integer)result).intValue());

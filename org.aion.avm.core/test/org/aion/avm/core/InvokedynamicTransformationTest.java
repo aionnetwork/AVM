@@ -6,6 +6,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.rt.Address;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -67,7 +68,7 @@ public class InvokedynamicTransformationTest {
             final Class<?> klass = loader.loadClass(className);
             final Constructor<?> constructor = klass.getDeclaredConstructor();
             final Object instance = constructor.newInstance();
-            final Method method = klass.getDeclaredMethod("test");
+            final Method method = klass.getDeclaredMethod("avm_test");
             org.aion.avm.core.testdoubles.indy.invoke.LambdaMetafactory.avm_metafactoryWasCalled = false;
             final org.aion.avm.core.testdoubles.indy.Double actual = (org.aion.avm.core.testdoubles.indy.Double) method.invoke(instance);
             assertEquals(30, actual.avm_doubleValue(), 0);
@@ -81,12 +82,12 @@ public class InvokedynamicTransformationTest {
     private byte[] transform(byte[] origBytecode, String className) {
         final AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
         final var avmClassLoader = new AvmClassLoader(sharedClassLoader, new HashMap<>());
-        new Helper(avmClassLoader, new SimpleRuntime(new byte[0], new byte[0], 0));
+        new Helper(avmClassLoader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
         final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS, SHADOW_PACKAGE, ClassWhiteList.buildForEmptyContract()))
+                .addNextVisitor(new ClassShadowing(HELPER_CLASS, SHADOW_PACKAGE, ClassWhiteList.build(className)))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, classHierarchy, new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();

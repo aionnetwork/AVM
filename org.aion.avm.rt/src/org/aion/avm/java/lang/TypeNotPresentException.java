@@ -12,6 +12,10 @@ public class TypeNotPresentException extends RuntimeException {
         this.typeName = typeName;
     }
 
+    //=======================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
     public String typeName() {
         return typeName;
     }

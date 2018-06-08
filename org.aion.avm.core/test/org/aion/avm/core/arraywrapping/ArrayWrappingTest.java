@@ -8,6 +8,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.rt.Address;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -60,7 +61,7 @@ public class ArrayWrappingTest {
         loader.addHandler(wrapperGenerator);
 
         // We don't really need the runtime but we do need to initialize the Helper.
-        helper = Helpers.instantiateHelper(loader, new SimpleRuntime(new byte[0], new byte[0], 1000000));
+        helper = Helpers.instantiateHelper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 1000000));
 
         clazz = loader.loadClass(className);
     }

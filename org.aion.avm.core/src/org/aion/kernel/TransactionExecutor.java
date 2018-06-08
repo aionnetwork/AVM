@@ -23,32 +23,32 @@ public class TransactionExecutor {
 
         BlockchainRuntime rt = new BlockchainRuntime() {
             @Override
-            public Address getSender() {
+            public Address avm_getSender() {
                 return sender;
             }
 
             @Override
-            public Address getAddress() {
+            public Address avm_getAddress() {
                 return address;
             }
 
             @Override
-            public long getEnergyLimit() {
+            public long avm_getEnergyLimit() {
                 return 1000000;
             }
 
             @Override
-            public ByteArray getData() {
+            public ByteArray avm_getData() {
                 return null;
             }
 
             @Override
-            public ByteArray getStorage(ByteArray key) {
+            public ByteArray avm_getStorage(ByteArray key) {
                 return new ByteArray(new byte[0]);
             }
 
             @Override
-            public void putStorage(ByteArray key, ByteArray value) {
+            public void avm_putStorage(ByteArray key, ByteArray value) {
             }
         };
 

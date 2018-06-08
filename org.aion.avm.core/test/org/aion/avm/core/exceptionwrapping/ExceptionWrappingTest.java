@@ -7,6 +7,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.rt.Address;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -57,7 +58,7 @@ public class ExceptionWrappingTest {
         this.testClass = this.loader.loadClass(className);
         
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(this.loader, new SimpleRuntime(new byte[0], new byte[0], 0));
+        new Helper(this.loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
     }
 
     @After
@@ -72,7 +73,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchFinally() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method tryMultiCatchFinally = this.testClass.getMethod("tryMultiCatchFinally");
+        Method tryMultiCatchFinally = this.testClass.getMethod("avm_tryMultiCatchFinally");
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
@@ -87,7 +88,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testmSimpleManuallyThrowNull() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method manuallyThrowNull = this.testClass.getMethod("manuallyThrowNull");
+        Method manuallyThrowNull = this.testClass.getMethod("avm_manuallyThrowNull");
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didWrap);
@@ -95,6 +96,7 @@ public class ExceptionWrappingTest {
         try {
             manuallyThrowNull.invoke(null);
         } catch (InvocationTargetException e) {
+            e.printStackTrace();
             // Make sure that this is the wrapper type that we normally expect to see.
             Class<?> compare = this.loader.loadClass("org.aion.avm.exceptionwrapper.java.lang.NullPointerException");
             didCatch = e.getCause().getClass() == compare;
@@ -109,7 +111,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchInteraction() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method tryMultiCatchFinally = this.testClass.getMethod("tryMultiCatch");
+        Method tryMultiCatchFinally = this.testClass.getMethod("avm_tryMultiCatch");
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
@@ -124,7 +126,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testRecatchCoreException() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method outerCatch = this.testClass.getMethod("outerCatch");
+        Method outerCatch = this.testClass.getMethod("avm_outerCatch");
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);

@@ -10,6 +10,7 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 
 import org.junit.Assert;
@@ -57,10 +58,10 @@ public class BasicAppTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         this.clazz = loader.loadClass(className);
         // NOTE:  The user's side is pre-shadow so it uses "byte[]" whereas we look up "ByteArray", here.
-        this.decodeMethod = this.clazz.getMethod("decode", BlockchainRuntime.class, ByteArray.class);
+        this.decodeMethod = this.clazz.getMethod("avm_decode", BlockchainRuntime.class, ByteArray.class);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
         
-        BlockchainRuntime externalRuntime = new SimpleRuntime(new byte[0], new byte[0], 10000);
+        BlockchainRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
         Helpers.instantiateHelper(loader, externalRuntime);
         // Create the wrapper for the runtime object, now that the external one has been used to create the Helper required to instantiate shadow objects.
         this.runtime = new ContractRuntimeWrapper(externalRuntime);

@@ -12,6 +12,7 @@ import org.aion.avm.core.dappreading.ClassLoadingResult;
 import org.aion.avm.core.dappreading.DAppClassLoader;
 import org.aion.avm.core.dappreading.DAppLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.rt.Address;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,7 +31,7 @@ public class StubGeneratorTest {
     public void setup()throws ClassNotFoundException{
         Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.emptyMap());
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
-        Helpers.instantiateHelper(loader, new SimpleRuntime(new byte[0], new byte[0], 0));
+        Helpers.instantiateHelper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
     }
 
     @Test

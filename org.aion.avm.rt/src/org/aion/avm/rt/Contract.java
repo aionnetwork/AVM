@@ -23,5 +23,5 @@ public interface Contract {
      * @param rt    the runtime
      * @return the output
      */
-    ByteArray run(ByteArray input, BlockchainRuntime rt);
+    ByteArray avm_run(ByteArray input, BlockchainRuntime rt);
 }

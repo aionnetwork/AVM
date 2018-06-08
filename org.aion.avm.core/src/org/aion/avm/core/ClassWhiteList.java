@@ -1,8 +1,11 @@
 package org.aion.avm.core;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.aion.avm.core.util.Helpers;
 
@@ -44,7 +47,7 @@ public class ClassWhiteList {
 
     /**
      * Checks if the given class is in our JDK white-list.
-     * 
+     *
      * @param slashClassName The class to check.
      * @return True if we are allowed to access this class due to it being in our JDK white-list.
      */
@@ -79,6 +82,10 @@ public class ClassWhiteList {
      */
     public static ClassWhiteList buildForEmptyContract() {
         return new ClassWhiteList(Collections.emptySet());
+    }
+
+    public static ClassWhiteList build(String ...classes) {
+        return new ClassWhiteList(Stream.of(classes).map(clazz -> clazz.replaceAll("\\.", "/")).collect(Collectors.toSet()));
     }
 
     private static void deepAddChildrenToSet(Set<String> providedClassNames, Forest.Node<String, byte[]> node) {

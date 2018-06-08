@@ -2,7 +2,6 @@ package org.aion.avm.internal;
 
 import org.aion.avm.rt.BlockchainRuntime;
 
-import java.lang.reflect.Array;
 import java.util.IdentityHashMap;
 
 
@@ -29,7 +28,7 @@ public class Helper implements IHelper {
         lateLoader = loader;
         
         blockchainRuntime = rt;
-        energyLeft = rt.getEnergyLimit();
+        energyLeft = rt.avm_getEnergyLimit();
         StackWatcher.reset();
         nextHashCode = 1;
         

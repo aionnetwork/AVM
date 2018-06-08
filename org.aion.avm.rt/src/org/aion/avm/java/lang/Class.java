@@ -15,7 +15,14 @@ public class Class<T> extends Object {
         return IHelper.currentContractHelper.get().externalWrapAsString(underlying.getName());
     }
 
-    // NOTE:  This toString() cannot be called by the contract code (it will call avm_toString()) but our runtime and test code can call this.
+    public String avm_toString() {
+        return null;
+    }
+
+    //=======================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
     @Override
     public java.lang.String toString() {
         return this.underlying.toString();

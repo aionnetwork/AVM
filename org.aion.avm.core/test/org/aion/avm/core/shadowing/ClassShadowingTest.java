@@ -8,6 +8,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.rt.Address;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -49,11 +50,11 @@ public class ClassShadowingTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, new SimpleRuntime(new byte[0], new byte[0], 0));
+        new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
 
-        Method method = clazz.getMethod("multi", int.class, int.class);
+        Method method = clazz.getMethod("avm_multi", int.class, int.class);
         Object ret = method.invoke(obj, 1, 2);
         Assert.assertEquals(0, ret);
 
@@ -62,9 +63,9 @@ public class ClassShadowingTest {
         Assert.assertEquals(0, Testing.countWrappedClasses);
 
         // We can rely on our test-facing toString methods to look into what we got back.
-        Object wrappedClass = clazz.getMethod("returnClass").invoke(obj);
+        Object wrappedClass = clazz.getMethod("avm_returnClass").invoke(obj);
         Assert.assertEquals("class org.aion.avm.java.lang.String", wrappedClass.toString());
-        Object wrappedString = clazz.getMethod("returnString").invoke(obj);
+        Object wrappedString = clazz.getMethod("avm_returnString").invoke(obj);
         Assert.assertEquals("hello", wrappedString.toString());
 
         // Verify that we see wrapped instances.
@@ -95,16 +96,16 @@ public class ClassShadowingTest {
         };
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, new SimpleRuntime(new byte[0], new byte[0], 0));
+        new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
 
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
 
-        Method method = clazz.getMethod("getStatic");
+        Method method = clazz.getMethod("avm_getStatic");
         Object ret = method.invoke(obj);
         Assert.assertTrue(loadedClasses.contains("org.aion.avm.java.lang.Byte"));
 
-        Method method2 = clazz.getMethod("localVariable");
+        Method method2 = clazz.getMethod("avm_localVariable");
         Object ret2 = method2.invoke(obj);
         Assert.assertEquals(Integer.valueOf(3), ret2);
     }
@@ -112,12 +113,13 @@ public class ClassShadowingTest {
     @Test
     public void testInterfaceHandling() throws Exception {
         String className = "org.aion.avm.core.shadowing.TestResourceInterface";
+        String classNameInner = className + "$1";
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         String innerClassName = className + "$1";
         byte[] innerRaw = Helpers.loadRequiredResourceAsBytes(innerClassName.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, ClassWhiteList.buildForEmptyContract()))
+                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, ClassWhiteList.build(className, classNameInner)))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
@@ -129,10 +131,10 @@ public class ClassShadowingTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, new SimpleRuntime(new byte[0], new byte[0], 0));
+        new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
         Class<?> clazz = loader.loadClass(className);
 
-        Method method = clazz.getMethod("getStringForNull");
+        Method method = clazz.getMethod("avm_getStringForNull");
         Object ret = method.invoke(null);
         // Note that we can't yet override methods in our contracts so the toString returns false, from Object.
         Assert.assertEquals(null, ret);

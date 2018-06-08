@@ -9,6 +9,7 @@ import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -49,8 +50,8 @@ public class AvmImplTest {
     }
 
 
-    private byte[] sender = Helpers.randomBytes(32);
-    private byte[] address = Helpers.randomBytes(32);
+    private byte[] sender = Helpers.randomBytes(Address.LENGTH);
+    private byte[] address = Helpers.randomBytes(Address.LENGTH);
     private long energyLimit = 1000000;
 
     @Test
@@ -70,11 +71,11 @@ public class AvmImplTest {
 
         BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
             @Override
-            public ByteArray getData() {
+            public ByteArray avm_getData() {
                 return new ByteArray(new byte[0]);
             }
             @Override
-            public ByteArray getStorage(ByteArray key) {
+            public ByteArray avm_getStorage(ByteArray key) {
                 return null;
             }
         };
@@ -103,7 +104,7 @@ public class AvmImplTest {
     @Test
     public void testPersistentEnergyLimit() {
         // Set up the runtime.
-        BlockchainRuntime rt = new SimpleRuntime(new byte[0], new byte[0], 5);
+        BlockchainRuntime rt = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 5);
         Map<String, byte[]> contractClasses = Helpers.mapIncludingHelperBytecode(Collections.emptyMap());
         IHelper helper = Helpers.instantiateHelper(new AvmClassLoader(sharedClassLoader, contractClasses), rt);
 

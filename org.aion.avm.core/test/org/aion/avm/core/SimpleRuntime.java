@@ -24,29 +24,29 @@ public class SimpleRuntime implements BlockchainRuntime {
         this.energyLimit = energyLimit;
     }
     @Override
-    public Address getSender() {
+    public Address avm_getSender() {
         return this.sender;
     }
     @Override
-    public Address getAddress() {
+    public Address avm_getAddress() {
         return this.address;
     }
     @Override
-    public long getEnergyLimit() {
+    public long avm_getEnergyLimit() {
         return this.energyLimit;
     }
     @Override
-    public ByteArray getData() {
+    public ByteArray avm_getData() {
         Assert.fail("This implementation doesn't handle this");
         return null;
     }
     @Override
-    public ByteArray getStorage(ByteArray key) {
+    public ByteArray avm_getStorage(ByteArray key) {
         Assert.fail("This implementation doesn't handle this");
         return null;
     }
     @Override
-    public void putStorage(ByteArray key, ByteArray value) {
+    public void avm_putStorage(ByteArray key, ByteArray value) {
         Assert.fail("This implementation doesn't handle this");
     }
 }

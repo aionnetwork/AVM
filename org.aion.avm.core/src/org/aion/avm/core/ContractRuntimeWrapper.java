@@ -18,27 +18,27 @@ public class ContractRuntimeWrapper extends org.aion.avm.java.lang.Object implem
         this.externalRuntime = externalRuntime;
     }
     @Override
-    public Address getSender() {
-        return this.externalRuntime.getSender();
+    public Address avm_getSender() {
+        return this.externalRuntime.avm_getSender();
     }
     @Override
-    public Address getAddress() {
-        return this.externalRuntime.getAddress();
+    public Address avm_getAddress() {
+        return this.externalRuntime.avm_getAddress();
     }
     @Override
-    public long getEnergyLimit() {
-        return this.externalRuntime.getEnergyLimit();
+    public long avm_getEnergyLimit() {
+        return this.externalRuntime.avm_getEnergyLimit();
     }
     @Override
-    public ByteArray getData() {
-        return this.externalRuntime.getData();
+    public ByteArray avm_getData() {
+        return this.externalRuntime.avm_getData();
     }
     @Override
-    public ByteArray getStorage(ByteArray key) {
-        return this.externalRuntime.getStorage(key);
+    public ByteArray avm_getStorage(ByteArray key) {
+        return this.externalRuntime.avm_getStorage(key);
     }
     @Override
-    public void putStorage(ByteArray key, ByteArray value) {
-        this.externalRuntime.putStorage(key, value);
+    public void avm_putStorage(ByteArray key, ByteArray value) {
+        this.externalRuntime.avm_putStorage(key, value);
     }
 }
