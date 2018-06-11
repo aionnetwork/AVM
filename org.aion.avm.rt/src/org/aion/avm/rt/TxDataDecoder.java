@@ -162,10 +162,13 @@ public class TxDataDecoder {
                         if (m == 0 && n > 0) {
                             // this is a jagged array
                             for (int i = 0; i < n; i ++) {
-                                if (argsDescriptor.charAt(idx++) == JAGGED_D_S) {
-                                    res = readNumFromDescriptor(argsDescriptor, JAGGED_D_S, idx + 1);
+                                if (argsDescriptor.charAt(++ idx) == JAGGED_D_S) {
+                                    res = readNumFromDescriptor(argsDescriptor, JAGGED_D_E, idx + 1);
                                     dimensions.add(res[0]);
                                     idx = res[1];
+                                }
+                                else {
+                                    throw new InvalidTxDataException();
                                 }
                             }
                         }
@@ -195,13 +198,13 @@ public class TxDataDecoder {
      */
     private int[] readNumFromDescriptor(String argsDescriptor, char stopChar, int startIdx) throws InvalidTxDataException {
         int[] res = new int[2];
-        int idxE = argsDescriptor.indexOf(ARRAY_E, startIdx);
+        int idxE = argsDescriptor.indexOf(stopChar, startIdx);
         if ( idxE == -1) {
             throw new InvalidTxDataException();
         }
 
         res[1] = idxE;
-        if (argsDescriptor.substring(startIdx, idxE) == "") {
+        if (argsDescriptor.substring(startIdx, idxE).isEmpty()) {
             res[0] = 0; // may be a jagged array
         }
         else {
