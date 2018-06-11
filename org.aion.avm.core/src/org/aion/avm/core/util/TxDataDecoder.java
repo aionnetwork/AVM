@@ -1,4 +1,4 @@
-package org.aion.avm.rt;
+package org.aion.avm.core.util;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;

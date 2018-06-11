@@ -1,4 +1,4 @@
-package org.aion.avm.rt;
+package org.aion.avm.core.util;
 
 
 public class InvalidTxDataException extends Exception {
