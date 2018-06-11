@@ -14,6 +14,7 @@ import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.TxDataDecoder;
 import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.FatalAvmError;
 import org.aion.avm.internal.IHelper;
@@ -338,11 +339,13 @@ public class AvmImpl implements Avm {
         classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
-        // TODO: parse the tx data, select the method and get the arguments
+        // Parse the tx data, get the method name and arguments
+        TxDataDecoder.MethodCaller methodCaller;
         try {
-
+            TxDataDecoder txDataDecoder = new TxDataDecoder();
+            methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
         } catch (Exception e) {
-            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+            //return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
         }
 
         // load class
@@ -353,6 +356,10 @@ public class AvmImpl implements Avm {
 
             Method method = clazz.getMethod("avm_run", ByteArray.class, BlockchainRuntime.class);
             ByteArray ret = (ByteArray) method.invoke(obj, rt.avm_getData(), rt);
+
+            // TODO: matchMethodSelector() -- generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
+            //Method method = matchMethodSelector(clazz, methodCaller.methodSelector);
+            //ByteArray ret = (ByteArray) method.invoke(obj, methodCaller.arguments, rt);
 
             // TODO: energy left
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret.getUnderlying());
