@@ -122,4 +122,13 @@ public class BasicAppTest {
         ByteArray output3 = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input1);
         Assert.assertEquals(input2.get(1), output3.get(1));
     }
+
+    @Test
+    public void testArrayEquality() throws Exception {
+        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodTestArrayEquality, 42, 13});
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        // Should be just 1 byte: 0 (since they should never be equal).
+        Assert.assertEquals(1, output.length());
+        Assert.assertEquals(0, output.get(0));
+    }
 }

@@ -16,7 +16,7 @@ public interface IObject {
 
     public int avm_hashCode();
 
-    public boolean avm_equals(Object obj);
+    public boolean avm_equals(IObject obj);
 
     public String avm_toString();
 }

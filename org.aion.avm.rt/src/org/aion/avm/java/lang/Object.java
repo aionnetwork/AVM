@@ -25,7 +25,7 @@ public class Object extends java.lang.Object implements IObject {
     }
 
     @Override
-    public boolean avm_equals(Object obj) {
+    public boolean avm_equals(IObject obj) {
         return false;
     }
 
