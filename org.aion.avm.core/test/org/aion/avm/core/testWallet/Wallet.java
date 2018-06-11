@@ -1,9 +1,7 @@
 package org.aion.avm.core.testWallet;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.aion.avm.rt.Address;
+import org.aion.avm.userlib.AionMap;
 
 
 /**
@@ -15,13 +13,13 @@ public class Wallet implements IMultisig {
     private final IEventLogger logger;
     private final Multiowned owners;
     private final Daylimit limit;
-    private final Map<BytesKey, Transaction> transactions;
+    private final AionMap<BytesKey, Transaction> transactions;
 
     public Wallet(IEventLogger logger, Multiowned owners, Daylimit limit) {
         this.logger = logger;
         this.owners = owners;
         this.limit = limit;
-        this.transactions = new HashMap<>();
+        this.transactions = new AionMap<>();
     }
 
     // EXTERNAL - composed

@@ -1,13 +1,9 @@
 package org.aion.avm.core.testWallet;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.aion.avm.rt.Address;
+import org.aion.avm.userlib.AionList;
+import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.AionSet;
 
 
 /**
@@ -19,24 +15,24 @@ import org.aion.avm.rt.Address;
 public class Multiowned {
     private final IEventLogger logger;
     // The owners.
-    private final Set<Address> owners;
-    private final List<Address> ownersByJoinOrder;
+    private final AionSet<Address> owners;
+    private final AionList<Address> ownersByJoinOrder;
     // The operations which we currently know about.
-    private final Map<Operation, PendingState> ongoingOperations;
+    private final AionMap<Operation, PendingState> ongoingOperations;
     // The number of owners which must confirm the operation before it is run.
     private int numberRequired;
 
     public Multiowned(IEventLogger logger, Address sender, Address[] requestedOwners, int votesRequiredPerOperation) {
         this.logger = logger;
-        this.owners = new HashSet<>();
-        this.ownersByJoinOrder = new ArrayList<>();
+        this.owners = new AionSet<>();
+        this.ownersByJoinOrder = new AionList<>();
         this.owners.add(sender);
         this.ownersByJoinOrder.add(sender);
         for (Address owner : requestedOwners) {
             this.owners.add(owner);
             this.ownersByJoinOrder.add(owner);
         }
-        this.ongoingOperations = new HashMap<>();
+        this.ongoingOperations = new AionMap<>();
         this.numberRequired = votesRequiredPerOperation;
     }
 
@@ -207,6 +203,6 @@ public class Multiowned {
 
 
     private static class PendingState {
-        public final Set<Address> confirmedOwners = new HashSet<>();
+        public final AionSet<Address> confirmedOwners = new AionSet<>();
     }
 }
