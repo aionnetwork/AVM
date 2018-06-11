@@ -17,7 +17,7 @@ public class TxDataDecoder {
     public static final int  BOOLEAN_SIZE = 1;
 
     public static final char CHAR = 'C';
-    // UTF-8 is variable-length encoding; minimum 1 byte, maximum 6 bytes
+    // UTF-8 is variable-length encoding; minimum 1 byte, maximum 6 bytes for 1 character
     public static final int  CHAR_SIZE_MIN = 1;
     public static final int  CHAR_SIZE_MAX = 6;
 
@@ -38,6 +38,9 @@ public class TxDataDecoder {
 
     public static final char ARRAY_S = '[';
     public static final char ARRAY_E = ']';
+
+    public static final char JAGGED_D_S = '(';
+    public static final char JAGGED_D_E = ')';
 
     public static final char DESCRIPTOR_S = '<';
     public static final char DESCRIPTOR_E = '>';
@@ -131,7 +134,12 @@ public class TxDataDecoder {
                     int arrayDimension = 1;
                     char type;
 
-                    // TODO add regex check
+                    // TODO add jagged array support
+
+                    // shortest [XM]
+                    if (argsDescriptor.length() - idx < 4) {
+                        throw new InvalidTxDataException();
+                    }
 
                     if (argsDescriptor.charAt(++ idx) == ARRAY_S) {
                         arrayDimension ++;
@@ -140,15 +148,17 @@ public class TxDataDecoder {
 
                     type = argsDescriptor.charAt(idx ++);
 
-                    int m = Integer.parseInt(argsDescriptor.substring(idx, argsDescriptor.indexOf(ARRAY_E, idx)));
-                    idx = argsDescriptor.indexOf(ARRAY_E, idx);
+                    int[] res = readNumFromDescriptor(argsDescriptor, ARRAY_E, idx);
+                    int m = res[0];
+                    idx = res[1];
 
                     if (arrayDimension == 1) {
                         start = get1DArrayData(txData, start, args, type, m);
                     }
                     else {
-                        int n = Integer.parseInt(argsDescriptor.substring(idx + 1, argsDescriptor.indexOf(ARRAY_E, idx + 1)));
-                        idx = argsDescriptor.indexOf(ARRAY_E, idx + 1);
+                        res = readNumFromDescriptor(argsDescriptor, ARRAY_E, idx + 1);
+                        int n = res[0];
+                        idx = res[1];
                         start = get2DArrayData(txData, start, args, type, m, n);
                     }
                     break;
@@ -160,7 +170,24 @@ public class TxDataDecoder {
         return args;
     }
 
+    private int[] readNumFromDescriptor(String argsDescriptor, char stopChar, int startIdx) throws InvalidTxDataException {
+        int[] res = new int[2];
+        int idxE = argsDescriptor.indexOf(ARRAY_E, startIdx);
+        if ( idxE == -1) {
+            throw new InvalidTxDataException();
+        }
+        else {
+            res[0] = Integer.parseInt(argsDescriptor.substring(startIdx, idxE));
+            res[1] = idxE;
+            return res;
+        }
+    }
+
     private int get1DArrayData(byte[] txData, int start, List<Object> args, char type, int m) throws InvalidTxDataException, UnsupportedEncodingException{
+        if (m <= 0) {
+            throw new InvalidTxDataException();
+        }
+
         switch (type) {
             case BYTE:
                 checkRemainingDataSize(txData.length - start, BYTE_SIZE * m);
@@ -231,11 +258,17 @@ public class TxDataDecoder {
                 }
                 args.add(argD);
                 break;
+            default:
+                throw new InvalidTxDataException();
         }
         return start;
     }
 
     private int get2DArrayData(byte[] txData, int start, List<Object> args, char type, int m, int n) throws InvalidTxDataException, UnsupportedEncodingException{
+        if (m <= 0 || n <= 0) {
+            throw new InvalidTxDataException();
+        }
+
         switch (type) {
             case BYTE:
                 checkRemainingDataSize(txData.length - start, BYTE_SIZE * m * n);
@@ -324,6 +357,8 @@ public class TxDataDecoder {
                 }
                 args.add(argD);
                 break;
+            default:
+                throw new InvalidTxDataException();
         }
         return start;
     }
