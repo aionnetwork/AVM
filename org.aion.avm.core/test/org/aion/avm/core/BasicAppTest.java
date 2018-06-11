@@ -13,7 +13,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
-
+import org.aion.avm.userlib.AionMap;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -45,8 +45,13 @@ public class BasicAppTest {
         String className = BasicAppTestTarget.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         
+        // Contract "user-space" library.
+        String aionMapClassName = AionMap.class.getName();
+        byte[] aionMapBytes = Helpers.loadRequiredResourceAsBytes(aionMapClassName.replaceAll("\\.", "/") + ".class");
+        
         Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", raw)
+                .addClass(aionMapClassName, "java.lang.Object", aionMapBytes)
                 .asMutableForest();
         
         AvmImpl avm = new AvmImpl(sharedClassLoader);
@@ -55,7 +60,10 @@ public class BasicAppTest {
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
         };
-        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(className, transformer.apply(raw)));
+        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(
+                Map.of(className, transformer.apply(raw),
+                        aionMapClassName, transformer.apply(aionMapBytes))
+        );
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.genWrapperClass(cName);
         loader.addHandler(wrapperGenerator);
@@ -153,5 +161,23 @@ public class BasicAppTest {
         Assert.assertEquals(2, output.length());
         Assert.assertEquals(42, output.get(0));
         Assert.assertEquals(42, output.get(1));
+    }
+
+    @Test
+    public void testMapInteraction() throws Exception {
+        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodMapPut, 1, 42});
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        Assert.assertEquals(1, output.length());
+        Assert.assertEquals(42, output.get(0));
+        
+        input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodMapPut, 2, 13});
+        output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        Assert.assertEquals(1, output.length());
+        Assert.assertEquals(13, output.get(0));
+        
+        input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodMapGet, 2});
+        output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        Assert.assertEquals(1, output.length());
+        Assert.assertEquals(13, output.get(0));
     }
 }

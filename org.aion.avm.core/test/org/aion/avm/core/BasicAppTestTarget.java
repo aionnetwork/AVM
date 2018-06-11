@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.rt.BlockchainRuntime;
+import org.aion.avm.userlib.AionMap;
 
 
 /**
@@ -18,9 +19,12 @@ public class BasicAppTestTarget {
     public static final byte kMethodTestArrayEquality = 6;
     public static final byte kMethodAllocateObjectArray = 7;
     public static final byte kMethodByteAutoboxing = 8;
+    public static final byte kMethodMapPut = 9;
+    public static final byte kMethodMapGet = 10;
 
     // NOTE:  This use of a static is something we will definitely be changing, later on, once we decide how static and instance state interacts with storage.
     private static byte[] swappingPoint;
+    private static AionMap<Byte, Byte> longLivedMap = new AionMap<>();
 
     // NOTE:  Even though this is "byte[]" on the user's side, we will call it from the outside as "ByteArray"
     public static byte[] decode(BlockchainRuntime runtime, byte[] input) {
@@ -50,6 +54,12 @@ public class BasicAppTestTarget {
             break;
         case kMethodByteAutoboxing:
             output = byteAutoboxing(runtime, input);
+            break;
+        case kMethodMapPut:
+            output = mapPut(runtime, input);
+            break;
+        case kMethodMapGet:
+            output = mapGet(runtime, input);
             break;
         default:
             throw new AssertionError("Unknown instruction");
@@ -100,5 +110,18 @@ public class BasicAppTestTarget {
         // Take the second byte, auto-boxed, and use that information to build the response.
         Byte value = input[1];
         return new byte[] { (byte)value.hashCode(), value.byteValue() };
+    }
+
+    private static byte[] mapPut(BlockchainRuntime runtime, byte[] input) {
+        byte key = input[1];
+        byte value = input[2];
+        longLivedMap.put(key, value);
+        return new byte[] {value};
+    }
+
+    private static byte[] mapGet(BlockchainRuntime runtime, byte[] input) {
+        byte key = input[1];
+        byte value = longLivedMap.get(key);
+        return new byte[] {value};
     }
 }
