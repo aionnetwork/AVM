@@ -24,6 +24,7 @@ public class ClassWhiteList {
     private static final String JAVA_LANG = "java/lang/";
     private static final String JAVA_UTIL_FUNCTION = "java/util/function";
     private static final String AION_RT = "org/aion/avm/rt/";
+    private static final String AION_SHADOWING = "org/aion/avm/core/shadowing/";
 
     private final Set<String> contractClassNames;
     
@@ -42,6 +43,7 @@ public class ClassWhiteList {
                 || slashClassName.startsWith(JAVA_LANG)
                 || slashClassName.startsWith(JAVA_UTIL_FUNCTION)
                 || slashClassName.startsWith(AION_RT)
+                || slashClassName.startsWith(AION_SHADOWING)
                 );
     }
 

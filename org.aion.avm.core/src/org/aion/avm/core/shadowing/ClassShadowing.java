@@ -313,7 +313,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
     }
 
     protected String replaceMethodName(String methodName) {
-        return methodName.equals("<init>") ? methodName : METHOD_PREFIX + methodName;
+        return (methodName.equals("<init>") || methodName.equals("<clinit>")) ? methodName : METHOD_PREFIX + methodName;
     }
 
     /**
