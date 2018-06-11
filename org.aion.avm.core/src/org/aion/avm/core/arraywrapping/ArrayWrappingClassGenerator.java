@@ -59,7 +59,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
                 Assert.unreachable("No valid component : " + compName);
             }
 
-            if (!c.getName().equals("java.lang.Object")){
+            if (!c.getName().equals("java.lang.Object") && !c.isInterface()){
                 c = c.getSuperclass();
                 superName = (new String(new char[d]).replace("\0", "[")) + 'L' + c.getName() + ";";
                 superName = superName.replace('.', '/');

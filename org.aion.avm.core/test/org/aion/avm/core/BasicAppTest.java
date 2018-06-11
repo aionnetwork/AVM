@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -56,6 +57,9 @@ public class BasicAppTest {
         };
         Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(className, transformer.apply(raw)));
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.genWrapperClass(cName);
+        loader.addHandler(wrapperGenerator);
+        
         this.clazz = loader.loadClass(className);
         // NOTE:  The user's side is pre-shadow so it uses "byte[]" whereas we look up "ByteArray", here.
         this.decodeMethod = this.clazz.getMethod("avm_decode", BlockchainRuntime.class, ByteArray.class);
@@ -130,5 +134,14 @@ public class BasicAppTest {
         // Should be just 1 byte: 0 (since they should never be equal).
         Assert.assertEquals(1, output.length());
         Assert.assertEquals(0, output.get(0));
+    }
+
+    @Test
+    public void testAllocateArray() throws Exception {
+        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodAllocateObjectArray, 42, 13});
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        // Should be just 1 byte: 2 (since that is the length).
+        Assert.assertEquals(1, output.length());
+        Assert.assertEquals(2, output.get(0));
     }
 }

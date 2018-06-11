@@ -16,6 +16,7 @@ public class BasicAppTestTarget {
     public static final byte kMethodLowOrderRuntimeHash = 4;
     public static final byte kMethodSwapInputsFromLastCall = 5;
     public static final byte kMethodTestArrayEquality = 6;
+    public static final byte kMethodAllocateObjectArray = 7;
 
     // NOTE:  This use of a static is something we will definitely be changing, later on, once we decide how static and instance state interacts with storage.
     private static byte[] swappingPoint;
@@ -42,6 +43,9 @@ public class BasicAppTestTarget {
             break;
         case kMethodTestArrayEquality:
             output = arrayEquality(runtime, input);
+            break;
+        case kMethodAllocateObjectArray:
+            output = allocateObjectArray(runtime, input);
             break;
         default:
             throw new AssertionError("Unknown instruction");
@@ -80,5 +84,11 @@ public class BasicAppTestTarget {
         boolean isEqual = target.equals(input);
         byte result = (byte)(isEqual ? 1 : 0);
         return new byte[] { result };
+    }
+
+    private static byte[] allocateObjectArray(BlockchainRuntime runtime, byte[] input) {
+        // We just want to create the array.
+        Object[] array = new Object[] {"test", "two"};
+        return new byte[] { (byte)array.length };
     }
 }
