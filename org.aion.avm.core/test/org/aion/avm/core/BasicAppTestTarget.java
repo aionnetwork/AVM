@@ -17,6 +17,7 @@ public class BasicAppTestTarget {
     public static final byte kMethodSwapInputsFromLastCall = 5;
     public static final byte kMethodTestArrayEquality = 6;
     public static final byte kMethodAllocateObjectArray = 7;
+    public static final byte kMethodByteAutoboxing = 8;
 
     // NOTE:  This use of a static is something we will definitely be changing, later on, once we decide how static and instance state interacts with storage.
     private static byte[] swappingPoint;
@@ -46,6 +47,9 @@ public class BasicAppTestTarget {
             break;
         case kMethodAllocateObjectArray:
             output = allocateObjectArray(runtime, input);
+            break;
+        case kMethodByteAutoboxing:
+            output = byteAutoboxing(runtime, input);
             break;
         default:
             throw new AssertionError("Unknown instruction");
@@ -90,5 +94,11 @@ public class BasicAppTestTarget {
         // We just want to create the array.
         Object[] array = new Object[] {"test", "two"};
         return new byte[] { (byte)array.length };
+    }
+
+    private static byte[] byteAutoboxing(BlockchainRuntime runtime, byte[] input) {
+        // Take the second byte, auto-boxed, and use that information to build the response.
+        Byte value = input[1];
+        return new byte[] { (byte)value.hashCode(), value.byteValue() };
     }
 }

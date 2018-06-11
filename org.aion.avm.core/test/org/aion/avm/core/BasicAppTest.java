@@ -144,4 +144,14 @@ public class BasicAppTest {
         Assert.assertEquals(1, output.length());
         Assert.assertEquals(2, output.get(0));
     }
+
+    @Test
+    public void testByteAutoboxing() throws Exception {
+        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodByteAutoboxing, 42});
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        // Should be just 2 bytes: 2 wrapper hashcode low byte and unwrapped value.
+        Assert.assertEquals(2, output.length());
+        Assert.assertEquals(42, output.get(0));
+        Assert.assertEquals(42, output.get(1));
+    }
 }
