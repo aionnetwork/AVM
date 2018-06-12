@@ -80,7 +80,6 @@ public class AvmImpl implements Avm {
      * <li>no invalid opcode</li>
      * <li>package name does not start with <code>org.aion.avm</code></li>
      * <li>no access to any <code>org.aion.avm</code> packages but the <code>org.aion.avm.rt</code> package</li>
-     * <li>main class is a <code>Contract</code></li>
      * <li>any assumptions that the class transformation has made</li>
      * <li>TODO: add more</li>
      * </ul>

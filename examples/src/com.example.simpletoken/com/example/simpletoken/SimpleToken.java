@@ -1,17 +1,16 @@
 package com.example.simpletoken;
 
-import org.aion.avm.rt.Contract;
 import org.aion.avm.rt.BlockchainRuntime;
 
-public class SimpleToken implements Contract {
+public class SimpleToken {
 
     public void transfer(BlockchainRuntime rt, byte[] from, byte[] to) {
         // dummy balance check
-        rt.getStorage(from);
+        rt.avm_getStorage(from);
 
         // dummy balance update
-        rt.putStorage(from, new byte[]{4});
-        rt.putStorage(to, new byte[]{2});
+        rt.avm_putStorage(from, new byte[]{4});
+        rt.avm_putStorage(to, new byte[]{2});
     }
 
     private byte[] copyOf(byte[] src, int from, int to) {
@@ -22,11 +21,10 @@ public class SimpleToken implements Contract {
         return dst;
     }
 
-    @Override
     public byte[] run(byte[] input, BlockchainRuntime rt) {
         // dummy encoding: method id + abi(input parameters)
         if (input.length == 33 && input[0] == 1) {
-            transfer(rt, rt.getSender(), copyOf(input, 1, 33));
+            transfer(rt, rt.avm_getSender().unwrap(), copyOf(input, 1, 33));
         }
 
         return null;

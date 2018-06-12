@@ -24,14 +24,6 @@ public class ClassWhiteListTest {
     }
 
     @Test
-    public void testRuntimeType() {
-        ClassWhiteList list = ClassWhiteList.buildForEmptyContract();
-        String className = "org/aion/avm/rt/Contract";
-        Assert.assertFalse(list.isJdkClass(className));
-        Assert.assertTrue(list.isInWhiteList(className));
-    }
-
-    @Test
     public void testUtilType() {
         ClassWhiteList list = ClassWhiteList.buildForEmptyContract();
         String className = "java/util/HashSet";

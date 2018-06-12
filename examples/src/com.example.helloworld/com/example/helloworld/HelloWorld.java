@@ -1,9 +1,8 @@
 package com.example.helloworld;
 
-import org.aion.avm.rt.Contract;
 import org.aion.avm.rt.BlockchainRuntime;
 
-public class HelloWorld implements Contract {
+public class HelloWorld {
 
     public int foo;
 
@@ -13,7 +12,6 @@ public class HelloWorld implements Contract {
         return a + b;
     }
 
-    @Override
     public byte[] run(byte[] input, BlockchainRuntime rt) {
         return "Hello, world!".getBytes();
     }
