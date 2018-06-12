@@ -10,6 +10,7 @@ import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
+import org.aion.avm.core.miscvisitors.StringConstantVisitor;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
@@ -162,6 +163,7 @@ public class AvmImpl implements Avm {
         for (String name : classes.keySet()) {
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new RejectionClassVisitor(classWhiteList))
+                    .addNextVisitor(new StringConstantVisitor())
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, objectSizes))
                     .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))
                     .addNextVisitor(new StackWatcherClassAdapter())
