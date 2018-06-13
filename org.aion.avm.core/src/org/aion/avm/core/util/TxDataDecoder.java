@@ -47,12 +47,12 @@ public class TxDataDecoder {
 
     public static class MethodCaller {
         public String methodName;
-        public String methodSelector;
+        public String argsDescriptor;
         public List<Object> arguments;
 
-        MethodCaller(String methodName, String methodSelector, List<Object> arguments) {
+        MethodCaller(String methodName, String argsDescriptor, List<Object> arguments) {
             this.methodName = methodName;
-            this.methodSelector = methodSelector;
+            this.argsDescriptor = argsDescriptor;
             this.arguments  = arguments;
         }
     }
@@ -71,9 +71,7 @@ public class TxDataDecoder {
 
         List<Object> arguments = getArguments(txData, m2+1, argsDescriptor);
 
-        String methodSelector = methodName + DESCRIPTOR_S + argsDescriptor + DESCRIPTOR_E;
-
-        MethodCaller mc = new MethodCaller(methodName, methodSelector, arguments);
+        MethodCaller mc = new MethodCaller(methodName, argsDescriptor, arguments);
         return mc;
     }
 

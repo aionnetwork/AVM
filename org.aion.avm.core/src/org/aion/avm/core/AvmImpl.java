@@ -15,6 +15,7 @@ import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.InvalidTxDataException;
 import org.aion.avm.core.util.TxDataDecoder;
 import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.FatalAvmError;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -260,6 +262,91 @@ public class AvmImpl implements Avm {
         return new DappModule(classes, mainClass);
     }
 
+    /**
+     * A helper method to match the method selector with the main-class methods.
+     */
+    public Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor) {
+        Method[] methods = clazz.getMethods();
+
+        // TODO: may need to include the shadowed ones?
+        Map<Character, String[]> elementaryTypesMap = new HashMap<>();
+        elementaryTypesMap.put(TxDataDecoder.BYTE, new String[]{"B", "byte", "java.lang.Byte"});
+        elementaryTypesMap.put(TxDataDecoder.BOOLEAN, new String[]{"Z", "boolean", "java.lang.Boolean"});
+        elementaryTypesMap.put(TxDataDecoder.CHAR, new String[]{"C", "char", "java.lang.Character"});
+        elementaryTypesMap.put(TxDataDecoder.SHORT, new String[]{"S", "short", "java.lang.Short"});
+        elementaryTypesMap.put(TxDataDecoder.INT, new String[]{"I", "int", "java.lang.Integer"});
+        elementaryTypesMap.put(TxDataDecoder.FLOAT, new String[]{"F", "float", "java.lang.Float"});
+        elementaryTypesMap.put(TxDataDecoder.LONG, new String[]{"J", "long", "java.lang.Long"});
+        elementaryTypesMap.put(TxDataDecoder.DOUBLE, new String[]{"D", "double", "java.lang.Double"});
+
+        for (Method method : methods) {
+            if (method.getName().equals(methodName)) {
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                int parIdx = 0;
+                boolean matched = true;
+                for (int idx = 0; idx < argsDescriptor.length(); idx++) {
+                    char c = argsDescriptor.charAt(idx);
+                    switch (c) {
+                        case TxDataDecoder.ARRAY_S:
+                            String pType = parameterTypes[parIdx].getName();
+                            if (pType.charAt(0) == '[') {
+                                pType = pType.substring(1);
+                            }
+                            else {
+                                break;
+                            }
+
+                            if (argsDescriptor.length() - idx < 2) {
+                                matched = false;
+                                break;
+                            }
+
+                            char eType;
+                            if (argsDescriptor.charAt(++idx) == TxDataDecoder.ARRAY_S) {
+                                if (pType.charAt(0) == '[') {
+                                    pType = pType.substring(1);
+                                }
+                                else {
+                                    break;
+                                }
+                                eType = argsDescriptor.charAt(++idx);
+                                idx += 2;
+                            }
+                            else {
+                                eType = argsDescriptor.charAt(idx);
+                                idx ++;
+                            }
+
+                            if (pType.charAt(0) == 'L') {
+                                pType = pType.substring(1);
+                            }
+
+                            if (!(Arrays.asList(elementaryTypesMap.get(eType)).contains(pType))) {
+                                matched = false;
+                                break;
+                            }
+                            break;
+                        default:
+                            if (!(Arrays.asList(elementaryTypesMap.get(c)).contains(parameterTypes[parIdx].getName()))) {
+                                matched = false;
+                                break;
+                            }
+                    }
+                    if (!matched) {
+                        break;
+                    }
+                    else {
+                        parIdx ++;
+                    }
+                }
+                if (matched) {
+                    return method;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public AvmResult deploy(byte[] jar, BlockchainRuntime rt) {
         try {
@@ -297,7 +384,7 @@ public class AvmImpl implements Avm {
             Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), app.getClassHierarchyForest(), allObjectSizes);
             app.setClasses(transformedClasses);
 
-            // TODO: execute main-class contractCreation(), and do not include it in the stored bytecode
+            // TODO: parse the txData, select and execute the main-class constructor
 
             // store transformed dapp
             long storedSize = storeTransformedDapp(rt.avm_getAddress(), app);
@@ -340,17 +427,12 @@ public class AvmImpl implements Avm {
         classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
-        // Parse the tx data, get the method name and arguments
-        TxDataDecoder.MethodCaller methodCaller;
-        try {
-            TxDataDecoder txDataDecoder = new TxDataDecoder();
-            methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
-        } catch (Exception e) {
-            //return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
-        }
-
         // load class
         try {
+            // Parse the tx data, get the method name and arguments
+            TxDataDecoder txDataDecoder = new TxDataDecoder();
+            TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
+
             Class<?> clazz = classLoader.loadClass(app.mainClass);
             // At a contract call, only choose the one without arguments.
             Object obj = clazz.getConstructor().newInstance();
@@ -358,12 +440,16 @@ public class AvmImpl implements Avm {
             Method method = clazz.getMethod("avm_run", ByteArray.class, BlockchainRuntime.class);
             ByteArray ret = (ByteArray) method.invoke(obj, rt.avm_getData(), rt);
 
-            // TODO: matchMethodSelector() -- generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
-            //Method method = matchMethodSelector(clazz, methodCaller.methodSelector);
+            // TODO: switch to the new code
+            // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
+            //Method method = matchMethodSelector(clazz, methodCaller.methodName, methodCaller.argsDescriptor);
             //ByteArray ret = (ByteArray) method.invoke(obj, methodCaller.arguments, rt);
 
             // TODO: energy left
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret.getUnderlying());
+        } catch (InvalidTxDataException | UnsupportedEncodingException e) {
+            //return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+            return new AvmResult(AvmResult.Code.SUCCESS, 0);
         } catch (Exception e) {
             e.printStackTrace();
 
