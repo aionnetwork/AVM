@@ -1,6 +1,7 @@
 package org.aion.avm.core.rejection;
 
 import org.aion.avm.core.ClassWhiteList;
+import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
 
 
@@ -8,6 +9,20 @@ import org.aion.avm.core.util.DescriptorParser;
  * Common utilities which verify that a referenced class is accessible from the contract (either defined by the contract or in "java/lang").
  */
 public class ClassAccessVerifier {
+    /**
+     * While most cases of type names are strictly names or descriptors but this helper is used in cases where either may appear.
+     * 
+     * @param classWhiteList
+     * @param descriptorOrName
+     */
+    public static void checkOptionallyDecorated(ClassWhiteList classWhiteList, String descriptorOrName) {
+        if (descriptorOrName.startsWith("[")) {
+            ClassAccessVerifier.checkDescriptor(classWhiteList, descriptorOrName);
+        } else {
+            ClassAccessVerifier.checkClassAccessible(classWhiteList, descriptorOrName);
+        }
+    }
+
     /**
      * The logic of the descriptor verification through the rejection components is the same so stored here.
      * In short, if anything not allowed is referenced, this will throw RejectedClassException.
@@ -69,6 +84,10 @@ public class ClassAccessVerifier {
     }
 
     public static void checkClassAccessible(ClassWhiteList classWhiteList, String className) {
+        // Note that we don't expect characters normally reserved for a descriptor encoding to be seen here (it is the caller's responsibility to parse that).
+        Assert.assertTrue(!className.contains("["));
+        Assert.assertTrue(!className.contains(";"));
+        
         if (!classWhiteList.isInWhiteList(className)) {
             RejectedClassException.nonWhiteListedClass(className);
         }

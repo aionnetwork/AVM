@@ -81,7 +81,7 @@ public class RejectionMethodVisitor extends MethodVisitor {
     @Override
     public void visitTypeInsn(int opcode, String type) {
         checkOpcode(opcode);
-        ClassAccessVerifier.checkClassAccessible(this.classWhiteList, type);
+        ClassAccessVerifier.checkOptionallyDecorated(this.classWhiteList, type);
         super.visitTypeInsn(opcode, type);
     }
 
@@ -95,7 +95,9 @@ public class RejectionMethodVisitor extends MethodVisitor {
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         checkOpcode(opcode);
-        ClassAccessVerifier.checkClassAccessible(this.classWhiteList, owner);
+        // NOTE:  "owner" is usually just a class name but it can sometimes be an array (for calls like "clone()"),
+        // so decode it like a descriptor, in that case.
+        ClassAccessVerifier.checkOptionallyDecorated(this.classWhiteList, owner);
         ClassAccessVerifier.checkDescriptor(this.classWhiteList, descriptor);
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
     }
