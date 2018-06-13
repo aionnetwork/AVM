@@ -451,7 +451,7 @@ public class AvmImpl implements Avm {
                 ret = (ByteArray) method.invoke(obj);
             }
             else {
-                ret = (ByteArray) method.invoke(obj, methodCaller.arguments);
+                ret = (ByteArray) method.invoke(obj, methodCaller.arguments.toArray());
             }
 
             // TODO: energy left
