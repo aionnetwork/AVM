@@ -11,25 +11,35 @@ import org.junit.Assert;
  * These provide only the direct inputs, none of the interactive data layer.
  */
 public class SimpleRuntime implements BlockchainRuntime {
-    private final Address sender;
-    private final Address address;
+    private final byte[] sender;
+    private final byte[] address;
     private final long energyLimit;
+
+    // We can't eagerly create these addresses, since the IHelper isn't yet installed, but we do want to reuse the same instance, once we create it.
+    private Address cachedSender;
+    private Address cachedAddress;
 
     public SimpleRuntime(byte[] sender, byte[] address, long energyLimit) {
         Assert.assertNotNull(sender);
         Assert.assertNotNull(address);
         
-        this.sender = new Address(sender);
-        this.address = new Address(address);
+        this.sender = sender;
+        this.address = address;
         this.energyLimit = energyLimit;
     }
     @Override
     public Address avm_getSender() {
-        return this.sender;
+        if (null == this.cachedSender) {
+            this.cachedSender = new Address(this.sender);
+        }
+        return this.cachedSender;
     }
     @Override
     public Address avm_getAddress() {
-        return this.address;
+        if (null == this.cachedAddress) {
+            this.cachedAddress = new Address(this.address);
+        }
+        return this.cachedAddress;
     }
     @Override
     public long avm_getEnergyLimit() {

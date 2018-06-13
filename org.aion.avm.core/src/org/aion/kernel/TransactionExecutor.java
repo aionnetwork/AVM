@@ -17,19 +17,26 @@ public class TransactionExecutor {
         byte[] payload = new byte[512];
         long energyLimit = 100000;
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, payload, energyLimit);
-        // We will create these up-front since our implementation should return the same instance on every call, where possible.
-        Address sender = new Address(tx.getFrom());
-        Address address = new Address(tx.getTo());
 
         BlockchainRuntime rt = new BlockchainRuntime() {
+            // We can't eagerly create these addresses, since the IHelper isn't yet installed, but we do want to reuse the same instance, once we create it.
+            private Address cachedSender;
+            private Address cachedAddress;
+
             @Override
             public Address avm_getSender() {
-                return sender;
+                if (null == this.cachedSender) {
+                    this.cachedSender = new Address(tx.getFrom());
+                }
+                return this.cachedSender;
             }
 
             @Override
             public Address avm_getAddress() {
-                return address;
+                if (null == this.cachedAddress) {
+                    this.cachedAddress = new Address(tx.getTo());
+                }
+                return this.cachedAddress;
             }
 
             @Override

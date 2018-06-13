@@ -10,7 +10,7 @@ package org.aion.avm.rt;
  * There is a good chance that we will convert this into an interface so that our implementation can provide a richer interface to
  * our AVM code than we want to support for the contract.
  */
-public class Address {
+public class Address extends org.aion.avm.java.lang.Object {
 
     public static final int LENGTH = 32;
 
