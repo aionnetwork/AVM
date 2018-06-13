@@ -268,16 +268,16 @@ public class AvmImpl implements Avm {
     public Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor) {
         Method[] methods = clazz.getMethods();
 
-        // TODO: may need to include the shadowed ones?
+        // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
         Map<Character, String[]> elementaryTypesMap = new HashMap<>();
-        elementaryTypesMap.put(TxDataDecoder.BYTE, new String[]{"B", "byte", "java.lang.Byte"});
-        elementaryTypesMap.put(TxDataDecoder.BOOLEAN, new String[]{"Z", "boolean", "java.lang.Boolean"});
-        elementaryTypesMap.put(TxDataDecoder.CHAR, new String[]{"C", "char", "java.lang.Character"});
-        elementaryTypesMap.put(TxDataDecoder.SHORT, new String[]{"S", "short", "java.lang.Short"});
-        elementaryTypesMap.put(TxDataDecoder.INT, new String[]{"I", "int", "java.lang.Integer"});
-        elementaryTypesMap.put(TxDataDecoder.FLOAT, new String[]{"F", "float", "java.lang.Float"});
-        elementaryTypesMap.put(TxDataDecoder.LONG, new String[]{"J", "long", "java.lang.Long"});
-        elementaryTypesMap.put(TxDataDecoder.DOUBLE, new String[]{"D", "double", "java.lang.Double"});
+        elementaryTypesMap.put(TxDataDecoder.BYTE,      new String[]{"B", "byte"});
+        elementaryTypesMap.put(TxDataDecoder.BOOLEAN,   new String[]{"Z", "boolean"});
+        elementaryTypesMap.put(TxDataDecoder.CHAR,      new String[]{"C", "char"});
+        elementaryTypesMap.put(TxDataDecoder.SHORT,     new String[]{"S", "short"});
+        elementaryTypesMap.put(TxDataDecoder.INT,       new String[]{"I", "int"});
+        elementaryTypesMap.put(TxDataDecoder.FLOAT,     new String[]{"F", "float"});
+        elementaryTypesMap.put(TxDataDecoder.LONG,      new String[]{"J", "long"});
+        elementaryTypesMap.put(TxDataDecoder.DOUBLE,    new String[]{"D", "double"});
 
         methodName = ClassShadowing.METHOD_PREFIX + methodName;
 
@@ -391,7 +391,7 @@ public class AvmImpl implements Avm {
             Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), app.getClassHierarchyForest(), allObjectSizes);
             app.setClasses(transformedClasses);
 
-            // TODO: parse the txData, select and execute the main-class constructor
+            // TODO: parse the txData, select and execute the main-class method as the user requires (a match with the txData method selector)
 
             // store transformed dapp
             long storedSize = storeTransformedDapp(rt.avm_getAddress(), app);
