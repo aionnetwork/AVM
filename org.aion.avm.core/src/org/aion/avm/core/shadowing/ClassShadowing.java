@@ -26,7 +26,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
     private static final String AVM_JAVA_LANG = "org/aion/avm/java/lang";
     private static final String AVM_INTERNAL_IOBJECT = "org/aion/avm/internal/IObject";
 
-    private static final String METHOD_PREFIX = "avm_";
+    public static final String METHOD_PREFIX = "avm_";
 
     private final String shadowPackage;
 

@@ -62,7 +62,11 @@ public class TxDataDecoder {
 
         int m1 = decoded.indexOf(DESCRIPTOR_S);
         int m2 = decoded.indexOf(DESCRIPTOR_E);
-        if (m1 == -1 || m2 == -1 || txData[m1] != 0x3C || txData[m2] != 0x3E) {
+        if (m1 == -1 && m2 == -1) {
+            // no arguments
+            return new MethodCaller(decoded, null, null);
+        }
+        if (m1 == -1 || m2 == -1) {
             throw new InvalidTxDataException();
         }
 
@@ -71,8 +75,7 @@ public class TxDataDecoder {
 
         List<Object> arguments = getArguments(txData, m2+1, argsDescriptor);
 
-        MethodCaller mc = new MethodCaller(methodName, argsDescriptor, arguments);
-        return mc;
+        return new MethodCaller(methodName, argsDescriptor, arguments);
     }
 
     private List<Object> getArguments(byte[] txData, int start, String argsDescriptor) throws InvalidTxDataException, UnsupportedEncodingException {

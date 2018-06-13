@@ -72,7 +72,8 @@ public class AvmImplTest {
         BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
             @Override
             public ByteArray avm_getData() {
-                return new ByteArray(new byte[0]);
+                byte[] txData = new byte[] {0x72, 0x75, 0x6E}; // "run"
+                return new ByteArray(txData);
             }
             @Override
             public ByteArray avm_getStorage(ByteArray key) {

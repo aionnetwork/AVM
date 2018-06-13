@@ -1,7 +1,5 @@
 package com.example.helloworld;
 
-import org.aion.avm.rt.BlockchainRuntime;
-
 public class HelloWorld {
 
     public int foo;
@@ -12,7 +10,7 @@ public class HelloWorld {
         return a + b;
     }
 
-    public byte[] run(byte[] input, BlockchainRuntime rt) {
+    public byte[] run() {
         return "Hello, world!".getBytes();
     }
 }

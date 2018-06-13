@@ -279,9 +279,16 @@ public class AvmImpl implements Avm {
         elementaryTypesMap.put(TxDataDecoder.LONG, new String[]{"J", "long", "java.lang.Long"});
         elementaryTypesMap.put(TxDataDecoder.DOUBLE, new String[]{"D", "double", "java.lang.Double"});
 
+        methodName = ClassShadowing.METHOD_PREFIX + methodName;
+
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {
                 Class<?>[] parameterTypes = method.getParameterTypes();
+
+                if ((parameterTypes == null || parameterTypes.length == 0) && (argsDescriptor==null || argsDescriptor.isEmpty())) {
+                    return method;
+                }
+
                 int parIdx = 0;
                 boolean matched = true;
                 for (int idx = 0; idx < argsDescriptor.length(); idx++) {
@@ -437,19 +444,20 @@ public class AvmImpl implements Avm {
             // At a contract call, only choose the one without arguments.
             Object obj = clazz.getConstructor().newInstance();
 
-            Method method = clazz.getMethod("avm_run", ByteArray.class, BlockchainRuntime.class);
-            ByteArray ret = (ByteArray) method.invoke(obj, rt.avm_getData(), rt);
-
-            // TODO: switch to the new code
             // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
-            //Method method = matchMethodSelector(clazz, methodCaller.methodName, methodCaller.argsDescriptor);
-            //ByteArray ret = (ByteArray) method.invoke(obj, methodCaller.arguments, rt);
+            Method method = matchMethodSelector(clazz, methodCaller.methodName, methodCaller.argsDescriptor);
+            ByteArray ret;
+            if (methodCaller.arguments == null) {
+                ret = (ByteArray) method.invoke(obj);
+            }
+            else {
+                ret = (ByteArray) method.invoke(obj, methodCaller.arguments);
+            }
 
             // TODO: energy left
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret.getUnderlying());
         } catch (InvalidTxDataException | UnsupportedEncodingException e) {
-            //return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
-            return new AvmResult(AvmResult.Code.SUCCESS, 0);
+            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
         } catch (Exception e) {
             e.printStackTrace();
 
