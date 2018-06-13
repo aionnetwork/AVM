@@ -25,19 +25,17 @@ public class BlockBuildingMethodVisitor extends MethodVisitor {
     public BlockBuildingMethodVisitor() {
         super(Opcodes.ASM6);
         this.buildingList = new ArrayList<>();
+        
+        // We need to enter our initial state in the constructor since this method may be abstract and have no code.
+        this.currentBuildingBlock = new ArrayList<>();
+        this.currentBlockSwitches = new ArrayList<>();
+        this.currentAllocationList = new ArrayList<>();
     }
 
     public List<BasicBlock> getBlockList() {
         return Collections.unmodifiableList(this.buildingList);
     }
 
-    @Override
-    public void visitCode() {
-        // This is just useful for internal sanity checking.
-        this.currentBuildingBlock = new ArrayList<>();
-        this.currentBlockSwitches = new ArrayList<>();
-        this.currentAllocationList = new ArrayList<>();
-    }
     @Override
     public void visitEnd() {
         // This is called after all the code has been walked, so seal the final block.

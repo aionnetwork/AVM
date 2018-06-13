@@ -91,6 +91,19 @@ public class ClassMeteringTest {
         Assert.assertEquals(expectedCost, TestEnergy.totalCost);
     }
 
+    @Test
+    public void testInterface() throws Exception {
+        // Setup and rewrite the interface.
+        String interfaceName = TestInterface.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(interfaceName.replaceAll("\\.", "/") + ".class");
+        Map<String, byte[]> classes = new HashMap<>();
+        classes.put(interfaceName, this.commonCostBuilder.apply(raw));
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        Class<?> theInterface = loader.loadClass(interfaceName);
+        Method method = theInterface.getMethod("one");
+        Assert.assertNotNull(method);
+    }
+
     private long getFees(int... opcodes) {
         long total = 0;
         
