@@ -22,7 +22,7 @@ public class ArrayWrappingClassAdapter extends ClassToolchain.ToolChainClassVisi
         // Convert array field to wrapper
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingClassGenerator.getWrapper(descriptor) + ";";
+            desc = "L" + ArrayWrappingClassGenerator.getClassWrapper(descriptor) + ";";
         }
 
         return super.visitField(access, name, desc, signature, value);

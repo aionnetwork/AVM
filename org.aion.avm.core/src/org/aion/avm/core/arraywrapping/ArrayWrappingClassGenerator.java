@@ -14,86 +14,206 @@ import java.util.regex.Pattern;
 public class ArrayWrappingClassGenerator implements Opcodes {
     private static boolean DEBUG = false;
 
-    static private String[] PRIMS = {"I", "J", "Z", "B", "S", "D", "F", "C"};
+    static private String[] PRIMITIVES = {"I", "J", "Z", "B", "S", "D", "F", "C"};
     static private String HELPER = "org/aion/avm/internal/Helper";
-    static private HashMap<String, String> WRAPPER_MAP = new HashMap<>();
+    static private HashMap<String, String> CLASS_WRAPPER_MAP = new HashMap<>();
+    static private HashMap<String, String> INTERFACE_WRAPPER_MAP = new HashMap<>();
 
     static{
-        WRAPPER_MAP.put("[I", "org/aion/avm/arraywrapper/IntArray");
-        WRAPPER_MAP.put("[B", "org/aion/avm/arraywrapper/ByteArray");
-        WRAPPER_MAP.put("[Z", "org/aion/avm/arraywrapper/ByteArray");
-        WRAPPER_MAP.put("[C", "org/aion/avm/arraywrapper/CharArray");
-        WRAPPER_MAP.put("[F", "org/aion/avm/arraywrapper/FloatArray");
-        WRAPPER_MAP.put("[S", "org/aion/avm/arraywrapper/ShortArray");
-        WRAPPER_MAP.put("[J", "org/aion/avm/arraywrapper/LongArray");
-        WRAPPER_MAP.put("[D", "org/aion/avm/arraywrapper/DoubleArray");
-        WRAPPER_MAP.put("[Ljava/lang/Object", "org/aion/avm/arraywrapper/ObjectArray");
+        CLASS_WRAPPER_MAP.put("[I", "org/aion/avm/arraywrapper/IntArray");
+        CLASS_WRAPPER_MAP.put("[B", "org/aion/avm/arraywrapper/ByteArray");
+        CLASS_WRAPPER_MAP.put("[Z", "org/aion/avm/arraywrapper/ByteArray");
+        CLASS_WRAPPER_MAP.put("[C", "org/aion/avm/arraywrapper/CharArray");
+        CLASS_WRAPPER_MAP.put("[F", "org/aion/avm/arraywrapper/FloatArray");
+        CLASS_WRAPPER_MAP.put("[S", "org/aion/avm/arraywrapper/ShortArray");
+        CLASS_WRAPPER_MAP.put("[J", "org/aion/avm/arraywrapper/LongArray");
+        CLASS_WRAPPER_MAP.put("[D", "org/aion/avm/arraywrapper/DoubleArray");
+        CLASS_WRAPPER_MAP.put("[Ljava/lang/Object", "org/aion/avm/arraywrapper/ObjectArray");
+        CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/java/lang/Object", "org/aion/avm/arraywrapper/ObjectArray");
+        CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/internal/IObject", "org/aion/avm/arraywrapper/ObjectArray");
     }
 
-    public static byte[] genWrapperClass(String wName) {
+    public static byte[] arrayWrappingFactory(String request){
 
-        //Wrapper name always starts org.aion.avm.arraywrapper.$
-        if (!wName.startsWith("org.aion.avm.arraywrapper.$")){
-            return null;
+        if (request.startsWith("org.aion.avm.arraywrapper.interface._")){
+            return genWrapperInterface(request);
         }
 
-        String wrapper = wName.replace('.', '/');
-        String compName = wrapper.substring("org.aion.avm.arraywrapper.".length());
-        int d = 0;
-
-        //TODO: What if user package starts with $?
-        while (compName.charAt(d) == '$') {
-            d++;
+        // we only handle class generation request prefixed with org.aion.avm.arraywrapper.$
+        if (request.startsWith("org.aion.avm.arraywrapper.$")){
+            return genWrapperClass(request);
         }
 
-        // Find the super class of the component type
-        String superName = "org/aion/avm/arraywrapper/ObjectArray";
-        compName = compName.substring(d).replace('/', '.');
-        if (compName.startsWith("L")){compName = compName.substring(1);}
-        if (! Arrays.asList(PRIMS).contains(compName)) {
-            Class<?> c = null;
-            try {
-                c = Class.forName(compName);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                Assert.unreachable("No valid component : " + compName);
-            }
+        return null;
+    }
 
-            if (!c.getName().equals("java.lang.Object") && !c.isInterface()){
-                c = c.getSuperclass();
-                superName = (new String(new char[d]).replace("\0", "[")) + 'L' + c.getName() + ";";
-                superName = superName.replace('.', '/');
-                superName = ArrayWrappingClassGenerator.getWrapper(superName);
-            }
-        }
+    private static byte[] genWrapperInterface(String requestInterface) {
 
         if (DEBUG) {
             System.out.println("*********************************");
-            System.out.println("Generating class : " + wrapper);
-            System.out.println("Superclass class : " + superName);
-            System.out.println("Wrapper Dimension : " + d);
+            System.out.println("requestInterface : " + requestInterface);
+        }
+
+        String wrapperInterfaceName = requestInterface.replace('.', '/');
+        // Get element class and array dim
+        String elementInterfaceName = wrapperInterfaceName.substring("org.aion.avm.arraywrapper.interface.".length());
+        int dim = 0;
+        while (elementInterfaceName.charAt(dim) == '_') {dim++;}
+        elementInterfaceName = elementInterfaceName.substring(dim).replace('/', '.');
+        if (elementInterfaceName.startsWith("L")){elementInterfaceName = elementInterfaceName.substring(1);}
+
+        Class<?> c = null;
+        try {
+            c = Class.forName(elementInterfaceName);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            Assert.unreachable("No valid component : " + elementInterfaceName);
+        }
+
+        String superInterfaceName;
+        Class<?>[] superInterfaceClasses =  c.getInterfaces();
+        String[] superInterfaces = new String[superInterfaceClasses.length];
+        int i = 0;
+        for (Class<?> curI : superInterfaceClasses){
+            superInterfaceName = (new String(new char[dim]).replace("\0", "[")) + 'L' + curI.getName() + ";";
+            superInterfaceName = superInterfaceName.replace('.', '/');
+            superInterfaceName = ArrayWrappingClassGenerator.getInterfaceWrapper(superInterfaceName);
+            superInterfaces[i++] = superInterfaceName;
+        }
+
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        classWriter.visit(V10, ACC_PUBLIC | ACC_ABSTRACT | ACC_INTERFACE , wrapperInterfaceName, null, "java/lang/Object", superInterfaces);
+
+        if (DEBUG) {
+            System.out.println("Generating interface : " + wrapperInterfaceName);
+            for (String s : superInterfaces) {
+                System.out.println("Interfaces : " + s);
+            }
+            System.out.println("Wrapper Dimension : " + dim);
             System.out.println("*********************************");
         }
-
-        ClassWriter classWriter = new ClassWriter(0);
-
-        classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapper, null, superName, null);
-
-        // Static factory for one dimensional array
-        // We always generate one D factory for corner case like int[][][][] a = new int[10][][][];
-        genSDFac(classWriter, wrapper, 1);
-
-        if (d > 1) {
-            //Static factory for multidimensional array
-            genMDFac(classWriter, wrapper, d);
-        }
-
-        //Constructor
-        genConstructor(classWriter, superName);
 
         classWriter.visitEnd();
 
         return classWriter.toByteArray();
+
+    }
+
+    private static byte[] genWrapperClass(String requestClass) {
+        if (DEBUG) {
+            System.out.println("*********************************");
+            System.out.println("requestClass : " + requestClass);
+        }
+
+        // Class name in bytecode
+        String wrapperClassName = requestClass.replace('.', '/');
+
+        // Get element class and array dim
+        String elementClassName = wrapperClassName.substring("org.aion.avm.arraywrapper.".length());
+        int dim = 0;
+        while (elementClassName.charAt(dim) == '$') {dim++;}
+        elementClassName = elementClassName.substring(dim).replace('/', '.');
+        if (elementClassName.startsWith("L")){elementClassName = elementClassName.substring(1);}
+
+        // Default super class is ObjectArray
+
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        // If element is not primitive type, we need to find its super class
+        if (! Arrays.asList(PRIMITIVES).contains(elementClassName)) {
+            Class<?> c = null;
+            try {
+                c = Class.forName(elementClassName);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                Assert.unreachable("No valid component : " + elementClassName);
+            }
+
+            String superInterfaceName;
+            Class<?>[] superInterfaceClasses =  c.getInterfaces();
+            String[] superInterfaces = new String[superInterfaceClasses.length];
+            if (c.isInterface()){superInterfaces = new String[superInterfaceClasses.length + 1];}
+
+            int i = 0;
+            for (Class<?> curI : superInterfaceClasses){
+                superInterfaceName = (new String(new char[dim]).replace("\0", "[")) + 'L' + curI.getName() + ";";
+                superInterfaceName = superInterfaceName.replace('.', '/');
+                superInterfaceName = ArrayWrappingClassGenerator.getInterfaceWrapper(superInterfaceName);
+                superInterfaces[i++] = superInterfaceName;
+            }
+
+            // Element is an interface
+            if (c.isInterface()){
+                String curInterfaceName = (new String(new char[dim]).replace("\0", "[")) + 'L' + c.getName() + ";";
+                curInterfaceName = curInterfaceName.replace('.', '/');
+                curInterfaceName = ArrayWrappingClassGenerator.getInterfaceWrapper(curInterfaceName);
+                superInterfaces[i++] = curInterfaceName;
+
+                // Generate
+                classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, "org/aion/avm/arraywrapper/ObjectArray", superInterfaces);
+                generateClass(classWriter,wrapperClassName, "org/aion/avm/arraywrapper/ObjectArray", dim);
+                if (DEBUG) {
+                    System.out.println("Generating Interface wrapper class : " + wrapperClassName);
+                    System.out.println("Wrapper Dimension : " + dim);
+                    for (String s : superInterfaces) {
+                        System.out.println("Interfaces : " + s);
+                    }
+                    System.out.println("*********************************");
+                }
+
+            }
+            // Element is a class
+            else{
+                String superClassName = "org/aion/avm/arraywrapper/ObjectArray";
+                if (!c.getName().equals("java.lang.Object")) {
+                    c = c.getSuperclass();
+                    superClassName = (new String(new char[dim]).replace("\0", "[")) + 'L' + c.getName() + ";";
+                    superClassName = superClassName.replace('.', '/');
+                    superClassName = ArrayWrappingClassGenerator.getClassWrapper(superClassName);
+                }
+                classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, superClassName, superInterfaces);
+                generateClass(classWriter,wrapperClassName, superClassName, dim);
+
+                if (DEBUG) {
+                    System.out.println("Generating class : " + wrapperClassName);
+                    System.out.println("Superclass class : " + superClassName);
+                    for (String s : superInterfaces) {
+                        System.out.println("Interfaces : " + s);
+                    }
+                    System.out.println("Wrapper Dimension : " + dim);
+                    System.out.println("*********************************");
+                }
+            }
+        }else{
+            classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, "org/aion/avm/arraywrapper/ObjectArray", null);
+            generateClass(classWriter,wrapperClassName, "org/aion/avm/arraywrapper/ObjectArray", dim);
+            if (DEBUG) {
+                System.out.println("Generating Prim Class : " + wrapperClassName);
+                System.out.println("Wrapper Dimension : " + dim);
+                System.out.println("*********************************");
+            }
+        }
+
+        classWriter.visitEnd();
+
+        return classWriter.toByteArray();
+    }
+
+    private static void generateClass(ClassWriter cw, String wrapper, String zuper, int d){
+        // Static factory for one dimensional array
+        // We always generate one D factory for corner case like int[][][][] a = new int[10][][][];
+        genSDFac(cw, wrapper, 1);
+
+        if (d > 1) {
+            //Static factory for multidimensional array
+            genMDFac(cw, wrapper, d);
+        }
+
+        //Constructor
+        genConstructor(cw, zuper);
+    }
+
+    private static void generateInterface(){
+
     }
 
     private static void genSDFac(ClassWriter cw, String wrapper, int d){
@@ -285,7 +405,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         {
             cur = paraMatcher.group();
             if(cur.startsWith("[")) {
-                cur = "L" + getWrapper(cur) + ";";
+                cur = "L" + getClassWrapper(cur) + ";";
             }
             sb.append(cur);
         }
@@ -301,7 +421,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             if (retMatcher.find()){
                 cur = retMatcher.group();
                 if(cur.startsWith("[")) {
-                    cur = "L" + getWrapper(cur) + ";";
+                    cur = "L" + getClassWrapper(cur) + ";";
                 }
                 sb.append(cur);
             }
@@ -311,7 +431,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     // Return the wrapper descriptor of an array
-    static java.lang.String getWrapper(java.lang.String desc){
+    static java.lang.String getClassWrapper(java.lang.String desc){
         if (desc.endsWith(";")){
             desc = desc.substring(0, desc.length() - 1);
         }
@@ -319,11 +439,31 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         java.lang.String ret;
         if (desc.charAt(0) != '['){
             ret = desc;
-        }else if (WRAPPER_MAP.containsKey(desc)){
-            ret = WRAPPER_MAP.get(desc);
+        }else if (CLASS_WRAPPER_MAP.containsKey(desc)){
+            ret = CLASS_WRAPPER_MAP.get(desc);
         }else{
-            WRAPPER_MAP.put(desc, newWrapper(desc));
-            ret = WRAPPER_MAP.get(desc);
+            CLASS_WRAPPER_MAP.put(desc, newClassWrapper(desc));
+            ret = CLASS_WRAPPER_MAP.get(desc);
+        }
+
+        //System.out.println("Wrapper name : " + ret);
+        return ret;
+    }
+
+    // Return the wrapper descriptor of an array
+    static java.lang.String getInterfaceWrapper(java.lang.String desc){
+        if (desc.endsWith(";")){
+            desc = desc.substring(0, desc.length() - 1);
+        }
+
+        java.lang.String ret;
+        if (desc.charAt(0) != '['){
+            ret = desc;
+        }else if (INTERFACE_WRAPPER_MAP.containsKey(desc)){
+            ret = INTERFACE_WRAPPER_MAP.get(desc);
+        }else{
+            INTERFACE_WRAPPER_MAP.put(desc, newInterfaceWrapper(desc));
+            ret = INTERFACE_WRAPPER_MAP.get(desc);
         }
 
         //System.out.println("Wrapper name : " + ret);
@@ -339,24 +479,35 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
 
     //TODO:: is this enough?
-    private static java.lang.String newWrapper(java.lang.String desc){
+    private static java.lang.String newClassWrapper(java.lang.String desc){
         //System.out.println(desc);
         StringBuilder sb = new StringBuilder();
         sb.append("org/aion/avm/arraywrapper/");
 
         //Check if the desc is a ref array
         if((desc.charAt(1) == 'L') || (desc.charAt(1) == '[')){
-            sb.append(getRefWrapperName(desc));
+            sb.append(desc.replace('[', '$'));
         }else{
-            Assert.unreachable("genWrapperName :" + desc);
+            Assert.unreachable("newClassWrapper :" + desc);
         }
 
         return sb.toString();
     }
 
-    // Return the element descriptor of an array
-    private static java.lang.String getRefWrapperName(java.lang.String desc){
-        return desc.replace('[', '$');
+    //TODO:: is this enough?
+    private static java.lang.String newInterfaceWrapper(java.lang.String desc){
+        //System.out.println(desc);
+        StringBuilder sb = new StringBuilder();
+        sb.append("org/aion/avm/arraywrapper/interface/");
+
+        //Check if the desc is a ref array
+        if((desc.charAt(1) == 'L') || (desc.charAt(1) == '[')){
+            sb.append(desc.replace('[', '_'));
+        }else{
+            Assert.unreachable("newInterfaceWrapper :" + desc);
+        }
+
+        return sb.toString();
     }
 
     public static int getDimension(java.lang.String desc){

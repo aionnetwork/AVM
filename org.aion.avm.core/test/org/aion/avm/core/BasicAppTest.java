@@ -65,7 +65,7 @@ public class BasicAppTest {
                         aionMapClassName, transformer.apply(aionMapBytes))
         );
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.genWrapperClass(cName);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName);
         loader.addHandler(wrapperGenerator);
         
         this.clazz = loader.loadClass(className);

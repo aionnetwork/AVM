@@ -430,7 +430,7 @@ public class AvmImpl implements Avm {
         
         // Construct the per-contract class loader and access the per-contract IHelper instance.
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.genWrapperClass(cName);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName);
         classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
