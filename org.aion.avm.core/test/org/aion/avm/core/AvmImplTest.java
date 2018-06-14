@@ -70,44 +70,46 @@ public class AvmImplTest {
         testDeploy();
 
         // call the "run" method
-        {
-            BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
-                @Override
-                public ByteArray avm_getData() {
-                    byte[] txData = new byte[]{0x72, 0x75, 0x6E}; // "run"
-                    return new ByteArray(txData);
-                }
+        BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
+            @Override
+            public ByteArray avm_getData() {
+                byte[] txData = new byte[]{0x72, 0x75, 0x6E}; // "run"
+                return new ByteArray(txData);
+            }
 
-                @Override
-                public ByteArray avm_getStorage(ByteArray key) {
-                    return null;
-                }
-            };
-            AvmImpl avm = new AvmImpl(sharedClassLoader);
-            AvmResult result = avm.run(rt);
+            @Override
+            public ByteArray avm_getStorage(ByteArray key) {
+                return null;
+            }
+        };
+        AvmImpl avm = new AvmImpl(sharedClassLoader);
+        AvmResult result = avm.run(rt);
 
-            assertEquals(AvmResult.Code.SUCCESS, result.code);
-        }
+        assertEquals(AvmResult.Code.SUCCESS, result.code);
+    }
 
-        // test another method call, "add"
-        {
-            BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
-                @Override
-                public ByteArray avm_getData() {
-                    byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "add<II>" + raw data 123, 1
-                    return new ByteArray(txData);
-                }
+    @Test
+    public void testDeployAndRunWithArgs() {
+        testDeploy();
 
-                @Override
-                public ByteArray avm_getStorage(ByteArray key) {
-                    return null;
-                }
-            };
-            AvmImpl avm = new AvmImpl(sharedClassLoader);
-            AvmResult result = avm.run(rt);
+        // test another method call, "add" with arguments
+        BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
+            @Override
+            public ByteArray avm_getData() {
+                byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "add<II>" + raw data 123, 1
+                return new ByteArray(txData);
+            }
 
-            assertEquals(AvmResult.Code.SUCCESS, result.code);
-        }
+            @Override
+            public ByteArray avm_getStorage(ByteArray key) {
+                return null;
+            }
+        };
+        AvmImpl avm = new AvmImpl(sharedClassLoader);
+        AvmResult result = avm.run(rt);
+
+        assertEquals(AvmResult.Code.SUCCESS, result.code);
+        assertEquals(124, result.returnData);
     }
 
     @Test

@@ -446,16 +446,16 @@ public class AvmImpl implements Avm {
 
             // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
             Method method = matchMethodSelector(clazz, methodCaller.methodName, methodCaller.argsDescriptor);
-            ByteArray ret;
+            Object ret;
             if (methodCaller.arguments == null) {
-                ret = (ByteArray) method.invoke(obj);
+                ret = method.invoke(obj);
             }
             else {
-                ret = (ByteArray) method.invoke(obj, methodCaller.arguments.toArray());
+                ret = method.invoke(obj, methodCaller.arguments.toArray());
             }
 
             // TODO: energy left
-            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret.getUnderlying());
+            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
         } catch (InvalidTxDataException | UnsupportedEncodingException e) {
             return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
         } catch (Exception e) {

@@ -19,14 +19,14 @@ public class AvmResult {
     /**
      * Return data.
      */
-    byte[] returnData;
+    Object returnData;
 
     public AvmResult(Code code, long energyLeft) {
         this.code = code;
         this.energyLeft = energyLeft;
     }
 
-    public AvmResult(Code code, long energyLeft, byte[] returnData) {
+    public AvmResult(Code code, long energyLeft, Object returnData) {
         this.code = code;
         this.energyLeft = energyLeft;
         this.returnData = returnData;
