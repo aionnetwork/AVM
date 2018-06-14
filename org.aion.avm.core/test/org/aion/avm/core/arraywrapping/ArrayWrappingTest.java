@@ -317,6 +317,17 @@ public class ArrayWrappingTest {
             Assert.assertTrue(e.getCause() instanceof OutOfEnergyError);
         }
 
+        helper.externalSetEnergy(10000000);
+    }
+
+    @Test
+    public void testInterfaceArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testInterfaceArray");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
     }
 
 }

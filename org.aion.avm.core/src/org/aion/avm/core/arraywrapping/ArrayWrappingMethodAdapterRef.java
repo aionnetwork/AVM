@@ -76,6 +76,30 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 instructions.insert(insn, invokeVNode);
                 instructions.remove(insn);
             }
+
+            if (insn.getOpcode() == Opcodes.AASTORE) {
+                //we pop the third slot on stack
+                f.pop();
+                f.pop();
+                BasicValue t = (BasicValue) (f.pop());
+                String targetDesc = t.toString();
+                String elementType = ArrayWrappingClassGenerator.getElementType(targetDesc);
+
+                MethodInsnNode invokeVNode =
+                        new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
+                                "org/aion/avm/arraywrapper/ObjectArray",
+                                "set",
+                                "(ILjava/lang/Object;)V",
+                                false);
+
+                TypeInsnNode checkcastNode =
+                        new TypeInsnNode(Opcodes.CHECKCAST,
+                                elementType);
+
+                instructions.insert(insn, invokeVNode);
+                instructions.insert(insn, checkcastNode);
+                instructions.remove(insn);
+            }
         }
         accept(mv);
     }

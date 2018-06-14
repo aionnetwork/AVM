@@ -90,18 +90,15 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
                 m = Method.getMethod("void set(int, short)");
                 invokeVirtual(typeSA, m);
                 break;
-
-            case Opcodes.AALOAD:
-                Assert.unreachable("Primitive array wrapping adapter catch AALOAD");
-            case Opcodes.AASTORE:
-                m = Method.getMethod("void set(int, Object)");
-                invokeVirtual(typeOA, m);
-                break;
-
             case Opcodes.ARRAYLENGTH:
                 m = Method.getMethod("int length()");
                 invokeVirtual(typeA, m);
                 break;
+
+            case Opcodes.AALOAD:
+                Assert.unreachable("Primitive array wrapping adapter catch AALOAD");
+            case Opcodes.AASTORE:
+                Assert.unreachable("Primitive array wrapping adapter catch AASTORE");
 
             default:
                 this.mv.visitInsn(opcode);

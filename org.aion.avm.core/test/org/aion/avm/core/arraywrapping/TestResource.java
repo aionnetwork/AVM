@@ -546,4 +546,31 @@ public class TestResource {
         return true;
     }
 
+    public boolean testInterfaceArray(){
+        X[][][] xxx = new X[5][5][5];
+        Y[][][] yyy = new Y[5][5][5];
+        Z[][][] zzz = new Z[5][5][5];
+        A[][][] aaa = new A[5][5][5];
+        B[][][] bbb = new B[5][5][5];
+        C[][][] ccc = new C[5][5][5];
+
+        xxx[0][0][0] = new A();
+        xxx[0][0][1] = new B();
+        xxx[0][0][2] = new C();
+
+        yyy[0][0][0] = new A();
+        yyy[0][0][1] = new B();
+        yyy[0][0][2] = new C();
+
+        zzz[0][0][0] = new A();
+        zzz[0][0][1] = new B();
+        zzz[0][0][2] = new C();
+
+        xxx = aaa;
+        yyy = bbb;
+        zzz = ccc;
+
+        return true;
+    }
+
 }
