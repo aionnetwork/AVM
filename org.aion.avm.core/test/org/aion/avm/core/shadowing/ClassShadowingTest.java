@@ -37,7 +37,7 @@ public class ClassShadowingTest {
 
     @Test
     public void testReplaceJavaLang() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        String className = "org.aion.avm.core.shadowing.TestResource";
+        String className = TestResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
@@ -75,7 +75,7 @@ public class ClassShadowingTest {
 
     @Test
     public void testField() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        String className = "org.aion.avm.core.shadowing.TestResource2";
+        String className = TestResource2.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, 0) /* DO NOT SKIP ANYTHING */
@@ -112,7 +112,7 @@ public class ClassShadowingTest {
 
     @Test
     public void testInterfaceHandling() throws Exception {
-        String className = "org.aion.avm.core.shadowing.TestResourceInterface";
+        String className = TestResourceInterface.class.getName();
         String classNameInner = className + "$1";
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         String innerClassName = className + "$1";

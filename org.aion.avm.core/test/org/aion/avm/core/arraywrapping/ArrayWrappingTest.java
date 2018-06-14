@@ -37,7 +37,7 @@ public class ArrayWrappingTest {
     @Before
     // We only need to load the instrumented class once.
     public void getInstrumentedClass() throws ClassNotFoundException {
-        String className = "org.aion.avm.core.arraywrapping.TestResource";
+        String className = TestResource.class.getName();
         Map<String, byte[]> classes = new HashMap<>();
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.EXPAND_FRAMES)
@@ -46,8 +46,6 @@ public class ArrayWrappingTest {
                     .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES))
                     .build();
             byte[] transformed = toolchain.runAndGetBytecode();
-
-            Helpers.writeBytesToFile(transformed,"/tmp/wrapped.class");
 
             return transformed;
         };

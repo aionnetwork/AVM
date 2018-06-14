@@ -48,13 +48,13 @@ public class ExceptionWrappingTest {
         
         // We know that we have an exception, in this test, but the forest normally needs to be populated from a jar so manually assemble it.
         String exceptionClassDotName = TestExceptionResource.UserDefinedException.class.getName();
+        String className = TestExceptionResource.class.getName();
         Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(exceptionClassDotName, "java.lang.Throwable", null)
-                .addClass("org.aion.avm.core.exceptionwrapping.TestExceptionResource", "java.lang.Object", null)
+                .addClass(className, "java.lang.Object", null)
                 .asMutableForest();
         LazyWrappingTransformer transformer = new LazyWrappingTransformer(classHierarchy);
         
-        String className = TestExceptionResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         transformer.transformClass(className, raw);
         

@@ -9,7 +9,6 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IHelper;
 import org.aion.avm.rt.Address;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
@@ -18,9 +17,7 @@ import org.objectweb.asm.ClassWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 
@@ -33,7 +30,6 @@ public class EnumShadowingTest {
     }
 
     private Class<?> clazz;
-    private IHelper helper;
 
     @After
     public void clearTestingState() {
@@ -42,9 +38,9 @@ public class EnumShadowingTest {
 
     @Before
     public void testReplaceJavaLang() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        String enumClassName = "org.aion.avm.core.shadowing.TestEnum";
+        String enumClassName = TestEnum.class.getName();
         byte[] raw1 = Helpers.loadRequiredResourceAsBytes(enumClassName.replaceAll("\\.", "/") + ".class");
-        String testClassName = "org.aion.avm.core.shadowing.TestEnumResource";
+        String testClassName = TestEnumResource.class.getName();
         byte[] raw2 = Helpers.loadRequiredResourceAsBytes(testClassName.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
@@ -57,17 +53,15 @@ public class EnumShadowingTest {
         byte[] transformed;
 
         transformed = transformer.apply(raw2);
-        Helpers.writeBytesToFile(transformed,"/tmp/enumTest.class");
         classes.put(testClassName, transformed);
 
         transformed = transformer.apply(raw1);
-        Helpers.writeBytesToFile(transformed,"/tmp/enum.class");
         classes.put(enumClassName, transformed);
 
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
-        helper = new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
+        new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
         clazz = loader.loadClass(testClassName);;
     }
 

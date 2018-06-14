@@ -35,7 +35,7 @@ public class StackWatcherTest {
     @Before
     // We only need to load the instrumented class once.
     public void getInstrumentedClass() throws ClassNotFoundException {
-        String className = "org.aion.avm.core.stacktracking.TestResource";
+        String className = TestResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             byte[] transformed = new ClassToolchain.Builder(inputBytes, ClassReader.EXPAND_FRAMES)
@@ -43,7 +43,6 @@ public class StackWatcherTest {
                     .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES))
                     .build()
                     .runAndGetBytecode();
-            Helpers.writeBytesToFile(transformed, "/tmp/stackWatched.class");
             return transformed;
         };
         Map<String, byte[]> classes = new HashMap<>();
