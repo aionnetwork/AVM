@@ -51,8 +51,8 @@ public class TypeAwareClassWriterTest {
     @Test
     public void testShadows_both() throws Exception {
         TestClass clazz = new TestClass(sharedClassLoader, new Forest<String, byte[]>(), new HierarchyTreeBuilder());
-        String common = clazz.testing_getCommonSuperClass("org/aion/avm/java/lang/OutOfMemoryError", "org/aion/avm/java/lang/TypeNotPresentException");
-        Assert.assertEquals("org/aion/avm/java/lang/Throwable", common);
+        String common = clazz.testing_getCommonSuperClass(PackageConstants.kShadowJavaLangSlashPrefix + "OutOfMemoryError", PackageConstants.kShadowJavaLangSlashPrefix + "TypeNotPresentException");
+        Assert.assertEquals(PackageConstants.kShadowJavaLangSlashPrefix + "Throwable", common);
     }
 
     @Test

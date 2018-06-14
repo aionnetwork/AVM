@@ -5,6 +5,7 @@ import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.*;
 
 import java.util.stream.Stream;
@@ -190,11 +191,11 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
                 // If we need to wrap this, call out to our static helper.
                 if (shouldWrapAsString) {
                     String methodName = "wrapAsString";
-                    String methodDescriptor = "(Ljava/lang/String;)" + Replacer.SHADOW_WRAPPED_STRING_TYPE;
+                    String methodDescriptor = "(Ljava/lang/String;)L" + PackageConstants.kShadowJavaLangSlashPrefix + "String;";
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
                 } else if (shouldWrapAsClass) {
                     String methodName = "wrapAsClass";
-                    String methodDescriptor = "(Ljava/lang/Class;)Lorg/aion/avm/java/lang/Class;";
+                    String methodDescriptor = "(Ljava/lang/Class;)L" + PackageConstants.kShadowJavaLangSlashPrefix + "Class;";
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
                 }
             }
