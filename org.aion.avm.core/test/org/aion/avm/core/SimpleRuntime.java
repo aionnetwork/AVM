@@ -14,18 +14,31 @@ public class SimpleRuntime implements BlockchainRuntime {
     private final byte[] sender;
     private final byte[] address;
     private final long energyLimit;
+    private final byte[] txData;
 
     // We can't eagerly create these addresses, since the IHelper isn't yet installed, but we do want to reuse the same instance, once we create it.
     private Address cachedSender;
     private Address cachedAddress;
+    private ByteArray cachedTxData;
 
     public SimpleRuntime(byte[] sender, byte[] address, long energyLimit) {
+        Assert.assertNotNull(sender);
+        Assert.assertNotNull(address);
+
+        this.sender = sender;
+        this.address = address;
+        this.energyLimit = energyLimit;
+        this.txData = null;
+    }
+
+    public SimpleRuntime(byte[] sender, byte[] address, long energyLimit, byte[] txData) {
         Assert.assertNotNull(sender);
         Assert.assertNotNull(address);
         
         this.sender = sender;
         this.address = address;
         this.energyLimit = energyLimit;
+        this.txData = txData;
     }
     @Override
     public Address avm_getSender() {
@@ -47,8 +60,13 @@ public class SimpleRuntime implements BlockchainRuntime {
     }
     @Override
     public ByteArray avm_getData() {
-        Assert.fail("This implementation doesn't handle this");
-        return null;
+        if (null == this.txData) {
+            return null;
+        }
+        if (null == this.cachedTxData) {
+            this.cachedTxData = new ByteArray(this.txData);
+        }
+        return cachedTxData;
     }
     @Override
     public ByteArray avm_getStorage(ByteArray key) {

@@ -265,7 +265,7 @@ public class AvmImpl implements Avm {
     /**
      * A helper method to match the method selector with the main-class methods.
      */
-    public Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor) {
+    public Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor, boolean isDeploy) {
         Method[] methods = clazz.getMethods();
 
         // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
@@ -279,7 +279,9 @@ public class AvmImpl implements Avm {
         elementaryTypesMap.put(TxDataDecoder.LONG,      new String[]{"J", "long"});
         elementaryTypesMap.put(TxDataDecoder.DOUBLE,    new String[]{"D", "double"});
 
-        methodName = ClassShadowing.METHOD_PREFIX + methodName;
+        if (!isDeploy) {
+            methodName = ClassShadowing.METHOD_PREFIX + methodName;
+        }
 
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {
@@ -371,12 +373,8 @@ public class AvmImpl implements Avm {
             IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            try {
-                helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
-                                    + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * app.bytecodeSize * (1 + app.numberOfClasses) / 10);
-            } catch (OutOfEnergyError e) {
-                return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
-            }
+            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
+                    + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * app.bytecodeSize * (1 + app.numberOfClasses) / 10);
 
             // validate dapp module
             if (!validateDapp(app)) {
@@ -391,7 +389,22 @@ public class AvmImpl implements Avm {
             Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), app.getClassHierarchyForest(), allObjectSizes);
             app.setClasses(transformedClasses);
 
-            // TODO: parse the txData, select and execute the main-class method as the user requires (a match with the txData method selector)
+            // Parse the tx data, get the method name and arguments
+            TxDataDecoder txDataDecoder = new TxDataDecoder();
+            if (rt.avm_getData() != null) {
+                TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
+
+                Class<?> clazz = classLoader.loadClass(app.mainClass);
+                Object obj = clazz.getConstructor().newInstance();
+
+                // select the method and invoke
+                Method method = matchMethodSelector(clazz, methodCaller.methodName, methodCaller.argsDescriptor, true);
+                if (methodCaller.arguments == null) {
+                    method.invoke(obj);
+                } else {
+                    method.invoke(obj, methodCaller.arguments.toArray());
+                }
+            }
 
             // store transformed dapp
             long storedSize = storeTransformedDapp(rt.avm_getAddress(), app);
@@ -408,6 +421,8 @@ public class AvmImpl implements Avm {
             return null;
         } catch (OutOfEnergyError e) {
             return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
+        } catch (InvalidTxDataException | UnsupportedEncodingException e) {
+            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             return new AvmResult(AvmResult.Code.FAILURE, 0);
@@ -438,6 +453,9 @@ public class AvmImpl implements Avm {
         try {
             // Parse the tx data, get the method name and arguments
             TxDataDecoder txDataDecoder = new TxDataDecoder();
+            if (rt.avm_getData() == null) {
+                throw new InvalidTxDataException();
+            }
             TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
 
             Class<?> clazz = classLoader.loadClass(app.mainClass);
@@ -445,7 +463,7 @@ public class AvmImpl implements Avm {
             Object obj = clazz.getConstructor().newInstance();
 
             // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
-            Method method = matchMethodSelector(clazz, methodCaller.methodName, methodCaller.argsDescriptor);
+            Method method = matchMethodSelector(clazz, methodCaller.methodName, methodCaller.argsDescriptor, false);
             Object ret;
             if (methodCaller.arguments == null) {
                 ret = method.invoke(obj);
