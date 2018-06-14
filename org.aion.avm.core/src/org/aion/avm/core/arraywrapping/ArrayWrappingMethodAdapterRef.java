@@ -1,5 +1,6 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -63,7 +64,7 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
 
                 MethodInsnNode invokeVNode =
                     new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
-                                        "org/aion/avm/arraywrapper/ObjectArray",
+                                        PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray",
                                         "get",
                                         "(I)Ljava/lang/Object;",
                                         false);
@@ -87,7 +88,7 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
 
                 MethodInsnNode invokeVNode =
                         new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
-                                "org/aion/avm/arraywrapper/ObjectArray",
+                                PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray",
                                 "set",
                                 "(ILjava/lang/Object;)V",
                                 false);

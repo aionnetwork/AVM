@@ -1,6 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -20,27 +21,27 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     static private HashMap<String, String> INTERFACE_WRAPPER_MAP = new HashMap<>();
 
     static{
-        CLASS_WRAPPER_MAP.put("[I", "org/aion/avm/arraywrapper/IntArray");
-        CLASS_WRAPPER_MAP.put("[B", "org/aion/avm/arraywrapper/ByteArray");
-        CLASS_WRAPPER_MAP.put("[Z", "org/aion/avm/arraywrapper/ByteArray");
-        CLASS_WRAPPER_MAP.put("[C", "org/aion/avm/arraywrapper/CharArray");
-        CLASS_WRAPPER_MAP.put("[F", "org/aion/avm/arraywrapper/FloatArray");
-        CLASS_WRAPPER_MAP.put("[S", "org/aion/avm/arraywrapper/ShortArray");
-        CLASS_WRAPPER_MAP.put("[J", "org/aion/avm/arraywrapper/LongArray");
-        CLASS_WRAPPER_MAP.put("[D", "org/aion/avm/arraywrapper/DoubleArray");
-        CLASS_WRAPPER_MAP.put("[Ljava/lang/Object", "org/aion/avm/arraywrapper/ObjectArray");
-        CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/java/lang/Object", "org/aion/avm/arraywrapper/ObjectArray");
-        CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/internal/IObject", "org/aion/avm/arraywrapper/ObjectArray");
+        CLASS_WRAPPER_MAP.put("[I", PackageConstants.kArrayWrapperSlashPrefix + "IntArray");
+        CLASS_WRAPPER_MAP.put("[B", PackageConstants.kArrayWrapperSlashPrefix + "ByteArray");
+        CLASS_WRAPPER_MAP.put("[Z", PackageConstants.kArrayWrapperSlashPrefix + "ByteArray");
+        CLASS_WRAPPER_MAP.put("[C", PackageConstants.kArrayWrapperSlashPrefix + "CharArray");
+        CLASS_WRAPPER_MAP.put("[F", PackageConstants.kArrayWrapperSlashPrefix + "FloatArray");
+        CLASS_WRAPPER_MAP.put("[S", PackageConstants.kArrayWrapperSlashPrefix + "ShortArray");
+        CLASS_WRAPPER_MAP.put("[J", PackageConstants.kArrayWrapperSlashPrefix + "LongArray");
+        CLASS_WRAPPER_MAP.put("[D", PackageConstants.kArrayWrapperSlashPrefix + "DoubleArray");
+        CLASS_WRAPPER_MAP.put("[Ljava/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
+        CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/java/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
+        CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/internal/IObject", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
     }
 
     public static byte[] arrayWrappingFactory(String request){
 
-        if (request.startsWith("org.aion.avm.arraywrapper.interface._")){
+        if (request.startsWith(PackageConstants.kArrayWrapperDotPrefix + "interface._")){
             return genWrapperInterface(request);
         }
 
         // we only handle class generation request prefixed with org.aion.avm.arraywrapper.$
-        if (request.startsWith("org.aion.avm.arraywrapper.$")){
+        if (request.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$")){
             return genWrapperClass(request);
         }
 
@@ -56,7 +57,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
         String wrapperInterfaceName = requestInterface.replace('.', '/');
         // Get element class and array dim
-        String elementInterfaceName = wrapperInterfaceName.substring("org.aion.avm.arraywrapper.interface.".length());
+        String elementInterfaceName = wrapperInterfaceName.substring((PackageConstants.kArrayWrapperDotPrefix + "interface.").length());
         int dim = 0;
         while (elementInterfaceName.charAt(dim) == '_') {dim++;}
         elementInterfaceName = elementInterfaceName.substring(dim).replace('/', '.');
@@ -109,7 +110,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         String wrapperClassName = requestClass.replace('.', '/');
 
         // Get element class and array dim
-        String elementClassName = wrapperClassName.substring("org.aion.avm.arraywrapper.".length());
+        String elementClassName = wrapperClassName.substring(PackageConstants.kArrayWrapperDotPrefix.length());
         int dim = 0;
         while (elementClassName.charAt(dim) == '$') {dim++;}
         elementClassName = elementClassName.substring(dim).replace('/', '.');
@@ -149,8 +150,8 @@ public class ArrayWrappingClassGenerator implements Opcodes {
                 superInterfaces[i++] = curInterfaceName;
 
                 // Generate
-                classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, "org/aion/avm/arraywrapper/ObjectArray", superInterfaces);
-                generateClass(classWriter,wrapperClassName, "org/aion/avm/arraywrapper/ObjectArray", dim);
+                classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", superInterfaces);
+                generateClass(classWriter,wrapperClassName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim);
                 if (DEBUG) {
                     System.out.println("Generating Interface wrapper class : " + wrapperClassName);
                     System.out.println("Wrapper Dimension : " + dim);
@@ -163,7 +164,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             }
             // Element is a class
             else{
-                String superClassName = "org/aion/avm/arraywrapper/ObjectArray";
+                String superClassName = PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray";
                 if (!c.getName().equals("java.lang.Object")) {
                     c = c.getSuperclass();
                     superClassName = (new String(new char[dim]).replace("\0", "[")) + 'L' + c.getName() + ";";
@@ -184,8 +185,8 @@ public class ArrayWrappingClassGenerator implements Opcodes {
                 }
             }
         }else{
-            classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, "org/aion/avm/arraywrapper/ObjectArray", null);
-            generateClass(classWriter,wrapperClassName, "org/aion/avm/arraywrapper/ObjectArray", dim);
+            classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", null);
+            generateClass(classWriter,wrapperClassName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim);
             if (DEBUG) {
                 System.out.println("Generating Prim Class : " + wrapperClassName);
                 System.out.println("Wrapper Dimension : " + dim);
@@ -306,7 +307,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         // Child wrapper factory descriptor will be constructed here.
         String childWrapper;
         String childFacDesc;
-        childWrapper = wrapper.substring("org/aion/avm/arraywrapper/$".length());
+        childWrapper = wrapper.substring((PackageConstants.kArrayWrapperSlashPrefix + "$").length());
         Assert.assertTrue(childWrapper.startsWith("$"));
 
         // If child is predefined array in rt, replace them.
@@ -339,7 +340,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
                 childWrapper = "ObjectArray";
                 break;
         }
-        childWrapper = "org/aion/avm/arraywrapper/" + childWrapper;
+        childWrapper = PackageConstants.kArrayWrapperSlashPrefix + childWrapper;
         childFacDesc = ArrayWrappingClassGenerator.getFacDesc(childWrapper, d - 1);
 
         mv.visitMethodInsn(INVOKESTATIC, childWrapper, "initArray", childFacDesc, false);
@@ -482,7 +483,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     private static java.lang.String newClassWrapper(java.lang.String desc){
         //System.out.println(desc);
         StringBuilder sb = new StringBuilder();
-        sb.append("org/aion/avm/arraywrapper/");
+        sb.append(PackageConstants.kArrayWrapperSlashPrefix);
 
         //Check if the desc is a ref array
         if((desc.charAt(1) == 'L') || (desc.charAt(1) == '[')){
@@ -498,7 +499,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     private static java.lang.String newInterfaceWrapper(java.lang.String desc){
         //System.out.println(desc);
         StringBuilder sb = new StringBuilder();
-        sb.append("org/aion/avm/arraywrapper/interface/");
+        sb.append(PackageConstants.kArrayWrapperSlashPrefix + "interface/");
 
         //Check if the desc is a ref array
         if((desc.charAt(1) == 'L') || (desc.charAt(1) == '[')){

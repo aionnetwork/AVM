@@ -2,6 +2,7 @@ package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -113,31 +114,31 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             switch (operand) {
                 case Opcodes.T_BOOLEAN:
                 case Opcodes.T_BYTE:
-                    m = Method.getMethod("org.aion.avm.arraywrapper.ByteArray initArray(int)");
+                    m = Method.getMethod(PackageConstants.kArrayWrapperDotPrefix + "ByteArray initArray(int)");
                     invokeStatic(typeBA, m);
                     break;
                 case Opcodes.T_SHORT:
-                    m = Method.getMethod("org.aion.avm.arraywrapper.ShortArray initArray(int)");
+                    m = Method.getMethod(PackageConstants.kArrayWrapperDotPrefix + "ShortArray initArray(int)");
                     invokeStatic(typeSA, m);
                     break;
                 case Opcodes.T_INT:
-                    m = Method.getMethod("org.aion.avm.arraywrapper.IntArray initArray(int)");
+                    m = Method.getMethod(PackageConstants.kArrayWrapperDotPrefix + "IntArray initArray(int)");
                     invokeStatic(typeIA, m);
                     break;
                 case Opcodes.T_LONG:
-                    m = Method.getMethod("org.aion.avm.arraywrapper.LongArray initArray(int)");
+                    m = Method.getMethod(PackageConstants.kArrayWrapperDotPrefix + "LongArray initArray(int)");
                     invokeStatic(typeLA, m);
                     break;
                 case Opcodes.T_CHAR:
-                    m = Method.getMethod("org.aion.avm.arraywrapper.CharArray initArray(int)");
+                    m = Method.getMethod(PackageConstants.kArrayWrapperDotPrefix + "CharArray initArray(int)");
                     invokeStatic(typeCA, m);
                     break;
                 case Opcodes.T_FLOAT:
-                    m = Method.getMethod("org.aion.avm.arraywrapper.FloatArray initArray(int)");
+                    m = Method.getMethod(PackageConstants.kArrayWrapperDotPrefix + "FloatArray initArray(int)");
                     invokeStatic(typeFA, m);
                     break;
                 case Opcodes.T_DOUBLE:
-                    m = Method.getMethod("org.aion.avm.arraywrapper.DoubleArray initArray(int)");
+                    m = Method.getMethod(PackageConstants.kArrayWrapperDotPrefix + "DoubleArray initArray(int)");
                     invokeStatic(typeDA, m);
                     break;
                 default:
