@@ -120,11 +120,11 @@ public class HeapMemoryCostCalculator {
                 heapSize += classHeapSizeMap.get(classNode.superName) * 8; // convert back to number of bits
             }
             else {
-                throw new IllegalStateException("A parent class does not have the size in HeapMemoryCostCalculator.");
+                throw new IllegalStateException("A parent class does not have the size in HeapMemoryCostCalculator: " + classNode.superName);
             }
         }
         else {
-            throw new IllegalStateException("A parent class is not processed by HeapMemoryCostCalculator.");
+            throw new IllegalStateException("A parent class is not processed by HeapMemoryCostCalculator: " + classNode.superName);
         }
 
         // read the declared fields in the current class, add the size of each according to the FieldType
