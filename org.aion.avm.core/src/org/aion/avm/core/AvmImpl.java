@@ -14,6 +14,7 @@ import org.aion.avm.core.miscvisitors.StringConstantVisitor;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
+import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.InvalidTxDataException;
 import org.aion.avm.core.util.TxDataDecoder;
@@ -113,6 +114,7 @@ public class AvmImpl implements Avm {
 
         // TODO (issue-79):  Implement the rest of these by walking the runtime, elsewhere (this "4" is probably not right, in most cases).
         map.put("java/lang/AssertionError", 4);
+        map.put("java/lang/Throwable", 4);
 
         return Collections.unmodifiableMap(map);
     }
@@ -144,10 +146,10 @@ public class AvmImpl implements Avm {
     /**
      * Replaces the <code>java.base</code> package with the shadow implementation.
      *
-     * @param classes        the class of DApp
+     * @param classes        the class of DApp (names specified in .-style)
      * @param classHierarchy the class hierarchy
      * @param objectSizes    the sizes of object
-     * @return the transformed classes and any generated classes
+     * @return the transformed classes and any generated classes (names specified in .-style)
      */
     public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> classHierarchy, Map<String, Integer> objectSizes) {
 
@@ -158,11 +160,16 @@ public class AvmImpl implements Avm {
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         // We also want to expose this type to the class writer so it can compute common superclasses.
         ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (superClassSlashName, classSlashName, bytecode) -> {
-            processedClasses.put(classSlashName, bytecode);
+            // Note that the processed classes are expected to use .-style names.
+            String classDotName = Helpers.internalNameToFulllyQualifiedName(classSlashName);
+            processedClasses.put(classDotName, bytecode);
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
         };
         ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
         for (String name : classes.keySet()) {
+            // Note that transformClasses requires that the input class names by the .-style names.
+            Assert.assertTrue(-1 == name.indexOf("/"));
+            
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                     .addNextVisitor(new StringConstantVisitor())

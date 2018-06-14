@@ -1,6 +1,12 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import org.aion.avm.core.*;
+import org.aion.avm.core.AvmImpl;
+import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.ClassWhiteList;
+import org.aion.avm.core.Forest;
+import org.aion.avm.core.HierarchyTreeBuilder;
+import org.aion.avm.core.SimpleRuntime;
+import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -8,7 +14,11 @@ import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.rt.Address;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -17,6 +27,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
 
 public class ExceptionWrappingTest {
     private static AvmSharedClassLoader sharedClassLoader;
@@ -35,9 +46,9 @@ public class ExceptionWrappingTest {
         TestHelpers.didWrap = false;
         
         // We know that we have an exception, in this test, but the forest normally needs to be populated from a jar so manually assemble it.
-        String exceptionClassSlashName = TestExceptionResource.UserDefinedException.class.getName();
+        String exceptionClassDotName = TestExceptionResource.UserDefinedException.class.getName();
         Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(exceptionClassSlashName, "java.lang.Throwable", null)
+                .addClass(exceptionClassDotName, "java.lang.Throwable", null)
                 .addClass("org.aion.avm.core.exceptionwrapping.TestExceptionResource", "java.lang.Object", null)
                 .asMutableForest();
         LazyWrappingTransformer transformer = new LazyWrappingTransformer(classHierarchy);
@@ -133,6 +144,30 @@ public class ExceptionWrappingTest {
         Assert.assertTrue(TestHelpers.didUnwrap);
         // 3 here will imply that the exception table wasn't re-written (since it only caught at the top-level Throwable).
         Assert.assertEquals(2, result);
+    }
+
+    /**
+     * Tests that the user-defined exception is correctly parsed when loaded through the AvmImpl pipeline (since this unit
+     * test stubs out some important callbacks).
+     */
+    @Test
+    public void testExceptionTransformOnAvmImplPipeline() throws Exception {
+        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
+        String exceptionClassDotName = TestExceptionResource.UserDefinedException.class.getName();
+        String exceptionClassSlashName = Helpers.fulllyQualifiedNameToInternalName(exceptionClassDotName);
+        byte[] inputBytecode = Helpers.loadRequiredResourceAsBytes(exceptionClassSlashName + ".class");
+        
+        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(exceptionClassDotName, "java.lang.Throwable", inputBytecode)
+                .asMutableForest();
+        AvmImpl avm = new AvmImpl(sharedClassLoader);
+        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
+        
+        Map<String, byte[]> allTransformedBytecode = avm.transformClasses(Collections.singletonMap(exceptionClassDotName, inputBytecode), classHierarchy, allObjectSizes);
+        // We expect this to have 2 exceptions in it:  the transformed user-defined exception and the generated wrapper.
+        Assert.assertEquals(2, allTransformedBytecode.size());
+        Assert.assertTrue(allTransformedBytecode.containsKey(exceptionClassDotName));
+        Assert.assertTrue(allTransformedBytecode.containsKey("org.aion.avm.exceptionwrapper." + exceptionClassDotName));
     }
 
 
