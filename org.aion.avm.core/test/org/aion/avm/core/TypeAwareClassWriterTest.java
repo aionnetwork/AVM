@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.internal.PackageConstants;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,14 +37,14 @@ public class TypeAwareClassWriterTest {
     @Test
     public void testWrappers_generated() throws Exception {
         TestClass clazz = new TestClass(sharedClassLoader, new Forest<String, byte[]>(), new HierarchyTreeBuilder());
-        String common = clazz.testing_getCommonSuperClass("org/aion/avm/exceptionwrapper/java/lang/OutOfMemoryError", "org/aion/avm/exceptionwrapper/java/lang/Error");
-        Assert.assertEquals("org/aion/avm/exceptionwrapper/java/lang/Error", common);
+        String common = clazz.testing_getCommonSuperClass(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/OutOfMemoryError", PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/Error");
+        Assert.assertEquals(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/Error", common);
     }
 
     @Test
     public void testWrappers_generatedAndreal() throws Exception {
         TestClass clazz = new TestClass(sharedClassLoader, new Forest<String, byte[]>(), new HierarchyTreeBuilder());
-        String common = clazz.testing_getCommonSuperClass("org/aion/avm/exceptionwrapper/java/lang/OutOfMemoryError", "java/lang/OutOfMemoryError");
+        String common = clazz.testing_getCommonSuperClass(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/OutOfMemoryError", "java/lang/OutOfMemoryError");
         Assert.assertEquals("java/lang/Throwable", common);
     }
 

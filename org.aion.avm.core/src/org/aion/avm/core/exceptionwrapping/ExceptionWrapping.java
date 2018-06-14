@@ -4,6 +4,7 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.Forest;
 import org.aion.avm.core.classgeneration.StubGenerator;
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -13,8 +14,6 @@ import java.util.Set;
 
 
 public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
-    private static final String kWrapperClassLibraryPrefix = "org/aion/avm/exceptionwrapper/";
-
     private final String runtimeClassName;
     private final ParentPointers pointers;
     private final GeneratedClassConsumer generatedClassesSink;
@@ -58,8 +57,8 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         }
         if (isThrowable) {
             // Generate our handler for this.
-            String reparentedName = kWrapperClassLibraryPrefix + name;
-            String reparentedSuperName = kWrapperClassLibraryPrefix + superName;
+            String reparentedName = PackageConstants.kExceptionWrapperSlashPrefix + name;
+            String reparentedSuperName = PackageConstants.kExceptionWrapperSlashPrefix + superName;
             byte[] wrapperBytes = StubGenerator.generateWrapperClass(reparentedName, reparentedSuperName);
             generatedClassesSink.accept(reparentedSuperName, reparentedName, wrapperBytes);
         }
@@ -150,11 +149,11 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     if (type.startsWith("java/lang/")) {
                         // If this was trying to catch anything in "java/lang/*", then duplicate it for our wrapper type.
                         super.visitTryCatchBlock(start, end, handler, type);
-                        String wrapperType = kWrapperClassLibraryPrefix + type;
+                        String wrapperType = PackageConstants.kExceptionWrapperSlashPrefix + type;
                         super.visitTryCatchBlock(start, end, handler, wrapperType);
                     } else {
                         // This is user-defined (or should have been stripped, earlier) so replace it with the appropriate wrapper type.
-                        String wrapperType = kWrapperClassLibraryPrefix + type;
+                        String wrapperType = PackageConstants.kExceptionWrapperSlashPrefix + type;
                         super.visitTryCatchBlock(start, end, handler, wrapperType);
                     }
                 } else {

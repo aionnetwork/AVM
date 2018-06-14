@@ -13,6 +13,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
 import org.junit.After;
 import org.junit.Assert;
@@ -108,7 +109,7 @@ public class ExceptionWrappingTest {
             manuallyThrowNull.invoke(null);
         } catch (InvocationTargetException e) {
             // Make sure that this is the wrapper type that we normally expect to see.
-            Class<?> compare = this.loader.loadClass("org.aion.avm.exceptionwrapper.java.lang.NullPointerException");
+            Class<?> compare = this.loader.loadClass(PackageConstants.kExceptionWrapperDotPrefix + "java.lang.NullPointerException");
             didCatch = e.getCause().getClass() == compare;
         }
         Assert.assertTrue(TestHelpers.didWrap);
@@ -167,7 +168,7 @@ public class ExceptionWrappingTest {
         // We expect this to have 2 exceptions in it:  the transformed user-defined exception and the generated wrapper.
         Assert.assertEquals(2, allTransformedBytecode.size());
         Assert.assertTrue(allTransformedBytecode.containsKey(exceptionClassDotName));
-        Assert.assertTrue(allTransformedBytecode.containsKey("org.aion.avm.exceptionwrapper." + exceptionClassDotName));
+        Assert.assertTrue(allTransformedBytecode.containsKey(PackageConstants.kExceptionWrapperDotPrefix + exceptionClassDotName));
     }
 
 
