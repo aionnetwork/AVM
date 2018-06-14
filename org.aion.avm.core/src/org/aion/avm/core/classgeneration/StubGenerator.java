@@ -1,5 +1,6 @@
 package org.aion.avm.core.classgeneration;
 
+import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -111,7 +112,7 @@ public class StubGenerator {
         // Generate the getException method.
         {
             // NOTE:  These methods need to exist with the "avm_" prefixes, since the shadow library is post-shadow.
-            String returnThrowable = "()Lorg/aion/avm/java/lang/Throwable;";
+            String returnThrowable = "()L" + PackageConstants.kShadowJavaLangSlashPrefix + "Throwable;";
             MethodVisitor methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, "avm_getException", returnThrowable, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
@@ -143,7 +144,7 @@ public class StubGenerator {
         
         // Generate the (String) constructor.
         {
-            String oneStringDescriptor = "(Lorg/aion/avm/java/lang/String;)V";
+            String oneStringDescriptor = "(L" + PackageConstants.kShadowJavaLangSlashPrefix + "String;)V";
             methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, INIT_NAME, oneStringDescriptor, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
@@ -156,7 +157,7 @@ public class StubGenerator {
         
         // Generate the (String, Throwable) constructor.
         {
-            String stringThrowableDescriptor = "(Lorg/aion/avm/java/lang/String;Lorg/aion/avm/java/lang/Throwable;)V";
+            String stringThrowableDescriptor = "(L" + PackageConstants.kShadowJavaLangSlashPrefix + "String;L" + PackageConstants.kShadowJavaLangSlashPrefix + "Throwable;)V";
             methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, INIT_NAME, stringThrowableDescriptor, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
@@ -170,7 +171,7 @@ public class StubGenerator {
         
         // Generate the (Throwable) constructor.
         {
-            String oneThrowableDescriptor = "(Lorg/aion/avm/java/lang/Throwable;)V";
+            String oneThrowableDescriptor = "(L" + PackageConstants.kShadowJavaLangSlashPrefix + "Throwable;)V";
             methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, INIT_NAME, oneThrowableDescriptor, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);

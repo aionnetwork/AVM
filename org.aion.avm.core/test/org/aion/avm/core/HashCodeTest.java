@@ -10,6 +10,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
 import org.junit.Assert;
 import org.junit.Before;
@@ -202,7 +203,7 @@ public class HashCodeTest {
         Assert.assertTrue(loader2.loadClass(className) == clazz2);
         
         // Load a shared class, via each contract-specific loader, and ensure that we get the same instance.
-        String classToLoad = "org.aion.avm.java.lang.Error";
+        String classToLoad = PackageConstants.kShadowJavaLangDotPrefix + "Error";
         Class<?> match1 = loader1.loadClass(classToLoad);
         Class<?> match2 = loader2.loadClass(classToLoad);
         Assert.assertTrue(match1 == match2);
