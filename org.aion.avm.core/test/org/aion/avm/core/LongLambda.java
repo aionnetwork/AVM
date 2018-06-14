@@ -4,9 +4,11 @@ package org.aion.avm.core;
  * @author Roman Katerinenko
  */
 public final class LongLambda {
-    public LongLambda() {
-         Runnable r = () -> {
-             System.out.println("");
+    static Double result;
+
+    public Double test() {
+        Runnable r = () -> {
+            System.out.println("");
             final var max = Math.max(1, 23);
             final var str = new String("str");
             final var obj = new Object();
@@ -19,7 +21,9 @@ public final class LongLambda {
             }catch (IllegalStateException e){
                 // do nothing
             }
+            result = 100.;
         };
         r.run();
+        return result;
     }
 }

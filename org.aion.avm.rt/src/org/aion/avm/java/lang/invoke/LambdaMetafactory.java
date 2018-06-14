@@ -1,4 +1,4 @@
-package org.aion.avm.core.testdoubles.indy.invoke;
+package org.aion.avm.java.lang.invoke;
 
 import java.lang.invoke.LambdaConversionException;
 
@@ -6,7 +6,6 @@ import java.lang.invoke.LambdaConversionException;
  * @author Roman Katerinenko
  */
 public class LambdaMetafactory {
-    public static boolean avm_metafactoryWasCalled;
 
     public static java.lang.invoke.CallSite avm_metafactory(java.lang.invoke.MethodHandles.Lookup owner,
                                                             String invokedName,
@@ -15,8 +14,7 @@ public class LambdaMetafactory {
                                                             java.lang.invoke.MethodHandle implMethod,
                                                             java.lang.invoke.MethodType instantiatedMethodType)
             throws LambdaConversionException {
-        avm_metafactoryWasCalled = true;
-        return org.aion.avm.java.lang.invoke.LambdaMetafactory.avm_metafactory(owner,
+        return java.lang.invoke.LambdaMetafactory.metafactory(owner,
                 invokedName,
                 invokedType,
                 samMethodType,
