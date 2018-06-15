@@ -2,7 +2,10 @@ package org.aion.avm.core.testWallet;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.rt.Address;
+import org.aion.avm.rt.IEventLogger;
+import org.aion.avm.rt.IFutureRuntime;
 
 
 /**
@@ -18,9 +21,16 @@ import org.aion.avm.rt.Address;
  * as that implementation becomes fleshed out.
  */
 public class Deployer {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Throwable {
         // This is eventually just a test harness to invoke the decode() but, for now, it will actually invoke the calls, directly.
-        
+        // In order to instantiate Address objects, we need to install the IHelper.
+        IHelper.currentContractHelper.set(new FakeHelper());
+        invokeDirect(args);
+        IHelper.currentContractHelper.set(null);
+    }
+
+
+    private static void invokeDirect(String[] args) {
         // First thing we do is create the Wallet (which requires its components).
         Address sender = buildAddress(1);
         Address extra1 = buildAddress(2);
@@ -265,6 +275,33 @@ public class Deployer {
         public void confirmationNeeded() {
             System.out.println("confirmationNeeded");
             this.confirmationNeeded += 1;
+        }
+    }
+
+
+    private static class FakeHelper implements IHelper {
+        @Override
+        public void externalChargeEnergy(long cost) {
+            Assert.unreachable("This shouldn't be called in this test.");
+        }
+        @Override
+        public void externalSetEnergy(long energy) {
+            Assert.unreachable("This shouldn't be called in this test.");
+        }
+        @Override
+        public long externalGetEnergyRemaining() {
+            Assert.unreachable("This shouldn't be called in this test.");
+            return 0;
+        }
+        @Override
+        public org.aion.avm.java.lang.String externalWrapAsString(String input) {
+            Assert.unreachable("This shouldn't be called in this test.");
+            return null;
+        }
+        @Override
+        public int externalGetNextHashCode() {
+            // Just return anything.
+            return 0;
         }
     }
 }

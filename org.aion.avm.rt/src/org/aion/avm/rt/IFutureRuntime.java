@@ -1,11 +1,10 @@
-package org.aion.avm.core.testWallet;
-
-import org.aion.avm.rt.Address;
-import org.aion.avm.rt.BlockchainRuntime;
+package org.aion.avm.rt;
 
 
 /**
  * We define this as an extension of BlockchainRuntime since these mechanisms probably need to be pushed back into it, at some point.
+ * 
+ * TODO:  Refactor this into BlockchainRuntime and then remove it as part of issue-102.
  */
 public interface IFutureRuntime extends BlockchainRuntime {
     public long getBlockEpochSeconds();

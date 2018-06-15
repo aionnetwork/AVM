@@ -1,5 +1,7 @@
 package org.aion.avm.core.testWallet;
 
+import org.aion.avm.rt.IFutureRuntime;
+
 
 /**
  * This is just a hash of some data used to identity a specific operation.

@@ -1,5 +1,7 @@
 package org.aion.avm.core.testWallet;
 
+import org.aion.avm.rt.IFutureRuntime;
+
 
 /**
  * In the original, daylimit "inherited" from multiowned but the Solidity concept of "inheritance" probably makes more sense as strict composition
