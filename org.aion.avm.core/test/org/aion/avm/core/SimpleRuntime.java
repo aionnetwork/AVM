@@ -3,7 +3,10 @@ package org.aion.avm.core;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
+import org.aion.kernel.TransformedCodeStorage;
 import org.junit.Assert;
+
+import java.io.File;
 
 
 /**
@@ -15,6 +18,7 @@ public class SimpleRuntime implements BlockchainRuntime {
     private final byte[] address;
     private final long energyLimit;
     private final byte[] txData;
+    private final TransformedCodeStorage codeStorage;
 
     // We can't eagerly create these addresses, since the IHelper isn't yet installed, but we do want to reuse the same instance, once we create it.
     private Address cachedSender;
@@ -29,9 +33,10 @@ public class SimpleRuntime implements BlockchainRuntime {
         this.address = address;
         this.energyLimit = energyLimit;
         this.txData = null;
+        this.codeStorage = null;
     }
 
-    public SimpleRuntime(byte[] sender, byte[] address, long energyLimit, byte[] txData) {
+    public SimpleRuntime(byte[] sender, byte[] address, long energyLimit, byte[] txData, TransformedCodeStorage codeStorage) {
         Assert.assertNotNull(sender);
         Assert.assertNotNull(address);
         
@@ -39,6 +44,7 @@ public class SimpleRuntime implements BlockchainRuntime {
         this.address = address;
         this.energyLimit = energyLimit;
         this.txData = txData;
+        this.codeStorage = codeStorage;
     }
     @Override
     public Address avm_getSender() {
@@ -77,4 +83,12 @@ public class SimpleRuntime implements BlockchainRuntime {
     public void avm_putStorage(ByteArray key, ByteArray value) {
         Assert.fail("This implementation doesn't handle this");
     }
+    @Override
+    public void avm_storeTransformedDapp(File transformedJar) {
+        codeStorage.storeCode(avm_getAddress(), transformedJar);
+    };
+    @Override
+    public File avm_loadTransformedDapp(Address address) {
+        return codeStorage.loadCode(address);
+    };
 }

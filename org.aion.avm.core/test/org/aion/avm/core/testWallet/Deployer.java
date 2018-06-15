@@ -7,6 +7,8 @@ import org.aion.avm.rt.Address;
 import org.aion.avm.rt.IEventLogger;
 import org.aion.avm.rt.IFutureRuntime;
 
+import java.io.File;
+
 
 /**
  * This is the first cut at a real application we can put on the AVM, based on the Solidity testWallet.
@@ -187,6 +189,16 @@ public class Deployer {
         public void avm_putStorage(ByteArray key, ByteArray value) {
             Assert.unimplemented("TODO");
         }
+
+        @Override
+        public void avm_storeTransformedDapp(File transformedJar) {
+        }
+
+        @Override
+        public File avm_loadTransformedDapp(Address address) {
+            return null;
+        }
+
         @Override
         public long getBlockEpochSeconds() {
             // For now, always say it is day 1:  seconds per day.

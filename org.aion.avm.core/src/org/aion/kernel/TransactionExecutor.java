@@ -7,6 +7,8 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 
+import java.io.File;
+
 public class TransactionExecutor {
 
     public static void main(String[] args) {
@@ -56,6 +58,15 @@ public class TransactionExecutor {
 
             @Override
             public void avm_putStorage(ByteArray key, ByteArray value) {
+            }
+
+            @Override
+            public void avm_storeTransformedDapp(File transformedJar) {
+            }
+
+            @Override
+            public File avm_loadTransformedDapp(Address address) {
+                return null;
             }
         };
 

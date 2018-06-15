@@ -1,5 +1,7 @@
 package org.aion.avm.core;
 
+import org.aion.avm.rt.Address;
+
 public class AvmResult {
 
     public enum  Code {
@@ -21,6 +23,11 @@ public class AvmResult {
      */
     Object returnData;
 
+    /**
+     * Return the address after deployment.
+     */
+    Address address;
+
     public AvmResult(Code code, long energyLeft) {
         this.code = code;
         this.energyLeft = energyLeft;
@@ -30,6 +37,12 @@ public class AvmResult {
         this.code = code;
         this.energyLeft = energyLeft;
         this.returnData = returnData;
+    }
+
+    public AvmResult(Code code, long energyLeft, Address address) {
+        this.code = code;
+        this.energyLeft = energyLeft;
+        this.address = address;
     }
 
     @Override

@@ -4,6 +4,8 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 
+import java.io.File;
+
 
 /**
  * This exists to resolve a chicken-and-egg problem found in issue-77:  the runtime object we pass to the contract code must be part
@@ -40,5 +42,14 @@ public class ContractRuntimeWrapper extends org.aion.avm.java.lang.Object implem
     @Override
     public void avm_putStorage(ByteArray key, ByteArray value) {
         this.externalRuntime.avm_putStorage(key, value);
+    }
+
+    @Override
+    public void avm_storeTransformedDapp(File transformedJar) {
+    }
+
+    @Override
+    public File avm_loadTransformedDapp(Address address) {
+        return null;
     }
 }

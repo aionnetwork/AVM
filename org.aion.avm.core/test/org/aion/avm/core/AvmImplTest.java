@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -47,69 +46,6 @@ public class AvmImplTest {
         assertEquals(1, classes.size());
         final var expectedSizeOfFile = 424;
         assertEquals(expectedSizeOfFile, classes.get(mainClassName).length);
-    }
-
-
-    private byte[] sender = Helpers.randomBytes(Address.LENGTH);
-    private byte[] address = Helpers.randomBytes(Address.LENGTH);
-    private long energyLimit = 1000000;
-
-    @Test
-    public void testDeploy() {
-
-        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
-        BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit);
-        AvmImpl avm = new AvmImpl(sharedClassLoader);
-        AvmResult result = avm.deploy(jar, rt);
-
-        assertEquals(AvmResult.Code.SUCCESS, result.code);
-    }
-
-    @Test
-    public void testDeployAndRun() {
-        testDeploy();
-
-        // call the "run" method
-        BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
-            @Override
-            public ByteArray avm_getData() {
-                byte[] txData = new byte[]{0x72, 0x75, 0x6E}; // "run"
-                return new ByteArray(txData);
-            }
-
-            @Override
-            public ByteArray avm_getStorage(ByteArray key) {
-                return null;
-            }
-        };
-        AvmImpl avm = new AvmImpl(sharedClassLoader);
-        AvmResult result = avm.run(rt);
-
-        assertEquals(AvmResult.Code.SUCCESS, result.code);
-    }
-
-    @Test
-    public void testDeployAndRunWithArgs() {
-        testDeploy();
-
-        // test another method call, "add" with arguments
-        BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit) {
-            @Override
-            public ByteArray avm_getData() {
-                byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "add<II>" + raw data 123, 1
-                return new ByteArray(txData);
-            }
-
-            @Override
-            public ByteArray avm_getStorage(ByteArray key) {
-                return null;
-            }
-        };
-        AvmImpl avm = new AvmImpl(sharedClassLoader);
-        AvmResult result = avm.run(rt);
-
-        assertEquals(AvmResult.Code.SUCCESS, result.code);
-        assertEquals(124, result.returnData);
     }
 
     @Test

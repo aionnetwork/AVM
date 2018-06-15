@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
@@ -31,10 +30,7 @@ import org.objectweb.asm.ClassWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -43,25 +39,23 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.function.Function;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 import static org.aion.avm.core.FileUtils.getFSRootDirFor;
 import static org.aion.avm.core.FileUtils.putToTempDir;
 
-
 public class AvmImpl implements Avm {
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
     private static final String HELPER_CLASS = PackageConstants.kInternalSlashPrefix + "Helper";
-    private static final File DAPPS_DIR = new File("../dapps");
 
     /**
      * We will re-use this top-level class loader for all contracts as the classes within it are state-less and have no dependencies on a contract.
      * It is provided by the caller of our constructor, meaning it gets to decide if the same AvmImpl is reused, or not.
      */
     private final AvmSharedClassLoader sharedClassLoader;
-
-    static {
-        DAPPS_DIR.mkdirs();
-    }
 
     /**
      * Extracts the DApp module in compressed format into the designated folder.
@@ -172,7 +166,7 @@ public class AvmImpl implements Avm {
         for (String name : classes.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
             Assert.assertTrue(-1 == name.indexOf("/"));
-            
+
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                     .addNextVisitor(new StringConstantVisitor())
@@ -193,84 +187,6 @@ public class AvmImpl implements Avm {
             processedClasses.put(name, bytecode);
         }
         return processedClasses;
-    }
-
-    private final static char[] hexArray = "0123456789abcdef".toCharArray();
-
-    private String addressToString(Address address) {
-        byte[] bytes = address.unwrap();
-        int length = bytes.length;
-
-        char[] hexChars = new char[length * 2];
-        for (int i = 0; i < length; i++) {
-            int v = bytes[i] & 0xFF;
-            hexChars[i * 2] = hexArray[v >>> 4];
-            hexChars[i * 2 + 1] = hexArray[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-
-    /**
-     * Stores the instrumented bytecode into database.
-     *
-     * TODO: re-design this dummy implementation
-     *
-     * @param address the address of the DApp
-     * @param dapp    the dapp module
-     * @return the stored bytecode size
-     */
-    public long storeTransformedDapp(Address address, DappModule dapp) {
-        long size = 0;
-        String id = addressToString(address);
-        File dir = new File(DAPPS_DIR, id);
-        dir.mkdir();
-
-        // store main class
-        File main = new File(dir, "MAIN");
-        Helpers.writeBytesToFile(dapp.getMainClass().getBytes(), main.getAbsolutePath());
-        size += dapp.getMainClass().getBytes().length;
-
-        // store bytecode
-        Map<String, byte[]> classes = dapp.getClasses();
-        for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
-            File file = new File(dir, entry.getKey() + ".class");
-            Helpers.writeBytesToFile(entry.getValue(), file.getAbsolutePath());
-            size += entry.getValue().length;
-        }
-
-        return size;
-    }
-
-    /**
-     * Loads the transformed bytecode.
-     *
-     * TODO: re-design this dummy implementation
-     *
-     * @param address
-     * @return
-     */
-    public DappModule loadTransformedDapp(Address address) {
-        String id = addressToString(address);
-        File dir = new File(DAPPS_DIR, id);
-        if (!dir.exists()) {
-            return null;
-        }
-
-        // store main class
-        File file = new File(dir, "MAIN");
-        String mainClass = new String(Helpers.readFileToBytes(file.getAbsolutePath()));
-
-        // store bytecode
-        Map<String, byte[]> classes = new HashMap<>();
-        for (String fileName : dir.list()) {
-            if (fileName.endsWith(".class")) {
-                String name = fileName.substring(0, fileName.length() - 6);
-                byte[] bytes = Helpers.readFileToBytes(new File(dir, fileName).getAbsolutePath());
-                classes.put(name, bytes);
-            }
-        }
-
-        return new DappModule(classes, mainClass);
     }
 
     /**
@@ -382,7 +298,7 @@ public class AvmImpl implements Avm {
 
             // As per usual, we need to get the special Helper class for each contract loader.
             Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
-            
+
             // Construct the per-contract class loader and access the per-contract IHelper instance.
             AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
             IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
@@ -418,12 +334,13 @@ public class AvmImpl implements Avm {
             }
 
             // store transformed dapp
-            long storedSize = storeTransformedDapp(rt.avm_getAddress(), app);
+            File transformedDappJar = app.createJar(rt.avm_getAddress());
+            rt.avm_storeTransformedDapp(transformedDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * storedSize);
+            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * transformedDappJar.length());
 
-            return new AvmResult(AvmResult.Code.SUCCESS, rt.avm_getEnergyLimit());
+            return new AvmResult(AvmResult.Code.SUCCESS, rt.avm_getEnergyLimit(), rt.avm_getAddress());
         } catch (FatalAvmError e) {
             // These are unrecoverable errors (either a bug in our code or a lower-level error reported by the JVM).
             // (for now, we System.exit(-1), since this is what ethereumj does, but we may want a more graceful shutdown in the future)
@@ -448,12 +365,18 @@ public class AvmImpl implements Avm {
 
     @Override
     public AvmResult run(BlockchainRuntime rt) {
-        //  retrieve the transformed bytecode
-        DappModule app = loadTransformedDapp(rt.avm_getAddress());
+        // retrieve the transformed bytecode
+        DappModule app;
+        try {
+            File transformedDappJar = rt.avm_loadTransformedDapp(rt.avm_getAddress());
+            app = DappModule.readFromJar(Helpers.readFileToBytes(transformedDappJar.getPath()));
+        } catch (IOException e) {
+            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+        }
 
         // As per usual, we need to get the special Helper class for each contract loader.
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
-        
+
         // Construct the per-contract class loader and access the per-contract IHelper instance.
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName);
@@ -508,6 +431,18 @@ public class AvmImpl implements Avm {
         final long bytecodeSize;
         final long numberOfClasses;
 
+        private DappModule(Map<String, byte[]> classes, String mainClass) {
+            this(classes, mainClass, null, 0, 0);
+        }
+
+        private DappModule(Map<String, byte[]> classes, String mainClass, ClassHierarchyForest classHierarchyForest, long bytecodeSize, long numberOfClasses) {
+            this.classes = classes;
+            this.mainClass = mainClass;
+            this.classHierarchyForest = classHierarchyForest;
+            this.bytecodeSize = bytecodeSize;
+            this.numberOfClasses = numberOfClasses;
+        }
+
         private static DappModule readFromJar(byte[] jar) throws IOException {
             ClassHierarchyForest forest = ClassHierarchyForest.createForestFrom(jar);
             Map<String, byte[]> classes = forest.toFlatMapWithoutRoots();
@@ -546,18 +481,6 @@ public class AvmImpl implements Avm {
             return null;
         }
 
-        private DappModule(Map<String, byte[]> classes, String mainClass) {
-            this(classes, mainClass, null, 0, 0);
-        }
-
-        private DappModule(Map<String, byte[]> classes, String mainClass, ClassHierarchyForest classHierarchyForest, long bytecodeSize, long numberOfClasses) {
-            this.classes = classes;
-            this.mainClass = mainClass;
-            this.classHierarchyForest = classHierarchyForest;
-            this.bytecodeSize = bytecodeSize;
-            this.numberOfClasses = numberOfClasses;
-        }
-
         Map<String, byte[]> getClasses() {
             return Collections.unmodifiableMap(classes);
         }
@@ -572,6 +495,53 @@ public class AvmImpl implements Avm {
 
         private void setClasses(Map<String, byte[]> classes) {
             this.classes = classes;
+        }
+
+        private static final File DAPPS_DIR = new File("../dapps");
+
+        /**
+         * Create a jar file from this Dapp module.
+         */
+        private File createJar(Address address) throws IOException {
+            // manifest
+            Manifest manifest = new Manifest();
+            manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+            manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mainClass);
+
+            // file name from the address
+            DAPPS_DIR.mkdirs();
+            File jarFile = new File(DAPPS_DIR, addressToString(address) + ".jar");
+
+            // create the jar file
+            JarOutputStream target = new JarOutputStream(new FileOutputStream(jarFile), manifest);
+
+            // add the classes
+            for (String clazz : classes.keySet()) {
+                JarEntry entry = new JarEntry(clazz.replace('.', '/') + ".class");
+                target.putNextEntry(entry);
+                target.write(classes.get(clazz));
+                target.closeEntry();
+            }
+
+            // close and return
+            target.close();
+
+            return jarFile;
+        }
+
+        private static final char[] hexArray = "0123456789abcdef".toCharArray();
+
+        private String addressToString(Address address) {
+            byte[] bytes = address.unwrap();
+            int length = bytes.length;
+
+            char[] hexChars = new char[length * 2];
+            for (int i = 0; i < length; i++) {
+                int v = bytes[i] & 0xFF;
+                hexChars[i * 2] = hexArray[v >>> 4];
+                hexChars[i * 2 + 1] = hexArray[v & 0x0F];
+            }
+            return new String(hexChars);
         }
     }
 }
