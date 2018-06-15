@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
@@ -10,6 +11,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
 import org.junit.Assert;
@@ -247,6 +249,25 @@ public class HashCodeTest {
         Assert.assertEquals(1, helper2.externalGetNextHashCode());
         result = getOneHashCode2.invoke(null);
         Assert.assertEquals(2, ((Integer)result).intValue());
+    }
+
+    /**
+     * Tests that the user code can't catch the OutOfEnergyError and bury it.
+     */
+    @Test
+    public void testExhaustion() throws Exception {
+        Method runUntilExhausted = this.clazz.getMethod("avm_runUntilExhausted");
+        
+        boolean caught = false;
+        try {
+            runUntilExhausted.invoke(null);
+        } catch (InvocationTargetException e) {
+            // Expected.
+            Throwable cause = e.getCause();
+            Assert.assertEquals(OutOfEnergyError.class, cause.getClass());
+            caught = true;
+        }
+        Assert.assertTrue(caught);
     }
 
 

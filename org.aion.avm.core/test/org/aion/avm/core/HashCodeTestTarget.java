@@ -77,4 +77,17 @@ public class HashCodeTestTarget {
     public static int getOverrideHashCode(int override) {
         return new HashCodeTestTarget(override).hashCode();
     }
+    
+    public static int runUntilExhausted() {
+        int result = 0;
+        try {
+            while (result >= 0) {
+                result += 1;
+            }
+        } finally {
+            // Note that we should fail to execute this since we should re-throw on out of energy.
+            result = 1;
+        }
+        return result;
+    }
 }

@@ -71,6 +71,7 @@ public class Helper implements IHelper {
 
     public static org.aion.avm.java.lang.Object unwrapThrowable(Throwable t) {
         org.aion.avm.java.lang.Object shadow = null;
+        AvmException exceptionToRethrow = null;
         try {
             // NOTE:  This is called for both the cases where the throwable is a VM-generated "java.lang" exception or one of our wrappers.
             // We need to wrap the java.lang instance in a shadow and unwrap the other case to return the shadow.
@@ -88,6 +89,10 @@ public class Helper implements IHelper {
                 }
                 // This is VM-generated - we will have to instantiate a shadow, directly.
                 shadow = convertVmGeneratedException(t);
+            } else if (t instanceof AvmException) {
+                // There are cases where an AvmException might appear here during, for example, a finally clause.  We just want to re-throw it
+                // since these aren't catchable within the user code.
+                exceptionToRethrow = (AvmException)t;
             } else {
                 // This is one of our wrappers.
                 org.aion.avm.exceptionwrapper.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.java.lang.Throwable)t;
@@ -96,6 +101,9 @@ public class Helper implements IHelper {
         } catch (Throwable err) {
             // Unrecoverable internal error.
             RuntimeAssertionError.unexpected(err);
+        }
+        if (null != exceptionToRethrow) {
+            throw exceptionToRethrow;
         }
         return shadow;
     }
