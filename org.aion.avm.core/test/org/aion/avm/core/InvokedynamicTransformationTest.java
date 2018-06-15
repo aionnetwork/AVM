@@ -59,7 +59,7 @@ public class InvokedynamicTransformationTest {
         final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
-        final var shadowPackage = "org/aion/avm/java/lang";
+        final var shadowPackage = PackageConstants.kShadowJavaLangSlashPrefix;
         final var classWhiteList = ClassWhiteList.build(className);
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, classWhiteList))
@@ -92,7 +92,7 @@ public class InvokedynamicTransformationTest {
         final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
-        final var shadowPackage = "org/aion/avm/core/testdoubles/indy";
+        final var shadowPackage = "org/aion/avm/core/testdoubles/indy/";
         final var classWhiteList = ClassWhiteList.build(className);
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
@@ -125,7 +125,7 @@ public class InvokedynamicTransformationTest {
         final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
-        final var shadowPackage = "org/aion/avm/java/lang";
+        final var shadowPackage = PackageConstants.kShadowJavaLangSlashPrefix;
         Helper.setEnergy(1000);
         final var classWhiteList = ClassWhiteList.build(className);
         final Map<String, byte[]> processedClasses = new HashMap<>();

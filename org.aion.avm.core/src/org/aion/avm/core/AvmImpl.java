@@ -46,7 +46,7 @@ import java.util.function.Function;
 
 import static org.aion.avm.core.FileUtils.getFSRootDirFor;
 import static org.aion.avm.core.FileUtils.putToTempDir;
-import static org.aion.avm.core.shadowing.ClassShadowing.AVM_JAVA_LANG;
+
 
 public class AvmImpl implements Avm {
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
@@ -177,7 +177,7 @@ public class AvmImpl implements Avm {
                     .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                     .addNextVisitor(new StringConstantVisitor())
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, objectSizes))
-                    .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS, AVM_JAVA_LANG, classWhiteList))
+                    .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS, PackageConstants.kShadowJavaLangSlashPrefix, classWhiteList))
                     .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, classHierarchy, generatedClassesSink))

@@ -10,11 +10,10 @@ import java.util.stream.Stream;
 class Replacer {
     static final String SHADOW_WRAPPED_STRING_TYPE = "Lorg/aion/avm/java/lang/String;";
     private static final String METHOD_PREFIX = "avm_";
-    private static final String JAVA_LANG = "java/lang";
-    private static final String JAVA_UTIL = "java/util";
+    private static final String JAVA_LANG = "java/lang/";
+    private static final String JAVA_UTIL = "java/util/";
     private static final String JAVA_LANG_OBJECT = "java/lang/Object";
     private static final String AVM_INTERNAL_IOBJECT = PackageConstants.kInternalSlashPrefix + "IObject";
-    private static final String AVM_JAVA_LANG = "org/aion/avm/java/lang";
 
     private final String shadowPackage;
     private final ClassWhiteList whiteList;
@@ -64,7 +63,7 @@ class Replacer {
         if (allowInterfaceReplacement && isTypeJavaLangObject) {
             return AVM_INTERNAL_IOBJECT;
         } else if (isTypeJavaLangObject) {
-            return AVM_JAVA_LANG + type.substring(JAVA_LANG.length());
+            return PackageConstants.kShadowJavaLangSlashPrefix + type.substring(JAVA_LANG.length());
         } else if (shouldReplacePrefix) {
             return Stream.of(JAVA_LANG, JAVA_UTIL)
                     .filter(type::startsWith)
