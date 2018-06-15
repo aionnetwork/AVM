@@ -1,7 +1,14 @@
 package org.aion.avm.core.arraywrapping;
-import org.aion.avm.arraywrapper.*;
 
 public class TestResource {
+
+    public interface X {}
+    public interface Y {}
+    public interface Z extends X, Y{}
+
+    public static class A implements Z{}
+    public static class B extends A {}
+    public static class C extends B {}
 
     private Object[] oa;
     private int[] oi;

@@ -1,4 +1,4 @@
-package org.aion.avm.core.shadowing;
+package org.aion.avm.core.shadowing.Enum;
 
 
 import org.aion.avm.core.ClassToolchain;
@@ -7,6 +7,7 @@ import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.rt.Address;

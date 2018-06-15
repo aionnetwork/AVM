@@ -1,4 +1,4 @@
-package org.aion.avm.core.shadowing;
+package org.aion.avm.core.shadowing.Enum;
 
 public enum TestEnum {
     MERCURY (3.303e+23, 2.4397e6),

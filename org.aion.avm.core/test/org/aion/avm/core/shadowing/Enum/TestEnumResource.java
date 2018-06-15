@@ -1,4 +1,4 @@
-package org.aion.avm.core.shadowing;
+package org.aion.avm.core.shadowing.Enum;
 
 
 public class TestEnumResource {
