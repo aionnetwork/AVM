@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -35,26 +34,12 @@ public class HashCodeTest {
 
     @Before
     public void setup() throws Exception {
-        String className = HashCodeTestTarget.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
+        SimpleAvm avm = new SimpleAvm(externalRuntime, HashCodeTestTarget.class);
+        AvmClassLoader loader = avm.getClassLoader();
         
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", raw)
-                .asMutableForest();
-        
-        AvmImpl avm = new AvmImpl(sharedClassLoader);
-        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
-        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
-        Function<byte[], byte[]> transformer = (inputBytes) -> {
-            return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
-        };
-        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(className, transformer.apply(raw)));
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
-        this.clazz = loader.loadClass(className);
+        this.clazz = loader.loadClass(HashCodeTestTarget.class.getName());
         Assert.assertEquals(loader, this.clazz.getClassLoader());
-        
-        SimpleRuntime rt = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        Helpers.instantiateHelper(loader, rt);
     }
 
     /**
@@ -278,7 +263,7 @@ public class HashCodeTest {
                 .addClass(className, "java.lang.Object", raw)
                 .asMutableForest();
         Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
-        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
+        Map<String, Integer> allObjectSizes = AvmImpl.computeObjectSizes(classHierarchy, runtimeObjectSizes);
         byte[] transformed = avm.transformClasses(Collections.singletonMap(className, raw), classHierarchy, allObjectSizes).get(className);
         return transformed;
     }

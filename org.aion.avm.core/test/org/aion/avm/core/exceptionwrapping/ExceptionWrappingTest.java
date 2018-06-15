@@ -1,10 +1,10 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.Forest;
 import org.aion.avm.core.HierarchyTreeBuilder;
+import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classgeneration.CommonGenerators;
@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 
 public class ExceptionWrappingTest {
@@ -153,22 +154,15 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testExceptionTransformOnAvmImplPipeline() throws Exception {
-        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
-        String exceptionClassDotName = TestExceptionResource.UserDefinedException.class.getName();
-        String exceptionClassSlashName = Helpers.fulllyQualifiedNameToInternalName(exceptionClassDotName);
-        byte[] inputBytecode = Helpers.loadRequiredResourceAsBytes(exceptionClassSlashName + ".class");
+        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
+        SimpleAvm avm = new SimpleAvm(externalRuntime, TestExceptionResource.UserDefinedException.class);
+        Set<String> transformedClassNames = avm.getTransformedClassNames();
         
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(exceptionClassDotName, "java.lang.Throwable", inputBytecode)
-                .asMutableForest();
-        AvmImpl avm = new AvmImpl(sharedClassLoader);
-        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
-        
-        Map<String, byte[]> allTransformedBytecode = avm.transformClasses(Collections.singletonMap(exceptionClassDotName, inputBytecode), classHierarchy, allObjectSizes);
         // We expect this to have 2 exceptions in it:  the transformed user-defined exception and the generated wrapper.
-        Assert.assertEquals(2, allTransformedBytecode.size());
-        Assert.assertTrue(allTransformedBytecode.containsKey(exceptionClassDotName));
-        Assert.assertTrue(allTransformedBytecode.containsKey(PackageConstants.kExceptionWrapperDotPrefix + exceptionClassDotName));
+        String exceptionClassDotName = TestExceptionResource.UserDefinedException.class.getName();
+        Assert.assertEquals(2, transformedClassNames.size());
+        Assert.assertTrue(transformedClassNames.contains(exceptionClassDotName));
+        Assert.assertTrue(transformedClassNames.contains(PackageConstants.kExceptionWrapperDotPrefix + exceptionClassDotName));
     }
 
 

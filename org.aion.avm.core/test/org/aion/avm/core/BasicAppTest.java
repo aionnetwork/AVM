@@ -1,22 +1,16 @@
 package org.aion.avm.core;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
-import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 
@@ -28,53 +22,24 @@ import org.junit.Test;
  * this design (especially considering that the entry-point interface is likely temporary).
  */
 public class BasicAppTest {
-    private static AvmSharedClassLoader sharedClassLoader;
-
-    @BeforeClass
-    public static void setupClass() throws Exception {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
-    }
-
     private Class<?> clazz;
     private Method decodeMethod;
     private BlockchainRuntime runtime;
 
     @Before
     public void setup() throws Exception {
-        // NOTE:  This boiler-plate is pulled directly from HashCodeTest but will eventually be cut-over to using AvmImpl, differently.
-        String className = BasicAppTestTarget.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
+        SimpleAvm avm = new SimpleAvm(externalRuntime, BasicAppTestTarget.class, AionMap.class);
+        AvmClassLoader loader = avm.getClassLoader();
         
-        // Contract "user-space" library.
-        String aionMapClassName = AionMap.class.getName();
-        byte[] aionMapBytes = Helpers.loadRequiredResourceAsBytes(aionMapClassName.replaceAll("\\.", "/") + ".class");
-        
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", raw)
-                .addClass(aionMapClassName, "java.lang.Object", aionMapBytes)
-                .asMutableForest();
-        
-        AvmImpl avm = new AvmImpl(sharedClassLoader);
-        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
-        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
-        Function<byte[], byte[]> transformer = (inputBytes) -> {
-            return avm.transformClasses(Collections.singletonMap(className, inputBytes), classHierarchy, allObjectSizes).get(className);
-        };
-        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(
-                Map.of(className, transformer.apply(raw),
-                        aionMapClassName, transformer.apply(aionMapBytes))
-        );
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName);
         loader.addHandler(wrapperGenerator);
         
-        this.clazz = loader.loadClass(className);
+        this.clazz = loader.loadClass(BasicAppTestTarget.class.getName());
         // NOTE:  The user's side is pre-shadow so it uses "byte[]" whereas we look up "ByteArray", here.
         this.decodeMethod = this.clazz.getMethod("avm_decode", BlockchainRuntime.class, ByteArray.class);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
         
-        BlockchainRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        Helpers.instantiateHelper(loader, externalRuntime);
         // Create the wrapper for the runtime object, now that the external one has been used to create the Helper required to instantiate shadow objects.
         this.runtime = new ContractRuntimeWrapper(externalRuntime);
     }

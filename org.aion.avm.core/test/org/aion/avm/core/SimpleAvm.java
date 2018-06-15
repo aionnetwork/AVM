@@ -7,16 +7,19 @@ import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.rt.BlockchainRuntime;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class SimpleAvm {
 
-    private BlockchainRuntime rt;
-    private Map<String, byte[]> classes;
+    private final BlockchainRuntime rt;
+    private final Map<String, byte[]> classes;
 
-    private AvmClassLoader loader;
+    private final AvmClassLoader loader;
+    private final Set<String> transformedClassNames;
 
     public SimpleAvm(BlockchainRuntime rt, Class<?>... classes) {
         this.rt = rt;
@@ -25,16 +28,12 @@ public class SimpleAvm {
         Stream.of(classes).forEach(clazz -> this.classes.put(clazz.getName(),
                 Helpers.loadRequiredResourceAsBytes(clazz.getName().replaceAll("\\.", "/") + ".class")));
 
-        setup();
-    }
-
-    private void setup() {
         // build shared class loader
         AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
 
         // build class hierarchy
         HierarchyTreeBuilder builder = new HierarchyTreeBuilder();
-        classes.entrySet().stream().forEach(e -> {
+        this.classes.entrySet().stream().forEach(e -> {
             try {
                 // NOTE: we load the class to figure out the super class instead of by static analysis.
                 Class<?> clazz = SimpleAvm.class.getClassLoader().loadClass(e.getKey());
@@ -51,11 +50,13 @@ public class SimpleAvm {
 
         // compute object sizes
         Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
-        Map<String, Integer> allObjectSizes = avm.computeObjectSizes(classHierarchy, runtimeObjectSizes);
+        Map<String, Integer> allObjectSizes = AvmImpl.computeObjectSizes(classHierarchy, runtimeObjectSizes);
 
         // transform classes
-        Map<String, byte[]> transformedClasses = avm.transformClasses(classes, classHierarchy, allObjectSizes);
-        this.loader = new AvmClassLoader(sharedClassLoader, transformedClasses);
+        Map<String, byte[]> transformedClasses = avm.transformClasses(this.classes, classHierarchy, allObjectSizes);
+        Map<String, byte[]> finalContractClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
+        this.loader = new AvmClassLoader(sharedClassLoader, finalContractClasses);
+        this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());
 
         // set up helper
         Helpers.instantiateHelper(loader, rt);
@@ -72,5 +73,9 @@ public class SimpleAvm {
 
     public AvmClassLoader getClassLoader() {
         return loader;
+    }
+
+    public Set<String> getTransformedClassNames() {
+        return this.transformedClassNames;
     }
 }
