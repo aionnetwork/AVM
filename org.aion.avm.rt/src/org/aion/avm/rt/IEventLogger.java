@@ -6,6 +6,8 @@ package org.aion.avm.rt;
  * For the purposes of this test, we will just create an interface which maps to the original testWallet.sol event definitions.
  * This is also great for our tests since we can use the event interface to observe when certain actions are taken by the internals.
  * In our actual environment, we still need to determine what kind of event concept is required.
+ * 
+ * TODO:  Refactor this into a general solution as part of issue-103.
  */
 public interface IEventLogger {
     public void revoke();
