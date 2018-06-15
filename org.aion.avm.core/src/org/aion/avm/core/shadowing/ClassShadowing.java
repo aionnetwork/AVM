@@ -17,8 +17,9 @@ import java.util.stream.Stream;
  * 2) All method ref to whitelisted JDK class and user defined class will be transformed into it's `avm_` version.
  */
 public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
+    public static final String AVM_JAVA_LANG = "org/aion/avm/java/lang";
+
     private static final String JAVA_LANG_OBJECT = "java/lang/Object";
-    private static final String AVM_JAVA_LANG = "org/aion/avm/java/lang";
 
     private final String runtimeClassName;
     private final ClassWhiteList classWhiteList;
