@@ -37,6 +37,11 @@ public class String extends Object implements CharSequence {
         }
     }
 
+    //internal
+    public java.lang.String getUnderlying(){
+        return underlying;
+    }
+
     public char avm_charAt(int index) {
         return this.underlying.charAt(index);
     }
