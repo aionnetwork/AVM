@@ -12,10 +12,6 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * Contains some of the common constants and code-generation idioms used in various tests and/or across the system, in general.
  */
 public class CommonGenerators {
-    public static final String kShadowClassLibraryPrefix = PackageConstants.kTopLevelDotPrefix;
-    public static final String kWrapperClassLibraryPrefix = PackageConstants.kExceptionWrapperDotPrefix;
-    public static final String kSlashWrapperClassLibraryPrefix = kWrapperClassLibraryPrefix.replaceAll("\\.", "/");
-
     // There doesn't appear to be any way to enumerate these classes in the existing class loader (even though they are part of java.lang)
     // so we will list the names of all the classes we need and assemble them that way.
     // We should at least be able to use the original Throwable's classloader to look up the subclasses (again, since they are in java.lang).
@@ -103,8 +99,12 @@ public class CommonGenerators {
             
             // Generate the shadow.
             if (!kHandWrittenExceptionClassNames.contains(className)) {
-                String shadowName = kShadowClassLibraryPrefix + className;
-                String shadowSuperName = kShadowClassLibraryPrefix + superclassName;
+                // Note that we are currently listing the shadow "java.lang." directly, so strip off the redundant "java.lang."
+                // (this might change in the future).
+                String strippedClassName = className.substring("java.lang.".length());
+                String strippedSuperclassName = superclassName.substring("java.lang.".length());
+                String shadowName = PackageConstants.kShadowJavaLangDotPrefix + strippedClassName;
+                String shadowSuperName = PackageConstants.kShadowJavaLangDotPrefix + strippedSuperclassName;
                 byte[] shadowBytes = null;
                 if (kLegacyExceptionClassNames.contains(className)) {
                     // "Legacy" exception.
@@ -118,8 +118,8 @@ public class CommonGenerators {
             }
             
             // Generate the wrapper.
-            String wrapperName = kWrapperClassLibraryPrefix + className;
-            String wrapperSuperName = kWrapperClassLibraryPrefix + superclassName;
+            String wrapperName = PackageConstants.kExceptionWrapperDotPrefix + className;
+            String wrapperSuperName = PackageConstants.kExceptionWrapperDotPrefix + superclassName;
             byte[] wrapperBytes = generateWrapperClass(wrapperName, wrapperSuperName);
             generatedClasses.put(wrapperName, wrapperBytes);
         }

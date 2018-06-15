@@ -113,9 +113,18 @@ public class Helper implements IHelper {
         try {
             // In this case, we just want to look up the appropriate wrapper (using reflection) and instantiate a wrapper for this.
             String objectClass = arg.getClass().getName();
-            // We know that this MUST be one of our shadow objects.
-            RuntimeAssertionError.assertTrue(objectClass.startsWith(PackageConstants.kTopLevelDotPrefix));
-            String wrapperClassName = PackageConstants.kExceptionWrapperDotPrefix + objectClass.substring(PackageConstants.kTopLevelDotPrefix.length());
+            // Note that there are currently 2 cases related to the argument:
+            // 1) This is an object from our "java/lang" shadows.
+            // 2) This is an object defined by the user, and mapped into our "user" package.
+            // Determine which case it is to strip off that prefix and apply the common wrapper prefix to look up the class.
+            RuntimeAssertionError.assertTrue(objectClass.startsWith(PackageConstants.kShadowJavaLangDotPrefix)
+                    || objectClass.startsWith(PackageConstants.kUserDotPrefix));
+            
+            // Note that, since we currently declare the "java.lang." inside the constant for JDK shadows, we need to avoid curring that off.
+            int lengthToCut = objectClass.startsWith(PackageConstants.kShadowJavaLangDotPrefix)
+                    ? (PackageConstants.kShadowJavaLangDotPrefix.length() - "java.lang.".length())
+                    : PackageConstants.kUserDotPrefix.length();
+            String wrapperClassName = PackageConstants.kExceptionWrapperDotPrefix + objectClass.substring(lengthToCut);
             Class<?> wrapperClass = lateLoader.loadClass(wrapperClassName);
             result = (Throwable)wrapperClass.getConstructor(Object.class).newInstance(arg);
         } catch (Throwable err) {
@@ -195,7 +204,7 @@ public class Helper implements IHelper {
         
         // Then, use reflection to find the appropriate wrapper.
         String throwableName = t.getClass().getName();
-        Class<?> shadowClass = lateLoader.loadClass(PackageConstants.kTopLevelDotPrefix + throwableName);
+        Class<?> shadowClass = lateLoader.loadClass(PackageConstants.kShadowJavaLangDotPrefix + throwableName.substring("java/lang/".length()));
         return (org.aion.avm.java.lang.Throwable)shadowClass.getConstructor(org.aion.avm.java.lang.String.class, org.aion.avm.java.lang.Throwable.class).newInstance(message, cause);
     }
 }

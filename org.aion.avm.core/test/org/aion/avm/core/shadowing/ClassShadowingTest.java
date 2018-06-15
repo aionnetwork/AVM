@@ -8,6 +8,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
@@ -103,7 +104,7 @@ public class ClassShadowingTest {
 
         Method method = clazz.getMethod("avm_getStatic");
         Object ret = method.invoke(obj);
-        Assert.assertTrue(loadedClasses.contains("org.aion.avm.java.lang.Byte"));
+        Assert.assertTrue(loadedClasses.contains(PackageConstants.kShadowJavaLangDotPrefix + "Byte"));
 
         Method method2 = clazz.getMethod("avm_localVariable");
         Object ret2 = method2.invoke(obj);
