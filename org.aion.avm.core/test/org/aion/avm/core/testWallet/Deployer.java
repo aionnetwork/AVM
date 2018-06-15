@@ -3,6 +3,8 @@ package org.aion.avm.core.testWallet;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.rt.Address;
+import org.aion.avm.rt.IEventLogger;
+import org.aion.avm.rt.IFutureRuntime;
 
 
 /**

@@ -1,4 +1,4 @@
-package org.aion.avm.core.testWallet;
+package org.aion.avm.rt;
 
 
 /**
@@ -16,4 +16,13 @@ public interface IEventLogger {
     public void deposit();
     public void transactionUnderLimit();
     public void confirmationNeeded();
+
+    public default void avm_revoke() { revoke(); }
+    public default void avm_ownerChanged() { ownerChanged(); }
+    public default void avm_ownerAdded() { ownerAdded(); }
+    public default void avm_ownerRemoved() { ownerRemoved(); }
+    public default void avm_requirementChanged() { requirementChanged(); }
+    public default void avm_deposit() { deposit(); }
+    public default void avm_transactionUnderLimit() { transactionUnderLimit(); }
+    public default void avm_confirmationNeeded() { confirmationNeeded(); }
 }
