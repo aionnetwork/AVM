@@ -128,7 +128,7 @@ public class AvmImpl implements Avm {
      *
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    public Map<String, Integer> computeObjectSizes(Forest<String, byte[]> classHierarchy, Map<String, Integer> runtimeObjectSizes) {
+    public static Map<String, Integer> computeObjectSizes(Forest<String, byte[]> classHierarchy, Map<String, Integer> runtimeObjectSizes) {
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
 
         // copy over the runtime classes sizes
@@ -363,6 +363,10 @@ public class AvmImpl implements Avm {
         return null;
     }
 
+    public static Map<String, Integer> computeAllObjectsSizes(Forest<String, byte[]> dappClasses){
+        return computeObjectSizes(dappClasses, computeRuntimeObjectSizes());
+    }
+
     @Override
     public AvmResult deploy(byte[] jar, BlockchainRuntime rt) {
         try {
@@ -387,13 +391,9 @@ public class AvmImpl implements Avm {
             if (!validateDapp(app)) {
                 return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
             }
-
-            // compute object sizes
-            Map<String, Integer> runtimeObjectSizes = computeRuntimeObjectSizes();
-            Map<String, Integer> allObjectSizes = computeObjectSizes(app.getClassHierarchyForest(), runtimeObjectSizes);
-
+            ClassHierarchyForest dappClassesForest = app.getClassHierarchyForest();
             // transform
-            Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), app.getClassHierarchyForest(), allObjectSizes);
+            Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), dappClassesForest, computeAllObjectsSizes(dappClassesForest));
             app.setClasses(transformedClasses);
 
             // Parse the tx data, get the method name and arguments
