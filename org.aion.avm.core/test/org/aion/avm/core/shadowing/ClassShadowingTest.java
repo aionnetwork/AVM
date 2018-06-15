@@ -54,9 +54,9 @@ public class ClassShadowingTest {
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
 
-        Method method = clazz.getMethod("avm_multi", int.class, int.class);
-        Object ret = method.invoke(obj, 1, 2);
-        Assert.assertEquals(0, ret);
+        Method method = clazz.getMethod("avm_abs", int.class);
+        Object ret = method.invoke(obj, -10);
+        Assert.assertEquals(10, ret);
 
         // Verify that we haven't created any wrapped instances, yet.
         Assert.assertEquals(0, Testing.countWrappedClasses);

@@ -6,6 +6,10 @@ public class TestResource {
         return Math.multiplyExact(a + 1, b + 1);
     }
 
+    public int abs(int a) {
+        return Math.abs(a);
+    }
+
     public String[] newarray(int sz) {
         return new String[sz];
     }

@@ -73,6 +73,8 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                     new TypeInsnNode(Opcodes.CHECKCAST,
                                         elementType);
 
+                // Insert indicate reverse order, we want
+                // invokevirtual -> checkcast here
                 instructions.insert(insn, checkcastNode);
                 instructions.insert(insn, invokeVNode);
                 instructions.remove(insn);
@@ -97,6 +99,8 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                         new TypeInsnNode(Opcodes.CHECKCAST,
                                 elementType);
 
+                // Insert indicate reverse order, we want
+                // checkcast -> invokevirtual here
                 instructions.insert(insn, invokeVNode);
                 instructions.insert(insn, checkcastNode);
                 instructions.remove(insn);
