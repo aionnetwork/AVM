@@ -3,6 +3,7 @@ package org.aion.avm.core.shadowing;
 import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
+import org.aion.avm.internal.PackageConstants;
 
 import java.util.stream.Stream;
 
@@ -12,7 +13,7 @@ class Replacer {
     private static final String JAVA_LANG = "java/lang";
     private static final String JAVA_UTIL = "java/util";
     private static final String JAVA_LANG_OBJECT = "java/lang/Object";
-    private static final String AVM_INTERNAL_IOBJECT = "org/aion/avm/internal/IObject";
+    private static final String AVM_INTERNAL_IOBJECT = PackageConstants.kInternalSlashPrefix + "IObject";
     private static final String AVM_JAVA_LANG = "org/aion/avm/java/lang";
 
     private final String shadowPackage;

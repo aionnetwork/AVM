@@ -14,6 +14,7 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -34,7 +35,7 @@ import static org.junit.Assert.*;
  * @author Roman Katerinenko
  */
 public class InvokedynamicTransformationTest {
-    private static String HELPER_CLASS_NAME = "org/aion/avm/internal/Helper";
+    private static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
     private static AvmSharedClassLoader sharedClassLoader;
 
     @BeforeClass

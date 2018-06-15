@@ -16,7 +16,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     private static boolean DEBUG = false;
 
     static private String[] PRIMITIVES = {"I", "J", "Z", "B", "S", "D", "F", "C"};
-    static private String HELPER = "org/aion/avm/internal/Helper";
+    static private String HELPER = PackageConstants.kInternalSlashPrefix + "Helper";
     static private HashMap<String, String> CLASS_WRAPPER_MAP = new HashMap<>();
     static private HashMap<String, String> INTERFACE_WRAPPER_MAP = new HashMap<>();
 

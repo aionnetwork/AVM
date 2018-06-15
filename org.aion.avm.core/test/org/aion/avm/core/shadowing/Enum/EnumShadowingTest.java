@@ -10,6 +10,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
@@ -45,7 +46,7 @@ public class EnumShadowingTest {
         byte[] raw2 = Helpers.loadRequiredResourceAsBytes(testClassName.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new ClassShadowing("org/aion/avm/internal/Helper", ClassWhiteList.buildForEmptyContract()))
+                        .addNextVisitor(new ClassShadowing(PackageConstants.kInternalSlashPrefix + "Helper", ClassWhiteList.buildForEmptyContract()))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();

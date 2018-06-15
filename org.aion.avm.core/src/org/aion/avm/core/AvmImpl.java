@@ -23,6 +23,7 @@ import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.FatalAvmError;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 import org.objectweb.asm.ClassReader;
@@ -49,7 +50,7 @@ import static org.aion.avm.core.shadowing.ClassShadowing.AVM_JAVA_LANG;
 
 public class AvmImpl implements Avm {
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
-    private static final String HELPER_CLASS = "org/aion/avm/internal/Helper";
+    private static final String HELPER_CLASS = PackageConstants.kInternalSlashPrefix + "Helper";
     private static final File DAPPS_DIR = new File("../dapps");
 
     /**
