@@ -1,7 +1,7 @@
-package org.aion.avm.core.shadowing.Enum;
+package org.aion.avm.core.shadowing.testEnum;
 
 
-public class TestEnumResource {
+public class TestResource {
     TestEnum earth = TestEnum.EARTH;
     TestEnum jupiter = TestEnum.JUPITER;
     TestEnum mars = TestEnum.MARS;

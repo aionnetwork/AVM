@@ -1,4 +1,4 @@
-package org.aion.avm.core.shadowing.Enum;
+package org.aion.avm.core.shadowing.testEnum;
 
 
 import org.aion.avm.core.ClassToolchain;
@@ -42,7 +42,7 @@ public class EnumShadowingTest {
     public void testReplaceJavaLang() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         String enumClassName = TestEnum.class.getName();
         byte[] raw1 = Helpers.loadRequiredResourceAsBytes(enumClassName.replaceAll("\\.", "/") + ".class");
-        String testClassName = TestEnumResource.class.getName();
+        String testClassName = TestResource.class.getName();
         byte[] raw2 = Helpers.loadRequiredResourceAsBytes(testClassName.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
