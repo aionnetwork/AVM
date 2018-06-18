@@ -66,7 +66,7 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         sharedClassLoader,
-                        classHierarchy,
+                        new ParentPointers(classHierarchy),
                         new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();
@@ -99,7 +99,7 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         sharedClassLoader,
-                        classHierarchy,
+                        new ParentPointers(classHierarchy),
                         new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();
@@ -137,6 +137,7 @@ public class InvokedynamicTransformationTest {
             processedClasses.put(classDotName, bytecode);
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
         };
+        ParentPointers parentPointers = new ParentPointers(classHierarchy);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                 .addNextVisitor(new StringConstantVisitor())
@@ -144,14 +145,14 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
                 .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
                 .addNextVisitor(new StackWatcherClassAdapter())
-                .addNextVisitor(new ExceptionWrapping(HELPER_CLASS_NAME, classHierarchy, generatedClassConsumer))
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, classHierarchy, dynamicHierarchyBuilder))
+                .addNextVisitor(new ExceptionWrapping(HELPER_CLASS_NAME, parentPointers, generatedClassConsumer))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, parentPointers, dynamicHierarchyBuilder))
                 .build()
                 .runAndGetBytecode();
         bytecode = new ClassToolchain.Builder(bytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new ArrayWrappingClassAdapterRef())
                 .addNextVisitor(new ArrayWrappingClassAdapter())
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, classHierarchy, dynamicHierarchyBuilder))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, parentPointers, dynamicHierarchyBuilder))
                 .build()
                 .runAndGetBytecode();
         return bytecode;

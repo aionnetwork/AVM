@@ -72,7 +72,7 @@ public class TypeAwareClassWriterTest {
 
     private static class TestClass extends TypeAwareClassWriter {
         public TestClass(AvmSharedClassLoader sharedClassLoader, Forest<String, byte[]> staticClassHierarchy, HierarchyTreeBuilder dynamicHierarchyBuilder) {
-            super(0, sharedClassLoader, staticClassHierarchy, dynamicHierarchyBuilder);
+            super(0, sharedClassLoader, new ParentPointers(staticClassHierarchy), dynamicHierarchyBuilder);
         }
         public String testing_getCommonSuperClass(String type1, String type2) {
             return this.getCommonSuperClass(type1, type2);

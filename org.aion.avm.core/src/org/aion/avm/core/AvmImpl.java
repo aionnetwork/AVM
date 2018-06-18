@@ -145,11 +145,11 @@ public class AvmImpl implements Avm {
      * Replaces the <code>java.base</code> package with the shadow implementation.
      *
      * @param classes        the class of DApp (names specified in .-style)
-     * @param classHierarchy the class hierarchy
+     * @param preRenameClassHierarchy The pre-rename hierarchy of user-defined classes in the DApp.
      * @param objectSizes    the sizes of object
      * @return the transformed classes and any generated classes (names specified in .-style)
      */
-    public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> classHierarchy, Map<String, Integer> objectSizes) {
+    public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> preRenameClassHierarchy, Map<String, Integer> objectSizes) {
 
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
@@ -163,7 +163,8 @@ public class AvmImpl implements Avm {
             processedClasses.put(classDotName, bytecode);
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
         };
-        ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
+        ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(preRenameClassHierarchy);
+        ParentPointers parentClassResolver = new ParentPointers(preRenameClassHierarchy);
         for (String name : classes.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
             Assert.assertTrue(-1 == name.indexOf("/"));
@@ -175,14 +176,14 @@ public class AvmImpl implements Avm {
                     .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS, PackageConstants.kShadowJavaLangSlashPrefix, classWhiteList))
                     .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))
                     .addNextVisitor(new StackWatcherClassAdapter())
-                    .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, classHierarchy, generatedClassesSink))
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, classHierarchy, dynamicHierarchyBuilder))
+                    .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, parentClassResolver, generatedClassesSink))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
             bytecode = new ClassToolchain.Builder(bytecode, ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new ArrayWrappingClassAdapterRef())
                     .addNextVisitor(new ArrayWrappingClassAdapter())
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, classHierarchy, dynamicHierarchyBuilder))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
             processedClasses.put(name, bytecode);

@@ -1,7 +1,7 @@
 package org.aion.avm.core.exceptionwrapping;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.Forest;
+import org.aion.avm.core.ParentPointers;
 import org.aion.avm.core.classgeneration.StubGenerator;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
@@ -18,10 +18,10 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
     private final ParentPointers pointers;
     private final GeneratedClassConsumer generatedClassesSink;
 
-    public ExceptionWrapping(String runtimeClassName, Forest<String, byte[]> classHierarchy, GeneratedClassConsumer generatedClassesSink) {
+    public ExceptionWrapping(String runtimeClassName, ParentPointers parentClassResolver, GeneratedClassConsumer generatedClassesSink) {
         super(Opcodes.ASM6);
         this.runtimeClassName = runtimeClassName;
-        this.pointers = new ParentPointers(classHierarchy);
+        this.pointers = parentClassResolver;
         this.generatedClassesSink = generatedClassesSink;
     }
 
@@ -64,27 +64,6 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         }
     }
 
-
-    /**
-     * Just a utility to simplify interactions with ClassHierarchyForest.
-     * NOTE:  The class names here are the ".-style"
-     */
-    private static class ParentPointers {
-        private final Forest<String, byte[]> classHierarchy;
-        public ParentPointers(Forest<String, byte[]> classHierarchy) {
-            this.classHierarchy = classHierarchy;
-        }
-        public String getSuperClassName(String className) {
-            // NOTE:  These are ".-style" names.
-            Assert.assertTrue(-1 == className.indexOf("/"));
-            String superClassName = null;
-            Forest.Node<String, byte[]> node = classHierarchy.getNodeById(className);
-            if (null != node) {
-                superClassName = node.getParent().getId();
-            }
-            return superClassName;
-        }
-    }
 
     public MethodVisitor visitMethod(
             final int access,

@@ -4,6 +4,7 @@ import java.util.Stack;
 
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.core.util.Helpers;
 import org.objectweb.asm.ClassWriter;
 
 
@@ -13,14 +14,14 @@ import org.objectweb.asm.ClassWriter;
  */
 public class TypeAwareClassWriter extends ClassWriter {
     private final AvmSharedClassLoader sharedClassLoader;
-    private final Forest<String, byte[]> staticClassHierarchy;
+    private final ParentPointers staticClassHierarchy;
     // WARNING:  This dynamicHierarchyBuilder is changing, externally, while we hold a reference to it.
     private final HierarchyTreeBuilder dynamicHierarchyBuilder;
 
-    public TypeAwareClassWriter(int flags, AvmSharedClassLoader sharedClassLoader, Forest<String, byte[]> staticClassHierarchy, HierarchyTreeBuilder dynamicHierarchyBuilder) {
+    public TypeAwareClassWriter(int flags, AvmSharedClassLoader sharedClassLoader, ParentPointers parentClassResolver, HierarchyTreeBuilder dynamicHierarchyBuilder) {
         super(flags);
         this.sharedClassLoader = sharedClassLoader;
-        this.staticClassHierarchy = staticClassHierarchy;
+        this.staticClassHierarchy = parentClassResolver;
         this.dynamicHierarchyBuilder = dynamicHierarchyBuilder;
     }
 
@@ -53,12 +54,16 @@ public class TypeAwareClassWriter extends ClassWriter {
         while (!"java/lang/Object".equals(nextType)) {
             stack.push(nextType);
             
-            String superName = getSuper(this.staticClassHierarchy, nextType);
+            String nextDotType = Helpers.internalNameToFulllyQualifiedName(nextType);
+            String superName = this.staticClassHierarchy.getSuperClassName(nextDotType);
             if (null == superName) {
                 superName = getSuper(this.dynamicHierarchyBuilder.asMutableForest(), nextType);
             }
             if (null == superName) {
-                superName = getSuperAsJdkType(nextType);
+                String superSlashName = getSuperAsJdkType(nextDotType);
+                if (null != superSlashName) {
+                    superName = Helpers.fulllyQualifiedNameToInternalName(superSlashName);
+                }
             }
             
             // If we didn't find it by now, there is something very wrong.
@@ -81,11 +86,17 @@ public class TypeAwareClassWriter extends ClassWriter {
         return superName;
     }
 
+    /**
+     * NOTE:  This takes and returns .-style names.
+     */
     private String getSuperAsJdkType(String name) {
+        // NOTE:  These are ".-style" names.
+        Assert.assertTrue(-1 == name.indexOf("/"));
+        
         String superName = null;
         try {
-            Class<?> clazz = Class.forName(name.replaceAll("/", "."), true, this.sharedClassLoader);
-            superName = clazz.getSuperclass().getName().replaceAll("\\.", "/");
+            Class<?> clazz = Class.forName(name, true, this.sharedClassLoader);
+            superName = clazz.getSuperclass().getName();
         } catch (ClassNotFoundException e) {
             // We can return null, in this case.
         }

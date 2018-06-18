@@ -4,6 +4,7 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.Forest;
 import org.aion.avm.core.HierarchyTreeBuilder;
+import org.aion.avm.core.ParentPointers;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.TypeAwareClassWriter;
@@ -212,12 +213,13 @@ public class ExceptionWrappingTest {
                 LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes);
                 dynamicHierarchyBuilder.addClass(slashName, slashSuperName, bytes);
             };
+            ParentPointers parentPointers = new ParentPointers(this.classHierarchy);
             ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(this.classHierarchy);
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                    .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, this.classHierarchy, generatedClassesSink))
+                    .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, parentPointers, generatedClassesSink))
                     .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME, classWhiteList))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                            sharedClassLoader, this.classHierarchy, dynamicHierarchyBuilder))
+                            sharedClassLoader, parentPointers, dynamicHierarchyBuilder))
                     .build();
             this.transformedClasses.put(name, toolchain.runAndGetBytecode());
         }
