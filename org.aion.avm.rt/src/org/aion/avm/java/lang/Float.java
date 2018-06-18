@@ -1,6 +1,6 @@
 package org.aion.avm.java.lang;
 
-public class Float extends Number{
+public class Float extends Number implements Comparable<Float>{
 
     public static final float avm_POSITIVE_INFINITY = java.lang.Float.POSITIVE_INFINITY;
 

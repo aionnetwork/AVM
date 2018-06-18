@@ -1,6 +1,6 @@
 package org.aion.avm.java.lang;
 
-public class Double extends Number {
+public class Double extends Number implements Comparable<Double>{
     private double value;
 
     public Double(double d){

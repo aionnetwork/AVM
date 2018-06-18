@@ -1,6 +1,6 @@
 package org.aion.avm.java.lang;
 
-public class Long extends Number{
+public class Long extends Number implements Comparable<Long>{
 
     public static final long avm_MIN_VALUE = 0x8000000000000000L;
 
