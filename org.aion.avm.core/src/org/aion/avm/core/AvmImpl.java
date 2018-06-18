@@ -164,7 +164,8 @@ public class AvmImpl implements Avm {
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
         };
         ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(preRenameClassHierarchy);
-        ParentPointers parentClassResolver = new ParentPointers(preRenameClassHierarchy);
+        Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
+        ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy);
         for (String name : classes.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
             Assert.assertTrue(-1 == name.indexOf("/"));

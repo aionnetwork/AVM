@@ -1,5 +1,9 @@
 package org.aion.avm.core;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.aion.avm.core.util.Assert;
 
 
@@ -10,22 +14,26 @@ import org.aion.avm.core.util.Assert;
  * TODO:  This will be where we impose user-class renaming for issue-96.
  */
 public class ParentPointers {
-    private final Forest<String, byte[]> classHierarchy;
-    public ParentPointers(Forest<String, byte[]> classHierarchy) {
-        this.classHierarchy = classHierarchy;
+    private final Map<String, String> postRenameParentMap;
+
+    public ParentPointers(Set<String> userDefinedClassNames, Forest<String, byte[]> classHierarchy) {
+        // Get every user-defined class, find its parent, and add the pair to the map, while renaming them.
+        Map<String, String> mapping = new HashMap<>();
+        for (String className : userDefinedClassNames) {
+            // NOTE:  These are ".-style" names.
+            Assert.assertTrue(-1 == className.indexOf("/"));
+            
+            Forest.Node<String, byte[]> node = classHierarchy.getNodeById(className);
+            String superClassName = node.getParent().getId();
+            
+            mapping.put(className, superClassName);
+        }
+        this.postRenameParentMap = mapping;
     }
 
     public String getSuperClassName(String className) {
         // NOTE:  These are ".-style" names.
         Assert.assertTrue(-1 == className.indexOf("/"));
-        String superClassName = null;
-        Forest.Node<String, byte[]> node = classHierarchy.getNodeById(className);
-        if (null != node) {
-            Forest.Node<String, byte[]> parentNode = node.getParent();
-            if (null != parentNode) {
-                superClassName = parentNode.getId();
-            }
-        }
-        return superClassName;
+        return this.postRenameParentMap.get(className);
     }
 }

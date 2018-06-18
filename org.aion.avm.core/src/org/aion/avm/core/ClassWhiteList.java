@@ -67,13 +67,23 @@ public class ClassWhiteList {
      */
     public static ClassWhiteList buildFromClassHierarchy(Forest<String, byte[]> classHierarchy) {
         Set<String> providedClassNames = new HashSet<>();
+        // We will use the common helper for this but we need to convert the names to /-style.
+        for (String classDotName : extractDeclaredClasses(classHierarchy)) {
+            String classSlashName = Helpers.fulllyQualifiedNameToInternalName(classDotName);
+            providedClassNames.add(classSlashName);
+        }
+        return new ClassWhiteList(Collections.unmodifiableSet(providedClassNames));
+    }
+
+    public static Set<String> extractDeclaredClasses(Forest<String, byte[]> classHierarchy) {
+        Set<String> providedClassNames = new HashSet<>();
         // We will build this set by walking the roots (note that roots, by definition, are not provided by the application, but the JDK)
         // and recursively collecting all reachable children.
         for (Forest.Node<String, byte[]> root : classHierarchy.getRoots()) {
             // Note that we don't add the roots, just walk their children.
             deepAddChildrenToSet(providedClassNames, root);
         }
-        return new ClassWhiteList(Collections.unmodifiableSet(providedClassNames));
+        return providedClassNames;
     }
 
     /**
@@ -92,9 +102,7 @@ public class ClassWhiteList {
 
     private static void deepAddChildrenToSet(Set<String> providedClassNames, Forest.Node<String, byte[]> node) {
         for (Forest.Node<String, byte[]> child : node.getChildren()) {
-            // We want to use the slash-style but the forest sees dot-style.
-            String slashChildName = Helpers.fulllyQualifiedNameToInternalName(child.getId());
-            providedClassNames.add(slashChildName);
+            providedClassNames.add(child.getId());
             deepAddChildrenToSet(providedClassNames, child);
         }
     }

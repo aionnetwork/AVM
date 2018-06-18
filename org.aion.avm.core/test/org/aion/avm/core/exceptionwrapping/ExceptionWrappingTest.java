@@ -212,7 +212,7 @@ public class ExceptionWrappingTest {
                 LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes);
                 dynamicHierarchyBuilder.addClass(slashName, slashSuperName, bytes);
             };
-            ParentPointers parentPointers = new ParentPointers(this.classHierarchy);
+            ParentPointers parentPointers = new ParentPointers(ClassWhiteList.extractDeclaredClasses(this.classHierarchy), this.classHierarchy);
             ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(this.classHierarchy);
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                     .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, parentPointers, generatedClassesSink))

@@ -1,5 +1,7 @@
 package org.aion.avm.core;
 
+import java.util.Collections;
+
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.internal.PackageConstants;
@@ -72,7 +74,7 @@ public class TypeAwareClassWriterTest {
 
     private static class TestClass extends TypeAwareClassWriter {
         public TestClass(AvmSharedClassLoader sharedClassLoader, HierarchyTreeBuilder dynamicHierarchyBuilder) {
-            super(0, sharedClassLoader, new ParentPointers(new Forest<String, byte[]>()), dynamicHierarchyBuilder);
+            super(0, sharedClassLoader, new ParentPointers(Collections.emptySet(), new Forest<String, byte[]>()), dynamicHierarchyBuilder);
         }
         public String testing_getCommonSuperClass(String type1, String type2) {
             return this.getCommonSuperClass(type1, type2);

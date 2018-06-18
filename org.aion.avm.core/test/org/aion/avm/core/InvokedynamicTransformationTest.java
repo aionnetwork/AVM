@@ -25,6 +25,7 @@ import org.objectweb.asm.ClassWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,7 +67,7 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         sharedClassLoader,
-                        new ParentPointers(classHierarchy),
+                        new ParentPointers(Collections.singleton(className), classHierarchy),
                         new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();
@@ -99,7 +100,7 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         sharedClassLoader,
-                        new ParentPointers(classHierarchy),
+                        new ParentPointers(Collections.singleton(className), classHierarchy),
                         new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();
@@ -137,7 +138,7 @@ public class InvokedynamicTransformationTest {
             processedClasses.put(classDotName, bytecode);
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
         };
-        ParentPointers parentPointers = new ParentPointers(classHierarchy);
+        ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                 .addNextVisitor(new StringConstantVisitor())
