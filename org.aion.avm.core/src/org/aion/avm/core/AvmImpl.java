@@ -10,6 +10,7 @@ import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.miscvisitors.StringConstantVisitor;
+import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
@@ -145,11 +146,11 @@ public class AvmImpl implements Avm {
      * Replaces the <code>java.base</code> package with the shadow implementation.
      *
      * @param classes        the class of DApp (names specified in .-style)
-     * @param preRenameClassHierarchy The pre-rename hierarchy of user-defined classes in the DApp.
-     * @param objectSizes    the sizes of object
+     * @param preRenameClassHierarchy The pre-rename hierarchy of user-defined classes in the DApp (/-style).
+     * @param preRenameObjectSizes The sizes of object by their pre-rename names (/-style).
      * @return the transformed classes and any generated classes (names specified in .-style)
      */
-    public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> preRenameClassHierarchy, Map<String, Integer> objectSizes) {
+    public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> preRenameClassHierarchy, Map<String, Integer> preRenameObjectSizes) {
 
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
@@ -163,17 +164,27 @@ public class AvmImpl implements Avm {
             processedClasses.put(classDotName, bytecode);
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
         };
-        ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(preRenameClassHierarchy);
+        ClassWhiteList classWhiteList = new ClassWhiteList();
         Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
         ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy);
+        
+        // The size map contains both the user-defined and the common types so we will start with the original and change it.
+        Map<String, Integer> postRenameObjectSizes = new HashMap<>(preRenameObjectSizes);
+        for (String prename : preRenameUserDefinedClasses) {
+            String slashPre = Helpers.fulllyQualifiedNameToInternalName(prename);
+            postRenameObjectSizes.remove(slashPre);
+            postRenameObjectSizes.put(PackageConstants.kUserSlashPrefix + slashPre, preRenameObjectSizes.get(slashPre));
+        }
+        
         for (String name : classes.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
             Assert.assertTrue(-1 == name.indexOf("/"));
 
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
+                    .addNextVisitor(new UserClassMappingVisitor(preRenameUserDefinedClasses))
                     .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                     .addNextVisitor(new StringConstantVisitor())
-                    .addNextVisitor(new ClassMetering(HELPER_CLASS, objectSizes))
+                    .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
                     .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS, PackageConstants.kShadowJavaLangSlashPrefix, classWhiteList))
                     .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))
                     .addNextVisitor(new StackWatcherClassAdapter())
@@ -187,7 +198,8 @@ public class AvmImpl implements Avm {
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
-            processedClasses.put(name, bytecode);
+            String mappedName = PackageConstants.kUserDotPrefix + name;
+            processedClasses.put(mappedName, bytecode);
         }
         return processedClasses;
     }
@@ -324,7 +336,8 @@ public class AvmImpl implements Avm {
             if (rt.avm_getData() != null) {
                 TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
 
-                Class<?> clazz = classLoader.loadClass(app.mainClass);
+                String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
+                Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
                 Object obj = clazz.getConstructor().newInstance();
 
                 // select the method and invoke
@@ -395,7 +408,8 @@ public class AvmImpl implements Avm {
             }
             TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
 
-            Class<?> clazz = classLoader.loadClass(app.mainClass);
+            String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
+            Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
             // At a contract call, only choose the one without arguments.
             Object obj = clazz.getConstructor().newInstance();
 

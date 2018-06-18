@@ -6,6 +6,7 @@ import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
@@ -42,7 +43,7 @@ public class ClassShadowingTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, ClassWhiteList.buildForEmptyContract()))
+                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, new ClassWhiteList()))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
@@ -80,7 +81,7 @@ public class ClassShadowingTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, 0) /* DO NOT SKIP ANYTHING */
-                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, ClassWhiteList.buildForEmptyContract()))
+                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, new ClassWhiteList()))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
@@ -114,20 +115,20 @@ public class ClassShadowingTest {
     @Test
     public void testInterfaceHandling() throws Exception {
         String className = TestResourceInterface.class.getName();
-        String classNameInner = className + "$1";
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         String innerClassName = className + "$1";
         byte[] innerRaw = Helpers.loadRequiredResourceAsBytes(innerClassName.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, ClassWhiteList.build(className, classNameInner)))
+                        .addNextVisitor(new UserClassMappingVisitor(Set.of(className, innerClassName)))
+                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, new ClassWhiteList()))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         byte[] transformed = transformer.apply(raw);
-        classes.put(className, transformed);
-        classes.put(innerClassName, transformer.apply(innerRaw));
+        classes.put(PackageConstants.kUserDotPrefix + className, transformed);
+        classes.put(PackageConstants.kUserDotPrefix + innerClassName, transformer.apply(innerRaw));
 
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 

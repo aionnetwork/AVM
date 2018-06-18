@@ -5,13 +5,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.PackageConstants;
 
 
 /**
  * Just a utility to simplify interactions with ClassHierarchyForest since most consumers only need to resolve parent names, not know the rest
  * of the data.
  * NOTE:  The class names here are the ".-style"
- * TODO:  This will be where we impose user-class renaming for issue-96.
  */
 public class ParentPointers {
     private final Map<String, String> postRenameParentMap;
@@ -26,7 +26,11 @@ public class ParentPointers {
             Forest.Node<String, byte[]> node = classHierarchy.getNodeById(className);
             String superClassName = node.getParent().getId();
             
-            mapping.put(className, superClassName);
+            String newName = PackageConstants.kUserDotPrefix + className;
+            String newSuperName = userDefinedClassNames.contains(superClassName)
+                    ? (PackageConstants.kUserDotPrefix + superClassName)
+                    : superClassName;
+            mapping.put(newName, newSuperName);
         }
         this.postRenameParentMap = mapping;
     }

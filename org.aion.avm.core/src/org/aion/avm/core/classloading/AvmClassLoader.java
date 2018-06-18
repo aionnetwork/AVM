@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.PackageConstants;
 
 
 /**
@@ -97,8 +98,7 @@ public class AvmClassLoader extends ClassLoader {
      * @throws ClassNotFoundException Underlying load failed.
      */
     public Class<?> loadUserClassByOriginalName(String originalClassName) throws ClassNotFoundException {
-        // TODO: Add the name mapping here later in issue-96 development.
-        String renamedClass = originalClassName;
+        String renamedClass = PackageConstants.kUserDotPrefix + originalClassName;
         Class<?> clazz = this.loadClass(renamedClass);
         Assert.assertTrue(this == clazz.getClassLoader());
         return clazz;

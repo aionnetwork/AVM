@@ -42,7 +42,7 @@ public class MathShadowingTest {
         byte[] testR = Helpers.loadRequiredResourceAsBytes(testClassName.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new ClassShadowing("org/aion/avm/internal/Helper", ClassWhiteList.buildForEmptyContract()))
+                        .addNextVisitor(new ClassShadowing("org/aion/avm/internal/Helper", new ClassWhiteList()))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();

@@ -8,6 +8,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.miscvisitors.StringConstantVisitor;
+import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
@@ -61,8 +62,9 @@ public class InvokedynamicTransformationTest {
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
         final var shadowPackage = PackageConstants.kShadowJavaLangSlashPrefix;
-        final var classWhiteList = ClassWhiteList.build(className);
+        final var classWhiteList = new ClassWhiteList();
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
+                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, classWhiteList))
                 .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
@@ -94,8 +96,9 @@ public class InvokedynamicTransformationTest {
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testdoubles/indy/";
-        final var classWhiteList = ClassWhiteList.build(className);
+        final var classWhiteList = new ClassWhiteList();
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
+                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
                 .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
@@ -128,7 +131,7 @@ public class InvokedynamicTransformationTest {
                 .asMutableForest();
         final var shadowPackage = PackageConstants.kShadowJavaLangSlashPrefix;
         Helper.setEnergy(1000);
-        final var classWhiteList = ClassWhiteList.build(className);
+        final var classWhiteList = new ClassWhiteList();
         final Map<String, byte[]> processedClasses = new HashMap<>();
         // WARNING:  This dynamicHierarchyBuilder is both mutable and shared by TypeAwareClassWriter instances.
         final HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
@@ -140,6 +143,7 @@ public class InvokedynamicTransformationTest {
         };
         ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
+                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
                 .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                 .addNextVisitor(new StringConstantVisitor())
                 .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, AvmImpl.computeAllObjectsSizes(classHierarchy)))
@@ -164,8 +168,9 @@ public class InvokedynamicTransformationTest {
     }
 
     private Object callTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
-        final var loader = new AvmSharedClassLoader(Map.of(className, bytecode));
-        final Class<?> klass = loader.loadClass(className);
+        String mappedClassName = PackageConstants.kUserDotPrefix + className;
+        final AvmSharedClassLoader loader = new AvmSharedClassLoader(Map.of(mappedClassName, bytecode));
+        final Class<?> klass = loader.loadClass(mappedClassName);
         final Constructor<?> constructor = klass.getDeclaredConstructor();
         final Object instance = constructor.newInstance();
         final Method method = klass.getDeclaredMethod(methodName);

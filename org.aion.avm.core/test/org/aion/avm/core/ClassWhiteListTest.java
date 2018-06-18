@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -8,7 +9,7 @@ import org.junit.Test;
 public class ClassWhiteListTest {
     @Test
     public void testJdkType() {
-        ClassWhiteList list = ClassWhiteList.buildForEmptyContract();
+        ClassWhiteList list = new ClassWhiteList();
         String className = "java/lang/Object";
         Assert.assertTrue(list.isJdkClass(className));
         Assert.assertTrue(list.isInWhiteList(className));
@@ -17,7 +18,7 @@ public class ClassWhiteListTest {
     @Test
     public void testJdkSubType() {
         // NOTE:  Classes in sub-packages should probably be rejected (the white-list needs to be made more complex).
-        ClassWhiteList list = ClassWhiteList.buildForEmptyContract();
+        ClassWhiteList list = new ClassWhiteList();
         String className = "java/lang/ref/SoftReference";
         Assert.assertTrue(list.isJdkClass(className));
         Assert.assertTrue(list.isInWhiteList(className));
@@ -25,7 +26,7 @@ public class ClassWhiteListTest {
 
     @Test
     public void testUtilType() {
-        ClassWhiteList list = ClassWhiteList.buildForEmptyContract();
+        ClassWhiteList list = new ClassWhiteList();
         String className = "java/util/HashSet";
         Assert.assertFalse(list.isJdkClass(className));
         Assert.assertFalse(list.isInWhiteList(className));
@@ -33,12 +34,9 @@ public class ClassWhiteListTest {
 
     @Test
     public void testContractType() {
-        String exceptionClassDotName = "my.contract.exception";
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(exceptionClassDotName, "java.lang.Throwable", null)
-                .asMutableForest();
+        String exceptionClassDotName = PackageConstants.kUserDotPrefix + "my.contract.exception";
         String className = Helpers.fulllyQualifiedNameToInternalName(exceptionClassDotName);
-        ClassWhiteList list = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
+        ClassWhiteList list = new ClassWhiteList();
         Assert.assertFalse(list.isJdkClass(className));
         Assert.assertTrue(list.isInWhiteList(className));
     }

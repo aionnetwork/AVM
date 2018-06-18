@@ -1,13 +1,9 @@
 package org.aion.avm.core;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.PackageConstants;
 
 
 /**
@@ -26,12 +22,6 @@ public class ClassWhiteList {
     private static final String AION_RT = "org/aion/avm/rt/";
     private static final String AION_SHADOWING = "org/aion/avm/core/shadowing/";
 
-    private final Set<String> contractClassNames;
-    
-    private ClassWhiteList(Set<String> contractClassNames) {
-        this.contractClassNames = contractClassNames;
-    }
-
     /**
      * Checks if the class given is in any of our white-lists.
      * 
@@ -39,7 +29,7 @@ public class ClassWhiteList {
      * @return True if we are allowed to access this class by any means we know.
      */
     public boolean isInWhiteList(String slashClassName) {
-        return (this.contractClassNames.contains(slashClassName)
+        return (slashClassName.startsWith(PackageConstants.kUserSlashPrefix)
                 || slashClassName.startsWith(JAVA_LANG)
                 || slashClassName.startsWith(JAVA_UTIL_FUNCTION)
                 || slashClassName.startsWith(AION_RT)
@@ -58,23 +48,6 @@ public class ClassWhiteList {
     }
 
 
-    /**
-     * Factory method to build a white-list from a populated hierarchy of classes in the user contract.
-     * This is the most typical usage.
-     * 
-     * @param classHierarchy The hierarchy of classes within the user contract.
-     * @return A white-list instance which knows about these types and our built-in JDK and runtime types.
-     */
-    public static ClassWhiteList buildFromClassHierarchy(Forest<String, byte[]> classHierarchy) {
-        Set<String> providedClassNames = new HashSet<>();
-        // We will use the common helper for this but we need to convert the names to /-style.
-        for (String classDotName : extractDeclaredClasses(classHierarchy)) {
-            String classSlashName = Helpers.fulllyQualifiedNameToInternalName(classDotName);
-            providedClassNames.add(classSlashName);
-        }
-        return new ClassWhiteList(Collections.unmodifiableSet(providedClassNames));
-    }
-
     public static Set<String> extractDeclaredClasses(Forest<String, byte[]> classHierarchy) {
         Set<String> providedClassNames = new HashSet<>();
         // We will build this set by walking the roots (note that roots, by definition, are not provided by the application, but the JDK)
@@ -84,20 +57,6 @@ public class ClassWhiteList {
             deepAddChildrenToSet(providedClassNames, root);
         }
         return providedClassNames;
-    }
-
-    /**
-     * Factory method to build a white-list which only includes our built-in JDK and runtime types.
-     * This usage is only appropriate for testing, really.
-     * 
-     * @return A white-list instance which only knows about our built-in JDK and runtime types.
-     */
-    public static ClassWhiteList buildForEmptyContract() {
-        return new ClassWhiteList(Collections.emptySet());
-    }
-
-    public static ClassWhiteList build(String ...classes) {
-        return new ClassWhiteList(Stream.of(classes).map(clazz -> clazz.replaceAll("\\.", "/")).collect(Collectors.toSet()));
     }
 
     private static void deepAddChildrenToSet(Set<String> providedClassNames, Forest.Node<String, byte[]> node) {

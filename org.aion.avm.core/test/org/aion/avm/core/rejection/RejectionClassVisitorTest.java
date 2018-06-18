@@ -3,13 +3,17 @@ package org.aion.avm.core.rejection;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.Forest;
 import org.aion.avm.core.HierarchyTreeBuilder;
+import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -28,14 +32,10 @@ public class RejectionClassVisitorTest {
         String className = FilteringResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", raw)
-                .addClass(className + "$A", "java.lang.Throwable", null)
-                .addClass(className + "$B", className + "$A", null)
-                .asMutableForest();
-        ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
+        ClassWhiteList classWhiteList = new ClassWhiteList();
         // We want to prove we can strip out everything so don't use any special parsing options for this visitor.
         byte[] filteredBytes = new ClassToolchain.Builder(raw, 0)
+                .addNextVisitor(new UserClassMappingVisitor(Set.of(className, className+"$A", className+"$B")))
                 .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
@@ -161,8 +161,12 @@ public class RejectionClassVisitorTest {
         Assert.assertEquals(inputInnerClasses.size(), outputInnerClasses.size());
         
         for (int i = 0; i < inputInnerClasses.size(); ++i) {
-            // Names are unchanged.
-            Assert.assertEquals(inputInnerClasses.get(i).name, outputInnerClasses.get(i).name);
+            // Names received user renaming - but only the classes which are strictly user-defined (not MethodHandles).
+            String inputName = inputInnerClasses.get(i).name;
+            String expectedName = inputInnerClasses.get(i).name.startsWith(inputNode.name)
+                    ? (PackageConstants.kUserSlashPrefix + inputName)
+                    : inputName;
+            Assert.assertEquals(expectedName, outputInnerClasses.get(i).name);
         }
         
         // Interfaces are unchanged.
@@ -195,7 +199,7 @@ public class RejectionClassVisitorTest {
         Assert.assertNull(outputNode.visibleAnnotations);
         Assert.assertNull(outputNode.visibleTypeAnnotations);
         
-        Assert.assertEquals(inputNode.name, outputNode.name);
+        Assert.assertEquals(PackageConstants.kUserSlashPrefix + inputNode.name, outputNode.name);
         Assert.assertEquals(inputNode.outerClass, outputNode.outerClass);
         Assert.assertEquals(inputNode.outerMethod, outputNode.outerMethod);
         Assert.assertEquals(inputNode.outerMethodDesc, outputNode.outerMethodDesc);
@@ -258,7 +262,8 @@ public class RejectionClassVisitorTest {
         Assert.assertEquals(inputExceptions.size(), outputExceptions.size());
         
         for (int i = 0; i < inputExceptions.size(); ++i) {
-            Assert.assertEquals(inputExceptions.get(i), outputExceptions.get(i));
+            // Names received user renaming.
+            Assert.assertEquals(PackageConstants.kUserSlashPrefix + inputExceptions.get(i), outputExceptions.get(i));
         }
         
         // Neither use any invisible annotations.
@@ -299,10 +304,7 @@ public class RejectionClassVisitorTest {
     }
 
     private byte[] commonFilterBytes(byte[] testBytes) throws IOException {
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass("TestClassTemplate", "java.lang.Object", testBytes)
-                .asMutableForest();
-        ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(classHierarchy);
+        ClassWhiteList classWhiteList = new ClassWhiteList();
         byte[] filteredBytes = new ClassToolchain.Builder(testBytes, 0)
                 .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))

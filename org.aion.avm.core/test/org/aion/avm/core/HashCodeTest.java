@@ -175,7 +175,7 @@ public class HashCodeTest {
         // Load the testing class.
         String className = HashCodeTestTarget.class.getName();
         byte[] transformed = getTransformedTestClass(className);
-        Map<String, byte[]> classes = Collections.singletonMap(className, transformed);
+        Map<String, byte[]> classes = Collections.singletonMap(PackageConstants.kUserDotPrefix + className, transformed);
         
         // Create 2 instances of the contract-specific loaders, each with the same class, and prove that we get 2 instances.
         AvmClassLoader loader1 = new AvmClassLoader(sharedClassLoader, classes);
@@ -206,7 +206,7 @@ public class HashCodeTest {
         // Load the testing class and the Helper.
         String targetClassName = HashCodeTestTarget.class.getName();
         byte[] transformedTarget = getTransformedTestClass(targetClassName);
-        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(targetClassName, transformedTarget));
+        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(PackageConstants.kUserDotPrefix + targetClassName, transformedTarget));
         
         // We need a common runtime.
         SimpleRuntime commonRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
@@ -262,7 +262,9 @@ public class HashCodeTest {
                 .asMutableForest();
         Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
         Map<String, Integer> allObjectSizes = AvmImpl.computeObjectSizes(classHierarchy, runtimeObjectSizes);
-        byte[] transformed = avm.transformClasses(Collections.singletonMap(className, raw), classHierarchy, allObjectSizes).get(className);
-        return transformed;
+        Map<String, byte[]> transformedClasses = avm.transformClasses(Collections.singletonMap(className, raw), classHierarchy, allObjectSizes);
+        
+        // Note that the class is renamed during this transformation.
+        return transformedClasses.get(PackageConstants.kUserDotPrefix + className);
     }
 }

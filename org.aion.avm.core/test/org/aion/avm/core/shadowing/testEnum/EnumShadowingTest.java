@@ -46,7 +46,7 @@ public class EnumShadowingTest {
         byte[] raw2 = Helpers.loadRequiredResourceAsBytes(testClassName.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new ClassShadowing(PackageConstants.kInternalSlashPrefix + "Helper", ClassWhiteList.buildForEmptyContract()))
+                        .addNextVisitor(new ClassShadowing(PackageConstants.kInternalSlashPrefix + "Helper", new ClassWhiteList()))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();

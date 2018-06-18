@@ -11,6 +11,7 @@ import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
@@ -161,7 +162,7 @@ public class ExceptionWrappingTest {
         // We expect this to have 2 exceptions in it:  the transformed user-defined exception and the generated wrapper.
         String exceptionClassDotName = TestExceptionResource.UserDefinedException.class.getName();
         Assert.assertEquals(2, transformedClassNames.size());
-        Assert.assertTrue(transformedClassNames.contains(exceptionClassDotName));
+        Assert.assertTrue(transformedClassNames.contains(PackageConstants.kUserDotPrefix + exceptionClassDotName));
         Assert.assertTrue(transformedClassNames.contains(PackageConstants.kExceptionWrapperDotPrefix + exceptionClassDotName));
     }
 
@@ -213,14 +214,15 @@ public class ExceptionWrappingTest {
                 dynamicHierarchyBuilder.addClass(slashName, slashSuperName, bytes);
             };
             ParentPointers parentPointers = new ParentPointers(ClassWhiteList.extractDeclaredClasses(this.classHierarchy), this.classHierarchy);
-            ClassWhiteList classWhiteList = ClassWhiteList.buildFromClassHierarchy(this.classHierarchy);
+            ClassWhiteList classWhiteList = new ClassWhiteList();
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
+                    .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(this.classHierarchy)))
                     .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, parentPointers, generatedClassesSink))
                     .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME, classWhiteList))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                             sharedClassLoader, parentPointers, dynamicHierarchyBuilder))
                     .build();
-            this.transformedClasses.put(name, toolchain.runAndGetBytecode());
+            this.transformedClasses.put(PackageConstants.kUserDotPrefix + name, toolchain.runAndGetBytecode());
         }
         
         public Map<String, byte[]> getLateGeneratedClasses() {
