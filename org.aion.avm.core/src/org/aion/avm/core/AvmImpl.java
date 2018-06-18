@@ -25,6 +25,7 @@ import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
+import org.aion.kernel.TransformedDappStorage;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.slf4j.Logger;
@@ -288,7 +289,7 @@ public class AvmImpl implements Avm {
     }
 
     @Override
-    public AvmResult deploy(byte[] jar, BlockchainRuntime rt) {
+    public AvmResult deploy(byte[] jar, BlockchainRuntime rt, TransformedDappStorage codeStorage) {
         try {
             // read dapp module
             DappModule app = readDapp(jar);
@@ -335,7 +336,7 @@ public class AvmImpl implements Avm {
 
             // store transformed dapp
             File transformedDappJar = app.createJar(rt.avm_getAddress());
-            rt.avm_storeTransformedDapp(transformedDappJar);
+            codeStorage.storeCode(rt.avm_getAddress(), transformedDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * jar.length);
@@ -364,11 +365,11 @@ public class AvmImpl implements Avm {
     }
 
     @Override
-    public AvmResult run(BlockchainRuntime rt) {
+    public AvmResult run(BlockchainRuntime rt, TransformedDappStorage codeStorage) {
         // retrieve the transformed bytecode
         DappModule app;
         try {
-            File transformedDappJar = rt.avm_loadTransformedDapp(rt.avm_getAddress());
+            File transformedDappJar = codeStorage.loadCode(rt.avm_getAddress());
             app = DappModule.readFromJar(Helpers.readFileToBytes(transformedDappJar.getPath()));
         } catch (IOException e) {
             return new AvmResult(AvmResult.Code.INVALID_CALL, 0);

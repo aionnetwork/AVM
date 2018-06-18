@@ -2,7 +2,6 @@ package org.aion.avm.rt;
 
 import org.aion.avm.arraywrapper.ByteArray;
 
-import java.io.File;
 
 /**
  * Represents the hub of AVM runtime.
@@ -51,8 +50,4 @@ public interface BlockchainRuntime {
      * @param value
      */
     void avm_putStorage(ByteArray key, ByteArray value);
-
-    void avm_storeTransformedDapp(File transformedJar);
-
-    File avm_loadTransformedDapp(Address address);
 }

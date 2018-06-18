@@ -191,15 +191,6 @@ public class Deployer {
         }
 
         @Override
-        public void avm_storeTransformedDapp(File transformedJar) {
-        }
-
-        @Override
-        public File avm_loadTransformedDapp(Address address) {
-            return null;
-        }
-
-        @Override
         public long getBlockEpochSeconds() {
             // For now, always say it is day 1:  seconds per day.
             return 60 * 60 * 24;

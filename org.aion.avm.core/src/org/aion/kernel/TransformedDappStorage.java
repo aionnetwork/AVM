@@ -7,12 +7,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A emulator of the transformed Dapp Jar storage.
+ * An emulator of the transformed Dapp Jar storage.
  */
-public class TransformedCodeStorage {
+public class TransformedDappStorage {
     private Map<byte[], File> codeStorage;
 
-    public TransformedCodeStorage() {
+    public TransformedDappStorage() {
         codeStorage = new HashMap<>();
     }
 

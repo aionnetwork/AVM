@@ -7,7 +7,6 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 
-import java.io.File;
 
 public class TransactionExecutor {
 
@@ -19,6 +18,7 @@ public class TransactionExecutor {
         byte[] payload = new byte[512];
         long energyLimit = 100000;
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, payload, energyLimit);
+        TransformedDappStorage codeStorage = new TransformedDappStorage();
 
         BlockchainRuntime rt = new BlockchainRuntime() {
             // We can't eagerly create these addresses, since the IHelper isn't yet installed, but we do want to reuse the same instance, once we create it.
@@ -59,19 +59,10 @@ public class TransactionExecutor {
             @Override
             public void avm_putStorage(ByteArray key, ByteArray value) {
             }
-
-            @Override
-            public void avm_storeTransformedDapp(File transformedJar) {
-            }
-
-            @Override
-            public File avm_loadTransformedDapp(Address address) {
-                return null;
-            }
         };
 
         // Note that the creator of the AvmImpl needs to provide the shared class loader.
         AvmImpl avm = new AvmImpl(new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers()));
-        avm.run(rt);
+        avm.run(rt, codeStorage);
     }
 }
