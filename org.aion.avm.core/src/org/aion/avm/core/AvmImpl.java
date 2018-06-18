@@ -338,7 +338,7 @@ public class AvmImpl implements Avm {
             rt.avm_storeTransformedDapp(transformedDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * transformedDappJar.length());
+            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * jar.length);
 
             return new AvmResult(AvmResult.Code.SUCCESS, rt.avm_getEnergyLimit(), rt.avm_getAddress());
         } catch (FatalAvmError e) {
