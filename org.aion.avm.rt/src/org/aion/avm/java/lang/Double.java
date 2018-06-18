@@ -1,5 +1,7 @@
 package org.aion.avm.java.lang;
 
+import org.aion.avm.internal.IObject;
+
 public class Double extends Number implements Comparable<Double>{
     private double value;
 
@@ -113,7 +115,7 @@ public class Double extends Number implements Comparable<Double>{
         return java.lang.Double.hashCode(value);
     }
 
-    public boolean equals(Object obj) {
+    public boolean equals(IObject obj) {
         return (obj instanceof Double)
                 && (avm_doubleToLongBits(((Double)obj).value) ==
                 avm_doubleToLongBits(value));

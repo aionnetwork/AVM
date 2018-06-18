@@ -1,5 +1,7 @@
 package org.aion.avm.java.lang;
 
+import org.aion.avm.internal.IObject;
+
 public class Integer extends Number implements Comparable<Integer>{
 
     public static final int avm_MAX_VALUE = java.lang.Integer.MAX_VALUE;
@@ -111,7 +113,7 @@ public class Integer extends Number implements Comparable<Integer>{
         return avm_toString(value);
     }
 
-    public boolean avm_equals(Object obj) {
+    public boolean avm_equals(IObject obj) {
         if (obj instanceof Integer) {
             return value == ((Integer)obj).avm_intValue();
         }

@@ -1,5 +1,7 @@
 package org.aion.avm.java.lang;
 
+import org.aion.avm.internal.IObject;
+
 public class Boolean extends Object implements Comparable<Boolean>{
 
     public static final Boolean avm_TRUE = new Boolean(true);
@@ -49,7 +51,7 @@ public class Boolean extends Object implements Comparable<Boolean>{
         return value ? 1231 : 1237;
     }
 
-    public boolean avm_equals(Object obj) {
+    public boolean avm_equals(IObject obj) {
         if (obj instanceof Boolean) {
             return value == ((Boolean)obj).avm_booleanValue();
         }

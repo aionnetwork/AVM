@@ -1,5 +1,7 @@
 package org.aion.avm.java.lang;
 
+import org.aion.avm.internal.IObject;
+
 public class Long extends Number implements Comparable<Long>{
 
     public static final long avm_MIN_VALUE = 0x8000000000000000L;
@@ -139,7 +141,7 @@ public class Long extends Number implements Comparable<Long>{
         return (int)(value ^ (value >>> 32));
     }
 
-    public boolean avm_equals(Object obj) {
+    public boolean avm_equals(IObject obj) {
         if (obj instanceof Long) {
             return value == ((Long)obj).avm_longValue();
         }

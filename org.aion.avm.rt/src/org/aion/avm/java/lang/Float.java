@@ -1,5 +1,7 @@
 package org.aion.avm.java.lang;
 
+import org.aion.avm.internal.IObject;
+
 public class Float extends Number implements Comparable<Float>{
 
     public static final float avm_POSITIVE_INFINITY = java.lang.Float.POSITIVE_INFINITY;
@@ -107,7 +109,7 @@ public class Float extends Number implements Comparable<Float>{
         return avm_floatToIntBits(value);
     }
 
-    public boolean avm_equals(Object obj) {
+    public boolean avm_equals(IObject obj) {
         return (obj instanceof Float)
                 && (avm_floatToIntBits(((Float)obj).value) == avm_floatToIntBits(value));
     }

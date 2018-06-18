@@ -1,5 +1,7 @@
 package org.aion.avm.java.lang;
 
+import org.aion.avm.internal.IObject;
+
 public class Short extends Number{
 
     public static final short avm_MIN_VALUE = java.lang.Short.MIN_VALUE;
@@ -83,7 +85,7 @@ public class Short extends Number{
         return (int)value;
     }
 
-    public boolean avm_equals(Object obj) {
+    public boolean avm_equals(IObject obj) {
         if (obj instanceof Short) {
             return value == ((Short)obj).avm_shortValue();
         }
