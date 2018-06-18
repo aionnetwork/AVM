@@ -336,7 +336,7 @@ public class AvmImpl implements Avm {
 
             // store transformed dapp
             File transformedDappJar = app.createJar(rt.avm_getAddress());
-            codeStorage.storeCode(rt.avm_getAddress(), transformedDappJar);
+            codeStorage.storeCode(rt.avm_getAddress().unwrap(), TransformedDappStorage.CodeVersion.VERSION_1_0, transformedDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * jar.length);
@@ -369,7 +369,7 @@ public class AvmImpl implements Avm {
         // retrieve the transformed bytecode
         DappModule app;
         try {
-            File transformedDappJar = codeStorage.loadCode(rt.avm_getAddress());
+            File transformedDappJar = codeStorage.loadCode(rt.avm_getAddress().unwrap());
             app = DappModule.readFromJar(Helpers.readFileToBytes(transformedDappJar.getPath()));
         } catch (IOException e) {
             return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
