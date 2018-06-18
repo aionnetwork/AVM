@@ -133,7 +133,7 @@ public class ClassShadowingTest {
 
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
-        Class<?> clazz = loader.loadClass(className);
+        Class<?> clazz = loader.loadUserClassByOriginalName(className);
 
         Method method = clazz.getMethod("avm_getStringForNull");
         Object ret = method.invoke(null);

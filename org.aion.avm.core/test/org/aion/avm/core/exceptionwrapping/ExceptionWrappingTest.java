@@ -60,16 +60,15 @@ public class ExceptionWrappingTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         transformer.transformClass(className, raw);
         
-        String resourceName = className.replaceAll("\\.", "/") + "$UserDefinedException.class";
         String exceptionName = className + "$UserDefinedException";
-        byte[] exceptionBytes = Helpers.loadRequiredResourceAsBytes(resourceName);
+        byte[] exceptionBytes = Helpers.loadRequiredResourceAsBytes(exceptionClassDotName.replaceAll("\\.", "/") + ".class");
         transformer.transformClass(exceptionName, exceptionBytes);
         
         Map<String, byte[]> classes = new HashMap<>();
         classes.putAll(transformer.getLateGeneratedClasses());
         
         this.loader = new AvmClassLoader(sharedClassLoader, classes);
-        this.testClass = this.loader.loadClass(className);
+        this.testClass = this.loader.loadUserClassByOriginalName(className);
         
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(this.loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));

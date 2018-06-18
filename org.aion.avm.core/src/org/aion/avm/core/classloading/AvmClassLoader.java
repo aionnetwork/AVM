@@ -3,6 +3,8 @@ package org.aion.avm.core.classloading;
 import java.util.*;
 import java.util.function.Function;
 
+import org.aion.avm.core.util.Assert;
+
 
 /**
  * NOTE:  This implementation assumes that the classes we are trying to load are "safe" in that they don't reference
@@ -87,5 +89,18 @@ public class AvmClassLoader extends ClassLoader {
         return result;
     }
 
-
+    /**
+     * A helper for tests which want to load a class by its pre-renamed name and also ensure that the receiver was the loader (didn't delegate).
+     * 
+     * @param originalClassName The pre-renamed class name (.-style).
+     * @return The transformed/renamed class instance.
+     * @throws ClassNotFoundException Underlying load failed.
+     */
+    public Class<?> loadUserClassByOriginalName(String originalClassName) throws ClassNotFoundException {
+        // TODO: Add the name mapping here later in issue-96 development.
+        String renamedClass = originalClassName;
+        Class<?> clazz = this.loadClass(renamedClass);
+        Assert.assertTrue(this == clazz.getClassLoader());
+        return clazz;
+    }
 }

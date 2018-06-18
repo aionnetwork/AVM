@@ -38,7 +38,7 @@ public class HashCodeTest {
         SimpleAvm avm = new SimpleAvm(externalRuntime, HashCodeTestTarget.class);
         AvmClassLoader loader = avm.getClassLoader();
         
-        this.clazz = loader.loadClass(HashCodeTestTarget.class.getName());
+        this.clazz = loader.loadUserClassByOriginalName(HashCodeTestTarget.class.getName());
         Assert.assertEquals(loader, this.clazz.getClassLoader());
     }
 
@@ -179,15 +179,13 @@ public class HashCodeTest {
         
         // Create 2 instances of the contract-specific loaders, each with the same class, and prove that we get 2 instances.
         AvmClassLoader loader1 = new AvmClassLoader(sharedClassLoader, classes);
-        Class<?> clazz1 = loader1.loadClass(className);
-        Assert.assertEquals(loader1, clazz1.getClassLoader());
+        Class<?> clazz1 = loader1.loadUserClassByOriginalName(className);
         AvmClassLoader loader2 = new AvmClassLoader(sharedClassLoader, classes);
-        Class<?> clazz2 = loader2.loadClass(className);
-        Assert.assertEquals(loader2, clazz2.getClassLoader());
+        Class<?> clazz2 = loader2.loadUserClassByOriginalName(className);
         // -not the same instances.
         Assert.assertFalse(clazz1 == clazz2);
         // -but reloading one of them gives us the same one back.
-        Assert.assertTrue(loader2.loadClass(className) == clazz2);
+        Assert.assertTrue(loader2.loadUserClassByOriginalName(className) == clazz2);
         
         // Load a shared class, via each contract-specific loader, and ensure that we get the same instance.
         String classToLoad = PackageConstants.kShadowJavaLangDotPrefix + "Error";
@@ -219,7 +217,7 @@ public class HashCodeTest {
         
         // First, run some tests in helper1.
         IHelper helper1 = Helpers.instantiateHelper(loader1, commonRuntime);
-        Class<?> clazz1 = loader1.loadClass(targetClassName);
+        Class<?> clazz1 = loader1.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode1 = clazz1.getMethod("avm_getOneHashCode");
         Object result = getOneHashCode1.invoke(null);
         Assert.assertEquals(1, ((Integer)result).intValue());
@@ -229,7 +227,7 @@ public class HashCodeTest {
         
         // Now, create the helper2, show that it is independent, and run a test in that.
         IHelper helper2 = Helpers.instantiateHelper(loader2, commonRuntime);
-        Class<?> clazz2 = loader2.loadClass(targetClassName);
+        Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode2 = clazz2.getMethod("avm_getOneHashCode");
         Assert.assertEquals(1, helper2.externalGetNextHashCode());
         result = getOneHashCode2.invoke(null);

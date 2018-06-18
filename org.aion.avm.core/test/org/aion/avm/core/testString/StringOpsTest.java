@@ -20,7 +20,7 @@ public class StringOpsTest {
         SimpleRuntime rt = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
         SimpleAvm avm = new SimpleAvm(rt, StringOps.class);
 
-        Class<?> clazz = avm.getClassLoader().loadClass(StringOps.class.getName());
+        Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(StringOps.class.getName());
         Object obj = clazz.getConstructor().newInstance();
         ObjectArray results = (ObjectArray) clazz.getMethod("avm_singleString").invoke(obj);
 

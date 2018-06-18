@@ -35,7 +35,7 @@ public class BasicAppTest {
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName);
         loader.addHandler(wrapperGenerator);
         
-        this.clazz = loader.loadClass(BasicAppTestTarget.class.getName());
+        this.clazz = loader.loadUserClassByOriginalName(BasicAppTestTarget.class.getName());
         // NOTE:  The user's side is pre-shadow so it uses "byte[]" whereas we look up "ByteArray", here.
         this.decodeMethod = this.clazz.getMethod("avm_decode", BlockchainRuntime.class, ByteArray.class);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
