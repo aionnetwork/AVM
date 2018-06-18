@@ -298,17 +298,6 @@ public class AvmImpl implements Avm {
                 return new AvmResult(AvmResult.Code.INVALID_JAR, 0);
             }
 
-            // As per usual, we need to get the special Helper class for each contract loader.
-            Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
-
-            // Construct the per-contract class loader and access the per-contract IHelper instance.
-            AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
-            IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
-
-            // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
-                    + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * app.bytecodeSize * (1 + app.numberOfClasses) / 10);
-
             // validate dapp module
             if (!validateDapp(app)) {
                 return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
@@ -317,6 +306,17 @@ public class AvmImpl implements Avm {
             // transform
             Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), dappClassesForest, computeAllObjectsSizes(dappClassesForest));
             app.setClasses(transformedClasses);
+
+            // As per usual, we need to get the special Helper class for each contract loader.
+            Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
+
+            // Construct the per-contract class loader and access the per-contract IHelper instance.
+            AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
+            IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
+
+            // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
+            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
+                    + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * app.bytecodeSize * (1 + app.numberOfClasses) / 10);
 
             // Parse the tx data, get the method name and arguments
             TxDataDecoder txDataDecoder = new TxDataDecoder();
@@ -327,7 +327,7 @@ public class AvmImpl implements Avm {
                 Object obj = clazz.getConstructor().newInstance();
 
                 // select the method and invoke
-                Method method = matchMethodSelector(clazz, methodCaller.methodName, methodCaller.argsDescriptor, true);
+                Method method = matchMethodSelector(clazz, "avm_" + methodCaller.methodName, methodCaller.argsDescriptor, true);
                 if (methodCaller.arguments == null) {
                     method.invoke(obj);
                 } else {
