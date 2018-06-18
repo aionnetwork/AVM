@@ -7,7 +7,7 @@ public class Double extends Number {
         value = d;
     }
 
-    public static final int avm_BYTES = 8;
+    public static final int avm_BYTES = java.lang.Double.BYTES;
 
     public static final int avm_MAX_EXPONENT = java.lang.Double.MAX_EXPONENT;
 

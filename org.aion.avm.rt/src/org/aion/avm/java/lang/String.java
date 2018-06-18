@@ -37,11 +37,6 @@ public class String extends Object implements CharSequence {
         }
     }
 
-    //internal
-    public java.lang.String getUnderlying(){
-        return underlying;
-    }
-
     public char avm_charAt(int index) {
         return this.underlying.charAt(index);
     }
@@ -138,5 +133,10 @@ public class String extends Object implements CharSequence {
     @Override
     public java.lang.String toString() {
         return this.underlying.toString();
+    }
+
+    //internal
+    java.lang.String getUnderlying(){
+        return underlying;
     }
 }

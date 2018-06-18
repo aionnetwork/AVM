@@ -8,6 +8,8 @@ public final class Byte extends Object {
 
     public static final Class<Byte> TYPE = null;
 
+    public static final int avm_SIZE = java.lang.Byte.SIZE;
+
     private final byte value;
 
     public Byte(byte value) {
