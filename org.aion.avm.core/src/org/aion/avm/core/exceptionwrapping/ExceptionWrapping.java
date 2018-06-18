@@ -57,13 +57,12 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         }
         if (isThrowable) {
             // Generate our handler for this.
-            String reparentedName = PackageConstants.kExceptionWrapperSlashPrefix + name;
-            String reparentedSuperName = PackageConstants.kExceptionWrapperSlashPrefix + superName;
+            String reparentedName = prependExceptionWrapperSlashPrefix(name);
+            String reparentedSuperName = prependExceptionWrapperSlashPrefix(superName);
             byte[] wrapperBytes = StubGenerator.generateWrapperClass(reparentedName, reparentedSuperName);
             generatedClassesSink.accept(reparentedSuperName, reparentedName, wrapperBytes);
         }
     }
-
 
     public MethodVisitor visitMethod(
             final int access,
@@ -128,11 +127,11 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     if (type.startsWith("java/lang/")) {
                         // If this was trying to catch anything in "java/lang/*", then duplicate it for our wrapper type.
                         super.visitTryCatchBlock(start, end, handler, type);
-                        String wrapperType = PackageConstants.kExceptionWrapperSlashPrefix + type;
+                        String wrapperType = prependExceptionWrapperSlashPrefix(type);
                         super.visitTryCatchBlock(start, end, handler, wrapperType);
                     } else {
                         // This is user-defined (or should have been stripped, earlier) so replace it with the appropriate wrapper type.
-                        String wrapperType = PackageConstants.kExceptionWrapperSlashPrefix + type;
+                        String wrapperType = prependExceptionWrapperSlashPrefix(type);
                         super.visitTryCatchBlock(start, end, handler, wrapperType);
                     }
                 } else {
@@ -163,6 +162,15 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                 super.visitInsn(opcode);
             }
         };
+    }
+
+
+    private static String prependExceptionWrapperSlashPrefix(String className) {
+        // It is possible that the name could have the user prefix so remove that before prepending the wrapper.
+        String strippedClassName = className.startsWith(PackageConstants.kUserSlashPrefix)
+                ? className.substring(PackageConstants.kUserSlashPrefix.length())
+                : className;
+        return PackageConstants.kExceptionWrapperSlashPrefix + strippedClassName;
     }
 
 
