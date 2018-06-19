@@ -189,6 +189,16 @@ public class Deployer {
         }
 
         @Override
+        public void avm_updateCode(ByteArray newCode, org.aion.avm.java.lang.String codeVersion) {
+            Assert.unimplemented("TODO");
+        }
+
+        @Override
+        public void avm_selfDestruct(Address beneficiary) {
+            Assert.unimplemented("TODO");
+        }
+
+        @Override
         public long getBlockEpochSeconds() {
             // For now, always say it is day 1:  seconds per day.
             return 60 * 60 * 24;
@@ -294,6 +304,7 @@ public class Deployer {
             Assert.unreachable("This shouldn't be called in this test.");
             return 0;
         }
+
         @Override
         public org.aion.avm.java.lang.String externalWrapAsString(String input) {
             Assert.unreachable("This shouldn't be called in this test.");

@@ -1,18 +1,10 @@
-package org.aion.avm.core;
+package org.aion.avm.rt;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.java.lang.String;
-import org.aion.avm.rt.Address;
-import org.aion.avm.rt.BlockchainRuntime;
-import org.junit.Assert;
 
-
-
-/**
- * A minimal implementation of BlockchainRuntime sufficient for our current class of tests.
- * These provide only the direct inputs, none of the interactive data layer.
- */
-public class SimpleRuntime implements BlockchainRuntime {
+public class BlockchainRuntimeImpl implements BlockchainRuntime {
     private final byte[] sender;
     private final byte[] address;
     private final long energyLimit;
@@ -23,25 +15,20 @@ public class SimpleRuntime implements BlockchainRuntime {
     private Address cachedAddress;
     private ByteArray cachedTxData;
 
-    public SimpleRuntime(byte[] sender, byte[] address, long energyLimit) {
-        Assert.assertNotNull(sender);
-        Assert.assertNotNull(address);
-
+    public BlockchainRuntimeImpl(byte[] sender, byte[] address, long energyLimit) {
         this.sender = sender;
         this.address = address;
         this.energyLimit = energyLimit;
         this.txData = null;
     }
 
-    public SimpleRuntime(byte[] sender, byte[] address, long energyLimit, byte[] txData) {
-        Assert.assertNotNull(sender);
-        Assert.assertNotNull(address);
-        
+    public BlockchainRuntimeImpl(byte[] sender, byte[] address, long energyLimit, byte[] txData) {
         this.sender = sender;
         this.address = address;
         this.energyLimit = energyLimit;
         this.txData = txData;
     }
+
     @Override
     public Address avm_getSender() {
         if (null == this.cachedSender) {
@@ -49,6 +36,7 @@ public class SimpleRuntime implements BlockchainRuntime {
         }
         return this.cachedSender;
     }
+
     @Override
     public Address avm_getAddress() {
         if (null == this.cachedAddress) {
@@ -56,10 +44,12 @@ public class SimpleRuntime implements BlockchainRuntime {
         }
         return this.cachedAddress;
     }
+
     @Override
     public long avm_getEnergyLimit() {
         return this.energyLimit;
     }
+
     @Override
     public ByteArray avm_getData() {
         if (null == this.txData) {
@@ -70,23 +60,24 @@ public class SimpleRuntime implements BlockchainRuntime {
         }
         return cachedTxData;
     }
+
     @Override
     public ByteArray avm_getStorage(ByteArray key) {
-        Assert.fail("This implementation doesn't handle this");
-        return null;
+        throw new RuntimeAssertionError("This implementation doesn't handle this");
     }
+
     @Override
     public void avm_putStorage(ByteArray key, ByteArray value) {
-        Assert.fail("This implementation doesn't handle this");
+        throw new RuntimeAssertionError("This implementation doesn't handle this");
     }
 
     @Override
     public void avm_updateCode(ByteArray newCode, String codeVersion) {
-        Assert.fail("This implementation doesn't handle this");
+        throw new RuntimeAssertionError("This implementation doesn't handle this");
     }
 
     @Override
     public void avm_selfDestruct(Address beneficiary) {
-        Assert.fail("This implementation doesn't handle this");
+        throw new RuntimeAssertionError("This implementation doesn't handle this");
     }
 }

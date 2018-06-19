@@ -19,11 +19,11 @@ public class RuntimeAssertionError extends FatalAvmError {
     }
 
 
-    private RuntimeAssertionError(String message) {
+    public RuntimeAssertionError(String message) {
         super(message);
     }
 
-    private RuntimeAssertionError(String message, Throwable cause) {
+    public RuntimeAssertionError(String message, Throwable cause) {
         super(message, cause);
     }
 }

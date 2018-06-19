@@ -4,6 +4,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.java.lang.String;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 
@@ -58,6 +59,14 @@ public class TransactionExecutor {
 
             @Override
             public void avm_putStorage(ByteArray key, ByteArray value) {
+            }
+
+            @Override
+            public void avm_updateCode(ByteArray newCode, String codeVersion) {
+            }
+
+            @Override
+            public void avm_selfDestruct(Address beneficiary) {
             }
         };
 

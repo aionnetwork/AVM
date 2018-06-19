@@ -1,7 +1,6 @@
 package org.aion.kernel;
 
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
 import org.aion.avm.rt.Address;
 import org.junit.Test;
 

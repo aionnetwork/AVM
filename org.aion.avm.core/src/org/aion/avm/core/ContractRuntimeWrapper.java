@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.java.lang.String;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
 
@@ -41,5 +42,13 @@ public class ContractRuntimeWrapper extends org.aion.avm.java.lang.Object implem
     @Override
     public void avm_putStorage(ByteArray key, ByteArray value) {
         this.externalRuntime.avm_putStorage(key, value);
+    }
+    @Override
+    public void avm_updateCode(ByteArray newCode, String codeVersion) {
+        this.externalRuntime.avm_updateCode(newCode, codeVersion);
+    }
+    @Override
+    public void avm_selfDestruct(Address beneficiary) {
+        this.externalRuntime.avm_selfDestruct(beneficiary);
     }
 }

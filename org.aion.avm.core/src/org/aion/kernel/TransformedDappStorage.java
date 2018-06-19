@@ -112,4 +112,8 @@ public class TransformedDappStorage {
     public CodeVersion getCodeVersion(byte[] address) {
         return codeStorage.get(new ByteArrayWrapper(address)).version;
     }
+
+    public void removeDapp(byte[] address) {
+        codeStorage.remove(new ByteArrayWrapper(address));
+    }
 }

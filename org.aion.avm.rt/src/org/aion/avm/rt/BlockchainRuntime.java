@@ -1,6 +1,7 @@
 package org.aion.avm.rt;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.java.lang.String;
 
 
 /**
@@ -50,4 +51,19 @@ public interface BlockchainRuntime {
      * @param value
      */
     void avm_putStorage(ByteArray key, ByteArray value);
+
+    /**
+     * Update the Dapp code with a new version.
+     *
+     * @param newCode
+     * @param codeVersion
+     */
+    void avm_updateCode(ByteArray newCode, String codeVersion);
+
+    /**
+     * Destruct the Dapp.
+     *
+     * @param beneficiary
+     */
+    void avm_selfDestruct(Address beneficiary);
 }
