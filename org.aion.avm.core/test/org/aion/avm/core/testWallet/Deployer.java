@@ -7,8 +7,6 @@ import org.aion.avm.rt.Address;
 import org.aion.avm.rt.IEventLogger;
 import org.aion.avm.rt.IFutureRuntime;
 
-import java.io.File;
-
 
 /**
  * This is the first cut at a real application we can put on the AVM, based on the Solidity testWallet.
@@ -39,7 +37,7 @@ public class Deployer {
         Address extra2 = buildAddress(3);
         TestLogger logger = new TestLogger();
         int requiredVotes = 2;
-        Multiowned owners = new Multiowned(logger, sender, new Address[] {extra1, extra2}, requiredVotes);
+        Multiowned owners = Multiowned.avoidArrayWrappingFactory(logger, sender, extra1, extra2, requiredVotes);
         long dailyLimit = 5000;
         long startInDays = 1;
         Daylimit limit = new Daylimit(owners, dailyLimit, startInDays);

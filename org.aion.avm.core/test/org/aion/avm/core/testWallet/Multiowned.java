@@ -15,6 +15,14 @@ import org.aion.avm.userlib.AionSet;
  * but the core implementation doesn't require it).
  */
 public class Multiowned {
+    /**
+     * Calling a reflection routine which has an array in it is a problem with how our arraywrapping works.
+     * This might not matter, in the future, but may be something we need to make easier to manage (maybe the arraywrappers have factories, or something).
+     */
+    public static Multiowned avoidArrayWrappingFactory(IEventLogger logger, Address sender, Address owner1, Address owner2, int votesRequiredPerOperation) {
+        return new Multiowned(logger, sender, new Address[] {owner1, owner2}, votesRequiredPerOperation);
+    }
+
     private final IEventLogger logger;
     // The owners.
     private final AionSet<Address> owners;
