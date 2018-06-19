@@ -1,6 +1,7 @@
 package org.aion.avm.rt;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.IObject;
 
 
 /**
@@ -38,6 +39,34 @@ public class Address extends org.aion.avm.java.lang.Object {
     public ByteArray avm_unwrap() {
         return this.underlying;
     }
+
+    @Override
+    public int avm_hashCode() {
+        // Just a really basic implementation.
+        int code = 0;
+        for (byte elt : this.underlying.getUnderlying()) {
+            code += (int)elt;
+        }
+        return code;
+    }
+
+    @Override
+    public boolean avm_equals(IObject obj) {
+        boolean isEqual = this == obj;
+        if (!isEqual && (obj instanceof Address)) {
+            Address other = (Address)obj;
+            if (this.underlying.length() == other.underlying.length()) {
+                isEqual = true;
+                byte[] us = this.underlying.getUnderlying();
+                byte[] them = other.underlying.getUnderlying();
+                for (int i = 0; isEqual && (i < us.length); ++i) {
+                    isEqual = (us[i] == them[i]);
+                }
+            }
+        }
+        return isEqual;
+    }
+
 
     // Compiler-facing implementation.
     public static final int LENGTH = avm_LENGTH;
