@@ -24,7 +24,7 @@ public class Daylimit {
     // PUBLIC INTERFACE
     public void setDailyLimit(IFutureRuntime runtime, long value) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.avm_getSender(), Operation.from(runtime));
+        this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
         this.dailyLimit = value;
     }
@@ -32,7 +32,7 @@ public class Daylimit {
     // PUBLIC INTERFACE
     public void resetSpentToday(IFutureRuntime runtime) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.avm_getSender(), Operation.from(runtime));
+        this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
         this.spentToday = 0;
     }
@@ -43,7 +43,7 @@ public class Daylimit {
     // public for composition.
     public boolean underLimit(IFutureRuntime runtime, long value) {
         // (modifier)
-        this.owners.onlyOwner(runtime.avm_getSender());
+        this.owners.onlyOwner(runtime.getSender());
         
         // reset the spend limit if we're on a different day to last time.
         long nowInDays = runtime.getBlockEpochSeconds() / kSecondsPerDay;

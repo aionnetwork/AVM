@@ -1,5 +1,7 @@
 package org.aion.avm.rt;
 
+import org.aion.avm.arraywrapper.ByteArray;
+
 
 /**
  * We define this as an extension of BlockchainRuntime since these mechanisms probably need to be pushed back into it, at some point.
@@ -7,16 +9,28 @@ package org.aion.avm.rt;
  * TODO:  Refactor this into BlockchainRuntime and then remove it as part of issue-102.
  */
 public interface IFutureRuntime extends BlockchainRuntime {
-    public long getBlockEpochSeconds();
+    // Runtime-facing implementation.
+    public long avm_getBlockEpochSeconds();
 
-    public byte[] getMessageData();
+    public ByteArray avm_getMessageData();
 
-    public long getBlockNumber();
+    public long avm_getBlockNumber();
 
     // Note that this response is always 32 bytes.  User-space might want to wrap it.  Should we wrap it on the runtime interface level?
-    public byte[] sha3(byte[] data);
+    public ByteArray avm_sha3(ByteArray data);
 
-    public void selfDestruct(Address beneficiary);
+    public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload);
 
-    public byte[] call(Address targetAddress, long energyToSend, byte[] payload);
+
+    // Compiler-facing implementation.
+    public default long getBlockEpochSeconds() { return avm_getBlockEpochSeconds(); }
+
+    public default byte[] getMessageData() { return avm_getMessageData().getUnderlying(); }
+
+    public default long getBlockNumber() { return avm_getBlockNumber(); }
+
+    // Note that this response is always 32 bytes.  User-space might want to wrap it.  Should we wrap it on the runtime interface level?
+    public default byte[] sha3(byte[] data) { return avm_sha3(new ByteArray(data)).getUnderlying(); }
+
+    public default byte[] call(Address targetAddress, long energyToSend, byte[] payload) { return avm_call(targetAddress, energyToSend, new ByteArray(payload)).getUnderlying(); }
 }

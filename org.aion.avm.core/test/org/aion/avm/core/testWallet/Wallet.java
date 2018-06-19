@@ -62,7 +62,7 @@ public class Wallet implements IMultisig {
     // EXTERNAL
     public void kill(IFutureRuntime runtime, Address to) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.avm_getSender(), Operation.from(runtime));
+        this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
         runtime.selfDestruct(to);
     }
@@ -82,7 +82,7 @@ public class Wallet implements IMultisig {
     @Override
     public byte[] execute(IFutureRuntime runtime, Address to, long value, byte[] data) {
         // (modifier)
-        this.owners.onlyOwner(runtime.avm_getSender());
+        this.owners.onlyOwner(runtime.getSender());
         
         byte[] result = null;
         // first, take the opportunity to check that we're under the daily limit.
@@ -132,7 +132,7 @@ public class Wallet implements IMultisig {
     @Override
     public boolean confirm(IFutureRuntime runtime, byte[] h) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.avm_getSender(), Operation.from(runtime));
+        this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
         boolean result = false;
         BytesKey key = BytesKey.from(h);

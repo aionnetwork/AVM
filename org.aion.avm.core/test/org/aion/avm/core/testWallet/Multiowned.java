@@ -48,7 +48,7 @@ public class Multiowned {
 
     // PUBLIC INTERFACE
     public void revoke(IFutureRuntime runtime) {
-        Address sender = runtime.avm_getSender();
+        Address sender = runtime.getSender();
         // Make sure that they are an owner.
         if (this.owners.contains(sender)) {
             // See if we know about this operation.
@@ -64,7 +64,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public void changeOwner(IFutureRuntime runtime, Address from, Address to) {
         // (modifier)
-        onlyManyOwners(runtime.avm_getSender(), Operation.from(runtime));
+        onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
         // Make sure that the to isn't already an owner and the from is.
         if (!isOwner(to) && isOwner(from)) {
@@ -83,7 +83,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public void addOwner(IFutureRuntime runtime, Address owner) {
         // (modifier)
-        onlyManyOwners(runtime.avm_getSender(), Operation.from(runtime));
+        onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
         // Make sure that this owner isn't already in the set.
         if (!isOwner(owner)) {
@@ -100,7 +100,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public void removeOwner(IFutureRuntime runtime, Address owner) {
         // (modifier)
-        onlyManyOwners(runtime.avm_getSender(), Operation.from(runtime));
+        onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
         // Make sure that this owner is  in the set.
         if (isOwner(owner)) {
@@ -119,7 +119,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public void changeRequirement(IFutureRuntime runtime, int newRequired) {
         // (modifier)
-        onlyManyOwners(runtime.avm_getSender(), Operation.from(runtime));
+        onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
         // Change the requirement.
         this.numberRequired = newRequired;

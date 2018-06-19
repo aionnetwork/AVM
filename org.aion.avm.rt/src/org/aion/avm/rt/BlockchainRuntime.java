@@ -8,7 +8,7 @@ import org.aion.avm.java.lang.String;
  * Represents the hub of AVM runtime.
  */
 public interface BlockchainRuntime {
-
+    // Runtime-facing implementation.
     /**
      * Returns the sender address.
      *
@@ -66,4 +66,21 @@ public interface BlockchainRuntime {
      * @param beneficiary
      */
     void avm_selfDestruct(Address beneficiary);
+
+    // Compiler-facing implementation.
+    default Address getSender() { return avm_getSender(); }
+
+    default Address getAddress() { return avm_getAddress(); }
+
+    default long getEnergyLimit() { return avm_getEnergyLimit(); }
+
+    default byte[] getData() { return avm_getData().getUnderlying(); }
+
+    default byte[] getStorage(byte[] key) { return avm_getStorage(new ByteArray(key)).getUnderlying(); }
+
+    default void putStorage(byte[] key, byte[] value) { avm_putStorage(new ByteArray(key), new ByteArray(value)); }
+
+    default void updateCode(byte[] newCode, java.lang.String codeVersion) { avm_updateCode(new ByteArray(newCode), new String(codeVersion)); }
+
+    default void selfDestruct(Address beneficiary) { avm_selfDestruct(beneficiary); }
 }

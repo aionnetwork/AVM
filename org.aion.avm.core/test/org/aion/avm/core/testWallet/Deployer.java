@@ -273,11 +273,13 @@ public class Deployer {
 
     private static class TestingRuntime implements IFutureRuntime {
         private final Address sender;
-        private final byte[] data;
+        private final ByteArray data;
         
         public TestingRuntime(Address sender, byte[] data) {
             this.sender = sender;
-            this.data = data;
+            this.data = (null != data)
+                    ? new ByteArray(data)
+                    : null;
         }
         
         @Override
@@ -308,45 +310,37 @@ public class Deployer {
         public void avm_putStorage(ByteArray key, ByteArray value) {
             Assert.unimplemented("TODO");
         }
-
         @Override
         public void avm_updateCode(ByteArray newCode, org.aion.avm.java.lang.String codeVersion) {
             Assert.unimplemented("TODO");
         }
-
         @Override
         public void avm_selfDestruct(Address beneficiary) {
             Assert.unimplemented("TODO");
         }
-
-        @Override
-        public long getBlockEpochSeconds() {
+        public long avm_getBlockEpochSeconds() {
             // For now, always say it is day 1:  seconds per day.
             return 60 * 60 * 24;
         }
         @Override
-        public byte[] getMessageData() {
+        public ByteArray avm_getMessageData() {
             return data;
         }
         @Override
-        public long getBlockNumber() {
+        public long avm_getBlockNumber() {
             // For now, say that this is block 1.
             return 1;
         }
         @Override
-        public byte[] sha3(byte[] data) {
+        public ByteArray avm_sha3(ByteArray data) {
             // For tests, we just return the initial data with a prefix.
-            byte[] result = new byte[data.length + 1];
+            byte[] result = new byte[data.length() + 1];
             result[0] = (byte)255;
-            System.arraycopy(data, 0, result, 1, data.length);
-            return result;
+            System.arraycopy(data.getUnderlying(), 0, result, 1, data.length());
+            return new ByteArray(result);
         }
         @Override
-        public void selfDestruct(Address beneficiary) {
-            Assert.unimplemented("TODO");
-        }
-        @Override
-        public byte[] call(Address targetAddress, long energyToSend, byte[] payload) {
+        public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
             // We probably want to capture/verify this more concretely but, for now, just return the payload to synthesize "something".
             return payload;
         }
