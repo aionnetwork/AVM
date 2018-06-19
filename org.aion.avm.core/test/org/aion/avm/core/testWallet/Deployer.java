@@ -1,11 +1,25 @@
 package org.aion.avm.core.testWallet;
 
+import java.util.Map;
+import java.util.function.Function;
+
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.AvmImpl;
+import org.aion.avm.core.Forest;
+import org.aion.avm.core.HierarchyTreeBuilder;
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
+import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.IEventLogger;
 import org.aion.avm.rt.IFutureRuntime;
+import org.aion.avm.userlib.AionList;
+import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.AionSet;
 
 
 /**
@@ -27,6 +41,9 @@ public class Deployer {
         IHelper.currentContractHelper.set(new FakeHelper());
         invokeDirect(args);
         IHelper.currentContractHelper.set(null);
+        
+        // Now, try the transformed version.
+        invokeTransformed(args);
     }
 
 
@@ -135,11 +152,115 @@ public class Deployer {
         Assert.assertTrue(wallet.getOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), 0) == extra2);
     }
 
-    public static byte[] decode(IFutureRuntime runtime, byte[] input) {
-        Assert.unimplemented("Switch to this when we know the ABI the test should use");
-        return null;
+    private static void invokeTransformed(String[] args) throws Throwable {
+        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        
+        String className = Multiowned.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        
+        // Contract "user-space" library.
+        String aionMapClassName = AionMap.class.getName();
+        byte[] aionMapBytes = Helpers.loadRequiredResourceAsBytes(aionMapClassName.replaceAll("\\.", "/") + ".class");
+        String aionSetClassName = AionSet.class.getName();
+        byte[] aionSetBytes = Helpers.loadRequiredResourceAsBytes(aionSetClassName.replaceAll("\\.", "/") + ".class");
+        String aionListClassName = AionList.class.getName();
+        byte[] aionListBytes = Helpers.loadRequiredResourceAsBytes(aionListClassName.replaceAll("\\.", "/") + ".class");
+        String imultisigName = IMultisig.class.getName();
+        byte[] imultisigBytes = Helpers.loadRequiredResourceAsBytes(imultisigName.replaceAll("\\.", "/") + ".class");
+        String operationName = Operation.class.getName();
+        byte[] operationBytes = Helpers.loadRequiredResourceAsBytes(operationName.replaceAll("\\.", "/") + ".class");
+        String wrapperName = ByteArrayWrapper.class.getName();
+        byte[] wrapperBytes = Helpers.loadRequiredResourceAsBytes(wrapperName.replaceAll("\\.", "/") + ".class");
+        String byteHelpersName = ByteArrayHelpers.class.getName();
+        byte[] byteHelpersBytes = Helpers.loadRequiredResourceAsBytes(byteHelpersName.replaceAll("\\.", "/") + ".class");
+        String bytesKeyName = BytesKey.class.getName();
+        byte[] bytesKeyBytes = Helpers.loadRequiredResourceAsBytes(bytesKeyName.replaceAll("\\.", "/") + ".class");
+        String pendingName = Multiowned.class.getName() + "$PendingState";
+        byte[] pendingBytes = Helpers.loadRequiredResourceAsBytes(pendingName.replaceAll("\\.", "/") + ".class");
+        String reqExcName = RequireFailedException.class.getName();
+        byte[] reqExcBytes = Helpers.loadRequiredResourceAsBytes(reqExcName.replaceAll("\\.", "/") + ".class");
+        String daylimitName = Daylimit.class.getName();
+        byte[] daylimitBytes = Helpers.loadRequiredResourceAsBytes(daylimitName.replaceAll("\\.", "/") + ".class");
+        String walletName = Wallet.class.getName();
+        byte[] walletBytes = Helpers.loadRequiredResourceAsBytes(walletName.replaceAll("\\.", "/") + ".class");
+        String walletTransactionName = walletName + "$Transaction";
+        byte[] walletTransactionBytes = Helpers.loadRequiredResourceAsBytes(walletTransactionName.replaceAll("\\.", "/") + ".class");
+        
+        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(className, "java.lang.Object", raw)
+                .addClass(aionMapClassName, "java.lang.Object", aionMapBytes)
+                .addClass(aionSetClassName, "java.lang.Object", aionSetBytes)
+                .addClass(aionListClassName, "java.lang.Object", aionListBytes)
+                .addClass(imultisigName, "java.lang.Object", imultisigBytes)
+                .addClass(wrapperName, "java.lang.Object", wrapperBytes)
+                .addClass(byteHelpersName, "java.lang.Object", byteHelpersBytes)
+                .addClass(bytesKeyName, "java.lang.Object", bytesKeyBytes)
+                .addClass(operationName, wrapperName, operationBytes)
+                .addClass(pendingName, "java.lang.Object", pendingBytes)
+                .addClass(reqExcName, "java.lang.RuntimeException", reqExcBytes)
+                .addClass(daylimitName, "java.lang.Object", daylimitBytes)
+                .addClass(walletName, "java.lang.Object", walletBytes)
+                .addClass(walletTransactionName, "java.lang.Object", walletTransactionBytes)
+                .asMutableForest();
+        
+        AvmImpl avm = new AvmImpl(sharedClassLoader, null);
+        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
+        Map<String, Integer> allObjectSizes = AvmImpl.computeObjectSizes(classHierarchy, runtimeObjectSizes);
+        
+        Map<String, byte[]> inputClasses = Map.ofEntries(Map.entry(className, raw)
+                , Map.entry(aionMapClassName, aionMapBytes)
+                , Map.entry(aionSetClassName, aionSetBytes)
+                , Map.entry(aionListClassName, aionListBytes)
+                , Map.entry(imultisigName, imultisigBytes)
+                , Map.entry(wrapperName, wrapperBytes)
+                , Map.entry(byteHelpersName, byteHelpersBytes)
+                , Map.entry(bytesKeyName, bytesKeyBytes)
+                , Map.entry(operationName, operationBytes)
+                , Map.entry(pendingName, pendingBytes)
+                , Map.entry(reqExcName, reqExcBytes)
+                , Map.entry(daylimitName, daylimitBytes)
+                , Map.entry(walletName, walletBytes)
+                , Map.entry(walletTransactionName, walletTransactionBytes)
+        );
+        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(inputClasses, classHierarchy, allObjectSizes));
+        
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, transformedClasses);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName);
+        loader.addHandler(wrapperGenerator);
+        
+        // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
+        TestingRuntime externalRuntime = new TestingRuntime(null, null);
+        Helpers.instantiateHelper(loader, externalRuntime);
+        
+        
+        
+        
+        
+        // Now, run the test.
+        Address sender = buildAddress(1);
+        Address extra1 = buildAddress(2);
+        Address extra2 = buildAddress(3);
+        TestLogger logger = new TestLogger();
+        int requiredVotes = 2;
+        
+        // Note that we need to call through this specially-made factory method to avoid needing to create an array wrapper on Address[].
+        Class<?> multiownerClass = loader.loadUserClassByOriginalName(className);
+        Object multiownedInstance = multiownerClass.getMethod("avm_avoidArrayWrappingFactory", IEventLogger.class, Address.class, Address.class, Address.class, int.class).invoke(null, logger, sender, extra1, extra2, requiredVotes);
+        long dailyLimit = 5000;
+        long startInDays = 1;
+        
+        Class<?> daylimitClass = loader.loadUserClassByOriginalName(daylimitName);
+        Object daylimitInstance = daylimitClass.getConstructor(multiownerClass, long.class, long.class).newInstance(multiownedInstance, dailyLimit, startInDays);
+        
+        Class<?> walletClass = loader.loadUserClassByOriginalName(walletName);
+        Object walletInstance = walletClass.getConstructor(IEventLogger.class, multiownerClass, daylimitClass).newInstance(logger, multiownedInstance, daylimitInstance);
+        
+        // First of all, just prove that we can send them some energy.
+        Address paymentFrom = buildAddress(4);
+        long paymentValue = 5;
+        walletClass.getMethod("avm_payable", Address.class, long.class).invoke(walletInstance, paymentFrom, paymentValue);
+        Assert.assertTrue(1 == logger.deposit);
     }
-
 
     private static Address buildAddress(int fillByte) {
         byte[] raw = new byte[32];
@@ -170,8 +291,8 @@ public class Deployer {
         }
         @Override
         public long avm_getEnergyLimit() {
-            Assert.unimplemented("TODO");
-            return 0;
+            // Just return a big number so we can run.
+            return 1000000;
         }
         @Override
         public ByteArray avm_getData() {
