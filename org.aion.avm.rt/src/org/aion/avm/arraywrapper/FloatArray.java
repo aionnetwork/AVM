@@ -1,6 +1,8 @@
 package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IObject;
+
 import java.util.Arrays;
 
 public class FloatArray extends Array {
@@ -36,7 +38,7 @@ public class FloatArray extends Array {
     }
 
     // Implementation of Cloneable
-    public FloatArray clone(){
+    public IObject clone() {
         return new FloatArray(Arrays.copyOf(underlying, underlying.length));
     }
 }

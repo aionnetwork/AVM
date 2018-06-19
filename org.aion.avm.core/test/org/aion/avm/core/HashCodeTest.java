@@ -253,6 +253,16 @@ public class HashCodeTest {
         Assert.assertTrue(caught);
     }
 
+    /**
+     * Tests that we handle the unusual code generated to support clone().
+     */
+    @Test
+    public void testLengthOfClonedByteArray() throws Exception {
+        Method lengthOfClonedByteArray = this.clazz.getMethod("avm_lengthOfClonedByteArray");
+        int result = (Integer)lengthOfClonedByteArray.invoke(null);
+        Assert.assertEquals(3, result);
+    }
+
 
     private byte[] getTransformedTestClass(String className) {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");

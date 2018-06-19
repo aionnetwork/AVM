@@ -1,6 +1,8 @@
 package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IObject;
+
 import java.util.Arrays;
 
 public class DoubleArray extends Array {
@@ -36,7 +38,7 @@ public class DoubleArray extends Array {
     }
 
     // Implementation of Cloneable
-    public DoubleArray clone(){
+    public IObject clone() {
         return new DoubleArray(Arrays.copyOf(underlying, underlying.length));
     }
 }

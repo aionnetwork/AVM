@@ -1,7 +1,7 @@
 package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.IHelper;
-import org.aion.avm.java.lang.Character;
+import org.aion.avm.internal.IObject;
 
 import java.util.Arrays;
 
@@ -42,7 +42,7 @@ public class ByteArray extends Array {
     }
 
     // Implementation of Cloneable
-    public ByteArray clone(){
+    public IObject clone() {
         return new ByteArray(Arrays.copyOf(underlying, underlying.length));
     }
 

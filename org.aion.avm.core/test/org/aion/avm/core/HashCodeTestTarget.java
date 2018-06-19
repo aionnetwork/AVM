@@ -90,4 +90,10 @@ public class HashCodeTestTarget {
         }
         return result;
     }
+    
+    public static int lengthOfClonedByteArray() {
+        byte[] original = new byte[] {1,2,3};
+        byte[] copy = original.clone();
+        return copy.length;
+    }
 }
