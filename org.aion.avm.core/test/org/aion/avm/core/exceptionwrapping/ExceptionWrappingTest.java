@@ -188,6 +188,28 @@ public class ExceptionWrappingTest {
         Assert.assertEquals("two", result.toString());
     }
 
+    /**
+     * Make sure that we are handling all these cases in the common pipeline, not just the unit test.
+     */
+    @Test
+    public void testUserDefinedThrowCatch_commonPipeline() throws Exception {
+        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
+        SimpleAvm avm = new SimpleAvm(externalRuntime
+                , TestExceptionResource.class
+                , TestExceptionResource.UserDefinedException.class
+                , TestExceptionResource.UserDefinedRuntimeException.class
+        );
+        
+        Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestExceptionResource.class.getName());
+        
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Method userDefinedCatch = clazz.getMethod("avm_userDefinedCatch");
+        
+        Object result = userDefinedCatch.invoke(null);
+        // We should see the "two" string if this was thrown and caught.
+        Assert.assertEquals("two", result.toString());
+    }
+
 
     // Note that we will delegate to the common Helper class to ensure that we maintain overall correctness.
     public static class TestHelpers {

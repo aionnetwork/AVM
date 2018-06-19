@@ -166,10 +166,20 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
 
 
     private static String prependExceptionWrapperSlashPrefix(String className) {
-        // It is possible that the name could have the user prefix so remove that before prepending the wrapper.
-        String strippedClassName = className.startsWith(PackageConstants.kUserSlashPrefix)
-                ? className.substring(PackageConstants.kUserSlashPrefix.length())
-                : className;
+        // It is possible that the name could have the user prefix, or a java.lang shadow prefix, so remove that before prepending the wrapper.
+        String strippedClassName = null;
+        if (className.startsWith(PackageConstants.kUserSlashPrefix)) {
+            strippedClassName = className.substring(PackageConstants.kUserSlashPrefix.length());
+        } else if (className.startsWith(PackageConstants.kShadowJavaLangSlashPrefix)) {
+            strippedClassName = "java/lang/" + className.substring(PackageConstants.kShadowJavaLangSlashPrefix.length());
+        } else if (className.startsWith("java/lang/")){
+            // Note that this is probably only temporarily required - once all class/method/field renaming has been moved to UserClassMappingVisitor
+            // we can probably get rid of this clause and fall-through to the unreachable assert.
+            strippedClassName = className;
+        } else {
+            // Someone created this prefix but we don't know how to decode it (means an incomplete change).
+            Assert.unreachable("Unknown exception prefix: " + className);
+        }
         return PackageConstants.kExceptionWrapperSlashPrefix + strippedClassName;
     }
 
