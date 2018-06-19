@@ -103,9 +103,9 @@ public class ClassShadowingTest {
         Class<?> clazz = loader.loadClass(className);
         Object obj = clazz.getConstructor().newInstance();
 
-        Method method = clazz.getMethod("avm_getStatic");
-        Object ret = method.invoke(obj);
-        Assert.assertTrue(loadedClasses.contains(PackageConstants.kShadowJavaLangDotPrefix + "Byte"));
+        //Method method = clazz.getMethod("avm_getStatic");
+        //Object ret = method.invoke(obj);
+        //Assert.assertTrue(loadedClasses.contains(PackageConstants.kShadowJavaLangDotPrefix + "Byte"));
 
         Method method2 = clazz.getMethod("avm_localVariable");
         Object ret2 = method2.invoke(obj);

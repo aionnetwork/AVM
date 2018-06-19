@@ -5,11 +5,14 @@ import org.aion.avm.internal.IObject;
 public class Integer extends Number implements Comparable<Integer>{
 
     public static final int avm_MAX_VALUE = java.lang.Integer.MAX_VALUE;
+
     public static final int avm_MIN_VALUE = java.lang.Integer.MIN_VALUE;
+
     public static final int avm_SIZE = java.lang.Integer.SIZE;
+
     public static final int avm_BYTES = java.lang.Integer.SIZE;
 
-    public static final Class<Integer> avm_TYPE = null; // TODO:
+    public static final Class<Integer> avm_TYPE = new Class(java.lang.Integer.TYPE);
 
     public static String avm_toString(int i, int radix) {
         return new String(java.lang.Integer.toString(i, radix));

@@ -29,9 +29,7 @@ public class Double extends Number implements Comparable<Double>{
 
     public static final int avm_SIZE = java.lang.Double.SIZE;
 
-    // TODO
-    public static final Class avm_TYPE = null;
-
+    public static final Class avm_TYPE = new Class(java.lang.Double.TYPE);
 
     public static String avm_toHexString(double a)
     {
@@ -122,10 +120,7 @@ public class Double extends Number implements Comparable<Double>{
     }
 
     public static long avm_doubleToLongBits(double value) {
-        if (!avm_isNaN(value)) {
-            return avm_doubleToRawLongBits(value);
-        }
-        return 0x7ff8000000000000L;
+        return java.lang.Double.doubleToLongBits(value);
     }
 
     public static long avm_doubleToRawLongBits(double value){

@@ -9,7 +9,7 @@ public class Short extends Number{
     public static final short avm_MAX_VALUE = java.lang.Short.MAX_VALUE;
 
     // TODO
-    public static final Class<Short> avm_TYPE = null;
+    public static final Class<Short> avm_TYPE = new Class(java.lang.Short.TYPE);
 
     public static String avm_toString(short s) {
         return Integer.avm_toString((int)s, 10);

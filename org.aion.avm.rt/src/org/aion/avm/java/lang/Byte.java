@@ -8,8 +8,7 @@ public final class Byte extends Object implements Comparable<Byte> {
 
     public static final byte avm_MAX_VALUE = java.lang.Byte.MAX_VALUE;
 
-    //TODO
-    public static final Class<Byte> TYPE = null;
+    public static final Class<Byte> avm_TYPE = new Class(java.lang.Byte.TYPE);;
 
     public static String avm_toString(byte b) {
         return Integer.avm_toString((int)b, 10);

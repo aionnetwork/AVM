@@ -13,9 +13,7 @@ public class Character extends Object {
 
     public static final char avm_MAX_VALUE = '\uFFFF';
 
-    //TODO
-    @SuppressWarnings("unchecked")
-    public static final Class<Character> avm_TYPE = null;
+    public static final Class<Character> avm_TYPE = new Class(java.lang.Character.TYPE);
 
     public static final byte avm_UNASSIGNED = 0;
 

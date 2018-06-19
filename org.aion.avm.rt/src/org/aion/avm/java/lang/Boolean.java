@@ -8,6 +8,8 @@ public class Boolean extends Object implements Comparable<Boolean>{
 
     public static final Boolean avm_FALSE = new Boolean(false);
 
+    public static final Class<Boolean> avm_TYPE = new Class(java.lang.Boolean.TYPE);
+
     private final boolean value;
 
     public Boolean(boolean b) {

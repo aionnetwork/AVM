@@ -24,8 +24,7 @@ public class Float extends Number implements Comparable<Float>{
 
     public static final int avm_BYTES = java.lang.Float.BYTES;
 
-    //TODO
-    public static final Class<Float> TYPE = null;
+    public static final Class<Float> avm_TYPE = new Class(java.lang.Float.TYPE);
 
     private final float value;
 
