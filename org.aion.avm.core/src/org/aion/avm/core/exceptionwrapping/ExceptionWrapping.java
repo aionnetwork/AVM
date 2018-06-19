@@ -46,7 +46,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     Assert.assertTrue(thisClass.startsWith("java.lang"));
                     try {
                         Class<?> clazz = Class.forName(thisClass);
-                        superClass = clazz.getName();
+                        superClass = clazz.getSuperclass().getName();
                     } catch (ClassNotFoundException e) {
                         // This is something we should have caught earlier so this is a hard failure.
                         Assert.unexpected(e);

@@ -51,25 +51,34 @@ public class ExceptionWrappingTest {
         
         // We know that we have an exception, in this test, but the forest normally needs to be populated from a jar so manually assemble it.
         String exceptionClassDotName = TestExceptionResource.UserDefinedException.class.getName();
-        String className = TestExceptionResource.class.getName();
+        String runtimeExceptionClassDotName = TestExceptionResource.UserDefinedRuntimeException.class.getName();
+        String classDotName = TestExceptionResource.class.getName();
         Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(exceptionClassDotName, "java.lang.Throwable", null)
-                .addClass(className, "java.lang.Object", null)
+                .addClass(runtimeExceptionClassDotName, "java.lang.RuntimeException", null)
+                .addClass(classDotName, "java.lang.Object", null)
                 .asMutableForest();
         LazyWrappingTransformer transformer = new LazyWrappingTransformer(classHierarchy);
         
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        transformer.transformClass(className, raw);
+        String classSlashName = Helpers.fulllyQualifiedNameToInternalName(classDotName);
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(classSlashName + ".class");
+        transformer.transformClass(classDotName, raw);
         
-        String exceptionName = className + "$UserDefinedException";
         byte[] exceptionBytes = Helpers.loadRequiredResourceAsBytes(exceptionClassDotName.replaceAll("\\.", "/") + ".class");
-        transformer.transformClass(exceptionName, exceptionBytes);
+        transformer.transformClass(exceptionClassDotName, exceptionBytes);
+        
+        String runtimeExceptionClassSlashName = Helpers.fulllyQualifiedNameToInternalName(runtimeExceptionClassDotName);
+        byte[] runtimeExceptionBytes = Helpers.loadRequiredResourceAsBytes(runtimeExceptionClassSlashName + ".class");
+        transformer.transformClass(runtimeExceptionClassDotName, runtimeExceptionBytes);
         
         Map<String, byte[]> classes = new HashMap<>();
         classes.putAll(transformer.getLateGeneratedClasses());
         
         this.loader = new AvmClassLoader(sharedClassLoader, classes);
-        this.testClass = this.loader.loadUserClassByOriginalName(className);
+        // Load the test class and the exceptions.
+        this.testClass = this.loader.loadUserClassByOriginalName(classDotName);
+        this.loader.loadUserClassByOriginalName(exceptionClassDotName);
+        this.loader.loadUserClassByOriginalName(runtimeExceptionClassDotName);
         
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(this.loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
@@ -164,6 +173,19 @@ public class ExceptionWrappingTest {
         Assert.assertEquals(2, transformedClassNames.size());
         Assert.assertTrue(transformedClassNames.contains(PackageConstants.kUserDotPrefix + exceptionClassDotName));
         Assert.assertTrue(transformedClassNames.contains(PackageConstants.kExceptionWrapperDotPrefix + exceptionClassDotName));
+    }
+
+    /**
+     * Tests User-defined exceptions can be thrown and caught
+     */
+    @Test
+    public void testUserDefinedThrowCatch() throws Exception {
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Method userDefinedCatch = this.testClass.getMethod("avm_userDefinedCatch");
+        
+        Object result = userDefinedCatch.invoke(null);
+        // We should see the "two" string if this was thrown and caught.
+        Assert.assertEquals("two", result.toString());
     }
 
 

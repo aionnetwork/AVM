@@ -88,9 +88,20 @@ public class TestExceptionResource {
         throw new UserDefinedException(message);
     }
 
+    public static void userDefinedThrowRuntime(String message) {
+        throw new UserDefinedRuntimeException(message);
+    }
+
     public static class UserDefinedException extends Throwable {
         private static final long serialVersionUID = 1L;
         public UserDefinedException(String message) {
+            super(message);
+        }
+    }
+
+    public static class UserDefinedRuntimeException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        public UserDefinedRuntimeException(String message) {
             super(message);
         }
     }
