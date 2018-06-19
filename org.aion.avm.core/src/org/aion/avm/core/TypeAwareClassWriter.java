@@ -43,6 +43,9 @@ public class TypeAwareClassWriter extends ClassWriter {
 
 
     private Stack<String> builTypeListFor(String type) {
+        // NOTE:  These are "/-style" names.
+        Assert.assertTrue(-1 == type.indexOf("."));
+        
         // The complexity here is that we have 3 different sources of truth to consult, and they are non-overlapping (only meeting at edges):
         // 1) Static class hierarchy within the contract.
         // 2) Dynamic class hierarchy, built as we operate on the contract code.
@@ -55,19 +58,20 @@ public class TypeAwareClassWriter extends ClassWriter {
             stack.push(nextType);
             
             String nextDotType = Helpers.internalNameToFulllyQualifiedName(nextType);
-            String superName = this.staticClassHierarchy.getSuperClassName(nextDotType);
-            if (null == superName) {
-                superName = getSuper(this.dynamicHierarchyBuilder.asMutableForest(), nextType);
+            String superDotName = this.staticClassHierarchy.getSuperClassName(nextDotType);
+            if (null == superDotName) {
+                superDotName = getSuper(this.dynamicHierarchyBuilder.asMutableForest(), nextDotType);
             }
-            if (null == superName) {
-                String superSlashName = getSuperAsJdkType(nextDotType);
-                if (null != superSlashName) {
-                    superName = Helpers.fulllyQualifiedNameToInternalName(superSlashName);
-                }
+            if (null == superDotName) {
+                superDotName = getSuperAsJdkType(nextDotType);
             }
             
             // If we didn't find it by now, there is something very wrong.
-            Assert.assertNotNull(superName);
+            Assert.assertNotNull(superDotName);
+            Assert.assertTrue(-1 == superDotName.indexOf("/"));
+            
+            String superName = Helpers.fulllyQualifiedNameToInternalName(superDotName);
+            Assert.assertTrue(-1 == superName.indexOf("."));
             nextType = superName;
         }
         stack.push(nextType);

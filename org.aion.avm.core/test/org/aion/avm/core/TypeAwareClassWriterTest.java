@@ -61,7 +61,7 @@ public class TypeAwareClassWriterTest {
     public void testGeneratedOnly() throws Exception {
         HierarchyTreeBuilder builder = new HierarchyTreeBuilder();
         TestClass clazz = new TestClass(sharedClassLoader, builder);
-        builder.addClass("A", "java/lang/Object", null);
+        builder.addClass("A", "java.lang.Object", null);
         builder.addClass("B", "A", null);
         builder.addClass("C", "B", null);
         String common = clazz.testing_getCommonSuperClass("B", "C");

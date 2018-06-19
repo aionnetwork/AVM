@@ -15,6 +15,10 @@ public class HierarchyTreeBuilder {
     private final Map<String, Forest.Node<String, byte[]>> nameCache = new HashMap<>();
 
     public HierarchyTreeBuilder addClass(String name, String superclass, byte[] code) {
+        // NOTE:  These are ".-style" names.
+        Assert.assertTrue(-1 == name.indexOf("/"));
+        Assert.assertTrue(-1 == superclass.indexOf("/"));
+        
         // This better be new.
         Assert.assertTrue(!this.nameCache.containsKey(name));
         

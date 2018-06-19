@@ -162,7 +162,8 @@ public class AvmImpl implements Avm {
             // Note that the processed classes are expected to use .-style names.
             String classDotName = Helpers.internalNameToFulllyQualifiedName(classSlashName);
             processedClasses.put(classDotName, bytecode);
-            dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
+            String superClassDotName = Helpers.internalNameToFulllyQualifiedName(superClassSlashName);
+            dynamicHierarchyBuilder.addClass(classDotName, superClassDotName, bytecode);
         };
         ClassWhiteList classWhiteList = new ClassWhiteList();
         Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);

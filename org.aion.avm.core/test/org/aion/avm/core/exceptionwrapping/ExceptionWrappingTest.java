@@ -210,8 +210,10 @@ public class ExceptionWrappingTest {
         public void transformClass(String name, byte[] inputBytes) {
             HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
             ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (slashSuperName, slashName, bytes) -> {
-                LazyWrappingTransformer.this.transformedClasses.put(slashName.replaceAll("/", "."), bytes);
-                dynamicHierarchyBuilder.addClass(slashName, slashSuperName, bytes);
+                String superDotName = Helpers.internalNameToFulllyQualifiedName(slashSuperName);
+                String dotName = Helpers.internalNameToFulllyQualifiedName(slashName);
+                LazyWrappingTransformer.this.transformedClasses.put(dotName, bytes);
+                dynamicHierarchyBuilder.addClass(dotName, superDotName, bytes);
             };
             ParentPointers parentPointers = new ParentPointers(ClassWhiteList.extractDeclaredClasses(this.classHierarchy), this.classHierarchy);
             ClassWhiteList classWhiteList = new ClassWhiteList();
