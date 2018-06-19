@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class ObjectArray extends Array {
 
-    private Object[] underlying;
+    protected Object[] underlying;
 
     // Static factory
     public static ObjectArray initArray(int c){
@@ -24,6 +24,8 @@ public class ObjectArray extends Array {
     public ObjectArray(Object[] underlying) {
         this.underlying = underlying;
     }
+
+    public ObjectArray(){};
 
     public int length() {
         return this.underlying.length;

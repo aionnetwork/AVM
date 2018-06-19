@@ -584,7 +584,37 @@ public class TestResource {
 
     public boolean testArrayClone(){
         byte[] ba = new byte[10];
-        byte[] cp = ba.clone();
+        byte[] bcp = ba.clone();
+
+        char[] ca = new char[10];
+        char[] ccp = ca.clone();
+
+        double[] da = new double[10];
+        double[] dcp = da.clone();
+
+        float[] fa = new float[10];
+        float[] fcp = fa.clone();
+
+        int[] ia = new int[10];
+        int[] icp = ia.clone();
+
+        long[] ja = new long[10];
+        long[] jcp = ja.clone();
+
+        String[] osa = new String[10];
+        String[] oscp = osa.clone();
+
+        short[] sa = new short[10];
+        short[] scp = sa.clone();
+
+        byte[][][] bamd = new byte[10][10][10];
+        byte[][][] bmdcp = bamd.clone();
+        byte[][] bamdcp2 = bamd[1].clone();
+
+        String[][][] osamd = new String[10][10][10];
+        String[][][] osmdcp = osamd.clone();
+        String[][] osmdcp2 = osamd[1].clone();
+
         return true;
     }
 

@@ -6,6 +6,7 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.rt.Address;
@@ -52,6 +53,8 @@ public class ArrayWrappingTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         classes.put(className, transformer.apply(raw));
         Map<String, byte[]> finalClasses = Helpers.mapIncludingHelperBytecode(classes);
+
+        Helpers.writeBytesToFile(transformer.apply(raw), "/tmp/wrapped.class");
 
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, finalClasses);
 

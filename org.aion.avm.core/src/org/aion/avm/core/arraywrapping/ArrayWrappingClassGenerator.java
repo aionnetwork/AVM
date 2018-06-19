@@ -211,6 +211,9 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
         //Constructor
         genConstructor(cw, zuper);
+
+        //Clone
+        genClone(cw, wrapper);
     }
 
     private static void generateInterface(){
@@ -376,6 +379,45 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         methodVisitor.visitMethodInsn(INVOKESPECIAL, superName, "<init>", "(I)V", false);
         methodVisitor.visitInsn(RETURN);
         methodVisitor.visitMaxs(2, 2);
+        methodVisitor.visitEnd();
+
+
+        methodVisitor = cw.visitMethod(ACC_PUBLIC, "<init>", "([Ljava/lang/Object;)V", null, null);
+        methodVisitor.visitCode();
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, superName, "<init>", "()V", false);
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitVarInsn(ALOAD, 1);
+        methodVisitor.visitFieldInsn(PUTFIELD, "org/aion/avm/arraywrapper/ObjectArray", "underlying", "[Ljava/lang/Object;");
+        methodVisitor.visitInsn(RETURN);
+        methodVisitor.visitMaxs(2, 2);
+        methodVisitor.visitEnd();
+
+        methodVisitor = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+        methodVisitor.visitCode();
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, superName, "<init>", "()V", false);
+        methodVisitor.visitInsn(RETURN);
+        methodVisitor.visitMaxs(1, 1);
+        methodVisitor.visitEnd();
+
+
+    }
+
+    private static void genClone(ClassWriter cw, String wrapper) {
+        MethodVisitor methodVisitor = cw.visitMethod(ACC_PUBLIC, "clone", "()Lorg/aion/avm/internal/IObject;", null, null);
+        methodVisitor.visitCode();
+        methodVisitor.visitTypeInsn(NEW, wrapper);
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitFieldInsn(GETFIELD, wrapper, "underlying", "[Ljava/lang/Object;");
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitFieldInsn(GETFIELD, wrapper, "underlying", "[Ljava/lang/Object;");
+        methodVisitor.visitInsn(ARRAYLENGTH);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "java/util/Arrays", "copyOf", "([Ljava/lang/Object;I)[Ljava/lang/Object;", false);
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, wrapper, "<init>", "([Ljava/lang/Object;)V", false);
+        methodVisitor.visitInsn(ARETURN);
+        methodVisitor.visitMaxs(4, 1);
         methodVisitor.visitEnd();
     }
 
