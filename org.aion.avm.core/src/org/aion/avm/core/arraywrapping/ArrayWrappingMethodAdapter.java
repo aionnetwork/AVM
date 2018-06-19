@@ -180,10 +180,10 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
     @Override
     //TODO: invokedynamic?
-    //TODO: Do we need to patch owner?
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         String desc = ArrayWrappingClassGenerator.updateMethodDesc(descriptor);
-        this.mv.visitMethodInsn(opcode, owner, name, desc, isInterface);
+        String newOwner = ArrayWrappingClassGenerator.getClassWrapper(owner);
+        this.mv.visitMethodInsn(opcode, newOwner, name, desc, isInterface);
     }
 
     @Override

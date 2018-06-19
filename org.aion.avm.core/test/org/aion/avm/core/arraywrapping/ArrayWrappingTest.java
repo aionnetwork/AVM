@@ -328,4 +328,14 @@ public class ArrayWrappingTest {
         Assert.assertEquals(ret, true);
     }
 
+    @Test
+    public void testArrayClone() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod("testArrayClone");
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
 }

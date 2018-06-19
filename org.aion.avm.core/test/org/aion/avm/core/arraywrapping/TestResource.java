@@ -1,5 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.arraywrapper.ByteArray;
+
 public class TestResource {
 
     public interface X {}
@@ -577,6 +579,12 @@ public class TestResource {
         yyy = bbb;
         zzz = ccc;
 
+        return true;
+    }
+
+    public boolean testArrayClone(){
+        byte[] ba = new byte[10];
+        byte[] cp = ba.clone();
         return true;
     }
 
