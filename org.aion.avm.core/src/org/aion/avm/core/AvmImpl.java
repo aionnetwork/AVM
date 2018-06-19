@@ -60,6 +60,11 @@ public class AvmImpl implements Avm {
     private final AvmSharedClassLoader sharedClassLoader;
 
     /**
+     * The TransformedDappStorage is unique and provided by the kernel.
+     */
+    private final TransformedDappStorage codeStorage;
+
+    /**
      * Extracts the DApp module in compressed format into the designated folder.
      *
      * @param jar the DApp module in JAR format
@@ -70,8 +75,9 @@ public class AvmImpl implements Avm {
         return DappModule.readFromJar(jar);
     }
 
-    public AvmImpl(AvmSharedClassLoader sharedClassLoader) {
+    public AvmImpl(AvmSharedClassLoader sharedClassLoader, TransformedDappStorage codeStorage) {
         this.sharedClassLoader = sharedClassLoader;
+        this.codeStorage = codeStorage;
     }
 
     /**
@@ -307,7 +313,7 @@ public class AvmImpl implements Avm {
     }
 
     @Override
-    public AvmResult deploy(byte[] jar, BlockchainRuntime rt, TransformedDappStorage codeStorage) {
+    public AvmResult deploy(byte[] jar, BlockchainRuntime rt) {
         try {
             // read dapp module
             DappModule app = readDapp(jar);
@@ -384,7 +390,7 @@ public class AvmImpl implements Avm {
     }
 
     @Override
-    public AvmResult run(BlockchainRuntime rt, TransformedDappStorage codeStorage) {
+    public AvmResult run(BlockchainRuntime rt) {
         // retrieve the transformed bytecode
         DappModule app;
         try {

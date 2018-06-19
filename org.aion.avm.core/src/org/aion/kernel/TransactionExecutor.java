@@ -71,7 +71,7 @@ public class TransactionExecutor {
         };
 
         // Note that the creator of the AvmImpl needs to provide the shared class loader.
-        AvmImpl avm = new AvmImpl(new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers()));
-        avm.run(rt, codeStorage);
+        AvmImpl avm = new AvmImpl(new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers()), codeStorage);
+        avm.run(rt);
     }
 }

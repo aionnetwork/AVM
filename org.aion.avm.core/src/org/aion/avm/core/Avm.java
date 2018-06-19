@@ -1,7 +1,6 @@
 package org.aion.avm.core;
 
 import org.aion.avm.rt.BlockchainRuntime;
-import org.aion.kernel.TransformedDappStorage;
 
 /**
  * High-level Aion Virtual Machine interface.
@@ -20,7 +19,7 @@ public interface Avm {
      * @param rt     the blockchain runtime
      * @return the result
      */
-    AvmResult deploy(byte[] module, BlockchainRuntime rt, TransformedDappStorage codeStorage);
+    AvmResult deploy(byte[] module, BlockchainRuntime rt);
 
     /**
      * Executes the given DApp, with the provided runtime.
@@ -28,5 +27,5 @@ public interface Avm {
      * @param rt   the blockchain runtime
      * @return the result
      */
-    AvmResult run(BlockchainRuntime rt, TransformedDappStorage codeStorage);
+    AvmResult run(BlockchainRuntime rt);
 }
