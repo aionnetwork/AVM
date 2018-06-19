@@ -114,6 +114,11 @@ public class String extends Object implements CharSequence {
         return this;
     }
 
+    public static String avm_valueOf(CharArray a){
+        java.lang.String s = new java.lang.String(a.getUnderlying());
+        return new String(s);
+    }
+
     //=======================================================
     // Methods below are used by runtime and test code only!
     //========================================================

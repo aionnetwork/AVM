@@ -39,4 +39,10 @@ public class CharArray extends Array {
     public CharArray clone(){
         return new CharArray(Arrays.copyOf(underlying, underlying.length));
     }
+
+    // Internal
+
+    public char[] getUnderlying() {
+        return underlying;
+    }
 }
