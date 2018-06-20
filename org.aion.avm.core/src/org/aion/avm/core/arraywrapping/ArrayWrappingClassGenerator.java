@@ -1,5 +1,6 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
@@ -35,21 +36,21 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/internal/IObject", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
     }
 
-    public static byte[] arrayWrappingFactory(String request, boolean mapMethodName){
+    public static byte[] arrayWrappingFactory(String request, boolean mapMethodName, AvmClassLoader loader){
 
         if (request.startsWith(PackageConstants.kArrayWrapperDotPrefix + "interface._")){
-            return genWrapperInterface(request);
+            return genWrapperInterface(request, loader);
         }
 
         // we only handle class generation request prefixed with org.aion.avm.arraywrapper.$
         if (request.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$")){
-            return genWrapperClass(request, mapMethodName);
+            return genWrapperClass(request, mapMethodName, loader);
         }
 
         return null;
     }
 
-    private static byte[] genWrapperInterface(String requestInterface) {
+    private static byte[] genWrapperInterface(String requestInterface, AvmClassLoader loader) {
 
         if (DEBUG) {
             System.out.println("*********************************");
@@ -66,7 +67,8 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
         Class<?> c = null;
         try {
-            c = Class.forName(elementInterfaceName);
+            c = loader.loadClass(elementInterfaceName);
+            //c = Class.forName(elementInterfaceName);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             Assert.unreachable("No valid component : " + elementInterfaceName);
@@ -101,7 +103,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
     }
 
-    private static byte[] genWrapperClass(String requestClass, boolean mapMethodName) {
+    private static byte[] genWrapperClass(String requestClass, boolean mapMethodName, AvmClassLoader loader) {
         if (DEBUG) {
             System.out.println("*********************************");
             System.out.println("requestClass : " + requestClass);
@@ -124,7 +126,8 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         if (! Arrays.asList(PRIMITIVES).contains(elementClassName)) {
             Class<?> c = null;
             try {
-                c = Class.forName(elementClassName);
+                c = loader.loadClass(elementClassName);
+                //c = Class.forName(elementClassName);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
                 Assert.unreachable("No valid component : " + elementClassName);

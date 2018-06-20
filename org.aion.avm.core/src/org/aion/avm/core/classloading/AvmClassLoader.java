@@ -103,4 +103,10 @@ public class AvmClassLoader extends ClassLoader {
         Assert.assertTrue(this == clazz.getClassLoader());
         return clazz;
     }
+
+    //Internal
+    public byte[] getUserClassBytecodeByOriginalName(String className){
+        String renamedClass = PackageConstants.kUserDotPrefix + className;
+        return this.classes.get(renamedClass);
+    }
 }

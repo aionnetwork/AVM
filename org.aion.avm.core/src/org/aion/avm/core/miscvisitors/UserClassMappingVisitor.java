@@ -299,9 +299,17 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
     private String mapType(String type) {
         Assert.assertTrue(-1 == type.indexOf("."));
         
-        String newType= this.userDefinedClassSlashNames.contains(type)
-                ? (PackageConstants.kUserSlashPrefix + type)
-                : type;
+        String newType = null;
+
+        if (type.startsWith("[")){
+            newType = mapDescriptor(type);
+        }else {
+
+            newType = this.userDefinedClassSlashNames.contains(type)
+                    ? (PackageConstants.kUserSlashPrefix + type)
+                    : type;
+        }
+
         return newType;
     }
 }

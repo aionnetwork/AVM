@@ -2,7 +2,9 @@ package org.aion.avm.core.shadowing.testMath;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
+import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.SimpleRuntime;
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -41,27 +43,14 @@ public class MathShadowingTest {
 
     @Before
     public void testReplaceJavaLang() throws ClassNotFoundException {
-        String testClassName = TestResource.class.getName();
-        byte[] testBytecode = Helpers.loadRequiredResourceAsBytes(testClassName.replaceAll("\\.", "/") + ".class");
-        String mappedClassName = PackageConstants.kUserDotPrefix + testClassName;
+        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
+        SimpleAvm avm = new SimpleAvm(externalRuntime, TestResource.class);
+        AvmClassLoader loader = avm.getClassLoader();
 
-        Function<byte[], byte[]> transformer = (inputBytes) ->
-                new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(Collections.singleton(testClassName)))
-                        .addNextVisitor(new ClassShadowing("org/aion/avm/internal/Helper", new ClassWhiteList()))
-                        .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
-                        .build()
-                        .runAndGetBytecode();
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
+        loader.addHandler(wrapperGenerator);
 
-        Map<String, byte[]> classes = new HashMap<>();
-        byte[] transformed = transformer.apply(testBytecode);
-        classes.put(mappedClassName, transformed);
-
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
-
-        // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
-        clazz = loader.loadClass(mappedClassName);
+        this.clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
     }
 
     @Test

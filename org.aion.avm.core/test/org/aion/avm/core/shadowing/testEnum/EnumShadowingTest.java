@@ -1,25 +1,20 @@
 package org.aion.avm.core.shadowing.testEnum;
 
-
-import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.SimpleRuntime;
+import org.aion.avm.core.SimpleAvm;
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.api.Address;
 import org.junit.*;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
 import java.util.function.Function;
 
 public class EnumShadowingTest {
@@ -39,34 +34,21 @@ public class EnumShadowingTest {
 
     @Before
     public void testReplaceJavaLang() throws ClassNotFoundException {
-        String enumClassName = TestEnum.class.getName();
-        byte[] enumBytecode = Helpers.loadRequiredResourceAsBytes(enumClassName.replaceAll("\\.", "/") + ".class");
-        String enumMappedClassName = PackageConstants.kUserDotPrefix + enumClassName;
+        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
+        SimpleAvm avm = new SimpleAvm(externalRuntime, TestResource.class, TestEnum.class);
+        AvmClassLoader loader = avm.getClassLoader();
 
-        String testClassName = TestResource.class.getName();
-        byte[] testBytecode = Helpers.loadRequiredResourceAsBytes(testClassName.replaceAll("\\.", "/") + ".class");
-        String testMappedClassName = PackageConstants.kUserDotPrefix + testClassName;
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
+        loader.addHandler(wrapperGenerator);
 
-        Set<String> classNamesPreMap = new HashSet<>(Arrays.asList(enumClassName, testClassName));
+        Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestResource.class.getName()), "/tmp/testR.class");
+        Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestEnum.class.getName()), "/tmp/enum.class");
 
-        Function<byte[], byte[]> transformer = (inputBytes) ->
-                new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(classNamesPreMap))
-                        .addNextVisitor(new ClassShadowing(PackageConstants.kInternalSlashPrefix + "Helper", new ClassWhiteList()))
-                        .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
-                        .build()
-                        .runAndGetBytecode();
+        this.clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
 
-        Map<String, byte[]> classes = new HashMap<>();
-        classes.put(testMappedClassName, transformer.apply(testBytecode));
-        classes.put(enumMappedClassName, transformer.apply(enumBytecode));
-
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
-        new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
-        clazz = loader.loadClass(testMappedClassName);
     }
 
-    @Ignore // TODO: fix by junhan
+    @Ignore
     @Test
     public void testEnumAccess() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Object obj = clazz.getConstructor().newInstance();

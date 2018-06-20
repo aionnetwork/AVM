@@ -117,6 +117,7 @@ public class AvmImpl implements Avm, IAvmProxy {
         map.put("java/lang/Class", 4);
         map.put("java/lang/Math", 4);
         map.put("java/lang/String", 4);
+        map.put("java/lang/Enum", 4);
 
         // TODO (issue-79):  Implement the rest of these by walking the runtime, elsewhere (this "4" is probably not right, in most cases).
         map.put("java/lang/AssertionError", 4);
@@ -414,7 +415,7 @@ public class AvmImpl implements Avm, IAvmProxy {
 
         // Construct the per-contract class loader and access the per-contract IHelper instance.
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, classLoader);
         classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
