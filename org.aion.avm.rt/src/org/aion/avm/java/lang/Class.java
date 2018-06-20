@@ -1,5 +1,6 @@
 package org.aion.avm.java.lang;
 
+import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.IHelper;
 
 import java.lang.reflect.Field;
@@ -35,12 +36,13 @@ public class Class<T> extends Object {
     Map<String, T> enumConstantDirectory() {
         Map<String, T> directory = enumConstantDirectory;
         if (directory == null) {
-            T[] universe = getEnumConstantsShared();
+            ObjectArray universe = getEnumConstantsShared();
             if (universe == null)
                 throw new IllegalArgumentException(
                         avm_getName() + " is not an enum type");
-            directory = new HashMap<>(2 * universe.length);
-            for (T constant : universe) {
+            directory = new HashMap<>(2 * universe.length());
+            for (int i = 0; i < universe.length(); i++){
+                T constant = (T) universe.get(i);
                 directory.put(((Enum<?>)constant).avm_name(), constant);
             }
             enumConstantDirectory = directory;
@@ -51,15 +53,15 @@ public class Class<T> extends Object {
 
 
 
-    T[] getEnumConstantsShared() {
-        T[] constants = enumConstants;
+    ObjectArray getEnumConstantsShared() {
+        ObjectArray constants = enumConstants;
         if (constants == null) {
             try {
-                Field f = underlying.getDeclaredField("$VALUES");
+                Field f = underlying.getDeclaredField("avm_$VALUES");
                 f.setAccessible(true);
 
                 java.lang.Object value = f.get(underlying);
-                T[] temporaryConstants = (T[]) value;
+                ObjectArray temporaryConstants = (ObjectArray) value;
                 enumConstants = constants = temporaryConstants;
             }
             // These can happen when users concoct enum-like classes
@@ -71,7 +73,7 @@ public class Class<T> extends Object {
         }
         return constants;
     }
-    private transient volatile T[] enumConstants;
+    private transient volatile ObjectArray enumConstants;
 
 
     //=======================================================

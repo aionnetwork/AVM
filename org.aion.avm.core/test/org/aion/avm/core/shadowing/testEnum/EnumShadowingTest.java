@@ -9,7 +9,6 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.api.Address;
 import org.junit.*;
 
@@ -48,7 +47,6 @@ public class EnumShadowingTest {
 
     }
 
-    @Ignore
     @Test
     public void testEnumAccess() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Object obj = clazz.getConstructor().newInstance();

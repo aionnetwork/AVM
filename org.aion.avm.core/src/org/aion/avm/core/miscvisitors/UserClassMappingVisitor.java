@@ -5,6 +5,7 @@ import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.kernel.Transaction;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
@@ -128,6 +129,17 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
                     }
                 }
                 super.visitFrame(type, nLocal, newLocals, nStack, newStack);
+            }
+
+            @Override
+            public void visitLdcInsn(final Object value) {
+                Object valueToWrite = value;
+                if (value instanceof Type) {
+                    if(((Type) value).getSort() == Type.OBJECT){
+                        valueToWrite = Type.getType(mapDescriptor(((Type) value).getDescriptor()));
+                    }
+                }
+                super.visitLdcInsn(valueToWrite);
             }
         };
     }
