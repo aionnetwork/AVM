@@ -1,7 +1,6 @@
 package org.aion.avm.core.testWallet;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.api.IEventLogger;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -19,11 +18,11 @@ public class Multiowned {
      * Calling a reflection routine which has an array in it is a problem with how our arraywrapping works.
      * This might not matter, in the future, but may be something we need to make easier to manage (maybe the arraywrappers have factories, or something).
      */
-    public static Multiowned avoidArrayWrappingFactory(IEventLogger logger, Address sender, Address owner1, Address owner2, int votesRequiredPerOperation) {
+    public static Multiowned avoidArrayWrappingFactory(EventLogger logger, Address sender, Address owner1, Address owner2, int votesRequiredPerOperation) {
         return new Multiowned(logger, sender, new Address[] {owner1, owner2}, votesRequiredPerOperation);
     }
 
-    private final IEventLogger logger;
+    private final EventLogger logger;
     // The owners.
     private final AionSet<Address> owners;
     private final AionList<Address> ownersByJoinOrder;
@@ -32,7 +31,7 @@ public class Multiowned {
     // The number of owners which must confirm the operation before it is run.
     private int numberRequired;
 
-    public Multiowned(IEventLogger logger, Address sender, Address[] requestedOwners, int votesRequiredPerOperation) {
+    public Multiowned(EventLogger logger, Address sender, Address[] requestedOwners, int votesRequiredPerOperation) {
         this.logger = logger;
         this.owners = new AionSet<>();
         this.ownersByJoinOrder = new AionList<>();

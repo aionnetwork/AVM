@@ -59,12 +59,13 @@ public class Deployer {
         Address extra1 = buildAddress(2);
         Address extra2 = buildAddress(3);
         TestLogger logger = new TestLogger();
+        EventLogger eventLogger = new EventLogger(logger);
         int requiredVotes = 2;
-        Multiowned owners = Multiowned.avoidArrayWrappingFactory(logger, sender, extra1, extra2, requiredVotes);
+        Multiowned owners = Multiowned.avoidArrayWrappingFactory(eventLogger, sender, extra1, extra2, requiredVotes);
         long dailyLimit = 5000;
         long startInDays = 1;
         Daylimit limit = new Daylimit(owners, dailyLimit, startInDays);
-        Wallet wallet = new Wallet(logger, owners, limit);
+        Wallet wallet = new Wallet(eventLogger, owners, limit);
         
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
@@ -176,6 +177,7 @@ public class Deployer {
         helper.loadClass(Daylimit.class);
         helper.loadClass(Wallet.class);
         helper.loadClass(Wallet.Transaction.class);
+        helper.loadClass(EventLogger.class);
         
         AvmImpl avm = new AvmImpl(sharedClassLoader, null);
         Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
@@ -200,11 +202,14 @@ public class Deployer {
         Address extra1 = buildAddress(2);
         Address extra2 = buildAddress(3);
         TestLogger logger = new TestLogger();
+        Class<?> eventLoggerClass = loader.loadUserClassByOriginalName(EventLogger.class.getName());
+        Object eventLoggerInstance = eventLoggerClass.getConstructor(IEventLogger.class).newInstance(logger);
         int requiredVotes = 2;
         
         // Note that we need to call through this specially-made factory method to avoid needing to create an array wrapper on Address[].
         Class<?> multiownerClass = loader.loadUserClassByOriginalName(Multiowned.class.getName());
-        Object multiownedInstance = multiownerClass.getMethod(UserClassMappingVisitor.mapMethodName("avoidArrayWrappingFactory"), IEventLogger.class, Address.class, Address.class, Address.class, int.class).invoke(null, logger, sender, extra1, extra2, requiredVotes);
+        Object multiownedInstance = multiownerClass.getMethod(UserClassMappingVisitor.mapMethodName("avoidArrayWrappingFactory"), eventLoggerClass, Address.class, Address.class, Address.class, int.class)
+                .invoke(null, eventLoggerInstance, sender, extra1, extra2, requiredVotes);
         long dailyLimit = 5000;
         long startInDays = 1;
         
@@ -212,7 +217,7 @@ public class Deployer {
         Object daylimitInstance = daylimitClass.getConstructor(multiownerClass, long.class, long.class).newInstance(multiownedInstance, dailyLimit, startInDays);
         
         Class<?> walletClass = loader.loadUserClassByOriginalName(Wallet.class.getName());
-        Object walletInstance = walletClass.getConstructor(IEventLogger.class, multiownerClass, daylimitClass).newInstance(logger, multiownedInstance, daylimitInstance);
+        Object walletInstance = walletClass.getConstructor(eventLoggerClass, multiownerClass, daylimitClass).newInstance(eventLoggerInstance, multiownedInstance, daylimitInstance);
         
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);

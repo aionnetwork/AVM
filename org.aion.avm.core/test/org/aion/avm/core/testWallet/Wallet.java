@@ -1,7 +1,6 @@
 package org.aion.avm.core.testWallet;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.api.IEventLogger;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
 
@@ -12,12 +11,12 @@ import org.aion.avm.userlib.AionMap;
  * interfaces.
  */
 public class Wallet implements IMultisig {
-    private final IEventLogger logger;
+    private final EventLogger logger;
     private final Multiowned owners;
     private final Daylimit limit;
     private final AionMap<BytesKey, Transaction> transactions;
 
-    public Wallet(IEventLogger logger, Multiowned owners, Daylimit limit) {
+    public Wallet(EventLogger logger, Multiowned owners, Daylimit limit) {
         this.logger = logger;
         this.owners = owners;
         this.limit = limit;
