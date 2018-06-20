@@ -1,6 +1,9 @@
 package org.aion.avm.core.testWallet;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -158,74 +161,27 @@ public class Deployer {
     private static void invokeTransformed(String[] args) throws Throwable {
         AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
         
-        String className = Multiowned.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        
-        // Contract "user-space" library.
-        String aionMapClassName = AionMap.class.getName();
-        byte[] aionMapBytes = Helpers.loadRequiredResourceAsBytes(aionMapClassName.replaceAll("\\.", "/") + ".class");
-        String aionSetClassName = AionSet.class.getName();
-        byte[] aionSetBytes = Helpers.loadRequiredResourceAsBytes(aionSetClassName.replaceAll("\\.", "/") + ".class");
-        String aionListClassName = AionList.class.getName();
-        byte[] aionListBytes = Helpers.loadRequiredResourceAsBytes(aionListClassName.replaceAll("\\.", "/") + ".class");
-        String imultisigName = IMultisig.class.getName();
-        byte[] imultisigBytes = Helpers.loadRequiredResourceAsBytes(imultisigName.replaceAll("\\.", "/") + ".class");
-        String operationName = Operation.class.getName();
-        byte[] operationBytes = Helpers.loadRequiredResourceAsBytes(operationName.replaceAll("\\.", "/") + ".class");
-        String wrapperName = ByteArrayWrapper.class.getName();
-        byte[] wrapperBytes = Helpers.loadRequiredResourceAsBytes(wrapperName.replaceAll("\\.", "/") + ".class");
-        String byteHelpersName = ByteArrayHelpers.class.getName();
-        byte[] byteHelpersBytes = Helpers.loadRequiredResourceAsBytes(byteHelpersName.replaceAll("\\.", "/") + ".class");
-        String bytesKeyName = BytesKey.class.getName();
-        byte[] bytesKeyBytes = Helpers.loadRequiredResourceAsBytes(bytesKeyName.replaceAll("\\.", "/") + ".class");
-        String pendingName = Multiowned.class.getName() + "$PendingState";
-        byte[] pendingBytes = Helpers.loadRequiredResourceAsBytes(pendingName.replaceAll("\\.", "/") + ".class");
-        String reqExcName = RequireFailedException.class.getName();
-        byte[] reqExcBytes = Helpers.loadRequiredResourceAsBytes(reqExcName.replaceAll("\\.", "/") + ".class");
-        String daylimitName = Daylimit.class.getName();
-        byte[] daylimitBytes = Helpers.loadRequiredResourceAsBytes(daylimitName.replaceAll("\\.", "/") + ".class");
-        String walletName = Wallet.class.getName();
-        byte[] walletBytes = Helpers.loadRequiredResourceAsBytes(walletName.replaceAll("\\.", "/") + ".class");
-        String walletTransactionName = walletName + "$Transaction";
-        byte[] walletTransactionBytes = Helpers.loadRequiredResourceAsBytes(walletTransactionName.replaceAll("\\.", "/") + ".class");
-        
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", raw)
-                .addClass(aionMapClassName, "java.lang.Object", aionMapBytes)
-                .addClass(aionSetClassName, "java.lang.Object", aionSetBytes)
-                .addClass(aionListClassName, "java.lang.Object", aionListBytes)
-                .addClass(imultisigName, "java.lang.Object", imultisigBytes)
-                .addClass(wrapperName, "java.lang.Object", wrapperBytes)
-                .addClass(byteHelpersName, "java.lang.Object", byteHelpersBytes)
-                .addClass(bytesKeyName, "java.lang.Object", bytesKeyBytes)
-                .addClass(operationName, wrapperName, operationBytes)
-                .addClass(pendingName, "java.lang.Object", pendingBytes)
-                .addClass(reqExcName, "java.lang.RuntimeException", reqExcBytes)
-                .addClass(daylimitName, "java.lang.Object", daylimitBytes)
-                .addClass(walletName, "java.lang.Object", walletBytes)
-                .addClass(walletTransactionName, "java.lang.Object", walletTransactionBytes)
-                .asMutableForest();
+        LoadingHelper helper = new LoadingHelper();
+        helper.loadClass(Multiowned.class);
+        helper.loadClass(AionMap.class);
+        helper.loadClass(AionSet.class);
+        helper.loadClass(AionList.class);
+        helper.loadClass(IMultisig.class);
+        helper.loadClass(ByteArrayWrapper.class);
+        helper.loadClass(Operation.class);
+        helper.loadClass(ByteArrayHelpers.class);
+        helper.loadClass(BytesKey.class);
+        helper.loadClass(Multiowned.PendingState.class);
+        helper.loadClass(RequireFailedException.class);
+        helper.loadClass(Daylimit.class);
+        helper.loadClass(Wallet.class);
+        helper.loadClass(Wallet.Transaction.class);
         
         AvmImpl avm = new AvmImpl(sharedClassLoader, null);
         Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
-        Map<String, Integer> allObjectSizes = AvmImpl.computeObjectSizes(classHierarchy, runtimeObjectSizes);
+        Map<String, Integer> allObjectSizes = AvmImpl.computeObjectSizes(helper.getClassHierarchy(), runtimeObjectSizes);
         
-        Map<String, byte[]> inputClasses = Map.ofEntries(Map.entry(className, raw)
-                , Map.entry(aionMapClassName, aionMapBytes)
-                , Map.entry(aionSetClassName, aionSetBytes)
-                , Map.entry(aionListClassName, aionListBytes)
-                , Map.entry(imultisigName, imultisigBytes)
-                , Map.entry(wrapperName, wrapperBytes)
-                , Map.entry(byteHelpersName, byteHelpersBytes)
-                , Map.entry(bytesKeyName, bytesKeyBytes)
-                , Map.entry(operationName, operationBytes)
-                , Map.entry(pendingName, pendingBytes)
-                , Map.entry(reqExcName, reqExcBytes)
-                , Map.entry(daylimitName, daylimitBytes)
-                , Map.entry(walletName, walletBytes)
-                , Map.entry(walletTransactionName, walletTransactionBytes)
-        );
-        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(inputClasses, classHierarchy, allObjectSizes));
+        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(helper.igetInputClasses(), helper.getClassHierarchy(), allObjectSizes));
         
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, transformedClasses);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
@@ -247,15 +203,15 @@ public class Deployer {
         int requiredVotes = 2;
         
         // Note that we need to call through this specially-made factory method to avoid needing to create an array wrapper on Address[].
-        Class<?> multiownerClass = loader.loadUserClassByOriginalName(className);
+        Class<?> multiownerClass = loader.loadUserClassByOriginalName(Multiowned.class.getName());
         Object multiownedInstance = multiownerClass.getMethod(UserClassMappingVisitor.mapMethodName("avoidArrayWrappingFactory"), IEventLogger.class, Address.class, Address.class, Address.class, int.class).invoke(null, logger, sender, extra1, extra2, requiredVotes);
         long dailyLimit = 5000;
         long startInDays = 1;
         
-        Class<?> daylimitClass = loader.loadUserClassByOriginalName(daylimitName);
+        Class<?> daylimitClass = loader.loadUserClassByOriginalName(Daylimit.class.getName());
         Object daylimitInstance = daylimitClass.getConstructor(multiownerClass, long.class, long.class).newInstance(multiownedInstance, dailyLimit, startInDays);
         
-        Class<?> walletClass = loader.loadUserClassByOriginalName(walletName);
+        Class<?> walletClass = loader.loadUserClassByOriginalName(Wallet.class.getName());
         Object walletInstance = walletClass.getConstructor(IEventLogger.class, multiownerClass, daylimitClass).newInstance(logger, multiownedInstance, daylimitInstance);
         
         // First of all, just prove that we can send them some energy.
@@ -541,6 +497,58 @@ public class Deployer {
         public int externalGetNextHashCode() {
             // Just return anything.
             return 0;
+        }
+    }
+
+
+    private static class LoadingHelper {
+        private final HierarchyTreeBuilder treeBuilder;
+        private final Map<String, byte[]> inputClasses;
+        
+        public LoadingHelper() {
+            this.treeBuilder = new HierarchyTreeBuilder();
+            this.inputClasses = new HashMap<>();
+        }
+        
+        public void loadClass(Class<?> clazz) {
+            // We want to get the name of this class to load the class file.
+            String className = clazz.getName();
+            byte[] bytes = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+            Class<?> superClass = clazz.getSuperclass();
+            // Note that superClass is null for interfaces so we just say they are under Object.
+            if (null == superClass) {
+                superClass = Object.class;
+            }
+            this.treeBuilder.addClass(className, superClass.getName(), bytes);
+            this.inputClasses.put(className, bytes);
+            
+            // Note that, in some cases, a compiler may generate an anonymous inner class (even in cases where there is a named inner class) so search for those, automatically.
+            int i = 1;
+            String innerName = className + "$" + Integer.toString(i);
+            InputStream stream = clazz.getClassLoader().getResourceAsStream(innerName.replaceAll("\\.", "/") + ".class");
+            while (null != stream) {
+                byte[] raw = null;
+                try {
+                    raw = stream.readAllBytes();
+                    stream.close();
+                } catch (IOException e) {
+                    Assert.unexpected(e);
+                }
+                this.treeBuilder.addClass(innerName, Object.class.getName(), raw);
+                this.inputClasses.put(innerName, raw);
+                
+                i += 1;
+                innerName = className + "$" + Integer.toString(i);
+                stream = clazz.getClassLoader().getResourceAsStream(innerName.replaceAll("\\.", "/") + ".class");
+            }
+        }
+        
+        public Map<String, byte[]> igetInputClasses() {
+            return this.inputClasses;
+        }
+        
+        public Forest<String, byte[]> getClassHierarchy() {
+            return this.treeBuilder.asMutableForest();
         }
     }
 }

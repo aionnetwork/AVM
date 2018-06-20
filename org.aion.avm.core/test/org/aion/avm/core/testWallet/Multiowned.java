@@ -212,7 +212,8 @@ public class Multiowned {
     }
 
 
-    private static class PendingState {
+    // (this is public just for easy referencing in the Deployer's loader logic).
+    public static class PendingState {
         public final AionSet<Address> confirmedOwners = new AionSet<>();
     }
 }

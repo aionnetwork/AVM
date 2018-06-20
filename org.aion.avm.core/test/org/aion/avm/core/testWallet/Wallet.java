@@ -150,7 +150,8 @@ public class Wallet implements IMultisig {
 
 
     // Transaction structure to remember details of transaction lest it need be saved for a later call.
-    private static class Transaction {
+    // (this is public just for easy referencing in the Deployer's loader logic).
+    public static class Transaction {
         public Address to;
         public long value;
         public byte[] data;
