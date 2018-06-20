@@ -29,7 +29,7 @@ public class AvmImplDeployAndRunTest {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
         BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit, null);
         AvmImpl avm = new AvmImpl(sharedClassLoader, codeStorage);
-        AvmResult result = avm.deploy(jar, rt);
+        AvmResult result = avm.deploy(jar, null, rt);
 
         return result;
     }
@@ -47,7 +47,7 @@ public class AvmImplDeployAndRunTest {
         byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01};
         BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit, txData);
         AvmImpl avm = new AvmImpl(sharedClassLoader, codeStorage);
-        AvmResult result = avm.deploy(jar, rt);
+        AvmResult result = avm.deploy(jar, null, rt);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
     }

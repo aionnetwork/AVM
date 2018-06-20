@@ -1,8 +1,9 @@
 package org.aion.avm.core;
 
 import org.aion.avm.rt.Address;
+import org.aion.avm.rt.IAvmResultProxy;
 
-public class AvmResult {
+public class AvmResult implements IAvmResultProxy {
 
     public enum  Code {
         SUCCESS, INVALID_JAR, INVALID_CODE, INVALID_CALL, OUT_OF_ENERGY, FAILURE

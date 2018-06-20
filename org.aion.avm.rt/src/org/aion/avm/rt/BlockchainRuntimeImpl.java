@@ -5,6 +5,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.java.lang.String;
 
 public class BlockchainRuntimeImpl implements BlockchainRuntime {
+    private final IAvmProxy avm;
     private final byte[] sender;
     private final byte[] address;
     private final long energyLimit;
@@ -15,18 +16,12 @@ public class BlockchainRuntimeImpl implements BlockchainRuntime {
     private Address cachedAddress;
     private ByteArray cachedTxData;
 
-    public BlockchainRuntimeImpl(byte[] sender, byte[] address, long energyLimit) {
-        this.sender = sender;
-        this.address = address;
-        this.energyLimit = energyLimit;
-        this.txData = null;
-    }
-
-    public BlockchainRuntimeImpl(byte[] sender, byte[] address, long energyLimit, byte[] txData) {
+    public BlockchainRuntimeImpl(byte[] sender, byte[] address, long energyLimit, byte[] txData, IAvmProxy avm) {
         this.sender = sender;
         this.address = address;
         this.energyLimit = energyLimit;
         this.txData = txData;
+        this.avm = avm;
     }
 
     @Override
@@ -73,12 +68,12 @@ public class BlockchainRuntimeImpl implements BlockchainRuntime {
 
     @Override
     public void avm_updateCode(ByteArray newCode, String codeVersion) {
-        throw new RuntimeAssertionError("This implementation doesn't handle this");
+        avm.deploy(newCode.getUnderlying(), codeVersion,this);
     }
 
     @Override
     public void avm_selfDestruct(Address beneficiary) {
-        throw new RuntimeAssertionError("This implementation doesn't handle this");
+        avm.removeDapp(beneficiary, this);
     }
 
     @Override

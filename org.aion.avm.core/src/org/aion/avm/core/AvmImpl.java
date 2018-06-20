@@ -26,6 +26,7 @@ import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.BlockchainRuntime;
+import org.aion.avm.rt.IAvmProxy;
 import org.aion.kernel.TransformedDappStorage;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -49,7 +50,7 @@ import java.util.jar.Manifest;
 import static org.aion.avm.core.FileUtils.getFSRootDirFor;
 import static org.aion.avm.core.FileUtils.putToTempDir;
 
-public class AvmImpl implements Avm {
+public class AvmImpl implements Avm, IAvmProxy {
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
     private static final String HELPER_CLASS = PackageConstants.kInternalSlashPrefix + "Helper";
 
@@ -309,7 +310,7 @@ public class AvmImpl implements Avm {
     }
 
     @Override
-    public AvmResult deploy(byte[] jar, BlockchainRuntime rt) {
+    public AvmResult deploy(byte[] jar, org.aion.avm.java.lang.String codeVersion, BlockchainRuntime rt) {
         try {
             // read dapp module
             DappModule app = readDapp(jar);
@@ -359,7 +360,17 @@ public class AvmImpl implements Avm {
 
             // store transformed dapp
             File transformedDappJar = app.createJar(rt.avm_getAddress());
-            codeStorage.storeCode(rt.avm_getAddress().unwrap(), TransformedDappStorage.CodeVersion.VERSION_1_0, transformedDappJar);
+            TransformedDappStorage.CodeVersion codeVersionFormat = null;
+            if (codeVersion == null) {
+                codeVersionFormat = TransformedDappStorage.CodeVersion.VERSION_1_0;
+            }
+            else {
+                codeStorage.matchCodeVersion(codeVersion.toString());
+            }
+            if (codeVersionFormat == null) {
+                throw new InvalidTxDataException(); // code version is not accepted.
+            }
+            codeStorage.storeCode(rt.avm_getAddress().unwrap(), codeVersionFormat, transformedDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * jar.length);
@@ -442,6 +453,14 @@ public class AvmImpl implements Avm {
 
             return new AvmResult(AvmResult.Code.FAILURE, 0);
         }
+    }
+
+    @Override
+    public AvmResult removeDapp(Address beneficiary, BlockchainRuntime rt) {
+        codeStorage.removeDapp(rt.getAddress().unwrap());
+        // TODO - ask the kernel to send the remaining balance to the beneficiary.
+
+        return new AvmResult(AvmResult.Code.SUCCESS, 0);
     }
 
     /**

@@ -19,7 +19,7 @@ public interface Avm {
      * @param rt     the blockchain runtime
      * @return the result
      */
-    AvmResult deploy(byte[] module, BlockchainRuntime rt);
+    AvmResult deploy(byte[] module, org.aion.avm.java.lang.String codeVersion, BlockchainRuntime rt);
 
     /**
      * Executes the given DApp, with the provided runtime.

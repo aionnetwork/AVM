@@ -13,7 +13,8 @@ public class TransformedDappStorage {
      * An enum of the code version.
      */
     public enum CodeVersion {
-        VERSION_1_0  ("1.0");
+        VERSION_1_0  ("1.0"),
+        VERSION_2_0  ("2.0");
 
         private final String version;
 
@@ -24,6 +25,17 @@ public class TransformedDappStorage {
         public String getVersion() {
             return version;
         }
+    }
+
+    private static final Map<String, CodeVersion> stringCodeVersionMap = new HashMap<>();
+    static {
+        for (CodeVersion codeVersion : CodeVersion.values()) {
+            stringCodeVersionMap.put(codeVersion.getVersion(), codeVersion);
+        }
+    }
+
+    public CodeVersion matchCodeVersion(String codeVersionString) {
+        return stringCodeVersionMap.get(codeVersionString);
     }
 
     /**
