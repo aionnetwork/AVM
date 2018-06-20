@@ -89,18 +89,19 @@ public class Deployer {
         // Send a normal transaction, which is under the limit, and observe that it goes through.
         Address transactionTo = buildAddress(6);
         long transactionSize = dailyLimit - 1;
-        Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
+        Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
         wallet.execute(new TestingRuntime(sender, new byte[] {5,6,42}), transactionTo, transactionSize, new byte[] {1});
-        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
         
         // Now, send another transaction, observe that it requires multisig confirmation, and confirm it with our new owner.
         Address confirmTransactionTo = buildAddress(7);
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kConfirmationNeeded));
         byte[] toConfirm = wallet.execute(new TestingRuntime(sender, new byte[] {5,6,42}), confirmTransactionTo, transactionSize, new byte[] {1});
-        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kConfirmationNeeded));
         boolean didConfirm = wallet.confirm(new TestingRuntime(newOwner, new byte[] {5,6,42}), toConfirm);
         Assert.assertTrue(didConfirm);
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kMultiTransact));
         
         // Change the count of required confirmations.
         try {
@@ -159,6 +160,9 @@ public class Deployer {
         wallet.removeOwner(new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerRemoved));
         Assert.assertTrue(wallet.getOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), 0) == extra2);
+        
+        // We should have seen 13 confirmations over the course of the test run.
+        Assert.assertTrue(13 == loggingRuntime.getEventCount(EventLogger.kConfirmation));
     }
 
     private static void invokeTransformed(String[] args) throws Throwable {
@@ -244,20 +248,21 @@ public class Deployer {
         // Send a normal transaction, which is under the limit, and observe that it goes through.
         Address transactionTo = buildAddress(6);
         long transactionSize = dailyLimit - 1;
-        Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
+        Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kSingleTransact));
         walletClass.getMethod(UserClassMappingVisitor.mapMethodName("execute"), BlockchainRuntime.class, Address.class, long.class, ByteArray.class).invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), transactionTo, transactionSize, new ByteArray(new byte[] {1}));
-        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kSingleTransact));
         
         // Now, send another transaction, observe that it requires multisig confirmation, and confirm it with our new owner.
         Address confirmTransactionTo = buildAddress(7);
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kConfirmationNeeded));
         ByteArray toConfirm = (ByteArray)walletClass.getMethod(UserClassMappingVisitor.mapMethodName("execute"), BlockchainRuntime.class, Address.class, long.class, ByteArray.class)
                 .invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), confirmTransactionTo, transactionSize, new ByteArray(new byte[] {1}));
-        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kSingleTransact));
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kConfirmationNeeded));
         boolean didConfirm = (Boolean)walletClass.getMethod(UserClassMappingVisitor.mapMethodName("confirm"), BlockchainRuntime.class, ByteArray.class)
                 .invoke(walletInstance, new TestingRuntime(newOwner, new byte[] {5,6,42}), toConfirm);
         Assert.assertTrue(didConfirm);
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kMultiTransact));
         
         // Change the count of required confirmations.
         try {
@@ -336,6 +341,9 @@ public class Deployer {
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kOwnerRemoved));
         Assert.assertTrue(extra2 == walletClass.getMethod(UserClassMappingVisitor.mapMethodName("getOwner"), BlockchainRuntime.class, int.class)
                 .invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), 0));
+        
+        // We should have seen 13 confirmations over the course of the test run.
+        Assert.assertTrue(13 == externalRuntime.getEventCount(EventLogger.kConfirmation));
     }
 
     private static Address buildAddress(int fillByte) {

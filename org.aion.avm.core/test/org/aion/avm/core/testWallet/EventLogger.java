@@ -8,19 +8,25 @@ import org.aion.avm.api.BlockchainRuntime;
  * In the future, we may change how we expose event logging.
  */
 public class EventLogger {
+    public static final String kConfirmation = "confirmation";
     public static final String kRevoke = "revoke";
     public static final String kOwnerChanged = "ownerChanged";
     public static final String kOwnerAdded = "ownerAdded";
     public static final String kOwnerRemoved = "ownerRemoved";
     public static final String kRequirementChanged = "requirementChanged";
     public static final String kDeposit = "deposit";
-    public static final String kTransactionUnderLimit = "transactionUnderLimit";
+    public static final String kSingleTransact = "singleTransact";
+    public static final String kMultiTransact = "multiTransact";
     public static final String kConfirmationNeeded = "confirmationNeeded";
 
     private final BlockchainRuntime logSink;
 
     public EventLogger(BlockchainRuntime logSink) {
         this.logSink = logSink;
+    }
+
+    public void confirmation() {
+        this.logSink.log(kConfirmation.getBytes(), null);
     }
 
     public void revoke() {
@@ -47,8 +53,12 @@ public class EventLogger {
         this.logSink.log(kDeposit.getBytes(), null);
     }
 
-    public void transactionUnderLimit() {
-        this.logSink.log(kTransactionUnderLimit.getBytes(), null);
+    public void singleTransact() {
+        this.logSink.log(kSingleTransact.getBytes(), null);
+    }
+
+    public void multiTransact() {
+        this.logSink.log(kMultiTransact.getBytes(), null);
     }
 
     public void confirmationNeeded() {

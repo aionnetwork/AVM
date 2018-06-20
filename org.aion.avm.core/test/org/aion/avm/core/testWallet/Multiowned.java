@@ -199,6 +199,7 @@ public class Multiowned {
             }
             
             // Add us to the set of those who have confirmed.
+            this.logger.confirmation();
             state.confirmedOwners.add(sender);
             
             // If we were the last required, return true and clean up.
