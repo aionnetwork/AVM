@@ -417,6 +417,10 @@ public class Deployer {
             // We probably want to capture/verify this more concretely but, for now, just return the payload to synthesize "something".
             return payload;
         }
+        @Override
+        public void avm_log(ByteArray index0, ByteArray data) {
+            // TODO:  Implement to complete issue-103.
+        }
     }
 
 

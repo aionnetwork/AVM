@@ -100,4 +100,9 @@ public class BlockchainRuntimeImpl implements BlockchainRuntime {
     public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
         throw new RuntimeAssertionError("This implementation doesn't handle this");
     }
+
+    @Override
+    public void avm_log(ByteArray index0, ByteArray data) {
+        throw new RuntimeAssertionError("This implementation doesn't handle this");
+    }
 }

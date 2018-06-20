@@ -102,6 +102,14 @@ public interface BlockchainRuntime {
      */
     ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload);
 
+    /**
+     * Logs information for offline analysis or external listening.
+     * 
+     * @param index0 One identifying element for the event.
+     * @param data Arbitrary unstructed data assocated with the event.
+     */
+    void avm_log(ByteArray index0, ByteArray data);
+
 
     // Compiler-facing implementation.
     default Address getSender() { return avm_getSender(); }
@@ -129,4 +137,6 @@ public interface BlockchainRuntime {
     default byte[] sha3(byte[] data) { return avm_sha3(new ByteArray(data)).getUnderlying(); }
 
     default byte[] call(Address targetAddress, long energyToSend, byte[] payload) { return avm_call(targetAddress, energyToSend, new ByteArray(payload)).getUnderlying(); }
+
+    default void log(byte[] index0, byte[] data) { avm_log(new ByteArray(index0), (null != data) ? new ByteArray(data) : null); }
 }

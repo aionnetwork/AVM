@@ -93,6 +93,10 @@ public class TransactionExecutor {
             public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
                 return null;
             }
+
+            @Override
+            public void avm_log(ByteArray index0, ByteArray data) {
+            }
         };
 
         // Note that the creator of the AvmImpl needs to provide the shared class loader.

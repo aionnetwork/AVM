@@ -71,4 +71,8 @@ public class ContractRuntimeWrapper extends org.aion.avm.java.lang.Object implem
     public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
         return this.externalRuntime.avm_call(targetAddress, energyToSend, payload);
     }
+    @Override
+    public void avm_log(ByteArray index0, ByteArray data) {
+        this.externalRuntime.avm_log(index0, data);
+    }
 }

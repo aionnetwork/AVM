@@ -118,4 +118,9 @@ public class SimpleRuntime implements BlockchainRuntime {
         Assert.fail("This implementation doesn't handle this");
         return null;
     }
+
+    @Override
+    public void avm_log(ByteArray index0, ByteArray data) {
+        Assert.fail("This implementation doesn't handle this");
+    }
 }
