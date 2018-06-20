@@ -9,7 +9,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.rt.BlockchainRuntime;
+import org.aion.avm.api.BlockchainRuntime;
 
 
 /**

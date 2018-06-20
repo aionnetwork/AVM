@@ -5,8 +5,8 @@ import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.java.lang.String;
-import org.aion.avm.rt.Address;
-import org.aion.avm.rt.BlockchainRuntime;
+import org.aion.avm.api.Address;
+import org.aion.avm.api.BlockchainRuntime;
 
 
 public class TransactionExecutor {

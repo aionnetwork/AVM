@@ -13,8 +13,8 @@ sed -i 's/import org.aion.avm.arraywrapper.ByteArray;//g' org/aion/avm/rt/*.java
 sed -i 's/ByteArray/byte[]/g' org/aion/avm/rt/*.java
 
 # generate module info
-echo "module org.aion.avm.rt {
-    exports org.aion.avm.rt;
+echo "module org.aion.avm.api {
+    exports org.aion.avm.api;
 }" > module-info.java
 
 # compile

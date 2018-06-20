@@ -1,7 +1,7 @@
 package org.aion.kernel;
 
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.rt.Address;
+import org.aion.avm.api.Address;
 import org.junit.Test;
 
 import java.io.File;

@@ -2,8 +2,8 @@ package org.aion.avm.core;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.java.lang.String;
-import org.aion.avm.rt.Address;
-import org.aion.avm.rt.BlockchainRuntime;
+import org.aion.avm.api.Address;
+import org.aion.avm.api.BlockchainRuntime;
 
 
 

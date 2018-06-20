@@ -1,7 +1,7 @@
 package org.aion.avm.core.testWallet;
 
-import org.aion.avm.rt.Address;
-import org.aion.avm.rt.BlockchainRuntime;
+import org.aion.avm.api.Address;
+import org.aion.avm.api.BlockchainRuntime;
 
 
 //interface contract for multisig proxy contracts; see below for docs.

@@ -24,9 +24,9 @@ import org.aion.avm.internal.FatalAvmError;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.rt.Address;
-import org.aion.avm.rt.BlockchainRuntime;
-import org.aion.avm.rt.IAvmProxy;
+import org.aion.avm.api.Address;
+import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.api.IAvmProxy;
 import org.aion.kernel.TransformedDappStorage;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -89,7 +89,7 @@ public class AvmImpl implements Avm, IAvmProxy {
      * <li>no native method</li>
      * <li>no invalid opcode</li>
      * <li>package name does not start with <code>org.aion.avm</code></li>
-     * <li>no access to any <code>org.aion.avm</code> packages but the <code>org.aion.avm.rt</code> package</li>
+     * <li>no access to any <code>org.aion.avm</code> packages but the <code>org.aion.avm.api</code> package</li>
      * <li>any assumptions that the class transformation has made</li>
      * <li>TODO: add more</li>
      * </ul>

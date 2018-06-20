@@ -8,8 +8,8 @@ import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyError;
-import org.aion.avm.rt.Address;
-import org.aion.avm.rt.BlockchainRuntime;
+import org.aion.avm.api.Address;
+import org.aion.avm.api.BlockchainRuntime;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

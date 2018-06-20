@@ -5,7 +5,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.rt.BlockchainRuntime;
+import org.aion.avm.api.BlockchainRuntime;
 
 import java.util.Collections;
 import java.util.HashMap;

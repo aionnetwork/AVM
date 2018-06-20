@@ -9,7 +9,7 @@ import org.aion.avm.java.lang.Boolean;
 import org.aion.avm.java.lang.Character;
 import org.aion.avm.java.lang.Integer;
 import org.aion.avm.java.lang.String;
-import org.aion.avm.rt.Address;
+import org.aion.avm.api.Address;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

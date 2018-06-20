@@ -14,7 +14,7 @@ import org.aion.avm.core.dappreading.DAppLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.rt.Address;
+import org.aion.avm.api.Address;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;

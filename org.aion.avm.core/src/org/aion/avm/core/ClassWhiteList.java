@@ -19,8 +19,7 @@ import org.aion.avm.internal.PackageConstants;
 public class ClassWhiteList {
     private static final String JAVA_LANG = "java/lang/";
     private static final String JAVA_UTIL_FUNCTION = "java/util/function";
-    private static final String AION_RT = "org/aion/avm/rt/";
-    private static final String AION_SHADOWING = "org/aion/avm/core/shadowing/";
+    private static final String AION_API = "org/aion/avm/api/";
 
     /**
      * Checks if the class given is in any of our white-lists.
@@ -32,8 +31,7 @@ public class ClassWhiteList {
         return (slashClassName.startsWith(PackageConstants.kUserSlashPrefix)
                 || slashClassName.startsWith(JAVA_LANG)
                 || slashClassName.startsWith(JAVA_UTIL_FUNCTION)
-                || slashClassName.startsWith(AION_RT)
-                || slashClassName.startsWith(AION_SHADOWING)
+                || slashClassName.startsWith(AION_API)
                 );
     }
 

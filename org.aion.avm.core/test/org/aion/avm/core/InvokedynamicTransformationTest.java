@@ -16,7 +16,7 @@ import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.rt.Address;
+import org.aion.avm.api.Address;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

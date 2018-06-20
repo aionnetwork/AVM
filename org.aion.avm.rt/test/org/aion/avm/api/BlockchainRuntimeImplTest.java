@@ -1,4 +1,4 @@
-package org.aion.avm.rt;
+package org.aion.avm.api;
 
 import org.junit.Assert;
 import org.junit.Test;

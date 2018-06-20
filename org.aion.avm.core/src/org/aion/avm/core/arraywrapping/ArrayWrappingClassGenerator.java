@@ -314,7 +314,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         childWrapper = wrapper.substring((PackageConstants.kArrayWrapperSlashPrefix + "$").length());
         Assert.assertTrue(childWrapper.startsWith("$"));
 
-        // If child is predefined array in rt, replace them.
+        // If child is predefined array in api, replace them.
         switch (childWrapper){
             case "$I":
                 childWrapper = "IntArray";

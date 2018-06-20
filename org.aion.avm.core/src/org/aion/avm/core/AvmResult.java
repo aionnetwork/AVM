@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
-import org.aion.avm.rt.Address;
-import org.aion.avm.rt.IAvmResultProxy;
+import org.aion.avm.api.Address;
+import org.aion.avm.api.IAvmResultProxy;
 
 public class AvmResult implements IAvmResultProxy {
 
