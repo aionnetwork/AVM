@@ -1,6 +1,6 @@
 package org.aion.avm.core.testWallet;
 
-import org.aion.avm.rt.IFutureRuntime;
+import org.aion.avm.rt.BlockchainRuntime;
 
 
 /**
@@ -22,7 +22,7 @@ public class Daylimit {
     }
 
     // PUBLIC INTERFACE
-    public void setDailyLimit(IFutureRuntime runtime, long value) {
+    public void setDailyLimit(BlockchainRuntime runtime, long value) {
         // (modifier)
         this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
@@ -30,7 +30,7 @@ public class Daylimit {
     }
 
     // PUBLIC INTERFACE
-    public void resetSpentToday(IFutureRuntime runtime) {
+    public void resetSpentToday(BlockchainRuntime runtime) {
         // (modifier)
         this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
@@ -41,7 +41,7 @@ public class Daylimit {
     // checks to see if there is at least `_value` left from the daily limit today. if there is, subtracts it and
     // returns true. otherwise just returns false.
     // public for composition.
-    public boolean underLimit(IFutureRuntime runtime, long value) {
+    public boolean underLimit(BlockchainRuntime runtime, long value) {
         // (modifier)
         this.owners.onlyOwner(runtime.getSender());
         

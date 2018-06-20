@@ -18,7 +18,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.IEventLogger;
-import org.aion.avm.rt.IFutureRuntime;
+import org.aion.avm.rt.BlockchainRuntime;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -266,37 +266,37 @@ public class Deployer {
         // Try to add an owner - we need to call this twice to see the event output: sender and extra1.
         Address newOwner = buildAddress(5);
         try {
-            walletClass.getMethod("avm_addOwner", IFutureRuntime.class, Address.class).invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), newOwner);
+            walletClass.getMethod("avm_addOwner", BlockchainRuntime.class, Address.class).invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), newOwner);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == logger.ownerAdded);
-        walletClass.getMethod("avm_addOwner", IFutureRuntime.class, Address.class).invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), newOwner);
+        walletClass.getMethod("avm_addOwner", BlockchainRuntime.class, Address.class).invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), newOwner);
         Assert.assertTrue(1 == logger.ownerAdded);
         
         // Send a normal transaction, which is under the limit, and observe that it goes through.
         Address transactionTo = buildAddress(6);
         long transactionSize = dailyLimit - 1;
         Assert.assertTrue(0 == logger.transactionUnderLimit);
-        walletClass.getMethod("avm_execute", IFutureRuntime.class, Address.class, long.class, ByteArray.class).invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), transactionTo, transactionSize, new ByteArray(new byte[] {1}));
+        walletClass.getMethod("avm_execute", BlockchainRuntime.class, Address.class, long.class, ByteArray.class).invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), transactionTo, transactionSize, new ByteArray(new byte[] {1}));
         Assert.assertTrue(1 == logger.transactionUnderLimit);
         
         // Now, send another transaction, observe that it requires multisig confirmation, and confirm it with our new owner.
         Address confirmTransactionTo = buildAddress(7);
         Assert.assertTrue(0 == logger.confirmationNeeded);
-        ByteArray toConfirm = (ByteArray)walletClass.getMethod("avm_execute", IFutureRuntime.class, Address.class, long.class, ByteArray.class)
+        ByteArray toConfirm = (ByteArray)walletClass.getMethod("avm_execute", BlockchainRuntime.class, Address.class, long.class, ByteArray.class)
                 .invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), confirmTransactionTo, transactionSize, new ByteArray(new byte[] {1}));
         Assert.assertTrue(1 == logger.transactionUnderLimit);
         Assert.assertTrue(1 == logger.confirmationNeeded);
-        boolean didConfirm = (Boolean)walletClass.getMethod("avm_confirm", IFutureRuntime.class, ByteArray.class)
+        boolean didConfirm = (Boolean)walletClass.getMethod("avm_confirm", BlockchainRuntime.class, ByteArray.class)
                 .invoke(walletInstance, new TestingRuntime(newOwner, new byte[] {5,6,42}), toConfirm);
         Assert.assertTrue(didConfirm);
         
         // Change the count of required confirmations.
         try {
-            walletClass.getMethod("avm_changeRequirement", IFutureRuntime.class, int.class)
+            walletClass.getMethod("avm_changeRequirement", BlockchainRuntime.class, int.class)
                     .invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), 3);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
@@ -304,16 +304,16 @@ public class Deployer {
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == logger.requirementChanged);
-        walletClass.getMethod("avm_changeRequirement", IFutureRuntime.class, int.class)
+        walletClass.getMethod("avm_changeRequirement", BlockchainRuntime.class, int.class)
             .invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), 3);
         Assert.assertTrue(1 == logger.requirementChanged);
         
         // Change the owner.
         Address lateOwner = buildAddress(8);
-        Assert.assertTrue(sender == walletClass.getMethod("avm_getOwner", IFutureRuntime.class, int.class)
+        Assert.assertTrue(sender == walletClass.getMethod("avm_getOwner", BlockchainRuntime.class, int.class)
                 .invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), 0));
         try {
-            walletClass.getMethod("avm_changeOwner", IFutureRuntime.class, Address.class, Address.class)
+            walletClass.getMethod("avm_changeOwner", BlockchainRuntime.class, Address.class, Address.class)
                 .invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), sender, lateOwner);
             Assert.assertTrue(false);
             Assert.assertTrue(false);
@@ -322,7 +322,7 @@ public class Deployer {
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         try {
-            walletClass.getMethod("avm_changeOwner", IFutureRuntime.class, Address.class, Address.class)
+            walletClass.getMethod("avm_changeOwner", BlockchainRuntime.class, Address.class, Address.class)
                 .invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), sender, lateOwner);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
@@ -330,13 +330,13 @@ public class Deployer {
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == logger.ownerChanged);
-        walletClass.getMethod("avm_changeOwner", IFutureRuntime.class, Address.class, Address.class)
+        walletClass.getMethod("avm_changeOwner", BlockchainRuntime.class, Address.class, Address.class)
             .invoke(walletInstance, new TestingRuntime(extra2, new byte[] {5,6,42}), sender, lateOwner);
         Assert.assertTrue(1 == logger.ownerChanged);
         
         // Try to remove an owner, but have someone revoke that so that it can't happen.
         try {
-            walletClass.getMethod("avm_removeOwner", IFutureRuntime.class, Address.class)
+            walletClass.getMethod("avm_removeOwner", BlockchainRuntime.class, Address.class)
                 .invoke(walletInstance, new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
@@ -344,7 +344,7 @@ public class Deployer {
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         try {
-            walletClass.getMethod("avm_removeOwner", IFutureRuntime.class, Address.class)
+            walletClass.getMethod("avm_removeOwner", BlockchainRuntime.class, Address.class)
                 .invoke(walletInstance, new TestingRuntime(extra2, new byte[] {5,6,42}), extra1);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
@@ -352,12 +352,12 @@ public class Deployer {
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == logger.revoke);
-        walletClass.getMethod("avm_revoke", IFutureRuntime.class)
+        walletClass.getMethod("avm_revoke", BlockchainRuntime.class)
             .invoke(walletInstance, new TestingRuntime(lateOwner, new byte[] {5,6,42}));
         Assert.assertTrue(1 == logger.revoke);
         try {
             // This fails since one of the owners revoked.
-            walletClass.getMethod("avm_removeOwner", IFutureRuntime.class, Address.class)
+            walletClass.getMethod("avm_removeOwner", BlockchainRuntime.class, Address.class)
                 .invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), extra1);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
@@ -366,10 +366,10 @@ public class Deployer {
         }
         Assert.assertTrue(0 == logger.ownerRemoved);
         // But this succeeds when they re-agree.
-        walletClass.getMethod("avm_removeOwner", IFutureRuntime.class, Address.class)
+        walletClass.getMethod("avm_removeOwner", BlockchainRuntime.class, Address.class)
             .invoke(walletInstance, new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
         Assert.assertTrue(1 == logger.ownerRemoved);
-        Assert.assertTrue(extra2 == walletClass.getMethod("avm_getOwner", IFutureRuntime.class, int.class)
+        Assert.assertTrue(extra2 == walletClass.getMethod("avm_getOwner", BlockchainRuntime.class, int.class)
                 .invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), 0));
     }
 
@@ -382,7 +382,7 @@ public class Deployer {
     }
 
 
-    private static class TestingRuntime implements IFutureRuntime {
+    private static class TestingRuntime implements BlockchainRuntime {
         private final Address sender;
         private final ByteArray data;
         

@@ -2,7 +2,7 @@ package org.aion.avm.core.testWallet;
 
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.IEventLogger;
-import org.aion.avm.rt.IFutureRuntime;
+import org.aion.avm.rt.BlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
 
 
@@ -25,42 +25,42 @@ public class Wallet implements IMultisig {
     }
 
     // EXTERNAL - composed
-    public void revoke(IFutureRuntime runtime) {
+    public void revoke(BlockchainRuntime runtime) {
         this.owners.revoke(runtime);
     }
 
     // EXTERNAL - composed
-    public void addOwner(IFutureRuntime runtime, Address owner) {
+    public void addOwner(BlockchainRuntime runtime, Address owner) {
         this.owners.addOwner(runtime, owner);
     }
 
     // EXTERNAL - composed
-    public void removeOwner(IFutureRuntime runtime, Address owner) {
+    public void removeOwner(BlockchainRuntime runtime, Address owner) {
         this.owners.removeOwner(runtime, owner);
     }
 
     // EXTERNAL - composed
-    public void changeRequirement(IFutureRuntime runtime, int newRequired) {
+    public void changeRequirement(BlockchainRuntime runtime, int newRequired) {
         this.owners.changeRequirement(runtime, newRequired);
     }
 
     // EXTERNAL - composed
-    public Address getOwner(IFutureRuntime runtime, int ownerIndex) {
+    public Address getOwner(BlockchainRuntime runtime, int ownerIndex) {
         return this.owners.getOwner(ownerIndex);
     }
 
     // EXTERNAL - composed
-    public void setDailyLimit(IFutureRuntime runtime, long value) {
+    public void setDailyLimit(BlockchainRuntime runtime, long value) {
         this.limit.setDailyLimit(runtime, value);
     }
 
     // EXTERNAL - composed
-    public void resetSpentToday(IFutureRuntime runtime) {
+    public void resetSpentToday(BlockchainRuntime runtime) {
         this.limit.resetSpentToday(runtime);
     }
 
     // EXTERNAL
-    public void kill(IFutureRuntime runtime, Address to) {
+    public void kill(BlockchainRuntime runtime, Address to) {
         // (modifier)
         this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
@@ -80,7 +80,7 @@ public class Wallet implements IMultisig {
     // shortcuts for the other confirmations (allowing them to avoid replicating the _to, _value
     // and _data arguments). They still get the option of using them if they want, anyways.
     @Override
-    public byte[] execute(IFutureRuntime runtime, Address to, long value, byte[] data) {
+    public byte[] execute(BlockchainRuntime runtime, Address to, long value, byte[] data) {
         // (modifier)
         this.owners.onlyOwner(runtime.getSender());
         
@@ -112,7 +112,7 @@ public class Wallet implements IMultisig {
     }
 
     // TODO:  Determine if this is the correct emulation of semantics.  The Solidity test seems to act like the exception is the same as "return false".
-    private boolean safeConfirm(IFutureRuntime runtime, byte[] h) {
+    private boolean safeConfirm(BlockchainRuntime runtime, byte[] h) {
         boolean result = false;
         try {
             result = confirm(runtime, h);
@@ -123,14 +123,14 @@ public class Wallet implements IMultisig {
     }
 
     @Override
-    public void changeOwner(IFutureRuntime runtime, Address from, Address to) {
+    public void changeOwner(BlockchainRuntime runtime, Address from, Address to) {
         this.owners.changeOwner(runtime, from, to);
     }
 
     // confirm a transaction through just the hash. we use the previous transactions map, m_txs, in order
     // to determine the body of the transaction from the hash provided.
     @Override
-    public boolean confirm(IFutureRuntime runtime, byte[] h) {
+    public boolean confirm(BlockchainRuntime runtime, byte[] h) {
         // (modifier)
         this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         

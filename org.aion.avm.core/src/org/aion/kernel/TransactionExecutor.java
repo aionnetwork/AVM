@@ -68,6 +68,31 @@ public class TransactionExecutor {
             @Override
             public void avm_selfDestruct(Address beneficiary) {
             }
+
+            @Override
+            public long avm_getBlockEpochSeconds() {
+                return 1l;
+            }
+
+            @Override
+            public ByteArray avm_getMessageData() {
+                return null;
+            }
+
+            @Override
+            public long avm_getBlockNumber() {
+                return 1l;
+            }
+
+            @Override
+            public ByteArray avm_sha3(ByteArray data) {
+                return null;
+            }
+
+            @Override
+            public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
+                return null;
+            }
         };
 
         // Note that the creator of the AvmImpl needs to provide the shared class loader.

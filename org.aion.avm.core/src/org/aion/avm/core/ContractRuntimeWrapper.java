@@ -51,4 +51,24 @@ public class ContractRuntimeWrapper extends org.aion.avm.java.lang.Object implem
     public void avm_selfDestruct(Address beneficiary) {
         this.externalRuntime.avm_selfDestruct(beneficiary);
     }
+    @Override
+    public long avm_getBlockEpochSeconds() {
+        return this.externalRuntime.avm_getBlockEpochSeconds();
+    }
+    @Override
+    public ByteArray avm_getMessageData() {
+        return this.externalRuntime.avm_getMessageData();
+    }
+    @Override
+    public long avm_getBlockNumber() {
+        return this.externalRuntime.avm_getBlockNumber();
+    }
+    @Override
+    public ByteArray avm_sha3(ByteArray data) {
+        return this.externalRuntime.avm_sha3(data);
+    }
+    @Override
+    public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
+        return this.externalRuntime.avm_call(targetAddress, energyToSend, payload);
+    }
 }

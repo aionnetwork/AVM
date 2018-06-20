@@ -2,7 +2,7 @@ package org.aion.avm.core.testWallet;
 
 import org.aion.avm.rt.Address;
 import org.aion.avm.rt.IEventLogger;
-import org.aion.avm.rt.IFutureRuntime;
+import org.aion.avm.rt.BlockchainRuntime;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -47,7 +47,7 @@ public class Multiowned {
     }
 
     // PUBLIC INTERFACE
-    public void revoke(IFutureRuntime runtime) {
+    public void revoke(BlockchainRuntime runtime) {
         Address sender = runtime.getSender();
         // Make sure that they are an owner.
         if (this.owners.contains(sender)) {
@@ -62,7 +62,7 @@ public class Multiowned {
     }
 
     // PUBLIC INTERFACE
-    public void changeOwner(IFutureRuntime runtime, Address from, Address to) {
+    public void changeOwner(BlockchainRuntime runtime, Address from, Address to) {
         // (modifier)
         onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
@@ -81,7 +81,7 @@ public class Multiowned {
     }
 
     // PUBLIC INTERFACE
-    public void addOwner(IFutureRuntime runtime, Address owner) {
+    public void addOwner(BlockchainRuntime runtime, Address owner) {
         // (modifier)
         onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
@@ -98,7 +98,7 @@ public class Multiowned {
     }
 
     // PUBLIC INTERFACE
-    public void removeOwner(IFutureRuntime runtime, Address owner) {
+    public void removeOwner(BlockchainRuntime runtime, Address owner) {
         // (modifier)
         onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         
@@ -117,7 +117,7 @@ public class Multiowned {
     }
 
     // PUBLIC INTERFACE
-    public void changeRequirement(IFutureRuntime runtime, int newRequired) {
+    public void changeRequirement(BlockchainRuntime runtime, int newRequired) {
         // (modifier)
         onlyManyOwners(runtime.getSender(), Operation.from(runtime));
         

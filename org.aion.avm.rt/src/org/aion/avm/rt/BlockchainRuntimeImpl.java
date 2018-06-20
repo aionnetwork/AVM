@@ -80,4 +80,29 @@ public class BlockchainRuntimeImpl implements BlockchainRuntime {
     public void avm_selfDestruct(Address beneficiary) {
         throw new RuntimeAssertionError("This implementation doesn't handle this");
     }
+
+    @Override
+    public long avm_getBlockEpochSeconds() {
+        throw new RuntimeAssertionError("This implementation doesn't handle this");
+    }
+
+    @Override
+    public ByteArray avm_getMessageData() {
+        throw new RuntimeAssertionError("This implementation doesn't handle this");
+    }
+
+    @Override
+    public long avm_getBlockNumber() {
+        throw new RuntimeAssertionError("This implementation doesn't handle this");
+    }
+
+    @Override
+    public ByteArray avm_sha3(ByteArray data) {
+        throw new RuntimeAssertionError("This implementation doesn't handle this");
+    }
+
+    @Override
+    public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
+        throw new RuntimeAssertionError("This implementation doesn't handle this");
+    }
 }

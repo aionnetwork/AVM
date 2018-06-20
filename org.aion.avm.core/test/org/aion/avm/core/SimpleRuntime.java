@@ -89,4 +89,33 @@ public class SimpleRuntime implements BlockchainRuntime {
     public void avm_selfDestruct(Address beneficiary) {
         Assert.fail("This implementation doesn't handle this");
     }
+    @Override
+    public long avm_getBlockEpochSeconds() {
+        Assert.fail("This implementation doesn't handle this");
+        return 0;
+    }
+
+    @Override
+    public ByteArray avm_getMessageData() {
+        Assert.fail("This implementation doesn't handle this");
+        return null;
+    }
+
+    @Override
+    public long avm_getBlockNumber() {
+        Assert.fail("This implementation doesn't handle this");
+        return 0;
+    }
+
+    @Override
+    public ByteArray avm_sha3(ByteArray data) {
+        Assert.fail("This implementation doesn't handle this");
+        return null;
+    }
+
+    @Override
+    public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
+        Assert.fail("This implementation doesn't handle this");
+        return null;
+    }
 }

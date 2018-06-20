@@ -1,15 +1,15 @@
 package org.aion.avm.core.testWallet;
 
 import org.aion.avm.rt.Address;
-import org.aion.avm.rt.IFutureRuntime;
+import org.aion.avm.rt.BlockchainRuntime;
 
 
 //interface contract for multisig proxy contracts; see below for docs.
 public interface IMultisig {
     // EXTERNAL
-    public void changeOwner(IFutureRuntime runtime, Address from, Address to);
+    public void changeOwner(BlockchainRuntime runtime, Address from, Address to);
     // EXTERNAL
-    public byte[] execute(IFutureRuntime runtime, Address to, long value, byte[] data);
+    public byte[] execute(BlockchainRuntime runtime, Address to, long value, byte[] data);
 
-    public boolean confirm(IFutureRuntime runtime, byte[] h);
+    public boolean confirm(BlockchainRuntime runtime, byte[] h);
 }
