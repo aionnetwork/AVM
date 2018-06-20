@@ -3,6 +3,7 @@ package org.aion.avm.core.testWallet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -21,7 +22,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.api.Address;
-import org.aion.avm.api.IEventLogger;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -54,24 +54,26 @@ public class Deployer {
 
 
     private static void invokeDirect(String[] args) {
+        // We create a test runtime but this is only to support the EventLogger.
+        TestingRuntime loggingRuntime = new TestingRuntime(null, null);
+        EventLogger logger = new EventLogger(loggingRuntime);
+        
         // First thing we do is create the Wallet (which requires its components).
         Address sender = buildAddress(1);
         Address extra1 = buildAddress(2);
         Address extra2 = buildAddress(3);
-        TestLogger logger = new TestLogger();
-        EventLogger eventLogger = new EventLogger(logger);
         int requiredVotes = 2;
-        Multiowned owners = Multiowned.avoidArrayWrappingFactory(eventLogger, sender, extra1, extra2, requiredVotes);
+        Multiowned owners = Multiowned.avoidArrayWrappingFactory(logger, sender, extra1, extra2, requiredVotes);
         long dailyLimit = 5000;
         long startInDays = 1;
         Daylimit limit = new Daylimit(owners, dailyLimit, startInDays);
-        Wallet wallet = new Wallet(eventLogger, owners, limit);
+        Wallet wallet = new Wallet(logger, owners, limit);
         
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
         long paymendValue = 5;
         wallet.payable(paymentFrom, paymendValue);
-        Assert.assertTrue(1 == logger.deposit);
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kDeposit));
         
         // Try to add an owner - we need to call this twice to see the event output: sender and extra1.
         Address newOwner = buildAddress(5);
@@ -80,23 +82,23 @@ public class Deployer {
         } catch (RequireFailedException e) {
             // Expected.
         }
-        Assert.assertTrue(0 == logger.ownerAdded);
+        Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerAdded));
         wallet.addOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), newOwner);
-        Assert.assertTrue(1 == logger.ownerAdded);
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerAdded));
         
         // Send a normal transaction, which is under the limit, and observe that it goes through.
         Address transactionTo = buildAddress(6);
         long transactionSize = dailyLimit - 1;
-        Assert.assertTrue(0 == logger.transactionUnderLimit);
+        Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
         wallet.execute(new TestingRuntime(sender, new byte[] {5,6,42}), transactionTo, transactionSize, new byte[] {1});
-        Assert.assertTrue(1 == logger.transactionUnderLimit);
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
         
         // Now, send another transaction, observe that it requires multisig confirmation, and confirm it with our new owner.
         Address confirmTransactionTo = buildAddress(7);
-        Assert.assertTrue(0 == logger.confirmationNeeded);
+        Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kConfirmationNeeded));
         byte[] toConfirm = wallet.execute(new TestingRuntime(sender, new byte[] {5,6,42}), confirmTransactionTo, transactionSize, new byte[] {1});
-        Assert.assertTrue(1 == logger.transactionUnderLimit);
-        Assert.assertTrue(1 == logger.confirmationNeeded);
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kConfirmationNeeded));
         boolean didConfirm = wallet.confirm(new TestingRuntime(newOwner, new byte[] {5,6,42}), toConfirm);
         Assert.assertTrue(didConfirm);
         
@@ -106,9 +108,9 @@ public class Deployer {
         } catch (RequireFailedException e) {
             // Expected.
         }
-        Assert.assertTrue(0 == logger.requirementChanged);
+        Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kRequirementChanged));
         wallet.changeRequirement(new TestingRuntime(extra1, new byte[] {5,6,42}), 3);
-        Assert.assertTrue(1 == logger.requirementChanged);
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kRequirementChanged));
         
         // Change the owner.
         Address lateOwner = buildAddress(8);
@@ -125,9 +127,9 @@ public class Deployer {
         } catch (RequireFailedException e) {
             // Expected.
         }
-        Assert.assertTrue(0 == logger.ownerChanged);
+        Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerChanged));
         wallet.changeOwner(new TestingRuntime(extra2, new byte[] {5,6,42}), sender, lateOwner);
-        Assert.assertTrue(1 == logger.ownerChanged);
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerChanged));
         
         // Try to remove an owner, but have someone revoke that so that it can't happen.
         try {
@@ -142,9 +144,9 @@ public class Deployer {
         } catch (RequireFailedException e) {
             // Expected.
         }
-        Assert.assertTrue(0 == logger.revoke);
+        Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kRevoke));
         wallet.revoke(new TestingRuntime(lateOwner, new byte[] {5,6,42}));
-        Assert.assertTrue(1 == logger.revoke);
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kRevoke));
         try {
             // This fails since one of the owners revoked.
             wallet.removeOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), extra1);
@@ -152,10 +154,10 @@ public class Deployer {
         } catch (RequireFailedException e) {
             // Expected.
         }
-        Assert.assertTrue(0 == logger.ownerRemoved);
+        Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerRemoved));
         // But this succeeds when they re-agree.
         wallet.removeOwner(new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
-        Assert.assertTrue(1 == logger.ownerRemoved);
+        Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerRemoved));
         Assert.assertTrue(wallet.getOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), 0) == extra2);
     }
 
@@ -189,8 +191,10 @@ public class Deployer {
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
         loader.addHandler(wrapperGenerator);
         
-        // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
+        // Note that this single externalRuntime instance doesn't really make sense - it is only useful in the cases where we aren't using
+        // it for invocation context, just environment (energy counter, event logging, etc).
         TestingRuntime externalRuntime = new TestingRuntime(null, null);
+        // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
         Helpers.instantiateHelper(loader, externalRuntime);
         
         
@@ -201,9 +205,8 @@ public class Deployer {
         Address sender = buildAddress(1);
         Address extra1 = buildAddress(2);
         Address extra2 = buildAddress(3);
-        TestLogger logger = new TestLogger();
         Class<?> eventLoggerClass = loader.loadUserClassByOriginalName(EventLogger.class.getName());
-        Object eventLoggerInstance = eventLoggerClass.getConstructor(IEventLogger.class).newInstance(logger);
+        Object eventLoggerInstance = eventLoggerClass.getConstructor(BlockchainRuntime.class).newInstance(externalRuntime);
         int requiredVotes = 2;
         
         // Note that we need to call through this specially-made factory method to avoid needing to create an array wrapper on Address[].
@@ -223,7 +226,7 @@ public class Deployer {
         Address paymentFrom = buildAddress(4);
         long paymentValue = 5;
         walletClass.getMethod(UserClassMappingVisitor.mapMethodName("payable"), Address.class, long.class).invoke(walletInstance, paymentFrom, paymentValue);
-        Assert.assertTrue(1 == logger.deposit);
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kDeposit));
         
         // Try to add an owner - we need to call this twice to see the event output: sender and extra1.
         Address newOwner = buildAddress(5);
@@ -234,24 +237,24 @@ public class Deployer {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
-        Assert.assertTrue(0 == logger.ownerAdded);
+        Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kOwnerAdded));
         walletClass.getMethod(UserClassMappingVisitor.mapMethodName("addOwner"), BlockchainRuntime.class, Address.class).invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), newOwner);
-        Assert.assertTrue(1 == logger.ownerAdded);
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kOwnerAdded));
         
         // Send a normal transaction, which is under the limit, and observe that it goes through.
         Address transactionTo = buildAddress(6);
         long transactionSize = dailyLimit - 1;
-        Assert.assertTrue(0 == logger.transactionUnderLimit);
+        Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
         walletClass.getMethod(UserClassMappingVisitor.mapMethodName("execute"), BlockchainRuntime.class, Address.class, long.class, ByteArray.class).invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), transactionTo, transactionSize, new ByteArray(new byte[] {1}));
-        Assert.assertTrue(1 == logger.transactionUnderLimit);
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
         
         // Now, send another transaction, observe that it requires multisig confirmation, and confirm it with our new owner.
         Address confirmTransactionTo = buildAddress(7);
-        Assert.assertTrue(0 == logger.confirmationNeeded);
+        Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kConfirmationNeeded));
         ByteArray toConfirm = (ByteArray)walletClass.getMethod(UserClassMappingVisitor.mapMethodName("execute"), BlockchainRuntime.class, Address.class, long.class, ByteArray.class)
                 .invoke(walletInstance, new TestingRuntime(sender, new byte[] {5,6,42}), confirmTransactionTo, transactionSize, new ByteArray(new byte[] {1}));
-        Assert.assertTrue(1 == logger.transactionUnderLimit);
-        Assert.assertTrue(1 == logger.confirmationNeeded);
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kTransactionUnderLimit));
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kConfirmationNeeded));
         boolean didConfirm = (Boolean)walletClass.getMethod(UserClassMappingVisitor.mapMethodName("confirm"), BlockchainRuntime.class, ByteArray.class)
                 .invoke(walletInstance, new TestingRuntime(newOwner, new byte[] {5,6,42}), toConfirm);
         Assert.assertTrue(didConfirm);
@@ -265,10 +268,10 @@ public class Deployer {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
-        Assert.assertTrue(0 == logger.requirementChanged);
+        Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kRequirementChanged));
         walletClass.getMethod(UserClassMappingVisitor.mapMethodName("changeRequirement"), BlockchainRuntime.class, int.class)
             .invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), 3);
-        Assert.assertTrue(1 == logger.requirementChanged);
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kRequirementChanged));
         
         // Change the owner.
         Address lateOwner = buildAddress(8);
@@ -291,10 +294,10 @@ public class Deployer {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
-        Assert.assertTrue(0 == logger.ownerChanged);
+        Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kOwnerChanged));
         walletClass.getMethod(UserClassMappingVisitor.mapMethodName("changeOwner"), BlockchainRuntime.class, Address.class, Address.class)
             .invoke(walletInstance, new TestingRuntime(extra2, new byte[] {5,6,42}), sender, lateOwner);
-        Assert.assertTrue(1 == logger.ownerChanged);
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kOwnerChanged));
         
         // Try to remove an owner, but have someone revoke that so that it can't happen.
         try {
@@ -313,10 +316,10 @@ public class Deployer {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
-        Assert.assertTrue(0 == logger.revoke);
+        Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kRevoke));
         walletClass.getMethod(UserClassMappingVisitor.mapMethodName("revoke"), BlockchainRuntime.class)
             .invoke(walletInstance, new TestingRuntime(lateOwner, new byte[] {5,6,42}));
-        Assert.assertTrue(1 == logger.revoke);
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kRevoke));
         try {
             // This fails since one of the owners revoked.
             walletClass.getMethod(UserClassMappingVisitor.mapMethodName("removeOwner"), BlockchainRuntime.class, Address.class)
@@ -326,11 +329,11 @@ public class Deployer {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
-        Assert.assertTrue(0 == logger.ownerRemoved);
+        Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kOwnerRemoved));
         // But this succeeds when they re-agree.
         walletClass.getMethod(UserClassMappingVisitor.mapMethodName("removeOwner"), BlockchainRuntime.class, Address.class)
             .invoke(walletInstance, new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
-        Assert.assertTrue(1 == logger.ownerRemoved);
+        Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kOwnerRemoved));
         Assert.assertTrue(extra2 == walletClass.getMethod(UserClassMappingVisitor.mapMethodName("getOwner"), BlockchainRuntime.class, int.class)
                 .invoke(walletInstance, new TestingRuntime(extra1, new byte[] {5,6,42}), 0));
     }
@@ -347,12 +350,14 @@ public class Deployer {
     private static class TestingRuntime implements BlockchainRuntime {
         private final Address sender;
         private final ByteArray data;
+        private final Map<java.lang.String, Integer> eventCounts;
         
         public TestingRuntime(Address sender, byte[] data) {
             this.sender = sender;
             this.data = (null != data)
                     ? new ByteArray(data)
                     : null;
+            this.eventCounts = new HashMap<>();
         }
         
         @Override
@@ -419,65 +424,15 @@ public class Deployer {
         }
         @Override
         public void avm_log(ByteArray index0, ByteArray data) {
-            // TODO:  Implement to complete issue-103.
+            String reconstituted = new String(index0.getUnderlying(), StandardCharsets.UTF_8);
+            System.out.println(reconstituted);
+            Integer oldCount = this.eventCounts.get(reconstituted);
+            int newCount = ((null != oldCount) ? oldCount : 0) + 1;
+            this.eventCounts.put(reconstituted, newCount);
         }
-    }
-
-
-    /**
-     * This is mostly just to give us a minimal representation of the defined events of the application and allow for counting events to verify tests.
-     * I suspect that we will need to create a more generic logging system (event name and varargs) but there may be value in the user wrapping it in
-     * something like this (depending on the debugging case, we may be able to sufficiently generalize the implementation).
-     */
-    private static class TestLogger implements IEventLogger {
-        public int revoke;
-        public int ownerChanged;
-        public int ownerAdded;
-        public int ownerRemoved;
-        public int requirementChanged;
-        public int deposit;
-        public int transactionUnderLimit;
-        public int confirmationNeeded;
-        
-        @Override
-        public void revoke() {
-            System.out.println("revoke");
-            this.revoke += 1;
-        }
-        @Override
-        public void ownerChanged() {
-            System.out.println("ownerChanged");
-            this.ownerChanged += 1;
-        }
-        @Override
-        public void ownerAdded() {
-            System.out.println("ownerAdded");
-            this.ownerAdded += 1;
-        }
-        @Override
-        public void ownerRemoved() {
-            System.out.println("ownerRemoved");
-            this.ownerRemoved += 1;
-        }
-        @Override
-        public void requirementChanged() {
-            System.out.println("requirementChanged");
-            this.requirementChanged += 1;
-        }
-        @Override
-        public void deposit() {
-            System.out.println("deposit");
-            this.deposit += 1;
-        }
-        @Override
-        public void transactionUnderLimit() {
-            System.out.println("transactionUnderLimit");
-            this.transactionUnderLimit += 1;
-        }
-        @Override
-        public void confirmationNeeded() {
-            System.out.println("confirmationNeeded");
-            this.confirmationNeeded += 1;
+        public int getEventCount(String event) {
+            Integer count = this.eventCounts.get(event);
+            return (null != count) ? count : 0;
         }
     }
 
