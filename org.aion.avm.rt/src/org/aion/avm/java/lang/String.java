@@ -4,11 +4,13 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.IObject;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class String extends Object implements CharSequence {
 
-    private java.lang.String DEFAULT_CHARSET = "UTF-8";
+    private Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     private java.lang.String underlying;
 
@@ -30,11 +32,7 @@ public class String extends Object implements CharSequence {
         if (offset < 0 || offset >= b.length || length < 0 || length > b.length || offset + length > b.length) {
             throw new java.lang.StringIndexOutOfBoundsException();
         }
-        try {
-            this.underlying = new java.lang.String(Arrays.copyOfRange(b, offset, offset + length), DEFAULT_CHARSET);
-        } catch (java.io.UnsupportedEncodingException ex) {
-            throw new java.lang.RuntimeException();
-        }
+        this.underlying = new java.lang.String(Arrays.copyOfRange(b, offset, offset + length), DEFAULT_CHARSET);
     }
 
     public char avm_charAt(int index) {
@@ -51,7 +49,8 @@ public class String extends Object implements CharSequence {
     }
 
     public ByteArray avm_getBytes() {
-        return new ByteArray(underlying.getBytes());
+        // Note that we ONLY support serialization/deserialization of strings in UTF-8.
+        return new ByteArray(underlying.getBytes(DEFAULT_CHARSET));
     }
 
     @Override
