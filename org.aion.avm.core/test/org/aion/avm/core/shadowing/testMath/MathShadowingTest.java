@@ -40,7 +40,7 @@ public class MathShadowingTest {
     }
 
     @Before
-    public void testReplaceJavaLang() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testReplaceJavaLang() throws ClassNotFoundException {
         String testClassName = TestResource.class.getName();
         byte[] testBytecode = Helpers.loadRequiredResourceAsBytes(testClassName.replaceAll("\\.", "/") + ".class");
         String mappedClassName = PackageConstants.kUserDotPrefix + testClassName;
@@ -68,7 +68,7 @@ public class MathShadowingTest {
     public void testMaxMin() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod("avm_testMaxMin");
+        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMaxMin"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);

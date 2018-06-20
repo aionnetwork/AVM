@@ -58,7 +58,7 @@ public class ClassShadowingTest {
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
         Object obj = clazz.getConstructor().newInstance();
 
-        Method method = clazz.getMethod("avm_abs", int.class);
+        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("abs"), int.class);
         Object ret = method.invoke(obj, -10);
         Assert.assertEquals(10, ret);
 
@@ -67,9 +67,9 @@ public class ClassShadowingTest {
         Assert.assertEquals(0, Testing.countWrappedClasses);
 
         // We can rely on our test-facing toString methods to look into what we got back.
-        Object wrappedClass = clazz.getMethod("avm_returnClass").invoke(obj);
+        Object wrappedClass = clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnClass")).invoke(obj);
         Assert.assertEquals("class org.aion.avm.java.lang.String", wrappedClass.toString());
-        Object wrappedString = clazz.getMethod("avm_returnString").invoke(obj);
+        Object wrappedString = clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnString")).invoke(obj);
         Assert.assertEquals("hello", wrappedString.toString());
 
         // Verify that we see wrapped instances.
@@ -109,11 +109,11 @@ public class ClassShadowingTest {
         Class<?> clazz = loader.loadClass(mappedClassName);
         Object obj = clazz.getConstructor().newInstance();
 
-        //Method method = clazz.getMethod("avm_getStatic");
+        //Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getStatic");
         //Object ret = method.invoke(obj);
         //Assert.assertTrue(loadedClasses.contains(PackageConstants.kShadowJavaLangDotPrefix + "Byte"));
 
-        Method method2 = clazz.getMethod("avm_localVariable");
+        Method method2 = clazz.getMethod(UserClassMappingVisitor.mapMethodName("localVariable"));
         Object ret2 = method2.invoke(obj);
         Assert.assertEquals(Integer.valueOf(3), ret2);
     }
@@ -144,7 +144,7 @@ public class ClassShadowingTest {
         new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
 
-        Method method = clazz.getMethod("avm_getStringForNull");
+        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getStringForNull"));
         Object ret = method.invoke(null);
         // Note that we can't yet override methods in our contracts so the toString returns false, from Object.
         Assert.assertEquals(null, ret);

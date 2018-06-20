@@ -96,7 +96,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchFinally() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method tryMultiCatchFinally = this.testClass.getMethod("avm_tryMultiCatchFinally");
+        Method tryMultiCatchFinally = this.testClass.getMethod(UserClassMappingVisitor.mapMethodName("tryMultiCatchFinally"));
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
@@ -111,7 +111,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testmSimpleManuallyThrowNull() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method manuallyThrowNull = this.testClass.getMethod("avm_manuallyThrowNull");
+        Method manuallyThrowNull = this.testClass.getMethod(UserClassMappingVisitor.mapMethodName("manuallyThrowNull"));
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didWrap);
@@ -133,7 +133,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchInteraction() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method tryMultiCatchFinally = this.testClass.getMethod("avm_tryMultiCatch");
+        Method tryMultiCatchFinally = this.testClass.getMethod(UserClassMappingVisitor.mapMethodName("tryMultiCatch"));
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
@@ -148,7 +148,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testRecatchCoreException() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method outerCatch = this.testClass.getMethod("avm_outerCatch");
+        Method outerCatch = this.testClass.getMethod(UserClassMappingVisitor.mapMethodName("outerCatch"));
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
@@ -181,7 +181,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testUserDefinedThrowCatch() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method userDefinedCatch = this.testClass.getMethod("avm_userDefinedCatch");
+        Method userDefinedCatch = this.testClass.getMethod(UserClassMappingVisitor.mapMethodName("userDefinedCatch"));
         
         Object result = userDefinedCatch.invoke(null);
         // We should see the "two" string if this was thrown and caught.
@@ -203,7 +203,7 @@ public class ExceptionWrappingTest {
         Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestExceptionResource.class.getName());
         
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method userDefinedCatch = clazz.getMethod("avm_userDefinedCatch");
+        Method userDefinedCatch = clazz.getMethod(UserClassMappingVisitor.mapMethodName("userDefinedCatch"));
         
         Object result = userDefinedCatch.invoke(null);
         // We should see the "two" string if this was thrown and caught.

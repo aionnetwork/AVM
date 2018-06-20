@@ -1,5 +1,6 @@
 package org.aion.avm.core.classgeneration;
 
+import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -111,12 +112,12 @@ public class StubGenerator {
         
         // Generate the getException method.
         {
-            // NOTE:  These methods need to exist with the "avm_" prefixes, since the shadow library is post-shadow.
+            // NOTE:  These methods need to exist with the UserClassMappingVisitor.mapMethodName("" prefixes, since the shadow library is post-shadow.
             String returnThrowable = "()L" + PackageConstants.kShadowJavaLangSlashPrefix + "Throwable;";
-            MethodVisitor methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, "avm_getException", returnThrowable, null, null);
+            MethodVisitor methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, UserClassMappingVisitor.mapMethodName("getException"), returnThrowable, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, name, "avm_getCause", returnThrowable, false);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, name, UserClassMappingVisitor.mapMethodName("getCause"), returnThrowable, false);
             methodVisitor.visitInsn(Opcodes.ARETURN);
             methodVisitor.visitMaxs(1, 1);
             methodVisitor.visitEnd();

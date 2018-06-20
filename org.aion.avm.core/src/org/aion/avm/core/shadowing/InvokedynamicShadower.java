@@ -2,6 +2,7 @@ package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
+import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -50,7 +51,7 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
         }
 
         private boolean isStringConcatIndy(String origMethodName, String owner) {
-            return "avm_makeConcatWithConstants".equals(origMethodName)
+            return UserClassMappingVisitor.mapMethodName("makeConcatWithConstants").equals(origMethodName)
                     && "java/lang/invoke/StringConcatFactory".equals(owner);
         }
 

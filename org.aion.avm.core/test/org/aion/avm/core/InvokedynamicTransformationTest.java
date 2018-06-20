@@ -53,7 +53,7 @@ public class InvokedynamicTransformationTest {
         final byte[] origBytecode = loadRequiredResourceAsBytes(getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
-        final var actual = (org.aion.avm.java.lang.String) callTestMethod(transformedBytecode, className, "avm_test");
+        final var actual = (org.aion.avm.java.lang.String) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
         Assert.assertEquals("abc", actual.toString());
     }
 
@@ -83,7 +83,7 @@ public class InvokedynamicTransformationTest {
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         try {
             final org.aion.avm.core.testdoubles.indy.Double actual =
-                    (org.aion.avm.core.testdoubles.indy.Double) callTestMethod(transformedBytecode, className, "avm_test");
+                    (org.aion.avm.core.testdoubles.indy.Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
             assertEquals(30, actual.avm_doubleValue(), 0);
             assertTrue(actual.avm_valueOfWasCalled);
         } catch (Exception e) {
@@ -117,7 +117,7 @@ public class InvokedynamicTransformationTest {
         Assert.assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         try {
             final org.aion.avm.java.lang.Double actual =
-                    (org.aion.avm.java.lang.Double) callTestMethod(transformedBytecode, className, "avm_test");
+                    (org.aion.avm.java.lang.Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
             assertEquals(100., actual.avm_doubleValue(), 0);
         } catch (Exception e) {
             e.printStackTrace();

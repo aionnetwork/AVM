@@ -8,6 +8,7 @@ import java.util.Map;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
@@ -56,7 +57,7 @@ public class HashCodeTest {
     @Test
     public void testCommonHash() throws Exception {
         Assert.assertNotNull(clazz);
-        Method getOneHashCode = clazz.getMethod("avm_getOneHashCode");
+        Method getOneHashCode = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         
         Object result = getOneHashCode.invoke(null);
         Assert.assertEquals(1, ((Integer)result).intValue());
@@ -73,7 +74,7 @@ public class HashCodeTest {
     @Test
     public void testStringConstant() throws Exception {
         Assert.assertNotNull(clazz);
-        Method getStringConstant = clazz.getMethod("avm_getStringConstant");
+        Method getStringConstant = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getStringConstant"));
         
         Object instance1 = getStringConstant.invoke(null);
         Object instance2 = getStringConstant.invoke(null);
@@ -86,8 +87,8 @@ public class HashCodeTest {
     @Test
     public void testStringHashCode() throws Exception {
         Assert.assertNotNull(clazz);
-        Method getStringConstant = clazz.getMethod("avm_getStringConstant");
-        Method getStringHash = clazz.getMethod("avm_getStringHash");
+        Method getStringConstant = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getStringConstant"));
+        Method getStringHash = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getStringHash"));
         
         Object instance1 = getStringConstant.invoke(null);
         Object hash = getStringHash.invoke(null);
@@ -103,7 +104,7 @@ public class HashCodeTest {
     @Test
     public void testClassConstant() throws Exception {
         Assert.assertNotNull(clazz);
-        Method getClassConstant = clazz.getMethod("avm_getClassConstant");
+        Method getClassConstant = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getClassConstant"));
         
         Object instance1 = getClassConstant.invoke(null);
         Object instance2 = getClassConstant.invoke(null);
@@ -116,7 +117,7 @@ public class HashCodeTest {
     @Test
     public void testVmExceptionInstancePreserved() throws Exception {
         Assert.assertNotNull(clazz);
-        Method matchRethrowVmException = clazz.getMethod("avm_matchRethrowVmException");
+        Method matchRethrowVmException = clazz.getMethod(UserClassMappingVisitor.mapMethodName("matchRethrowVmException"));
         
         Object instance1 = matchRethrowVmException.invoke(null);
         Assert.assertTrue(((Boolean)instance1).booleanValue());
@@ -128,7 +129,7 @@ public class HashCodeTest {
     @Test
     public void testClassGetName() throws Exception {
         Assert.assertNotNull(clazz);
-        Method compareClassName = clazz.getMethod("avm_compareClassName");
+        Method compareClassName = clazz.getMethod(UserClassMappingVisitor.mapMethodName("compareClassName"));
         
         Object instance1 = compareClassName.invoke(null);
         boolean didMatchInContract = ((Boolean)instance1).booleanValue();
@@ -142,7 +143,7 @@ public class HashCodeTest {
     @Test
     public void testStringToString() throws Exception {
         Assert.assertNotNull(clazz);
-        Method compareStringString = clazz.getMethod("avm_compareStringString");
+        Method compareStringString = clazz.getMethod(UserClassMappingVisitor.mapMethodName("compareStringString"));
         
         Object instance1 = compareStringString.invoke(null);
         boolean didMatchInContract = ((Boolean)instance1).booleanValue();
@@ -156,7 +157,7 @@ public class HashCodeTest {
     @Test
     public void testOverrideHashcode() throws Exception {
         Assert.assertNotNull(clazz);
-        Method getOverrideHashCode = clazz.getMethod("avm_getOverrideHashCode", int.class);
+        Method getOverrideHashCode = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getOverrideHashCode"), int.class);
         
         int override = 5;
         Object instance1 = getOverrideHashCode.invoke(null, Integer.valueOf(override));
@@ -218,7 +219,7 @@ public class HashCodeTest {
         // First, run some tests in helper1.
         IHelper helper1 = Helpers.instantiateHelper(loader1, commonRuntime);
         Class<?> clazz1 = loader1.loadUserClassByOriginalName(targetClassName);
-        Method getOneHashCode1 = clazz1.getMethod("avm_getOneHashCode");
+        Method getOneHashCode1 = clazz1.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         Object result = getOneHashCode1.invoke(null);
         Assert.assertEquals(1, ((Integer)result).intValue());
         result = getOneHashCode1.invoke(null);
@@ -228,7 +229,7 @@ public class HashCodeTest {
         // Now, create the helper2, show that it is independent, and run a test in that.
         IHelper helper2 = Helpers.instantiateHelper(loader2, commonRuntime);
         Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName);
-        Method getOneHashCode2 = clazz2.getMethod("avm_getOneHashCode");
+        Method getOneHashCode2 = clazz2.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         Assert.assertEquals(1, helper2.externalGetNextHashCode());
         result = getOneHashCode2.invoke(null);
         Assert.assertEquals(2, ((Integer)result).intValue());
@@ -239,7 +240,7 @@ public class HashCodeTest {
      */
     @Test
     public void testExhaustion() throws Exception {
-        Method runUntilExhausted = this.clazz.getMethod("avm_runUntilExhausted");
+        Method runUntilExhausted = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("runUntilExhausted"));
         
         boolean caught = false;
         try {
@@ -258,7 +259,7 @@ public class HashCodeTest {
      */
     @Test
     public void testLengthOfClonedByteArray() throws Exception {
-        Method lengthOfClonedByteArray = this.clazz.getMethod("avm_lengthOfClonedByteArray");
+        Method lengthOfClonedByteArray = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("lengthOfClonedByteArray"));
         int result = (Integer)lengthOfClonedByteArray.invoke(null);
         Assert.assertEquals(3, result);
     }

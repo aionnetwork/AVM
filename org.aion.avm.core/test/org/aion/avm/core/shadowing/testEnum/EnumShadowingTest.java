@@ -70,7 +70,7 @@ public class EnumShadowingTest {
     @Test
     public void testEnumAccess() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod("avm_testEnumAccess");
+        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testEnumAccess"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);

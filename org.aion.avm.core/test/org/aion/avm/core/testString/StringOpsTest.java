@@ -4,6 +4,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.SimpleRuntime;
+import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.java.lang.Boolean;
 import org.aion.avm.java.lang.Character;
 import org.aion.avm.java.lang.Integer;
@@ -22,7 +23,7 @@ public class StringOpsTest {
 
         Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(StringOps.class.getName());
         Object obj = clazz.getConstructor().newInstance();
-        ObjectArray results = (ObjectArray) clazz.getMethod("avm_singleString").invoke(obj);
+        ObjectArray results = (ObjectArray) clazz.getMethod(UserClassMappingVisitor.mapMethodName("singleString")).invoke(obj);
 
         int i = 0;
         assertEquals(new Integer(96354), results.get(i++));

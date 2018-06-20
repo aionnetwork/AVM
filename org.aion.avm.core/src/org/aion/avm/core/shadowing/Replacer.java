@@ -8,8 +8,6 @@ import org.aion.avm.internal.PackageConstants;
 import java.util.stream.Stream;
 
 class Replacer {
-    static final String SHADOW_WRAPPED_STRING_TYPE = "Lorg/aion/avm/java/lang/String;";
-    private static final String METHOD_PREFIX = "avm_";
     private static final String JAVA_LANG = "java/lang/";
     private static final String JAVA_UTIL = "java/util/";
     private static final String JAVA_LANG_OBJECT = "java/lang/Object";
