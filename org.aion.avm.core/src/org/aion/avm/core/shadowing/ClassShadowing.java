@@ -22,7 +22,6 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
     private final String runtimeClassName;
     private final ClassWhiteList classWhiteList;
     private final Replacer replacer;
-    public static final String METHOD_PREFIX = "avm_";
 
 
     public ClassShadowing(String runtimeClassName, String shadowPackage, ClassWhiteList classWhiteList) {
@@ -76,7 +75,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
             final String signature,
             final String[] exceptions) {
 
-        String newName = replacer.replaceMethodName(name);
+        String newName = name;
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
         MethodVisitor mv = super.visitMethod(access, newName, replacer.replaceMethodDescriptor(descriptor), null, exceptions);
@@ -91,7 +90,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
                     final boolean isInterface) {
 
                 // don't replace methods of internal classes, introduced by instrumentation
-                String newName = replacer.replaceMethodName(owner, name);
+                String newName = name;
 
                 // Note that it is possible we will see calls from other phases in the chain and we don't want to re-write them
                 // (often, they _are_ the bridging code).

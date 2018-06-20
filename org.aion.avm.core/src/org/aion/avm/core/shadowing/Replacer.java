@@ -24,24 +24,6 @@ class Replacer {
     }
 
     /**
-     * Update the method reference if the owner type is a white-listed JDK class.
-     *
-     * @param type
-     * @return
-     */
-    protected String replaceMethodName(String type, String methodName) {
-        if (this.whiteList.isInWhiteList(type)) {
-            return replaceMethodName(methodName);
-        } else {
-            return methodName;
-        }
-    }
-
-    protected String replaceMethodName(String methodName) {
-        return (methodName.equals("<init>") || methodName.equals("<clinit>")) ? methodName : METHOD_PREFIX + methodName;
-    }
-
-    /**
      * Update the class reference if the type is a white-listed JDK class which starts with {@link #JAVA_LANG}.
      *
      * @param type

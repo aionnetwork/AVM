@@ -21,6 +21,10 @@ import java.util.stream.Collectors;
  * and ensure that they aren't trying to invade one of our spaces, so we will re-map them all into PackageConstants.kUserDotPrefix, here.
  */
 public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisitor {
+
+    private static final String FIELD_PREFIX = "avm_";
+    private static final String METHOD_PREFIX = "avm_";
+
     private final Set<String> userDefinedClassSlashNames;
 
     public UserClassMappingVisitor(Set<String> userDefinedClassDotNames) {
@@ -43,7 +47,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-        String newName = mapType(name);
+        String newName = mapMethodName(name);
         String newDescriptor = mapDescriptor(descriptor);
         String[] newExceptions = mapTypeArray(exceptions);
         
@@ -54,7 +58,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
             @Override
             public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
                 String newOwner = mapType(owner);
-                String newName = mapType(name);
+                String newName = mapMethodName(name);
                 String newDescriptor = mapDescriptor(descriptor);
                 super.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
             }
@@ -65,11 +69,13 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
             @Override
             public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
                 String newOwner = mapType(owner);
+                String newName = mapFieldName(name);
                 String newDescriptor = mapDescriptor(descriptor);
-                super.visitFieldInsn(opcode, newOwner, name, newDescriptor);
+                super.visitFieldInsn(opcode, newOwner, newName, newDescriptor);
             }
             @Override
             public void visitInvokeDynamicInsn(String methodName, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+                String newName = mapMethodName(methodName);
                 String newDescriptor = mapDescriptor(descriptor);
                 
                 Handle newBootstrapMethodHandle = mapHandle(bootstrapMethodHandle);
@@ -88,7 +94,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
                     newArgs[i] = newArg;
                 }
                 
-                super.visitInvokeDynamicInsn(methodName, newDescriptor, newBootstrapMethodHandle, newArgs);
+                super.visitInvokeDynamicInsn(newName, newDescriptor, newBootstrapMethodHandle, newArgs);
             }
             @Override
             public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
@@ -128,10 +134,11 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
 
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+        String newName = mapFieldName(name);
         String newDescriptor = mapDescriptor(descriptor);
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
-        return super.visitField(access, name, newDescriptor, null, value);
+        return super.visitField(access, newName, newDescriptor, null, value);
     }
 
     @Override
@@ -154,6 +161,17 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
         super.visitInnerClass(newName, newOuterName, newInnerName, access);
     }
 
+    public static String mapFieldName(String name) {
+        return FIELD_PREFIX  + name;
+    }
+
+    public static String mapMethodName(String name) {
+        if ("<init>".equals(name) || "<clinit>".equals(name)) {
+            return name;
+        }
+
+        return METHOD_PREFIX + name;
+    }
 
     private Type mapMethodType(Type type) {
         return Type.getMethodType(mapDescriptor(type.getDescriptor()));
@@ -161,10 +179,13 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
 
     private Handle mapHandle(Handle methodHandle) {
         String methodOwner = methodHandle.getOwner();
+        String methodName = methodHandle.getName();
         String methodDescriptor = methodHandle.getDesc();
+
         String newMethodOwner = mapType(methodOwner);
+        String newMethodName = mapMethodName(methodName);
         String newMethodDescriptor = mapDescriptor(methodDescriptor);
-        return new Handle(methodHandle.getTag(), newMethodOwner, methodHandle.getName(), newMethodDescriptor, methodHandle.isInterface());
+        return new Handle(methodHandle.getTag(), newMethodOwner, newMethodName, newMethodDescriptor, methodHandle.isInterface());
     }
 
     /**
@@ -257,12 +278,12 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
         return builder.toString();
     }
 
-    private String[] mapTypeArray(String[] names) {
+    private String[] mapTypeArray(String[] types) {
         String[] newNames = null;
-        if (null != names) {
-            newNames = new String[names.length];
-            for (int i = 0; i < names.length; ++i) {
-                newNames[i] = mapType(names[i]);
+        if (null != types) {
+            newNames = new String[types.length];
+            for (int i = 0; i < types.length; ++i) {
+                newNames[i] = mapType(types[i]);
             }
         }
         return newNames;

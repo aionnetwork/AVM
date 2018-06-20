@@ -42,6 +42,11 @@ public class ByteArray extends Array {
     }
 
     // Implementation of Cloneable
+    public IObject avm_clone() {
+        return new ByteArray(Arrays.copyOf(underlying, underlying.length));
+    }
+
+    // This is here because one of the array wrapping tests requires.
     public IObject clone() {
         return new ByteArray(Arrays.copyOf(underlying, underlying.length));
     }

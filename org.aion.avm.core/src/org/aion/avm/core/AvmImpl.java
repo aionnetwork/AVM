@@ -217,7 +217,7 @@ public class AvmImpl implements Avm {
     /**
      * A helper method to match the method selector with the main-class methods.
      */
-    public Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor, boolean isDeploy) {
+    public Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor) {
         Method[] methods = clazz.getMethods();
 
         // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
@@ -230,10 +230,6 @@ public class AvmImpl implements Avm {
         elementaryTypesMap.put(TxDataDecoder.FLOAT,     new String[]{"F", "float"});
         elementaryTypesMap.put(TxDataDecoder.LONG,      new String[]{"J", "long"});
         elementaryTypesMap.put(TxDataDecoder.DOUBLE,    new String[]{"D", "double"});
-
-        if (!isDeploy) {
-            methodName = ClassShadowing.METHOD_PREFIX + methodName;
-        }
 
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {
@@ -345,13 +341,15 @@ public class AvmImpl implements Avm {
             TxDataDecoder txDataDecoder = new TxDataDecoder();
             if (rt.avm_getData() != null) {
                 TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
+                String newMethodName = UserClassMappingVisitor.mapMethodName(methodCaller.methodName);
+                String newArgDescriptor = methodCaller.argsDescriptor; // TODO: nancy, take array wrapping into consideration
 
                 String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
                 Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
                 Object obj = clazz.getConstructor().newInstance();
 
                 // select the method and invoke
-                Method method = matchMethodSelector(clazz, "avm_" + methodCaller.methodName, methodCaller.argsDescriptor, true);
+                Method method = matchMethodSelector(clazz, newMethodName, newArgDescriptor);
                 if (methodCaller.arguments == null) {
                     method.invoke(obj);
                 } else {
@@ -405,7 +403,7 @@ public class AvmImpl implements Avm {
 
         // Construct the per-contract class loader and access the per-contract IHelper instance.
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true);
         classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
 
@@ -417,6 +415,8 @@ public class AvmImpl implements Avm {
                 throw new InvalidTxDataException();
             }
             TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
+            String newMethodName = UserClassMappingVisitor.mapMethodName(methodCaller.methodName);
+            String newArgDescriptor = methodCaller.argsDescriptor; // TODO: nancy, take array wrapping into consideration
 
             String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
             Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
@@ -424,7 +424,7 @@ public class AvmImpl implements Avm {
             Object obj = clazz.getConstructor().newInstance();
 
             // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
-            Method method = matchMethodSelector(clazz, methodCaller.methodName, methodCaller.argsDescriptor, false);
+            Method method = matchMethodSelector(clazz, newMethodName, newArgDescriptor);
             Object ret;
             if (methodCaller.arguments == null) {
                 ret = method.invoke(obj);

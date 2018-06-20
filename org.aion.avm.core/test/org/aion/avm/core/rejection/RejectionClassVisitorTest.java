@@ -230,7 +230,7 @@ public class RejectionClassVisitorTest {
         Assert.assertNull(outputField.invisibleTypeAnnotations);
         
         // Name is unchanged.
-        Assert.assertEquals(inputField.name, outputField.name);
+        Assert.assertEquals(UserClassMappingVisitor.mapFieldName(inputField.name), outputField.name);
         
         // Signature is now null.
         Assert.assertNull(outputField.signature);
@@ -249,7 +249,8 @@ public class RejectionClassVisitorTest {
         Assert.assertEquals(inputMethod.invisibleAnnotableParameterCount, outputMethod.invisibleAnnotableParameterCount);
         Assert.assertEquals(inputMethod.maxLocals, outputMethod.maxLocals);
         Assert.assertEquals(inputMethod.maxStack, outputMethod.maxStack);
-        Assert.assertEquals(inputMethod.name, outputMethod.name);
+
+        Assert.assertEquals(UserClassMappingVisitor.mapMethodName(inputMethod.name), outputMethod.name);
         
         // Signature is now null.
         Assert.assertNull(outputMethod.signature);

@@ -58,7 +58,7 @@ public class ArrayWrappingTest {
 
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, finalClasses);
 
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, false);
         loader.addHandler(wrapperGenerator);
 
         // We don't really need the runtime but we do need to initialize the Helper.

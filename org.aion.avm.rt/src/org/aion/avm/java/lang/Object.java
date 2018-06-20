@@ -29,7 +29,7 @@ public class Object extends java.lang.Object implements IObject {
         return false;
     }
 
-    protected Object avm_clone() throws CloneNotSupportedException {
+    protected IObject avm_clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
 

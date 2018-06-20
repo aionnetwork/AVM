@@ -50,7 +50,7 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
         }
 
         private boolean isStringConcatIndy(String origMethodName, String owner) {
-            return "makeConcatWithConstants".equals(origMethodName)
+            return "avm_makeConcatWithConstants".equals(origMethodName)
                     && "java/lang/invoke/StringConcatFactory".equals(owner);
         }
 
@@ -59,7 +59,7 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
         }
 
         private void handleLambdaIndy(String origMethodName, String methodDescriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-            final String newMethodName = replacer.replaceMethodName(bootstrapMethodHandle.getOwner(), origMethodName);
+            final String newMethodName = origMethodName;
             final String newMethodDescriptor = replacer.replaceMethodDescriptor(methodDescriptor);
             final Handle newHandle = newLambdaHandleFrom(bootstrapMethodHandle, false);
             final Object[] newBootstrapMethodArgs = newShadowLambdaArgsFrom(bootstrapMethodArguments);
@@ -76,7 +76,7 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
         private Handle newLambdaHandleFrom(Handle origHandle, boolean shadowMethodDescriptor) {
             final String owner = origHandle.getOwner();
             final String newOwner = replacer.replaceType(owner, true);
-            final String newMethodName = replacer.replaceMethodName(owner, origHandle.getName());
+            final String newMethodName = origHandle.getName();
             final String newMethodDescriptor = shadowMethodDescriptor ? replacer.replaceMethodDescriptor(origHandle.getDesc()) : origHandle.getDesc();
             return new Handle(origHandle.getTag(), newOwner, newMethodName, newMethodDescriptor, origHandle.isInterface());
         }

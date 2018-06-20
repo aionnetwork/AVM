@@ -11,16 +11,16 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.rt.Address;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 
@@ -40,20 +40,22 @@ public class ClassShadowingTest {
     @Test
     public void testReplaceJavaLang() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         String className = TestResource.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] bytecode = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
+                        .addNextVisitor(new UserClassMappingVisitor(Set.of(className)))
                         .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, new ClassWhiteList()))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
-        classes.put(className, transformer.apply(raw));
+        classes.put(PackageConstants.kUserDotPrefix + className, transformer.apply(bytecode));
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
-        Class<?> clazz = loader.loadClass(className);
+        Class<?> clazz = loader.loadUserClassByOriginalName(className);
         Object obj = clazz.getConstructor().newInstance();
 
         Method method = clazz.getMethod("avm_abs", int.class);
@@ -78,15 +80,19 @@ public class ClassShadowingTest {
     @Test
     public void testField() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         String className = TestResource2.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        String mappedClassName = PackageConstants.kUserDotPrefix + className;
+        byte[] bytecode = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, 0) /* DO NOT SKIP ANYTHING */
+                        .addNextVisitor(new UserClassMappingVisitor(Collections.singleton(className)))
                         .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, new ClassWhiteList()))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
+
         Map<String, byte[]> classes = new HashMap<>();
-        classes.put(className, transformer.apply(raw));
+        classes.put(mappedClassName, transformer.apply(bytecode));
 
         Set<String> loadedClasses = new HashSet<>();
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes) {
@@ -100,7 +106,7 @@ public class ClassShadowingTest {
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
 
-        Class<?> clazz = loader.loadClass(className);
+        Class<?> clazz = loader.loadClass(mappedClassName);
         Object obj = clazz.getConstructor().newInstance();
 
         //Method method = clazz.getMethod("avm_getStatic");
@@ -115,9 +121,11 @@ public class ClassShadowingTest {
     @Test
     public void testInterfaceHandling() throws Exception {
         String className = TestResourceInterface.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] bytecode = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+
         String innerClassName = className + "$1";
-        byte[] innerRaw = Helpers.loadRequiredResourceAsBytes(innerClassName.replaceAll("\\.", "/") + ".class");
+        byte[] innerBytecode = Helpers.loadRequiredResourceAsBytes(innerClassName.replaceAll("\\.", "/") + ".class");
+
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new UserClassMappingVisitor(Set.of(className, innerClassName)))
@@ -126,9 +134,9 @@ public class ClassShadowingTest {
                         .build()
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
-        byte[] transformed = transformer.apply(raw);
+        byte[] transformed = transformer.apply(bytecode);
         classes.put(PackageConstants.kUserDotPrefix + className, transformed);
-        classes.put(PackageConstants.kUserDotPrefix + innerClassName, transformer.apply(innerRaw));
+        classes.put(PackageConstants.kUserDotPrefix + innerClassName, transformer.apply(innerBytecode));
 
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
@@ -151,6 +159,7 @@ public class ClassShadowingTest {
             countWrappedClasses += 1;
             return Helper.wrapAsClass(input);
         }
+
         public static org.aion.avm.java.lang.String wrapAsString(String input) {
             countWrappedStrings += 1;
             return Helper.wrapAsString(input);

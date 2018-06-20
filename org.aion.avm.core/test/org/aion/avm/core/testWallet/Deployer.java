@@ -227,7 +227,7 @@ public class Deployer {
         Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(inputClasses, classHierarchy, allObjectSizes));
         
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, transformedClasses);
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true);
         loader.addHandler(wrapperGenerator);
         
         // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
