@@ -23,6 +23,24 @@ public class ByteArrayHelpers {
         return newArray;
     }
 
+    public static byte[] concatenate(byte[] one, byte[] two) {
+        byte[] result = new byte[one.length + two.length];
+        arraycopy(one, 0, result, 0, one.length);
+        arraycopy(two, 0, result, one.length, two.length);
+        return result;
+    }
+
+    public static byte[] serializeInt(int i) {
+        // We want to avoid any special JDK dependencies, so crack the int into big-endian bytes (network order).
+        byte[] intBytes = new byte[] {
+                (byte) (0xff & (i >> 24)),
+                (byte) (0xff & (i >> 16)),
+                (byte) (0xff & (i >>  8)),
+                (byte) (0xff & (i >>  0)),
+        };
+        return intBytes;
+    }
+
     public static void arraycopy(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
         for (int i = 0; i < length; ++i) {
             byte elt = src[srcPos + i];

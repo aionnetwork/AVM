@@ -22,6 +22,14 @@ public abstract class ByteArrayWrapper {
         this.hash = hash;
     }
 
+    /**
+     * WARNING:  This returns a reference to the underlying byte array and MUST be treated as read-only.
+     * @return The bytes underlying the wrapper.
+     */
+    public byte[] getByteArrayAccess() {
+        return this.data;
+    }
+
     @Override
     public int hashCode() {
         return this.hash;

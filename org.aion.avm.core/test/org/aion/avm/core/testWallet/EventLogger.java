@@ -27,42 +27,75 @@ public class EventLogger {
     }
 
     public void confirmation(Address sender, Operation operation) {
-        this.logSink.log(kConfirmation.getBytes(), null);
+        byte[] senderBytes = sender.unwrap();
+        byte[] operationBytes = operation.getByteArrayAccess();
+        byte[] data = ByteArrayHelpers.concatenate(senderBytes, operationBytes);
+        this.logSink.log(kConfirmation.getBytes(), data);
     }
 
     public void revoke(Address sender, Operation operation) {
-        this.logSink.log(kRevoke.getBytes(), null);
+        byte[] senderBytes = sender.unwrap();
+        byte[] operationBytes = operation.getByteArrayAccess();
+        byte[] data = ByteArrayHelpers.concatenate(senderBytes, operationBytes);
+        this.logSink.log(kRevoke.getBytes(), data);
     }
 
     public void ownerChanged(Address oldOwner, Address newOwner) {
-        this.logSink.log(kOwnerChanged.getBytes(), null);
+        byte[] oldBytes = oldOwner.unwrap();
+        byte[] newBytes = newOwner.unwrap();
+        byte[] data = ByteArrayHelpers.concatenate(oldBytes, newBytes);
+        this.logSink.log(kOwnerChanged.getBytes(), data);
     }
 
     public void ownerAdded(Address newOwner) {
-        this.logSink.log(kOwnerAdded.getBytes(), null);
+        byte[] data = newOwner.unwrap();
+        this.logSink.log(kOwnerAdded.getBytes(), data);
     }
 
     public void ownerRemoved(Address oldOwner) {
-        this.logSink.log(kOwnerRemoved.getBytes(), null);
+        byte[] data = oldOwner.unwrap();
+        this.logSink.log(kOwnerRemoved.getBytes(), data);
     }
 
     public void requirementChanged(int newRequired) {
-        this.logSink.log(kRequirementChanged.getBytes(), null);
+        byte[] data = ByteArrayHelpers.serializeInt(newRequired);
+        this.logSink.log(kRequirementChanged.getBytes(), data);
     }
 
     public void deposit(Address from, long value) {
-        this.logSink.log(kDeposit.getBytes(), null);
+        byte[] fromBytes = from.unwrap();
+        byte[] data = ByteArrayHelpers.appendLong(fromBytes, value);
+        this.logSink.log(kDeposit.getBytes(), data);
     }
 
     public void singleTransact(Address owner, long value, Address to, byte[] data) {
-        this.logSink.log(kSingleTransact.getBytes(), null);
+        byte[] ownerBytes = owner.unwrap();
+        byte[] ownerValue = ByteArrayHelpers.appendLong(ownerBytes, value);
+        byte[] toBytes = to.unwrap();
+        byte[] partial = ByteArrayHelpers.concatenate(ownerValue, toBytes);
+        byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
+        this.logSink.log(kSingleTransact.getBytes(), finalData);
     }
 
     public void multiTransact(Address owner, Operation operation, long value, Address to, byte[] data) {
-        this.logSink.log(kMultiTransact.getBytes(), null);
+        byte[] ownerBytes = owner.unwrap();
+        byte[] operationBytes = operation.getByteArrayAccess();
+        byte[] ownerOperation = ByteArrayHelpers.concatenate(ownerBytes, operationBytes);
+        byte[] ownerOperationValue = ByteArrayHelpers.appendLong(ownerOperation, value);
+        byte[] toBytes = to.unwrap();
+        byte[] partial = ByteArrayHelpers.concatenate(ownerOperationValue, toBytes);
+        byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
+        this.logSink.log(kMultiTransact.getBytes(), finalData);
     }
 
     public void confirmationNeeded(Operation operation, Address initiator, long value, Address to, byte[] data) {
-        this.logSink.log(kConfirmationNeeded.getBytes(), null);
+        byte[] operationBytes = operation.getByteArrayAccess();
+        byte[] initBytes = initiator.unwrap();
+        byte[] operationInit = ByteArrayHelpers.concatenate(operationBytes, initBytes);
+        byte[] operationInitValue = ByteArrayHelpers.appendLong(operationInit, value);
+        byte[] toBytes = to.unwrap();
+        byte[] partial = ByteArrayHelpers.concatenate(operationInitValue, toBytes);
+        byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
+        this.logSink.log(kConfirmationNeeded.getBytes(), finalData);
     }
 }
