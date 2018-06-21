@@ -5,19 +5,43 @@ package org.aion.avm.api;
  */
 public class BlockchainRuntime {
 
-    private static Block block = null;
-    private static Transaction tx = null;
+    // TODO: clean up the method names, or re-organize by types
 
-    private BlockchainRuntime() {
+    //===================
+    // Transaction
+    //===================
+
+    public static Address getSender() {
+        return null;
     }
 
-    public static Block block() {
-        return block;
+    public static Address getAddress() {
+        return null;
     }
 
-    public static Transaction transaction() {
-        return tx;
+    public static byte[] getData() {
+        return null;
     }
+
+    public static long getEnergyLimit() {
+        return 0;
+    }
+
+    //===================
+    // Block
+    //===================
+
+    public static long getBlockEpochSeconds() {
+        return 0;
+    }
+
+    public static long getBlockNumber() {
+        return 0;
+    }
+
+    //===================
+    // Storage
+    //===================
 
     public static byte[] getStorage(byte[] key) {
         return null;
@@ -26,16 +50,24 @@ public class BlockchainRuntime {
     public static void putStorage(byte[] key, byte[] value) {
     }
 
-    public static byte[] sha3(byte[] data) {
-        return null;
-    }
-
-    public static void call(Address targetAddress, byte[] value, byte[] data, long energyLimit) {
-    }
+    //===================
+    // Misc
+    //===================
 
     public static void updateCode(byte[] newCode) {
     }
 
     public static void selfDestruct(Address beneficiary) {
+    }
+
+    public static byte[] sha3(byte[] data) {
+        return null;
+    }
+
+    public static byte[] call(Address to, byte[] value, byte[] data, long energyLimit) {
+        return null;
+    }
+
+    public static void log(byte[] index0, byte[] data) {
     }
 }
