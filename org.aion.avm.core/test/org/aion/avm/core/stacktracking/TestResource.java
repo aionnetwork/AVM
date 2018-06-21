@@ -1,6 +1,6 @@
 package org.aion.avm.core.stacktracking;
 
-import org.aion.avm.internal.StackWatcher;
+import org.aion.avm.internal.Helper.StackWatcher;
 
 public class TestResource {
 

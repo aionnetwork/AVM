@@ -1,6 +1,6 @@
 package org.aion.avm.core.stacktracking;
 
-import org.aion.avm.internal.StackWatcher;
+import org.aion.avm.internal.Helper;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -23,7 +23,7 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
 
     //JAVA asm Type for later use.
     private Type typeInt = Type.getType(int.class);
-    private Type typeAVMSW = Type.getType(StackWatcher.class);
+    private Type typeAVMSW = Type.getType(Helper.StackWatcher.class);
 
     public StackWatcherMethodAdapter(final GeneratorAdapter mv,
             final int access, final String name, final String desc)

@@ -5,12 +5,10 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.OutOfStackError;
-import org.aion.avm.internal.StackWatcher;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.aion.avm.internal.Helper.StackWatcher;
+import org.junit.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -49,6 +47,11 @@ public class StackWatcherTest {
         classes.put(className, transformer.apply(raw));
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         clazz = loader.loadClass(className);
+    }
+
+    @After
+    public void clearTestingState() {
+        Helper.clearTestingState();
     }
 
     @Test
@@ -104,6 +107,7 @@ public class StackWatcherTest {
 
         for (int i = 0; i < 50; i++){
             StackWatcher.reset();
+            Helper.clearTestingState();
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
             counter = clazz.getDeclaredField("upCounter");
@@ -125,6 +129,7 @@ public class StackWatcherTest {
         StackWatcher.setPolicy(StackWatcher.POLICY_DEPTH);
         for (int i = 0; i < 50; i++){
             StackWatcher.reset();
+            Helper.clearTestingState();
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
             counter = clazz.getDeclaredField("upCounter");
