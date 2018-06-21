@@ -46,7 +46,7 @@ public class SimpleAvm {
         Forest<String, byte[]> classHierarchy = builder.asMutableForest();
 
         // create a new AVM
-        AvmImpl avm = new AvmImpl(sharedClassLoader, null);
+        AvmImpl avm = new AvmImpl(sharedClassLoader);
 
         // compute object sizes
         Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();

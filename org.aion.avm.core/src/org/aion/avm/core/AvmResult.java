@@ -1,12 +1,11 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.api.IAvmResultProxy;
 
-public class AvmResult implements IAvmResultProxy {
+public class AvmResult {
 
     public enum  Code {
-        SUCCESS, INVALID_JAR, INVALID_CODE, INVALID_CALL, OUT_OF_ENERGY, FAILURE
+        SUCCESS, INVALID_TX, INVALID_JAR, INVALID_CODE, INVALID_CALL, OUT_OF_ENERGY, FAILURE
     }
 
     /**
@@ -22,7 +21,7 @@ public class AvmResult implements IAvmResultProxy {
     /**
      * Return data.
      */
-    Object returnData;
+    byte[] returnData;
 
     /**
      * Return the address after deployment.
@@ -34,7 +33,7 @@ public class AvmResult implements IAvmResultProxy {
         this.energyLeft = energyLeft;
     }
 
-    public AvmResult(Code code, long energyLeft, Object returnData) {
+    public AvmResult(Code code, long energyLeft, byte[] returnData) {
         this.code = code;
         this.energyLeft = energyLeft;
         this.returnData = returnData;

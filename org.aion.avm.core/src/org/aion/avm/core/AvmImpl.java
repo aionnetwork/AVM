@@ -27,7 +27,9 @@ import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.IAvmProxy;
+import org.aion.kernel.Block;
+import org.aion.kernel.KernelApi;
+import org.aion.kernel.Transaction;
 import org.aion.kernel.TransformedDappStorage;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -51,20 +53,17 @@ import java.util.jar.Manifest;
 import static org.aion.avm.core.FileUtils.getFSRootDirFor;
 import static org.aion.avm.core.FileUtils.putToTempDir;
 
-public class AvmImpl implements Avm, IAvmProxy {
+public class AvmImpl implements Avm {
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
     private static final String HELPER_CLASS = PackageConstants.kInternalSlashPrefix + "Helper";
+
+    private static final TransformedDappStorage.CodeVersion VERSION = TransformedDappStorage.CodeVersion.VERSION_1_0;
 
     /**
      * We will re-use this top-level class loader for all contracts as the classes within it are state-less and have no dependencies on a contract.
      * It is provided by the caller of our constructor, meaning it gets to decide if the same AvmImpl is reused, or not.
      */
     private final AvmSharedClassLoader sharedClassLoader;
-
-    /**
-     * The TransformedDappStorage is unique and provided by the kernel.
-     */
-    private final TransformedDappStorage codeStorage;
 
     /**
      * Extracts the DApp module in compressed format into the designated folder.
@@ -77,9 +76,8 @@ public class AvmImpl implements Avm, IAvmProxy {
         return DappModule.readFromJar(jar);
     }
 
-    public AvmImpl(AvmSharedClassLoader sharedClassLoader, TransformedDappStorage codeStorage) {
+    public AvmImpl(AvmSharedClassLoader sharedClassLoader) {
         this.sharedClassLoader = sharedClassLoader;
-        this.codeStorage = codeStorage;
     }
 
     /**
@@ -363,15 +361,102 @@ public class AvmImpl implements Avm, IAvmProxy {
         return arguments.toArray();
     }
 
-    public static Map<String, Integer> computeAllObjectsSizes(Forest<String, byte[]> dappClasses){
+    public  static Map<String, Integer> computeAllObjectsSizes(Forest<String, byte[]> dappClasses){
         return computeObjectSizes(dappClasses, computeRuntimeObjectSizes());
     }
 
+    public static BlockchainRuntime createBlockchainRuntime(Transaction tx, Block block, KernelApi cb) {
+        return new BlockchainRuntime() {
+
+            @Override
+            public Address avm_getSender() {
+                return new Address(tx.getFrom());
+            }
+
+            @Override
+            public Address avm_getAddress() {
+                // TODO: handle CREATE transaction
+                return new Address(tx.getTo());
+            }
+
+            @Override
+            public long avm_getEnergyLimit() {
+                return tx.getEnergyLimit();
+            }
+
+            @Override
+            public ByteArray avm_getData() {
+                return  new ByteArray(tx.getData());
+            }
+
+            @Override
+            public ByteArray avm_getStorage(ByteArray key) {
+                return new ByteArray(cb.getStorage(tx.getTo(), key.getUnderlying()));
+            }
+
+            @Override
+            public void avm_putStorage(ByteArray key, ByteArray value) {
+                cb.putStorage(tx.getTo(), key.getUnderlying(), value.getUnderlying());
+            }
+
+            @Override
+            public void avm_updateCode(ByteArray newCode) {
+                cb.updateCode(tx.getTo(), newCode.getUnderlying());
+            }
+
+            @Override
+            public void avm_selfDestruct(Address beneficiary) {
+                cb.selfdestruct(tx.getTo(), beneficiary.unwrap());
+            }
+
+            @Override
+            public long avm_getBlockEpochSeconds() {
+                return block.getTimestamp();
+            }
+
+            @Override
+            public long avm_getBlockNumber() {
+                return block.getNumber();
+            }
+
+            @Override
+            public ByteArray avm_sha3(ByteArray data) {
+                // TODO: we can implement this inside vm
+                return null;
+            }
+
+            @Override
+            public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray data, long energyLimit) {
+                AvmResult result = cb.call(tx.getTo(), targetAddress.unwrap(), value.getUnderlying(), data.getUnderlying(), energyLimit);
+
+                return new ByteArray(result.returnData);
+            }
+
+            @Override
+            public void avm_log(ByteArray index0, ByteArray data) {
+                cb.log(getAddress().unwrap(), index0.getUnderlying(), data.getUnderlying());
+            }
+        };
+    }
+
     @Override
-    public AvmResult deploy(byte[] jar, org.aion.avm.java.lang.String codeVersion, BlockchainRuntime rt) {
+    public AvmResult run(Transaction tx, Block block, KernelApi cb) {
+        switch (tx.getType()) {
+            case CREATE:
+                return create(tx, block, cb);
+            case CALL:
+                return call(tx, block, cb);
+            default:
+                return new AvmResult(AvmResult.Code.INVALID_TX, 0);
+        }
+    }
+
+    public AvmResult create(Transaction tx, Block block, KernelApi cb) {
         try {
             // read dapp module
-            DappModule app = readDapp(jar);
+            byte[] dappAddress = tx.getTo(); // TODO: CREATE does not specify address
+            byte[] dappCode = tx.getData();
+            DappModule app = readDapp(dappCode);
             if (app == null) {
                 return new AvmResult(AvmResult.Code.INVALID_JAR, 0);
             }
@@ -390,50 +475,22 @@ public class AvmImpl implements Avm, IAvmProxy {
 
             // Construct the per-contract class loader and access the per-contract IHelper instance.
             AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
-            IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
+            IHelper helper = Helpers.instantiateHelper(classLoader, createBlockchainRuntime(tx, block , cb));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
                     + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * app.bytecodeSize * (1 + app.numberOfClasses) / 10);
 
-            // Parse the tx data, get the method name and arguments
-            TxDataDecoder txDataDecoder = new TxDataDecoder();
-            if (rt.avm_getData() != null) {
-                TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
-                String newMethodName = UserClassMappingVisitor.mapMethodName(methodCaller.methodName);
-                String newArgDescriptor = methodCaller.argsDescriptor; // TODO: nancy, take array wrapping into consideration
-
-                String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
-                Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
-                Object obj = clazz.getConstructor().newInstance();
-
-                // select the method and invoke
-                Method method = matchMethodSelector(clazz, newMethodName, newArgDescriptor);
-                if (methodCaller.arguments == null) {
-                    method.invoke(obj);
-                } else {
-                    method.invoke(obj, convertArguments(methodCaller.arguments));
-                }
-            }
-
             // store transformed dapp
-            File transformedDappJar = app.createJar(rt.avm_getAddress());
-            TransformedDappStorage.CodeVersion codeVersionFormat = null;
-            if (codeVersion == null) {
-                codeVersionFormat = TransformedDappStorage.CodeVersion.VERSION_1_0;
-            }
-            else {
-                codeStorage.matchCodeVersion(codeVersion.toString());
-            }
-            if (codeVersionFormat == null) {
-                throw new InvalidTxDataException(); // code version is not accepted.
-            }
-            codeStorage.storeCode(rt.avm_getAddress().unwrap(), codeVersionFormat, transformedDappJar);
+            File transformedDappJar = app.createJar(dappAddress);
+            cb.putTransformedCode(dappAddress, VERSION, transformedDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * jar.length);
+            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * tx.getData().length);
 
-            return new AvmResult(AvmResult.Code.SUCCESS, rt.avm_getEnergyLimit(), rt.avm_getAddress());
+            // TODO: create invocation is temporarily disabled
+
+            return new AvmResult(AvmResult.Code.SUCCESS, tx.getEnergyLimit(), dappAddress);
         } catch (FatalAvmError e) {
             // These are unrecoverable errors (either a bug in our code or a lower-level error reported by the JVM).
             // (for now, we System.exit(-1), since this is what ethereumj does, but we may want a more graceful shutdown in the future)
@@ -442,8 +499,6 @@ public class AvmImpl implements Avm, IAvmProxy {
             return null;
         } catch (OutOfEnergyError e) {
             return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
-        } catch (InvalidTxDataException | UnsupportedEncodingException e) {
-            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             return new AvmResult(AvmResult.Code.FAILURE, 0);
@@ -456,12 +511,11 @@ public class AvmImpl implements Avm, IAvmProxy {
         }
     }
 
-    @Override
-    public AvmResult run(BlockchainRuntime rt) {
+    public AvmResult call(Transaction tx, Block block, KernelApi cb) {
         // retrieve the transformed bytecode
         DappModule app;
         try {
-            File transformedDappJar = codeStorage.loadCode(rt.avm_getAddress().unwrap());
+            File transformedDappJar = cb.getTransformedCode(tx.getTo());
             app = DappModule.readFromJar(Helpers.readFileToBytes(transformedDappJar.getPath()));
         } catch (IOException e) {
             return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
@@ -474,16 +528,16 @@ public class AvmImpl implements Avm, IAvmProxy {
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, classLoader);
         classLoader.addHandler(wrapperGenerator);
-        IHelper helper = Helpers.instantiateHelper(classLoader,  rt);
+        IHelper helper = Helpers.instantiateHelper(classLoader, createBlockchainRuntime(tx, block, cb));
 
         // load class
         try {
             // Parse the tx data, get the method name and arguments
             TxDataDecoder txDataDecoder = new TxDataDecoder();
-            if (rt.avm_getData() == null) {
+            if (tx.getData() == null) {
                 throw new InvalidTxDataException();
             }
-            TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(rt.avm_getData().getUnderlying());
+            TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(tx.getData());
             String newMethodName = UserClassMappingVisitor.mapMethodName(methodCaller.methodName);
             String newArgDescriptor = methodCaller.argsDescriptor; // TODO: nancy, take array wrapping into consideration
 
@@ -502,8 +556,8 @@ public class AvmImpl implements Avm, IAvmProxy {
                 ret = method.invoke(obj, convertArguments(methodCaller.arguments));
             }
 
-            // TODO: energy left
-            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
+            // TODO: handle the return data after changing the entry function ABI
+            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), (byte[]) null);
         } catch (InvalidTxDataException | UnsupportedEncodingException e) {
             return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
         } catch (Exception e) {
@@ -511,14 +565,6 @@ public class AvmImpl implements Avm, IAvmProxy {
 
             return new AvmResult(AvmResult.Code.FAILURE, 0);
         }
-    }
-
-    @Override
-    public AvmResult removeDapp(Address beneficiary, BlockchainRuntime rt) {
-        codeStorage.removeDapp(rt.getAddress().unwrap());
-        // TODO - ask the kernel to send the remaining balance to the beneficiary.
-
-        return new AvmResult(AvmResult.Code.SUCCESS, 0);
     }
 
     /**
@@ -606,7 +652,7 @@ public class AvmImpl implements Avm, IAvmProxy {
         /**
          * Create a jar file from this Dapp module.
          */
-        private File createJar(Address address) throws IOException {
+        private File createJar(byte[] address) throws IOException {
             // manifest
             Manifest manifest = new Manifest();
             manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -635,8 +681,7 @@ public class AvmImpl implements Avm, IAvmProxy {
 
         private static final char[] hexArray = "0123456789abcdef".toCharArray();
 
-        private String addressToString(Address address) {
-            byte[] bytes = address.unwrap();
+        private String addressToString(byte[] bytes) {
             int length = bytes.length;
 
             char[] hexChars = new char[length * 2];

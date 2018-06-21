@@ -12,15 +12,15 @@ public class Transaction {
 
     byte[] to;
 
-    byte[] payload;
+    byte[] data;
 
     long energyLimit;
 
-    public Transaction(Type type, byte[] from, byte[] to, byte[] payload, long energyLimit) {
+    public Transaction(Type type, byte[] from, byte[] to, byte[] data, long energyLimit) {
         this.type = type;
         this.from = from;
         this.to = to;
-        this.payload = payload;
+        this.data = data;
         this.energyLimit = energyLimit;
     }
 
@@ -36,8 +36,8 @@ public class Transaction {
         return to;
     }
 
-    public byte[] getPayload() {
-        return payload;
+    public byte[] getData() {
+        return data;
     }
 
     public long getEnergyLimit() {

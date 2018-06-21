@@ -87,7 +87,7 @@ public class AvmImplTest {
         // We didn't reset the state so this should still fail.
         try {
             helper.externalChargeEnergy(0);
-        } catch (OutOfEnergyError e) {
+        } catch (OutOfEnergyError e) {new AvmImpl(sharedClassLoader);
             catchCount += 1;
             // And have the same exception.
             assertEquals(error, e);
