@@ -447,7 +447,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
         // Parse param
         java.lang.String para = desc.substring(beginIndex + 1, endIndex);
-        Pattern pattern = Pattern.compile("\\[*L[^;]+;|\\[[ZBCSIFDJ]|[ZBCSIFDJ]");
+        Pattern pattern = Pattern.compile("\\[*L[^;]+;|\\[*[ZBCSIFDJ]|[ZBCSIFDJ]");
         Matcher paraMatcher = pattern.matcher(para);
 
         while(paraMatcher.find())
