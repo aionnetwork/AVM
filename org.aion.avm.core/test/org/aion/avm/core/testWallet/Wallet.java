@@ -70,7 +70,7 @@ public class Wallet implements IMultisig {
     // gets called when no other function matches
     public void payable(Address from, long value) {
         if (value > 0) {
-            this.logger.deposit();
+            this.logger.deposit(from, value);
         }
     }
 
@@ -87,7 +87,7 @@ public class Wallet implements IMultisig {
         byte[] result = null;
         // first, take the opportunity to check that we're under the daily limit.
         if (this.limit.underLimit(runtime, value)) {
-            this.logger.singleTransact();
+            this.logger.singleTransact(runtime.getSender(), value, to, data);
             // yes - just execute the call.
             byte[] response = runtime.call(to, value, data);
             if (null == response) {
@@ -105,7 +105,7 @@ public class Wallet implements IMultisig {
                 transaction.value = value;
                 transaction.data = data;
                 this.transactions.put(transactionKey, transaction);
-                this.logger.confirmationNeeded();
+                this.logger.confirmationNeeded(Operation.fromBytes(result), runtime.getSender(), value, to, data);
             }
         }
         return result;
@@ -142,7 +142,7 @@ public class Wallet implements IMultisig {
             if (null == response) {
                 throw new RequireFailedException();
             }
-            this.logger.multiTransact();
+            this.logger.multiTransact(runtime.getSender(), Operation.fromBytes(h), transaction.value, transaction.to, transaction.data);
             this.transactions.remove(BytesKey.from(h));
             result = true;
         }

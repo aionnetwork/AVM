@@ -56,7 +56,7 @@ public class Multiowned {
             if (null != state) {
                 // Remove them from the confirmed set.
                 state.confirmedOwners.remove(sender);
-                this.logger.revoke();
+                this.logger.revoke(sender, operation);
             }
         }
     }
@@ -76,7 +76,7 @@ public class Multiowned {
             
             // Pending states will now be inconsistent so clear them.
             this.ongoingOperations.clear();
-            this.logger.ownerChanged();
+            this.logger.ownerChanged(from, to);
         }
     }
 
@@ -93,7 +93,7 @@ public class Multiowned {
             
             // Pending states will now be inconsistent so clear them.
             this.ongoingOperations.clear();
-            this.logger.ownerAdded();
+            this.logger.ownerAdded(owner);
         }
     }
 
@@ -110,7 +110,7 @@ public class Multiowned {
             
             // Pending states will now be inconsistent so clear them.
             this.ongoingOperations.clear();
-            this.logger.ownerRemoved();
+            this.logger.ownerRemoved(owner);
             
             // (Note that it is possible that we have now removed so many owners that numberRequired no longer exist - the Solidity example didn't avoid this)
         }
@@ -126,7 +126,7 @@ public class Multiowned {
         
         // Pending states will now be inconsistent so clear them.
         this.ongoingOperations.clear();
-        this.logger.requirementChanged();
+        this.logger.requirementChanged(newRequired);
     }
 
     // PUBLIC INTERFACE
@@ -200,7 +200,7 @@ public class Multiowned {
             }
             
             // Add us to the set of those who have confirmed.
-            this.logger.confirmation();
+            this.logger.confirmation(sender, operation);
             state.confirmedOwners.add(sender);
             
             // If we were the last required, return true and clean up.

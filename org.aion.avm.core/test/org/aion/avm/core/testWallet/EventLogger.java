@@ -1,5 +1,6 @@
 package org.aion.avm.core.testWallet;
 
+import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 
 
@@ -25,43 +26,43 @@ public class EventLogger {
         this.logSink = logSink;
     }
 
-    public void confirmation() {
+    public void confirmation(Address sender, Operation operation) {
         this.logSink.log(kConfirmation.getBytes(), null);
     }
 
-    public void revoke() {
+    public void revoke(Address sender, Operation operation) {
         this.logSink.log(kRevoke.getBytes(), null);
     }
 
-    public void ownerChanged() {
+    public void ownerChanged(Address oldOwner, Address newOwner) {
         this.logSink.log(kOwnerChanged.getBytes(), null);
     }
 
-    public void ownerAdded() {
+    public void ownerAdded(Address newOwner) {
         this.logSink.log(kOwnerAdded.getBytes(), null);
     }
 
-    public void ownerRemoved() {
+    public void ownerRemoved(Address oldOwner) {
         this.logSink.log(kOwnerRemoved.getBytes(), null);
     }
 
-    public void requirementChanged() {
+    public void requirementChanged(int newRequired) {
         this.logSink.log(kRequirementChanged.getBytes(), null);
     }
 
-    public void deposit() {
+    public void deposit(Address from, long value) {
         this.logSink.log(kDeposit.getBytes(), null);
     }
 
-    public void singleTransact() {
+    public void singleTransact(Address owner, long value, Address to, byte[] data) {
         this.logSink.log(kSingleTransact.getBytes(), null);
     }
 
-    public void multiTransact() {
+    public void multiTransact(Address owner, Operation operation, long value, Address to, byte[] data) {
         this.logSink.log(kMultiTransact.getBytes(), null);
     }
 
-    public void confirmationNeeded() {
+    public void confirmationNeeded(Operation operation, Address initiator, long value, Address to, byte[] data) {
         this.logSink.log(kConfirmationNeeded.getBytes(), null);
     }
 }
