@@ -8,7 +8,7 @@ import org.aion.avm.api.BlockchainRuntime;
  */
 public class Operation extends ByteArrayWrapper {
     public static Operation fromMessage(BlockchainRuntime context) {
-        byte[] data = context.getMessageData();
+        byte[] data = context.getData();
         byte[] hash = context.sha3(data);
         return new Operation(hash);
     }
@@ -18,7 +18,7 @@ public class Operation extends ByteArrayWrapper {
     }
 
     public static byte[] rawOperationForCurrentMessageAndBlock(BlockchainRuntime context) {
-        byte[] data = context.getMessageData();
+        byte[] data = context.getData();
         long blockNumber = context.getBlockNumber();
         byte[] fullData = ByteArrayHelpers.appendLong(data, blockNumber);
         byte[] hash = context.sha3(fullData);

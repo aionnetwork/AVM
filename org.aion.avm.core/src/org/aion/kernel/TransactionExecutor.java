@@ -62,7 +62,7 @@ public class TransactionExecutor {
             }
 
             @Override
-            public void avm_updateCode(ByteArray newCode, String codeVersion) {
+            public void avm_updateCode(ByteArray newCode) {
             }
 
             @Override
@@ -72,11 +72,6 @@ public class TransactionExecutor {
             @Override
             public long avm_getBlockEpochSeconds() {
                 return 1l;
-            }
-
-            @Override
-            public ByteArray avm_getMessageData() {
-                return null;
             }
 
             @Override

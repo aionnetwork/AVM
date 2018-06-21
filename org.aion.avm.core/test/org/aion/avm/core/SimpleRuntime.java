@@ -81,7 +81,7 @@ public class SimpleRuntime implements BlockchainRuntime {
     }
 
     @Override
-    public void avm_updateCode(ByteArray newCode, String codeVersion) {
+    public void avm_updateCode(ByteArray newCode) {
         Assert.fail("This implementation doesn't handle this");
     }
 
@@ -93,12 +93,6 @@ public class SimpleRuntime implements BlockchainRuntime {
     public long avm_getBlockEpochSeconds() {
         Assert.fail("This implementation doesn't handle this");
         return 0;
-    }
-
-    @Override
-    public ByteArray avm_getMessageData() {
-        Assert.fail("This implementation doesn't handle this");
-        return null;
     }
 
     @Override

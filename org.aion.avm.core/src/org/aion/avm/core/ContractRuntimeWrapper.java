@@ -44,8 +44,8 @@ public class ContractRuntimeWrapper extends org.aion.avm.java.lang.Object implem
         this.externalRuntime.avm_putStorage(key, value);
     }
     @Override
-    public void avm_updateCode(ByteArray newCode, String codeVersion) {
-        this.externalRuntime.avm_updateCode(newCode, codeVersion);
+    public void avm_updateCode(ByteArray newCode) {
+        this.externalRuntime.avm_updateCode(newCode);
     }
     @Override
     public void avm_selfDestruct(Address beneficiary) {
@@ -54,10 +54,6 @@ public class ContractRuntimeWrapper extends org.aion.avm.java.lang.Object implem
     @Override
     public long avm_getBlockEpochSeconds() {
         return this.externalRuntime.avm_getBlockEpochSeconds();
-    }
-    @Override
-    public ByteArray avm_getMessageData() {
-        return this.externalRuntime.avm_getMessageData();
     }
     @Override
     public long avm_getBlockNumber() {

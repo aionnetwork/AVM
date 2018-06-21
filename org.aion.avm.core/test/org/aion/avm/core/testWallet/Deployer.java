@@ -397,7 +397,7 @@ public class Deployer {
             Assert.unimplemented("TODO");
         }
         @Override
-        public void avm_updateCode(ByteArray newCode, org.aion.avm.java.lang.String codeVersion) {
+        public void avm_updateCode(ByteArray newCode) {
             Assert.unimplemented("TODO");
         }
         @Override
@@ -407,10 +407,6 @@ public class Deployer {
         public long avm_getBlockEpochSeconds() {
             // For now, always say it is day 1:  seconds per day.
             return 60 * 60 * 24;
-        }
-        @Override
-        public ByteArray avm_getMessageData() {
-            return data;
         }
         @Override
         public long avm_getBlockNumber() {

@@ -56,9 +56,8 @@ public interface BlockchainRuntime {
      * Update the Dapp code with a new version.
      *
      * @param newCode
-     * @param codeVersion
      */
-    void avm_updateCode(ByteArray newCode, String codeVersion);
+    void avm_updateCode(ByteArray newCode);
 
     /**
      * Destruct the Dapp.
@@ -71,11 +70,6 @@ public interface BlockchainRuntime {
      * @return The time of the current block, as seconds since the Epoch.
      */
     long avm_getBlockEpochSeconds();
-
-    /**
-     * @return The raw message data which started this invocation.
-     */
-    ByteArray avm_getMessageData();
 
     /**
      * @return The number of the current block.
@@ -124,13 +118,11 @@ public interface BlockchainRuntime {
 
     default void putStorage(byte[] key, byte[] value) { avm_putStorage(new ByteArray(key), new ByteArray(value)); }
 
-    default void updateCode(byte[] newCode, java.lang.String codeVersion) { avm_updateCode(new ByteArray(newCode), new String(codeVersion)); }
+    default void updateCode(byte[] newCode) { avm_updateCode(new ByteArray(newCode)); }
 
     default void selfDestruct(Address beneficiary) { avm_selfDestruct(beneficiary); }
 
     default long getBlockEpochSeconds() { return avm_getBlockEpochSeconds(); }
-
-    default byte[] getMessageData() { return avm_getMessageData().getUnderlying(); }
 
     default long getBlockNumber() { return avm_getBlockNumber(); }
 
