@@ -11,10 +11,36 @@ import org.aion.avm.userlib.AionMap;
  * interfaces.
  */
 public class Wallet {
+    /**
+     * Calling a reflection routine which has an array in it is a problem with how our arraywrapping works.
+     * This might not matter, in the future, but may be something we need to make easier to manage (maybe the arraywrappers have factories, or something).
+     */
+    public static void avoidArrayWrappingFactory(BlockchainRuntime runtime, Address owner1, Address owner2, int votesRequiredPerOperation, long daylimit) {
+        Wallet.init(runtime, new Address[] {owner1, owner2}, votesRequiredPerOperation, daylimit);
+    }
+
+    /**
+     * This is a helper we use to invoke the init() method given that our arraywrapping makes creating the Address[] problematic.
+     * This method acts as a factory for us.
+     */
+    public static Address[] wrapTwoAddresses(Address owner1, Address owner2) {
+        return new Address[] {owner1, owner2};
+    }
+
+
     // Note that this key is really just a subset of uses of "Operation".
     private static AionMap<BytesKey, Transaction> transactions;
 
-    public static void init() {
+    // The contract "Constructor".  Note that this should only be called once, when initially deployed (in Ethereum world, the arguments are
+    // just pass as part of the deployment payload, after the code).
+    public static void init(BlockchainRuntime runtime, Address[] requestedOwners, int votesRequiredPerOperation, long daylimit) {
+        // This is the contract entry-point so "construct" the contract fragments from which we are derived.
+        Address sender = runtime.getSender();
+        long nowInSeconds = runtime.getBlockEpochSeconds();
+        long nowInDays = nowInSeconds / (24 * 60 * 60);
+        Multiowned.init(sender, requestedOwners, votesRequiredPerOperation);
+        Daylimit.init(daylimit, nowInDays);
+        
         Wallet.transactions = new AionMap<>();
     }
 

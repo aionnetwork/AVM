@@ -58,16 +58,15 @@ public class Deployer {
         TestingRuntime loggingRuntime = new TestingRuntime(null, null);
         EventLogger.init(loggingRuntime);
         
-        // First thing we do is create the Wallet (which requires its components).
+        // We can now init the actual contract (the Wallet is the root so init it).
         Address sender = buildAddress(1);
         Address extra1 = buildAddress(2);
         Address extra2 = buildAddress(3);
         int requiredVotes = 2;
-        Multiowned.avoidArrayWrappingFactory(sender, extra1, extra2, requiredVotes);
         long dailyLimit = 5000;
-        long startInDays = 1;
-        Daylimit.init(dailyLimit, startInDays);
-        Wallet.init();
+        // This helper to avoid creating/referencing the arraywrapper will init Wallet.
+        BlockchainRuntime deploymentRuntime = new TestingRuntime(sender, null);
+        Wallet.avoidArrayWrappingFactory(deploymentRuntime, extra1, extra2, requiredVotes, dailyLimit);
         
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
@@ -208,27 +207,19 @@ public class Deployer {
         Address sender = buildAddress(1);
         Address extra1 = buildAddress(2);
         Address extra2 = buildAddress(3);
+        Class<?> walletClass = loader.loadUserClassByOriginalName(Wallet.class.getName());
         loader.loadUserClassByOriginalName(EventLogger.class.getName())
             .getMethod(UserClassMappingVisitor.mapMethodName("init"), BlockchainRuntime.class)
             .invoke(null, externalRuntime);
+        
+        // We can now init the actual contract (the Wallet is the root so init it).
         int requiredVotes = 2;
-        
-        // Note that we need to call through this specially-made factory method to avoid needing to create an array wrapper on Address[].
-        Class<?> multiownerClass = loader.loadUserClassByOriginalName(Multiowned.class.getName());
-        multiownerClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("avoidArrayWrappingFactory"), Address.class, Address.class, Address.class, int.class)
-            .invoke(null, sender, extra1, extra2, requiredVotes);
         long dailyLimit = 5000;
-        long startInDays = 1;
-        
-        loader.loadUserClassByOriginalName(Daylimit.class.getName())
-            .getMethod(UserClassMappingVisitor.mapMethodName("init"), long.class, long.class)
-            .invoke(null, dailyLimit, startInDays);
-        
-        Class<?> walletClass = loader.loadUserClassByOriginalName(Wallet.class.getName());
+        // This helper to avoid creating/referencing the arraywrapper will init Wallet.
+        BlockchainRuntime deploymentRuntime = new TestingRuntime(sender, null);
         walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("init"))
-            .invoke(null);
+            .getMethod(UserClassMappingVisitor.mapMethodName("avoidArrayWrappingFactory"), BlockchainRuntime.class, Address.class, Address.class, int.class, long.class)
+            .invoke(null, deploymentRuntime, extra1, extra2, requiredVotes, dailyLimit);
         
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
