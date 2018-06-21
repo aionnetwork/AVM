@@ -40,8 +40,8 @@ public class EnumShadowingTest {
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
         loader.addHandler(wrapperGenerator);
 
-        Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestResource.class.getName()), "/tmp/testR.class");
-        Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestEnum.class.getName()), "/tmp/enum.class");
+        //Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestResource.class.getName()), "/tmp/testR.class");
+        //Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestEnum.class.getName()), "/tmp/enum.class");
 
         this.clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
 
@@ -51,6 +51,15 @@ public class EnumShadowingTest {
     public void testEnumAccess() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testEnumAccess"));
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
+
+    @Test
+    public void testEnumValues() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testEnumValues"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
