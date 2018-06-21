@@ -117,4 +117,8 @@ public final class Byte extends Object implements Comparable<Byte> {
 
     public static final int avm_BYTES = java.lang.Byte.BYTES;
 
+    //========================================================
+    // Methods below are excluded from shadowing
+    //========================================================
+
 }

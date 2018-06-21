@@ -151,5 +151,8 @@ public class Double extends Number implements Comparable<Double>{
         return Math.avm_min(a, b);
     }
 
+    //========================================================
+    // Methods below are excluded from shadowing
+    //========================================================
 
 }

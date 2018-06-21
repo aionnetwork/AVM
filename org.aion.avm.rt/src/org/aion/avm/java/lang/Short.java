@@ -119,4 +119,8 @@ public class Short extends Number{
     public static long avm_toUnsignedLong(short x) {
         return ((long) x) & 0xffffL;
     }
+
+    //========================================================
+    // Methods below are excluded from shadowing
+    //========================================================
 }

@@ -60,9 +60,6 @@ public class Boolean extends Object implements Comparable<Boolean>{
         return false;
     }
 
-    //TODO
-    //public static boolean getBoolean(java.lang.String name){}
-
     public int avm_compareTo(Boolean b) {
         return avm_compare(this.value, b.value);
     }
@@ -96,4 +93,11 @@ public class Boolean extends Object implements Comparable<Boolean>{
     public java.lang.String toString() {
         return java.lang.Boolean.toString(this.value);
     }
+
+    //========================================================
+    // Methods below are excluded from shadowing
+    //========================================================
+
+    //public static boolean avm_getBoolean(java.lang.String name){}
+
 }

@@ -42,11 +42,6 @@ public class Long extends Number implements Comparable<Long>{
         return java.lang.Long.parseLong(s.getUnderlying(), radix);
     }
 
-    // TODO: how to handle CharSequence?
-//    public static long parseLong(CharSequence s, int beginIndex, int endIndex, int radix) throws NumberFormatException {
-//        return java.lang.Long.parseLong(s, beginIndex, endIndex, radix);
-//    }
-
     public static long avm_parseLong(String s) throws NumberFormatException {
         return java.lang.Long.parseLong(s.getUnderlying(), 10);
     }
@@ -55,9 +50,7 @@ public class Long extends Number implements Comparable<Long>{
         return java.lang.Long.parseUnsignedLong(s.getUnderlying(), radix);
     }
 
-//    public static long parseUnsignedLong(CharSequence s, int beginIndex, int endIndex, int radix)
-//            throws NumberFormatException {
-//    }
+
 
     public static long avm_parseUnsignedLong(String s) throws NumberFormatException {
         return java.lang.Long.parseUnsignedLong(s.getUnderlying(), 10);
@@ -71,22 +64,7 @@ public class Long extends Number implements Comparable<Long>{
         return avm_valueOf(avm_parseLong(s, 10));
     }
 
-    private static class LongCache {
-        private LongCache(){}
-
-        static final Long cache[] = new Long[-(-128) + 127 + 1];
-
-        static {
-            for(int i = 0; i < cache.length; i++)
-                cache[i] = new Long(i - 128);
-        }
-    }
-
     public static Long avm_valueOf(long l) {
-        final int offset = 128;
-        if (l >= -128 && l <= 127) { // will cache
-            return LongCache.cache[(int)l + offset];
-        }
         return new Long(l);
     }
 
@@ -146,32 +124,6 @@ public class Long extends Number implements Comparable<Long>{
         }
         return false;
     }
-
-    //TODO: We should disable getLong?
-
-//    public static Long avm_getLong(String nm) {
-//        return avm_getLong(nm, null);
-//    }
-//
-//    public static Long avm_getLong(String nm, long val) {
-//        Long result = Long.avm_getLong(nm, null);
-//        return (result == null) ? Long.avm_valueOf(val) : result;
-//    }
-//
-//    public static Long avm_getLong(String nm, Long val) {
-//        String v = null;
-//        try {
-//            v = System.getProperty(nm);
-//        } catch (IllegalArgumentException | NullPointerException e) {
-//        }
-//        if (v != null) {
-//            try {
-//                return Long.decode(v);
-//            } catch (NumberFormatException e) {
-//            }
-//        }
-//        return val;
-//    }
 
     public int avm_compareTo(Long anotherLong) {
         return avm_compare(this.value, anotherLong.value);
@@ -248,4 +200,22 @@ public class Long extends Number implements Comparable<Long>{
     public static long avm_min(long a, long b) {
         return Math.avm_min(a, b);
     }
+
+    //========================================================
+    // Methods below are excluded from shadowing
+    //========================================================
+
+    // public static long avm_parseLong(CharSequence s, int beginIndex, int endIndex, int radix)
+    //      throws NumberFormatException {}
+
+
+    // public static long avm_parseUnsignedLong(CharSequence s, int beginIndex, int endIndex, int radix)
+    //      throws NumberFormatException {}
+
+    // public static Long avm_getLong(String nm) {}
+
+    // public static Long avm_getLong(String nm, long val) {}
+
+    // public static Long avm_getLong(String nm, Long val) {}
+
 }

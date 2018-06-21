@@ -46,10 +46,6 @@ public class Integer extends Number implements Comparable<Integer>{
         return java.lang.Integer.parseInt(s.getUnderlying(), radix);
     }
 
-    //TODO
-//    public static int parseInt(CharSequence s, int beginIndex, int endIndex, int radix)
-//            throws NumberFormatException {}
-
     public static int avm_parseInt(String s) throws NumberFormatException {
         return java.lang.Integer.parseInt(s.getUnderlying());
     }
@@ -57,10 +53,6 @@ public class Integer extends Number implements Comparable<Integer>{
     public static int avm_parseUnsignedInt(String s, int radix){
         return java.lang.Integer.parseUnsignedInt(s.getUnderlying(), radix);
     }
-
-    //TODO
-//    public static int parseUnsignedInt(CharSequence s, int beginIndex, int endIndex, int radix)
-//            throws NumberFormatException {}
 
     public static int avm_parseUnsignedInt(String s){
         return java.lang.Integer.parseUnsignedInt(s.getUnderlying());
@@ -122,13 +114,6 @@ public class Integer extends Number implements Comparable<Integer>{
         }
         return false;
     }
-
-    //TODO
-//    public static Integer getInteger(String nm){}
-//
-//    public static Integer getInteger(String nm, int val) {}
-//
-//    public static Integer getInteger(String nm, Integer val) {}
 
     public static Integer avm_decode(String nm) throws NumberFormatException {
         return new Integer(java.lang.Integer.decode(nm.getUnderlying()).intValue());
@@ -217,4 +202,24 @@ public class Integer extends Number implements Comparable<Integer>{
     public java.lang.String toString() {
         return java.lang.Integer.toString(this.value);
     }
+
+    //========================================================
+    // Methods below are excluded from shadowing
+    //========================================================
+
+    // public static int avm_parseInt(CharSequence s, int beginIndex, int endIndex, int radix)
+    //      throws NumberFormatException {}
+
+    // public static int avm_parseUnsignedInt(CharSequence s, int beginIndex, int endIndex, int radix)
+    //      throws NumberFormatException {}
+
+    // public static Integer avm_getInteger(String nm){}
+
+    // public static Integer avm_getInteger(String nm, int val) {}
+
+    // public static Integer avm_getInteger(String nm, Integer val) {}
+
+
+
+
 }

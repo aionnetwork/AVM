@@ -219,10 +219,6 @@ public class Character extends Object {
         return java.lang.Character.toCodePoint(high, low);
     }
 
-    //TODO
-    //public static int codePointAt(CharSequence seq, int index) {
-    //}
-
     public static int avm_codePointAt(CharArray c, int index) {
         return java.lang.Character.codePointAt(c.getUnderlying(), index);
     }
@@ -230,9 +226,6 @@ public class Character extends Object {
     public static int avm_codePointAt(CharArray c, int index, int limit) {
         return java.lang.Character.codePointAt(c.getUnderlying(), index, limit);
     }
-
-    //TODO
-    //public static int codePointBefore(CharSequence seq, int index) {}
 
     public static int avm_codePointBefore(CharArray c, int index) {
         return java.lang.Character.codePointBefore(c.getUnderlying(), index);
@@ -258,15 +251,9 @@ public class Character extends Object {
         return new CharArray(java.lang.Character.toChars(codePoint));
     }
 
-    //TODO
-    //public static int codePointCount(CharSequence seq, int beginIndex, int endIndex)
-
     public static int avm_codePointCount(CharArray a, int offset, int count) {
         return java.lang.Character.codePointCount(a.getUnderlying(), offset, count);
     }
-
-    //TODO
-    //public static int offsetByCodePoints(CharSequence seq, int index, int codePointOffset) {}
 
     public static int avm_offsetByCodePoints(CharArray a, int start, int count,
                                          int index, int codePointOffset) {
@@ -506,7 +493,7 @@ public class Character extends Object {
         return java.lang.Character.codePointOf(name.getUnderlying());
     }
 
-    //=======================================================
+    //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
 
@@ -519,4 +506,18 @@ public class Character extends Object {
     public java.lang.String toString() {
         return java.lang.Character.toString(this.value);
     }
+
+
+    //========================================================
+    // Methods below are excluded from shadowing
+    //========================================================
+
+    //public static int avm_codePointAt(CharSequence seq, int index) {}
+
+    //public static int avm_codePointBefore(CharSequence seq, int index) {}
+
+    //public static int avm_codePointCount(CharSequence seq, int beginIndex, int endIndex){}
+
+    //public static int avm_offsetByCodePoints(CharSequence seq, int index, int codePointOffset) {}
+
 }

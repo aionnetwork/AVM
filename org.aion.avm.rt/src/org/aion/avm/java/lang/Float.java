@@ -114,10 +114,7 @@ public class Float extends Number implements Comparable<Float>{
     }
 
     public static int avm_floatToIntBits(float value) {
-        if (!avm_isNaN(value)) {
-            return avm_floatToRawIntBits(value);
-        }
-        return 0x7fc00000;
+        return java.lang.Float.floatToIntBits(value);
     }
 
     public static int avm_floatToRawIntBits(float value){
@@ -133,18 +130,7 @@ public class Float extends Number implements Comparable<Float>{
     }
 
     public static int avm_compare(float f1, float f2) {
-        if (f1 < f2)
-            return -1;           // Neither val is NaN, thisVal is smaller
-        if (f1 > f2)
-            return 1;            // Neither val is NaN, thisVal is larger
-
-        // Cannot use floatToRawIntBits because of possibility of NaNs.
-        int thisBits    = Float.avm_floatToIntBits(f1);
-        int anotherBits = Float.avm_floatToIntBits(f2);
-
-        return (thisBits == anotherBits ?  0 : // Values are equal
-                (thisBits < anotherBits ? -1 : // (-0.0, 0.0) or (!NaN, NaN)
-                        1));                          // (0.0, -0.0) or (NaN, !NaN)
+        return java.lang.Float.compare(f1, f2);
     }
 
     public static float avm_sum(float a, float b) {
@@ -158,5 +144,10 @@ public class Float extends Number implements Comparable<Float>{
     public static float avm_min(float a, float b) {
         return Math.avm_min(a, b);
     }
+
+    //========================================================
+    // Methods below are excluded from shadowing
+    //========================================================
+
 
 }
