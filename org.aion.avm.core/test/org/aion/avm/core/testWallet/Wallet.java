@@ -89,7 +89,7 @@ public class Wallet implements IMultisig {
         if (this.limit.underLimit(runtime, value)) {
             this.logger.singleTransact(runtime.getSender(), value, to, data);
             // yes - just execute the call.
-            byte[] response = runtime.call(to, value, data);
+            byte[] response = runtime.call(to, null, data, value);
             if (null == response) {
                 throw new RequireFailedException();
             }
@@ -138,7 +138,7 @@ public class Wallet implements IMultisig {
         BytesKey key = BytesKey.from(h);
         if (null != this.transactions.get(key).to) {
             Transaction transaction = this.transactions.get(key);
-            byte[] response = runtime.call(transaction.to, transaction.value, transaction.data);
+            byte[] response = runtime.call(transaction.to, null, transaction.data, transaction.value);
             if (null == response) {
                 throw new RequireFailedException();
             }

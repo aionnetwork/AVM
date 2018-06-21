@@ -85,7 +85,7 @@ public class TransactionExecutor {
             }
 
             @Override
-            public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
+            public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray payload, long energyToSend) {
                 return null;
             }
 

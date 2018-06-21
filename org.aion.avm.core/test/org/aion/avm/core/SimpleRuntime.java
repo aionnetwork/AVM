@@ -1,7 +1,6 @@
 package org.aion.avm.core;
 
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.java.lang.String;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.junit.Assert;
@@ -108,7 +107,7 @@ public class SimpleRuntime implements BlockchainRuntime {
     }
 
     @Override
-    public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
+    public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray payload, long energyToSend) {
         Assert.fail("This implementation doesn't handle this");
         return null;
     }

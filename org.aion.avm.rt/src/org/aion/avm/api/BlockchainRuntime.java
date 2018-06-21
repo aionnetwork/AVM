@@ -1,7 +1,6 @@
 package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.java.lang.String;
 
 
 /**
@@ -90,11 +89,12 @@ public interface BlockchainRuntime {
      * NOTE:  This is likely to change as we work out the details of the ABI and cross-call semantics but exists to handle expectations of ported Solidity applications.
      * 
      * @param targetAddress The address of the contract to call.
+     * @param value The value to transfer
+     * @param data The data payload to send to that contract.
      * @param energyToSend The energy to send that contract.
-     * @param payload The data payload to send to that contract.
      * @return The response of executing the contract.
      */
-    ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload);
+    ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray data, long energyToSend);
 
     /**
      * Logs information for offline analysis or external listening.
@@ -128,7 +128,7 @@ public interface BlockchainRuntime {
 
     default byte[] sha3(byte[] data) { return avm_sha3(new ByteArray(data)).getUnderlying(); }
 
-    default byte[] call(Address targetAddress, long energyToSend, byte[] payload) { return avm_call(targetAddress, energyToSend, new ByteArray(payload)).getUnderlying(); }
+    default byte[] call(Address targetAddress, byte[] value, byte[] data, long energyLimit) { return avm_call(targetAddress, null, new ByteArray(data), energyLimit).getUnderlying(); }
 
     default void log(byte[] index0, byte[] data) { avm_log(new ByteArray(index0), (null != data) ? new ByteArray(data) : null); }
 }

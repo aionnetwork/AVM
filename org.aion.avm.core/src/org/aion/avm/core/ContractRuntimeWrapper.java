@@ -1,7 +1,6 @@
 package org.aion.avm.core;
 
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.java.lang.String;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 
@@ -64,8 +63,8 @@ public class ContractRuntimeWrapper extends org.aion.avm.java.lang.Object implem
         return this.externalRuntime.avm_sha3(data);
     }
     @Override
-    public ByteArray avm_call(Address targetAddress, long energyToSend, ByteArray payload) {
-        return this.externalRuntime.avm_call(targetAddress, energyToSend, payload);
+    public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray payload, long energyToSend) {
+        return this.externalRuntime.avm_call(targetAddress, null, payload, energyToSend);
     }
     @Override
     public void avm_log(ByteArray index0, ByteArray data) {
