@@ -20,64 +20,64 @@ public class EventLogger {
     public static final String kMultiTransact = "multiTransact";
     public static final String kConfirmationNeeded = "confirmationNeeded";
 
-    private final BlockchainRuntime logSink;
+    private static BlockchainRuntime logSink;
 
-    public EventLogger(BlockchainRuntime logSink) {
-        this.logSink = logSink;
+    public static void init(BlockchainRuntime logSink) {
+        EventLogger.logSink = logSink;
     }
 
-    public void confirmation(Address sender, Operation operation) {
+    public static void confirmation(Address sender, Operation operation) {
         byte[] senderBytes = sender.unwrap();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] data = ByteArrayHelpers.concatenate(senderBytes, operationBytes);
-        this.logSink.log(kConfirmation.getBytes(), data);
+        EventLogger.logSink.log(kConfirmation.getBytes(), data);
     }
 
-    public void revoke(Address sender, Operation operation) {
+    public static void revoke(Address sender, Operation operation) {
         byte[] senderBytes = sender.unwrap();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] data = ByteArrayHelpers.concatenate(senderBytes, operationBytes);
-        this.logSink.log(kRevoke.getBytes(), data);
+        EventLogger.logSink.log(kRevoke.getBytes(), data);
     }
 
-    public void ownerChanged(Address oldOwner, Address newOwner) {
+    public static void ownerChanged(Address oldOwner, Address newOwner) {
         byte[] oldBytes = oldOwner.unwrap();
         byte[] newBytes = newOwner.unwrap();
         byte[] data = ByteArrayHelpers.concatenate(oldBytes, newBytes);
-        this.logSink.log(kOwnerChanged.getBytes(), data);
+        EventLogger.logSink.log(kOwnerChanged.getBytes(), data);
     }
 
-    public void ownerAdded(Address newOwner) {
+    public static void ownerAdded(Address newOwner) {
         byte[] data = newOwner.unwrap();
-        this.logSink.log(kOwnerAdded.getBytes(), data);
+        EventLogger.logSink.log(kOwnerAdded.getBytes(), data);
     }
 
-    public void ownerRemoved(Address oldOwner) {
+    public static void ownerRemoved(Address oldOwner) {
         byte[] data = oldOwner.unwrap();
-        this.logSink.log(kOwnerRemoved.getBytes(), data);
+        EventLogger.logSink.log(kOwnerRemoved.getBytes(), data);
     }
 
-    public void requirementChanged(int newRequired) {
+    public static void requirementChanged(int newRequired) {
         byte[] data = ByteArrayHelpers.serializeInt(newRequired);
-        this.logSink.log(kRequirementChanged.getBytes(), data);
+        EventLogger.logSink.log(kRequirementChanged.getBytes(), data);
     }
 
-    public void deposit(Address from, long value) {
+    public static void deposit(Address from, long value) {
         byte[] fromBytes = from.unwrap();
         byte[] data = ByteArrayHelpers.appendLong(fromBytes, value);
-        this.logSink.log(kDeposit.getBytes(), data);
+        EventLogger.logSink.log(kDeposit.getBytes(), data);
     }
 
-    public void singleTransact(Address owner, long value, Address to, byte[] data) {
+    public static void singleTransact(Address owner, long value, Address to, byte[] data) {
         byte[] ownerBytes = owner.unwrap();
         byte[] ownerValue = ByteArrayHelpers.appendLong(ownerBytes, value);
         byte[] toBytes = to.unwrap();
         byte[] partial = ByteArrayHelpers.concatenate(ownerValue, toBytes);
         byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
-        this.logSink.log(kSingleTransact.getBytes(), finalData);
+        EventLogger.logSink.log(kSingleTransact.getBytes(), finalData);
     }
 
-    public void multiTransact(Address owner, Operation operation, long value, Address to, byte[] data) {
+    public static void multiTransact(Address owner, Operation operation, long value, Address to, byte[] data) {
         byte[] ownerBytes = owner.unwrap();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] ownerOperation = ByteArrayHelpers.concatenate(ownerBytes, operationBytes);
@@ -85,10 +85,10 @@ public class EventLogger {
         byte[] toBytes = to.unwrap();
         byte[] partial = ByteArrayHelpers.concatenate(ownerOperationValue, toBytes);
         byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
-        this.logSink.log(kMultiTransact.getBytes(), finalData);
+        EventLogger.logSink.log(kMultiTransact.getBytes(), finalData);
     }
 
-    public void confirmationNeeded(Operation operation, Address initiator, long value, Address to, byte[] data) {
+    public static void confirmationNeeded(Operation operation, Address initiator, long value, Address to, byte[] data) {
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] initBytes = initiator.unwrap();
         byte[] operationInit = ByteArrayHelpers.concatenate(operationBytes, initBytes);
@@ -96,6 +96,6 @@ public class EventLogger {
         byte[] toBytes = to.unwrap();
         byte[] partial = ByteArrayHelpers.concatenate(operationInitValue, toBytes);
         byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
-        this.logSink.log(kConfirmationNeeded.getBytes(), finalData);
+        EventLogger.logSink.log(kConfirmationNeeded.getBytes(), finalData);
     }
 }

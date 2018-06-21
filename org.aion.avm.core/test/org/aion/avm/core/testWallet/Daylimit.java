@@ -10,55 +10,54 @@ import org.aion.avm.api.BlockchainRuntime;
 public class Daylimit {
     private static final long kSecondsPerDay = 60 * 60 * 24;
 
-    private final Multiowned owners;
-    private long dailyLimit;
-    private long lastDay;
-    private long spentToday = 0;
+    private static long dailyLimit;
+    private static long lastDay;
+    private static long spentToday = 0;
 
-    public Daylimit(Multiowned owners, long value, long nowInDays) {
-        this.owners = owners;
-        this.dailyLimit = value;
-        this.lastDay = nowInDays;
+    // "Constructor"
+    public static void init(long value, long nowInDays) {
+        Daylimit.dailyLimit = value;
+        Daylimit.lastDay = nowInDays;
     }
 
     // PUBLIC INTERFACE
-    public void setDailyLimit(BlockchainRuntime runtime, long value) {
+    public static void setDailyLimit(BlockchainRuntime runtime, long value) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
+        Multiowned.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
-        this.dailyLimit = value;
+        Daylimit.dailyLimit = value;
     }
 
     // PUBLIC INTERFACE
-    public void resetSpentToday(BlockchainRuntime runtime) {
+    public static void resetSpentToday(BlockchainRuntime runtime) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
+        Multiowned.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
-        this.spentToday = 0;
+        Daylimit.spentToday = 0;
     }
 
 
     // checks to see if there is at least `_value` left from the daily limit today. if there is, subtracts it and
     // returns true. otherwise just returns false.
     // public for composition.
-    public boolean underLimit(BlockchainRuntime runtime, long value) {
+    public static boolean underLimit(BlockchainRuntime runtime, long value) {
         // (modifier)
-        this.owners.onlyOwner(runtime.getSender());
+        Multiowned.onlyOwner(runtime.getSender());
         
         // reset the spend limit if we're on a different day to last time.
         long nowInDays = runtime.getBlockEpochSeconds() / kSecondsPerDay;
-        if (nowInDays > this.lastDay) {
-            this.spentToday = 0;
-            this.lastDay = nowInDays;
+        if (nowInDays > Daylimit.lastDay) {
+            Daylimit.spentToday = 0;
+            Daylimit.lastDay = nowInDays;
         }
         
         // check to see if there's enough left - if so, subtract and return true.
         // overflow protection                    // dailyLimit check
         boolean didChange = false;
-        if (((this.spentToday + value) >= this.spentToday)
-                && ((this.spentToday + value) < this.dailyLimit)
+        if (((Daylimit.spentToday + value) >= Daylimit.spentToday)
+                && ((Daylimit.spentToday + value) < Daylimit.dailyLimit)
            ) {
-            this.spentToday += value;
+            Daylimit.spentToday += value;
             didChange = true;
         }
         return didChange;

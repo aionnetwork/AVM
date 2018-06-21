@@ -10,67 +10,61 @@ import org.aion.avm.userlib.AionMap;
  * sense as strict composition so we will just depend on someone creating this object with a pre-configured instances and implementing the
  * interfaces.
  */
-public class Wallet implements IMultisig {
-    private final EventLogger logger;
-    private final Multiowned owners;
-    private final Daylimit limit;
+public class Wallet {
     // Note that this key is really just a subset of uses of "Operation".
-    private final AionMap<BytesKey, Transaction> transactions;
+    private static AionMap<BytesKey, Transaction> transactions;
 
-    public Wallet(EventLogger logger, Multiowned owners, Daylimit limit) {
-        this.logger = logger;
-        this.owners = owners;
-        this.limit = limit;
-        this.transactions = new AionMap<>();
+    public static void init() {
+        Wallet.transactions = new AionMap<>();
     }
 
     // EXTERNAL - composed
-    public void revoke(BlockchainRuntime runtime) {
-        this.owners.revoke(runtime);
+    public static void revoke(BlockchainRuntime runtime) {
+        Multiowned.revoke(runtime);
     }
 
     // EXTERNAL - composed
-    public void addOwner(BlockchainRuntime runtime, Address owner) {
-        this.owners.addOwner(runtime, owner);
+    public static void addOwner(BlockchainRuntime runtime, Address owner) {
+        Multiowned.addOwner(runtime, owner);
     }
 
     // EXTERNAL - composed
-    public void removeOwner(BlockchainRuntime runtime, Address owner) {
-        this.owners.removeOwner(runtime, owner);
+    public static void removeOwner(BlockchainRuntime runtime, Address owner) {
+        Multiowned.removeOwner(runtime, owner);
     }
 
     // EXTERNAL - composed
-    public void changeRequirement(BlockchainRuntime runtime, int newRequired) {
-        this.owners.changeRequirement(runtime, newRequired);
+    public static void changeRequirement(BlockchainRuntime runtime, int newRequired) {
+        Multiowned.changeRequirement(runtime, newRequired);
     }
 
     // EXTERNAL - composed
-    public Address getOwner(BlockchainRuntime runtime, int ownerIndex) {
-        return this.owners.getOwner(ownerIndex);
+    public static Address getOwner(BlockchainRuntime runtime, int ownerIndex) {
+        return Multiowned.getOwner(ownerIndex);
     }
 
     // EXTERNAL - composed
-    public void setDailyLimit(BlockchainRuntime runtime, long value) {
-        this.limit.setDailyLimit(runtime, value);
+    public static void setDailyLimit(BlockchainRuntime runtime, long value) {
+        Daylimit.setDailyLimit(runtime, value);
     }
 
     // EXTERNAL - composed
-    public void resetSpentToday(BlockchainRuntime runtime) {
-        this.limit.resetSpentToday(runtime);
+    public static void resetSpentToday(BlockchainRuntime runtime) {
+        Daylimit.resetSpentToday(runtime);
     }
 
     // EXTERNAL
-    public void kill(BlockchainRuntime runtime, Address to) {
+    public static void kill(BlockchainRuntime runtime, Address to) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
+        Multiowned.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         runtime.selfDestruct(to);
     }
 
     // gets called when no other function matches
-    public void payable(Address from, long value) {
+    public static void payable(Address from, long value) {
         if (value > 0) {
-            this.logger.deposit(from, value);
+            EventLogger.deposit(from, value);
         }
     }
 
@@ -79,15 +73,14 @@ public class Wallet implements IMultisig {
     // If not, goes into multisig process. We provide a hash on return to allow the sender to provide
     // shortcuts for the other confirmations (allowing them to avoid replicating the _to, _value
     // and _data arguments). They still get the option of using them if they want, anyways.
-    @Override
-    public byte[] execute(BlockchainRuntime runtime, Address to, long value, byte[] data) {
+    public static byte[] execute(BlockchainRuntime runtime, Address to, long value, byte[] data) {
         // (modifier)
-        this.owners.onlyOwner(runtime.getSender());
+        Multiowned.onlyOwner(runtime.getSender());
         
         byte[] result = null;
         // first, take the opportunity to check that we're under the daily limit.
-        if (this.limit.underLimit(runtime, value)) {
-            this.logger.singleTransact(runtime.getSender(), value, to, data);
+        if (Daylimit.underLimit(runtime, value)) {
+            EventLogger.singleTransact(runtime.getSender(), value, to, data);
             // yes - just execute the call.
             byte[] response = runtime.call(to, null, data, value);
             if (null == response) {
@@ -99,20 +92,20 @@ public class Wallet implements IMultisig {
             // determine our operation hash.
             result = Operation.rawOperationForCurrentMessageAndBlock(runtime);
             BytesKey transactionKey = BytesKey.from(result);
-            if (!safeConfirm(runtime, result) && (null == this.transactions.get(transactionKey))) {
+            if (!safeConfirm(runtime, result) && (null == Wallet.transactions.get(transactionKey))) {
                 Transaction transaction = new Transaction();
                 transaction.to = to;
                 transaction.value = value;
                 transaction.data = data;
-                this.transactions.put(transactionKey, transaction);
-                this.logger.confirmationNeeded(Operation.fromBytes(result), runtime.getSender(), value, to, data);
+                Wallet.transactions.put(transactionKey, transaction);
+                EventLogger.confirmationNeeded(Operation.fromBytes(result), runtime.getSender(), value, to, data);
             }
         }
         return result;
     }
 
     // TODO:  Determine if this is the correct emulation of semantics.  The Solidity test seems to act like the exception is the same as "return false".
-    private boolean safeConfirm(BlockchainRuntime runtime, byte[] h) {
+    private static boolean safeConfirm(BlockchainRuntime runtime, byte[] h) {
         boolean result = false;
         try {
             result = confirm(runtime, h);
@@ -122,28 +115,26 @@ public class Wallet implements IMultisig {
         return result;
     }
 
-    @Override
-    public void changeOwner(BlockchainRuntime runtime, Address from, Address to) {
-        this.owners.changeOwner(runtime, from, to);
+    public static void changeOwner(BlockchainRuntime runtime, Address from, Address to) {
+        Multiowned.changeOwner(runtime, from, to);
     }
 
     // confirm a transaction through just the hash. we use the previous transactions map, m_txs, in order
     // to determine the body of the transaction from the hash provided.
-    @Override
-    public boolean confirm(BlockchainRuntime runtime, byte[] h) {
+    public static boolean confirm(BlockchainRuntime runtime, byte[] h) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.getSender(), Operation.fromBytes(h));
+        Multiowned.onlyManyOwners(runtime.getSender(), Operation.fromBytes(h));
         
         boolean result = false;
         BytesKey key = BytesKey.from(h);
-        if (null != this.transactions.get(key).to) {
-            Transaction transaction = this.transactions.get(key);
+        if (null != Wallet.transactions.get(key).to) {
+            Transaction transaction = Wallet.transactions.get(key);
             byte[] response = runtime.call(transaction.to, null, transaction.data, transaction.value);
             if (null == response) {
                 throw new RequireFailedException();
             }
-            this.logger.multiTransact(runtime.getSender(), Operation.fromBytes(h), transaction.value, transaction.to, transaction.data);
-            this.transactions.remove(BytesKey.from(h));
+            EventLogger.multiTransact(runtime.getSender(), Operation.fromBytes(h), transaction.value, transaction.to, transaction.data);
+            Wallet.transactions.remove(BytesKey.from(h));
             result = true;
         }
         return result;

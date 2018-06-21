@@ -18,137 +18,135 @@ public class Multiowned {
      * Calling a reflection routine which has an array in it is a problem with how our arraywrapping works.
      * This might not matter, in the future, but may be something we need to make easier to manage (maybe the arraywrappers have factories, or something).
      */
-    public static Multiowned avoidArrayWrappingFactory(EventLogger logger, Address sender, Address owner1, Address owner2, int votesRequiredPerOperation) {
-        return new Multiowned(logger, sender, new Address[] {owner1, owner2}, votesRequiredPerOperation);
+    public static void avoidArrayWrappingFactory(Address sender, Address owner1, Address owner2, int votesRequiredPerOperation) {
+        Multiowned.init(sender, new Address[] {owner1, owner2}, votesRequiredPerOperation);
     }
 
-    private final EventLogger logger;
     // The owners.
-    private final AionSet<Address> owners;
-    private final AionList<Address> ownersByJoinOrder;
+    private static AionSet<Address> owners;
+    private static AionList<Address> ownersByJoinOrder;
     // The operations which we currently know about.
-    private final AionMap<Operation, PendingState> ongoingOperations;
+    private static AionMap<Operation, PendingState> ongoingOperations;
     // The number of owners which must confirm the operation before it is run.
-    private int numberRequired;
+    private static int numberRequired;
 
-    public Multiowned(EventLogger logger, Address sender, Address[] requestedOwners, int votesRequiredPerOperation) {
-        this.logger = logger;
-        this.owners = new AionSet<>();
-        this.ownersByJoinOrder = new AionList<>();
-        this.owners.add(sender);
-        this.ownersByJoinOrder.add(sender);
+    public static void init(Address sender, Address[] requestedOwners, int votesRequiredPerOperation) {
+        Multiowned.owners = new AionSet<>();
+        Multiowned.ownersByJoinOrder = new AionList<>();
+        Multiowned.owners.add(sender);
+        Multiowned.ownersByJoinOrder.add(sender);
         for (Address owner : requestedOwners) {
-            this.owners.add(owner);
-            this.ownersByJoinOrder.add(owner);
+            Multiowned.owners.add(owner);
+            Multiowned.ownersByJoinOrder.add(owner);
         }
-        this.ongoingOperations = new AionMap<>();
-        this.numberRequired = votesRequiredPerOperation;
+        Multiowned.ongoingOperations = new AionMap<>();
+        Multiowned.numberRequired = votesRequiredPerOperation;
     }
 
     // PUBLIC INTERFACE
-    public void revoke(BlockchainRuntime runtime) {
+    public static void revoke(BlockchainRuntime runtime) {
         Address sender = runtime.getSender();
         // Make sure that they are an owner.
-        if (this.owners.contains(sender)) {
+        if (Multiowned.owners.contains(sender)) {
             // See if we know about this operation.
             Operation operation = Operation.fromMessage(runtime);
-            PendingState state = this.ongoingOperations.get(operation);
+            PendingState state = Multiowned.ongoingOperations.get(operation);
             if (null != state) {
                 // Remove them from the confirmed set.
                 state.confirmedOwners.remove(sender);
-                this.logger.revoke(sender, operation);
+                EventLogger.revoke(sender, operation);
             }
         }
     }
 
     // PUBLIC INTERFACE
-    public void changeOwner(BlockchainRuntime runtime, Address from, Address to) {
+    public static void changeOwner(BlockchainRuntime runtime, Address from, Address to) {
         // (modifier)
         onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         // Make sure that the to isn't already an owner and the from is.
         if (!isOwner(to) && isOwner(from)) {
             // Remove the one owner and add the other.
-            this.owners.remove(from);
-            this.owners.add(to);
-            this.ownersByJoinOrder.remove(from);
-            this.ownersByJoinOrder.add(to);
+            Multiowned.owners.remove(from);
+            Multiowned.owners.add(to);
+            Multiowned.ownersByJoinOrder.remove(from);
+            Multiowned.ownersByJoinOrder.add(to);
             
             // Pending states will now be inconsistent so clear them.
-            this.ongoingOperations.clear();
-            this.logger.ownerChanged(from, to);
+            Multiowned.ongoingOperations.clear();
+            EventLogger.ownerChanged(from, to);
         }
     }
 
     // PUBLIC INTERFACE
-    public void addOwner(BlockchainRuntime runtime, Address owner) {
+    public static void addOwner(BlockchainRuntime runtime, Address owner) {
         // (modifier)
         onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         // Make sure that this owner isn't already in the set.
         if (!isOwner(owner)) {
             // Remove the one owner and add the other.
-            this.owners.add(owner);
-            this.ownersByJoinOrder.add(owner);
+            Multiowned.owners.add(owner);
+            Multiowned.ownersByJoinOrder.add(owner);
             
             // Pending states will now be inconsistent so clear them.
-            this.ongoingOperations.clear();
-            this.logger.ownerAdded(owner);
+            Multiowned.ongoingOperations.clear();
+            EventLogger.ownerAdded(owner);
         }
     }
 
     // PUBLIC INTERFACE
-    public void removeOwner(BlockchainRuntime runtime, Address owner) {
+    public static void removeOwner(BlockchainRuntime runtime, Address owner) {
         // (modifier)
         onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         // Make sure that this owner is  in the set.
         if (isOwner(owner)) {
             // Remove the one owner and add the other.
-            this.owners.remove(owner);
-            this.ownersByJoinOrder.remove(owner);
+            Multiowned.owners.remove(owner);
+            Multiowned.ownersByJoinOrder.remove(owner);
             
             // Pending states will now be inconsistent so clear them.
-            this.ongoingOperations.clear();
-            this.logger.ownerRemoved(owner);
+            Multiowned.ongoingOperations.clear();
+            EventLogger.ownerRemoved(owner);
             
             // (Note that it is possible that we have now removed so many owners that numberRequired no longer exist - the Solidity example didn't avoid this)
         }
     }
 
     // PUBLIC INTERFACE
-    public void changeRequirement(BlockchainRuntime runtime, int newRequired) {
+    public static void changeRequirement(BlockchainRuntime runtime, int newRequired) {
         // (modifier)
         onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         // Change the requirement.
-        this.numberRequired = newRequired;
+        Multiowned.numberRequired = newRequired;
         
         // Pending states will now be inconsistent so clear them.
-        this.ongoingOperations.clear();
-        this.logger.requirementChanged(newRequired);
+        Multiowned.ongoingOperations.clear();
+        EventLogger.requirementChanged(newRequired);
     }
 
     // PUBLIC INTERFACE
     // Gets the 0-indexed owner, in order of when they became owners.
     // This is just supported because the Solidity example had it but I am not sure how it would be used.
-    public Address getOwner(int ownerIndex) {
+    public static Address getOwner(int ownerIndex) {
         Address result = null;
         
-        if (ownerIndex < this.ownersByJoinOrder.size()) {
-            result = this.ownersByJoinOrder.get(ownerIndex);
+        if (ownerIndex < Multiowned.ownersByJoinOrder.size()) {
+            result = Multiowned.ownersByJoinOrder.get(ownerIndex);
         }
         return result;
     }
 
     // This is just supported because the Solidity example had it but it wasn't marked "external" and had no callers.
-    public boolean hasConfirmed(Operation operation, Address owner) {
+    public static boolean hasConfirmed(Operation operation, Address owner) {
         boolean didConfirm = false;
         
         // Make sure they are an owner.
-        if (this.owners.contains(owner)) {
+        if (Multiowned.owners.contains(owner)) {
             // Check to see if this is a real operation.
-            PendingState pending = this.ongoingOperations.get(operation);
+            PendingState pending = Multiowned.ongoingOperations.get(operation);
             if (null != pending) {
                 didConfirm = pending.confirmedOwners.contains(owner);
             }
@@ -158,7 +156,7 @@ public class Multiowned {
 
 
     // MODIFIER - public for composition
-    public void onlyOwner(Address sender) {
+    public static void onlyOwner(Address sender) {
         if (!isOwner(sender)) {
             // We want to bail out with a failed "require".
             throw new RequireFailedException();
@@ -175,7 +173,7 @@ public class Multiowned {
      * @param operation The operation hash.
      */
     // MODIFIER - public for composition
-    public void onlyManyOwners(Address sender, Operation operation) {
+    public static void onlyManyOwners(Address sender, Operation operation) {
         boolean shouldRunRoutine = confirmAndCheck(sender, operation);
         if (!shouldRunRoutine) {
             // We want to bail out with a failed "require".
@@ -183,30 +181,30 @@ public class Multiowned {
         }
     }
 
-    private boolean isOwner(Address address) {
-        return this.owners.contains(address);
+    private static boolean isOwner(Address address) {
+        return Multiowned.owners.contains(address);
     }
 
-    private boolean confirmAndCheck(Address sender, Operation operation) {
+    private static boolean confirmAndCheck(Address sender, Operation operation) {
         boolean shouldRunRoutine = false;
         
         // They must be an owner.
-        if (this.owners.contains(sender)) {
+        if (Multiowned.owners.contains(sender)) {
             // We lazily create these the first time they are requested so see if there is one.
-            PendingState state = this.ongoingOperations.get(operation);
+            PendingState state = Multiowned.ongoingOperations.get(operation);
             if (null == state) {
                 state = new PendingState();
-                this.ongoingOperations.put(operation, state);
+                Multiowned.ongoingOperations.put(operation, state);
             }
             
             // Add us to the set of those who have confirmed.
-            this.logger.confirmation(sender, operation);
+            EventLogger.confirmation(sender, operation);
             state.confirmedOwners.add(sender);
             
             // If we were the last required, return true and clean up.
-            if (state.confirmedOwners.size() == this.numberRequired) {
+            if (state.confirmedOwners.size() == Multiowned.numberRequired) {
                 shouldRunRoutine = true;
-                this.ongoingOperations.remove(operation);
+                Multiowned.ongoingOperations.remove(operation);
             }
         }
         return shouldRunRoutine;
