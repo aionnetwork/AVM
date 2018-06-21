@@ -384,8 +384,7 @@ public class Deployer {
         }
         @Override
         public ByteArray avm_getData() {
-            Assert.unimplemented("TODO");
-            return null;
+            return this.data;
         }
         @Override
         public ByteArray avm_getStorage(ByteArray key) {
