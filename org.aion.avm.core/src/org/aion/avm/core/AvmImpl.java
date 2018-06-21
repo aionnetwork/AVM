@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.arraywrapper.*;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
@@ -224,14 +225,16 @@ public class AvmImpl implements Avm, IAvmProxy {
 
         // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
         Map<Character, String[]> elementaryTypesMap = new HashMap<>();
-        elementaryTypesMap.put(TxDataDecoder.BYTE,      new String[]{"B", "byte"});
-        elementaryTypesMap.put(TxDataDecoder.BOOLEAN,   new String[]{"Z", "boolean"});
-        elementaryTypesMap.put(TxDataDecoder.CHAR,      new String[]{"C", "char"});
-        elementaryTypesMap.put(TxDataDecoder.SHORT,     new String[]{"S", "short"});
-        elementaryTypesMap.put(TxDataDecoder.INT,       new String[]{"I", "int"});
-        elementaryTypesMap.put(TxDataDecoder.FLOAT,     new String[]{"F", "float"});
-        elementaryTypesMap.put(TxDataDecoder.LONG,      new String[]{"J", "long"});
-        elementaryTypesMap.put(TxDataDecoder.DOUBLE,    new String[]{"D", "double"});
+        elementaryTypesMap.put(TxDataDecoder.BYTE,      new String[]{"B", "byte", "ByteArray"});
+        elementaryTypesMap.put(TxDataDecoder.BOOLEAN,   new String[]{"Z", "boolean", "ByteArray"});
+        elementaryTypesMap.put(TxDataDecoder.CHAR,      new String[]{"C", "char", "CharArray"});
+        elementaryTypesMap.put(TxDataDecoder.SHORT,     new String[]{"S", "short", "ShortArray"});
+        elementaryTypesMap.put(TxDataDecoder.INT,       new String[]{"I", "int", "IntArray"});
+        elementaryTypesMap.put(TxDataDecoder.FLOAT,     new String[]{"F", "float", "FloatArray"});
+        elementaryTypesMap.put(TxDataDecoder.LONG,      new String[]{"J", "long", "LongArray"});
+        elementaryTypesMap.put(TxDataDecoder.DOUBLE,    new String[]{"D", "double", "DoubleArray"});
+
+        String ARRAY_WRAPPER_PREFIX = "org.aion.avm.arraywrapper.";
 
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {
@@ -248,10 +251,12 @@ public class AvmImpl implements Avm, IAvmProxy {
                     switch (c) {
                         case TxDataDecoder.ARRAY_S:
                             String pType = parameterTypes[parIdx].getName();
-                            if (pType.charAt(0) == '[') {
+                            if (pType.charAt(0) == '[' || pType.charAt(0) == '$') {
                                 pType = pType.substring(1);
-                            }
-                            else {
+                            } else if (pType.startsWith(ARRAY_WRAPPER_PREFIX)) {
+                                pType = pType.substring(ARRAY_WRAPPER_PREFIX.length());
+                            } else {
+                                matched = false;
                                 break;
                             }
 
@@ -262,18 +267,19 @@ public class AvmImpl implements Avm, IAvmProxy {
 
                             char eType;
                             if (argsDescriptor.charAt(++idx) == TxDataDecoder.ARRAY_S) {
-                                if (pType.charAt(0) == '[') {
+                                if (pType.charAt(0) == '$') {
                                     pType = pType.substring(1);
                                 }
                                 else {
+                                    matched = false;
                                     break;
                                 }
                                 eType = argsDescriptor.charAt(++idx);
-                                idx += 2;
+                                idx = argsDescriptor.indexOf(TxDataDecoder.ARRAY_E, idx);
                             }
                             else {
                                 eType = argsDescriptor.charAt(idx);
-                                idx ++;
+                                idx = argsDescriptor.indexOf(TxDataDecoder.ARRAY_E, idx);
                             }
 
                             if (pType.charAt(0) == 'L') {
@@ -304,6 +310,57 @@ public class AvmImpl implements Avm, IAvmProxy {
             }
         }
         return null;
+    }
+
+    /**
+     * Convert the method call arguments, 1) take care of the array wrapping; 2) convert to an array list.
+     *
+     * @param arguments
+     * @return
+     */
+    private Object[] convertArguments(List<Object> arguments) {
+        for (int index = 0; index < arguments.size(); index ++) {
+            Object obj = arguments.get(index);
+            if (obj.getClass().isArray()) {
+                switch (obj.getClass().getName()) {
+                    case "[B":
+                        obj = new ByteArray((byte[]) obj);
+                        arguments.set(index, obj);
+                        break;
+                    case "[C":
+                        obj = new CharArray((char[]) obj);
+                        arguments.set(index, obj);
+                        break;
+                    case "[D":
+                        obj = new DoubleArray((double[]) obj);
+                        arguments.set(index, obj);
+                        break;
+                    case "[F":
+                        obj = new FloatArray((float[]) obj);
+                        arguments.set(index, obj);
+                        break;
+                    case "[I":
+                        obj = new IntArray((int[]) obj);
+                        arguments.set(index, obj);
+                        break;
+                    case "[J":
+                        obj = new LongArray((long[]) obj);
+                        arguments.set(index, obj);
+                        break;
+                    case "[S":
+                        obj = new ShortArray((short[]) obj);
+                        arguments.set(index, obj);
+                        break;
+                    case "[Z":
+                        obj = new ByteArray((byte[]) obj);
+                        arguments.set(index, obj);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        return arguments.toArray();
     }
 
     public static Map<String, Integer> computeAllObjectsSizes(Forest<String, byte[]> dappClasses){
@@ -355,7 +412,7 @@ public class AvmImpl implements Avm, IAvmProxy {
                 if (methodCaller.arguments == null) {
                     method.invoke(obj);
                 } else {
-                    method.invoke(obj, methodCaller.arguments.toArray());
+                    method.invoke(obj, convertArguments(methodCaller.arguments));
                 }
             }
 
@@ -442,7 +499,7 @@ public class AvmImpl implements Avm, IAvmProxy {
                 ret = method.invoke(obj);
             }
             else {
-                ret = method.invoke(obj, methodCaller.arguments.toArray());
+                ret = method.invoke(obj, convertArguments(methodCaller.arguments));
             }
 
             // TODO: energy left

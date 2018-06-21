@@ -34,6 +34,15 @@ public class AvmImplDeployAndRunTest {
         return result;
     }
 
+    public AvmResult deployTheDeployAndRunTest() {
+        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
+        BlockchainRuntime rt = new SimpleRuntime(sender, address, energyLimit, null);
+        AvmImpl avm = new AvmImpl(sharedClassLoader, codeStorage);
+        AvmResult result = avm.deploy(jar, null, rt);
+
+        return result;
+    }
+
     @Test
     public void testDeploy() {
         AvmResult result = deployHelloWorld();
@@ -71,6 +80,20 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "add" with arguments
         byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "add<II>" + raw data 123, 1
+        BlockchainRuntime rt = new SimpleRuntime(sender, deployResult.address.unwrap(), energyLimit, txData);
+        AvmImpl avm = new AvmImpl(sharedClassLoader, codeStorage);
+        AvmResult result = avm.run(rt);
+
+        assertEquals(AvmResult.Code.SUCCESS, result.code);
+        assertEquals(124, result.returnData);
+    }
+
+    @Test
+    public void testDeployAndRunWithArrayArgs() {
+        AvmResult deployResult = deployTheDeployAndRunTest();
+
+        // test another method call, "add" with arguments
+        byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
         BlockchainRuntime rt = new SimpleRuntime(sender, deployResult.address.unwrap(), energyLimit, txData);
         AvmImpl avm = new AvmImpl(sharedClassLoader, codeStorage);
         AvmResult result = avm.run(rt);
