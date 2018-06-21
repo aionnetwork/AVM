@@ -38,14 +38,14 @@ public class TestResource {
         Object[]    i = new Object[42];
         String[]    j = new String[42];
         String[][]          k = new String[42][1];
-        String[][][][][]    l = new String[42][1][1][1][1];
+        char[][][][][]    l = new char[42][1][1][1][1];
         return a == this.testMixedSignature(a, b, c, d, e, f, g, h, i, j, k, l);
     }
 
     public boolean[] testMixedSignature(boolean[] in1, byte[] in2, char[] in3,
                                         double[] in4, float[] in5, int[] in6,
                                         long[] in7, short[] in8, Object[] in9,
-                                        String[] in10, String[][] in11, String[][][][][] in12)
+                                        String[] in10, String[][] in11, char[][][][][] in12)
     {
         return in1;
     }
