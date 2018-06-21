@@ -51,7 +51,8 @@ public class Multiowned {
         // Make sure that they are an owner.
         if (this.owners.contains(sender)) {
             // See if we know about this operation.
-            PendingState state = this.ongoingOperations.get(Operation.from(runtime));
+            Operation operation = Operation.fromMessage(runtime);
+            PendingState state = this.ongoingOperations.get(operation);
             if (null != state) {
                 // Remove them from the confirmed set.
                 state.confirmedOwners.remove(sender);
@@ -63,7 +64,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public void changeOwner(BlockchainRuntime runtime, Address from, Address to) {
         // (modifier)
-        onlyManyOwners(runtime.getSender(), Operation.from(runtime));
+        onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         // Make sure that the to isn't already an owner and the from is.
         if (!isOwner(to) && isOwner(from)) {
@@ -82,7 +83,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public void addOwner(BlockchainRuntime runtime, Address owner) {
         // (modifier)
-        onlyManyOwners(runtime.getSender(), Operation.from(runtime));
+        onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         // Make sure that this owner isn't already in the set.
         if (!isOwner(owner)) {
@@ -99,7 +100,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public void removeOwner(BlockchainRuntime runtime, Address owner) {
         // (modifier)
-        onlyManyOwners(runtime.getSender(), Operation.from(runtime));
+        onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         // Make sure that this owner is  in the set.
         if (isOwner(owner)) {
@@ -118,7 +119,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public void changeRequirement(BlockchainRuntime runtime, int newRequired) {
         // (modifier)
-        onlyManyOwners(runtime.getSender(), Operation.from(runtime));
+        onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         // Change the requirement.
         this.numberRequired = newRequired;

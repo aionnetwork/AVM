@@ -24,7 +24,7 @@ public class Daylimit {
     // PUBLIC INTERFACE
     public void setDailyLimit(BlockchainRuntime runtime, long value) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
+        this.owners.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         this.dailyLimit = value;
     }
@@ -32,7 +32,7 @@ public class Daylimit {
     // PUBLIC INTERFACE
     public void resetSpentToday(BlockchainRuntime runtime) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
+        this.owners.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         this.spentToday = 0;
     }

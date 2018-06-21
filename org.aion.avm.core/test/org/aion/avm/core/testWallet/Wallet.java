@@ -14,6 +14,7 @@ public class Wallet implements IMultisig {
     private final EventLogger logger;
     private final Multiowned owners;
     private final Daylimit limit;
+    // Note that this key is really just a subset of uses of "Operation".
     private final AionMap<BytesKey, Transaction> transactions;
 
     public Wallet(EventLogger logger, Multiowned owners, Daylimit limit) {
@@ -61,7 +62,7 @@ public class Wallet implements IMultisig {
     // EXTERNAL
     public void kill(BlockchainRuntime runtime, Address to) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
+        this.owners.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
         
         runtime.selfDestruct(to);
     }
@@ -96,7 +97,7 @@ public class Wallet implements IMultisig {
             result = null;
         } else {
             // determine our operation hash.
-            result = runtime.sha3(ByteArrayHelpers.appendLong(runtime.getMessageData(), runtime.getBlockNumber()));
+            result = Operation.rawOperationForCurrentMessageAndBlock(runtime);
             BytesKey transactionKey = BytesKey.from(result);
             if (!safeConfirm(runtime, result) && (null == this.transactions.get(transactionKey))) {
                 Transaction transaction = new Transaction();
@@ -131,7 +132,7 @@ public class Wallet implements IMultisig {
     @Override
     public boolean confirm(BlockchainRuntime runtime, byte[] h) {
         // (modifier)
-        this.owners.onlyManyOwners(runtime.getSender(), Operation.from(runtime));
+        this.owners.onlyManyOwners(runtime.getSender(), Operation.fromBytes(h));
         
         boolean result = false;
         BytesKey key = BytesKey.from(h);
