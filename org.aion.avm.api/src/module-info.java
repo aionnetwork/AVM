@@ -1,3 +1,3 @@
-module org.aion.avm.rt {
+module org.aion.avm.api {
     exports org.aion.avm.api;
 }
