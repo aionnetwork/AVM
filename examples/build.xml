@@ -5,7 +5,7 @@
     <property name="dir.local.build" value="${dir.local.workspace}/build"/>
     <property name="dir.local.lib" value="${dir.local.workspace}/lib"/>
     <property name="dir.local.src" value="${dir.local.workspace}/src"/>
-
+    <property name="dir.global.jar" value="../out/jar"/>
 
     <target name="clean">
         <delete dir="${dir.local.build}"/>
@@ -47,7 +47,7 @@
                srcdir="${dir.local.src}/${name}"
                destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
             <modulepath>
-                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+                <pathelement location="${dir.global.jar}/org-aion-avm-rt.jar"/>
             </modulepath>
         </javac>
 
@@ -66,7 +66,7 @@
                srcdir="${dir.local.src}/${name}"
                destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
             <modulepath>
-                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+                <pathelement location="${dir.global.jar}/org-aion-avm-rt.jar"/>
             </modulepath>
         </javac>
 
@@ -87,7 +87,7 @@
                srcdir="${dir.local.src}/${name}"
                destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
             <modulepath>
-                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+                <pathelement location="${dir.global.jar}/org-aion-avm-rt.jar"/>
             </modulepath>
         </javac>
 
@@ -112,7 +112,7 @@
                srcdir="${dir.local.src}/${name}"
                destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
             <modulepath>
-                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+                <pathelement location="${dir.global.jar}/org-aion-avm-rt.jar"/>
             </modulepath>
         </javac>
 
@@ -137,7 +137,7 @@
                srcdir="${dir.local.src}/${name}"
                destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
             <modulepath>
-                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+                <pathelement location="${dir.global.jar}/org-aion-avm-rt.jar"/>
             </modulepath>
         </javac>
 
@@ -162,7 +162,7 @@
                srcdir="${dir.local.src}/${name}"
                destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
             <modulepath>
-                <pathelement location="${dir.local.lib}/org-aion-avm-rt.jar"/>
+                <pathelement location="${dir.global.jar}/org-aion-avm-rt.jar"/>
             </modulepath>
         </javac>
 
