@@ -58,7 +58,7 @@ public class EventLogger {
     }
 
     public static void requirementChanged(int newRequired) {
-        byte[] data = ByteArrayHelpers.serializeInt(newRequired);
+        byte[] data = ByteArrayHelpers.encodeInt(newRequired);
         EventLogger.logSink.log(kRequirementChanged.getBytes(), data);
     }
 
