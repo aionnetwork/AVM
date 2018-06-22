@@ -192,8 +192,8 @@ public class AvmImpl implements Avm {
             Assert.assertTrue(-1 == name.indexOf("/"));
 
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
+                    .addNextVisitor(new RejectionClassVisitor())
                     .addNextVisitor(new UserClassMappingVisitor(preRenameUserDefinedClasses))
-                    .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                     .addNextVisitor(new StringConstantVisitor())
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
                     .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS, PackageConstants.kShadowSlashPrefix, classWhiteList))

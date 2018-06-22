@@ -1,11 +1,11 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.kernel.Transaction;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
@@ -20,11 +20,23 @@ import java.util.stream.Collectors;
 /**
  * The user classes can come in associated with essentially any package name but we want to be able to identity them, in later pipeline stages,
  * and ensure that they aren't trying to invade one of our spaces, so we will re-map them all into PackageConstants.kUserDotPrefix, here.
+ *
+ * The following mechanical transformation has been applied:
+ * 1) User-defined code are moved to `org.aion.avm.user`;
+ * 2) All method declarations and references has been prepended with `avm_`;
+ * 3) All fields declarations and references has been prepended with `avm_`;
+ * 4) TODO: `java.base` types has been replaced with shadow `java.base`, i.e. `org.aion.avm.shadow.**`.
+ *
+ * NOTE: String & class constant wrapping is in separate class visitor
  */
 public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisitor {
 
     private static final String FIELD_PREFIX = "avm_";
     private static final String METHOD_PREFIX = "avm_";
+
+    private static final String JAVA_LANG = "java/lang/";
+    private static final String JAVA_UTIL_FUNCTION = "java/util/function";
+    private static final String ORG_AION_AVM_API = "org/aion/avm/api/";
 
     private final Set<String> userDefinedClassSlashNames;
 
@@ -156,7 +168,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
     @Override
     public void visitOuterClass(String owner, String name, String descriptor) {
         String newOwner = mapType(owner);
-        String newName = mapType(name);
+        String newName = mapMethodName(name);
         String newDescriptor = mapDescriptor(descriptor);
         super.visitOuterClass(newOwner, newName, newDescriptor);
     }
@@ -168,7 +180,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
                 ? mapType(outerName)
                 : null;
         String newInnerName = (null != innerName)
-                ? mapType(innerName)
+                ? innerName // mapType(innerName) TODO: disable because it's simple name, more investigation may be required
                 : null;
         super.visitInnerClass(newName, newOuterName, newInnerName, access);
     }
@@ -316,10 +328,15 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
         if (type.startsWith("[")){
             newType = mapDescriptor(type);
         }else {
-
-            newType = this.userDefinedClassSlashNames.contains(type)
-                    ? (PackageConstants.kUserSlashPrefix + type)
-                    : type;
+            if (this.userDefinedClassSlashNames.contains(type)) {
+                return PackageConstants.kUserSlashPrefix + type;
+            } else if (type.startsWith(JAVA_LANG)
+                    || type.startsWith(JAVA_UTIL_FUNCTION)
+                    || type.startsWith(ORG_AION_AVM_API)) {
+                return type;
+            } else {
+                RejectedClassException.nonWhiteListedClass(type);
+            }
         }
 
         return newType;

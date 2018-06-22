@@ -146,7 +146,7 @@ public class InvokedynamicTransformationTest {
         ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
-                .addNextVisitor(new RejectionClassVisitor(classWhiteList))
+                .addNextVisitor(new RejectionClassVisitor())
                 .addNextVisitor(new StringConstantVisitor())
                 .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, AvmImpl.computeAllObjectsSizes(classHierarchy)))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage, classWhiteList))

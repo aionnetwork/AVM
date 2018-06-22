@@ -3,14 +3,11 @@ package org.aion.avm.core.rejection;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
-import org.aion.avm.core.Forest;
-import org.aion.avm.core.HierarchyTreeBuilder;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
@@ -36,7 +33,7 @@ public class RejectionClassVisitorTest {
         // We want to prove we can strip out everything so don't use any special parsing options for this visitor.
         byte[] filteredBytes = new ClassToolchain.Builder(raw, 0)
                 .addNextVisitor(new UserClassMappingVisitor(Set.of(className, className+"$A", className+"$B")))
-                .addNextVisitor(new RejectionClassVisitor(classWhiteList))
+                .addNextVisitor(new RejectionClassVisitor())
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();
@@ -55,7 +52,7 @@ public class RejectionClassVisitorTest {
         // This is just to verify that the test classes we are using were made from a test that actually _does_ load.
         String path = "test/resources/TestClassTemplate_control.class";
         // This is the untouched input so it should work.
-        byte[] filteredBytes = commonFilterClass(path);
+        byte[] filteredBytes = commonFilterClass("TestClassTemplate", path);
         Assert.assertNotNull(filteredBytes);
     }
 
@@ -63,7 +60,7 @@ public class RejectionClassVisitorTest {
     public void testRejection_version() throws Exception {
         // Load the bytes we saved (normal TestClassTemplate but with Java9 version).
         // Verify that this fails by throwing.
-        commonFilterClass("test/resources/TestClassTemplate_V9.class");
+        commonFilterClass("TestClassTemplate","test/resources/TestClassTemplate_V9.class");
     }
 
     @Test(expected=RejectedClassException.class)
@@ -87,7 +84,7 @@ public class RejectionClassVisitorTest {
         // (this test uses JDK10 as the version to ensure that we aren't tripped by the version check but actually see the blacklisted opcode)
         
         // Verify that this fails by throwing.
-        commonFilterClass("test/resources/TestClassTemplate_jsr.class");
+        commonFilterClass("TestClassTemplate","test/resources/TestClassTemplate_jsr.class");
     }
 
     // TODO:  We probably want to handle these RuntimeExceptions from ASM in a more general way.  For now, we just get whatever it failed on.
@@ -96,21 +93,21 @@ public class RejectionClassVisitorTest {
         // Load the bytes we saved (normal TestClassTemplate I over-wrote a random byte in the bytecode).
         // (interestingly, I over-wrote the goto offset in a path the test doesn't execute so this runs with -Xverify:none)
         // Verify that this fails by throwing.
-        commonFilterClass("test/resources/TestClassTemplate_corrupt.class");
+        commonFilterClass("TestClassTemplate","test/resources/TestClassTemplate_corrupt.class");
     }
 
     @Test(expected=RejectedClassException.class)
     public void testRejection_deniedField() throws Exception {
         // Load the bytes we saved (normal TestClassTemplate but we include a java/util/Set static field).
         // Verify that this fails by throwing.
-        commonFilterClass("test/resources/TestClassTemplate_deniedField.class");
+        commonFilterClass("TestClassTemplate","test/resources/TestClassTemplate_deniedField.class");
     }
 
     @Test(expected=RejectedClassException.class)
     public void testRejection_deniedMethod() throws Exception {
         // Load the bytes we saved (normal TestClassTemplate we try to call System.out near the end).
         // Verify that this fails by throwing.
-        commonFilterClass("test/resources/TestClassTemplate_deniedMethod.class");
+        commonFilterClass("TestClassTemplate","test/resources/TestClassTemplate_deniedMethod.class");
     }
 
     @Test(expected=RejectedClassException.class)
@@ -118,7 +115,7 @@ public class RejectionClassVisitorTest {
         String className = RejectFinalizeResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         // We expect this to fail since we have a finalize() method, which isn't allowed.
-        commonFilterBytes(raw);
+        commonFilterBytes(className, raw);
     }
 
     @Test(expected=RejectedClassException.class)
@@ -126,14 +123,14 @@ public class RejectionClassVisitorTest {
         String className = RejectUnknownArray.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         // Expected to fail since we try to call clone on a java/util/Set array, which isn't allowed.
-        commonFilterBytes(raw);
+        commonFilterBytes(className, raw);
     }
 
     @Test
     public void testRejection_goodArrays() throws Exception {
         String className = AcceptedArrayCases.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        byte[] result = commonFilterBytes(raw);
+        byte[] result = commonFilterBytes(className, raw);
         Assert.assertNotNull(result);
     }
 
@@ -299,15 +296,16 @@ public class RejectionClassVisitorTest {
         Assert.assertNull(outputMethod.parameters);
     }
 
-    private byte[] commonFilterClass(String path) throws IOException {
+    private byte[] commonFilterClass(String classDotName, String path) throws IOException {
         byte[] testBytes = Files.readAllBytes(Paths.get(path));
-        return commonFilterBytes(testBytes);
+        return commonFilterBytes(classDotName, testBytes);
     }
 
-    private byte[] commonFilterBytes(byte[] testBytes) throws IOException {
+    private byte[] commonFilterBytes(String classDotName, byte[] testBytes) throws IOException {
         ClassWhiteList classWhiteList = new ClassWhiteList();
         byte[] filteredBytes = new ClassToolchain.Builder(testBytes, 0)
-                .addNextVisitor(new RejectionClassVisitor(classWhiteList))
+                .addNextVisitor(new RejectionClassVisitor())
+                .addNextVisitor(new UserClassMappingVisitor(Set.of(classDotName)))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();

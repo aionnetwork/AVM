@@ -165,12 +165,15 @@ public class ExceptionWrappingTest {
     @Test
     public void testExceptionTransformOnAvmImplPipeline() throws Exception {
         SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        SimpleAvm avm = new SimpleAvm(externalRuntime, TestExceptionResource.UserDefinedException.class);
+        SimpleAvm avm = new SimpleAvm(externalRuntime,
+                TestExceptionResource.class,
+                TestExceptionResource.UserDefinedRuntimeException.class,
+                TestExceptionResource.UserDefinedException.class);
         Set<String> transformedClassNames = avm.getTransformedClassNames();
         
         // We expect this to have 2 exceptions in it:  the transformed user-defined exception and the generated wrapper.
         String exceptionClassDotName = TestExceptionResource.UserDefinedException.class.getName();
-        Assert.assertEquals(2, transformedClassNames.size());
+        Assert.assertEquals(3 + 2, transformedClassNames.size());
         Assert.assertTrue(transformedClassNames.contains(PackageConstants.kUserDotPrefix + exceptionClassDotName));
         Assert.assertTrue(transformedClassNames.contains(PackageConstants.kExceptionWrapperDotPrefix + exceptionClassDotName));
     }
