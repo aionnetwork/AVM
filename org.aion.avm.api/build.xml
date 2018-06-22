@@ -10,6 +10,7 @@
     <property name="dir.global.lib" value="../lib"/>
     <property name="dir.global.build.main" value="../build/main"/>
     <property name="dir.global.build.test" value="../build/test"/>
+    <property name="dir.global.jar" value="../out/jar"/>
 
     <target name="clean" >
         <antcall target="cleanmain" />
@@ -90,4 +91,9 @@
         </junit>
     </target>
 
+    <target name="buildJar">
+        <jar destfile = "${dir.global.jar}/org-aion-avm-api.jar"
+             basedir = "${dir.local.build.main}">
+        </jar>
+    </target>
 </project>
