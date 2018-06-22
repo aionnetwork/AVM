@@ -226,9 +226,9 @@ public class String extends Object implements Comparable<String> {
         return new CharArray(this.underlying.toCharArray());
     }
 
-    public static String avm_format(String format, Object... args) {
-        return new String(java.lang.String.format(format.getUnderlying(), args));
-    }
+//    public static String avm_format(String format, Object... args) {
+//        return new String(java.lang.String.format(format.getUnderlying(), args));
+//    }
 
     //TODO: IOBJECT?
     public static String avm_valueOf(Object obj) {
