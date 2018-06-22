@@ -43,7 +43,6 @@ public class CharArray extends Array {
     }
 
     // Internal
-
     public char[] getUnderlying() {
         return underlying;
     }

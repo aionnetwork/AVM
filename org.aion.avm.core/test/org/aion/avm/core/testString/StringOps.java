@@ -10,8 +10,8 @@ public class StringOps {
         String str1 = new String("abc");
         results[i++] = str1.hashCode();
         results[i++] = str1.length();
-        results[i++] = str1.contains("c");
-        results[i++] = str1.contains("d");
+        //results[i++] = str1.contains("c");
+        //results[i++] = str1.contains("d");
         results[i++] = str1.equals("abc");
         results[i++] = str1.equals("def");
         results[i++] = str1.startsWith("a");

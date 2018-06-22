@@ -41,4 +41,9 @@ public class IntArray extends Array {
     public IObject clone() {
         return new IntArray(Arrays.copyOf(underlying, underlying.length));
     }
+
+    // Internal
+    public int[] getUnderlying() {
+        return underlying;
+    }
 }

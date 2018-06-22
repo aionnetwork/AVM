@@ -28,8 +28,8 @@ public class StringOpsTest {
         int i = 0;
         assertEquals(new Integer(96354), results.get(i++));
         assertEquals(new Integer(3), results.get(i++));
-        assertEquals(Boolean.avm_TRUE, results.get(i++));
-        assertEquals(Boolean.avm_FALSE, results.get(i++));
+        //assertEquals(Boolean.avm_TRUE, results.get(i++));
+        //assertEquals(Boolean.avm_FALSE, results.get(i++));
         assertEquals(Boolean.avm_TRUE, results.get(i++));
         assertEquals(Boolean.avm_FALSE, results.get(i++));
         assertEquals(Boolean.avm_TRUE, results.get(i++));
