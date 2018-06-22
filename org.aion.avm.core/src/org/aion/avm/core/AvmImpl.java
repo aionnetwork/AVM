@@ -124,6 +124,8 @@ public class AvmImpl implements Avm {
         map.put("java/lang/Exception", 4);
         map.put("java/lang/RuntimeException", 4);
         map.put("java/lang/NullPointerException", 4);
+        // - we also need to figure out what we are doing with these RT types which the user should be able to allocate.
+        map.put("org/aion/avm/api/Address", 4);
 
         return Collections.unmodifiableMap(map);
     }

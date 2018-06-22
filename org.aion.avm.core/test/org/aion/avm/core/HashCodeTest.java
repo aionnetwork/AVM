@@ -14,6 +14,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.api.Address;
+import org.aion.avm.arraywrapper.ByteArray;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -262,6 +263,32 @@ public class HashCodeTest {
         Method lengthOfClonedByteArray = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("lengthOfClonedByteArray"));
         int result = (Integer)lengthOfClonedByteArray.invoke(null);
         Assert.assertEquals(3, result);
+    }
+
+    /**
+     * Tests that 2 Address instances with the same data have the same hash code and are equal.
+     * Also, to verify that our testing works, we want to verify that we get the same answer inside and outside.
+     */
+    @Test
+    public void testAddressHashCodeAndEquals() throws Exception {
+        byte[] data = new byte[32];
+        for (int i = 0; i < data.length; ++i) {
+            data[i] = (byte)i;
+        }
+        Address outside = new Address(data);
+        // Just to make this interesting, we will see what happens if we create the Address objects from different environments.
+        ByteArray wrapper = new ByteArray(data);
+        Address inside = (Address) this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("createAddress"), ByteArray.class)
+                .invoke(null, wrapper);
+        
+        // Compare these outside.
+        Assert.assertEquals(outside.hashCode(), inside.hashCode());
+        Assert.assertEquals(outside, inside);
+        
+        // Compare them insider.
+        boolean didBothMatch = (Boolean) this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("compareAddresses"), Address.class, Address.class)
+                .invoke(null, outside, inside);
+        Assert.assertTrue(didBothMatch);
     }
 
 

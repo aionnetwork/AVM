@@ -1,5 +1,7 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.Address;
+
 
 /**
  * The test class loaded by HashCodeTest.
@@ -95,5 +97,14 @@ public class HashCodeTestTarget {
         byte[] original = new byte[] {1,2,3};
         byte[] copy = original.clone();
         return copy.length;
+    }
+    
+    public static Address createAddress(byte[] data) {
+        return new Address(data);
+    }
+    
+    public static boolean compareAddresses(Address outside, Address inside) {
+        return (outside.hashCode() == inside.hashCode())
+                && (outside.equals(inside));
     }
 }

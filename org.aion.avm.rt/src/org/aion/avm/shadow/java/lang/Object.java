@@ -61,4 +61,18 @@ public class Object extends java.lang.Object implements IObject {
     protected void avm_finalize() throws java.lang.Throwable {
 
     }
+
+    @Override
+    public int hashCode() {
+        // NOTE:  This is not called in normal operation but is called in cases where we run a contract without transformation.
+        return avm_hashCode();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object obj) {
+        // NOTE:  This is not called in normal operation but is called in cases where we run a contract without transformation.
+        return (obj instanceof IObject)
+                ? avm_equals((IObject)obj)
+                : false;
+    }
 }
