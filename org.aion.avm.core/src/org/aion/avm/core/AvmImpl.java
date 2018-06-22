@@ -251,7 +251,7 @@ public class AvmImpl implements Avm {
                     switch (c) {
                         case TxDataDecoder.ARRAY_S:
                             String pType = parameterTypes[parIdx].getName();
-                            if (pType.charAt(0) == '[' || pType.charAt(0) == '$') {
+                            if (pType.charAt(0) == '[') {
                                 pType = pType.substring(1);
                             } else if (pType.startsWith(ARRAY_WRAPPER_PREFIX)) {
                                 pType = pType.substring(ARRAY_WRAPPER_PREFIX.length());
@@ -267,8 +267,8 @@ public class AvmImpl implements Avm {
 
                             char eType;
                             if (argsDescriptor.charAt(++idx) == TxDataDecoder.ARRAY_S) {
-                                if (pType.charAt(0) == '$') {
-                                    pType = pType.substring(1);
+                                if (pType.charAt(0) == '$' && pType.charAt(1) == '$') {
+                                    pType = pType.substring(2);
                                 }
                                 else {
                                     matched = false;
@@ -279,8 +279,8 @@ public class AvmImpl implements Avm {
                             }
                             else {
                                 eType = argsDescriptor.charAt(idx);
-                                idx = argsDescriptor.indexOf(TxDataDecoder.ARRAY_E, idx);
                             }
+                            idx = argsDescriptor.indexOf(TxDataDecoder.ARRAY_E, idx);
 
                             if (pType.charAt(0) == 'L') {
                                 pType = pType.substring(1);
@@ -302,9 +302,12 @@ public class AvmImpl implements Avm {
                     }
                     else {
                         parIdx ++;
+                        if (parIdx == parameterTypes.length) {
+                            break;
+                        }
                     }
                 }
-                if (matched) {
+                if (matched && parIdx == parameterTypes.length) {
                     return method;
                 }
             }
