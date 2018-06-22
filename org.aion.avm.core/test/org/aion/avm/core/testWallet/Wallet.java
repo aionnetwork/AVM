@@ -44,6 +44,78 @@ public class Wallet {
         Wallet.transactions = new AionMap<>();
     }
 
+    /**
+     * The generic start symbol which processes the input using the ABI to calls out to other helpers.
+     * 
+     * @param runtime The context of the invocation.
+     * @param input The ABI-encoded input.
+     * @return The output of running the invoke (null for void methods).
+     */
+    public static byte[] decode(BlockchainRuntime runtime, byte[] input) {
+        byte[] result = null;
+        Abi.Decoder decoder = Abi.buildDecoder(input);
+        byte methodByte = decoder.decodeByte();
+        
+        switch (methodByte) {
+        case Abi.kWallet_payable : {
+            Address from = decoder.decodeAddress();
+            long value = decoder.decodeLong();
+            Wallet.payable(from, value);
+            break;
+        }
+        case Abi.kWallet_addOwner : {
+            Address owner = decoder.decodeAddress();
+            Wallet.addOwner(runtime, owner);
+            break;
+        }
+        case Abi.kWallet_execute : {
+            Address to = decoder.decodeAddress();
+            long value = decoder.decodeLong();
+            byte[] data = decoder.decodeRemainder();
+            result = Wallet.execute(runtime, to, value, data);
+            break;
+        }
+        case Abi.kWallet_confirm : {
+            byte[] data = decoder.decodeRemainder();
+            boolean bool = Wallet.confirm(runtime, data);
+            result = new byte[] { (byte)(bool ? 0x1 : 0x0) };
+            break;
+        }
+        case Abi.kWallet_changeRequirement : {
+            int newRequired = decoder.decodeInt();
+            Wallet.changeRequirement(runtime, newRequired);
+            break;
+        }
+        case Abi.kWallet_getOwner : {
+            int ownerIndex = decoder.decodeInt();
+            Address owner = Wallet.getOwner(runtime, ownerIndex);
+            // We need to encode this so allocate a buffer and write it with the encoder.
+            byte[] onto = new byte[Address.LENGTH];
+            Abi.buildEncoder(onto).encodeAddress(owner);
+            result = onto;
+            break;
+        }
+        case Abi.kWallet_changeOwner : {
+            Address from = decoder.decodeAddress();
+            Address to = decoder.decodeAddress();
+            Wallet.changeOwner(runtime, from, to);
+            break;
+        }
+        case Abi.kWallet_removeOwner : {
+            Address owner = decoder.decodeAddress();
+            Wallet.removeOwner(runtime, owner);
+            break;
+        }
+        case Abi.kWallet_revoke : {
+            Wallet.revoke(runtime);
+            break;
+        }
+        default:
+            throw new AssertionError(methodByte);
+        }
+        return result;
+    }
+
     // EXTERNAL - composed
     public static void revoke(BlockchainRuntime runtime) {
         Multiowned.revoke(runtime);

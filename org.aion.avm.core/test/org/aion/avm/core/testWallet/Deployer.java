@@ -182,6 +182,9 @@ public class Deployer {
         helper.loadClass(Wallet.class);
         helper.loadClass(Wallet.Transaction.class);
         helper.loadClass(EventLogger.class);
+        helper.loadClass(Abi.class);
+        helper.loadClass(Abi.Encoder.class);
+        helper.loadClass(Abi.Decoder.class);
         
         AvmImpl avm = new AvmImpl(sharedClassLoader);
         Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();

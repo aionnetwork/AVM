@@ -9,38 +9,49 @@ import org.aion.avm.api.BlockchainRuntime;
  */
 public class DirectProxy {
     public static void payable(Address from, long value) {
-        Wallet.payable(from, value);
+        byte[] onto = CallEncoder.payable(from, value);
+        Wallet.decode(null, onto);
     }
 
     public static void addOwner(BlockchainRuntime runtime, Address owner) {
-        Wallet.addOwner(runtime, owner);
+        byte[] onto = CallEncoder.addOwner(owner);
+        Wallet.decode(runtime, onto);
     }
 
     public static byte[] execute(BlockchainRuntime runtime, Address to, long value, byte[] data) {
-        return Wallet.execute(runtime, to, value, data);
+        byte[] onto = CallEncoder.execute(to, value, data);
+        return Wallet.decode(runtime, onto);
     }
 
     public static boolean confirm(BlockchainRuntime runtime, byte[] data) {
-        return Wallet.confirm(runtime, data);
+        byte[] onto = CallEncoder.confirm(data);
+        byte[] result = Wallet.decode(runtime, onto);
+        return (0x1 == result[0]);
     }
 
     public static void changeRequirement(BlockchainRuntime runtime, int newRequired) {
-        Wallet.changeRequirement(runtime, newRequired);
+        byte[] onto = CallEncoder.changeRequirement(newRequired);
+        Wallet.decode(runtime, onto);
     }
 
     public static Address getOwner(BlockchainRuntime runtime, int ownerIndex) {
-        return Wallet.getOwner(runtime, ownerIndex);
+        byte[] onto = CallEncoder.getOwner(ownerIndex);
+        byte[] result = Wallet.decode(runtime, onto);
+        return new Address(result);
     }
 
     public static void changeOwner(BlockchainRuntime runtime, Address from, Address to) {
-        Wallet.changeOwner(runtime, from, to);
+        byte[] onto = CallEncoder.changeOwner(from, to);
+        Wallet.decode(runtime, onto);
     }
 
     public static void removeOwner(BlockchainRuntime runtime, Address owner) {
-        Wallet.removeOwner(runtime, owner);
+        byte[] onto = CallEncoder.removeOwner(owner);
+        Wallet.decode(runtime, onto);
     }
 
     public static void revoke(BlockchainRuntime runtime) {
-        Wallet.revoke(runtime);
+        byte[] onto = CallEncoder.revoke();
+        Wallet.decode(runtime, onto);
     }
 }

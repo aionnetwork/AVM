@@ -12,59 +12,60 @@ import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
  */
 public class CallProxy {
     public static void payable(Class<?> walletClass, Address from, long value) throws Exception {
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("payable"), Address.class, long.class)
-            .invoke(null, from, value);
+        byte[] onto = CallEncoder.payable(from, value);
+        callDecode(walletClass, null, onto);
     }
 
     public static void addOwner(Class<?> walletClass, BlockchainRuntime runtime, Address owner) throws Exception {
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("addOwner"), BlockchainRuntime.class, Address.class)
-            .invoke(null, runtime, owner);
+        byte[] onto = CallEncoder.addOwner(owner);
+        callDecode(walletClass, runtime, onto);
     }
 
     public static byte[] execute(Class<?> walletClass, BlockchainRuntime runtime, Address to, long value, byte[] data) throws Exception {
-        ByteArray result = (ByteArray) walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("execute"), BlockchainRuntime.class, Address.class, long.class, ByteArray.class)
-            .invoke(null, runtime, to, value, new ByteArray(data));
-        return (null != result)
-             ? result.getUnderlying()
-             : null;
+        byte[] onto = CallEncoder.execute(to, value, data);
+        return callDecode(walletClass, runtime, onto);
     }
 
     public static boolean confirm(Class<?> walletClass, BlockchainRuntime runtime, byte[] data) throws Exception {
-        return (Boolean)walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("confirm"), BlockchainRuntime.class, ByteArray.class)
-            .invoke(null, runtime, new ByteArray(data));
+        byte[] onto = CallEncoder.confirm(data);
+        byte[] result = callDecode(walletClass, runtime, onto);
+        return (0x1 == result[0]);
     }
 
     public static void changeRequirement(Class<?> walletClass, BlockchainRuntime runtime, int newRequired) throws Exception {
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("changeRequirement"), BlockchainRuntime.class, int.class)
-            .invoke(null, runtime, newRequired);
+        byte[] onto = CallEncoder.changeRequirement(newRequired);
+        callDecode(walletClass, runtime, onto);
     }
 
     public static Address getOwner(Class<?> walletClass, BlockchainRuntime runtime, int ownerIndex) throws Exception {
-        return (Address) walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("getOwner"), BlockchainRuntime.class, int.class)
-            .invoke(null, runtime, ownerIndex);
+        byte[] onto = CallEncoder.getOwner(ownerIndex);
+        byte[] result = callDecode(walletClass, runtime, onto);
+        return new Address(result);
     }
 
     public static void changeOwner(Class<?> walletClass, BlockchainRuntime runtime, Address from, Address to) throws Exception {
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("changeOwner"), BlockchainRuntime.class, Address.class, Address.class)
-            .invoke(null, runtime, from, to);
+        byte[] onto = CallEncoder.changeOwner(from, to);
+        callDecode(walletClass, runtime, onto);
     }
 
     public static void removeOwner(Class<?> walletClass, BlockchainRuntime runtime, Address owner) throws Exception {
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("removeOwner"), BlockchainRuntime.class, Address.class)
-            .invoke(null, runtime, owner);
+        byte[] onto = CallEncoder.removeOwner(owner);
+        callDecode(walletClass, runtime, onto);
     }
 
     public static void revoke(Class<?> walletClass, BlockchainRuntime runtime) throws Exception {
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("revoke"), BlockchainRuntime.class)
-            .invoke(null, runtime);
+        byte[] onto = CallEncoder.revoke();
+        callDecode(walletClass, runtime, onto);
+    }
+
+
+    private static byte[] callDecode(Class<?> walletClass, BlockchainRuntime runtime, byte[] input) throws Exception {
+        ByteArray inputWrapper = new ByteArray(input);
+        ByteArray output = (ByteArray)walletClass
+            .getMethod(UserClassMappingVisitor.mapMethodName("decode"), BlockchainRuntime.class, ByteArray.class)
+            .invoke(null, runtime, inputWrapper);
+        return (null != output)
+                ? output.getUnderlying()
+                : null;
     }
 }
