@@ -32,7 +32,6 @@ hs_err_pid*
 /build/
 /mod/
 /mod*/build/
-out/
 testreports/
 
 # ant
