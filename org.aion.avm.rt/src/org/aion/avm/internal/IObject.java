@@ -1,8 +1,7 @@
 package org.aion.avm.internal;
 
-import org.aion.avm.java.lang.Class;
-import org.aion.avm.java.lang.Object;
-import org.aion.avm.java.lang.String;
+import org.aion.avm.shadow.java.lang.Class;
+import org.aion.avm.shadow.java.lang.String;
 
 
 /**

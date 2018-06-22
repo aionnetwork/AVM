@@ -189,7 +189,7 @@ public class HashCodeTest {
         Assert.assertTrue(loader2.loadUserClassByOriginalName(className) == clazz2);
         
         // Load a shared class, via each contract-specific loader, and ensure that we get the same instance.
-        String classToLoad = PackageConstants.kShadowJavaLangDotPrefix + "Error";
+        String classToLoad = PackageConstants.kShadowDotPrefix + "java.lang.Error";
         Class<?> match1 = loader1.loadClass(classToLoad);
         Class<?> match2 = loader2.loadClass(classToLoad);
         Assert.assertTrue(match1 == match2);

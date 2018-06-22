@@ -219,19 +219,19 @@ public class ExceptionWrappingTest {
         public static boolean didUnwrap = false;
         public static boolean didWrap = false;
         
-        public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {
+        public static <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
             countWrappedClasses += 1;
             return Helper.wrapAsClass(input);
         }
-        public static org.aion.avm.java.lang.String wrapAsString(String input) {
+        public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
             countWrappedStrings += 1;
             return Helper.wrapAsString(input);
         }
-        public static org.aion.avm.java.lang.Object unwrapThrowable(Throwable t) {
+        public static org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t) {
             didUnwrap = true;
             return Helper.unwrapThrowable(t);
         }
-        public static Throwable wrapAsThrowable(org.aion.avm.java.lang.Object arg) {
+        public static Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg) {
             didWrap = true;
             return Helper.wrapAsThrowable(arg);
         }

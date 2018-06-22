@@ -2,6 +2,7 @@ package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.shadow.java.lang.Object;
 
 
 /**
@@ -11,7 +12,7 @@ import org.aion.avm.internal.IObject;
  * There is a good chance that we will convert this into an interface so that our implementation can provide a richer interface to
  * our AVM code than we want to support for the contract.
  */
-public class Address extends org.aion.avm.java.lang.Object {
+public class Address extends Object {
     // Runtime-facing implementation.
     public static final int avm_LENGTH = 32;
 

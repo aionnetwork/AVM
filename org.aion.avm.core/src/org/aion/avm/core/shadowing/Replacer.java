@@ -43,12 +43,12 @@ class Replacer {
         if (allowInterfaceReplacement && isTypeJavaLangObject) {
             return AVM_INTERNAL_IOBJECT;
         } else if (isTypeJavaLangObject) {
-            return PackageConstants.kShadowJavaLangSlashPrefix + type.substring(JAVA_LANG.length());
+            return PackageConstants.kShadowSlashPrefix + type;
         } else if (shouldReplacePrefix) {
             return Stream.of(JAVA_LANG, JAVA_UTIL)
                     .filter(type::startsWith)
                     .findFirst()
-                    .map(s -> shadowPackage + type.substring(s.length()))
+                    .map(s -> shadowPackage + type)
                     .orElse(type);
         } else {
             return type;

@@ -68,7 +68,7 @@ public class ClassShadowingTest {
 
         // We can rely on our test-facing toString methods to look into what we got back.
         Object wrappedClass = clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnClass")).invoke(obj);
-        Assert.assertEquals("class org.aion.avm.java.lang.String", wrappedClass.toString());
+        Assert.assertEquals("class org.aion.avm.shadow.java.lang.String", wrappedClass.toString());
         Object wrappedString = clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnString")).invoke(obj);
         Assert.assertEquals("hello", wrappedString.toString());
 
@@ -155,12 +155,12 @@ public class ClassShadowingTest {
         public static int countWrappedClasses;
         public static int countWrappedStrings;
 
-        public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {
+        public static <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
             countWrappedClasses += 1;
             return Helper.wrapAsClass(input);
         }
 
-        public static org.aion.avm.java.lang.String wrapAsString(String input) {
+        public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
             countWrappedStrings += 1;
             return Helper.wrapAsString(input);
         }

@@ -471,7 +471,7 @@ public class Deployer {
         }
 
         @Override
-        public org.aion.avm.java.lang.String externalWrapAsString(String input) {
+        public org.aion.avm.shadow.java.lang.String externalWrapAsString(String input) {
             Assert.unreachable("This shouldn't be called in this test.");
             return null;
         }

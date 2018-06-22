@@ -15,8 +15,8 @@ public class Helper implements IHelper {
      * We can't return a different wrapper for the same string instance so we need to intern these mappings to give back the same wrapper, each time.
      * It would probably be a good idea build an implementation of this which has WeakReference keys so we don't keep around unreachable wrappers.
      */
-    private static IdentityHashMap<String, org.aion.avm.java.lang.String> internedStringWrappers;
-    private static IdentityHashMap<Class<?>, org.aion.avm.java.lang.Class<?>> internedClassWrappers;
+    private static IdentityHashMap<String, org.aion.avm.shadow.java.lang.String> internedStringWrappers;
+    private static IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers;
 
     // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
     private static AvmException forceExitState;
@@ -33,8 +33,8 @@ public class Helper implements IHelper {
         nextHashCode = 1;
         
         // Reset our interning state.
-        internedStringWrappers = new IdentityHashMap<String, org.aion.avm.java.lang.String>();
-        internedClassWrappers = new IdentityHashMap<Class<?>, org.aion.avm.java.lang.Class<?>>();
+        internedStringWrappers = new IdentityHashMap<String, org.aion.avm.shadow.java.lang.String>();
+        internedClassWrappers = new IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>>();
     }
 
     public static void clearTestingState() {
@@ -45,32 +45,32 @@ public class Helper implements IHelper {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {
-        org.aion.avm.java.lang.Class<T> wrapper = null;
+    public static <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
+        org.aion.avm.shadow.java.lang.Class<T> wrapper = null;
         if (null != input) {
-            wrapper = (org.aion.avm.java.lang.Class<T>) internedClassWrappers.get(input);
+            wrapper = (org.aion.avm.shadow.java.lang.Class<T>) internedClassWrappers.get(input);
             if (null == wrapper) {
-                wrapper = new org.aion.avm.java.lang.Class<T>(input);
+                wrapper = new org.aion.avm.shadow.java.lang.Class<T>(input);
                 internedClassWrappers.put(input, wrapper);
             }
         }
         return wrapper;
     }
 
-    public static org.aion.avm.java.lang.String wrapAsString(String input) {
-        org.aion.avm.java.lang.String wrapper = null;
+    public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+        org.aion.avm.shadow.java.lang.String wrapper = null;
         if (null != input) {
             wrapper = internedStringWrappers.get(input);
             if (null == wrapper) {
-                wrapper = new org.aion.avm.java.lang.String(input);
+                wrapper = new org.aion.avm.shadow.java.lang.String(input);
                 internedStringWrappers.put(input, wrapper);
             }
         }
         return wrapper;
     }
 
-    public static org.aion.avm.java.lang.Object unwrapThrowable(Throwable t) {
-        org.aion.avm.java.lang.Object shadow = null;
+    public static org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t) {
+        org.aion.avm.shadow.java.lang.Object shadow = null;
         AvmException exceptionToRethrow = null;
         try {
             // NOTE:  This is called for both the cases where the throwable is a VM-generated "java.lang" exception or one of our wrappers.
@@ -96,7 +96,7 @@ public class Helper implements IHelper {
             } else {
                 // This is one of our wrappers.
                 org.aion.avm.exceptionwrapper.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.java.lang.Throwable)t;
-                shadow = (org.aion.avm.java.lang.Object)wrapper.unwrap();
+                shadow = (org.aion.avm.shadow.java.lang.Object)wrapper.unwrap();
             }
         } catch (Throwable err) {
             // Unrecoverable internal error.
@@ -108,7 +108,7 @@ public class Helper implements IHelper {
         return shadow;
     }
 
-    public static Throwable wrapAsThrowable(org.aion.avm.java.lang.Object arg) {
+    public static Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg) {
         Throwable result = null;
         try {
             // In this case, we just want to look up the appropriate wrapper (using reflection) and instantiate a wrapper for this.
@@ -117,12 +117,12 @@ public class Helper implements IHelper {
             // 1) This is an object from our "java/lang" shadows.
             // 2) This is an object defined by the user, and mapped into our "user" package.
             // Determine which case it is to strip off that prefix and apply the common wrapper prefix to look up the class.
-            RuntimeAssertionError.assertTrue(objectClass.startsWith(PackageConstants.kShadowJavaLangDotPrefix)
+            RuntimeAssertionError.assertTrue(objectClass.startsWith(PackageConstants.kShadowDotPrefix)
                     || objectClass.startsWith(PackageConstants.kUserDotPrefix));
             
             // Note that, since we currently declare the "java.lang." inside the constant for JDK shadows, we need to avoid curring that off.
-            int lengthToCut = objectClass.startsWith(PackageConstants.kShadowJavaLangDotPrefix)
-                    ? (PackageConstants.kShadowJavaLangDotPrefix.length() - "java.lang.".length())
+            int lengthToCut = objectClass.startsWith(PackageConstants.kShadowDotPrefix)
+                    ? PackageConstants.kShadowDotPrefix.length()
                     : PackageConstants.kUserDotPrefix.length();
             String wrapperClassName = PackageConstants.kExceptionWrapperDotPrefix + objectClass.substring(lengthToCut);
             Class<?> wrapperClass = lateLoader.loadClass(wrapperClassName);
@@ -176,7 +176,7 @@ public class Helper implements IHelper {
         return Helper.energyLeft();
     }
     @Override
-    public org.aion.avm.java.lang.String externalWrapAsString(String input) {
+    public org.aion.avm.shadow.java.lang.String externalWrapAsString(String input) {
         return Helper.wrapAsString(input);
     }
     @Override
@@ -190,22 +190,22 @@ public class Helper implements IHelper {
 
 
     // Private helpers used internally.
-    private static org.aion.avm.java.lang.Throwable convertVmGeneratedException(Throwable t) throws Exception {
+    private static org.aion.avm.shadow.java.lang.Throwable convertVmGeneratedException(Throwable t) throws Exception {
         // First step is to convert the message and cause into shadow objects, as well.
         String originalMessage = t.getMessage();
-        org.aion.avm.java.lang.String message = (null != originalMessage)
+        org.aion.avm.shadow.java.lang.String message = (null != originalMessage)
                 ? wrapAsString(originalMessage)
                 : null;
         // (note that converting the cause is recusrive on the causal chain)
         Throwable originalCause = t.getCause();
-        org.aion.avm.java.lang.Throwable cause = (null != originalCause)
+        org.aion.avm.shadow.java.lang.Throwable cause = (null != originalCause)
                 ? convertVmGeneratedException(originalCause)
                 : null;
         
         // Then, use reflection to find the appropriate wrapper.
         String throwableName = t.getClass().getName();
-        Class<?> shadowClass = lateLoader.loadClass(PackageConstants.kShadowJavaLangDotPrefix + throwableName.substring("java/lang/".length()));
-        return (org.aion.avm.java.lang.Throwable)shadowClass.getConstructor(org.aion.avm.java.lang.String.class, org.aion.avm.java.lang.Throwable.class).newInstance(message, cause);
+        Class<?> shadowClass = lateLoader.loadClass(PackageConstants.kShadowDotPrefix + throwableName);
+        return (org.aion.avm.shadow.java.lang.Throwable)shadowClass.getConstructor(org.aion.avm.shadow.java.lang.String.class, org.aion.avm.shadow.java.lang.Throwable.class).newInstance(message, cause);
     }
 
     public static class StackWatcher {

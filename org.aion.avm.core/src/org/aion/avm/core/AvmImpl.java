@@ -196,7 +196,7 @@ public class AvmImpl implements Avm {
                     .addNextVisitor(new RejectionClassVisitor(classWhiteList))
                     .addNextVisitor(new StringConstantVisitor())
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
-                    .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS, PackageConstants.kShadowJavaLangSlashPrefix, classWhiteList))
+                    .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS, PackageConstants.kShadowSlashPrefix, classWhiteList))
                     .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, parentClassResolver, generatedClassesSink))

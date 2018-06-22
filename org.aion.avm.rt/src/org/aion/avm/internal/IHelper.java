@@ -25,7 +25,7 @@ public interface IHelper {
 
     public long externalGetEnergyRemaining();
 
-    public org.aion.avm.java.lang.String externalWrapAsString(java.lang.String input);
+    public org.aion.avm.shadow.java.lang.String externalWrapAsString(java.lang.String input);
 
     public int externalGetNextHashCode();
 }

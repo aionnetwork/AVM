@@ -104,7 +104,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     // Note that this java/lang/Throwable MUST not be rewritten as another type since that is literally what is on the operand
                     // stack at the beginning of an exception handler.
                     // On the other hand, the returned java/lang/Object _should_ be rewritten as the shadow type, but we are safe if it isn't.
-                    String methodDescriptor = "(Ljava/lang/Throwable;)L" + PackageConstants.kShadowJavaLangSlashPrefix + "Object;";
+                    String methodDescriptor = "(Ljava/lang/Throwable;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object;";
                     
                     // The call-out will actually return the base object class in our environment so we need to cast.
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, ExceptionWrapping.this.runtimeClassName, methodName, methodDescriptor, false);
@@ -113,8 +113,8 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     // (without this, the verifier will complain about the operand stack containing the wrong type when used).
                     // Note that this type also needs to be translated into our namespace, since we won't be giving the user direct access to
                     // real exceptions.
-                    String mappedCastType = castType.startsWith("java/lang/")
-                            ? "org/aion/avm/" + castType
+                    String mappedCastType = castType.startsWith("java/lang/") // TODO: check this condition
+                            ? PackageConstants.kShadowSlashPrefix + castType
                             : castType;
                     super.visitTypeInsn(Opcodes.CHECKCAST, mappedCastType);
                 }
@@ -154,7 +154,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     // Note that this java/lang/Throwable MUST NOT be rewritten as another type since that is literally what must be on the
                     // operand stack when we call athrow.
                     // On the other hand, the java/lang/Object _should_ be rewritten as the shadow type, but we are safe if it isn't.
-                    String methodDescriptor = "(L" + PackageConstants.kShadowJavaLangSlashPrefix + "Object;)Ljava/lang/Throwable;";
+                    String methodDescriptor = "(L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object;)Ljava/lang/Throwable;";
                     
                     // The call-out will actually return the base object class in our environment so we need to cast.
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, ExceptionWrapping.this.runtimeClassName, methodName, methodDescriptor, false);
@@ -170,8 +170,8 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         String strippedClassName = null;
         if (className.startsWith(PackageConstants.kUserSlashPrefix)) {
             strippedClassName = className.substring(PackageConstants.kUserSlashPrefix.length());
-        } else if (className.startsWith(PackageConstants.kShadowJavaLangSlashPrefix)) {
-            strippedClassName = "java/lang/" + className.substring(PackageConstants.kShadowJavaLangSlashPrefix.length());
+        } else if (className.startsWith(PackageConstants.kShadowSlashPrefix)) {
+            strippedClassName = className.substring(PackageConstants.kShadowSlashPrefix.length());
         } else if (className.startsWith("java/lang/")){
             // Note that this is probably only temporarily required - once all class/method/field renaming has been moved to UserClassMappingVisitor
             // we can probably get rid of this clause and fall-through to the unreachable assert.

@@ -113,7 +113,7 @@ public class StubGenerator {
         // Generate the getException method.
         {
             // NOTE:  These methods need to exist with the UserClassMappingVisitor.mapMethodName("" prefixes, since the shadow library is post-shadow.
-            String returnThrowable = "()L" + PackageConstants.kShadowJavaLangSlashPrefix + "Throwable;";
+            String returnThrowable = "()L" + PackageConstants.kShadowSlashPrefix + "java/lang/Throwable;";
             MethodVisitor methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, UserClassMappingVisitor.mapMethodName("getException"), returnThrowable, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
@@ -145,7 +145,7 @@ public class StubGenerator {
         
         // Generate the (String) constructor.
         {
-            String oneStringDescriptor = "(L" + PackageConstants.kShadowJavaLangSlashPrefix + "String;)V";
+            String oneStringDescriptor = "(L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;)V";
             methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, INIT_NAME, oneStringDescriptor, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
@@ -158,7 +158,7 @@ public class StubGenerator {
         
         // Generate the (String, Throwable) constructor.
         {
-            String stringThrowableDescriptor = "(L" + PackageConstants.kShadowJavaLangSlashPrefix + "String;L" + PackageConstants.kShadowJavaLangSlashPrefix + "Throwable;)V";
+            String stringThrowableDescriptor = "(L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;L" + PackageConstants.kShadowSlashPrefix + "java/lang/Throwable;)V";
             methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, INIT_NAME, stringThrowableDescriptor, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
@@ -172,7 +172,7 @@ public class StubGenerator {
         
         // Generate the (Throwable) constructor.
         {
-            String oneThrowableDescriptor = "(L" + PackageConstants.kShadowJavaLangSlashPrefix + "Throwable;)V";
+            String oneThrowableDescriptor = "(L" + PackageConstants.kShadowSlashPrefix + "java/lang/Throwable;)V";
             methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, INIT_NAME, oneThrowableDescriptor, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);

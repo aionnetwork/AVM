@@ -101,10 +101,8 @@ public class CommonGenerators {
             if (!kHandWrittenExceptionClassNames.contains(className)) {
                 // Note that we are currently listing the shadow "java.lang." directly, so strip off the redundant "java.lang."
                 // (this might change in the future).
-                String strippedClassName = className.substring("java.lang.".length());
-                String strippedSuperclassName = superclassName.substring("java.lang.".length());
-                String shadowName = PackageConstants.kShadowJavaLangDotPrefix + strippedClassName;
-                String shadowSuperName = PackageConstants.kShadowJavaLangDotPrefix + strippedSuperclassName;
+                String shadowName = PackageConstants.kShadowDotPrefix + className;
+                String shadowSuperName = PackageConstants.kShadowDotPrefix + superclassName;
                 byte[] shadowBytes = null;
                 if (kLegacyExceptionClassNames.contains(className)) {
                     // "Legacy" exception.

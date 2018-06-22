@@ -13,6 +13,8 @@ import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
+import org.aion.avm.core.testindy.java.lang.Double;
+import org.aion.avm.core.testindy.java.lang.invoke.LambdaMetafactory;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
@@ -53,7 +55,7 @@ public class InvokedynamicTransformationTest {
         final byte[] origBytecode = loadRequiredResourceAsBytes(getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
-        final var actual = (org.aion.avm.java.lang.String) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+        final var actual = (org.aion.avm.shadow.java.lang.String) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
         Assert.assertEquals("abc", actual.toString());
     }
 
@@ -61,7 +63,7 @@ public class InvokedynamicTransformationTest {
         final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
-        final var shadowPackage = PackageConstants.kShadowJavaLangSlashPrefix;
+        final var shadowPackage = PackageConstants.kShadowSlashPrefix;
         final var classWhiteList = new ClassWhiteList();
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
@@ -82,8 +84,8 @@ public class InvokedynamicTransformationTest {
         final byte[] transformedBytecode = transformForParametrizedLambdaTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         try {
-            final org.aion.avm.core.testdoubles.indy.Double actual =
-                    (org.aion.avm.core.testdoubles.indy.Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+            final Double actual =
+                    (Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
             assertEquals(30, actual.avm_doubleValue(), 0);
             assertTrue(actual.avm_valueOfWasCalled);
         } catch (Exception e) {
@@ -95,7 +97,7 @@ public class InvokedynamicTransformationTest {
         final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
-        final var shadowPackage = "org/aion/avm/core/testdoubles/indy/";
+        final var shadowPackage = "org/aion/avm/core/testindy/";
         final var classWhiteList = new ClassWhiteList();
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
@@ -116,8 +118,8 @@ public class InvokedynamicTransformationTest {
         final byte[] transformedBytecode = transformForMultiLineLambda(origBytecode, className);
         Assert.assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         try {
-            final org.aion.avm.java.lang.Double actual =
-                    (org.aion.avm.java.lang.Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+            final org.aion.avm.shadow.java.lang.Double actual =
+                    (org.aion.avm.shadow.java.lang.Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
             assertEquals(100., actual.avm_doubleValue(), 0);
         } catch (Exception e) {
             e.printStackTrace();
@@ -129,7 +131,7 @@ public class InvokedynamicTransformationTest {
         final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
-        final var shadowPackage = PackageConstants.kShadowJavaLangSlashPrefix;
+        final var shadowPackage = PackageConstants.kShadowSlashPrefix;
         Helper.setEnergy(1000);
         final var classWhiteList = new ClassWhiteList();
         final Map<String, byte[]> processedClasses = new HashMap<>();
@@ -174,17 +176,17 @@ public class InvokedynamicTransformationTest {
         final Constructor<?> constructor = klass.getDeclaredConstructor();
         final Object instance = constructor.newInstance();
         final Method method = klass.getDeclaredMethod(methodName);
-        org.aion.avm.core.testdoubles.indy.invoke.LambdaMetafactory.avm_metafactoryWasCalled = false;
+        LambdaMetafactory.avm_metafactoryWasCalled = false;
         return method.invoke(instance);
     }
 
     public static class TestingHelper {
-        public static <T> org.aion.avm.java.lang.Class<T> wrapAsClass(Class<T> input) {
+        public static <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
             return Helper.wrapAsClass(input);
         }
 
-        public static org.aion.avm.java.lang.String wrapAsString(String input) {
-            return new org.aion.avm.java.lang.String(input);
+        public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+            return new org.aion.avm.shadow.java.lang.String(input);
         }
     }
 }

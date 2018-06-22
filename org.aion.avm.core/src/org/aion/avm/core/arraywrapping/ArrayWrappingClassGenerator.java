@@ -32,7 +32,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         CLASS_WRAPPER_MAP.put("[J", PackageConstants.kArrayWrapperSlashPrefix + "LongArray");
         CLASS_WRAPPER_MAP.put("[D", PackageConstants.kArrayWrapperSlashPrefix + "DoubleArray");
         CLASS_WRAPPER_MAP.put("[Ljava/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
-        CLASS_WRAPPER_MAP.put("[L" + PackageConstants.kShadowJavaLangSlashPrefix + "Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
+        CLASS_WRAPPER_MAP.put("[L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
         CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/internal/IObject", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
     }
 

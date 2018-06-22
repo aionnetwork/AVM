@@ -5,10 +5,10 @@ import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.java.lang.Boolean;
-import org.aion.avm.java.lang.Character;
-import org.aion.avm.java.lang.Integer;
-import org.aion.avm.java.lang.String;
+import org.aion.avm.shadow.java.lang.Boolean;
+import org.aion.avm.shadow.java.lang.Character;
+import org.aion.avm.shadow.java.lang.Integer;
+import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.api.Address;
 import org.junit.Test;
 

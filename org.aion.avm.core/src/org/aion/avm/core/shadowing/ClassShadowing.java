@@ -33,7 +33,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
     public ClassShadowing(String runtimeClassName, ClassWhiteList classWhiteList) {
         super(Opcodes.ASM6);
-        this.replacer = new Replacer(PackageConstants.kShadowJavaLangSlashPrefix, classWhiteList);
+        this.replacer = new Replacer(PackageConstants.kShadowSlashPrefix, classWhiteList);
         this.runtimeClassName = runtimeClassName;
         this.classWhiteList = classWhiteList;
     }
@@ -189,11 +189,11 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
                 // If we need to wrap this, call out to our static helper.
                 if (shouldWrapAsString) {
                     String methodName = "wrapAsString";
-                    String methodDescriptor = "(Ljava/lang/String;)L" + PackageConstants.kShadowJavaLangSlashPrefix + "String;";
+                    String methodDescriptor = "(Ljava/lang/String;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;";
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
                 } else if (shouldWrapAsClass) {
                     String methodName = "wrapAsClass";
-                    String methodDescriptor = "(Ljava/lang/Class;)L" + PackageConstants.kShadowJavaLangSlashPrefix + "Class;";
+                    String methodDescriptor = "(Ljava/lang/Class;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/Class;";
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
                 }
             }
