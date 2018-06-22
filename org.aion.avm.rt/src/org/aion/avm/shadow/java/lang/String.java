@@ -279,7 +279,7 @@ public class String extends Object implements Comparable<String> {
         return new String(this.underlying.intern());
     }
 
-    //=======================================================
+    //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
 
