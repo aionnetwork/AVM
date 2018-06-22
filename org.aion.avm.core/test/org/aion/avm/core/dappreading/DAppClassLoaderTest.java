@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
  * @author Roman Katerinenko
  */
 public class DAppClassLoaderTest {
-    private static final String dAppRuntimePath = "../examples/lib";
+    private static final String dAppRuntimePath = "../out/jar";
     private static final String dAppModulesPath = "../examples/build";
     private static final String moduleName = "com.example.twoclasses";
 
