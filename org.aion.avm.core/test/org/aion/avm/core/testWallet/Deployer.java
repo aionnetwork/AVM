@@ -71,94 +71,94 @@ public class Deployer {
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
         long paymendValue = 5;
-        Wallet.payable(paymentFrom, paymendValue);
+        DirectProxy.payable(paymentFrom, paymendValue);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kDeposit));
         
         // Try to add an owner - we need to call this twice to see the event output: sender and extra1.
         Address newOwner = buildAddress(5);
         try {
-            Wallet.addOwner(new TestingRuntime(sender, new byte[] {5,6,42}), newOwner);
+            DirectProxy.addOwner(new TestingRuntime(sender, new byte[] {5,6,42}), newOwner);
         } catch (RequireFailedException e) {
             // Expected.
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerAdded));
-        Wallet.addOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), newOwner);
+        DirectProxy.addOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), newOwner);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerAdded));
         
         // Send a normal transaction, which is under the limit, and observe that it goes through.
         Address transactionTo = buildAddress(6);
         long transactionSize = dailyLimit - 1;
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
-        Wallet.execute(new TestingRuntime(sender, new byte[] {5,6,42}), transactionTo, transactionSize, new byte[] {1});
+        DirectProxy.execute(new TestingRuntime(sender, new byte[] {5,6,42}), transactionTo, transactionSize, new byte[] {1});
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
         
         // Now, send another transaction, observe that it requires multisig confirmation, and confirm it with our new owner.
         Address confirmTransactionTo = buildAddress(7);
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kConfirmationNeeded));
-        byte[] toConfirm = Wallet.execute(new TestingRuntime(sender, new byte[] {5,6,42}), confirmTransactionTo, transactionSize, new byte[] {1});
+        byte[] toConfirm = DirectProxy.execute(new TestingRuntime(sender, new byte[] {5,6,42}), confirmTransactionTo, transactionSize, new byte[] {1});
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kConfirmationNeeded));
-        boolean didConfirm = Wallet.confirm(new TestingRuntime(newOwner, new byte[] {5,6,42}), toConfirm);
+        boolean didConfirm = DirectProxy.confirm(new TestingRuntime(newOwner, new byte[] {5,6,42}), toConfirm);
         Assert.assertTrue(didConfirm);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kMultiTransact));
         
         // Change the count of required confirmations.
         try {
-            Wallet.changeRequirement(new TestingRuntime(sender, new byte[] {5,6,42}), 3);
+            DirectProxy.changeRequirement(new TestingRuntime(sender, new byte[] {5,6,42}), 3);
         } catch (RequireFailedException e) {
             // Expected.
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kRequirementChanged));
-        Wallet.changeRequirement(new TestingRuntime(extra1, new byte[] {5,6,42}), 3);
+        DirectProxy.changeRequirement(new TestingRuntime(extra1, new byte[] {5,6,42}), 3);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kRequirementChanged));
         
         // Change the owner.
         Address lateOwner = buildAddress(8);
-        Assert.assertTrue(Wallet.getOwner(new TestingRuntime(lateOwner, new byte[] {5,6,42}), 0) == sender);
+        Assert.assertTrue(sender.equals(DirectProxy.getOwner(new TestingRuntime(lateOwner, new byte[] {5,6,42}), 0)));
         try {
-            Wallet.changeOwner(new TestingRuntime(sender, new byte[] {5,6,42}), sender, lateOwner);
+            DirectProxy.changeOwner(new TestingRuntime(sender, new byte[] {5,6,42}), sender, lateOwner);
             Assert.assertTrue(false);
         } catch (RequireFailedException e) {
             // Expected.
         }
         try {
-            Wallet.changeOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), sender, lateOwner);
+            DirectProxy.changeOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), sender, lateOwner);
             Assert.assertTrue(false);
         } catch (RequireFailedException e) {
             // Expected.
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerChanged));
-        Wallet.changeOwner(new TestingRuntime(extra2, new byte[] {5,6,42}), sender, lateOwner);
+        DirectProxy.changeOwner(new TestingRuntime(extra2, new byte[] {5,6,42}), sender, lateOwner);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerChanged));
         
         // Try to remove an owner, but have someone revoke that so that it can't happen.
         try {
-            Wallet.removeOwner(new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
+            DirectProxy.removeOwner(new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
             Assert.assertTrue(false);
         } catch (RequireFailedException e) {
             // Expected.
         }
         try {
-            Wallet.removeOwner(new TestingRuntime(extra2, new byte[] {5,6,42}), extra1);
+            DirectProxy.removeOwner(new TestingRuntime(extra2, new byte[] {5,6,42}), extra1);
             Assert.assertTrue(false);
         } catch (RequireFailedException e) {
             // Expected.
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kRevoke));
-        Wallet.revoke(new TestingRuntime(lateOwner, new byte[] {5,6,42}));
+        DirectProxy.revoke(new TestingRuntime(lateOwner, new byte[] {5,6,42}));
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kRevoke));
         try {
             // This fails since one of the owners revoked.
-            Wallet.removeOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), extra1);
+            DirectProxy.removeOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), extra1);
             Assert.assertTrue(false);
         } catch (RequireFailedException e) {
             // Expected.
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerRemoved));
         // But this succeeds when they re-agree.
-        Wallet.removeOwner(new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
+        DirectProxy.removeOwner(new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerRemoved));
-        Assert.assertTrue(Wallet.getOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), 0) == extra2);
+        Assert.assertTrue(extra2.equals(DirectProxy.getOwner(new TestingRuntime(extra1, new byte[] {5,6,42}), 0)));
         
         // We should have seen 13 confirmations over the course of the test run.
         Assert.assertTrue(13 == loggingRuntime.getEventCount(EventLogger.kConfirmation));
@@ -224,75 +224,56 @@ public class Deployer {
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
         long paymentValue = 5;
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("payable"), Address.class, long.class)
-            .invoke(null, paymentFrom, paymentValue);
+        CallProxy.payable(walletClass, paymentFrom, paymentValue);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kDeposit));
         
         // Try to add an owner - we need to call this twice to see the event output: sender and extra1.
         Address newOwner = buildAddress(5);
         try {
-            walletClass
-                .getMethod(UserClassMappingVisitor.mapMethodName("addOwner"), BlockchainRuntime.class, Address.class)
-                .invoke(null, new TestingRuntime(sender, new byte[] {5,6,42}), newOwner);
+            CallProxy.addOwner(walletClass, new TestingRuntime(sender, new byte[] {5,6,42}), newOwner);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kOwnerAdded));
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("addOwner"), BlockchainRuntime.class, Address.class)
-            .invoke(null, new TestingRuntime(extra1, new byte[] {5,6,42}), newOwner);
+        CallProxy.addOwner(walletClass, new TestingRuntime(extra1, new byte[] {5,6,42}), newOwner);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kOwnerAdded));
         
         // Send a normal transaction, which is under the limit, and observe that it goes through.
         Address transactionTo = buildAddress(6);
         long transactionSize = dailyLimit - 1;
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kSingleTransact));
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("execute"), BlockchainRuntime.class, Address.class, long.class, ByteArray.class)
-            .invoke(null, new TestingRuntime(sender, new byte[] {5,6,42}), transactionTo, transactionSize, new ByteArray(new byte[] {1}));
+        CallProxy.execute(walletClass, new TestingRuntime(sender, new byte[] {5,6,42}), transactionTo, transactionSize, new byte[] {1});
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kSingleTransact));
         
         // Now, send another transaction, observe that it requires multisig confirmation, and confirm it with our new owner.
         Address confirmTransactionTo = buildAddress(7);
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kConfirmationNeeded));
-        ByteArray toConfirm = (ByteArray)walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("execute"), BlockchainRuntime.class, Address.class, long.class, ByteArray.class)
-            .invoke(null, new TestingRuntime(sender, new byte[] {5,6,42}), confirmTransactionTo, transactionSize, new ByteArray(new byte[] {1}));
+        byte[] toConfirm = CallProxy.execute(walletClass, new TestingRuntime(sender, new byte[] {5,6,42}), confirmTransactionTo, transactionSize, new byte[] {1});
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kSingleTransact));
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kConfirmationNeeded));
-        boolean didConfirm = (Boolean)walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("confirm"), BlockchainRuntime.class, ByteArray.class)
-            .invoke(null, new TestingRuntime(newOwner, new byte[] {5,6,42}), toConfirm);
+        boolean didConfirm = CallProxy.confirm(walletClass, new TestingRuntime(newOwner, new byte[] {5,6,42}), toConfirm);
         Assert.assertTrue(didConfirm);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kMultiTransact));
         
         // Change the count of required confirmations.
         try {
-            walletClass
-                .getMethod(UserClassMappingVisitor.mapMethodName("changeRequirement"), BlockchainRuntime.class, int.class)
-                .invoke(null, new TestingRuntime(sender, new byte[] {5,6,42}), 3);
+            CallProxy.changeRequirement(walletClass, new TestingRuntime(sender, new byte[] {5,6,42}), 3);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kRequirementChanged));
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("changeRequirement"), BlockchainRuntime.class, int.class)
-            .invoke(null, new TestingRuntime(extra1, new byte[] {5,6,42}), 3);
+        CallProxy.changeRequirement(walletClass, new TestingRuntime(extra1, new byte[] {5,6,42}), 3);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kRequirementChanged));
         
         // Change the owner.
         Address lateOwner = buildAddress(8);
-        Assert.assertTrue(sender == walletClass.getMethod(UserClassMappingVisitor.mapMethodName("getOwner"), BlockchainRuntime.class, int.class)
-            .invoke(null, new TestingRuntime(extra1, new byte[] {5,6,42}), 0));
+        Assert.assertTrue(sender.equals(CallProxy.getOwner(walletClass, new TestingRuntime(extra1, new byte[] {5,6,42}), 0)));
         try {
-            walletClass
-                .getMethod(UserClassMappingVisitor.mapMethodName("changeOwner"), BlockchainRuntime.class, Address.class, Address.class)
-                .invoke(null, new TestingRuntime(sender, new byte[] {5,6,42}), sender, lateOwner);
+            CallProxy.changeOwner(walletClass, new TestingRuntime(sender, new byte[] {5,6,42}), sender, lateOwner);
             Assert.assertTrue(false);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
@@ -300,49 +281,37 @@ public class Deployer {
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         try {
-            walletClass
-                .getMethod(UserClassMappingVisitor.mapMethodName("changeOwner"), BlockchainRuntime.class, Address.class, Address.class)
-                .invoke(null, new TestingRuntime(extra1, new byte[] {5,6,42}), sender, lateOwner);
+            CallProxy.changeOwner(walletClass, new TestingRuntime(extra1, new byte[] {5,6,42}), sender, lateOwner);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kOwnerChanged));
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("changeOwner"), BlockchainRuntime.class, Address.class, Address.class)
-            .invoke(null, new TestingRuntime(extra2, new byte[] {5,6,42}), sender, lateOwner);
+        CallProxy.changeOwner(walletClass, new TestingRuntime(extra2, new byte[] {5,6,42}), sender, lateOwner);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kOwnerChanged));
         
         // Try to remove an owner, but have someone revoke that so that it can't happen.
         try {
-            walletClass
-                .getMethod(UserClassMappingVisitor.mapMethodName("removeOwner"), BlockchainRuntime.class, Address.class)
-                .invoke(null, new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
+            CallProxy.removeOwner(walletClass, new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         try {
-            walletClass
-                .getMethod(UserClassMappingVisitor.mapMethodName("removeOwner"), BlockchainRuntime.class, Address.class)
-                .invoke(null, new TestingRuntime(extra2, new byte[] {5,6,42}), extra1);
+            CallProxy.removeOwner(walletClass, new TestingRuntime(extra2, new byte[] {5,6,42}), extra1);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kRevoke));
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("revoke"), BlockchainRuntime.class)
-            .invoke(null, new TestingRuntime(lateOwner, new byte[] {5,6,42}));
+        CallProxy.revoke(walletClass, new TestingRuntime(lateOwner, new byte[] {5,6,42}));
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kRevoke));
         try {
             // This fails since one of the owners revoked.
-            walletClass
-                .getMethod(UserClassMappingVisitor.mapMethodName("removeOwner"), BlockchainRuntime.class, Address.class)
-                .invoke(null, new TestingRuntime(extra1, new byte[] {5,6,42}), extra1);
+            CallProxy.removeOwner(walletClass, new TestingRuntime(extra1, new byte[] {5,6,42}), extra1);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
@@ -350,12 +319,9 @@ public class Deployer {
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kOwnerRemoved));
         // But this succeeds when they re-agree.
-        walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("removeOwner"), BlockchainRuntime.class, Address.class)
-            .invoke(null, new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
+        CallProxy.removeOwner(walletClass, new TestingRuntime(lateOwner, new byte[] {5,6,42}), extra1);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kOwnerRemoved));
-        Assert.assertTrue(extra2 == walletClass.getMethod(UserClassMappingVisitor.mapMethodName("getOwner"), BlockchainRuntime.class, int.class)
-            .invoke(null, new TestingRuntime(extra1, new byte[] {5,6,42}), 0));
+        Assert.assertTrue(extra2.equals(CallProxy.getOwner(walletClass, new TestingRuntime(extra1, new byte[] {5,6,42}), 0)));
         
         // We should have seen 13 confirmations over the course of the test run.
         Assert.assertTrue(13 == externalRuntime.getEventCount(EventLogger.kConfirmation));
