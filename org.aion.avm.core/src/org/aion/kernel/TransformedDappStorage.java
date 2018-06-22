@@ -27,17 +27,6 @@ public class TransformedDappStorage {
         }
     }
 
-    private static final Map<String, CodeVersion> stringCodeVersionMap = new HashMap<>();
-    static {
-        for (CodeVersion codeVersion : CodeVersion.values()) {
-            stringCodeVersionMap.put(codeVersion.getVersion(), codeVersion);
-        }
-    }
-
-    public CodeVersion matchCodeVersion(String codeVersionString) {
-        return stringCodeVersionMap.get(codeVersionString);
-    }
-
     /**
      * DappStorage includes the code version and the transformed jar file.
      */
