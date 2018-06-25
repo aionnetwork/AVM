@@ -60,10 +60,9 @@ public class Deployer {
 
 
     private static void invokeDirect(String[] args) {
-        // We create a test runtime but this is only to support the EventLogger.
+        // Note that this loggingRuntime is just to give us a consistent interface for reading the eventCounts.
         Map<String, Integer> eventCounts = new HashMap<>();
         TestingRuntime loggingRuntime = new TestingRuntime(null, null, eventCounts);
-        EventLogger.init(loggingRuntime);
         
         // We can now init the actual contract (the Wallet is the root so init it).
         Address sender = buildAddress(1);
@@ -219,9 +218,6 @@ public class Deployer {
         Address extra1 = buildAddress(2);
         Address extra2 = buildAddress(3);
         Class<?> walletClass = loader.loadUserClassByOriginalName(Wallet.class.getName());
-        loader.loadUserClassByOriginalName(EventLogger.class.getName())
-            .getMethod(UserClassMappingVisitor.mapMethodName("init"), BlockchainRuntime.class)
-            .invoke(null, externalRuntime);
         
         // We can now init the actual contract (the Wallet is the root so init it).
         int requiredVotes = 2;
