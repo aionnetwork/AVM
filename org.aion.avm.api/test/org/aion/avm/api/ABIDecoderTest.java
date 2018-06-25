@@ -1,4 +1,4 @@
-package org.aion.avm.core.util;
+package org.aion.avm.api;
 
 import org.junit.Test;
 
@@ -6,7 +6,7 @@ import java.io.UnsupportedEncodingException;
 
 import static org.junit.Assert.*;
 
-public class TxDataDecoderTest {
+public class ABIDecoderTest {
     @Test
     public void testDecodeElementaryTypes() throws UnsupportedEncodingException, InvalidTxDataException {
         byte[] txData = new byte[]{0x6D, 0x65, 0x74, 0x68, 0x6F, 0x64, 0x41, // methodA
@@ -21,19 +21,19 @@ public class TxDataDecoderTest {
         };
         //  {123, -1} of a Java method, public static void methodA(Integer i, byte b)
 
-        TxDataDecoder decoder = new TxDataDecoder();
-        TxDataDecoder.MethodCaller mc = decoder.decode(txData);
+        ABIDecoder decoder = new ABIDecoder();
+        ABIDecoder.MethodCaller mc = decoder.decode(txData);
         assertEquals("methodA", mc.methodName);
-        assertEquals(9, mc.arguments.size());
-        assertEquals(123, mc.arguments.get(0));
-        assertEquals((byte)-1, mc.arguments.get(1));
-        assertEquals(98765432123456789L, mc.arguments.get(2));
-        assertEquals(3.6f, mc.arguments.get(3));
-        assertEquals(true, mc.arguments.get(4));
-        assertEquals(false, mc.arguments.get(5));
-        assertEquals('e', mc.arguments.get(6));
-        assertEquals((short)321, mc.arguments.get(7));
-        assertEquals(3.6d, mc.arguments.get(8));
+        //assertEquals(9, mc.arguments.size(];
+        assertEquals(123, mc.arguments[0]);
+        assertEquals((byte)-1, mc.arguments[1]);
+        assertEquals(98765432123456789L, mc.arguments[2]);
+        assertEquals(3.6f, mc.arguments[3]);
+        assertEquals(true, mc.arguments[4]);
+        assertEquals(false, mc.arguments[5]);
+        assertEquals('e', mc.arguments[6]);
+        assertEquals((short)321, mc.arguments[7]);
+        assertEquals(3.6d, mc.arguments[8]);
     }
 
     @Test
@@ -44,13 +44,13 @@ public class TxDataDecoderTest {
                 0x68, 0x65, 0x6C, 0x6C, 0x6F}; // hello
         //  {123, -1, "hello"} of a Java method, public static void methodA(Integer i, byte b, String s)
 
-        TxDataDecoder decoder = new TxDataDecoder();
-        TxDataDecoder.MethodCaller mc = decoder.decode(txData);
+        ABIDecoder decoder = new ABIDecoder();
+        ABIDecoder.MethodCaller mc = decoder.decode(txData);
         assertEquals("methodA", mc.methodName);
-        assertEquals(3, mc.arguments.size());
-        assertEquals(123, mc.arguments.get(0));
-        assertEquals((byte)-1, mc.arguments.get(1));
-        assertEquals("hello", mc.arguments.get(2));
+        //assertEquals(3, mc.arguments.size(];
+        assertEquals(123, mc.arguments[0]);
+        assertEquals((byte)-1, mc.arguments[1]);
+        assertEquals("hello", mc.arguments[2]);
     }
 
     @Test
@@ -62,15 +62,15 @@ public class TxDataDecoderTest {
                 0x63, 0x61, 0x74, 0x64, 0x6F, 0x67}; // {cat, dog}
         //  {123, -1, "hello"} of a Java method, public static void methodA(Integer i, byte b, String s)
 
-        TxDataDecoder decoder = new TxDataDecoder();
-        TxDataDecoder.MethodCaller mc = decoder.decode(txData);
+        ABIDecoder decoder = new ABIDecoder();
+        ABIDecoder.MethodCaller mc = decoder.decode(txData);
         assertEquals("methodA", mc.methodName);
-        assertEquals(4, mc.arguments.size());
-        assertEquals(123, mc.arguments.get(0));
-        assertEquals((byte)-1, mc.arguments.get(1));
-        assertEquals("hello", mc.arguments.get(2));
-        assertEquals("cat", ((String[])(mc.arguments.get(3)))[0]);
-        assertEquals("dog", ((String[])(mc.arguments.get(3)))[1]);
+        //assertEquals(4, mc.arguments.size(];
+        assertEquals(123, mc.arguments[0]);
+        assertEquals((byte)-1, mc.arguments[1]);
+        assertEquals("hello", mc.arguments[2]);
+        assertEquals("cat", ((String[])(mc.arguments[3]))[0]);
+        assertEquals("dog", ((String[])(mc.arguments[3]))[1]);
     }
 
     @Test
@@ -86,29 +86,29 @@ public class TxDataDecoderTest {
                 // 234, 345, 456, 567, 678
                 0x00, 0x00, 0x03, 0x15, // 789
                 0x00, 0x00, 0x03, 0x6C, 0x00, 0x00, 0x02, (byte) 0xFD, 0x00, 0x00, 0x02, (byte) 0x8E,// 876, 765, 654
-                };
+        };
         //  {123, -1, "hello"} of a Java method, public static void methodA(Integer i, byte b, String s)
 
-        TxDataDecoder decoder = new TxDataDecoder();
-        TxDataDecoder.MethodCaller mc = decoder.decode(txData);
+        ABIDecoder decoder = new ABIDecoder();
+        ABIDecoder.MethodCaller mc = decoder.decode(txData);
         assertEquals("methodA", mc.methodName);
-        assertEquals(4, mc.arguments.size());
-        assertEquals(123, mc.arguments.get(0));
-        assertEquals((byte)-1, mc.arguments.get(1));
-        assertEquals("cat", ((String[])(mc.arguments.get(2)))[0]);
-        assertEquals("dog", ((String[])(mc.arguments.get(2)))[1]);
+        //assertEquals(4, mc.arguments.size(];
+        assertEquals(123, mc.arguments[0]);
+        assertEquals((byte)-1, mc.arguments[1]);
+        assertEquals("cat", ((String[])(mc.arguments[2]))[0]);
+        assertEquals("dog", ((String[])(mc.arguments[2]))[1]);
 
-        assertEquals(76498, ((int[][])(mc.arguments.get(3)))[0][0]);
-        assertEquals(593, ((int[][])(mc.arguments.get(3)))[1][0]);
-        assertEquals(389, ((int[][])(mc.arguments.get(3)))[1][1]);
-        assertEquals(234, ((int[][])(mc.arguments.get(3)))[2][0]);
-        assertEquals(345, ((int[][])(mc.arguments.get(3)))[2][1]);
-        assertEquals(456, ((int[][])(mc.arguments.get(3)))[2][2]);
-        assertEquals(567, ((int[][])(mc.arguments.get(3)))[2][3]);
-        assertEquals(678, ((int[][])(mc.arguments.get(3)))[2][4]);
-        assertEquals(789, ((int[][])(mc.arguments.get(3)))[3][0]);
-        assertEquals(876, ((int[][])(mc.arguments.get(3)))[4][0]);
-        assertEquals(765, ((int[][])(mc.arguments.get(3)))[4][1]);
-        assertEquals(654, ((int[][])(mc.arguments.get(3)))[4][2]);
+        assertEquals(76498, ((int[][])(mc.arguments[3]))[0][0]);
+        assertEquals(593, ((int[][])(mc.arguments[3]))[1][0]);
+        assertEquals(389, ((int[][])(mc.arguments[3]))[1][1]);
+        assertEquals(234, ((int[][])(mc.arguments[3]))[2][0]);
+        assertEquals(345, ((int[][])(mc.arguments[3]))[2][1]);
+        assertEquals(456, ((int[][])(mc.arguments[3]))[2][2]);
+        assertEquals(567, ((int[][])(mc.arguments[3]))[2][3]);
+        assertEquals(678, ((int[][])(mc.arguments[3]))[2][4]);
+        assertEquals(789, ((int[][])(mc.arguments[3]))[3][0]);
+        assertEquals(876, ((int[][])(mc.arguments[3]))[4][0]);
+        assertEquals(765, ((int[][])(mc.arguments[3]))[4][1]);
+        assertEquals(654, ((int[][])(mc.arguments[3]))[4][2]);
     }
 }

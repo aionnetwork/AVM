@@ -22,7 +22,7 @@ public class Multiowned {
     // The number of owners which must confirm the operation before it is run.
     private static int numberRequired;
 
-    public static void init(Address sender, Address[] requestedOwners, int votesRequiredPerOperation) {
+    public static void init(BlockchainRuntime runtime, Address sender, Address[] requestedOwners, int votesRequiredPerOperation) {
         Multiowned.owners = new AionSet<>();
         Multiowned.ownersByJoinOrder = new AionList<>();
         Multiowned.owners.add(sender);
@@ -46,7 +46,7 @@ public class Multiowned {
             if (null != state) {
                 // Remove them from the confirmed set.
                 state.confirmedOwners.remove(sender);
-                EventLogger.revoke(sender, operation);
+                EventLogger.revoke(runtime, sender, operation);
             }
         }
     }
@@ -54,10 +54,10 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public static void changeOwner(BlockchainRuntime runtime, Address from, Address to) {
         // (modifier)
-        onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
+        onlyManyOwners(runtime, runtime.getSender(), Operation.fromMessage(runtime));
         
         // Make sure that the to isn't already an owner and the from is.
-        if (!isOwner(to) && isOwner(from)) {
+        if (!isOwner(runtime, to) && isOwner(runtime, from)) {
             // Remove the one owner and add the other.
             Multiowned.owners.remove(from);
             Multiowned.owners.add(to);
@@ -66,41 +66,41 @@ public class Multiowned {
             
             // Pending states will now be inconsistent so clear them.
             Multiowned.ongoingOperations.clear();
-            EventLogger.ownerChanged(from, to);
+            EventLogger.ownerChanged(runtime, from, to);
         }
     }
 
     // PUBLIC INTERFACE
     public static void addOwner(BlockchainRuntime runtime, Address owner) {
         // (modifier)
-        onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
+        onlyManyOwners(runtime, runtime.getSender(), Operation.fromMessage(runtime));
         
         // Make sure that this owner isn't already in the set.
-        if (!isOwner(owner)) {
+        if (!isOwner(runtime, owner)) {
             // Remove the one owner and add the other.
             Multiowned.owners.add(owner);
             Multiowned.ownersByJoinOrder.add(owner);
             
             // Pending states will now be inconsistent so clear them.
             Multiowned.ongoingOperations.clear();
-            EventLogger.ownerAdded(owner);
+            EventLogger.ownerAdded(runtime, owner);
         }
     }
 
     // PUBLIC INTERFACE
     public static void removeOwner(BlockchainRuntime runtime, Address owner) {
         // (modifier)
-        onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
+        onlyManyOwners(runtime, runtime.getSender(), Operation.fromMessage(runtime));
         
         // Make sure that this owner is  in the set.
-        if (isOwner(owner)) {
+        if (isOwner(runtime, owner)) {
             // Remove the one owner and add the other.
             Multiowned.owners.remove(owner);
             Multiowned.ownersByJoinOrder.remove(owner);
             
             // Pending states will now be inconsistent so clear them.
             Multiowned.ongoingOperations.clear();
-            EventLogger.ownerRemoved(owner);
+            EventLogger.ownerRemoved(runtime, owner);
             
             // (Note that it is possible that we have now removed so many owners that numberRequired no longer exist - the Solidity example didn't avoid this)
         }
@@ -109,20 +109,20 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public static void changeRequirement(BlockchainRuntime runtime, int newRequired) {
         // (modifier)
-        onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
+        onlyManyOwners(runtime, runtime.getSender(), Operation.fromMessage(runtime));
         
         // Change the requirement.
         Multiowned.numberRequired = newRequired;
         
         // Pending states will now be inconsistent so clear them.
         Multiowned.ongoingOperations.clear();
-        EventLogger.requirementChanged(newRequired);
+        EventLogger.requirementChanged(runtime, newRequired);
     }
 
     // PUBLIC INTERFACE
     // Gets the 0-indexed owner, in order of when they became owners.
     // This is just supported because the Solidity example had it but I am not sure how it would be used.
-    public static Address getOwner(int ownerIndex) {
+    public static Address getOwner(BlockchainRuntime runtime, int ownerIndex) {
         Address result = null;
         
         if (ownerIndex < Multiowned.ownersByJoinOrder.size()) {
@@ -132,7 +132,7 @@ public class Multiowned {
     }
 
     // This is just supported because the Solidity example had it but it wasn't marked "external" and had no callers.
-    public static boolean hasConfirmed(Operation operation, Address owner) {
+    public static boolean hasConfirmed(BlockchainRuntime runtime, Operation operation, Address owner) {
         boolean didConfirm = false;
         
         // Make sure they are an owner.
@@ -148,8 +148,8 @@ public class Multiowned {
 
 
     // MODIFIER - public for composition
-    public static void onlyOwner(Address sender) {
-        if (!isOwner(sender)) {
+    public static void onlyOwner(BlockchainRuntime runtime, Address sender) {
+        if (!isOwner(runtime, sender)) {
             // We want to bail out with a failed "require".
             throw new RequireFailedException();
         }
@@ -165,19 +165,19 @@ public class Multiowned {
      * @param operation The operation hash.
      */
     // MODIFIER - public for composition
-    public static void onlyManyOwners(Address sender, Operation operation) {
-        boolean shouldRunRoutine = confirmAndCheck(sender, operation);
+    public static void onlyManyOwners(BlockchainRuntime runtime, Address sender, Operation operation) {
+        boolean shouldRunRoutine = confirmAndCheck(runtime, sender, operation);
         if (!shouldRunRoutine) {
             // We want to bail out with a failed "require".
             throw new RequireFailedException();
         }
     }
 
-    private static boolean isOwner(Address address) {
+    private static boolean isOwner(BlockchainRuntime runtime, Address address) {
         return Multiowned.owners.contains(address);
     }
 
-    private static boolean confirmAndCheck(Address sender, Operation operation) {
+    private static boolean confirmAndCheck(BlockchainRuntime runtime, Address sender, Operation operation) {
         boolean shouldRunRoutine = false;
         
         // They must be an owner.
@@ -190,7 +190,7 @@ public class Multiowned {
             }
             
             // Add us to the set of those who have confirmed.
-            EventLogger.confirmation(sender, operation);
+            EventLogger.confirmation(runtime, sender, operation);
             state.confirmedOwners.add(sender);
             
             // If we were the last required, return true and clean up.

@@ -18,8 +18,6 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.InvalidTxDataException;
-import org.aion.avm.core.util.TxDataDecoder;
 import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.FatalAvmError;
 import org.aion.avm.internal.IHelper;
@@ -126,6 +124,8 @@ public class AvmImpl implements Avm {
         map.put("java/lang/NullPointerException", 4);
         // - we also need to figure out what we are doing with these RT types which the user should be able to allocate.
         map.put("org/aion/avm/api/Address", 4);
+        map.put("org/aion/avm/api/ABIDecoder", 4);
+        map.put("org/aion/avm/api/InvalidTxDataException", 4);
 
         return Collections.unmodifiableMap(map);
     }
@@ -215,155 +215,6 @@ public class AvmImpl implements Avm {
             processedClasses.put(mappedName, bytecode);
         }
         return processedClasses;
-    }
-
-    /**
-     * A helper method to match the method selector with the main-class methods.
-     */
-    public Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor) {
-        Method[] methods = clazz.getMethods();
-
-        // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
-        Map<Character, String[]> elementaryTypesMap = new HashMap<>();
-        elementaryTypesMap.put(TxDataDecoder.BYTE,      new String[]{"B", "byte", "ByteArray"});
-        elementaryTypesMap.put(TxDataDecoder.BOOLEAN,   new String[]{"Z", "boolean", "ByteArray"});
-        elementaryTypesMap.put(TxDataDecoder.CHAR,      new String[]{"C", "char", "CharArray"});
-        elementaryTypesMap.put(TxDataDecoder.SHORT,     new String[]{"S", "short", "ShortArray"});
-        elementaryTypesMap.put(TxDataDecoder.INT,       new String[]{"I", "int", "IntArray"});
-        elementaryTypesMap.put(TxDataDecoder.FLOAT,     new String[]{"F", "float", "FloatArray"});
-        elementaryTypesMap.put(TxDataDecoder.LONG,      new String[]{"J", "long", "LongArray"});
-        elementaryTypesMap.put(TxDataDecoder.DOUBLE,    new String[]{"D", "double", "DoubleArray"});
-
-        String ARRAY_WRAPPER_PREFIX = "org.aion.avm.arraywrapper.";
-
-        for (Method method : methods) {
-            if (method.getName().equals(methodName)) {
-                Class<?>[] parameterTypes = method.getParameterTypes();
-
-                if ((parameterTypes == null || parameterTypes.length == 0) && (argsDescriptor==null || argsDescriptor.isEmpty())) {
-                    return method;
-                }
-
-                int parIdx = 0;
-                boolean matched = true;
-                for (int idx = 0; idx < argsDescriptor.length(); idx++) {
-                    char c = argsDescriptor.charAt(idx);
-                    switch (c) {
-                        case TxDataDecoder.ARRAY_S:
-                            String pType = parameterTypes[parIdx].getName();
-                            if (pType.charAt(0) == '[') {
-                                pType = pType.substring(1);
-                            } else if (pType.startsWith(ARRAY_WRAPPER_PREFIX)) {
-                                pType = pType.substring(ARRAY_WRAPPER_PREFIX.length());
-                            } else {
-                                matched = false;
-                                break;
-                            }
-
-                            if (argsDescriptor.length() - idx < 2) {
-                                matched = false;
-                                break;
-                            }
-
-                            char eType;
-                            if (argsDescriptor.charAt(++idx) == TxDataDecoder.ARRAY_S) {
-                                if (pType.charAt(0) == '$' && pType.charAt(1) == '$') {
-                                    pType = pType.substring(2);
-                                }
-                                else {
-                                    matched = false;
-                                    break;
-                                }
-                                eType = argsDescriptor.charAt(++idx);
-                                idx = argsDescriptor.indexOf(TxDataDecoder.ARRAY_E, idx);
-                            }
-                            else {
-                                eType = argsDescriptor.charAt(idx);
-                            }
-                            idx = argsDescriptor.indexOf(TxDataDecoder.ARRAY_E, idx);
-
-                            if (pType.charAt(0) == 'L') {
-                                pType = pType.substring(1);
-                            }
-
-                            if (!(Arrays.asList(elementaryTypesMap.get(eType)).contains(pType))) {
-                                matched = false;
-                                break;
-                            }
-                            break;
-                        default:
-                            if (!(Arrays.asList(elementaryTypesMap.get(c)).contains(parameterTypes[parIdx].getName()))) {
-                                matched = false;
-                                break;
-                            }
-                    }
-                    if (!matched) {
-                        break;
-                    }
-                    else {
-                        parIdx ++;
-                        if (parIdx == parameterTypes.length) {
-                            break;
-                        }
-                    }
-                }
-                if (matched && parIdx == parameterTypes.length) {
-                    return method;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Convert the method call arguments, 1) take care of the array wrapping; 2) convert to an array list.
-     *
-     * @param arguments
-     * @return
-     */
-    private Object[] convertArguments(List<Object> arguments) {
-        for (int index = 0; index < arguments.size(); index ++) {
-            Object obj = arguments.get(index);
-            if (obj.getClass().isArray()) {
-                switch (obj.getClass().getName()) {
-                    case "[B":
-                        obj = new ByteArray((byte[]) obj);
-                        arguments.set(index, obj);
-                        break;
-                    case "[C":
-                        obj = new CharArray((char[]) obj);
-                        arguments.set(index, obj);
-                        break;
-                    case "[D":
-                        obj = new DoubleArray((double[]) obj);
-                        arguments.set(index, obj);
-                        break;
-                    case "[F":
-                        obj = new FloatArray((float[]) obj);
-                        arguments.set(index, obj);
-                        break;
-                    case "[I":
-                        obj = new IntArray((int[]) obj);
-                        arguments.set(index, obj);
-                        break;
-                    case "[J":
-                        obj = new LongArray((long[]) obj);
-                        arguments.set(index, obj);
-                        break;
-                    case "[S":
-                        obj = new ShortArray((short[]) obj);
-                        arguments.set(index, obj);
-                        break;
-                    case "[Z":
-                        obj = new ByteArray((byte[]) obj);
-                        arguments.set(index, obj);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-        return arguments.toArray();
     }
 
     public  static Map<String, Integer> computeAllObjectsSizes(Forest<String, byte[]> dappClasses){
@@ -535,10 +386,10 @@ public class AvmImpl implements Avm {
         classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader, createBlockchainRuntime(tx, block, cb));
 
-        // load class
+        // load class TODO: invocation is temporarily disabled
         try {
             // Parse the tx data, get the method name and arguments
-            TxDataDecoder txDataDecoder = new TxDataDecoder();
+            /*TxDataDecoder txDataDecoder = new TxDataDecoder();
             if (tx.getData() == null) {
                 throw new InvalidTxDataException();
             }
@@ -552,19 +403,19 @@ public class AvmImpl implements Avm {
             Object obj = clazz.getConstructor().newInstance();
 
             // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
-            Method method = matchMethodSelector(clazz, newMethodName, newArgDescriptor);
+          /*  Method method = matchMethodSelector(clazz, newMethodName, newArgDescriptor);
             Object ret;
             if (methodCaller.arguments == null) {
                 ret = method.invoke(obj);
             }
             else {
                 ret = method.invoke(obj, convertArguments(methodCaller.arguments));
-            }
+            }*/
 
             // TODO: handle the return data after changing the entry function ABI
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), (byte[]) null);
-        } catch (InvalidTxDataException | UnsupportedEncodingException e) {
-            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+        //} catch (InvalidTxDataException | UnsupportedEncodingException e) {
+          //  return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
         } catch (Exception e) {
             e.printStackTrace();
 
