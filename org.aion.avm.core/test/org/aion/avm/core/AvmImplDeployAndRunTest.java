@@ -4,7 +4,6 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelApiImpl;
 import org.aion.kernel.Transaction;
@@ -33,17 +32,16 @@ public class AvmImplDeployAndRunTest {
         KernelApiImpl cb = new KernelApiImpl();
 
         AvmImpl avm = new AvmImpl(sharedClassLoader);
-        return avm.create(tx, block, cb);
+        return avm.run(tx, block, cb);
     }
 
     public AvmResult deployTheDeployAndRunTest() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, jar, energyLimit);
         KernelApiImpl cb = new KernelApiImpl();
-        BlockchainRuntime runtime = AvmImpl.createBlockchainRuntime(tx, block, cb);
 
         AvmImpl avm = new AvmImpl(sharedClassLoader);
-        return avm.create(tx, block, cb);
+        return avm.run(tx, block, cb);
     }
 
     @Test
@@ -91,19 +89,22 @@ public class AvmImplDeployAndRunTest {
         assertEquals(AvmResult.Code.SUCCESS, result.code);
         assertEquals(124, result.returnData);
     }
-
+*/
     @Test
     public void testDeployAndRunWithArrayArgs() {
         AvmResult deployResult = deployTheDeployAndRunTest();
+        assertEquals(AvmResult.Code.SUCCESS, deployResult.code);
 
         // test another method call, "add" with arguments
-        byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
-        BlockchainRuntime rt = new SimpleRuntime(from, deployResult.address.unwrap(), energyLimit, txData);
-        AvmImpl avm = new AvmImpl(sharedClassLoader, codeStorage);
-        AvmResult result = avm.run(rt);
+        /*byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
+        //BlockchainRuntime rt = new SimpleRuntime(from, deployResult.address.unwrap(), energyLimit, txData);
+        AvmImpl avm = new AvmImpl(sharedClassLoader);
+        KernelApi cb = new KernelApiImpl();
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, txData, energyLimit);
+        AvmResult result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
-        assertEquals(124, result.returnData);
+        //assertEquals(124, result.returnData);*/
     }
-*/
+
 }

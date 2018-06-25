@@ -4,7 +4,6 @@ import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.InvalidTxDataException;
 
-import java.io.UnsupportedEncodingException;
 
 public class DeployAndRunTest {
 
@@ -35,16 +34,16 @@ public class DeployAndRunTest {
         return "Hello, world!".getBytes();
     }
 
-    public Object main() throws InvalidTxDataException, UnsupportedEncodingException {
+    public Object main() throws InvalidTxDataException {
         ABIDecoder decoder = new ABIDecoder();
         ABIDecoder.MethodCaller methodCaller = decoder.decode(BlockchainRuntime.getData());
         switch (methodCaller.methodName) {
             case "add":
-                return add((int)methodCaller.arguments.get(0), (int)methodCaller.arguments.get(1));
+                return add((int)methodCaller.arguments[0], (int)methodCaller.arguments[1]);
             case "addArray":
-                return addArray((int[])methodCaller.arguments.get(0));
+                return addArray((int[])methodCaller.arguments[0]);
             case "concatenate":
-                return concatenate((char[][]) methodCaller.arguments.get(0));
+                return concatenate((char[][]) methodCaller.arguments[0]);
             case "run":
                 return run();
             default:
