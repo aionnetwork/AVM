@@ -33,7 +33,7 @@ public class StubGeneratorTest {
     public void setup()throws ClassNotFoundException{
         Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.emptyMap());
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
-        Helpers.instantiateHelper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
+        Helpers.instantiateHelper(loader, 0);
     }
 
     @Test

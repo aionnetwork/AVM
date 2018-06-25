@@ -127,15 +127,15 @@ public class Helpers {
      * This "Helper" bytecode is typically added to the classloader using the "mapIncludingHelperBytecode", above.
      *
      * @param contractLoader The loader which will load all the code running within the contract.
-     * @param runtime The runtime which describes the inputs/capabilities of the contract.
+     * @param energyLimit The energy limit
      * @return The instance which will trampoline into the "Helper" statics called by the instrumented code within this contract.
      */
-    public static IHelper instantiateHelper(AvmClassLoader contractLoader, BlockchainRuntime runtime) {
+    public static IHelper instantiateHelper(AvmClassLoader contractLoader, long energyLimit) {
         IHelper helper = null;
         try {
             String helperClassName = Helper.class.getName();
             Class<?> helperClass = contractLoader.loadClass(helperClassName);
-            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, BlockchainRuntime.class).newInstance(contractLoader, runtime);
+            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, long.class).newInstance(contractLoader, energyLimit);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             RuntimeAssertionError.unexpected(t);

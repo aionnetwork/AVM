@@ -40,11 +40,18 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
 
     private final Set<String> userDefinedClassSlashNames;
 
-    public UserClassMappingVisitor(Set<String> userDefinedClassDotNames) {
+    private final String shadowPackageSlash;
+
+    public UserClassMappingVisitor(Set<String> userDefinedClassDotNames, String shadowPackageSlash) {
         super(Opcodes.ASM6);
         
         // Note that the input is given in .-style names, so convert these for our uses.
         this.userDefinedClassSlashNames = userDefinedClassDotNames.stream().map((dotStyle) -> Helpers.fulllyQualifiedNameToInternalName(dotStyle)).collect(Collectors.toSet());
+        this.shadowPackageSlash = shadowPackageSlash;
+    }
+
+    public UserClassMappingVisitor(Set<String> userDefinedClassDotNames) {
+        this(userDefinedClassDotNames, PackageConstants.kShadowSlashPrefix);
     }
 
     @Override
@@ -90,8 +97,9 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
             public void visitInvokeDynamicInsn(String methodName, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
                 String newName = mapMethodName(methodName);
                 String newDescriptor = mapDescriptor(descriptor);
-                
-                Handle newBootstrapMethodHandle = mapHandle(bootstrapMethodHandle);
+
+                // NOTE: method descriptor can't be replaced, based on Rom's comments
+                Handle newBootstrapMethodHandle = mapHandle(bootstrapMethodHandle, false);
                 
                 Object newArgs[] = new Object[bootstrapMethodArguments.length];
                 for (int i = 0; i < bootstrapMethodArguments.length; ++i) {
@@ -100,7 +108,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
                     if (arg instanceof Type) {
                         newArg = mapMethodType((Type) arg);
                     } else if (arg instanceof Handle) {
-                        newArg = mapHandle((Handle) arg);
+                        newArg = mapHandle((Handle) arg, true);
                     } else {
                         newArg = arg;
                     }
@@ -201,14 +209,14 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
         return Type.getMethodType(mapDescriptor(type.getDescriptor()));
     }
 
-    private Handle mapHandle(Handle methodHandle) {
+    private Handle mapHandle(Handle methodHandle, boolean mapMethodDescriptor) {
         String methodOwner = methodHandle.getOwner();
         String methodName = methodHandle.getName();
         String methodDescriptor = methodHandle.getDesc();
 
         String newMethodOwner = mapType(methodOwner);
         String newMethodName = mapMethodName(methodName);
-        String newMethodDescriptor = mapDescriptor(methodDescriptor);
+        String newMethodDescriptor = mapMethodDescriptor ? mapDescriptor(methodDescriptor) : methodDescriptor;
         return new Handle(methodHandle.getTag(), newMethodOwner, newMethodName, newMethodDescriptor, methodHandle.isInterface());
     }
 
@@ -330,15 +338,28 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
         }else {
             if (this.userDefinedClassSlashNames.contains(type)) {
                 return PackageConstants.kUserSlashPrefix + type;
-            } else if (type.startsWith(JAVA_LANG)
-                    || type.startsWith(JAVA_UTIL_FUNCTION)
-                    || type.startsWith(ORG_AION_AVM_API)) {
+
+            } else if (type.startsWith(JAVA_LANG) || type.startsWith(JAVA_UTIL_FUNCTION)) {
+                return shadowPackageSlash + type;
+
+            } else if (type.startsWith(ORG_AION_AVM_API)) {
                 return type;
+
             } else {
                 RejectedClassException.nonWhiteListedClass(type);
             }
         }
 
         return newType;
+    }
+
+    // FOR TEST PURPOSE ONLY
+
+    public String testMapDescriptor(String descriptor) {
+        return mapDescriptor(descriptor);
+    }
+
+    public String testMapType(String type) {
+        return mapType(type);
     }
 }

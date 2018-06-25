@@ -15,14 +15,12 @@ import java.util.stream.Stream;
 
 public class SimpleAvm {
 
-    private final BlockchainRuntime rt;
     private final Map<String, byte[]> classes;
 
     private final AvmClassLoader loader;
     private final Set<String> transformedClassNames;
 
-    public SimpleAvm(BlockchainRuntime rt, Class<?>... classes) {
-        this.rt = rt;
+    public SimpleAvm(long energyLimit, Class<?>... classes) {
         this.classes = new HashMap<>();
 
         Stream.of(classes).forEach(clazz -> this.classes.put(clazz.getName(),
@@ -48,23 +46,14 @@ public class SimpleAvm {
         // create a new AVM
         AvmImpl avm = new AvmImpl(sharedClassLoader);
 
-        // compute object sizes
-        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
-        Map<String, Integer> allObjectSizes = AvmImpl.computeObjectSizes(classHierarchy, runtimeObjectSizes);
-
         // transform classes
-        Map<String, byte[]> transformedClasses = avm.transformClasses(this.classes, classHierarchy, allObjectSizes);
+        Map<String, byte[]> transformedClasses = avm.transformClasses(this.classes, classHierarchy);
         Map<String, byte[]> finalContractClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
         this.loader = new AvmClassLoader(sharedClassLoader, finalContractClasses);
         this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());
 
         // set up helper
-        Helpers.instantiateHelper(loader, rt);
-    }
-
-
-    public BlockchainRuntime getBlockchainRuntime() {
-        return rt;
+        Helpers.instantiateHelper(loader, energyLimit);
     }
 
     public Map<String, byte[]> getClasses() {

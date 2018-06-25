@@ -67,9 +67,8 @@ public class AvmImplTest {
     @Test
     public void testPersistentEnergyLimit() {
         // Set up the runtime.
-        BlockchainRuntime rt = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 5);
         Map<String, byte[]> contractClasses = Helpers.mapIncludingHelperBytecode(Collections.emptyMap());
-        IHelper helper = Helpers.instantiateHelper(new AvmClassLoader(sharedClassLoader, contractClasses), rt);
+        IHelper helper = Helpers.instantiateHelper(new AvmClassLoader(sharedClassLoader, contractClasses), 5L);
 
         // Prove that we can charge 0 without issue.
         helper.externalChargeEnergy(0);

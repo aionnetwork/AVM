@@ -11,7 +11,7 @@ import org.junit.Assert;
  * A minimal implementation of BlockchainRuntime sufficient for our current class of tests.
  * These provide only the direct inputs, none of the interactive data layer.
  */
-public class SimpleRuntime implements BlockchainRuntime {
+public class SimpleRuntime extends org.aion.avm.shadow.java.lang.Object implements BlockchainRuntime {
     private final byte[] sender;
     private final byte[] address;
     private final long energyLimit;

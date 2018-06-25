@@ -21,14 +21,13 @@ public class Helper implements IHelper {
     // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
     private static AvmException forceExitState;
 
-    private static void initializeStaticState(ClassLoader loader, BlockchainRuntime rt) {
+    private static void initializeStaticState(ClassLoader loader, long nrgLeft) {
         // If we set the lateLoader twice, there is a serious problem in our configuration.
         RuntimeAssertionError.assertTrue(null == lateLoader);
         RuntimeAssertionError.assertTrue(null != loader);
         lateLoader = loader;
-        
-        blockchainRuntime = rt;
-        energyLeft = rt.avm_getEnergyLimit();
+
+        energyLeft = nrgLeft;
         StackWatcher.reset();
         nextHashCode = 1;
         
@@ -162,9 +161,9 @@ public class Helper implements IHelper {
     }
 
     // Note that there are a few methods implementing the IHelper interface for calls coming from outside our loader.
-    public Helper(ClassLoader contractLoader, BlockchainRuntime runtime) {
+    public Helper(ClassLoader contractLoader, long energyLeft) {
         // We don't use these within the instance state but it is a convenient initialization point.
-        Helper.initializeStaticState(contractLoader, runtime);
+        Helper.initializeStaticState(contractLoader, energyLeft);
         IHelper.currentContractHelper.set(this);
     }
     @Override

@@ -7,7 +7,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
-import org.aion.avm.core.miscvisitors.StringConstantVisitor;
+import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
@@ -18,7 +18,6 @@ import org.aion.avm.core.testindy.java.lang.invoke.LambdaMetafactory;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.api.Address;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -46,7 +45,7 @@ public class InvokedynamicTransformationTest {
     public static void init() {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
         final var avmClassLoader = new AvmClassLoader(sharedClassLoader, new HashMap<>());
-        new Helper(avmClassLoader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
+        new Helper(avmClassLoader, 1_000_000L);
     }
 
     @Test
@@ -64,11 +63,11 @@ public class InvokedynamicTransformationTest {
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
         final var shadowPackage = PackageConstants.kShadowSlashPrefix;
-        final var classWhiteList = new ClassWhiteList();
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, classWhiteList))
-                .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
+                .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
+                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME))
+                .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         sharedClassLoader,
                         new ParentPointers(Collections.singleton(className), classHierarchy),
@@ -78,19 +77,15 @@ public class InvokedynamicTransformationTest {
     }
 
     @Test
-    public void given_parametrizedLambda_then_allUserAccessableObjectsShouldBeShadowed() {
+    public void given_parametrizedLambda_then_allUserAccessableObjectsShouldBeShadowed() throws Exception {
         final var className = ParametrizedLambda.class.getName();
         final byte[] origBytecode = loadRequiredResourceAsBytes(getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForParametrizedLambdaTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
-        try {
-            final Double actual =
-                    (Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
-            assertEquals(30, actual.avm_doubleValue(), 0);
-            assertTrue(actual.avm_valueOfWasCalled);
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
+        final Double actual =
+                (Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+        assertEquals(30, actual.avm_doubleValue(), 0);
+        assertTrue(actual.avm_valueOfWasCalled);
     }
 
     private byte[] transformForParametrizedLambdaTest(byte[] origBytecode, String className) {
@@ -98,11 +93,11 @@ public class InvokedynamicTransformationTest {
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
-        final var classWhiteList = new ClassWhiteList();
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
-                .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
+                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy), shadowPackage))
+                .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
+                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
+                .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         sharedClassLoader,
                         new ParentPointers(Collections.singleton(className), classHierarchy),
@@ -112,19 +107,14 @@ public class InvokedynamicTransformationTest {
     }
 
     @Test
-    public void given_MultiLineLambda_then_itsTransformedAsUsualCode() {
+    public void given_MultiLineLambda_then_itsTransformedAsUsualCode() throws Exception {
         final var className = LongLambda.class.getName();
         final byte[] origBytecode = Helpers.loadRequiredResourceAsBytes(getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForMultiLineLambda(origBytecode, className);
         Assert.assertFalse(Arrays.equals(origBytecode, transformedBytecode));
-        try {
-            final org.aion.avm.shadow.java.lang.Double actual =
-                    (org.aion.avm.shadow.java.lang.Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
-            assertEquals(100., actual.avm_doubleValue(), 0);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+        final org.aion.avm.shadow.java.lang.Double actual =
+                (org.aion.avm.shadow.java.lang.Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+        assertEquals(100., actual.avm_doubleValue(), 0);
     }
 
     private byte[] transformForMultiLineLambda(byte[] origBytecode, String className) {
@@ -132,8 +122,7 @@ public class InvokedynamicTransformationTest {
                 .addClass(className, "java.lang.Object", origBytecode)
                 .asMutableForest();
         final var shadowPackage = PackageConstants.kShadowSlashPrefix;
-        Helper.setEnergy(1000);
-        final var classWhiteList = new ClassWhiteList();
+        Helper.setEnergy(1_000_000L);
         final Map<String, byte[]> processedClasses = new HashMap<>();
         // WARNING:  This dynamicHierarchyBuilder is both mutable and shared by TypeAwareClassWriter instances.
         final HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
@@ -145,12 +134,12 @@ public class InvokedynamicTransformationTest {
         };
         ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
                 .addNextVisitor(new RejectionClassVisitor())
-                .addNextVisitor(new StringConstantVisitor())
-                .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, AvmImpl.computeAllObjectsSizes(classHierarchy)))
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
-                .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage, classWhiteList))
+                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
+                .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
+                .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, AvmImpl.computeAllPostRenameObjectSizes(classHierarchy)))
+                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
+                .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage))
                 .addNextVisitor(new StackWatcherClassAdapter())
                 .addNextVisitor(new ExceptionWrapping(HELPER_CLASS_NAME, parentPointers, generatedClassConsumer))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, parentPointers, dynamicHierarchyBuilder))

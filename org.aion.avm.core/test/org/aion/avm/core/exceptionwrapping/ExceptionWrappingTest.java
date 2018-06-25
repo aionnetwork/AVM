@@ -6,17 +6,16 @@ import org.aion.avm.core.Forest;
 import org.aion.avm.core.HierarchyTreeBuilder;
 import org.aion.avm.core.ParentPointers;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.api.Address;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -81,7 +80,7 @@ public class ExceptionWrappingTest {
         this.loader.loadUserClassByOriginalName(runtimeExceptionClassDotName);
         
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(this.loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
+        new Helper(this.loader, 1_000_000L);
     }
 
     @After
@@ -164,8 +163,7 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testExceptionTransformOnAvmImplPipeline() throws Exception {
-        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        SimpleAvm avm = new SimpleAvm(externalRuntime,
+        SimpleAvm avm = new SimpleAvm(10000,
                 TestExceptionResource.class,
                 TestExceptionResource.UserDefinedRuntimeException.class,
                 TestExceptionResource.UserDefinedException.class);
@@ -196,8 +194,7 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testUserDefinedThrowCatch_commonPipeline() throws Exception {
-        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        SimpleAvm avm = new SimpleAvm(externalRuntime
+        SimpleAvm avm = new SimpleAvm(1000L
                 , TestExceptionResource.class
                 , TestExceptionResource.UserDefinedException.class
                 , TestExceptionResource.UserDefinedRuntimeException.class
@@ -266,8 +263,9 @@ public class ExceptionWrappingTest {
             ClassWhiteList classWhiteList = new ClassWhiteList();
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                     .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(this.classHierarchy)))
+                    .addNextVisitor(new ConstantVisitor(TestHelpers.CLASS_NAME))
                     .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, parentPointers, generatedClassesSink))
-                    .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME, classWhiteList))
+                    .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                             sharedClassLoader, parentPointers, dynamicHierarchyBuilder))
                     .build();

@@ -4,12 +4,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 
 /**
+ * A dedicated visitor to deal with String and Class constants.
+ *
  * A class visitor which replaces the "ConstantValue" static final String constants with a "ldc+putstatic" pair in the &lt;clinit&gt;
  * (much like Class constants).
  * This should be one of the earliest visitors in the chain since the transformation produces code with no special assumptions,
@@ -18,16 +23,26 @@ import org.objectweb.asm.Opcodes;
  * we will see the method we need to modify.
  * If the &lt;clinit&gt; exists, we will prepend this ldc+pustatic pairs.  If it doesn't, we will generate it last.
  */
-public class StringConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
+public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
     private static final String kClinitName = "<clinit>";
     private static final int kClinitAccess = Opcodes.ACC_STATIC;
     private static final String kClinitDescriptor = "()V";
 
+    private static final String postRenameStringDescriptor = "L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;";
+    private static final String wrapStringMethodName = "wrapAsString";
+    private static final String wrapStringMethodDescriptor = "(Ljava/lang/String;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;";
+
+    private static final String postRenameClassDescriptor = "L" + PackageConstants.kShadowSlashPrefix + "java/lang/Class;";
+    private static final String wrapClassMethodName = "wrapAsClass";
+    private static final String wrapClassMethodDescriptor = "(Ljava/lang/Class;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/Class;";
+
     private final Map<String, String> staticFieldNamesToConstantValues;
+    private final String runtimeClassName;
     private String thisClassName;
 
-    public StringConstantVisitor() {
+    public ConstantVisitor(String runtimeClassName) {
         super(Opcodes.ASM6);
+        this.runtimeClassName = runtimeClassName;
         this.staticFieldNamesToConstantValues = new HashMap<>();
     }
 
@@ -47,7 +62,7 @@ public class StringConstantVisitor extends ClassToolchain.ToolChainClassVisitor 
         Object filteredValue = value;
         if ((0 != (access & Opcodes.ACC_STATIC))
                 && (null != value)
-                && "Ljava/lang/String;".equals(descriptor)
+                && postRenameStringDescriptor.equals(descriptor)
         ) {
             // We need to do something special in this case.
             this.staticFieldNamesToConstantValues.put(name, (String)value);
@@ -63,12 +78,39 @@ public class StringConstantVisitor extends ClassToolchain.ToolChainClassVisitor 
         if (kClinitName.equals(name)) {
             // Prepend the ldc+putstatic pairs.
             for (Map.Entry<String, String> elt : this.staticFieldNamesToConstantValues.entrySet()) {
+                // load constant
                 visitor.visitLdcInsn(elt.getValue());
-                visitor.visitFieldInsn(Opcodes.PUTSTATIC, this.thisClassName, elt.getKey(), "Ljava/lang/String;");
+
+                // wrap as shadow string
+                visitor.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, wrapStringMethodName, wrapStringMethodDescriptor, false);
+
+                // set the field
+                visitor.visitFieldInsn(Opcodes.PUTSTATIC, this.thisClassName, elt.getKey(), postRenameStringDescriptor);
             }
             this.staticFieldNamesToConstantValues.clear();
         }
-        return visitor;
+
+        return new MethodVisitor(Opcodes.ASM6, visitor) {
+            @Override
+            public void visitLdcInsn(Object value) {
+                if (value instanceof Type && ((Type) value).getSort() == Type.OBJECT) {
+                    // class constants
+                    String descriptor = ((Type) value).getDescriptor();
+
+                    // TODO: should we load the original class or the shadow class?
+
+                    super.visitLdcInsn(value);
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, wrapClassMethodName, wrapClassMethodDescriptor, false);
+                } else if (value instanceof String) {
+                    // string constants
+                    super.visitLdcInsn(value);
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, wrapStringMethodName, wrapStringMethodDescriptor, false);
+                } else {
+                    // numbers?
+                    super.visitLdcInsn(value);
+                }
+            }
+        };
     }
 
     @Override

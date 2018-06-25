@@ -18,8 +18,7 @@ public class StringOpsTest {
 
     @Test
     public void testSingleString() throws Exception {
-        SimpleRuntime rt = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        SimpleAvm avm = new SimpleAvm(rt, StringOps.class);
+        SimpleAvm avm = new SimpleAvm(1000000L, StringOps.class);
 
         Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(StringOps.class.getName());
         Object obj = clazz.getConstructor().newInstance();

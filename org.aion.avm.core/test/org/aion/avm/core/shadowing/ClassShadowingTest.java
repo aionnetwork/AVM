@@ -1,16 +1,14 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.ClassWhiteList;
-import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.api.Address;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -26,15 +24,19 @@ import java.util.function.Function;
 
 public class ClassShadowingTest {
     private static AvmSharedClassLoader sharedClassLoader;
+    private static String runtimeClassName;
 
     @BeforeClass
     public static void setupClass() {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        runtimeClassName = Helpers.fulllyQualifiedNameToInternalName(Testing.class.getName());
     }
 
     @After
     public void clearTestingState() {
         Helper.clearTestingState();
+        Testing.countWrappedStrings = 0;
+        Testing.countWrappedClasses = 0;
     }
 
     @Test
@@ -45,7 +47,8 @@ public class ClassShadowingTest {
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new UserClassMappingVisitor(Set.of(className)))
-                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, new ClassWhiteList()))
+                        .addNextVisitor(new ConstantVisitor(runtimeClassName))
+                        .addNextVisitor(new ClassShadowing(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
@@ -54,7 +57,7 @@ public class ClassShadowingTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
+        new Helper(loader, 1_000_000L);
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
         Object obj = clazz.getConstructor().newInstance();
 
@@ -63,7 +66,7 @@ public class ClassShadowingTest {
         Assert.assertEquals(10, ret);
 
         // Verify that we haven't created any wrapped instances, yet.
-        Assert.assertEquals(0, Testing.countWrappedClasses);
+        Assert.assertEquals(0, Testing.countWrappedStrings);
         Assert.assertEquals(0, Testing.countWrappedClasses);
 
         // We can rely on our test-facing toString methods to look into what we got back.
@@ -73,7 +76,7 @@ public class ClassShadowingTest {
         Assert.assertEquals("hello", wrappedString.toString());
 
         // Verify that we see wrapped instances.
-        Assert.assertEquals(1, Testing.countWrappedClasses);
+        Assert.assertEquals(1, Testing.countWrappedStrings);
         Assert.assertEquals(1, Testing.countWrappedClasses);
     }
 
@@ -86,7 +89,8 @@ public class ClassShadowingTest {
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, 0) /* DO NOT SKIP ANYTHING */
                         .addNextVisitor(new UserClassMappingVisitor(Collections.singleton(className)))
-                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, new ClassWhiteList()))
+                        .addNextVisitor(new ConstantVisitor(runtimeClassName))
+                        .addNextVisitor(new ClassShadowing(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
@@ -104,7 +108,7 @@ public class ClassShadowingTest {
         };
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
+        new Helper(loader, 1_000_000L);
 
         Class<?> clazz = loader.loadClass(mappedClassName);
         Object obj = clazz.getConstructor().newInstance();
@@ -129,7 +133,8 @@ public class ClassShadowingTest {
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new UserClassMappingVisitor(Set.of(className, innerClassName)))
-                        .addNextVisitor(new ClassShadowing(Testing.CLASS_NAME, new ClassWhiteList()))
+                        .addNextVisitor(new ConstantVisitor(runtimeClassName))
+                        .addNextVisitor(new ClassShadowing(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
@@ -141,7 +146,7 @@ public class ClassShadowingTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
+        new Helper(loader, 1_000_000L);
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
 
         Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getStringForNull"));
@@ -151,7 +156,6 @@ public class ClassShadowingTest {
     }
 
     public static class Testing {
-        public static String CLASS_NAME = Testing.class.getName().replaceAll("\\.", "/");
         public static int countWrappedClasses;
         public static int countWrappedStrings;
 

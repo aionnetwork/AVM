@@ -10,7 +10,7 @@ public class ClassWhiteListTest {
     @Test
     public void testJdkType() {
         ClassWhiteList list = new ClassWhiteList();
-        String className = "java/lang/Object";
+        String className = PackageConstants.kShadowSlashPrefix + "java/lang/Object";
         Assert.assertTrue(list.isJdkClass(className));
         Assert.assertTrue(list.isInWhiteList(className));
     }
@@ -19,7 +19,7 @@ public class ClassWhiteListTest {
     public void testJdkSubType() {
         // NOTE:  Classes in sub-packages should probably be rejected (the white-list needs to be made more complex).
         ClassWhiteList list = new ClassWhiteList();
-        String className = "java/lang/ref/SoftReference";
+        String className = PackageConstants.kShadowSlashPrefix + "java/lang/ref/SoftReference";
         Assert.assertTrue(list.isJdkClass(className));
         Assert.assertTrue(list.isInWhiteList(className));
     }

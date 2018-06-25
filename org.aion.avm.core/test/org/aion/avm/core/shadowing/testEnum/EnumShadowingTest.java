@@ -33,8 +33,7 @@ public class EnumShadowingTest {
 
     @Before
     public void testReplaceJavaLang() throws ClassNotFoundException {
-        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        SimpleAvm avm = new SimpleAvm(externalRuntime, TestResource.class, TestEnum.class);
+        SimpleAvm avm = new SimpleAvm(1000000L, TestResource.class, TestEnum.class);
         AvmClassLoader loader = avm.getClassLoader();
 
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);

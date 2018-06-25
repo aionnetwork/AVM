@@ -29,7 +29,7 @@ public class ParentPointers {
             String newName = PackageConstants.kUserDotPrefix + className;
             String newSuperName = userDefinedClassNames.contains(superClassName)
                     ? (PackageConstants.kUserDotPrefix + superClassName)
-                    : superClassName;
+                    : (superClassName.startsWith(PackageConstants.kApiDotPrefix) ? superClassName : (PackageConstants.kShadowDotPrefix + superClassName));
             mapping.put(newName, newSuperName);
         }
         this.postRenameParentMap = mapping;

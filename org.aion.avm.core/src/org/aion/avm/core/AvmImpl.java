@@ -10,7 +10,7 @@ import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
-import org.aion.avm.core.miscvisitors.StringConstantVisitor;
+import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
@@ -102,13 +102,13 @@ public class AvmImpl implements Avm {
     }
 
     /**
-     * Computes the object size of runtime classes
+     * Computes the object size of shadow java.base classes
      *
      * @return a mapping between class name and object size
      *
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    public static Map<String, Integer> computeRuntimeObjectSizes() {
+    public static Map<String, Integer> computeShadowObjectSizes() {
         Map<String, Integer> map = new HashMap<String, Integer>();
         map.put("java/lang/Object", 4);
         map.put("java/lang/Class", 4);
@@ -122,7 +122,17 @@ public class AvmImpl implements Avm {
         map.put("java/lang/Exception", 4);
         map.put("java/lang/RuntimeException", 4);
         map.put("java/lang/NullPointerException", 4);
-        // - we also need to figure out what we are doing with these RT types which the user should be able to allocate.
+
+        return Collections.unmodifiableMap(map);
+    }
+
+    /**
+     * Computes the object size of API classes.
+     *
+     * @return
+     */
+    public static Map<String, Integer> computeApiObjectSizes() {
+        Map<String, Integer> map = new HashMap<String, Integer>();
         map.put("org/aion/avm/api/Address", 4);
         map.put("org/aion/avm/api/ABIDecoder", 4);
         map.put("org/aion/avm/api/InvalidTxDataException", 4);
@@ -134,24 +144,57 @@ public class AvmImpl implements Avm {
      * Returns the sizes of all the classes, including the runtime ones and the DApp ones.
      *
      * @param classHierarchy     the class hierarchy
-     * @param runtimeObjectSizes the object size of runtime classes
-     * @return a mapping between class name and object size, for all classes, including the runtime ones from "runtimeObjectSizes"; and the DApp ones passed-in with "classes".
-     *
+     * @param shadowObjectSizes  the object size of shadow java.base classes
+     * @param apiObjectSizes     the object size of API classes
+     * @return The size of user objects
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    public static Map<String, Integer> computeObjectSizes(Forest<String, byte[]> classHierarchy, Map<String, Integer> runtimeObjectSizes) {
+    public static Map<String, Integer> computeUserObjectSizes(Forest<String, byte[]> classHierarchy,
+                                                             Map<String, Integer> shadowObjectSizes,
+                                                             Map<String, Integer> apiObjectSizes)
+    {
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
 
         // copy over the runtime classes sizes
-        Map<String, Integer> objectSizes = new HashMap<>(runtimeObjectSizes);
+        HashMap<String, Integer> runtimeObjectSizes = new HashMap<>();
+        runtimeObjectSizes.putAll(shadowObjectSizes);
+        runtimeObjectSizes.putAll(apiObjectSizes);
 
         // compute the object size of every one in 'classes'
         objectSizeCalculator.calcClassesInstanceSize(classHierarchy, runtimeObjectSizes);
 
-        // copy over the DApp classes sizes
-        objectSizes.putAll(objectSizeCalculator.getClassHeapSizeMap());
 
-        return Collections.unmodifiableMap(objectSizes);
+        Map<String, Integer> userObjectSizes = new HashMap<>();
+        objectSizeCalculator.getClassHeapSizeMap().forEach((k, v) -> {
+            if (!runtimeObjectSizes.containsKey(k)) {
+                userObjectSizes.put(k, v);
+            }
+        });
+        return userObjectSizes;
+    }
+
+    public static Map<String, Integer> computeAllObjectsSizes(Forest<String, byte[]> forest) {
+        Map<String, Integer> map = new HashMap<>();
+        map.putAll(computeShadowObjectSizes());
+        map.putAll(computeApiObjectSizes());
+        map.putAll(computeUserObjectSizes(forest, computeShadowObjectSizes(), computeApiObjectSizes()));
+
+        return map;
+    }
+
+    public static Map<String, Integer> computeAllPostRenameObjectSizes(Forest<String, byte[]> forest) {
+        Map<String, Integer> preRenameShadowObjectSizes = computeShadowObjectSizes();
+        Map<String, Integer> preRenameApiObjectSizes = computeApiObjectSizes();
+        Map<String, Integer> preRenameUserObjectSizes = computeUserObjectSizes(forest, preRenameShadowObjectSizes, preRenameApiObjectSizes);
+
+        Map<String, Integer> postRenameObjectSizes = new HashMap<>(preRenameApiObjectSizes);
+        for (Map.Entry<String, Integer> entry : preRenameUserObjectSizes.entrySet()) {
+            postRenameObjectSizes.put(PackageConstants.kUserSlashPrefix + entry.getKey(), entry.getValue());
+        }
+        for (Map.Entry<String, Integer> entry : preRenameShadowObjectSizes.entrySet()) {
+            postRenameObjectSizes.put(PackageConstants.kShadowSlashPrefix + entry.getKey(), entry.getValue());
+        }
+        return postRenameObjectSizes;
     }
 
     /**
@@ -159,10 +202,9 @@ public class AvmImpl implements Avm {
      *
      * @param classes        the class of DApp (names specified in .-style)
      * @param preRenameClassHierarchy The pre-rename hierarchy of user-defined classes in the DApp (/-style).
-     * @param preRenameObjectSizes The sizes of object by their pre-rename names (/-style).
      * @return the transformed classes and any generated classes (names specified in .-style)
      */
-    public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> preRenameClassHierarchy, Map<String, Integer> preRenameObjectSizes) {
+    public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> preRenameClassHierarchy) {
 
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
@@ -177,18 +219,10 @@ public class AvmImpl implements Avm {
             String superClassDotName = Helpers.internalNameToFulllyQualifiedName(superClassSlashName);
             dynamicHierarchyBuilder.addClass(classDotName, superClassDotName, bytecode);
         };
-        ClassWhiteList classWhiteList = new ClassWhiteList();
         Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
         ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy);
-        
-        // The size map contains both the user-defined and the common types so we will start with the original and change it.
-        Map<String, Integer> postRenameObjectSizes = new HashMap<>(preRenameObjectSizes);
-        for (String prename : preRenameUserDefinedClasses) {
-            String slashPre = Helpers.fulllyQualifiedNameToInternalName(prename);
-            postRenameObjectSizes.remove(slashPre);
-            postRenameObjectSizes.put(PackageConstants.kUserSlashPrefix + slashPre, preRenameObjectSizes.get(slashPre));
-        }
-        
+        Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy);
+
         for (String name : classes.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
             Assert.assertTrue(-1 == name.indexOf("/"));
@@ -196,10 +230,10 @@ public class AvmImpl implements Avm {
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new RejectionClassVisitor())
                     .addNextVisitor(new UserClassMappingVisitor(preRenameUserDefinedClasses))
-                    .addNextVisitor(new StringConstantVisitor())
+                    .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
-                    .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS, PackageConstants.kShadowSlashPrefix, classWhiteList))
-                    .addNextVisitor(new ClassShadowing(HELPER_CLASS, classWhiteList))
+                    .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS, PackageConstants.kShadowSlashPrefix))
+                    .addNextVisitor(new ClassShadowing(HELPER_CLASS))
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, parentClassResolver, generatedClassesSink))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, parentClassResolver, dynamicHierarchyBuilder))
@@ -217,82 +251,90 @@ public class AvmImpl implements Avm {
         return processedClasses;
     }
 
-    public  static Map<String, Integer> computeAllObjectsSizes(Forest<String, byte[]> dappClasses){
-        return computeObjectSizes(dappClasses, computeRuntimeObjectSizes());
+    public static class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object implements BlockchainRuntime {
+
+        private Transaction tx;
+        private Block block;
+        private KernelApi cb;
+
+        public BlockchainRuntimeImpl(Transaction tx, Block block, KernelApi cb) {
+            this.tx = tx;
+            this.block = block;
+            this.cb = cb;
+        }
+
+        @Override
+        public Address avm_getSender() {
+            return new Address(tx.getFrom());
+        }
+
+        @Override
+        public Address avm_getAddress() {
+            // TODO: handle CREATE transaction
+            return new Address(tx.getTo());
+        }
+
+        @Override
+        public long avm_getEnergyLimit() {
+            return tx.getEnergyLimit();
+        }
+
+        @Override
+        public ByteArray avm_getData() {
+            return new ByteArray(tx.getData());
+        }
+
+        @Override
+        public ByteArray avm_getStorage(ByteArray key) {
+            return new ByteArray(cb.getStorage(tx.getTo(), key.getUnderlying()));
+        }
+
+        @Override
+        public void avm_putStorage(ByteArray key, ByteArray value) {
+            cb.putStorage(tx.getTo(), key.getUnderlying(), value.getUnderlying());
+        }
+
+        @Override
+        public void avm_updateCode(ByteArray newCode) {
+            cb.updateCode(tx.getTo(), newCode.getUnderlying());
+        }
+
+        @Override
+        public void avm_selfDestruct(Address beneficiary) {
+            cb.selfdestruct(tx.getTo(), beneficiary.unwrap());
+        }
+
+        @Override
+        public long avm_getBlockEpochSeconds() {
+            return block.getTimestamp();
+        }
+
+        @Override
+        public long avm_getBlockNumber() {
+            return block.getNumber();
+        }
+
+        @Override
+        public ByteArray avm_sha3(ByteArray data) {
+            // TODO: we can implement this inside vm
+            return null;
+        }
+
+        @Override
+        public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray data, long energyLimit) {
+            AvmResult result = cb.call(tx.getTo(), targetAddress.unwrap(), value.getUnderlying(), data.getUnderlying(), energyLimit);
+
+            return new ByteArray(result.returnData);
+        }
+
+        @Override
+        public void avm_log(ByteArray index0, ByteArray data) {
+            cb.log(getAddress().unwrap(), index0.getUnderlying(), data.getUnderlying());
+        }
     }
 
     public static BlockchainRuntime createBlockchainRuntime(Transaction tx, Block block, KernelApi cb) {
-        return new BlockchainRuntime() {
-
-            @Override
-            public Address avm_getSender() {
-                return new Address(tx.getFrom());
-            }
-
-            @Override
-            public Address avm_getAddress() {
-                // TODO: handle CREATE transaction
-                return new Address(tx.getTo());
-            }
-
-            @Override
-            public long avm_getEnergyLimit() {
-                return tx.getEnergyLimit();
-            }
-
-            @Override
-            public ByteArray avm_getData() {
-                return  new ByteArray(tx.getData());
-            }
-
-            @Override
-            public ByteArray avm_getStorage(ByteArray key) {
-                return new ByteArray(cb.getStorage(tx.getTo(), key.getUnderlying()));
-            }
-
-            @Override
-            public void avm_putStorage(ByteArray key, ByteArray value) {
-                cb.putStorage(tx.getTo(), key.getUnderlying(), value.getUnderlying());
-            }
-
-            @Override
-            public void avm_updateCode(ByteArray newCode) {
-                cb.updateCode(tx.getTo(), newCode.getUnderlying());
-            }
-
-            @Override
-            public void avm_selfDestruct(Address beneficiary) {
-                cb.selfdestruct(tx.getTo(), beneficiary.unwrap());
-            }
-
-            @Override
-            public long avm_getBlockEpochSeconds() {
-                return block.getTimestamp();
-            }
-
-            @Override
-            public long avm_getBlockNumber() {
-                return block.getNumber();
-            }
-
-            @Override
-            public ByteArray avm_sha3(ByteArray data) {
-                // TODO: we can implement this inside vm
-                return null;
-            }
-
-            @Override
-            public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray data, long energyLimit) {
-                AvmResult result = cb.call(tx.getTo(), targetAddress.unwrap(), value.getUnderlying(), data.getUnderlying(), energyLimit);
-
-                return new ByteArray(result.returnData);
-            }
-
-            @Override
-            public void avm_log(ByteArray index0, ByteArray data) {
-                cb.log(getAddress().unwrap(), index0.getUnderlying(), data.getUnderlying());
-            }
-        };
+        return new BlockchainRuntimeImpl(tx, block , cb);
     }
 
     @Override
@@ -322,8 +364,9 @@ public class AvmImpl implements Avm {
                 return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
             }
             ClassHierarchyForest dappClassesForest = app.getClassHierarchyForest();
+
             // transform
-            Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), dappClassesForest, computeAllObjectsSizes(dappClassesForest));
+            Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), dappClassesForest);
             app.setClasses(transformedClasses);
 
             // As per usual, we need to get the special Helper class for each contract loader.
@@ -331,7 +374,8 @@ public class AvmImpl implements Avm {
 
             // Construct the per-contract class loader and access the per-contract IHelper instance.
             AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
-            IHelper helper = Helpers.instantiateHelper(classLoader, createBlockchainRuntime(tx, block , cb));
+            IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit());
+            // TODO: createBlockchainRuntime(tx, block , cb)
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
@@ -384,7 +428,8 @@ public class AvmImpl implements Avm {
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, classLoader);
         classLoader.addHandler(wrapperGenerator);
-        IHelper helper = Helpers.instantiateHelper(classLoader, createBlockchainRuntime(tx, block, cb));
+        IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit());
+        // TODO: createBlockchainRuntime(tx, block , cb)
 
         // load class TODO: invocation is temporarily disabled
         try {

@@ -36,8 +36,7 @@ public class HashCodeTest {
 
     @Before
     public void setup() throws Exception {
-        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        SimpleAvm avm = new SimpleAvm(externalRuntime, HashCodeTestTarget.class);
+        SimpleAvm avm = new SimpleAvm(1000000L, HashCodeTestTarget.class);
         AvmClassLoader loader = avm.getClassLoader();
         
         this.clazz = loader.loadUserClassByOriginalName(HashCodeTestTarget.class.getName());
@@ -209,16 +208,13 @@ public class HashCodeTest {
         String targetClassName = HashCodeTestTarget.class.getName();
         byte[] transformedTarget = getTransformedTestClass(targetClassName);
         Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(PackageConstants.kUserDotPrefix + targetClassName, transformedTarget));
-        
-        // We need a common runtime.
-        SimpleRuntime commonRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        
+
         // Now, we will create 2 class loaders with the same classes:  these will be contract-level loaders.
         AvmClassLoader loader1 = new AvmClassLoader(sharedClassLoader, classes);
         AvmClassLoader loader2 = new AvmClassLoader(sharedClassLoader, classes);
         
         // First, run some tests in helper1.
-        IHelper helper1 = Helpers.instantiateHelper(loader1, commonRuntime);
+        IHelper helper1 = Helpers.instantiateHelper(loader1, 1_000_000L);
         Class<?> clazz1 = loader1.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode1 = clazz1.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         Object result = getOneHashCode1.invoke(null);
@@ -228,7 +224,7 @@ public class HashCodeTest {
         Assert.assertEquals(3, helper1.externalGetNextHashCode());
         
         // Now, create the helper2, show that it is independent, and run a test in that.
-        IHelper helper2 = Helpers.instantiateHelper(loader2, commonRuntime);
+        IHelper helper2 = Helpers.instantiateHelper(loader2, 1_000_000L);
         Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode2 = clazz2.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         Assert.assertEquals(1, helper2.externalGetNextHashCode());
@@ -298,9 +294,8 @@ public class HashCodeTest {
         Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", raw)
                 .asMutableForest();
-        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
-        Map<String, Integer> allObjectSizes = AvmImpl.computeObjectSizes(classHierarchy, runtimeObjectSizes);
-        Map<String, byte[]> transformedClasses = avm.transformClasses(Collections.singletonMap(className, raw), classHierarchy, allObjectSizes);
+
+        Map<String, byte[]> transformedClasses = avm.transformClasses(Collections.singletonMap(className, raw), classHierarchy);
         
         // Note that the class is renamed during this transformation.
         return transformedClasses.get(PackageConstants.kUserDotPrefix + className);

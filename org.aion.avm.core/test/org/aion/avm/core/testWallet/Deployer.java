@@ -195,10 +195,7 @@ public class Deployer {
         helper.loadClass(Abi.Decoder.class);
         
         AvmImpl avm = new AvmImpl(sharedClassLoader);
-        Map<String, Integer> runtimeObjectSizes = AvmImpl.computeRuntimeObjectSizes();
-        Map<String, Integer> allObjectSizes = AvmImpl.computeObjectSizes(helper.getClassHierarchy(), runtimeObjectSizes);
-        
-        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(helper.igetInputClasses(), helper.getClassHierarchy(), allObjectSizes));
+        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(helper.igetInputClasses(), helper.getClassHierarchy()));
         
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, transformedClasses);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
@@ -208,7 +205,7 @@ public class Deployer {
         // it for invocation context, just environment (energy counter, event logging, etc).
         TestingRuntime externalRuntime = new TestingRuntime(null, null, eventCounts);
         // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
-        Helpers.instantiateHelper(loader, externalRuntime);
+        Helpers.instantiateHelper(loader, 1_000_000L);
         
         // issue-112:  We create this classProvider to make it easier to emulate a full reload of a DApp.
         // The idea is that we can reload a fresh Wallet class from a new AvmClassLoader for each invocation into the DApp in order to simulate
@@ -351,7 +348,7 @@ public class Deployer {
     }
 
 
-    private static class TestingRuntime implements BlockchainRuntime {
+    private static class TestingRuntime extends org.aion.avm.shadow.java.lang.Object implements BlockchainRuntime {
         private final Address sender;
         private final ByteArray data;
         private final Map<java.lang.String, Integer> eventCounts;

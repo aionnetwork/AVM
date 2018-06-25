@@ -1,12 +1,13 @@
 package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.IObject;
 
 
 /**
  * Represents the hub of AVM runtime.
  */
-public interface BlockchainRuntime {
+public interface BlockchainRuntime extends IObject {
     // Runtime-facing implementation.
     /**
      * Returns the sender address.

@@ -1,55 +1,30 @@
 package org.aion.avm.core.shadowing;
 
-import org.aion.avm.core.ClassWhiteList;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.internal.PackageConstants;
 
-import java.util.stream.Stream;
-
 class Replacer {
-    private static final String JAVA_LANG = "java/lang/";
-    private static final String JAVA_UTIL = "java/util/";
     private static final String JAVA_LANG_OBJECT = "java/lang/Object";
     private static final String AVM_INTERNAL_IOBJECT = PackageConstants.kInternalSlashPrefix + "IObject";
 
     private final String shadowPackage;
-    private final ClassWhiteList whiteList;
 
-    Replacer(String shadowPackage, ClassWhiteList whiteList) {
+    Replacer(String shadowPackage) {
         this.shadowPackage = shadowPackage;
-        this.whiteList = whiteList;
     }
 
     /**
-     * Update the class reference if the type is a white-listed JDK class which starts with {@link #JAVA_LANG}.
+     * Replace java.lang.Object with IObject if necessary.
      *
      * @param type
      * @param allowInterfaceReplacement If true, we will use IObject instead of our shadow Object when replacing java/lang/Object
      * @return
      */
     protected String replaceType(String type, boolean allowInterfaceReplacement) {
-        // Note that this assumes we have an agreement with the ClassWhiteList regarding what the JAVA_LANG prefix is
-        // but this is unavoidable since it is a high-level interface and we are doing low-level string replacement.
-        boolean shouldReplacePrefix = whiteList.isJdkClass(type);
-        if (shouldReplacePrefix) {
-            // This assertion verifies that these agree (in the future, we probably want to source them from the same place and avoid the direct string manipulation, here).
-            // (technically, the white-list check is more restrictive than this since it can know about sub-packages while this doesn't).
-            Assert.assertTrue(type.startsWith(JAVA_LANG) || type.startsWith(JAVA_UTIL));
-        }
-
         // Handle the 3 relevant cases, independently.
-        boolean isTypeJavaLangObject = JAVA_LANG_OBJECT.equals(type);
+        boolean isTypeJavaLangObject = (shadowPackage + JAVA_LANG_OBJECT).equals(type);
         if (allowInterfaceReplacement && isTypeJavaLangObject) {
             return AVM_INTERNAL_IOBJECT;
-        } else if (isTypeJavaLangObject) {
-            return PackageConstants.kShadowSlashPrefix + type;
-        } else if (shouldReplacePrefix) {
-            return Stream.of(JAVA_LANG, JAVA_UTIL)
-                    .filter(type::startsWith)
-                    .findFirst()
-                    .map(s -> shadowPackage + type)
-                    .orElse(type);
         } else {
             return type;
         }

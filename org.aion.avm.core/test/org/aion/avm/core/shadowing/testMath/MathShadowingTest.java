@@ -34,8 +34,7 @@ public class MathShadowingTest {
 
     @Before
     public void testReplaceJavaLang() throws ClassNotFoundException {
-        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        SimpleAvm avm = new SimpleAvm(externalRuntime, TestResource.class);
+        SimpleAvm avm = new SimpleAvm(10000L, TestResource.class);
         AvmClassLoader loader = avm.getClassLoader();
 
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);

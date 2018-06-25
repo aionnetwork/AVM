@@ -17,10 +17,6 @@ import org.aion.avm.internal.PackageConstants;
  * TODO:  We need to add some additional restrictions to our JDK filter since we won't shadow all java/lang sub-packages ("ref", for example).
  */
 public class ClassWhiteList {
-    private static final String JAVA_LANG = "java/lang/";
-    private static final String JAVA_UTIL_FUNCTION = "java/util/function";
-    private static final String AION_API = "org/aion/avm/api/";
-
     /**
      * Checks if the class given is in any of our white-lists.
      * 
@@ -29,9 +25,8 @@ public class ClassWhiteList {
      */
     public boolean isInWhiteList(String slashClassName) {
         return (slashClassName.startsWith(PackageConstants.kUserSlashPrefix)
-                || slashClassName.startsWith(JAVA_LANG)
-                || slashClassName.startsWith(JAVA_UTIL_FUNCTION)
-                || slashClassName.startsWith(AION_API)
+                || slashClassName.startsWith(PackageConstants.kShadowSlashPrefix)
+                || slashClassName.startsWith(PackageConstants.kApiSlashPrefix)
                 );
     }
 
@@ -42,7 +37,7 @@ public class ClassWhiteList {
      * @return True if we are allowed to access this class due to it being in our JDK white-list.
      */
     public boolean isJdkClass(String slashClassName) {
-        return slashClassName.startsWith(JAVA_LANG) || slashClassName.startsWith(JAVA_UTIL_FUNCTION);
+        return slashClassName.startsWith(PackageConstants.kShadowSlashPrefix);
     }
 
 

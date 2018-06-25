@@ -29,8 +29,7 @@ public class BasicAppTest {
 
     @Before
     public void setup() throws Exception {
-        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        SimpleAvm avm = new SimpleAvm(externalRuntime, BasicAppTestTarget.class, AionMap.class);
+        SimpleAvm avm = new SimpleAvm(10000L, BasicAppTestTarget.class, AionMap.class);
         AvmClassLoader loader = avm.getClassLoader();
         
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
@@ -42,6 +41,7 @@ public class BasicAppTest {
         Assert.assertEquals(loader, this.clazz.getClassLoader());
         
         // Create the wrapper for the runtime object, now that the external one has been used to create the Helper required to instantiate shadow objects.
+        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
         this.runtime = new ContractRuntimeWrapper(externalRuntime);
     }
 
@@ -80,8 +80,9 @@ public class BasicAppTest {
         // Should be just 1 byte, containing the low hash byte.
         Assert.assertEquals(1, output.length());
         byte result = output.get(0);
-        // We know that the runtime was the first object we created so its hash will be 1.
-        Assert.assertEquals(1, result);
+        // We know that the runtime was the first object and the runtime wrapper is the second
+        // so its hash will be 2.
+        Assert.assertEquals(2, result);
     }
 
     /**

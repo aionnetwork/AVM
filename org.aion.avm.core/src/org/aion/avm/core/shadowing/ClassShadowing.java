@@ -17,25 +17,24 @@ import java.util.stream.Stream;
  * 2) All method ref to whitelisted JDK class and user defined class will be transformed into it's `avm_` version.
  */
 public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
+
     private static final String JAVA_LANG_OBJECT = "java/lang/Object";
 
     private final String runtimeClassName;
     private final ClassWhiteList classWhiteList;
     private final Replacer replacer;
+    private final String postRenameJavaLangObject;
 
-
-    public ClassShadowing(String runtimeClassName, String shadowPackage, ClassWhiteList classWhiteList) {
+    public ClassShadowing(String runtimeClassName, String shadowPackage) {
         super(Opcodes.ASM6);
-        this.replacer = new Replacer(shadowPackage, classWhiteList);
+        this.replacer = new Replacer(shadowPackage);
         this.runtimeClassName = runtimeClassName;
-        this.classWhiteList = classWhiteList;
+        this.classWhiteList = new ClassWhiteList();
+        this.postRenameJavaLangObject = shadowPackage + JAVA_LANG_OBJECT;
     }
 
-    public ClassShadowing(String runtimeClassName, ClassWhiteList classWhiteList) {
-        super(Opcodes.ASM6);
-        this.replacer = new Replacer(PackageConstants.kShadowSlashPrefix, classWhiteList);
-        this.runtimeClassName = runtimeClassName;
-        this.classWhiteList = classWhiteList;
+    public ClassShadowing(String runtimeClassName) {
+        this(runtimeClassName, PackageConstants.kShadowSlashPrefix);
     }
 
     @Override
@@ -52,7 +51,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
         // Note that we can't change the superName if this is an interface (since those all must specify "java/lang/Object").
         boolean isInterface = (0 != (Opcodes.ACC_INTERFACE & access));
         String newSuperName = isInterface
-                ? superName
+                ? (postRenameJavaLangObject.equals(superName) ? JAVA_LANG_OBJECT : superName)
                 : replacer.replaceType(superName, false);
         Stream<String> replacedInterfaces = Stream.of(interfaces).map((oldName) -> replacer.replaceType(oldName, true));
         // If this is an interface, we need to add our "root interface" so that we have a unification point between the interface and our shadow Object.
@@ -102,7 +101,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
                     // If this is invokespecial, it is probably something like "super.<init>" so we can't replace the opcode or type.
                     boolean allowInterfaceReplacement = (Opcodes.INVOKESPECIAL != opcode);
                     // If this is java/lang/Object, and we aren't in one of those invokespecial cases, we probably need to treat this as an interface.
-                    boolean newIsInterface = JAVA_LANG_OBJECT.equals(owner)
+                    boolean newIsInterface = postRenameJavaLangObject.equals(owner)
                             ? allowInterfaceReplacement
                             : isInterface;
                     // If we are changing to the interface, change the opcode.
@@ -132,70 +131,6 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
             @Override
             public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
                 super.visitLocalVariable(name, replacer.replaceMethodDescriptor(descriptor), signature, start, end, index);
-            }
-
-            @Override
-            public void visitLdcInsn(final Object value) {
-                // We will default to passing the value through since only 1 case does anything different.
-                Object valueToWrite = value;
-                boolean shouldWrapAsString = false;
-                boolean shouldWrapAsClass = false;
-
-                if (value instanceof Type) {
-                    Type type = (Type) value;
-                    // TODO: how to deal with METHOD and HANDLE?
-                    switch (type.getSort()) {
-                        case Type.ARRAY: {
-                            Assert.unimplemented("Array type sort doesn't seem to appear in this usage.");
-                            break;
-                        }
-                        case Type.BOOLEAN:
-                        case Type.BYTE:
-                        case Type.CHAR:
-                        case Type.DOUBLE:
-                        case Type.FLOAT:
-                        case Type.INT:
-                        case Type.LONG:
-                        case Type.SHORT: {
-                            // These primitive require no special handling - just emit the instruction.
-                            break;
-                        }
-                        case Type.METHOD: {
-                            // The method constant sort should only show up related to either invokedynamic or reflection and we don't support those cases.
-                            Assert.unreachable("Method constants cannot be loaded should have been filtered earlier.");
-                            break;
-                        }
-                        case Type.OBJECT: {
-                            // This is the interesting case where we might need to replace the descriptor.
-                            valueToWrite = Type.getType(replacer.replaceMethodDescriptor(type.getDescriptor()));
-                            // This is also the case where we want to wrap this as a class (since strings go through their own path).
-                            shouldWrapAsClass = true;
-                            break;
-                        }
-                        case Type.VOID: {
-                            Assert.unreachable("Void constants cannot be loaded.");
-                            break;
-                        }
-                        default:
-                            Assert.unreachable("Unknown type: " + type.getSort());
-                    }
-                } else if (value instanceof String) {
-                    shouldWrapAsString = true;
-                }
-
-                // All paths emit the instruction.
-                super.visitLdcInsn(valueToWrite);
-
-                // If we need to wrap this, call out to our static helper.
-                if (shouldWrapAsString) {
-                    String methodName = "wrapAsString";
-                    String methodDescriptor = "(Ljava/lang/String;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;";
-                    super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
-                } else if (shouldWrapAsClass) {
-                    String methodName = "wrapAsClass";
-                    String methodDescriptor = "(Ljava/lang/Class;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/Class;";
-                    super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, methodName, methodDescriptor, false);
-                }
             }
         };
     }

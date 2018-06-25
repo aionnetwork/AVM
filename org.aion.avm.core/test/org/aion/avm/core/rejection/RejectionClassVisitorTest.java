@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
@@ -24,16 +23,23 @@ import org.objectweb.asm.tree.TryCatchBlockNode;
 
 
 public class RejectionClassVisitorTest {
+
+    private static final String runtimeClassName = PackageConstants.kInternalSlashPrefix + "Helper";
+
+    private UserClassMappingVisitor mapper = null;
+
     @Test
     public void testFiltering() throws Exception {
         String className = FilteringResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        
-        ClassWhiteList classWhiteList = new ClassWhiteList();
+
+        // user class mapper, which also rejects illegal class access
+        mapper = new UserClassMappingVisitor(Set.of(className, className+"$A", className+"$B"));
+
         // We want to prove we can strip out everything so don't use any special parsing options for this visitor.
         byte[] filteredBytes = new ClassToolchain.Builder(raw, 0)
-                .addNextVisitor(new UserClassMappingVisitor(Set.of(className, className+"$A", className+"$B")))
                 .addNextVisitor(new RejectionClassVisitor())
+                .addNextVisitor(mapper)
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();
@@ -135,7 +141,7 @@ public class RejectionClassVisitorTest {
     }
 
 
-    private static void compareClasses(ClassNode inputNode, ClassNode outputNode) {
+    private void compareClasses(ClassNode inputNode, ClassNode outputNode) {
         // Access is unchanged.
         Assert.assertEquals(inputNode.access, outputNode.access);
         
@@ -160,9 +166,7 @@ public class RejectionClassVisitorTest {
         for (int i = 0; i < inputInnerClasses.size(); ++i) {
             // Names received user renaming - but only the classes which are strictly user-defined (not MethodHandles).
             String inputName = inputInnerClasses.get(i).name;
-            String expectedName = inputInnerClasses.get(i).name.startsWith(inputNode.name)
-                    ? (PackageConstants.kUserSlashPrefix + inputName)
-                    : inputName;
+            String expectedName = mapper.testMapType(inputName);
             Assert.assertEquals(expectedName, outputInnerClasses.get(i).name);
         }
         
@@ -172,7 +176,7 @@ public class RejectionClassVisitorTest {
         Assert.assertEquals(inputInterfaces.size(), outputInterfaces.size());
         
         for (int i = 0; i < inputInterfaces.size(); ++i) {
-            Assert.assertEquals(inputInterfaces.get(i), outputInterfaces.get(i));
+            Assert.assertEquals(mapper.testMapType(inputInterfaces.get(i)), outputInterfaces.get(i));
         }
         
         // Neither use any invisible annotations.
@@ -206,10 +210,10 @@ public class RejectionClassVisitorTest {
         // We expect the sourceFile to be removed.
         Assert.assertNull(outputNode.sourceFile);
         
-        Assert.assertEquals(inputNode.superName, outputNode.superName);
+        Assert.assertEquals(mapper.testMapType(inputNode.superName), outputNode.superName);
     }
 
-    private static void compareFields(FieldNode inputField, FieldNode outputField) {
+    private void compareFields(FieldNode inputField, FieldNode outputField) {
         // Access is unchanged.
         Assert.assertEquals(inputField.access, outputField.access);
         
@@ -217,17 +221,15 @@ public class RejectionClassVisitorTest {
         Assert.assertNull(inputField.attrs);
         Assert.assertNull(outputField.attrs);
         
-        // Descriptor is unchanged.
-        Assert.assertEquals(inputField.desc, outputField.desc);
+        // Field name and descriptor
+        Assert.assertEquals(UserClassMappingVisitor.mapFieldName(inputField.name), outputField.name);
+        Assert.assertEquals(mapper.testMapDescriptor(inputField.desc), outputField.desc);
         
         // Neither use any invisible annotations.
         Assert.assertNull(inputField.invisibleAnnotations);
         Assert.assertNull(outputField.invisibleAnnotations);
         Assert.assertNull(inputField.invisibleTypeAnnotations);
         Assert.assertNull(outputField.invisibleTypeAnnotations);
-        
-        // Name is unchanged.
-        Assert.assertEquals(UserClassMappingVisitor.mapFieldName(inputField.name), outputField.name);
         
         // Signature is now null.
         Assert.assertNull(outputField.signature);
@@ -240,9 +242,9 @@ public class RejectionClassVisitorTest {
         Assert.assertNull(outputField.visibleTypeAnnotations);
     }
 
-    private static void compareMethods(MethodNode inputMethod, MethodNode outputMethod) {
+    private void compareMethods(MethodNode inputMethod, MethodNode outputMethod) {
         Assert.assertEquals(inputMethod.access, outputMethod.access);
-        Assert.assertEquals(inputMethod.desc, outputMethod.desc);
+        Assert.assertEquals(mapper.testMapDescriptor(inputMethod.desc), outputMethod.desc);
         Assert.assertEquals(inputMethod.invisibleAnnotableParameterCount, outputMethod.invisibleAnnotableParameterCount);
         Assert.assertEquals(inputMethod.maxLocals, outputMethod.maxLocals);
         Assert.assertEquals(inputMethod.maxStack, outputMethod.maxStack);
@@ -302,7 +304,6 @@ public class RejectionClassVisitorTest {
     }
 
     private byte[] commonFilterBytes(String classDotName, byte[] testBytes) throws IOException {
-        ClassWhiteList classWhiteList = new ClassWhiteList();
         byte[] filteredBytes = new ClassToolchain.Builder(testBytes, 0)
                 .addNextVisitor(new RejectionClassVisitor())
                 .addNextVisitor(new UserClassMappingVisitor(Set.of(classDotName)))

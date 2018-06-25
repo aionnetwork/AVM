@@ -8,6 +8,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.api.Address;
+import org.aion.avm.internal.PackageConstants;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -15,15 +16,19 @@ import org.objectweb.asm.ClassWriter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 
 public class StringConstantVisitorTest {
     private static AvmSharedClassLoader sharedClassLoader;
 
+    private static String runtimeClassName;
+
     @BeforeClass
     public static void setupClass() {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        runtimeClassName = PackageConstants.kInternalSlashPrefix + "Helper";
     }
 
 
@@ -39,19 +44,20 @@ public class StringConstantVisitorTest {
         
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new StringConstantVisitor())
+                        .addNextVisitor(new UserClassMappingVisitor(Set.of(targetTestName, targetNoStaticName)))
+                        .addNextVisitor(new ConstantVisitor(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
-        classes.put(targetTestName, transformer.apply(targetTestBytes));
-        classes.put(targetNoStaticName, transformer.apply(targetNoStaticBytes));
+        classes.put(PackageConstants.kUserDotPrefix + targetTestName, transformer.apply(targetTestBytes));
+        classes.put(PackageConstants.kUserDotPrefix + targetNoStaticName, transformer.apply(targetNoStaticBytes));
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 0));
-        this.clazz = loader.loadClass(targetTestName);
-        this.clazzNoStatic = loader.loadClass(targetNoStaticName);
+        new Helper(loader, 1_000_000L);
+        this.clazz = loader.loadUserClassByOriginalName(targetTestName);
+        this.clazzNoStatic = loader.loadUserClassByOriginalName(targetNoStaticName);
     }
 
     @After
@@ -64,13 +70,13 @@ public class StringConstantVisitorTest {
         Object obj = this.clazz.getConstructor().newInstance();
         
         // Get the constant via the method.
-        Method method = this.clazz.getMethod("returnStaticStringConstant");
+        Method method = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnStaticStringConstant"));
         Object ret = method.invoke(obj);
-        Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, ret);
+        Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, ret.toString());
         
         // Get the constant directly from the static field.
-        Object direct = this.clazz.getField("kStringConstant").get(null);
-        Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, direct);
+        Object direct = this.clazz.getField(UserClassMappingVisitor.mapFieldName("kStringConstant")).get(null);
+        Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, direct.toString());
         
         // They should also be the same instance.
         Assert.assertTrue(ret == direct);
@@ -81,13 +87,13 @@ public class StringConstantVisitorTest {
         Object obj = this.clazzNoStatic.getConstructor().newInstance();
         
         // Get the constant via the method.
-        Method method = this.clazzNoStatic.getMethod("returnStaticStringConstant");
+        Method method = this.clazzNoStatic.getMethod(UserClassMappingVisitor.mapMethodName("returnStaticStringConstant"));
         Object ret = method.invoke(obj);
-        Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, ret);
+        Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, ret.toString());
         
         // Get the constant directly from the static field.
-        Object direct = this.clazzNoStatic.getField("kStringConstant").get(null);
-        Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, direct);
+        Object direct = this.clazzNoStatic.getField(UserClassMappingVisitor.mapFieldName("kStringConstant")).get(null);
+        Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, direct.toString());
         
         // They should also be the same instance.
         Assert.assertTrue(ret == direct);

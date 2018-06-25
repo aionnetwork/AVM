@@ -33,9 +33,10 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         // We do this by walking the hierarchy backward until we get to the java.lang and then seeing if we walk to "java.lang.Throwable" before
         // "java.lang.Object".
         String thisClass = name.replaceAll("/", ".");
+
         boolean isThrowable = false;
-        while (!isThrowable && !"java.lang.Object".equals(thisClass)) {
-            if ("java.lang.Throwable".equals(thisClass)) {
+        while (!isThrowable && !(PackageConstants.kShadowDotPrefix + "java.lang.Object").equals(thisClass)) {
+            if ((PackageConstants.kShadowDotPrefix + "java.lang.Throwable").equals(thisClass)) {
                 isThrowable = true;
             } else {
                 // We assume that we can only descend from objects already in the ClassHierarchyForest or in "java/lang".
@@ -43,7 +44,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                 if (null == superClass) {
                     // We will try to load this from the default class loader and ask its parent.
                     // (we can only land outside if we fell into the java.lang package, which is a problem we should have filtered, earlier)
-                    Assert.assertTrue(thisClass.startsWith("java.lang"));
+                    Assert.assertTrue(thisClass.startsWith(PackageConstants.kShadowDotPrefix + "java.lang"));
                     try {
                         Class<?> clazz = Class.forName(thisClass);
                         superClass = clazz.getSuperclass().getName();
@@ -78,11 +79,11 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
             private final Set<Label> catchTargets = new HashSet<>();
             // When we match a label as a target, we set this flag to inject our call-out before the first bytecode.
             private boolean isTargetFrame = false;
-            
+
             @Override
             public void visitLabel(Label label) {
                 super.visitLabel(label);
-                
+
                 // Be careful that we could have multiple labels at the same bytecode so saturate to true on match.
                 if (this.catchTargets.contains(label)) {
                     this.isTargetFrame = true;
@@ -91,7 +92,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
             @Override
             public void visitFrame(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
                 super.visitFrame(type, nLocal, local, nStack, stack);
-                
+
                 // If this is the target frame, then this is the last callback before the first bytecode.
                 // This means, once we call the super visitFrame, we can now inject the call-out.
                 if (this.isTargetFrame) {
@@ -99,16 +100,16 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     // (we know that there is exactly one element on the stack, since this is the beginning of a catch block.
                     String castType = (String) stack[0];
                     String methodName = "unwrapThrowable";
-                    
+
                     // SHADOW NOTES:
                     // Note that this java/lang/Throwable MUST not be rewritten as another type since that is literally what is on the operand
                     // stack at the beginning of an exception handler.
                     // On the other hand, the returned java/lang/Object _should_ be rewritten as the shadow type, but we are safe if it isn't.
                     String methodDescriptor = "(Ljava/lang/Throwable;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object;";
-                    
+
                     // The call-out will actually return the base object class in our environment so we need to cast.
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, ExceptionWrapping.this.runtimeClassName, methodName, methodDescriptor, false);
-                    
+
                     // The cast will give us exactly what the previous path thought was the common class of any multi-catch options.
                     // (without this, the verifier will complain about the operand stack containing the wrong type when used).
                     // Note that this type also needs to be translated into our namespace, since we won't be giving the user direct access to
@@ -124,9 +125,10 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
             public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
                 // Our special-handling is only for non-finally blocks.
                 if (null != type) {
-                    if (type.startsWith("java/lang/")) {
+                    if (type.startsWith(PackageConstants.kShadowSlashPrefix + "java/lang/")) {
                         // If this was trying to catch anything in "java/lang/*", then duplicate it for our wrapper type.
-                        super.visitTryCatchBlock(start, end, handler, type);
+                        String strippedClass = getStrippedClassSlashName(type);
+                        super.visitTryCatchBlock(start, end, handler, strippedClass);
                         String wrapperType = prependExceptionWrapperSlashPrefix(type);
                         super.visitTryCatchBlock(start, end, handler, wrapperType);
                     } else {
@@ -138,7 +140,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     // Finally, just pass through.
                     super.visitTryCatchBlock(start, end, handler, type);
                 }
-                
+
                 // We also need to record the handler label so we know it is a catch block, in visitLabel, above.
                 this.catchTargets.add(handler);
             }
@@ -149,13 +151,13 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                 // This must happen BEFORE the athrow opcode is emitted, for obvious reasons.
                 if (Opcodes.ATHROW == opcode) {
                     String methodName = "wrapAsThrowable";
-                    
+
                     // SHADOW NOTES:
                     // Note that this java/lang/Throwable MUST NOT be rewritten as another type since that is literally what must be on the
                     // operand stack when we call athrow.
                     // On the other hand, the java/lang/Object _should_ be rewritten as the shadow type, but we are safe if it isn't.
                     String methodDescriptor = "(L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object;)Ljava/lang/Throwable;";
-                    
+
                     // The call-out will actually return the base object class in our environment so we need to cast.
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, ExceptionWrapping.this.runtimeClassName, methodName, methodDescriptor, false);
                 }
@@ -164,22 +166,26 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         };
     }
 
+    private static String getStrippedClassSlashName(String className) {
+        if (className.startsWith(PackageConstants.kUserSlashPrefix)) {
+            return className.substring(PackageConstants.kUserSlashPrefix.length());
+
+        } else if (className.startsWith(PackageConstants.kShadowSlashPrefix)) {
+            return className.substring(PackageConstants.kShadowSlashPrefix.length());
+
+        } else if (className.startsWith(PackageConstants.kApiSlashPrefix)) {
+            Assert.unimplemented("Stripping name for API classes not implemented");
+
+        } else {
+            Assert.unreachable("Unknown class prefix: " + className);
+        }
+
+        return null;
+    }
 
     private static String prependExceptionWrapperSlashPrefix(String className) {
         // It is possible that the name could have the user prefix, or a java.lang shadow prefix, so remove that before prepending the wrapper.
-        String strippedClassName = null;
-        if (className.startsWith(PackageConstants.kUserSlashPrefix)) {
-            strippedClassName = className.substring(PackageConstants.kUserSlashPrefix.length());
-        } else if (className.startsWith(PackageConstants.kShadowSlashPrefix)) {
-            strippedClassName = className.substring(PackageConstants.kShadowSlashPrefix.length());
-        } else if (className.startsWith("java/lang/")){
-            // Note that this is probably only temporarily required - once all class/method/field renaming has been moved to UserClassMappingVisitor
-            // we can probably get rid of this clause and fall-through to the unreachable assert.
-            strippedClassName = className;
-        } else {
-            // Someone created this prefix but we don't know how to decode it (means an incomplete change).
-            Assert.unreachable("Unknown exception prefix: " + className);
-        }
+        String strippedClassName = getStrippedClassSlashName(className);
         return PackageConstants.kExceptionWrapperSlashPrefix + strippedClassName;
     }
 

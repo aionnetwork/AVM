@@ -17,10 +17,14 @@ import java.util.ArrayList;
  */
 public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor {
     private final Replacer replacer;
+    private final String postRenameStringConcatFactory;
+    private final String postRenameLambdaFactory;
 
-    public InvokedynamicShadower(String runtimeClassName, String shadowPackage, ClassWhiteList classWhiteList) {
+    public InvokedynamicShadower(String runtimeClassName, String shadowPackage) {
         super(Opcodes.ASM6);
-        this.replacer = new Replacer(shadowPackage, classWhiteList);
+        this.replacer = new Replacer(shadowPackage);
+        this.postRenameStringConcatFactory = shadowPackage + "java/lang/invoke/StringConcatFactory";
+        this.postRenameLambdaFactory = shadowPackage + "java/lang/invoke/LambdaMetafactory";
     }
 
     public MethodVisitor visitMethod(
@@ -52,11 +56,11 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
 
         private boolean isStringConcatIndy(String origMethodName, String owner) {
             return UserClassMappingVisitor.mapMethodName("makeConcatWithConstants").equals(origMethodName)
-                    && "java/lang/invoke/StringConcatFactory".equals(owner);
+                    && postRenameStringConcatFactory.equals(owner);
         }
 
         private boolean isLambdaIndy(String owner) {
-            return "java/lang/invoke/LambdaMetafactory".equals(owner);
+            return postRenameLambdaFactory.equals(owner);
         }
 
         private void handleLambdaIndy(String origMethodName, String methodDescriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
@@ -68,7 +72,7 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
         }
 
         private void handleStringConcatIndy(String methodDescriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-            final String newMethodName = "concat";  /** {@link org.aion.avm.core.testdoubles.indy.invoke.StringConcatFactory#concat} */
+            final String newMethodName = "concat";
             final String newMethodDescriptor = replacer.replaceMethodDescriptor(methodDescriptor);
             final Handle newHandle = newLambdaHandleFrom(bootstrapMethodHandle, false);
             super.visitInvokeDynamicInsn(newMethodName, newMethodDescriptor, newHandle, bootstrapMethodArguments);
