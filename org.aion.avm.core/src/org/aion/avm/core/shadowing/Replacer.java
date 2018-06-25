@@ -7,10 +7,10 @@ class Replacer {
     private static final String JAVA_LANG_OBJECT = "java/lang/Object";
     private static final String AVM_INTERNAL_IOBJECT = PackageConstants.kInternalSlashPrefix + "IObject";
 
-    private final String shadowPackage;
+    private final String shadowJavaLangObject;
 
     Replacer(String shadowPackage) {
-        this.shadowPackage = shadowPackage;
+        this.shadowJavaLangObject = shadowPackage + JAVA_LANG_OBJECT;
     }
 
     /**
@@ -21,8 +21,7 @@ class Replacer {
      * @return
      */
     protected String replaceType(String type, boolean allowInterfaceReplacement) {
-        // Handle the 3 relevant cases, independently.
-        boolean isTypeJavaLangObject = (shadowPackage + JAVA_LANG_OBJECT).equals(type);
+        boolean isTypeJavaLangObject = shadowJavaLangObject.equals(type);
         if (allowInterfaceReplacement && isTypeJavaLangObject) {
             return AVM_INTERNAL_IOBJECT;
         } else {

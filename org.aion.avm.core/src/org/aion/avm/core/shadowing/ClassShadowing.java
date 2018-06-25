@@ -11,10 +11,9 @@ import org.objectweb.asm.*;
 import java.util.stream.Stream;
 
 /**
- * Utility for replacing class refs
+ * Most of the class shadowing logic has been moved to {@link org.aion.avm.core.miscvisitors.UserClassMappingVisitor}.
  *
- * 1) All whitelisted JDK classes are tranformed into their shadow implementations;
- * 2) All method ref to whitelisted JDK class and user defined class will be transformed into it's `avm_` version.
+ * The only logic left here is to deal with the Object-IObject swap for assignability.
  */
 public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
@@ -52,7 +51,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
         boolean isInterface = (0 != (Opcodes.ACC_INTERFACE & access));
         String newSuperName = isInterface
                 ? (postRenameJavaLangObject.equals(superName) ? JAVA_LANG_OBJECT : superName)
-                : replacer.replaceType(superName, false);
+                : superName;
         Stream<String> replacedInterfaces = Stream.of(interfaces).map((oldName) -> replacer.replaceType(oldName, true));
         // If this is an interface, we need to add our "root interface" so that we have a unification point between the interface and our shadow Object.
         if (isInterface) {
@@ -74,10 +73,8 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
             final String signature,
             final String[] exceptions) {
 
-        String newName = name;
-
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
-        MethodVisitor mv = super.visitMethod(access, newName, replacer.replaceMethodDescriptor(descriptor), null, exceptions);
+        MethodVisitor mv = super.visitMethod(access, name, replacer.replaceMethodDescriptor(descriptor), null, exceptions);
 
         return new MethodVisitor(Opcodes.ASM6, mv) {
             @Override
@@ -88,13 +85,10 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
                     final String descriptor,
                     final boolean isInterface) {
 
-                // don't replace methods of internal classes, introduced by instrumentation
-                String newName = name;
-
                 // Note that it is possible we will see calls from other phases in the chain and we don't want to re-write them
                 // (often, they _are_ the bridging code).
                 if ((Opcodes.INVOKESTATIC == opcode) && runtimeClassName.equals(owner)) {
-                    super.visitMethodInsn(opcode, owner, newName, descriptor, isInterface);
+                    super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
                 } else {
                     // Due to our use of the IObject interface at the root of the shadow type hierarchy (issue-80), we may need to replace this invokevirtual
                     // opcode and/or the owner of the call we are making.
@@ -110,13 +104,17 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
                             : opcode;
                     // We need to shadow the owner type, potentially replacing it with the IObject type.
                     String newOwner = replacer.replaceType(owner, allowInterfaceReplacement);
-                    super.visitMethodInsn(newOpcode, newOwner, newName, replacer.replaceMethodDescriptor(descriptor), newIsInterface);
+                    super.visitMethodInsn(newOpcode, newOwner, name, replacer.replaceMethodDescriptor(descriptor), newIsInterface);
                 }
             }
 
             @Override
             public void visitTypeInsn(final int opcode, final String type) {
-                super.visitTypeInsn(opcode, replacer.replaceType(type, true));
+                if (opcode != Opcodes.NEW) {
+                    super.visitTypeInsn(opcode, replacer.replaceType(type, true));
+                } else {
+                    super.visitTypeInsn(opcode, type);
+                }
             }
 
             @Override

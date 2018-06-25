@@ -1,6 +1,7 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -37,6 +38,15 @@ public class ClassShadowingTest {
         Helper.clearTestingState();
         Testing.countWrappedStrings = 0;
         Testing.countWrappedClasses = 0;
+    }
+
+    @Test
+    public void testNewObject() throws Exception {
+        SimpleAvm avm = new SimpleAvm(1_000_000L, TestObjectCreation.class);
+        Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestObjectCreation.class.getName());
+
+        Object ret = clazz.getMethod(UserClassMappingVisitor.mapMethodName("accessObject")).invoke(null);
+        Assert.assertEquals(Integer.valueOf(1), ret);
     }
 
     @Test
