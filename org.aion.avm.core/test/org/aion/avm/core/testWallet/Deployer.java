@@ -44,12 +44,18 @@ public class Deployer {
     public static void main(String[] args) throws Throwable {
         // This is eventually just a test harness to invoke the decode() but, for now, it will actually invoke the calls, directly.
         // In order to instantiate Address objects, we need to install the IHelper.
+        System.out.println("--- DIRECT ---");
         IHelper.currentContractHelper.set(new FakeHelper());
         invokeDirect(args);
         IHelper.currentContractHelper.set(null);
+        System.out.println("--- DONE (DIRECT) ---");
+        
+        System.out.println("----- ***** -----");
         
         // Now, try the transformed version.
+        System.out.println("--- TRANSFORMED ---");
         invokeTransformed(args);
+        System.out.println("--- DONE (TRANSFORMED) ---");
     }
 
 
