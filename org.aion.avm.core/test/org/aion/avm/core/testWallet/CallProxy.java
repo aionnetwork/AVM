@@ -11,9 +11,9 @@ import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
  * transformed contract space.
  */
 public class CallProxy {
-    public static void payable(Class<?> walletClass, Address from, long value) throws Exception {
+    public static void payable(Class<?> walletClass, BlockchainRuntime runtime, Address from, long value) throws Exception {
         byte[] onto = CallEncoder.payable(from, value);
-        callDecode(walletClass, null, onto);
+        callDecode(walletClass, runtime, onto);
     }
 
     public static void addOwner(Class<?> walletClass, BlockchainRuntime runtime, Address owner) throws Exception {

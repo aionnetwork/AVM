@@ -26,49 +26,49 @@ public class EventLogger {
         EventLogger.logSink = logSink;
     }
 
-    public static void confirmation(Address sender, Operation operation) {
+    public static void confirmation(BlockchainRuntime logSink, Address sender, Operation operation) {
         byte[] senderBytes = sender.unwrap();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] data = ByteArrayHelpers.concatenate(senderBytes, operationBytes);
         EventLogger.logSink.log(kConfirmation.getBytes(), data);
     }
 
-    public static void revoke(Address sender, Operation operation) {
+    public static void revoke(BlockchainRuntime logSink, Address sender, Operation operation) {
         byte[] senderBytes = sender.unwrap();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] data = ByteArrayHelpers.concatenate(senderBytes, operationBytes);
         EventLogger.logSink.log(kRevoke.getBytes(), data);
     }
 
-    public static void ownerChanged(Address oldOwner, Address newOwner) {
+    public static void ownerChanged(BlockchainRuntime logSink, Address oldOwner, Address newOwner) {
         byte[] oldBytes = oldOwner.unwrap();
         byte[] newBytes = newOwner.unwrap();
         byte[] data = ByteArrayHelpers.concatenate(oldBytes, newBytes);
         EventLogger.logSink.log(kOwnerChanged.getBytes(), data);
     }
 
-    public static void ownerAdded(Address newOwner) {
+    public static void ownerAdded(BlockchainRuntime logSink, Address newOwner) {
         byte[] data = newOwner.unwrap();
         EventLogger.logSink.log(kOwnerAdded.getBytes(), data);
     }
 
-    public static void ownerRemoved(Address oldOwner) {
+    public static void ownerRemoved(BlockchainRuntime logSink, Address oldOwner) {
         byte[] data = oldOwner.unwrap();
         EventLogger.logSink.log(kOwnerRemoved.getBytes(), data);
     }
 
-    public static void requirementChanged(int newRequired) {
+    public static void requirementChanged(BlockchainRuntime logSink, int newRequired) {
         byte[] data = ByteArrayHelpers.encodeInt(newRequired);
         EventLogger.logSink.log(kRequirementChanged.getBytes(), data);
     }
 
-    public static void deposit(Address from, long value) {
+    public static void deposit(BlockchainRuntime logSink, Address from, long value) {
         byte[] fromBytes = from.unwrap();
         byte[] data = ByteArrayHelpers.appendLong(fromBytes, value);
         EventLogger.logSink.log(kDeposit.getBytes(), data);
     }
 
-    public static void singleTransact(Address owner, long value, Address to, byte[] data) {
+    public static void singleTransact(BlockchainRuntime logSink, Address owner, long value, Address to, byte[] data) {
         byte[] ownerBytes = owner.unwrap();
         byte[] ownerValue = ByteArrayHelpers.appendLong(ownerBytes, value);
         byte[] toBytes = to.unwrap();
@@ -77,7 +77,7 @@ public class EventLogger {
         EventLogger.logSink.log(kSingleTransact.getBytes(), finalData);
     }
 
-    public static void multiTransact(Address owner, Operation operation, long value, Address to, byte[] data) {
+    public static void multiTransact(BlockchainRuntime logSink, Address owner, Operation operation, long value, Address to, byte[] data) {
         byte[] ownerBytes = owner.unwrap();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] ownerOperation = ByteArrayHelpers.concatenate(ownerBytes, operationBytes);
@@ -88,7 +88,7 @@ public class EventLogger {
         EventLogger.logSink.log(kMultiTransact.getBytes(), finalData);
     }
 
-    public static void confirmationNeeded(Operation operation, Address initiator, long value, Address to, byte[] data) {
+    public static void confirmationNeeded(BlockchainRuntime logSink, Operation operation, Address initiator, long value, Address to, byte[] data) {
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] initBytes = initiator.unwrap();
         byte[] operationInit = ByteArrayHelpers.concatenate(operationBytes, initBytes);

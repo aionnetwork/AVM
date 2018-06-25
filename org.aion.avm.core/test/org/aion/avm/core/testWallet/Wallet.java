@@ -38,8 +38,8 @@ public class Wallet {
         Address sender = runtime.getSender();
         long nowInSeconds = runtime.getBlockEpochSeconds();
         long nowInDays = nowInSeconds / (24 * 60 * 60);
-        Multiowned.init(sender, requestedOwners, votesRequiredPerOperation);
-        Daylimit.init(daylimit, nowInDays);
+        Multiowned.init(runtime, sender, requestedOwners, votesRequiredPerOperation);
+        Daylimit.init(runtime, daylimit, nowInDays);
         
         Wallet.transactions = new AionMap<>();
     }
@@ -60,7 +60,7 @@ public class Wallet {
         case Abi.kWallet_payable : {
             Address from = decoder.decodeAddress();
             long value = decoder.decodeLong();
-            Wallet.payable(from, value);
+            Wallet.payable(runtime, from, value);
             break;
         }
         case Abi.kWallet_addOwner : {
@@ -138,7 +138,7 @@ public class Wallet {
 
     // EXTERNAL - composed
     public static Address getOwner(BlockchainRuntime runtime, int ownerIndex) {
-        return Multiowned.getOwner(ownerIndex);
+        return Multiowned.getOwner(runtime, ownerIndex);
     }
 
     // EXTERNAL - composed
@@ -154,15 +154,15 @@ public class Wallet {
     // EXTERNAL
     public static void kill(BlockchainRuntime runtime, Address to) {
         // (modifier)
-        Multiowned.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
+        Multiowned.onlyManyOwners(runtime, runtime.getSender(), Operation.fromMessage(runtime));
         
         runtime.selfDestruct(to);
     }
 
     // gets called when no other function matches
-    public static void payable(Address from, long value) {
+    public static void payable(BlockchainRuntime runtime, Address from, long value) {
         if (value > 0) {
-            EventLogger.deposit(from, value);
+            EventLogger.deposit(runtime, from, value);
         }
     }
 
@@ -173,12 +173,12 @@ public class Wallet {
     // and _data arguments). They still get the option of using them if they want, anyways.
     public static byte[] execute(BlockchainRuntime runtime, Address to, long value, byte[] data) {
         // (modifier)
-        Multiowned.onlyOwner(runtime.getSender());
+        Multiowned.onlyOwner(runtime, runtime.getSender());
         
         byte[] result = null;
         // first, take the opportunity to check that we're under the daily limit.
         if (Daylimit.underLimit(runtime, value)) {
-            EventLogger.singleTransact(runtime.getSender(), value, to, data);
+            EventLogger.singleTransact(runtime, runtime.getSender(), value, to, data);
             // yes - just execute the call.
             byte[] response = runtime.call(to, null, data, value);
             if (null == response) {
@@ -196,7 +196,7 @@ public class Wallet {
                 transaction.value = value;
                 transaction.data = data;
                 Wallet.transactions.put(transactionKey, transaction);
-                EventLogger.confirmationNeeded(Operation.fromBytes(result), runtime.getSender(), value, to, data);
+                EventLogger.confirmationNeeded(runtime, Operation.fromBytes(result), runtime.getSender(), value, to, data);
             }
         }
         return result;
@@ -221,7 +221,7 @@ public class Wallet {
     // to determine the body of the transaction from the hash provided.
     public static boolean confirm(BlockchainRuntime runtime, byte[] h) {
         // (modifier)
-        Multiowned.onlyManyOwners(runtime.getSender(), Operation.fromBytes(h));
+        Multiowned.onlyManyOwners(runtime, runtime.getSender(), Operation.fromBytes(h));
         
         boolean result = false;
         BytesKey key = BytesKey.from(h);
@@ -231,7 +231,7 @@ public class Wallet {
             if (null == response) {
                 throw new RequireFailedException();
             }
-            EventLogger.multiTransact(runtime.getSender(), Operation.fromBytes(h), transaction.value, transaction.to, transaction.data);
+            EventLogger.multiTransact(runtime, runtime.getSender(), Operation.fromBytes(h), transaction.value, transaction.to, transaction.data);
             Wallet.transactions.remove(BytesKey.from(h));
             result = true;
         }

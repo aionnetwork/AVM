@@ -8,9 +8,9 @@ import org.aion.avm.api.BlockchainRuntime;
  * Based on the CallProxy, to give a similar interface for even the direct call comparison.
  */
 public class DirectProxy {
-    public static void payable(Address from, long value) {
+    public static void payable(BlockchainRuntime runtime, Address from, long value) {
         byte[] onto = CallEncoder.payable(from, value);
-        Wallet.decode(null, onto);
+        Wallet.decode(runtime, onto);
     }
 
     public static void addOwner(BlockchainRuntime runtime, Address owner) {

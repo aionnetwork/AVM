@@ -15,7 +15,7 @@ public class Daylimit {
     private static long spentToday = 0;
 
     // "Constructor"
-    public static void init(long value, long nowInDays) {
+    public static void init(BlockchainRuntime runtime, long value, long nowInDays) {
         Daylimit.dailyLimit = value;
         Daylimit.lastDay = nowInDays;
     }
@@ -23,7 +23,7 @@ public class Daylimit {
     // PUBLIC INTERFACE
     public static void setDailyLimit(BlockchainRuntime runtime, long value) {
         // (modifier)
-        Multiowned.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
+        Multiowned.onlyManyOwners(runtime, runtime.getSender(), Operation.fromMessage(runtime));
         
         Daylimit.dailyLimit = value;
     }
@@ -31,7 +31,7 @@ public class Daylimit {
     // PUBLIC INTERFACE
     public static void resetSpentToday(BlockchainRuntime runtime) {
         // (modifier)
-        Multiowned.onlyManyOwners(runtime.getSender(), Operation.fromMessage(runtime));
+        Multiowned.onlyManyOwners(runtime, runtime.getSender(), Operation.fromMessage(runtime));
         
         Daylimit.spentToday = 0;
     }
@@ -42,7 +42,7 @@ public class Daylimit {
     // public for composition.
     public static boolean underLimit(BlockchainRuntime runtime, long value) {
         // (modifier)
-        Multiowned.onlyOwner(runtime.getSender());
+        Multiowned.onlyOwner(runtime, runtime.getSender());
         
         // reset the spend limit if we're on a different day to last time.
         long nowInDays = runtime.getBlockEpochSeconds() / kSecondsPerDay;

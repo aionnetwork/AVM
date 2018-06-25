@@ -77,7 +77,7 @@ public class Deployer {
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
         long paymendValue = 5;
-        DirectProxy.payable(paymentFrom, paymendValue);
+        DirectProxy.payable(new TestingRuntime(paymentFrom, new byte[] {5,6,42}), paymentFrom, paymendValue);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kDeposit));
         
         // Try to add an owner - we need to call this twice to see the event output: sender and extra1.
@@ -233,7 +233,7 @@ public class Deployer {
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
         long paymentValue = 5;
-        CallProxy.payable(walletClass, paymentFrom, paymentValue);
+        CallProxy.payable(walletClass, new TestingRuntime(paymentFrom, new byte[] {5,6,42}) , paymentFrom, paymentValue);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kDeposit));
         
         // Try to add an owner - we need to call this twice to see the event output: sender and extra1.
