@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.lang.reflect.Method;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -232,7 +231,7 @@ public class AvmImpl implements Avm {
                     .addNextVisitor(new UserClassMappingVisitor(preRenameUserDefinedClasses))
                     .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
-                    .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS, PackageConstants.kShadowSlashPrefix))
+                    .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new ClassShadowing(HELPER_CLASS))
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, parentClassResolver, generatedClassesSink))

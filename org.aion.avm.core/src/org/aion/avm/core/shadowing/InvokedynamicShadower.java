@@ -1,7 +1,6 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
@@ -11,18 +10,23 @@ import org.objectweb.asm.Type;
 import java.util.ArrayList;
 
 /**
- * This transformer has no dependencies on other transformers.
+ * Class visitor dedicated for invokedyanmic. Currently supported types:
+ * 1) String concatenation
+ * 2) Lambda expression
+ *
+ * NOTE: this visitor requires the {@link IObjectReplacer} to deal with Object-IObject
+ * replacement in method handle.
  *
  * @author Roman Katerinenko
  */
 public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor {
-    private final Replacer replacer;
+    private final IObjectReplacer replacer;
     private final String postRenameStringConcatFactory;
     private final String postRenameLambdaFactory;
 
-    public InvokedynamicShadower(String runtimeClassName, String shadowPackage) {
+    public InvokedynamicShadower(String shadowPackage) {
         super(Opcodes.ASM6);
-        this.replacer = new Replacer(shadowPackage);
+        this.replacer = new IObjectReplacer(shadowPackage);
         this.postRenameStringConcatFactory = shadowPackage + "java/lang/invoke/StringConcatFactory";
         this.postRenameLambdaFactory = shadowPackage + "java/lang/invoke/LambdaMetafactory";
     }
@@ -45,7 +49,7 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
         @Override
         public void visitInvokeDynamicInsn(String origMethodName, String methodDescriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
             String methodOwner = bootstrapMethodHandle.getOwner();
-            if (isStringConcatIndy(origMethodName, methodOwner)) {
+            if (isStringConcatIndy(methodOwner, origMethodName)) {
                 handleStringConcatIndy(methodDescriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             } else if (isLambdaIndy(methodOwner)) {
                 handleLambdaIndy(origMethodName, methodDescriptor, bootstrapMethodHandle, bootstrapMethodArguments);
@@ -54,9 +58,8 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
             }
         }
 
-        private boolean isStringConcatIndy(String origMethodName, String owner) {
-            return UserClassMappingVisitor.mapMethodName("makeConcatWithConstants").equals(origMethodName)
-                    && postRenameStringConcatFactory.equals(owner);
+        private boolean isStringConcatIndy(String owner, String origMethodName) {
+            return postRenameStringConcatFactory.equals(owner) && UserClassMappingVisitor.mapMethodName("makeConcatWithConstants").equals(origMethodName);
         }
 
         private boolean isLambdaIndy(String owner) {
@@ -80,7 +83,7 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
 
         private Handle newLambdaHandleFrom(Handle origHandle, boolean shadowMethodDescriptor) {
             final String owner = origHandle.getOwner();
-            final String newOwner = replacer.replaceType(owner, true);
+            final String newOwner = owner;
             final String newMethodName = origHandle.getName();
             final String newMethodDescriptor = shadowMethodDescriptor ? replacer.replaceMethodDescriptor(origHandle.getDesc()) : origHandle.getDesc();
             return new Handle(origHandle.getTag(), newOwner, newMethodName, newMethodDescriptor, origHandle.isInterface());
@@ -102,8 +105,8 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
             return newArgs.toArray();
         }
 
-        private org.objectweb.asm.Type newMethodTypeFrom(org.objectweb.asm.Type origType) {
-            return org.objectweb.asm.Type.getMethodType(replacer.replaceMethodDescriptor(origType.getDescriptor()));
+        private Type newMethodTypeFrom(Type origType) {
+            return Type.getMethodType(replacer.replaceMethodDescriptor(origType.getDescriptor()));
         }
     }
 }

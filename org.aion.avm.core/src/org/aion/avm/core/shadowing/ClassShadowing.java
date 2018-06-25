@@ -21,12 +21,12 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
     private final String runtimeClassName;
     private final ClassWhiteList classWhiteList;
-    private final Replacer replacer;
+    private final IObjectReplacer replacer;
     private final String postRenameJavaLangObject;
 
     public ClassShadowing(String runtimeClassName, String shadowPackage) {
         super(Opcodes.ASM6);
-        this.replacer = new Replacer(shadowPackage);
+        this.replacer = new IObjectReplacer(shadowPackage);
         this.runtimeClassName = runtimeClassName;
         this.classWhiteList = new ClassWhiteList();
         this.postRenameJavaLangObject = shadowPackage + JAVA_LANG_OBJECT;

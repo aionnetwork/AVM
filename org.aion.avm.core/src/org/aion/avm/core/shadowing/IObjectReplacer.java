@@ -3,13 +3,13 @@ package org.aion.avm.core.shadowing;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.internal.PackageConstants;
 
-class Replacer {
+class IObjectReplacer {
     private static final String JAVA_LANG_OBJECT = "java/lang/Object";
     private static final String AVM_INTERNAL_IOBJECT = PackageConstants.kInternalSlashPrefix + "IObject";
 
     private final String shadowJavaLangObject;
 
-    Replacer(String shadowPackage) {
+    IObjectReplacer(String shadowPackage) {
         this.shadowJavaLangObject = shadowPackage + JAVA_LANG_OBJECT;
     }
 

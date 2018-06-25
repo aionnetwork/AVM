@@ -67,7 +67,7 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME))
-                .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage))
+                .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         sharedClassLoader,
                         new ParentPointers(Collections.singleton(className), classHierarchy),
@@ -97,7 +97,7 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy), shadowPackage))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
-                .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage))
+                .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         sharedClassLoader,
                         new ParentPointers(Collections.singleton(className), classHierarchy),
@@ -139,7 +139,7 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, AvmImpl.computeAllPostRenameObjectSizes(classHierarchy)))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
-                .addNextVisitor(new InvokedynamicShadower(HELPER_CLASS_NAME, shadowPackage))
+                .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addNextVisitor(new StackWatcherClassAdapter())
                 .addNextVisitor(new ExceptionWrapping(HELPER_CLASS_NAME, parentPointers, generatedClassConsumer))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, parentPointers, dynamicHierarchyBuilder))
