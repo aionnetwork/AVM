@@ -20,11 +20,7 @@ import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.InvalidTxDataException;
-import org.aion.avm.internal.AvmException;
-import org.aion.avm.internal.FatalAvmError;
-import org.aion.avm.internal.IHelper;
-import org.aion.avm.internal.OutOfEnergyError;
-import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.*;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelApi;
@@ -376,6 +372,7 @@ public class AvmImpl implements Avm {
             // Construct the per-contract class loader and access the per-contract IHelper instance.
             AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
             IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit());
+            Helpers.attachBlockchainRuntime(classLoader, createBlockchainRuntime(tx, block, cb));
             // TODO: createBlockchainRuntime(tx, block , cb)
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
@@ -430,6 +427,7 @@ public class AvmImpl implements Avm {
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, classLoader);
         classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit());
+        Helpers.attachBlockchainRuntime(classLoader, createBlockchainRuntime(tx, block, cb));
         // TODO: createBlockchainRuntime(tx, block , cb)
 
         // load class TODO: invocation is temporarily disabled
