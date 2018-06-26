@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -376,7 +377,6 @@ public class AvmImpl implements Avm {
             AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
             IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit());
             Helpers.attachBlockchainRuntime(classLoader, createBlockchainRuntime(tx, block, cb));
-            // TODO: createBlockchainRuntime(tx, block , cb)
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
@@ -431,9 +431,8 @@ public class AvmImpl implements Avm {
         classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit());
         Helpers.attachBlockchainRuntime(classLoader, createBlockchainRuntime(tx, block, cb));
-        // TODO: createBlockchainRuntime(tx, block , cb)
 
-        // load class TODO: invocation is temporarily disabled
+        // load class
         try {
             if (tx.getData() == null) {
                 throw new InvalidTxDataException();
@@ -445,13 +444,14 @@ public class AvmImpl implements Avm {
             Object obj = clazz.getConstructor().newInstance();
 
             // call contract main method
-            Method method = clazz.getMethod("avm_main", null);
+            Method method = clazz.getMethod("avm_main");
             Object ret = method.invoke(obj);
 
             // TODO: handle the return data after changing the entry function ABI
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), (byte[])null);
-        } catch (InvalidTxDataException e) {
-            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+        } catch (InvocationTargetException e) {
+            if (e.getCause() != null) return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+            return new AvmResult(AvmResult.Code.FAILURE, 0);
         } catch (Exception e) {
             e.printStackTrace();
 
