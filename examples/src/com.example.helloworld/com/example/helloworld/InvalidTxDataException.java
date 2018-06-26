@@ -1,4 +1,4 @@
-package org.aion.avm.api;
+package com.example.helloworld;
 
 public class InvalidTxDataException extends Exception {
 }

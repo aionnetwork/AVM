@@ -1,9 +1,6 @@
 package com.example.deployAndRunTest;
 
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.InvalidTxDataException;
-
 
 public class DeployAndRunTest {
 
@@ -35,8 +32,12 @@ public class DeployAndRunTest {
     }
 
     public Object main() throws InvalidTxDataException {
+        // copy txData here for now
+        byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
+
         ABIDecoder decoder = new ABIDecoder();
-        ABIDecoder.MethodCaller methodCaller = decoder.decode(BlockchainRuntime.getData());
+        //ABIDecoder.MethodCaller methodCaller = decoder.decode(BlockchainRuntime.getData());
+        ABIDecoder.MethodCaller methodCaller = decoder.decode(txData);
         switch (methodCaller.methodName) {
             case "add":
                 return add((int)methodCaller.arguments[0], (int)methodCaller.arguments[1]);

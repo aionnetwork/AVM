@@ -1,7 +1,4 @@
-package org.aion.avm.api;
-
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+package com.example.deployAndRunTest;
 
 public class ABIDecoder {
     /*
@@ -472,24 +469,24 @@ public class ABIDecoder {
     }
 
     private static float getNextFloat(byte[] txData, int start) {
-        return ByteBuffer.allocate(4).put(Arrays.copyOfRange(txData, start, start + 4)).getFloat(0);
+        //return ByteBuffer.allocate(4).put(Arrays.copyOfRange(txData, start, start + 4)).getFloat(0);
+        return Float.intBitsToFloat(getNextInt(txData, start));
     }
 
     private static double getNextDouble(byte[] txData, int start) {
-        return ByteBuffer.allocate(8).put(Arrays.copyOfRange(txData, start, start + 8)).getDouble(0);
+        //return ByteBuffer.allocate(8).put(Arrays.copyOfRange(txData, start, start + 8)).getDouble(0);
+        return Double.longBitsToDouble(getNextLong(txData, start));
     }
 
     private static String getNextString(byte[] txData, int start, int m) {
-        String s;
-        if ((txData.length - start) > CHAR_SIZE_MAX * m) {
-            s = new String(Arrays.copyOfRange(txData, start, start + CHAR_SIZE_MAX * m))
-                    .substring(0, m);
+        int newLength = Math.min(CHAR_SIZE_MAX * m, txData.length - start);
+        byte[] bytes = new byte[newLength];
+
+        for (int i = 0; i < newLength; i++) {
+            bytes[i] = txData[start + i];
         }
-        else {
-            s = new String(Arrays.copyOfRange(txData, start, txData.length))
-                    .substring(0, m);
-        }
-        return s;
+
+        return new String(bytes).substring(0, m);
     }
 
     private static void checkRemainingDataSize(int remainingDataSize, int minRequiredDataSize) throws InvalidTxDataException {
@@ -498,4 +495,3 @@ public class ABIDecoder {
         }
     }
 }
-

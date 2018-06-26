@@ -19,6 +19,7 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.InvalidTxDataException;
 import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.FatalAvmError;
 import org.aion.avm.internal.IHelper;
@@ -35,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -389,7 +391,7 @@ public class AvmImpl implements Avm {
 
             // TODO: create invocation is temporarily disabled
 
-            return new AvmResult(AvmResult.Code.SUCCESS, tx.getEnergyLimit(), dappAddress);
+            return new AvmResult(AvmResult.Code.SUCCESS, tx.getEnergyLimit(), new Address(dappAddress));
         } catch (FatalAvmError e) {
             // These are unrecoverable errors (either a bug in our code or a lower-level error reported by the JVM).
             // (for now, we System.exit(-1), since this is what ethereumj does, but we may want a more graceful shutdown in the future)
@@ -432,34 +434,23 @@ public class AvmImpl implements Avm {
 
         // load class TODO: invocation is temporarily disabled
         try {
-            // Parse the tx data, get the method name and arguments
-            /*TxDataDecoder txDataDecoder = new TxDataDecoder();
             if (tx.getData() == null) {
                 throw new InvalidTxDataException();
             }
-            TxDataDecoder.MethodCaller methodCaller = txDataDecoder.decode(tx.getData());
-            String newMethodName = UserClassMappingVisitor.mapMethodName(methodCaller.methodName);
-            String newArgDescriptor = methodCaller.argsDescriptor; // TODO: nancy, take array wrapping into consideration
 
             String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
             Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
             // At a contract call, only choose the one without arguments.
             Object obj = clazz.getConstructor().newInstance();
 
-            // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
-          /*  Method method = matchMethodSelector(clazz, newMethodName, newArgDescriptor);
-            Object ret;
-            if (methodCaller.arguments == null) {
-                ret = method.invoke(obj);
-            }
-            else {
-                ret = method.invoke(obj, convertArguments(methodCaller.arguments));
-            }*/
+            // call contract main method
+            Method method = clazz.getMethod("avm_main", null);
+            Object ret = method.invoke(obj);
 
             // TODO: handle the return data after changing the entry function ABI
-            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), (byte[]) null);
-        //} catch (InvalidTxDataException | UnsupportedEncodingException e) {
-          //  return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), (byte[])null);
+        } catch (InvalidTxDataException e) {
+            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
         } catch (Exception e) {
             e.printStackTrace();
 
