@@ -112,6 +112,8 @@ public class AvmImpl implements Avm {
         map.put("java/lang/Math", 4);
         map.put("java/lang/String", 4);
         map.put("java/lang/Enum", 4);
+        map.put("java/lang/StringBuffer", 4);
+        map.put("java/lang/StringBuilder", 4);
 
         // TODO (issue-79):  Implement the rest of these by walking the runtime, elsewhere (this "4" is probably not right, in most cases).
         map.put("java/lang/AssertionError", 4);
@@ -119,6 +121,7 @@ public class AvmImpl implements Avm {
         map.put("java/lang/Exception", 4);
         map.put("java/lang/RuntimeException", 4);
         map.put("java/lang/NullPointerException", 4);
+        map.put("java/lang/IllegalArgumentException", 4);
 
         return Collections.unmodifiableMap(map);
     }
