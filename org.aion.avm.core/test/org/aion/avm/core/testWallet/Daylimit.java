@@ -1,5 +1,6 @@
 package org.aion.avm.core.testWallet;
 
+import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.IBlockchainRuntime;
 
 
@@ -15,23 +16,23 @@ public class Daylimit {
     private static long spentToday = 0;
 
     // "Constructor"
-    public static void init(IBlockchainRuntime runtime, long value, long nowInDays) {
+    public static void init(long value, long nowInDays) {
         Daylimit.dailyLimit = value;
         Daylimit.lastDay = nowInDays;
     }
 
     // PUBLIC INTERFACE
-    public static void setDailyLimit(IBlockchainRuntime runtime, long value) {
+    public static void setDailyLimit(long value) {
         // (modifier)
-        Multiowned.onlyManyOwners(runtime, runtime.getSender(), Operation.fromMessage(runtime));
+        Multiowned.onlyManyOwners(BlockchainRuntime.getSender(), Operation.fromMessage());
         
         Daylimit.dailyLimit = value;
     }
 
     // PUBLIC INTERFACE
-    public static void resetSpentToday(IBlockchainRuntime runtime) {
+    public static void resetSpentToday() {
         // (modifier)
-        Multiowned.onlyManyOwners(runtime, runtime.getSender(), Operation.fromMessage(runtime));
+        Multiowned.onlyManyOwners(BlockchainRuntime.getSender(), Operation.fromMessage());
         
         Daylimit.spentToday = 0;
     }
@@ -40,12 +41,12 @@ public class Daylimit {
     // checks to see if there is at least `_value` left from the daily limit today. if there is, subtracts it and
     // returns true. otherwise just returns false.
     // public for composition.
-    public static boolean underLimit(IBlockchainRuntime runtime, long value) {
+    public static boolean underLimit(long value) {
         // (modifier)
-        Multiowned.onlyOwner(runtime, runtime.getSender());
+        Multiowned.onlyOwner(BlockchainRuntime.getSender());
         
         // reset the spend limit if we're on a different day to last time.
-        long nowInDays = runtime.getBlockEpochSeconds() / kSecondsPerDay;
+        long nowInDays = BlockchainRuntime.getBlockEpochSeconds() / kSecondsPerDay;
         if (nowInDays > Daylimit.lastDay) {
             Daylimit.spentToday = 0;
             Daylimit.lastDay = nowInDays;

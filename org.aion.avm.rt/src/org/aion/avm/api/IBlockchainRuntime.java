@@ -104,32 +104,4 @@ public interface IBlockchainRuntime extends IObject {
      * @param data Arbitrary unstructed data assocated with the event.
      */
     void avm_log(ByteArray index0, ByteArray data);
-
-
-    // Compiler-facing implementation.
-    default Address getSender() { return avm_getSender(); }
-
-    default Address getAddress() { return avm_getAddress(); }
-
-    default long getEnergyLimit() { return avm_getEnergyLimit(); }
-
-    default byte[] getData() { return avm_getData().getUnderlying(); }
-
-    default byte[] getStorage(byte[] key) { return avm_getStorage(new ByteArray(key)).getUnderlying(); }
-
-    default void putStorage(byte[] key, byte[] value) { avm_putStorage(new ByteArray(key), new ByteArray(value)); }
-
-    default void updateCode(byte[] newCode) { avm_updateCode(new ByteArray(newCode)); }
-
-    default void selfDestruct(Address beneficiary) { avm_selfDestruct(beneficiary); }
-
-    default long getBlockEpochSeconds() { return avm_getBlockEpochSeconds(); }
-
-    default long getBlockNumber() { return avm_getBlockNumber(); }
-
-    default byte[] sha3(byte[] data) { return avm_sha3(new ByteArray(data)).getUnderlying(); }
-
-    default byte[] call(Address targetAddress, byte[] value, byte[] data, long energyLimit) { return avm_call(targetAddress, null, new ByteArray(data), energyLimit).getUnderlying(); }
-
-    default void log(byte[] index0, byte[] data) { avm_log(new ByteArray(index0), (null != data) ? new ByteArray(data) : null); }
 }

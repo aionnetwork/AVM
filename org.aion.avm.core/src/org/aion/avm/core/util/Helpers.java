@@ -5,6 +5,8 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
@@ -21,7 +23,7 @@ public class Helpers {
      * This is effective for dumping re-written bytecode to file for offline analysis.
      *
      * @param bytes The bytes to write.
-     * @param file  The path where the file should be written.
+     * @param path  The path where the file should be written.
      */
     public static void writeBytesToFile(byte[] bytes, String path) {
         File f = new File(path);
@@ -114,10 +116,16 @@ public class Helpers {
      * @return The inputMap with the Helper bytecode added.
      */
     public static Map<String, byte[]> mapIncludingHelperBytecode(Map<String, byte[]> inputMap) {
+        Map<String, byte[]> modifiedMap = new HashMap<>(inputMap);
+
         String helperClassName = Helper.class.getName();
         byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
-        Map<String, byte[]> modifiedMap = new HashMap<>(inputMap);
         modifiedMap.put(helperClassName, helperBytes);
+
+        String blockchainRuntimeClassName = BlockchainRuntime.class.getName();
+        byte[] blockchainRuntimeBytes = Helpers.loadRequiredResourceAsBytes(blockchainRuntimeClassName.replaceAll("\\.", "/") + ".class");
+        modifiedMap.put(blockchainRuntimeClassName, blockchainRuntimeBytes);
+
         return modifiedMap;
     }
 
@@ -140,5 +148,23 @@ public class Helpers {
             RuntimeAssertionError.unexpected(t);
         }
         return helper;
+    }
+
+    /**
+     * Attaches a BlockchainRuntime instance to the Helper class (per contract) so DApp can
+     * access blockchain related methods.
+     *
+     * @param contractLoader
+     * @param rt
+     */
+    public static void attachBlockchainRuntime(AvmClassLoader contractLoader, IBlockchainRuntime rt) {
+        try {
+            String helperClassName = Helper.class.getName();
+            Class<?> helperClass = contractLoader.loadClass(helperClassName);
+            helperClass.getField("blockchainRuntime").set(null, rt);
+        } catch (Throwable t) {
+            // Errors at this point imply something wrong with the installation so fail.
+            RuntimeAssertionError.unexpected(t);
+        }
     }
 }

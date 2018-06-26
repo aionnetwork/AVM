@@ -6,7 +6,9 @@ import java.util.IdentityHashMap;
 
 
 public class Helper implements IHelper {
-    private static IBlockchainRuntime blockchainRuntime;
+
+    public static IBlockchainRuntime blockchainRuntime;
+
     private static long energyLeft;
     private static ClassLoader lateLoader;
     private static int nextHashCode;

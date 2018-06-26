@@ -328,7 +328,7 @@ public class AvmImpl implements Avm {
 
         @Override
         public void avm_log(ByteArray index0, ByteArray data) {
-            cb.log(getAddress().unwrap(), index0.getUnderlying(), data.getUnderlying());
+            cb.log(tx.getTo(), index0.getUnderlying(), data.getUnderlying());
         }
     }
 
