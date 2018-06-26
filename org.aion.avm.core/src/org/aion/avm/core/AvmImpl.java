@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
@@ -24,7 +25,6 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelApi;
 import org.aion.kernel.Transaction;
@@ -250,7 +250,7 @@ public class AvmImpl implements Avm {
         return processedClasses;
     }
 
-    public static class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object implements BlockchainRuntime {
+    public static class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object implements IBlockchainRuntime {
 
         private Transaction tx;
         private Block block;
@@ -332,7 +332,7 @@ public class AvmImpl implements Avm {
         }
     }
 
-    public static BlockchainRuntime createBlockchainRuntime(Transaction tx, Block block, KernelApi cb) {
+    public static IBlockchainRuntime createBlockchainRuntime(Transaction tx, Block block, KernelApi cb) {
         return new BlockchainRuntimeImpl(tx, block , cb);
     }
 

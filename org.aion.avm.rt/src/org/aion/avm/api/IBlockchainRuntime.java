@@ -7,7 +7,7 @@ import org.aion.avm.internal.IObject;
 /**
  * Represents the hub of AVM runtime.
  */
-public interface BlockchainRuntime extends IObject {
+public interface IBlockchainRuntime extends IObject {
     // Runtime-facing implementation.
     /**
      * Returns the sender address.

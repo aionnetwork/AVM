@@ -50,7 +50,7 @@ public class ClassMeteringTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
         this.clazz = loader.loadClass(className);
         
-        // We only need to install a BlockchainRuntime which can afford our energy.
+        // We only need to install a IBlockchainRuntime which can afford our energy.
         new Helper(loader, 1_000_000L);
     }
 

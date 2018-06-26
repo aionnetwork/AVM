@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.Forest;
@@ -23,7 +24,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -72,7 +72,7 @@ public class Deployer {
         int requiredVotes = 2;
         long dailyLimit = 5000;
         // This helper to avoid creating/referencing the arraywrapper will init Wallet.
-        BlockchainRuntime deploymentRuntime = new TestingRuntime(sender, null, eventCounts);
+        IBlockchainRuntime deploymentRuntime = new TestingRuntime(sender, null, eventCounts);
         Wallet.avoidArrayWrappingFactory(deploymentRuntime, extra1, extra2, requiredVotes, dailyLimit);
         
         // First of all, just prove that we can send them some energy.
@@ -228,9 +228,9 @@ public class Deployer {
         int requiredVotes = 2;
         long dailyLimit = 5000;
         // This helper to avoid creating/referencing the arraywrapper will init Wallet.
-        BlockchainRuntime deploymentRuntime = new TestingRuntime(sender, null, eventCounts);
+        IBlockchainRuntime deploymentRuntime = new TestingRuntime(sender, null, eventCounts);
         classProvider.get()
-            .getMethod(UserClassMappingVisitor.mapMethodName("avoidArrayWrappingFactory"), BlockchainRuntime.class, Address.class, Address.class, int.class, long.class)
+            .getMethod(UserClassMappingVisitor.mapMethodName("avoidArrayWrappingFactory"), IBlockchainRuntime.class, Address.class, Address.class, int.class, long.class)
             .invoke(null, deploymentRuntime, extra1, extra2, requiredVotes, dailyLimit);
         
         // First of all, just prove that we can send them some energy.
@@ -348,7 +348,7 @@ public class Deployer {
     }
 
 
-    private static class TestingRuntime extends org.aion.avm.shadow.java.lang.Object implements BlockchainRuntime {
+    private static class TestingRuntime extends org.aion.avm.shadow.java.lang.Object implements IBlockchainRuntime {
         private final Address sender;
         private final ByteArray data;
         private final Map<java.lang.String, Integer> eventCounts;

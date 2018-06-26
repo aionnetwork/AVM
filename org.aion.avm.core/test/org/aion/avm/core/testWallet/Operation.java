@@ -1,13 +1,13 @@
 package org.aion.avm.core.testWallet;
 
-import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.api.IBlockchainRuntime;
 
 
 /**
  * This is just a hash of some data used to identity a specific operation.
  */
 public class Operation extends ByteArrayWrapper {
-    public static Operation fromMessage(BlockchainRuntime context) {
+    public static Operation fromMessage(IBlockchainRuntime context) {
         byte[] data = context.getData();
         byte[] hash = context.sha3(data);
         return new Operation(hash);
@@ -17,7 +17,7 @@ public class Operation extends ByteArrayWrapper {
         return new Operation(bytes);
     }
 
-    public static byte[] rawOperationForCurrentMessageAndBlock(BlockchainRuntime context) {
+    public static byte[] rawOperationForCurrentMessageAndBlock(IBlockchainRuntime context) {
         byte[] data = context.getData();
         long blockNumber = context.getBlockNumber();
         byte[] fullData = ByteArrayHelpers.appendLong(data, blockNumber);

@@ -1,8 +1,8 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
 
 
 /**
@@ -11,10 +11,10 @@ import org.aion.avm.api.BlockchainRuntime;
  * We resolve this by installing an "external runtime", which is an object with no special nature.  We can then create this wrapper,
  * which is part of the shadow hierarchy, and pass that into the contract code.
  */
-public class ContractRuntimeWrapper extends org.aion.avm.shadow.java.lang.Object implements BlockchainRuntime {
-    private final BlockchainRuntime externalRuntime;
+public class ContractRuntimeWrapper extends org.aion.avm.shadow.java.lang.Object implements IBlockchainRuntime {
+    private final IBlockchainRuntime externalRuntime;
 
-    public ContractRuntimeWrapper(BlockchainRuntime externalRuntime) {
+    public ContractRuntimeWrapper(IBlockchainRuntime externalRuntime) {
         this.externalRuntime = externalRuntime;
     }
     @Override

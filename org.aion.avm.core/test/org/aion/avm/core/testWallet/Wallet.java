@@ -1,7 +1,7 @@
 package org.aion.avm.core.testWallet;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
 
 
@@ -15,7 +15,7 @@ public class Wallet {
      * Calling a reflection routine which has an array in it is a problem with how our arraywrapping works.
      * This might not matter, in the future, but may be something we need to make easier to manage (maybe the arraywrappers have factories, or something).
      */
-    public static void avoidArrayWrappingFactory(BlockchainRuntime runtime, Address owner1, Address owner2, int votesRequiredPerOperation, long daylimit) {
+    public static void avoidArrayWrappingFactory(IBlockchainRuntime runtime, Address owner1, Address owner2, int votesRequiredPerOperation, long daylimit) {
         Wallet.init(runtime, new Address[] {owner1, owner2}, votesRequiredPerOperation, daylimit);
     }
 
@@ -33,7 +33,7 @@ public class Wallet {
 
     // The contract "Constructor".  Note that this should only be called once, when initially deployed (in Ethereum world, the arguments are
     // just pass as part of the deployment payload, after the code).
-    public static void init(BlockchainRuntime runtime, Address[] requestedOwners, int votesRequiredPerOperation, long daylimit) {
+    public static void init(IBlockchainRuntime runtime, Address[] requestedOwners, int votesRequiredPerOperation, long daylimit) {
         // This is the contract entry-point so "construct" the contract fragments from which we are derived.
         Address sender = runtime.getSender();
         long nowInSeconds = runtime.getBlockEpochSeconds();
@@ -51,7 +51,7 @@ public class Wallet {
      * @param input The ABI-encoded input.
      * @return The output of running the invoke (null for void methods).
      */
-    public static byte[] decode(BlockchainRuntime runtime, byte[] input) {
+    public static byte[] decode(IBlockchainRuntime runtime, byte[] input) {
         byte[] result = null;
         Abi.Decoder decoder = Abi.buildDecoder(input);
         byte methodByte = decoder.decodeByte();
@@ -117,42 +117,42 @@ public class Wallet {
     }
 
     // EXTERNAL - composed
-    public static void revoke(BlockchainRuntime runtime) {
+    public static void revoke(IBlockchainRuntime runtime) {
         Multiowned.revoke(runtime);
     }
 
     // EXTERNAL - composed
-    public static void addOwner(BlockchainRuntime runtime, Address owner) {
+    public static void addOwner(IBlockchainRuntime runtime, Address owner) {
         Multiowned.addOwner(runtime, owner);
     }
 
     // EXTERNAL - composed
-    public static void removeOwner(BlockchainRuntime runtime, Address owner) {
+    public static void removeOwner(IBlockchainRuntime runtime, Address owner) {
         Multiowned.removeOwner(runtime, owner);
     }
 
     // EXTERNAL - composed
-    public static void changeRequirement(BlockchainRuntime runtime, int newRequired) {
+    public static void changeRequirement(IBlockchainRuntime runtime, int newRequired) {
         Multiowned.changeRequirement(runtime, newRequired);
     }
 
     // EXTERNAL - composed
-    public static Address getOwner(BlockchainRuntime runtime, int ownerIndex) {
+    public static Address getOwner(IBlockchainRuntime runtime, int ownerIndex) {
         return Multiowned.getOwner(runtime, ownerIndex);
     }
 
     // EXTERNAL - composed
-    public static void setDailyLimit(BlockchainRuntime runtime, long value) {
+    public static void setDailyLimit(IBlockchainRuntime runtime, long value) {
         Daylimit.setDailyLimit(runtime, value);
     }
 
     // EXTERNAL - composed
-    public static void resetSpentToday(BlockchainRuntime runtime) {
+    public static void resetSpentToday(IBlockchainRuntime runtime) {
         Daylimit.resetSpentToday(runtime);
     }
 
     // EXTERNAL
-    public static void kill(BlockchainRuntime runtime, Address to) {
+    public static void kill(IBlockchainRuntime runtime, Address to) {
         // (modifier)
         Multiowned.onlyManyOwners(runtime, runtime.getSender(), Operation.fromMessage(runtime));
         
@@ -160,7 +160,7 @@ public class Wallet {
     }
 
     // gets called when no other function matches
-    public static void payable(BlockchainRuntime runtime, Address from, long value) {
+    public static void payable(IBlockchainRuntime runtime, Address from, long value) {
         if (value > 0) {
             EventLogger.deposit(runtime, from, value);
         }
@@ -171,7 +171,7 @@ public class Wallet {
     // If not, goes into multisig process. We provide a hash on return to allow the sender to provide
     // shortcuts for the other confirmations (allowing them to avoid replicating the _to, _value
     // and _data arguments). They still get the option of using them if they want, anyways.
-    public static byte[] execute(BlockchainRuntime runtime, Address to, long value, byte[] data) {
+    public static byte[] execute(IBlockchainRuntime runtime, Address to, long value, byte[] data) {
         // (modifier)
         Multiowned.onlyOwner(runtime, runtime.getSender());
         
@@ -203,7 +203,7 @@ public class Wallet {
     }
 
     // TODO:  Determine if this is the correct emulation of semantics.  The Solidity test seems to act like the exception is the same as "return false".
-    private static boolean safeConfirm(BlockchainRuntime runtime, byte[] h) {
+    private static boolean safeConfirm(IBlockchainRuntime runtime, byte[] h) {
         boolean result = false;
         try {
             result = confirm(runtime, h);
@@ -213,13 +213,13 @@ public class Wallet {
         return result;
     }
 
-    public static void changeOwner(BlockchainRuntime runtime, Address from, Address to) {
+    public static void changeOwner(IBlockchainRuntime runtime, Address from, Address to) {
         Multiowned.changeOwner(runtime, from, to);
     }
 
     // confirm a transaction through just the hash. we use the previous transactions map, m_txs, in order
     // to determine the body of the transaction from the hash provided.
-    public static boolean confirm(BlockchainRuntime runtime, byte[] h) {
+    public static boolean confirm(IBlockchainRuntime runtime, byte[] h) {
         // (modifier)
         Multiowned.onlyManyOwners(runtime, runtime.getSender(), Operation.fromBytes(h));
         

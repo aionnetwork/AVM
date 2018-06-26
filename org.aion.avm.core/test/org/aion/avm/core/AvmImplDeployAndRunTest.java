@@ -56,7 +56,7 @@ public class AvmImplDeployAndRunTest {
     public void testDeployWithMethodCall() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
         byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01};
-        BlockchainRuntime rt = new SimpleRuntime(from, to, energyLimit, txData);
+        IBlockchainRuntime rt = new SimpleRuntime(from, to, energyLimit, txData);
         AvmImpl avm = new AvmImpl(sharedClassLoader, codeStorage);
         AvmResult result = avm.deploy(jar, null, rt);
 
@@ -69,7 +69,7 @@ public class AvmImplDeployAndRunTest {
 
         // call the "run" method
         byte[] txData = new byte[]{0x72, 0x75, 0x6E}; // "run"
-        BlockchainRuntime rt = new SimpleRuntime(from, deployResult.address.unwrap(), energyLimit, txData);
+        IBlockchainRuntime rt = new SimpleRuntime(from, deployResult.address.unwrap(), energyLimit, txData);
         AvmImpl avm = new AvmImpl(sharedClassLoader, codeStorage);
         AvmResult result = avm.run(rt);
 
@@ -82,7 +82,7 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "add" with arguments
         byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "add<II>" + raw data 123, 1
-        BlockchainRuntime rt = new SimpleRuntime(from, deployResult.address.unwrap(), energyLimit, txData);
+        IBlockchainRuntime rt = new SimpleRuntime(from, deployResult.address.unwrap(), energyLimit, txData);
         AvmImpl avm = new AvmImpl(sharedClassLoader, codeStorage);
         AvmResult result = avm.run(rt);
 
@@ -97,7 +97,7 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "add" with arguments
         /*byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
-        //BlockchainRuntime rt = new SimpleRuntime(from, deployResult.address.unwrap(), energyLimit, txData);
+        //IBlockchainRuntime rt = new SimpleRuntime(from, deployResult.address.unwrap(), energyLimit, txData);
         AvmImpl avm = new AvmImpl(sharedClassLoader);
         KernelApi cb = new KernelApiImpl();
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, txData, energyLimit);

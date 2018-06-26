@@ -8,7 +8,7 @@ import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,7 +25,7 @@ import org.junit.Test;
 public class BasicAppTest {
     private Class<?> clazz;
     private Method decodeMethod;
-    private BlockchainRuntime runtime;
+    private IBlockchainRuntime runtime;
 
     @Before
     public void setup() throws Exception {
@@ -37,7 +37,7 @@ public class BasicAppTest {
         
         this.clazz = loader.loadUserClassByOriginalName(BasicAppTestTarget.class.getName());
         // NOTE:  The user's side is pre-shadow so it uses "byte[]" whereas we look up "ByteArray", here.
-        this.decodeMethod = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("decode"), BlockchainRuntime.class, ByteArray.class);
+        this.decodeMethod = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("decode"), IBlockchainRuntime.class, ByteArray.class);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
         
         // Create the wrapper for the runtime object, now that the external one has been used to create the Helper required to instantiate shadow objects.
