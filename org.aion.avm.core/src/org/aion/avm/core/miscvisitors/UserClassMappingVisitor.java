@@ -177,7 +177,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
     public void visitOuterClass(String owner, String name, String descriptor) {
         String newOwner = mapType(owner);
         String newName = mapMethodName(name);
-        String newDescriptor = mapDescriptor(descriptor);
+        String newDescriptor = descriptor == null ? null: mapDescriptor(descriptor);
         super.visitOuterClass(newOwner, newName, newDescriptor);
     }
 
