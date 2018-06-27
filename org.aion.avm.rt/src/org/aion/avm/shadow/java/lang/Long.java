@@ -46,14 +46,22 @@ public class Long extends Number implements Comparable<Long> {
         return java.lang.Long.parseLong(s.getUnderlying(), 10);
     }
 
+    public static long avm_parseLong(CharSequence s, int beginIndex, int endIndex, int radix)
+            throws NumberFormatException {
+        return java.lang.Long.parseLong(s.avm_toString().getUnderlying(), beginIndex, endIndex, radix);
+    }
+
     public static long avm_parseUnsignedLong(String s, int radix) throws NumberFormatException {
         return java.lang.Long.parseUnsignedLong(s.getUnderlying(), radix);
     }
 
-
-
     public static long avm_parseUnsignedLong(String s) throws NumberFormatException {
         return java.lang.Long.parseUnsignedLong(s.getUnderlying(), 10);
+    }
+
+    public static long avm_parseUnsignedLong(CharSequence s, int beginIndex, int endIndex, int radix)
+            throws NumberFormatException {
+        return java.lang.Long.parseUnsignedLong(s.avm_toString().getUnderlying(), beginIndex, endIndex, radix);
     }
 
     public static Long avm_valueOf(String s, int radix) throws NumberFormatException {
@@ -204,13 +212,6 @@ public class Long extends Number implements Comparable<Long> {
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================
-
-    // public static long avm_parseLong(CharSequence s, int beginIndex, int endIndex, int radix)
-    //      throws NumberFormatException {}
-
-
-    // public static long avm_parseUnsignedLong(CharSequence s, int beginIndex, int endIndex, int radix)
-    //      throws NumberFormatException {}
 
     // public static Long avm_getLong(String nm) {}
 

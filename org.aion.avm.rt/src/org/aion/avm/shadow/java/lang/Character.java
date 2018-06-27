@@ -219,12 +219,20 @@ public class Character extends Object {
         return java.lang.Character.toCodePoint(high, low);
     }
 
+    public static int avm_codePointAt(CharSequence seq, int index) {
+        return java.lang.Character.codePointAt(seq.avm_toString().getUnderlying(), index);
+    }
+
     public static int avm_codePointAt(CharArray c, int index) {
         return java.lang.Character.codePointAt(c.getUnderlying(), index);
     }
 
     public static int avm_codePointAt(CharArray c, int index, int limit) {
         return java.lang.Character.codePointAt(c.getUnderlying(), index, limit);
+    }
+
+    public static int avm_codePointBefore(CharSequence seq, int index) {
+        return java.lang.Character.codePointAt(seq.avm_toString().getUnderlying(), index);
     }
 
     public static int avm_codePointBefore(CharArray c, int index) {
@@ -251,8 +259,16 @@ public class Character extends Object {
         return new CharArray(java.lang.Character.toChars(codePoint));
     }
 
+    public static int avm_codePointCount(CharSequence seq, int beginIndex, int endIndex){
+        return java.lang.Character.codePointCount(seq.avm_toString().getUnderlying(), beginIndex, endIndex);
+    }
+
     public static int avm_codePointCount(CharArray a, int offset, int count) {
         return java.lang.Character.codePointCount(a.getUnderlying(), offset, count);
+    }
+
+    public static int avm_offsetByCodePoints(CharSequence seq, int index, int codePointOffset) {
+        return java.lang.Character.offsetByCodePoints(seq.avm_toString().getUnderlying(), index, codePointOffset);
     }
 
     public static int avm_offsetByCodePoints(CharArray a, int start, int count,
@@ -512,12 +528,5 @@ public class Character extends Object {
     // Methods below are excluded from shadowing
     //========================================================
 
-    //public static int avm_codePointAt(CharSequence seq, int index) {}
-
-    //public static int avm_codePointBefore(CharSequence seq, int index) {}
-
-    //public static int avm_codePointCount(CharSequence seq, int beginIndex, int endIndex){}
-
-    //public static int avm_offsetByCodePoints(CharSequence seq, int index, int codePointOffset) {}
 
 }
