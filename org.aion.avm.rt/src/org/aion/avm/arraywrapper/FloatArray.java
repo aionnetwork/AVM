@@ -9,20 +9,13 @@ public class FloatArray extends Array {
 
     private float[] underlying;
 
-    // Static factory
     public static FloatArray initArray(int c){
         IHelper.currentContractHelper.get().externalChargeEnergy(c * 32);
         return new FloatArray(c);
     }
 
-    // Constructor for newarray
     public FloatArray(int c) {
         this.underlying = new float[c];
-    }
-
-    // Constructor for internal use
-    public FloatArray(float[] underlying) {
-        this.underlying = underlying;
     }
 
     public int length() {
@@ -37,8 +30,23 @@ public class FloatArray extends Array {
         this.underlying[idx] = val;
     }
 
-    // Implementation of Cloneable
     public IObject clone() {
         return new FloatArray(Arrays.copyOf(underlying, underlying.length));
+    }
+
+    //========================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    public FloatArray(float[] underlying) {
+        this.underlying = underlying;
+    }
+
+    public void setUnderlyingAsObject(java.lang.Object u){
+        this.underlying = (float[]) u;
+    }
+
+    public java.lang.Object getUnderlyingAsObject(){
+        return underlying;
     }
 }

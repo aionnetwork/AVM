@@ -9,20 +9,13 @@ public class CharArray extends Array {
 
     private char[] underlying;
 
-    // Static factory
     public static CharArray initArray(int c){
         IHelper.currentContractHelper.get().externalChargeEnergy(c * 16);
         return new CharArray(c);
     }
 
-    // Constructor for newarray
     public CharArray(int c) {
         this.underlying = new char[c];
-    }
-
-    // Constructor for internal use
-    public CharArray(char[] underlying) {
-        this.underlying = underlying;
     }
 
     public int length() {
@@ -37,13 +30,27 @@ public class CharArray extends Array {
         this.underlying[idx] = val;
     }
 
-    // Implementation of Cloneable
     public IObject clone() {
         return new CharArray(Arrays.copyOf(underlying, underlying.length));
     }
 
-    // Internal
+    //========================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    public CharArray(char[] underlying) {
+        this.underlying = underlying;
+    }
+
     public char[] getUnderlying() {
+        return underlying;
+    }
+
+    public void setUnderlyingAsObject(java.lang.Object u){
+        this.underlying = (char[]) u;
+    }
+
+    public java.lang.Object getUnderlyingAsObject(){
         return underlying;
     }
 }

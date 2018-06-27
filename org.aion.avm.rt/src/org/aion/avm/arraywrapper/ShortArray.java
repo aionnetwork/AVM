@@ -9,20 +9,13 @@ public class ShortArray extends Array {
 
     private short[] underlying;
 
-    // Static factory
     public static ShortArray initArray(int c){
         IHelper.currentContractHelper.get().externalChargeEnergy(c * 8);
         return new ShortArray(c);
     }
 
-    // Constructor for newarray
     public ShortArray(int c) {
         this.underlying = new short[c];
-    }
-
-    // Constructor for internal use
-    public ShortArray(short[] underlying) {
-        this.underlying = underlying;
     }
 
     public int length() {
@@ -40,5 +33,21 @@ public class ShortArray extends Array {
     // Implementation of Cloneable
     public IObject clone() {
         return new ShortArray(Arrays.copyOf(underlying, underlying.length));
+    }
+
+    //========================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    public ShortArray(short[] underlying) {
+        this.underlying = underlying;
+    }
+
+    public java.lang.Object getUnderlyingAsObject(){
+        return underlying;
+    }
+
+    public void setUnderlyingAsObject(java.lang.Object u){
+        this.underlying = (short[]) u;
     }
 }

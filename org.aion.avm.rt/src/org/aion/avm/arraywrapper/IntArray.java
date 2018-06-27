@@ -9,20 +9,13 @@ public class IntArray extends Array {
 
     private int[] underlying;
 
-    // Static factory
     public static IntArray initArray(int c){
         IHelper.currentContractHelper.get().externalChargeEnergy(c * 32);
         return new IntArray(c);
     }
 
-    // Constructor for newarray
     public IntArray(int c) {
         this.underlying = new int[c];
-    }
-
-    // Constructor for internal use
-    public IntArray(int[] underlying) {
-        this.underlying = underlying;
     }
 
     public int length() {
@@ -37,13 +30,27 @@ public class IntArray extends Array {
         this.underlying[idx] = val;
     }
 
-    // Implementation of Cloneable
     public IObject clone() {
         return new IntArray(Arrays.copyOf(underlying, underlying.length));
     }
 
-    // Internal
+    //========================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    public IntArray(int[] underlying) {
+        this.underlying = underlying;
+    }
+
     public int[] getUnderlying() {
+        return underlying;
+    }
+
+    public void setUnderlyingAsObject(java.lang.Object u){
+        this.underlying = (int[]) u;
+    }
+
+    public java.lang.Object getUnderlyingAsObject(){
         return underlying;
     }
 }

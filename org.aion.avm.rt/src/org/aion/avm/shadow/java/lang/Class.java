@@ -66,7 +66,7 @@ public class Class<T> extends Object {
             // that don't comply with the enum spec.
             catch (NoSuchFieldException |
                     IllegalAccessException ex) {
-                System.out.println(ex.toString());
+                java.lang.System.out.println(ex.toString());
                 return null; }
         }
         return constants;

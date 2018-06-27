@@ -9,20 +9,13 @@ public class ObjectArray extends Array {
 
     protected Object[] underlying;
 
-    // Static factory
     public static ObjectArray initArray(int c){
         IHelper.currentContractHelper.get().externalChargeEnergy(c * 64);
         return new ObjectArray(c);
     }
 
-    // Constructor for anewarray
     public ObjectArray(int c) {
         this.underlying = new Object[c];
-    }
-
-    // Constructor for internal use
-    public ObjectArray(Object[] underlying) {
-        this.underlying = underlying;
     }
 
     public ObjectArray(){};
@@ -39,8 +32,23 @@ public class ObjectArray extends Array {
         this.underlying[idx] = val;
     }
 
-    // Implementation of Cloneable
     public IObject clone() {
         return new ObjectArray(Arrays.copyOf(underlying, underlying.length));
+    }
+
+    //========================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    public ObjectArray(Object[] underlying) {
+        this.underlying = underlying;
+    }
+
+    public void setUnderlyingAsObject(java.lang.Object u){
+        this.underlying = (Object[]) u;
+    }
+
+    public java.lang.Object getUnderlyingAsObject(){
+        return underlying;
     }
 }

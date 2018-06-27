@@ -9,20 +9,13 @@ public class DoubleArray extends Array {
 
     private double[] underlying;
 
-    // Static factory
     public static DoubleArray initArray(int c){
         IHelper.currentContractHelper.get().externalChargeEnergy(c * 64);
         return new DoubleArray(c);
     }
 
-    // Constructor for newarray
     public DoubleArray(int c) {
         this.underlying = new double[c];
-    }
-
-    // Constructor for internal use
-    public DoubleArray(double[] underlying) {
-        this.underlying = underlying;
     }
 
     public int length() {
@@ -37,8 +30,23 @@ public class DoubleArray extends Array {
         this.underlying[idx] = val;
     }
 
-    // Implementation of Cloneable
     public IObject clone() {
         return new DoubleArray(Arrays.copyOf(underlying, underlying.length));
+    }
+
+    //========================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    public DoubleArray(double[] underlying) {
+        this.underlying = underlying;
+    }
+
+    public void setUnderlyingAsObject(java.lang.Object u){
+        this.underlying = (double[]) u;
+    }
+
+    public java.lang.Object getUnderlyingAsObject(){
+        return underlying;
     }
 }
