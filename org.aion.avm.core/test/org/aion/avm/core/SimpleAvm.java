@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -53,6 +54,10 @@ public class SimpleAvm {
 
         // set up helper
         Helpers.instantiateHelper(loader, energyLimit);
+    }
+
+    public void attachBlockchainRuntime(IBlockchainRuntime rt) {
+        Helpers.attachBlockchainRuntime(loader, rt);
     }
 
     public Map<String, byte[]> getClasses() {
