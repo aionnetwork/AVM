@@ -2,7 +2,7 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
 
-public class StringBuilder {
+public class StringBuilder extends Object implements CharSequence{
 
     public StringBuilder() {
         this.underlying = new java.lang.StringBuilder();
@@ -14,6 +14,10 @@ public class StringBuilder {
 
     public StringBuilder(String str) {
         this.underlying = new java.lang.StringBuilder(str.getUnderlying());
+    }
+
+    public StringBuilder(CharSequence seq){
+        this.underlying = new java.lang.StringBuilder(seq.avm_toString().getUnderlying());
     }
 
     //TODO: IOBJECT?
@@ -39,6 +43,16 @@ public class StringBuilder {
 
     public StringBuilder avm_append(CharArray str, int offset, int len) {
         this.underlying.append(str.getUnderlying(), offset, len);
+        return this;
+    }
+
+    public StringBuilder avm_append(CharSequence s){
+        this.underlying.append(s.avm_toString());
+        return this;
+    }
+
+    public StringBuilder avm_append(CharSequence s, int start, int end){
+        this.underlying.append(s.avm_toString().getUnderlying(), start, end);
         return this;
     }
 
@@ -115,6 +129,16 @@ public class StringBuilder {
         return this;
     }
 
+    public StringBuilder avm_insert(int dstOffset, CharSequence s) {
+        this.underlying.insert(dstOffset, s.avm_toString().getUnderlying());
+        return this;
+    }
+
+    public StringBuilder avm_insert(int dstOffset, CharSequence s, int start, int end) {
+        this.underlying.insert(dstOffset, s.avm_subSequence(start, end).avm_toString().getUnderlying());
+        return this;
+    }
+
     public StringBuilder avm_insert(int offset, boolean b) {
         this.underlying.insert(offset, b);
         return this;
@@ -170,10 +194,17 @@ public class StringBuilder {
         return new String(this);
     }
 
+    public char avm_charAt(int index){
+        return this.underlying.charAt(index);
+    }
 
+    public CharSequence avm_subSequence(int start, int end) {
+        return this.avm_toString().avm_subSequence(start, end);
+    }
 
-
-
+    public int avm_length(){
+        return this.avm_toString().avm_length();
+    }
 
     //========================================================
     // Methods below are used by runtime and test code only!
@@ -194,15 +225,5 @@ public class StringBuilder {
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================
-
-    //public StringBuilder(CharSequence seq)
-
-    //public StringBuilder append(CharSequence s)
-
-    //public StringBuilder append(CharSequence s, int start, int end)
-
-    //public StringBuilder insert(int dstOffset, CharSequence s)
-
-    //public StringBuilder insert(int dstOffset, CharSequence s, int start, int end)
 
 }

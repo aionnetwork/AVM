@@ -2,225 +2,254 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
 
-public class StringBuffer {
+public class StringBuffer extends Object implements CharSequence{
 
     public StringBuffer() {
-        this.underlying = new java.lang.StringBuffer();
+        this.v = new java.lang.StringBuffer();
     }
 
     public StringBuffer(int capacity) {
-        this.underlying = new java.lang.StringBuffer(capacity);
+        this.v = new java.lang.StringBuffer(capacity);
     }
 
     public StringBuffer(String str) {
-        this.underlying = new java.lang.StringBuffer(str.getUnderlying());
+        this.v = new java.lang.StringBuffer(str.getUnderlying());
+    }
+
+    public StringBuffer(CharSequence seq) {
+        this(seq.avm_length() + 16);
+        avm_append(seq);
     }
 
     public synchronized int avm_length() {
-        return this.underlying.length();
+        return this.v.length();
     }
 
     public synchronized int avm_capacity() {
-        return this.underlying.capacity();
+        return this.v.capacity();
     }
 
     public synchronized void avm_ensureCapacity(int minimumCapacity){
-        this.underlying.ensureCapacity(minimumCapacity);
+        this.v.ensureCapacity(minimumCapacity);
     }
 
     public synchronized void avm_trimToSize() {
-        this.underlying.trimToSize();
+        this.v.trimToSize();
     }
 
     public synchronized void avm_setLength(int newLength) {
-        this.underlying.setLength(newLength);
+        this.v.setLength(newLength);
     }
 
     public synchronized char avm_charAt(int index) {
-        return this.underlying.charAt(index);
+        return this.v.charAt(index);
     }
 
     public synchronized int avm_codePointAt(int index) {
-        return this.underlying.codePointAt(index);
+        return this.v.codePointAt(index);
     }
 
     public synchronized int avm_codePointBefore(int index) {
-        return this.underlying.codePointBefore(index);
+        return this.v.codePointBefore(index);
     }
 
     public synchronized int avm_codePointCount(int beginIndex, int endIndex) {
-        return this.underlying.codePointCount(beginIndex, endIndex);
+        return this.v.codePointCount(beginIndex, endIndex);
     }
 
     public synchronized int avm_offsetByCodePoints(int index, int codePointOffset) {
-        return this.underlying.offsetByCodePoints(index, codePointOffset);
+        return this.v.offsetByCodePoints(index, codePointOffset);
     }
 
     public synchronized void avm_getChars(int srcBegin, int srcEnd, char[] dst,
                                       int dstBegin)
     {
-        this.underlying.getChars(srcBegin, srcEnd, dst, dstBegin);
+        this.v.getChars(srcBegin, srcEnd, dst, dstBegin);
     }
 
     public synchronized void avm_setCharAt(int index, char ch) {
-        this.underlying.setCharAt(index, ch);
+        this.v.setCharAt(index, ch);
     }
 
     //TODO: IOBJECT?
     public synchronized StringBuffer avm_append(Object obj) {
-        this.underlying = this.underlying.append(obj);
+        this.v = this.v.append(obj);
         return this;
     }
 
     public synchronized StringBuffer avm_append(String str) {
-        this.underlying = this.underlying.append(str);
+        this.v = this.v.append(str);
         return this;
     }
 
     public synchronized StringBuffer avm_append(StringBuffer sb) {
-        this.underlying = this.underlying.append(sb.underlying);
+        this.v = this.v.append(sb.v);
+        return this;
+    }
+
+    public synchronized StringBuffer avm_append(CharSequence s){
+        this.v = this.v.append(s.avm_toString());
+        return this;
+    }
+
+    public synchronized StringBuffer avm_append(CharSequence s, int start, int end){
+        this.v = this.v.append(s.avm_toString().getUnderlying(), start, end);
         return this;
     }
 
     public synchronized StringBuffer avm_append(CharArray str) {
-        this.underlying = this.underlying.append(str.getUnderlying());
+        this.v = this.v.append(str.getUnderlying());
         return this;
     }
 
     public synchronized StringBuffer avm_append(CharArray str, int offset, int len) {
-        this.underlying = this.underlying.append(str.getUnderlying(), offset, len);
+        this.v = this.v.append(str.getUnderlying(), offset, len);
         return this;
     }
 
     public synchronized StringBuffer avm_append(boolean b) {
-        this.underlying = this.underlying.append(b);
+        this.v = this.v.append(b);
         return this;
     }
 
     public synchronized StringBuffer avm_append(char c) {
-        this.underlying = this.underlying.append(c);
+        this.v = this.v.append(c);
         return this;
     }
 
     public synchronized StringBuffer avm_append(int i) {
-        this.underlying = this.underlying.append(i);
+        this.v = this.v.append(i);
         return this;
     }
 
     public synchronized StringBuffer avm_appendCodePoint(int codePoint) {
-        this.underlying = this.underlying.appendCodePoint(codePoint);
+        this.v = this.v.appendCodePoint(codePoint);
         return this;
     }
 
     public synchronized StringBuffer avm_append(long lng) {
-        this.underlying = this.underlying.append(lng);
+        this.v = this.v.append(lng);
         return this;
     }
 
     public synchronized StringBuffer avm_append(float f) {
-        this.underlying = this.underlying.append(f);
+        this.v = this.v.append(f);
         return this;
     }
 
     public synchronized StringBuffer avm_append(double d) {
-        this.underlying = this.underlying.append(d);
+        this.v = this.v.append(d);
         return this;
     }
 
     public synchronized StringBuffer avm_delete(int start, int end) {
-        this.underlying = this.underlying.delete(start, end);
+        this.v = this.v.delete(start, end);
         return this;
     }
 
     public synchronized StringBuffer avm_deleteCharAt(int index) {
-        this.underlying = this.underlying.deleteCharAt(index);
+        this.v = this.v.deleteCharAt(index);
         return this;
     }
 
     public synchronized StringBuffer avm_replace(int start, int end, String str) {
-        this.underlying = this.underlying.replace(start, end, str.getUnderlying());
+        this.v = this.v.replace(start, end, str.getUnderlying());
         return this;
     }
 
     public synchronized String avm_substring(int start) {
-        return new String(this.underlying.substring(start));
+        return new String(this.v.substring(start));
+    }
+
+    public synchronized CharSequence avm_subSequence(int start, int end){
+        return new String(this.v.subSequence(start, end).toString());
     }
 
     public synchronized String avm_substring(int start, int end) {
-        return new String(this.underlying.substring(start, end));
+        return new String(this.v.substring(start, end));
     }
 
     public synchronized StringBuffer avm_insert(int index, CharArray str, int offset,
                                             int len)
     {
-        this.underlying.insert(index, str.getUnderlying(), offset, len);
+        this.v.insert(index, str.getUnderlying(), offset, len);
         return this;
     }
 
     //TODO: IOBJECT?
     public synchronized StringBuffer avm_insert(int offset, Object obj) {
-        this.underlying.insert(offset, obj);
+        this.v.insert(offset, obj);
         return this;
     }
 
     public synchronized StringBuffer avm_insert(int offset, String str) {
-        this.underlying.insert(offset, str.getUnderlying());
+        this.v.insert(offset, str.getUnderlying());
         return this;
     }
 
     public synchronized StringBuffer avm_insert(int offset, CharArray str) {
-        this.underlying.insert(offset, str.getUnderlying());
+        this.v.insert(offset, str.getUnderlying());
+        return this;
+    }
+
+    public StringBuffer avm_insert(int dstOffset, CharSequence s){
+        this.v.insert(dstOffset, s.avm_toString());
+        return this;
+    }
+
+    public synchronized StringBuffer avm_insert(int dstOffset, CharSequence s, int start, int end) {
+        this.v.insert(dstOffset, s.avm_subSequence(start, end));
         return this;
     }
 
     public StringBuffer avm_insert(int offset, boolean b) {
-        this.underlying.insert(offset, b);
+        this.v.insert(offset, b);
         return this;
     }
 
     public synchronized StringBuffer avm_insert(int offset, char c) {
-        this.underlying.insert(offset, c);
+        this.v.insert(offset, c);
         return this;
     }
 
     public StringBuffer avm_insert(int offset, int i) {
-        this.underlying.insert(offset, i);
+        this.v.insert(offset, i);
         return this;
     }
 
     public StringBuffer avm_insert(int offset, long l) {
-        this.underlying.insert(offset, l);
+        this.v.insert(offset, l);
         return this;
     }
 
     public StringBuffer avm_insert(int offset, float f) {
-        this.underlying.insert(offset, f);
+        this.v.insert(offset, f);
         return this;
     }
 
     public StringBuffer avm_insert(int offset, double d) {
-        this.underlying.insert(offset, d);
+        this.v.insert(offset, d);
         return this;
     }
 
     public int avm_indexOf(String str) {
-        return this.underlying.indexOf(str.getUnderlying());
+        return this.v.indexOf(str.getUnderlying());
     }
 
     public synchronized int avm_indexOf(String str, int fromIndex) {
-        return this.underlying.indexOf(str.getUnderlying(), fromIndex);
+        return this.v.indexOf(str.getUnderlying(), fromIndex);
     }
 
     public int avm_lastIndexOf(String str) {
-        return this.underlying.lastIndexOf(str.getUnderlying());
+        return this.v.lastIndexOf(str.getUnderlying());
     }
 
     public synchronized int avm_lastIndexOf(String str, int fromIndex) {
-        return this.underlying.lastIndexOf(str.getUnderlying(), fromIndex);
+        return this.v.lastIndexOf(str.getUnderlying(), fromIndex);
     }
 
     public synchronized StringBuffer avm_reverse() {
-        this.underlying.reverse();
+        this.v.reverse();
         return this;
     }
 
@@ -231,10 +260,10 @@ public class StringBuffer {
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
-    private java.lang.StringBuffer underlying;
+    private java.lang.StringBuffer v;
 
     public java.lang.StringBuffer getUnderlying() {
-        return underlying;
+        return v;
     }
 
 
@@ -247,17 +276,4 @@ public class StringBuffer {
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================
-
-    //public StringBuffer(CharSequence seq)
-
-    //public synchronized StringBuffer append(CharSequence s)
-
-    //public synchronized StringBuffer append(CharSequence s, int start, int end)
-
-    //public synchronized CharSequence subSequence(int start, int end)
-
-    //public StringBuffer insert(int dstOffset, CharSequence s)
-
-    //public synchronized StringBuffer insert(int dstOffset, CharSequence s,
-    //            int start, int end)
 }
