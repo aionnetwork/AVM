@@ -3,9 +3,9 @@ package org.aion.avm.core.testCall;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 
-public class Call {
+public class Caller {
 
-    private byte[] intToBytes(int n) {
+    private static byte[] intToBytes(int n) {
         return new byte[]{
                 (byte) (n >> 24),
                 (byte) ((n >> 16) & 0xff),
@@ -13,7 +13,7 @@ public class Call {
                 (byte) (n & 0xff)};
     }
 
-    private Address genAddress(int n) {
+    private static Address genAddress(int n) {
         byte[] bytes = new byte[Address.LENGTH];
         for (int i = 0; i < bytes.length; i++) {
             bytes[i] = (byte) n;
@@ -22,7 +22,7 @@ public class Call {
         return new Address(bytes);
     }
 
-    public byte[] foo() {
+    public static byte[] main() {
         byte[] bytes = new byte[Address.LENGTH];
         for (int i = 0; i < bytes.length; i++) {
             bytes[i] = 1;
