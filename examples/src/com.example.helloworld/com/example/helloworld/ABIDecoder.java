@@ -51,7 +51,7 @@ public class ABIDecoder {
         }
     }
 
-    public MethodCaller decode(byte[] txData) throws InvalidTxDataException{
+    public static MethodCaller decode(byte[] txData) throws InvalidTxDataException{
         String decoded = new String(txData);
 
         int m1 = decoded.indexOf(DESCRIPTOR_S);
@@ -72,7 +72,7 @@ public class ABIDecoder {
         return new MethodCaller(methodName, argsDescriptor, arguments);
     }
 
-    private Object[] getArguments(byte[] txData, int start, String argsDescriptor) throws InvalidTxDataException{
+    private static Object[] getArguments(byte[] txData, int start, String argsDescriptor) throws InvalidTxDataException{
         Object[] args = new Object[10]; // TODO expand if 10 is not enough
         int argsCount = 0;
 
@@ -196,7 +196,7 @@ public class ABIDecoder {
     /*
      * A helper method to read a number from the arguments descriptor.
      */
-    private int[] readNumFromDescriptor(String argsDescriptor, char stopChar, int startIdx) throws InvalidTxDataException {
+    private static int[] readNumFromDescriptor(String argsDescriptor, char stopChar, int startIdx) throws InvalidTxDataException {
         int[] res = new int[2];
         int idxE = argsDescriptor.indexOf(stopChar, startIdx);
         if ( idxE == -1) {
@@ -219,7 +219,7 @@ public class ABIDecoder {
 
     }
 
-    private int get1DArrayData(byte[] txData, int start, Object[] args, int argsCount, char type, int m) throws InvalidTxDataException{
+    private static int get1DArrayData(byte[] txData, int start, Object[] args, int argsCount, char type, int m) throws InvalidTxDataException{
         if (m <= 0) {
             throw new InvalidTxDataException();
         }
@@ -300,7 +300,7 @@ public class ABIDecoder {
         return start;
     }
 
-    private int get2DArrayData(byte[] txData, int start, Object[] args, int argsCount, char type, int[] m, int n) throws InvalidTxDataException{
+    private static int get2DArrayData(byte[] txData, int start, Object[] args, int argsCount, char type, int[] m, int n) throws InvalidTxDataException{
         if (n <= 0) {
             throw new InvalidTxDataException();
         }
@@ -469,12 +469,10 @@ public class ABIDecoder {
     }
 
     private static float getNextFloat(byte[] txData, int start) {
-        //return ByteBuffer.allocate(4).put(Arrays.copyOfRange(txData, start, start + 4)).getFloat(0);
         return Float.intBitsToFloat(getNextInt(txData, start));
     }
 
     private static double getNextDouble(byte[] txData, int start) {
-        //return ByteBuffer.allocate(8).put(Arrays.copyOfRange(txData, start, start + 8)).getDouble(0);
         return Double.longBitsToDouble(getNextLong(txData, start));
     }
 

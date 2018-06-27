@@ -16,12 +16,11 @@ public class HelloWorld {
         return "Hello, world!".getBytes();
     }
 
-    public Object main() throws InvalidTxDataException {
-        ABIDecoder decoder = new ABIDecoder();
-        ABIDecoder.MethodCaller methodCaller = decoder.decode(BlockchainRuntime.getData());
+    public byte[] main() throws InvalidTxDataException {
+        ABIDecoder.MethodCaller methodCaller = ABIDecoder.decode(BlockchainRuntime.getData());
         switch (methodCaller.methodName) {
             case "add":
-                return add((int)methodCaller.arguments[0], (int)methodCaller.arguments[1]);
+                return ABIEncoder.encodeInt(add((int)methodCaller.arguments[0], (int)methodCaller.arguments[1]));
             case "run":
                 return run();
             default:

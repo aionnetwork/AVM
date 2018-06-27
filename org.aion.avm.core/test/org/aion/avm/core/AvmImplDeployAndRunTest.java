@@ -10,6 +10,8 @@ import org.aion.kernel.Transaction;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.nio.ByteBuffer;
+
 import static org.junit.Assert.assertEquals;
 
 public class AvmImplDeployAndRunTest {
@@ -26,7 +28,7 @@ public class AvmImplDeployAndRunTest {
 
     private byte[] from = Helpers.randomBytes(Address.LENGTH);
     private byte[] to = Helpers.randomBytes(Address.LENGTH);
-    private long energyLimit = 2000000;
+    private long energyLimit = 5000000;
 
     Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
@@ -85,7 +87,7 @@ public class AvmImplDeployAndRunTest {
         AvmResult result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
-        //assertEquals(124, result.returnData);
+        assertEquals(124, ByteBuffer.allocate(4).put(result.returnData).getInt(0));
     }
 
     @Test
@@ -99,7 +101,7 @@ public class AvmImplDeployAndRunTest {
         AvmResult result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
-        //assertEquals(124, result.returnData);
+        assertEquals(124, ByteBuffer.allocate(4).put(result.returnData).getInt(0));
     }
 
 }

@@ -445,14 +445,18 @@ public class AvmImpl implements Avm {
 
             // call contract main method
             Method method = clazz.getMethod("avm_main");
-            Object ret = method.invoke(obj);
+            byte[] ret = ((ByteArray) method.invoke(obj)).getUnderlying();
 
             // TODO: handle the return data after changing the entry function ABI
-            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), (byte[])null);
-        } catch (InvocationTargetException e) {
-            if (e.getCause() != null) return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
+        } catch (InvalidTxDataException e) {
+            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+        }catch (InvocationTargetException e) {
+            if (e.getCause() != null && e.getCause() instanceof Exception) return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
             return new AvmResult(AvmResult.Code.FAILURE, 0);
-        } catch (Exception e) {
+        } catch (OutOfEnergyError e) {
+            return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
+        }catch (Exception e) {
             e.printStackTrace();
 
             return new AvmResult(AvmResult.Code.FAILURE, 0);
