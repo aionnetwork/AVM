@@ -10,12 +10,8 @@ public class Callee {
         }
 
         byte[] ret = new byte[a.length + b.length];
-        for (int i = 0; i < a.length; i++) {
-            ret[i] = a[i];
-        }
-        for (int i = 0; i < b.length; i++) {
-            ret[i + a.length] = b[i];
-        }
+        System.arraycopy(a, 0, ret, 0, a.length);
+        System.arraycopy(b, 0, ret, a.length, b.length);
 
         return ret;
     }
