@@ -2,7 +2,7 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
 
-public class StringBuffer extends Object implements CharSequence{
+public class StringBuffer extends Object implements CharSequence, Appendable{
 
     public StringBuffer() {
         this.v = new java.lang.StringBuffer();

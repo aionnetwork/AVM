@@ -1,34 +1,32 @@
-package org.aion.avm.core.testString;
+package org.aion.avm.core.shadowing.testString;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.shadow.java.lang.Boolean;
 import org.aion.avm.shadow.java.lang.Character;
 import org.aion.avm.shadow.java.lang.Integer;
 import org.aion.avm.shadow.java.lang.String;
-import org.aion.avm.api.Address;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class StringOpsTest {
+public class StringShadowingTest {
 
     @Test
     public void testSingleString() throws Exception {
-        SimpleAvm avm = new SimpleAvm(1000000L, StringOps.class);
+        SimpleAvm avm = new SimpleAvm(1000000L, TestResource.class);
 
-        Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(StringOps.class.getName());
+        Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
         Object obj = clazz.getConstructor().newInstance();
         ObjectArray results = (ObjectArray) clazz.getMethod(UserClassMappingVisitor.mapMethodName("singleString")).invoke(obj);
 
         int i = 0;
         assertEquals(new Integer(96354), results.get(i++));
         assertEquals(new Integer(3), results.get(i++));
-        //assertEquals(Boolean.avm_TRUE, results.get(i++));
-        //assertEquals(Boolean.avm_FALSE, results.get(i++));
+        assertEquals(Boolean.avm_TRUE, results.get(i++));
+        assertEquals(Boolean.avm_FALSE, results.get(i++));
         assertEquals(Boolean.avm_TRUE, results.get(i++));
         assertEquals(Boolean.avm_FALSE, results.get(i++));
         assertEquals(Boolean.avm_TRUE, results.get(i++));

@@ -2,7 +2,7 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
 
-public class StringBuilder extends Object implements CharSequence{
+public class StringBuilder extends Object implements CharSequence, Appendable{
 
     public StringBuilder() {
         this.underlying = new java.lang.StringBuilder();
