@@ -73,7 +73,7 @@ public class ABIDecoder {
     }
 
     private static Object[] getArguments(byte[] txData, int start, String argsDescriptor) throws InvalidTxDataException{
-        Object[] args = new Object[10]; // TODO expand if 10 is not enough
+        Object[] args = new Object[10];
         int argsCount = 0;
 
         for (int idx = 0; idx < argsDescriptor.length(); idx++, argsCount++) {
@@ -187,6 +187,14 @@ public class ABIDecoder {
                     break;
                 default:
                     throw new InvalidTxDataException();
+            }
+
+            if (argsCount == args.length - 1) {
+                Object[] argsNew = new Object[args.length + 10];
+                for (int i = 0; i < args.length; i ++) {
+                    argsNew[i] = args[i];
+                }
+                args = argsNew;
             }
         }
 

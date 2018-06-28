@@ -31,6 +31,13 @@ public class DeployAndRunTest {
         return res;
     }
 
+    public char[][] swap(char[][] s) {
+        char[][] res = new char[2][];
+        res[0] = s[1];
+        res[1] = s[0];
+        return res;
+    }
+
     public byte[] run() {
         return "Hello, world!".getBytes();
     }
@@ -45,9 +52,9 @@ public class DeployAndRunTest {
             case "addArray2":
                 return ABIEncoder.encodeInt(addArray2((int[][])methodCaller.arguments[0]));
             case "concatenate":
-                //return String.valueOf(((char[][])methodCaller.arguments[0])[0]).getBytes();
-                //return Character.toString(concatenate((char[][]) methodCaller.arguments[0])[0]).getBytes();
                 return ABIEncoder.encode1DArray(concatenate((char[][]) methodCaller.arguments[0]), ABIEncoder.ABITypes.CHAR);
+            case "swap":
+                return ABIEncoder.encode2DArray(swap((char[][]) methodCaller.arguments[0]), ABIEncoder.ABITypes.CHAR);
             case "run":
                 return run();
             default:

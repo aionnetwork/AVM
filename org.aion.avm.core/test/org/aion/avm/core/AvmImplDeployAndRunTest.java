@@ -75,6 +75,7 @@ public class AvmImplDeployAndRunTest {
         AvmResult result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
+        assertEquals("Hello, world!", new String(result.returnData));
     }
 
     @Test
@@ -119,5 +120,14 @@ public class AvmImplDeployAndRunTest {
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
         assertEquals("catdog", new String(result.returnData));
+
+        // test another method call, "swap" with 2D array arguments and 2D array return data
+        txData = new byte[]{0x73, 0x77, 0x61, 0x70, 0x3C, 0x5B, 0x5B, 0x43, 0x33, 0x5D, 0x32, 0x5D, 0x3E,
+                0x63, 0x61, 0x74, 0x64, 0x6F, 0x67}; // "swap<[[C3]2]>" + raw data "cat" "dog"
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), txData, energyLimit);
+        result = avm.run(tx, block, cb);
+
+        assertEquals(AvmResult.Code.SUCCESS, result.code);
+        assertEquals("dogcat", new String(result.returnData));
     }
 }
