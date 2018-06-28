@@ -10,7 +10,7 @@ public abstract class Enum<E extends Enum<E>> extends Object {
 
     private final int ordinal;
 
-    public final int ordinal() {
+    public final int avm_ordinal() {
         return ordinal;
     }
 

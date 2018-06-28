@@ -247,7 +247,7 @@ public class ABIDecoder {
                 checkRemainingDataSize(txData.length - start, CHAR_SIZE_MIN * m);
                 String argC = getNextString(txData, start, m);
                 start += argC.getBytes().length;
-                args[argsCount] = argC;
+                args[argsCount] = argC.toCharArray();
                 break;
             case SHORT:
                 checkRemainingDataSize(txData.length - start, SHORT_SIZE * m);
@@ -343,7 +343,7 @@ public class ABIDecoder {
                 args[argsCount] = argZ;
                 break;
             case CHAR:
-                String[] argC = new String[n];
+                char[][] argC = new char[n][];
                 for (int indexN = 0; indexN < n; indexN ++) {
                     int curM = m[indexN];
                     if (curM <= 0) {
@@ -351,8 +351,9 @@ public class ABIDecoder {
                     }
                     checkRemainingDataSize(txData.length - start, CHAR_SIZE_MIN * curM);
 
-                    argC[indexN] = getNextString(txData, start, curM);
-                    start += argC[indexN].getBytes().length;
+                    String s = getNextString(txData, start, curM);
+                    argC[indexN] = s.toCharArray();
+                    start += s.getBytes().length;
                 }
                 args[argsCount] = argC;
                 break;

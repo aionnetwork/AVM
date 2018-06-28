@@ -95,13 +95,29 @@ public class AvmImplDeployAndRunTest {
         AvmResult deployResult = deployTheDeployAndRunTest();
         assertEquals(AvmResult.Code.SUCCESS, deployResult.code);
 
-        // test another method call, "add" with arguments
+        // test another method call, "addArray" with 1D array arguments
         byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), txData, energyLimit);
         AvmResult result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
         assertEquals(124, ByteBuffer.allocate(4).put(result.returnData).getInt(0));
-    }
 
+        // test another method call, "addArray2" with 2D array arguments
+        txData = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x32, 0x3C, 0x5B, 0x5B, 0x49, 0x31, 0x5D, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), txData, energyLimit);
+        result = avm.run(tx, block, cb);
+
+        assertEquals(AvmResult.Code.SUCCESS, result.code);
+        assertEquals(124, ByteBuffer.allocate(4).put(result.returnData).getInt(0));
+
+        // test another method call, "concatenate" with 2D array arguments and 1D array return data
+        txData = new byte[]{0x63, 0x6F, 0x6E, 0x63, 0x61, 0x74, 0x65, 0x6E, 0x61, 0x74, 0x65, 0x3C, 0x5B, 0x5B, 0x43, 0x33, 0x5D, 0x32, 0x5D, 0x3E,
+                0x63, 0x61, 0x74, 0x64, 0x6F, 0x67}; // "concatenate<[[C3]2]>" + raw data "cat" "dog"
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), txData, energyLimit);
+        result = avm.run(tx, block, cb);
+
+        assertEquals(AvmResult.Code.SUCCESS, result.code);
+        assertEquals("catdog", new String(result.returnData));
+    }
 }

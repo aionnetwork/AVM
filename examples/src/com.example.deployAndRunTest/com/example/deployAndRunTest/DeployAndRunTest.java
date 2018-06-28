@@ -16,6 +16,10 @@ public class DeployAndRunTest {
         return a[0] + a[1];
     }
 
+    public int addArray2(int[][] a) {
+        return a[0][0] + a[1][0];
+    }
+
     public char[] concatenate(char[][] s) {
         char[] res = new char[6];
         for (int i = 0; i < s[0].length; i++) {
@@ -38,8 +42,12 @@ public class DeployAndRunTest {
                 return ABIEncoder.encodeInt(add((int)methodCaller.arguments[0], (int)methodCaller.arguments[1]));
             case "addArray":
                 return ABIEncoder.encodeInt(addArray((int[])methodCaller.arguments[0]));
+            case "addArray2":
+                return ABIEncoder.encodeInt(addArray2((int[][])methodCaller.arguments[0]));
             case "concatenate":
-                return null; //concatenate((char[][]) methodCaller.arguments[0]);
+                //return String.valueOf(((char[][])methodCaller.arguments[0])[0]).getBytes();
+                //return Character.toString(concatenate((char[][]) methodCaller.arguments[0])[0]).getBytes();
+                return ABIEncoder.encode1DArray(concatenate((char[][]) methodCaller.arguments[0]), ABIEncoder.ABITypes.CHAR);
             case "run":
                 return run();
             default:
