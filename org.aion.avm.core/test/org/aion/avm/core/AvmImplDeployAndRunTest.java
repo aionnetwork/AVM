@@ -128,6 +128,6 @@ public class AvmImplDeployAndRunTest {
         result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
-        assertEquals("dogcat", new String(result.returnData));
+        assertEquals("<[[C]2](3)(3)>dogcat", new String(result.returnData));
     }
 }

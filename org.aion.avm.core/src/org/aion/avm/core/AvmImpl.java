@@ -447,7 +447,6 @@ public class AvmImpl implements Avm {
             Method method = clazz.getMethod("avm_main");
             byte[] ret = ((ByteArray) method.invoke(obj)).getUnderlying();
 
-            // TODO: handle the return data after changing the entry function ABI
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
         } catch (InvalidTxDataException e) {
             return new AvmResult(AvmResult.Code.INVALID_CALL, 0);

@@ -143,25 +143,47 @@ public class ABIEncoder {
         }
     }
 
+    /**
+     * Encode a 2D array of an elementary type. Include the argument descriptor at the beginning of the return byte array.
+     *
+     * @param data
+     * @param type
+     * @return
+     */
     public static byte[] encode2DArray(Object data, ABITypes type) {
-        // TODO: now we assume the receiver knows the dimension of the 2D array. May revise later, aka, pass the argument descriptor
         int size = 0;
+        String argumentDescriptor = "<[[";
+
+        // temporary code before we can do string concatenation with constant Strings.
+        String closeSquare  = "]";
+        String openBracket  = "(";
+        String closeBracket = ")";
+        String closeAngle   = ">";
 
         switch (type) {
             case CHAR:
                 char[][] dataC = (char[][]) data;
-                String s = String.valueOf(dataC[0]);
-                for (int i = 1; i < dataC.length; i ++) {
+                argumentDescriptor += String.valueOf('C') + closeSquare + String.valueOf(dataC.length) + closeSquare;
+                String s = "";
+                for (int i = 0; i < dataC.length; i ++) {
+                    argumentDescriptor += openBracket + String.valueOf(dataC[i].length) + closeBracket;
                     s = s + String.valueOf(dataC[i]);
                 }
+                s = argumentDescriptor + closeAngle + s;
                 return s.getBytes();
             case BOOLEAN:
                 boolean[][] dataZ = (boolean[][]) data;
+                argumentDescriptor += String.valueOf('Z') + closeSquare + String.valueOf(dataZ.length) + closeSquare;
                 for (int i = 0; i < dataZ.length; i ++) {
+                    argumentDescriptor += openBracket + String.valueOf(dataZ[i].length) + closeBracket;
                     size += dataZ[i].length;
                 }
-                byte[] retZ = new byte[size];
-                for (int i = 0, idx = 0; i < dataZ.length; i ++) {
+                byte[] descriptorZ = (argumentDescriptor + closeAngle).getBytes();
+                byte[] retZ = new byte[size + descriptorZ.length];
+                for (int i = 0; i < descriptorZ.length; i ++) {
+                    retZ[i] = descriptorZ[i];
+                }
+                for (int i = 0, idx = descriptorZ.length; i < dataZ.length; i ++) {
                     for (int j = 0; j < dataZ[i].length; j ++, idx ++) {
                         retZ[idx] = (byte) (dataZ[i][j] ? 1 : 0);
                     }
@@ -169,11 +191,17 @@ public class ABIEncoder {
                 return retZ;
             case SHORT:
                 short[][] dataS = (short[][]) data;
+                argumentDescriptor += String.valueOf('S') + closeSquare + String.valueOf(dataS.length) + closeSquare;
                 for (int i = 0; i < dataS.length; i ++) {
+                    argumentDescriptor += openBracket + String.valueOf(dataS[i].length) + closeBracket;
                     size += dataS[i].length;
                 }
-                byte[] retS = new byte[size * 2];
-                for (int i = 0, idx = 0; i < dataS.length; i ++) {
+                byte[] descriptorS = (argumentDescriptor + closeAngle).getBytes();
+                byte[] retS = new byte[size * 2 + descriptorS.length];
+                for (int i = 0; i < descriptorS.length; i ++) {
+                    retS[i] = descriptorS[i];
+                }
+                for (int i = 0, idx = descriptorS.length; i < dataS.length; i ++) {
                     for (int j = 0; j < dataS[i].length; j ++, idx += 2) {
                         retS[idx] = (byte) (dataS[i][j] >>> 8);
                         retS[idx + 1] = (byte) (dataS[i][j]);
@@ -182,11 +210,17 @@ public class ABIEncoder {
                 return retS;
             case INT:
                 int[][] dataI = (int[][]) data;
+                argumentDescriptor += String.valueOf('I') + closeSquare + String.valueOf(dataI.length) + closeSquare;
                 for (int i = 0; i < dataI.length; i ++) {
+                    argumentDescriptor += openBracket + String.valueOf(dataI[i].length) + closeBracket;
                     size += dataI[i].length;
                 }
-                byte[] retI = new byte[size * 4];
-                for (int i = 0, idx = 0; i < dataI.length; i ++) {
+                byte[] descriptorI = (argumentDescriptor + closeAngle).getBytes();
+                byte[] retI = new byte[size * 4 + descriptorI.length];
+                for (int i = 0; i < descriptorI.length; i ++) {
+                    retI[i] = descriptorI[i];
+                }
+                for (int i = 0, idx = descriptorI.length; i < dataI.length; i ++) {
                     for (int j = 0; j < dataI[i].length; j ++, idx += 4) {
                         retI[idx] = (byte) (dataI[i][j] >>> 24);
                         retI[idx + 1] = (byte) (dataI[i][j] >>> 16);
@@ -197,11 +231,17 @@ public class ABIEncoder {
                 return retI;
             case LONG:
                 long[][] dataL = (long[][]) data;
+                argumentDescriptor += String.valueOf('L') + closeSquare + String.valueOf(dataL.length) + closeSquare;
                 for (int i = 0; i < dataL.length; i ++) {
+                    argumentDescriptor += openBracket + String.valueOf(dataL[i].length) + closeBracket;
                     size += dataL[i].length;
                 }
-                byte[] retL = new byte[size * 8];
-                for (int i = 0, idx = 0; i < dataL.length; i ++) {
+                byte[] descriptorL = (argumentDescriptor + closeAngle).getBytes();
+                byte[] retL = new byte[size * 8 + descriptorL.length];
+                for (int i = 0; i < descriptorL.length; i ++) {
+                    retL[i] = descriptorL[i];
+                }
+                for (int i = 0, idx = descriptorL.length; i < dataL.length; i ++) {
                     for (int j = 0; j < dataL[i].length; j ++, idx += 8) {
                         retL[idx] = (byte) (dataL[i][j] >>> 56);
                         retL[idx + 1] = (byte) (dataL[i][j] >>> 48);
@@ -216,11 +256,17 @@ public class ABIEncoder {
                 return retL;
             case FLOAT:
                 float[][] dataF = (float[][]) data;
+                argumentDescriptor += String.valueOf('F') + closeSquare + String.valueOf(dataF.length) + closeSquare;
                 for (int i = 0; i < dataF.length; i ++) {
+                    argumentDescriptor += openBracket + String.valueOf(dataF[i].length) + closeBracket;
                     size += dataF[i].length;
                 }
-                byte[] retF = new byte[size * 4];
-                for (int i = 0, idx = 0; i < dataF.length; i ++) {
+                byte[] descriptorF = (argumentDescriptor + closeAngle).getBytes();
+                byte[] retF = new byte[size * 4 + descriptorF.length];
+                for (int i = 0; i < descriptorF.length; i ++) {
+                    retF[i] = descriptorF[i];
+                }
+                for (int i = 0, idx = descriptorF.length; i < dataF.length; i ++) {
                     for (int j = 0; j < dataF[i].length; j ++, idx += 4) {
                         byte[] curF = encodeFloat(dataF[i][j]);
                         retF[idx] = curF[0];
@@ -232,11 +278,17 @@ public class ABIEncoder {
                 return retF;
             case DOUBLE:
                 double[][] dataD = (double[][]) data;
+                argumentDescriptor += String.valueOf('D') + closeSquare + String.valueOf(dataD.length) + closeSquare;
                 for (int i = 0; i < dataD.length; i ++) {
+                    argumentDescriptor += openBracket + String.valueOf(dataD[i].length) + closeBracket;
                     size += dataD[i].length;
                 }
-                byte[] retD = new byte[size * 8];
-                for (int i = 0, idx = 0; i < dataD.length; i ++) {
+                byte[] descriptorD = (argumentDescriptor + closeAngle).getBytes();
+                byte[] retD = new byte[size * 8 + descriptorD.length];
+                for (int i = 0; i < descriptorD.length; i ++) {
+                    retD[i] = descriptorD[i];
+                }
+                for (int i = 0, idx = descriptorD.length; i < dataD.length; i ++) {
                     for (int j = 0; j < dataD[i].length; j ++, idx += 8) {
                         byte[] curD = encodeDouble(dataD[i][j]);
                         retD[idx] = curD[0];
@@ -252,11 +304,17 @@ public class ABIEncoder {
                 return retD;
             case BYTE:
                 byte[][] dataB = (byte[][]) data;
+                argumentDescriptor += String.valueOf('B') + closeSquare + String.valueOf(dataB.length) + closeSquare;
                 for (int i = 0; i < dataB.length; i ++) {
+                    argumentDescriptor += openBracket + String.valueOf(dataB[i].length) + closeBracket;
                     size += dataB[i].length;
                 }
-                byte[] retB = new byte[size];
-                for (int i = 0, idx = 0; i < dataB.length; i ++) {
+                byte[] descriptorB = (argumentDescriptor + closeAngle).getBytes();
+                byte[] retB = new byte[size + descriptorB.length];
+                for (int i = 0; i < descriptorB.length; i ++) {
+                    retB[i] = descriptorB[i];
+                }
+                for (int i = 0, idx = descriptorB.length; i < dataB.length; i ++) {
                     for (int j = 0; j < dataB[i].length; j ++, idx ++) {
                         retB[idx] = dataB[i][j];
                     }
