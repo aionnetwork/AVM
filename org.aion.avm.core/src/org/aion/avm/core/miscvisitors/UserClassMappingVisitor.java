@@ -1,6 +1,7 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
@@ -35,6 +36,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
     private static final String METHOD_PREFIX = "avm_";
 
     private static final String JAVA_LANG = "java/lang/";
+    private static final String JAVA_MATH = "java/math/";
     private static final String JAVA_UTIL_FUNCTION = "java/util/function";
     private static final String ORG_AION_AVM_API = "org/aion/avm/api/";
 
@@ -157,6 +159,8 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
                 if (value instanceof Type) {
                     if(((Type) value).getSort() == Type.OBJECT){
                         valueToWrite = Type.getType(mapDescriptor(((Type) value).getDescriptor()));
+                    }else if (((Type) value).getSort() == Type.ARRAY){
+                        valueToWrite = Type.getType("L" + ArrayWrappingClassGenerator.getClassWrapper(((Type) value).getDescriptor()) + ";");
                     }
                 }
                 super.visitLdcInsn(valueToWrite);
@@ -342,7 +346,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
             } else if (type.startsWith(JAVA_LANG) || type.startsWith(JAVA_UTIL_FUNCTION)) {
                 return shadowPackageSlash + type;
 
-            } else if (type.startsWith(ORG_AION_AVM_API)) {
+            } else if (type.startsWith(ORG_AION_AVM_API) || type.startsWith("org/aion/avm/shadow/")) {
                 return type;
 
             } else {

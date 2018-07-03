@@ -480,7 +480,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     // Return the wrapper descriptor of an array
-    static java.lang.String getClassWrapper(java.lang.String desc){
+    public static java.lang.String getClassWrapper(java.lang.String desc){
         if (desc.endsWith(";")){
             desc = desc.substring(0, desc.length() - 1);
         }
