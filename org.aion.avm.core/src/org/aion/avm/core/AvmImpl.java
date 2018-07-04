@@ -555,7 +555,7 @@ public class AvmImpl implements Avm {
 
             // file name from the address
             DAPPS_DIR.mkdirs();
-            File jarFile = new File(DAPPS_DIR, addressToString(address) + ".jar");
+            File jarFile = new File(DAPPS_DIR, Helpers.toHexString(address) + ".jar");
 
             // create the jar file
             JarOutputStream target = new JarOutputStream(new FileOutputStream(jarFile), manifest);
@@ -572,20 +572,6 @@ public class AvmImpl implements Avm {
             target.close();
 
             return jarFile;
-        }
-
-        private static final char[] hexArray = "0123456789abcdef".toCharArray();
-
-        private String addressToString(byte[] bytes) {
-            int length = bytes.length;
-
-            char[] hexChars = new char[length * 2];
-            for (int i = 0; i < length; i++) {
-                int v = bytes[i] & 0xFF;
-                hexChars[i * 2] = hexArray[v >>> 4];
-                hexChars[i * 2 + 1] = hexArray[v & 0x0F];
-            }
-            return new String(hexChars);
         }
     }
 }

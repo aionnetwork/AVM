@@ -1,10 +1,5 @@
 package org.aion.avm.core.util;
 
-import java.io.*;
-import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -12,12 +7,38 @@ import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;
 
+import java.io.*;
+import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * Common utilities we often want to use in various tests (either temporarily or permanently).
  * These are kept here just to avoid duplication.
  */
 public class Helpers {
+
+    private static final char[] hexArray = "0123456789abcdef".toCharArray();
+
+    /**
+     * Converts byte array into it's hex string representation.
+     *
+     * @param bytes
+     * @return
+     */
+    public static String toHexString(byte[] bytes) {
+        int length = bytes.length;
+
+        char[] hexChars = new char[length * 2];
+        for (int i = 0; i < length; i++) {
+            int v = bytes[i] & 0xFF;
+            hexChars[i * 2] = hexArray[v >>> 4];
+            hexChars[i * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
     /**
      * Writes the given bytes to the file at the given path.
      * This is effective for dumping re-written bytecode to file for offline analysis.

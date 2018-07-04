@@ -1,5 +1,7 @@
 package org.aion.kernel;
 
+import org.aion.avm.core.util.Helpers;
+
 public class Transaction {
 
     public enum Type {
@@ -49,5 +51,17 @@ public class Transaction {
 
     public long getEnergyLimit() {
         return energyLimit;
+    }
+
+    @Override
+    public String toString() {
+        return "Transaction{" +
+                "type=" + type +
+                ", from=" + Helpers.toHexString(from) +
+                ", to=" + Helpers.toHexString(to) +
+                ", value=" + value +
+                ", data=" + data +
+                ", energyLimit=" + energyLimit +
+                '}';
     }
 }
