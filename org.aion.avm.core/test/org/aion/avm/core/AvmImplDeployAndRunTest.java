@@ -11,6 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
@@ -96,10 +97,18 @@ public class AvmImplDeployAndRunTest {
         AvmResult deployResult = deployTheDeployAndRunTest();
         assertEquals(AvmResult.Code.SUCCESS, deployResult.code);
 
-        // test another method call, "addArray" with 1D array arguments
-        byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
+        // test encode method arguments
+        byte[] txData = new byte[]{0x65, 0x6E, 0x63, 0x6F, 0x64, 0x65, 0x41, 0x72, 0x67, 0x73}; // encodeArgs
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), new byte[0], txData, energyLimit);
         AvmResult result = avm.run(tx, block, cb);
+
+        byte[] expected = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
+        boolean correct = Arrays.equals(result.returnData, expected);
+        assertEquals(true, correct);
+
+        // test another method call, "addArray" with 1D array arguments
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), new byte[0], expected, energyLimit);
+        result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
         assertEquals(124, ByteBuffer.allocate(4).put(result.returnData).getInt(0));
@@ -119,7 +128,7 @@ public class AvmImplDeployAndRunTest {
         result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
-        assertEquals("catdog", new String(result.returnData));
+        assertEquals("<[C6]>catdog", new String(result.returnData));
 
         // test another method call, "swap" with 2D array arguments and 2D array return data
         txData = new byte[]{0x73, 0x77, 0x61, 0x70, 0x3C, 0x5B, 0x5B, 0x43, 0x33, 0x5D, 0x32, 0x5D, 0x3E,

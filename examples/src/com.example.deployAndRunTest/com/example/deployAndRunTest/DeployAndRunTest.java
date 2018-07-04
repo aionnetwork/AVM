@@ -42,6 +42,12 @@ public class DeployAndRunTest {
         return "Hello, world!".getBytes();
     }
 
+    public byte[] encodeArgs() throws InvalidTxDataException {
+        String methodAPI = "int addArray(int[] a)";
+        int[] a = new int[]{123, 1};
+        return ABIEncoder.encodeMethodArguments(methodAPI, a);
+    }
+
     public byte[] main() throws InvalidTxDataException {
         ABIDecoder.MethodCaller methodCaller = ABIDecoder.decode(BlockchainRuntime.getData());
         switch (methodCaller.methodName) {
@@ -57,6 +63,8 @@ public class DeployAndRunTest {
                 return ABIEncoder.encode2DArray(swap((char[][]) methodCaller.arguments[0]), ABIEncoder.ABITypes.CHAR);
             case "run":
                 return run();
+            case "encodeArgs":
+                return encodeArgs();
             default:
                 throw new InvalidTxDataException();
         }
