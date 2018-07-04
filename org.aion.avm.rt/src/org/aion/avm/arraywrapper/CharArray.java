@@ -30,6 +30,10 @@ public class CharArray extends Array {
         this.underlying[idx] = val;
     }
 
+    public IObject avm_clone() {
+        return new CharArray(Arrays.copyOf(underlying, underlying.length));
+    }
+
     public IObject clone() {
         return new CharArray(Arrays.copyOf(underlying, underlying.length));
     }

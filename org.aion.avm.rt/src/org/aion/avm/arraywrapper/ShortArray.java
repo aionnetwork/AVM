@@ -35,6 +35,10 @@ public class ShortArray extends Array {
         return new ShortArray(Arrays.copyOf(underlying, underlying.length));
     }
 
+    public IObject avm_clone() {
+        return new ShortArray(Arrays.copyOf(underlying, underlying.length));
+    }
+
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================

@@ -1,7 +1,5 @@
 package org.aion.avm.core.arraywrapping;
 
-import org.aion.avm.arraywrapper.ByteArray;
-
 public class TestResource {
 
     public interface X {}

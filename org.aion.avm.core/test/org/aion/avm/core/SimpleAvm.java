@@ -6,6 +6,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.IHelper;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ public class SimpleAvm {
     private final Map<String, byte[]> classes;
 
     private final AvmClassLoader loader;
+    private final IHelper helper;
     private final Set<String> transformedClassNames;
 
     public SimpleAvm(long energyLimit, Class<?>... classes) {
@@ -35,8 +37,11 @@ public class SimpleAvm {
             try {
                 // NOTE: we load the class to figure out the super class instead of by static analysis.
                 Class<?> clazz = SimpleAvm.class.getClassLoader().loadClass(e.getKey());
-
-                builder.addClass(e.getKey(), clazz.getSuperclass().getName(), e.getValue());
+                if (!clazz.isInterface()) {
+                    builder.addClass(e.getKey(), clazz.getSuperclass().getName(), e.getValue());
+                }else{
+                    builder.addClass(e.getKey(), Object.class.getName(), e.getValue());
+                }
             } catch (ClassNotFoundException ex) {
                 Assert.unexpected(ex);
             }
@@ -53,7 +58,7 @@ public class SimpleAvm {
         this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());
 
         // set up helper
-        Helpers.instantiateHelper(loader, energyLimit);
+        helper = Helpers.instantiateHelper(loader, energyLimit);
     }
 
     public void attachBlockchainRuntime(IBlockchainRuntime rt) {
@@ -66,6 +71,10 @@ public class SimpleAvm {
 
     public AvmClassLoader getClassLoader() {
         return loader;
+    }
+
+    public IHelper getHelper() {
+        return helper;
     }
 
     public Set<String> getTransformedClassNames() {

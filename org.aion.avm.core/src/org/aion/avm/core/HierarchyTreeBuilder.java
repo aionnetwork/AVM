@@ -18,26 +18,37 @@ public class HierarchyTreeBuilder {
         // NOTE:  These are ".-style" names.
         Assert.assertTrue(-1 == name.indexOf("/"));
         Assert.assertTrue(-1 == superclass.indexOf("/"));
-        
-        // This better be new.
-        Assert.assertTrue(!this.nameCache.containsKey(name));
-        
-        // Get the parent node.
-        Forest.Node<String, byte[]> parent = this.nameCache.get(superclass);
-        if (null == parent) {
-            // Must be a root.
-            parent = new Forest.Node<>(superclass, null);
-            this.nameCache.put(superclass,  parent);
+
+        // already added as parent
+        if (this.nameCache.containsKey(name)){
+            Forest.Node<String, byte[]> cur = this.nameCache.get(name);
+            cur.setContent(code);
+
+            Forest.Node<String, byte[]> parent = this.nameCache.get(superclass);
+            if (null == parent) {
+                parent = new Forest.Node<>(superclass, null);
+                this.nameCache.put(superclass,  parent);
+            }
+            this.classHierarchy.add(parent, cur);
+
+        }else {
+
+            Forest.Node<String, byte[]> parent = this.nameCache.get(superclass);
+            if (null == parent) {
+                // Must be a root.
+                parent = new Forest.Node<>(superclass, null);
+                this.nameCache.put(superclass, parent);
+            }
+
+            // Inject into tree.
+            Forest.Node<String, byte[]> child = new Forest.Node<>(name, code);
+
+            // Cache result.
+            this.nameCache.put(name, child);
+
+            // Add connection.
+            this.classHierarchy.add(parent, child);
         }
-        
-        // Inject into tree.
-        Forest.Node<String, byte[]> child = new Forest.Node<>(name, code);
-        
-        // Cache result.
-        this.nameCache.put(name,  child);
-        
-        // Add connection.
-        this.classHierarchy.add(parent, child);
         
         return this;
     }

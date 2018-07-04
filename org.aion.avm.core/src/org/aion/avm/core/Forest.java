@@ -123,6 +123,10 @@ public class Forest<I, C> {
             return content;
         }
 
+        public void setContent(C c) {
+            this.content = c;
+        }
+
         @Override
         public int hashCode() {
             return id.hashCode();
