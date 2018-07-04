@@ -2,6 +2,8 @@ package org.aion.kernel;
 
 import org.aion.avm.core.util.Helpers;
 
+import java.util.Arrays;
+
 public class Transaction {
 
     public enum Type {
@@ -57,10 +59,10 @@ public class Transaction {
     public String toString() {
         return "Transaction{" +
                 "type=" + type +
-                ", from=" + Helpers.toHexString(from) +
-                ", to=" + Helpers.toHexString(to) +
-                ", value=" + value +
-                ", data=" + data +
+                ", from=" + Helpers.toHexString(Arrays.copyOf(from, 4)) +
+                ", to=" + Helpers.toHexString(Arrays.copyOf(to, 4)) +
+                ", value=" + Helpers.toHexString(value) +
+                ", data=" + Helpers.toHexString(data) +
                 ", energyLimit=" + energyLimit +
                 '}';
     }
