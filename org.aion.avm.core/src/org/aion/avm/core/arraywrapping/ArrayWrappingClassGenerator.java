@@ -36,7 +36,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/internal/IObject", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
     }
 
-    public static byte[] arrayWrappingFactory(String request, boolean mapMethodName, AvmClassLoader loader){
+    public static byte[] arrayWrappingFactory(String request, AvmClassLoader loader){
 
         if (request.startsWith(PackageConstants.kArrayWrapperDotPrefix + "interface._")){
             return genWrapperInterface(request, loader);
@@ -44,7 +44,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
         // we only handle class generation request prefixed with org.aion.avm.arraywrapper.$
         if (request.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$")){
-            return genWrapperClass(request, mapMethodName, loader);
+            return genWrapperClass(request, loader);
         }
 
         return null;
@@ -103,7 +103,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
     }
 
-    private static byte[] genWrapperClass(String requestClass, boolean mapMethodName, AvmClassLoader loader) {
+    private static byte[] genWrapperClass(String requestClass, AvmClassLoader loader) {
         if (DEBUG) {
             System.out.println("*********************************");
             System.out.println("requestClass : " + requestClass);
@@ -155,7 +155,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
                 // Generate
                 classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", superInterfaces);
-                generateClass(classWriter,wrapperClassName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim, mapMethodName);
+                generateClass(classWriter,wrapperClassName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim);
                 if (DEBUG) {
                     System.out.println("Generating Interface wrapper class : " + wrapperClassName);
                     System.out.println("Wrapper Dimension : " + dim);
@@ -176,7 +176,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
                     superClassName = ArrayWrappingClassGenerator.getClassWrapper(superClassName);
                 }
                 classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, superClassName, superInterfaces);
-                generateClass(classWriter,wrapperClassName, superClassName, dim, mapMethodName);
+                generateClass(classWriter,wrapperClassName, superClassName, dim);
 
                 if (DEBUG) {
                     System.out.println("Generating class : " + wrapperClassName);
@@ -190,7 +190,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             }
         }else{
             classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", null);
-            generateClass(classWriter,wrapperClassName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim, mapMethodName);
+            generateClass(classWriter,wrapperClassName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim);
             if (DEBUG) {
                 System.out.println("Generating Prim Class : " + wrapperClassName);
                 System.out.println("Wrapper Dimension : " + dim);
@@ -203,7 +203,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         return classWriter.toByteArray();
     }
 
-    private static void generateClass(ClassWriter cw, String wrapper, String zuper, int d, boolean mapMethodName){
+    private static void generateClass(ClassWriter cw, String wrapper, String zuper, int d){
         // Static factory for one dimensional array
         // We always generate one D factory for corner case like int[][][][] a = new int[10][][][];
         genSDFac(cw, wrapper, 1);
@@ -217,7 +217,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         genConstructor(cw, zuper);
 
         //Clone
-        genClone(cw, wrapper, mapMethodName);
+        genClone(cw, wrapper);
     }
 
     private static void generateInterface(){
@@ -408,8 +408,8 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
     }
 
-    private static void genClone(ClassWriter cw, String wrapper, boolean mapMethodName) {
-        String cloneMethodName = mapMethodName ? UserClassMappingVisitor.mapMethodName("clone") : "clone";
+    private static void genClone(ClassWriter cw, String wrapper) {
+        String cloneMethodName = UserClassMappingVisitor.mapMethodName("clone");
         String cloneMethodDesc = "()Lorg/aion/avm/internal/IObject;";
         MethodVisitor methodVisitor = cw.visitMethod(ACC_PUBLIC, cloneMethodName, cloneMethodDesc, null, null);
         methodVisitor.visitCode();

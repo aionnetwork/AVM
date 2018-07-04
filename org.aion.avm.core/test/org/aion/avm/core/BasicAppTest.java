@@ -32,7 +32,7 @@ public class BasicAppTest {
         SimpleAvm avm = new SimpleAvm(10000L, BasicAppTestTarget.class, AionMap.class);
         AvmClassLoader loader = avm.getClassLoader();
         
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
         loader.addHandler(wrapperGenerator);
         
         this.clazz = loader.loadUserClassByOriginalName(BasicAppTestTarget.class.getName());

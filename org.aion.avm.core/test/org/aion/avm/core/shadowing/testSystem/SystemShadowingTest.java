@@ -38,7 +38,7 @@ public class SystemShadowingTest {
         SimpleAvm avm = new SimpleAvm(1000000000000000000L, TestResource.class);
         AvmClassLoader loader = avm.getClassLoader();
 
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
         loader.addHandler(wrapperGenerator);
 
         Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestResource.class.getName()), "/tmp/System.class");

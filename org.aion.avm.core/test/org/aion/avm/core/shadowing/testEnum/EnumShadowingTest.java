@@ -1,15 +1,12 @@
 package org.aion.avm.core.shadowing.testEnum;
 
-import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.api.Address;
 import org.junit.*;
 
 import java.lang.reflect.InvocationTargetException;
@@ -36,7 +33,7 @@ public class EnumShadowingTest {
         SimpleAvm avm = new SimpleAvm(1000000L, TestResource.class, TestEnum.class);
         AvmClassLoader loader = avm.getClassLoader();
 
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
         loader.addHandler(wrapperGenerator);
 
         //Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestResource.class.getName()), "/tmp/testR.class");

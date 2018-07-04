@@ -1,23 +1,15 @@
 package org.aion.avm.core.arraywrapping;
 
-import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
-import org.aion.avm.internal.OutOfEnergyError;
 import org.junit.*;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 
@@ -44,7 +36,7 @@ public class ArrayWrappingTest {
         );
         AvmClassLoader loader = avm.getClassLoader();
 
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
         loader.addHandler(wrapperGenerator);
 
         Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestResource.class.getName()), "/tmp/wrapped.class");

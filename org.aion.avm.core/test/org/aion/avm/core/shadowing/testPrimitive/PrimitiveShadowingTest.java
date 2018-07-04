@@ -1,8 +1,6 @@
 package org.aion.avm.core.shadowing.testPrimitive;
 
-import org.aion.avm.api.Address;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -63,7 +61,7 @@ public class PrimitiveShadowingTest {
         );
         AvmClassLoader loader = avm.getClassLoader();
 
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, true, loader);
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
         loader.addHandler(wrapperGenerator);
 
         Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestResource.class.getName()), "/tmp/Prim.class");
