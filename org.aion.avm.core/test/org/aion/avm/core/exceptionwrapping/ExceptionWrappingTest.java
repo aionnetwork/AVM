@@ -37,7 +37,7 @@ public class ExceptionWrappingTest {
 
     @BeforeClass
     public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
     }
 
     private AvmClassLoader loader;

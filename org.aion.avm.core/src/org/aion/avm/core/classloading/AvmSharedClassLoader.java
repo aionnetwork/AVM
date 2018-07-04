@@ -1,6 +1,7 @@
 package org.aion.avm.core.classloading;
 
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
+import org.aion.avm.core.util.Assert;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class AvmSharedClassLoader extends ClassLoader {
             result = defineClass(name, injected, 0, injected.length);
             this.cache.put(name, result);
         } else {
-
+            Assert.assertTrue(!name.contains("org.aion.avm.user"));
             byte[] code = ArrayWrappingClassGenerator.arrayWrappingFactory(name, this);
             if (code != null) {
                 result = defineClass(name, code, 0, code.length);

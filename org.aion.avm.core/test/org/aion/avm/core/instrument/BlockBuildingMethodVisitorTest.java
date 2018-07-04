@@ -7,7 +7,6 @@ import java.util.Map;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
-import org.aion.avm.core.instrument.BasicBlock;
 import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,7 +20,7 @@ public class BlockBuildingMethodVisitorTest {
 
     @BeforeClass
     public static void setupClass() throws Exception {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
     }
 
     private Map<String, List<BasicBlock>> METHOD_BLOCKS;

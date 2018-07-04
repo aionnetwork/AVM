@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
 
-import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.ClassLoadingResult;
@@ -14,7 +13,6 @@ import org.aion.avm.core.dappreading.DAppLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.api.Address;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -26,7 +24,7 @@ public class StubGeneratorTest {
 
     @BeforeClass
     public static void setupClass() throws Exception {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
     }
 
     @Before
@@ -239,7 +237,7 @@ public class StubGeneratorTest {
 
     private static AvmClassLoader generateExceptionShadowsAndWrappers(ClassLoader parent) throws Exception {
         // Get the generated classes.
-        Map<String, byte[]> allGenerated = CommonGenerators.generateExceptionShadowsAndWrappers();
+        Map<String, byte[]> allGenerated = CommonGenerators.generateShadowJDK();
         // This test now falls back to the sharedClassLoader, which makes it kind of redundant, but it at least proves it is working as expected.
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, Collections.emptyMap());
         

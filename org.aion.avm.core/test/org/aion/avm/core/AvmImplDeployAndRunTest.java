@@ -21,7 +21,7 @@ public class AvmImplDeployAndRunTest {
 
     @BeforeClass
     public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         avm = new AvmImpl(sharedClassLoader);
         cb = new KernelApiImpl();
     }

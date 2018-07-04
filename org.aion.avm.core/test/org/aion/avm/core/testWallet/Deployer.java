@@ -192,7 +192,7 @@ public class Deployer {
 
     private static void invokeTransformed(String[] args) throws Throwable {
         Map<String, Integer> eventCounts = new HashMap<>();
-        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         
         LoadingHelper helper = new LoadingHelper();
         helper.loadClass(Multiowned.class);

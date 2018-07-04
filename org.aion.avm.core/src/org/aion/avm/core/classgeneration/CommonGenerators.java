@@ -1,11 +1,20 @@
 package org.aion.avm.core.classgeneration;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
+import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.shadowing.ClassShadowing;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 
 
 /**
@@ -85,7 +94,23 @@ public class CommonGenerators {
             "java.lang.ClassNotFoundException",
     });
 
-    public static Map<String, byte[]> generateExceptionShadowsAndWrappers() {
+    public static final Set<String> kShadowEnumClassNames = Set.of(new String[] {
+            "org.aion.avm.shadow.java.math.RoundingMode",
+    });
+
+    public static Map<String, byte[]> generateShadowJDK() {
+        Map<String, byte[]> shadowJDK = new HashMap<>();
+
+        Map<String, byte[]> shadowException = generateShadowException();
+        Map<String, byte[]> shadowEnum = generateShadowEnum();
+
+        shadowJDK.putAll(shadowEnum);
+        shadowJDK.putAll(shadowException);
+
+        return shadowJDK;
+    }
+
+    public static Map<String, byte[]> generateShadowException() {
         Map<String, byte[]> generatedClasses = new HashMap<>();
         for (String className : kExceptionClassNames) {
             // We need to look this up to find the superclass.
@@ -121,6 +146,35 @@ public class CommonGenerators {
             byte[] wrapperBytes = generateWrapperClass(wrapperName, wrapperSuperName);
             generatedClasses.put(wrapperName, wrapperBytes);
         }
+        return generatedClasses;
+    }
+
+    public static Map<String, byte[]> generateShadowEnum(){
+        Map<String, byte[]> generatedClasses = new HashMap<>();
+
+        for (String name : kShadowEnumClassNames){
+            byte[] cnt = Helpers.loadRequiredResourceAsBytes(name.replaceAll("\\.", "/") + ".class");
+
+            //Helpers.writeBytesToFile(cnt, "/tmp/round.class");
+
+            byte[] bytecode = new ClassToolchain.Builder(cnt, ClassReader.EXPAND_FRAMES)
+                    .addNextVisitor(new UserClassMappingVisitor(new HashSet<>()))
+                    .addNextVisitor(new ClassShadowing(PackageConstants.kInternalSlashPrefix + "Helper"))
+                    .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                    .build()
+                    .runAndGetBytecode();
+            bytecode = new ClassToolchain.Builder(bytecode, ClassReader.EXPAND_FRAMES)
+                    .addNextVisitor(new ArrayWrappingClassAdapterRef())
+                    .addNextVisitor(new ArrayWrappingClassAdapter())
+                    .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                    .build()
+                    .runAndGetBytecode();
+
+            Helpers.writeBytesToFile(bytecode, "/tmp/roundAfter.class");
+
+            generatedClasses.put(name, bytecode);
+        }
+
         return generatedClasses;
     }
 

@@ -23,7 +23,7 @@ public class SystemShadowingTest {
 
     @BeforeClass
     public static void setupClass() throws ClassNotFoundException {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         testReplaceJavaLang();
     }
 

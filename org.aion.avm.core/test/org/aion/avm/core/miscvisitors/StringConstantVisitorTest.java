@@ -1,13 +1,11 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.api.Address;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
@@ -27,7 +25,7 @@ public class StringConstantVisitorTest {
 
     @BeforeClass
     public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         runtimeClassName = PackageConstants.kInternalSlashPrefix + "Helper";
     }
 

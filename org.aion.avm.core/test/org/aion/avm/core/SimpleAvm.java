@@ -29,7 +29,7 @@ public class SimpleAvm {
                 Helpers.loadRequiredResourceAsBytes(clazz.getName().replaceAll("\\.", "/") + ".class")));
 
         // build shared class loader
-        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
 
         // build class hierarchy
         HierarchyTreeBuilder builder = new HierarchyTreeBuilder();

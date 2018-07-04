@@ -43,7 +43,7 @@ public class InvokedynamicTransformationTest {
 
     @BeforeClass
     public static void init() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         final var avmClassLoader = new AvmClassLoader(sharedClassLoader, new HashMap<>());
         new Helper(avmClassLoader, 1_000_000L);
     }

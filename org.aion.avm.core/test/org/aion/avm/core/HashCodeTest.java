@@ -29,7 +29,7 @@ public class HashCodeTest {
 
     @BeforeClass
     public static void setupClass() throws Exception {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
     }
 
     private Class<?> clazz;
@@ -171,7 +171,7 @@ public class HashCodeTest {
     @Test
     public void testTwoLevelClassLoading() throws Exception {
         // Create the shared instance with the reusable classes.
-        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         
         // Load the testing class.
         String className = HashCodeTestTarget.class.getName();
@@ -202,7 +202,7 @@ public class HashCodeTest {
     @Test
     public void testTwoIsolatedContracts() throws Exception {
         // Create the shared instance with the reusable classes.
-        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         
         // Load the testing class and the Helper.
         String targetClassName = HashCodeTestTarget.class.getName();

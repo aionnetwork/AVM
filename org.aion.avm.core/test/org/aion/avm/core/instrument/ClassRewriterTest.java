@@ -19,7 +19,7 @@ public class ClassRewriterTest {
 
     @BeforeClass
     public static void setupClass() throws Exception {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
     }
 
     /**

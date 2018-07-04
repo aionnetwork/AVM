@@ -20,7 +20,7 @@ public class PrimitiveShadowingTest {
 
     @BeforeClass
     public static void setupClass() throws ClassNotFoundException {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateExceptionShadowsAndWrappers());
+        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         testReplaceJavaLang();
     }
 
