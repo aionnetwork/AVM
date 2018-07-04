@@ -10,7 +10,7 @@ public class LongArray extends Array {
     private long[] underlying;
 
     public static LongArray initArray(int c){
-        IHelper.currentContractHelper.get().externalChargeEnergy(c * 64);
+        //IHelper.currentContractHelper.get().externalChargeEnergy(c * 64);
         return new LongArray(c);
     }
 

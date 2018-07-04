@@ -19,7 +19,6 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     private Type typeFA = Type.getType(FloatArray.class);
     private Type typeIA = Type.getType(IntArray.class);
     private Type typeLA = Type.getType(LongArray.class);
-    private Type typeOA = Type.getType(ObjectArray.class);
     private Type typeSA = Type.getType(ShortArray.class);
 
 

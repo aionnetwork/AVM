@@ -10,7 +10,7 @@ public class IntArray extends Array {
     private int[] underlying;
 
     public static IntArray initArray(int c){
-        IHelper.currentContractHelper.get().externalChargeEnergy(c * 32);
+        //IHelper.currentContractHelper.get().externalChargeEnergy(c * 32);
         return new IntArray(c);
     }
 

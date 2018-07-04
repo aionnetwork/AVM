@@ -10,7 +10,7 @@ public class FloatArray extends Array {
     private float[] underlying;
 
     public static FloatArray initArray(int c){
-        IHelper.currentContractHelper.get().externalChargeEnergy(c * 32);
+        //IHelper.currentContractHelper.get().externalChargeEnergy(c * 32);
         return new FloatArray(c);
     }
 

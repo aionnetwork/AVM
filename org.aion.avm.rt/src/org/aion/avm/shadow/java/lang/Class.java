@@ -21,6 +21,7 @@ public class Class<T> extends Object {
     }
 
     public String avm_toString() {
+        //java.lang.System.out.println(underlying.getName() + " is loaded from " + underlying.getClassLoader());
         return null;
     }
 

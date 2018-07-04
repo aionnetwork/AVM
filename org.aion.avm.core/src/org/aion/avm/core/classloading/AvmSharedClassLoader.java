@@ -1,5 +1,7 @@
 package org.aion.avm.core.classloading;
 
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,9 +36,18 @@ public class AvmSharedClassLoader extends ClassLoader {
             result = defineClass(name, injected, 0, injected.length);
             this.cache.put(name, result);
         } else {
-            result = getParent().loadClass(name);
-            // We got this from the parent so don't resolve.
-            shouldResolve = false;
+
+            byte[] code = ArrayWrappingClassGenerator.arrayWrappingFactory(name, this);
+            if (code != null) {
+                result = defineClass(name, code, 0, code.length);
+                this.cache.put(name, result);
+            }
+
+            if (null == result) {
+                result = getParent().loadClass(name);
+                // We got this from the parent so don't resolve.
+                shouldResolve = false;
+            }
         }
         
         if ((null != result) && shouldResolve) {

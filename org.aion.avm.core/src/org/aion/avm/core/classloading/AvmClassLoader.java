@@ -65,11 +65,13 @@ public class AvmClassLoader extends ClassLoader {
 
             // Before falling back to the parent, try the dynamic.
             for (Function<String, byte[]> handler : handlers) {
-                byte[] code = handler.apply(name);
-                if (code != null) {
-                    result = defineClass(name, code, 0, code.length);
-                    this.cache.put(name, result);
-                    break;
+                if (name.contains("org.aion.avm.user")) {
+                    byte[] code = handler.apply(name);
+                    if (code != null) {
+                        result = defineClass(name, code, 0, code.length);
+                        this.cache.put(name, result);
+                        break;
+                    }
                 }
             }
             

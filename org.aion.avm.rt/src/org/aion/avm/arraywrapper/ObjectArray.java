@@ -10,7 +10,7 @@ public class ObjectArray extends Array {
     protected Object[] underlying;
 
     public static ObjectArray initArray(int c){
-        IHelper.currentContractHelper.get().externalChargeEnergy(c * 64);
+        //IHelper.currentContractHelper.get().externalChargeEnergy(c * 64);
         return new ObjectArray(c);
     }
 

@@ -10,7 +10,7 @@ public class CharArray extends Array {
     private char[] underlying;
 
     public static CharArray initArray(int c){
-        IHelper.currentContractHelper.get().externalChargeEnergy(c * 16);
+        //IHelper.currentContractHelper.get().externalChargeEnergy(c * 16);
         return new CharArray(c);
     }
 

@@ -10,7 +10,7 @@ public class DoubleArray extends Array {
     private double[] underlying;
 
     public static DoubleArray initArray(int c){
-        IHelper.currentContractHelper.get().externalChargeEnergy(c * 64);
+        //IHelper.currentContractHelper.get().externalChargeEnergy(c * 64);
         return new DoubleArray(c);
     }
 

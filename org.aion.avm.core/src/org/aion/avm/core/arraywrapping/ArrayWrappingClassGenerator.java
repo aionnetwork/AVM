@@ -36,7 +36,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/internal/IObject", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
     }
 
-    public static byte[] arrayWrappingFactory(String request, AvmClassLoader loader){
+    public static byte[] arrayWrappingFactory(String request, ClassLoader loader){
 
         if (request.startsWith(PackageConstants.kArrayWrapperDotPrefix + "interface._")){
             return genWrapperInterface(request, loader);
@@ -50,7 +50,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         return null;
     }
 
-    private static byte[] genWrapperInterface(String requestInterface, AvmClassLoader loader) {
+    private static byte[] genWrapperInterface(String requestInterface, ClassLoader loader) {
 
         if (DEBUG) {
             System.out.println("*********************************");
@@ -103,7 +103,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
     }
 
-    private static byte[] genWrapperClass(String requestClass, AvmClassLoader loader) {
+    private static byte[] genWrapperClass(String requestClass, ClassLoader loader) {
         if (DEBUG) {
             System.out.println("*********************************");
             System.out.println("requestClass : " + requestClass);
@@ -233,13 +233,13 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         mv.visitVarInsn(ILOAD, 0);
         mv.visitMethodInsn(INVOKESPECIAL, wrapper, "<init>", "(I)V", false);
 
-        // Charge energy
-        mv.visitVarInsn(ILOAD, 0);
-        // OBJREF size is 64 per slot
-        mv.visitIntInsn(BIPUSH, 64);
-        mv.visitInsn(IMUL);
-        mv.visitInsn(I2L);
-        mv.visitMethodInsn(INVOKESTATIC, HELPER, "chargeEnergy", "(J)V", false);
+//        // Charge energy
+//        mv.visitVarInsn(ILOAD, 0);
+//        // OBJREF size is 64 per slot
+//        mv.visitIntInsn(BIPUSH, 64);
+//        mv.visitInsn(IMUL);
+//        mv.visitInsn(I2L);
+//        mv.visitMethodInsn(INVOKESTATIC, HELPER, "chargeEnergy", "(J)V", false);
 
         mv.visitInsn(ARETURN);
         mv.visitMaxs(3, 1);
@@ -268,13 +268,13 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         mv.visitVarInsn(ILOAD, 0);
         mv.visitMethodInsn(INVOKESPECIAL, wrapper, "<init>", "(I)V", false);
 
-        // Charge energy
-        mv.visitVarInsn(ILOAD, 0);
-        //OBJREF size is 64 per slot
-        mv.visitIntInsn(BIPUSH, 64);
-        mv.visitInsn(IMUL);
-        mv.visitInsn(I2L);
-        mv.visitMethodInsn(INVOKESTATIC, HELPER, "chargeEnergy", "(J)V", false);
+//        // Charge energy
+//        mv.visitVarInsn(ILOAD, 0);
+//        //OBJREF size is 64 per slot
+//        mv.visitIntInsn(BIPUSH, 64);
+//        mv.visitInsn(IMUL);
+//        mv.visitInsn(I2L);
+//        mv.visitMethodInsn(INVOKESTATIC, HELPER, "chargeEnergy", "(J)V", false);
 
         // Wrapper OBJ to return
         // Now LVT[0] ~ LVT[d-1] hold all dimension data, LVT[d] hold wrapper object.
