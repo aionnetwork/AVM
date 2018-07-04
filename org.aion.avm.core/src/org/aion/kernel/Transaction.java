@@ -12,14 +12,17 @@ public class Transaction {
 
     byte[] to;
 
+    byte[] value;
+
     byte[] data;
 
     long energyLimit;
 
-    public Transaction(Type type, byte[] from, byte[] to, byte[] data, long energyLimit) {
+    public Transaction(Type type, byte[] from, byte[] to, byte[] value, byte[] data, long energyLimit) {
         this.type = type;
         this.from = from;
         this.to = to;
+        this.value = value;
         this.data = data;
         this.energyLimit = energyLimit;
     }
@@ -34,6 +37,10 @@ public class Transaction {
 
     public byte[] getTo() {
         return to;
+    }
+
+    public byte[] getValue() {
+        return value;
     }
 
     public byte[] getData() {
