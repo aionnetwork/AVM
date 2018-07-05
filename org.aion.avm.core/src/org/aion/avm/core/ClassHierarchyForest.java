@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.dappreading.DAppReaderWriter;
+import org.aion.avm.core.dappreading.LoadedJar;
+import org.aion.avm.core.util.Helpers;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -46,7 +47,7 @@ public final class ClassHierarchyForest extends Forest<String, byte[]> {
     }
 
     private void createForestInternal() throws IOException {
-        Map<String, byte[]> classNameToBytes = new DAppReaderWriter().readClassesFromJar(jar);
+        Map<String, byte[]> classNameToBytes = LoadedJar.fromBytes(jar).classBytesByQualifiedNames;
         for (Map.Entry<String, byte[]> entry : classNameToBytes.entrySet()) {
             final byte[] klass = entry.getValue();
             analyzeClass(klass);

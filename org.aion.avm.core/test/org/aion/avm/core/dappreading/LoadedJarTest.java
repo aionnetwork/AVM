@@ -1,5 +1,6 @@
 package org.aion.avm.core.dappreading;
 
+import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,7 +12,7 @@ import static java.util.Arrays.sort;
 /**
  * @author Roman Katerinenko
  */
-public class DAppReaderWriterTest {
+public class LoadedJarTest {
 
     private static final String[] expectedReadClasses = {
             "com.example.twoclasses.C1",
@@ -35,7 +36,8 @@ public class DAppReaderWriterTest {
     public void checkExpectedClassesReadFromJar() throws IOException {
         final var module = "com.example.twoclasses";
         final var pathToJar = String.format("%s/%s.jar", "../examples/build", module);
-        Map<String, byte[]> actualClasses = new DAppReaderWriter().readClassesFromJar(pathToJar);
+        byte[] jarBytes = Helpers.readFileToBytes(pathToJar);
+        Map<String, byte[]> actualClasses = LoadedJar.fromBytes(jarBytes).classBytesByQualifiedNames;
         checkIfMatchExpected(actualClasses);
     }
 
