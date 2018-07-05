@@ -2,6 +2,7 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IObject;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -23,6 +24,10 @@ public class Class<T> extends Object {
     public String avm_toString() {
         //java.lang.System.out.println(underlying.getName() + " is loaded from " + underlying.getClassLoader());
         return null;
+    }
+
+    public IObject avm_cast(IObject obj) {
+        return (IObject)this.underlying.cast(obj);
     }
 
     public java.lang.Class<T> getRealClass(){return this.underlying;}
