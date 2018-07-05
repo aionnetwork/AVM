@@ -575,7 +575,7 @@ public class TestResource {
 
         public static class ParsingTest {
 
-            public static void main(String... argv) {
+            public static void main(String[] argv) {
                 check(+100, "+100");
                 check(-100, "-100");
 
@@ -821,7 +821,7 @@ public class TestResource {
 
         static class ParsingTest {
 
-            public static void main(String... argv) {
+            public static void main(String[] argv) {
                 check(+100L, "+100");
                 check(-100L, "-100");
 
