@@ -1,6 +1,7 @@
 package org.aion.avm.core.instrument;
 
 import org.aion.avm.core.Forest;
+import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.ClassHierarchyForest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +23,7 @@ public class HeapMemoryCostCalculatorTest {
     public void testCalcClassesInstanceSize() throws IOException {
         final var module = "com.example.heapsizecalctest";
         final Path path = Paths.get(format("%s/%s.jar", "../examples/build", module));
-        final byte[] jar = Files.readAllBytes(path);
+        LoadedJar jar = LoadedJar.fromBytes(Files.readAllBytes(path));
         final var forest = ClassHierarchyForest.createForestFrom(jar);
 
         Collection<Forest.Node<String, byte[]>> roots = forest.getRoots();
@@ -44,9 +45,4 @@ public class HeapMemoryCostCalculatorTest {
         assertEquals(0, (long)result.get(moduleName + "/E"));
         assertEquals(8, (long)result.get(moduleName + "/EF"));
     }
-
-    private static Forest.Node<String, byte[]> newNode(String id) {
-        return new Forest.Node<>(id, null);
-    }
-
 }

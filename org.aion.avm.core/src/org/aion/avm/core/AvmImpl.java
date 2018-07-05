@@ -7,6 +7,7 @@ import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.instrument.ClassMetering;
@@ -28,17 +29,10 @@ import org.aion.kernel.Transaction;
 import org.aion.kernel.TransformedDappStorage;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.function.Function;
 import java.util.jar.Attributes;
@@ -46,11 +40,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-import static org.aion.avm.core.FileUtils.getFSRootDirFor;
-import static org.aion.avm.core.FileUtils.putToTempDir;
 
 public class AvmImpl implements Avm {
-    private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
     private static final String HELPER_CLASS = PackageConstants.kInternalSlashPrefix + "Helper";
 
     private static final TransformedDappStorage.CodeVersion VERSION = TransformedDappStorage.CodeVersion.VERSION_1_0;
@@ -489,41 +480,12 @@ public class AvmImpl implements Avm {
         }
 
         private static DappModule readFromJar(byte[] jar) throws IOException {
-            ClassHierarchyForest forest = ClassHierarchyForest.createForestFrom(jar);
+            LoadedJar loadedJar = LoadedJar.fromBytes(jar);
+            ClassHierarchyForest forest = ClassHierarchyForest.createForestFrom(loadedJar);
             Map<String, byte[]> classes = forest.toFlatMapWithoutRoots();
-            String mainClass = readMainClassQualifiedNameFrom(jar);
+            String mainClass = loadedJar.mainClassName;
 
             return new DappModule(classes, mainClass, forest, jar.length, classes.size());
-        }
-
-        private static String readMainClassQualifiedNameFrom(byte[] jar) throws IOException {
-            final Path pathToJar = putToTempDir(jar, "aiontemp", "module-temp.jar");
-            final Path rootInJar = getFSRootDirFor(pathToJar);
-            final var container = new ArrayList<String>(1);
-            Files.walkFileTree(rootInJar, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                    if (file.getFileName().toString().equalsIgnoreCase("MANIFEST.MF")) {
-                        container.add(extractMainClassNameFrom(file));
-                        return FileVisitResult.TERMINATE;
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-            return container.size() == 1 ? container.get(0) : null;
-        }
-
-        private static String extractMainClassNameFrom(Path file) {
-            final var propertyKey = "Main-Class";
-            try (InputStream in = Files.newInputStream(file)) {
-                final var properties = new Properties();
-                properties.load(in);
-                Object result = properties.get(propertyKey);
-                return result.toString();
-            } catch (IOException e) {
-                logger.debug(String.format("Can't find property %s in jar %s", propertyKey, file));
-            }
-            return null;
         }
 
         Map<String, byte[]> getClasses() {

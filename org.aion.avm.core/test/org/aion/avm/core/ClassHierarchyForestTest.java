@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.core.dappreading.LoadedJar;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -20,7 +21,7 @@ public class ClassHierarchyForestTest {
     public void test() throws IOException {
         final var module = "com.example.foresttest";
         final Path path = Paths.get(format("%s/%s.jar", "../examples/build", module));
-        final byte[] jar = Files.readAllBytes(path);
+        LoadedJar jar = LoadedJar.fromBytes(Files.readAllBytes(path));
         final var forest = ClassHierarchyForest.createForestFrom(jar);
         Collection<Forest.Node<String, byte[]>> roots = forest.getRoots();
         Assert.assertEquals(2, roots.size());

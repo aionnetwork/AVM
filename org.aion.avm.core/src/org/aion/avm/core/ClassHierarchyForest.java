@@ -1,7 +1,6 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.dappreading.LoadedJar;
-import org.aion.avm.core.util.Helpers;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -25,7 +24,7 @@ import java.util.Map;
  */
 public final class ClassHierarchyForest extends Forest<String, byte[]> {
 
-    private final byte[] jar;
+    private final LoadedJar loadedJar;
 
     private String curParentName;
     private boolean isInterface;
@@ -36,18 +35,18 @@ public final class ClassHierarchyForest extends Forest<String, byte[]> {
         return collector.getMap();
     }
 
-    public static ClassHierarchyForest createForestFrom(byte[] jar) throws IOException {
-        final var forest = new ClassHierarchyForest(jar);
+    public static ClassHierarchyForest createForestFrom(LoadedJar loadedJar) throws IOException {
+        final var forest = new ClassHierarchyForest(loadedJar);
         forest.createForestInternal();
         return forest;
     }
 
-    private ClassHierarchyForest(byte[] jar) {
-        this.jar = jar;
+    private ClassHierarchyForest(LoadedJar loadedJar) {
+        this.loadedJar = loadedJar;
     }
 
     private void createForestInternal() throws IOException {
-        Map<String, byte[]> classNameToBytes = LoadedJar.fromBytes(jar).classBytesByQualifiedNames;
+        Map<String, byte[]> classNameToBytes = this.loadedJar.classBytesByQualifiedNames;
         for (Map.Entry<String, byte[]> entry : classNameToBytes.entrySet()) {
             final byte[] klass = entry.getValue();
             analyzeClass(klass);
