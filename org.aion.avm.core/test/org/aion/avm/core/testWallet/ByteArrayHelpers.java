@@ -18,15 +18,15 @@ public class ByteArrayHelpers {
                 (byte) (0xff & (l >>  0)),
         };
         byte[] newArray = new byte[array.length + longBytes.length];
-        arraycopy(array, 0, newArray, 0, array.length);
-        arraycopy(longBytes, 0, newArray, array.length, longBytes.length);
+        System.arraycopy(array, 0, newArray, 0, array.length);
+        System.arraycopy(longBytes, 0, newArray, array.length, longBytes.length);
         return newArray;
     }
 
     public static byte[] concatenate(byte[] one, byte[] two) {
         byte[] result = new byte[one.length + two.length];
-        arraycopy(one, 0, result, 0, one.length);
-        arraycopy(two, 0, result, one.length, two.length);
+        System.arraycopy(one, 0, result, 0, one.length);
+        System.arraycopy(two, 0, result, one.length, two.length);
         return result;
     }
 
@@ -70,13 +70,6 @@ public class ByteArrayHelpers {
                 | (long)((0xff & eightBytes[5]) << 16)
                 | (long)((0xff & eightBytes[6]) << 8)
                 | (long)((0xff & eightBytes[7]) << 0);
-    }
-
-    public static void arraycopy(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
-        for (int i = 0; i < length; ++i) {
-            byte elt = src[srcPos + i];
-            dest[destPos + i] = elt;
-        }
     }
 
     public static byte[] arraySlice(byte[] src, int srcPos, int length) {

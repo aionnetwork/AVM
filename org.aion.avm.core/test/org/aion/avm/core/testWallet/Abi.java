@@ -84,27 +84,27 @@ public class Abi {
         
         public Encoder encodeInt(int arg) {
             byte[] slice = ByteArrayHelpers.encodeInt(arg);
-            ByteArrayHelpers.arraycopy(slice, 0, this.onto, this.cursor, slice.length);
+            System.arraycopy(slice, 0, this.onto, this.cursor, slice.length);
             this.cursor += slice.length;
             return this;
         }
         
         public Encoder encodeLong(long arg) {
             byte[] slice = ByteArrayHelpers.encodeLong(arg);
-            ByteArrayHelpers.arraycopy(slice, 0, this.onto, this.cursor, slice.length);
+            System.arraycopy(slice, 0, this.onto, this.cursor, slice.length);
             this.cursor += slice.length;
             return this;
         }
         
         public Encoder encodeAddress(Address arg) {
             byte[] slice = arg.unwrap();
-            ByteArrayHelpers.arraycopy(slice, 0, this.onto, this.cursor, slice.length);
+            System.arraycopy(slice, 0, this.onto, this.cursor, slice.length);
             this.cursor += slice.length;
             return this;
         }
         
         public Encoder encodeRemainder(byte[] arg) {
-            ByteArrayHelpers.arraycopy(arg, 0, this.onto, this.cursor, arg.length);
+            System.arraycopy(arg, 0, this.onto, this.cursor, arg.length);
             this.cursor += arg.length;
             return this;
         }
