@@ -78,18 +78,20 @@ public class Helpers {
 
     /**
      * A helper which will attempt to load the given resource path as bytes.
-     * Any failure in the load is considered fatal.
+     * Returns null if the resource could not be found.
      *
      * @param resourcePath The path to this resource, within the parent class loader.
-     * @return The bytes
+     * @return The resource as bytes, or null if not found.
      */
     public static byte[] loadRequiredResourceAsBytes(String resourcePath) {
         InputStream stream = Helpers.class.getClassLoader().getResourceAsStream(resourcePath);
         byte[] raw = null;
-        try {
-            raw = stream.readAllBytes();
-        } catch (IOException e) {
-            Assert.unexpected(e);
+        if (null != stream) {
+            try {
+                raw = stream.readAllBytes();
+            } catch (IOException e) {
+                Assert.unexpected(e);
+            }
         }
         return raw;
     }

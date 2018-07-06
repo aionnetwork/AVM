@@ -1,7 +1,5 @@
 package org.aion.avm.core.testWallet;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -202,15 +200,11 @@ public class Deployer {
         helper.loadClass(Operation.class);
         helper.loadClass(ByteArrayHelpers.class);
         helper.loadClass(BytesKey.class);
-        helper.loadClass(Multiowned.PendingState.class);
         helper.loadClass(RequireFailedException.class);
         helper.loadClass(Daylimit.class);
         helper.loadClass(Wallet.class);
-        helper.loadClass(Wallet.Transaction.class);
         helper.loadClass(EventLogger.class);
         helper.loadClass(Abi.class);
-        helper.loadClass(Abi.Encoder.class);
-        helper.loadClass(Abi.Decoder.class);
         
         AvmImpl avm = new AvmImpl(sharedClassLoader);
         Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(helper.igetInputClasses(), helper.getClassHierarchy()));
@@ -500,10 +494,25 @@ public class Deployer {
             this.inputClasses = new HashMap<>();
         }
         
+        /**
+         * Loads the given class, any declared classes (named inner classes), and any anonymous inner classes.
+         * 
+         * @param clazz The class to load.
+         */
         public void loadClass(Class<?> clazz) {
-            // We want to get the name of this class to load the class file.
+            // Load everything related to this class.
+            loadClassAndAnonymous(clazz);
+            // Now, include any declared classes.
+            for (Class<?> one : clazz.getDeclaredClasses()) {
+                loadClassAndAnonymous(one);
+            }
+        }
+        
+        private void loadClassAndAnonymous(Class<?> clazz) {
+            // Start with the fully-qualified class name, since we use that for addressing it.
             String className = clazz.getName();
-            byte[] bytes = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+            
+            byte[] bytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(className) + ".class");
             Class<?> superClass = clazz.getSuperclass();
             // Note that superClass is null for interfaces so we just say they are under Object.
             if (null == superClass) {
@@ -515,21 +524,14 @@ public class Deployer {
             // Note that, in some cases, a compiler may generate an anonymous inner class (even in cases where there is a named inner class) so search for those, automatically.
             int i = 1;
             String innerName = className + "$" + Integer.toString(i);
-            InputStream stream = clazz.getClassLoader().getResourceAsStream(innerName.replaceAll("\\.", "/") + ".class");
-            while (null != stream) {
-                byte[] raw = null;
-                try {
-                    raw = stream.readAllBytes();
-                    stream.close();
-                } catch (IOException e) {
-                    Assert.unexpected(e);
-                }
-                this.treeBuilder.addClass(innerName, Object.class.getName(), raw);
-                this.inputClasses.put(innerName, raw);
+            byte[] innerBytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(innerName) + ".class");
+            while (null != innerBytes) {
+                this.treeBuilder.addClass(innerName, Object.class.getName(), innerBytes);
+                this.inputClasses.put(innerName, innerBytes);
                 
                 i += 1;
                 innerName = className + "$" + Integer.toString(i);
-                stream = clazz.getClassLoader().getResourceAsStream(innerName.replaceAll("\\.", "/") + ".class");
+                innerBytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(innerName) + ".class");
             }
         }
         
