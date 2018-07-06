@@ -10,12 +10,13 @@ import java.util.function.Supplier;
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.Forest;
-import org.aion.avm.core.HierarchyTreeBuilder;
+import org.aion.avm.core.ClassHierarchyForest;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
@@ -191,23 +192,24 @@ public class Deployer {
         Map<String, Integer> eventCounts = new HashMap<>();
         AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         
-        LoadingHelper helper = new LoadingHelper();
-        helper.loadClass(Multiowned.class);
-        helper.loadClass(AionMap.class);
-        helper.loadClass(AionSet.class);
-        helper.loadClass(AionList.class);
-        helper.loadClass(ByteArrayWrapper.class);
-        helper.loadClass(Operation.class);
-        helper.loadClass(ByteArrayHelpers.class);
-        helper.loadClass(BytesKey.class);
-        helper.loadClass(RequireFailedException.class);
-        helper.loadClass(Daylimit.class);
-        helper.loadClass(Wallet.class);
-        helper.loadClass(EventLogger.class);
-        helper.loadClass(Abi.class);
+        byte[] jarBytes = JarBuilder.buildJarForMainAndClasses(Wallet.class
+                , Multiowned.class
+                , AionMap.class
+                , AionSet.class
+                , AionList.class
+                , ByteArrayWrapper.class
+                , Operation.class
+                , ByteArrayHelpers.class
+                , BytesKey.class
+                , RequireFailedException.class
+                , Daylimit.class
+                , EventLogger.class
+                , Abi.class
+        );
+        LoadedJar jar = LoadedJar.fromBytes(jarBytes);
         
         AvmImpl avm = new AvmImpl(sharedClassLoader);
-        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(helper.igetInputClasses(), helper.getClassHierarchy()));
+        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar)));
         
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, transformedClasses);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
@@ -481,66 +483,6 @@ public class Deployer {
         public int externalGetNextHashCode() {
             // Just return anything.
             return 0;
-        }
-    }
-
-
-    private static class LoadingHelper {
-        private final HierarchyTreeBuilder treeBuilder;
-        private final Map<String, byte[]> inputClasses;
-        
-        public LoadingHelper() {
-            this.treeBuilder = new HierarchyTreeBuilder();
-            this.inputClasses = new HashMap<>();
-        }
-        
-        /**
-         * Loads the given class, any declared classes (named inner classes), and any anonymous inner classes.
-         * 
-         * @param clazz The class to load.
-         */
-        public void loadClass(Class<?> clazz) {
-            // Load everything related to this class.
-            loadClassAndAnonymous(clazz);
-            // Now, include any declared classes.
-            for (Class<?> one : clazz.getDeclaredClasses()) {
-                loadClassAndAnonymous(one);
-            }
-        }
-        
-        private void loadClassAndAnonymous(Class<?> clazz) {
-            // Start with the fully-qualified class name, since we use that for addressing it.
-            String className = clazz.getName();
-            
-            byte[] bytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(className) + ".class");
-            Class<?> superClass = clazz.getSuperclass();
-            // Note that superClass is null for interfaces so we just say they are under Object.
-            if (null == superClass) {
-                superClass = Object.class;
-            }
-            this.treeBuilder.addClass(className, superClass.getName(), bytes);
-            this.inputClasses.put(className, bytes);
-            
-            // Note that, in some cases, a compiler may generate an anonymous inner class (even in cases where there is a named inner class) so search for those, automatically.
-            int i = 1;
-            String innerName = className + "$" + Integer.toString(i);
-            byte[] innerBytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(innerName) + ".class");
-            while (null != innerBytes) {
-                this.treeBuilder.addClass(innerName, Object.class.getName(), innerBytes);
-                this.inputClasses.put(innerName, innerBytes);
-                
-                i += 1;
-                innerName = className + "$" + Integer.toString(i);
-                innerBytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(innerName) + ".class");
-            }
-        }
-        
-        public Map<String, byte[]> igetInputClasses() {
-            return this.inputClasses;
-        }
-        
-        public Forest<String, byte[]> getClassHierarchy() {
-            return this.treeBuilder.asMutableForest();
         }
     }
 }
