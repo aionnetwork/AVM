@@ -1,6 +1,5 @@
 package org.aion.kernel;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,9 +31,9 @@ public class TransformedDappStorage {
      */
     public class DappStorage {
         private CodeVersion version;
-        private File jarFile;
+        private byte[] jarFile;
 
-        public DappStorage(CodeVersion version, File jarFile) {
+        public DappStorage(CodeVersion version, byte[] jarFile) {
             this.version = version;
             this.jarFile = jarFile;
         }
@@ -88,7 +87,7 @@ public class TransformedDappStorage {
      * @param version the code version.
      * @param codeJar the Jar file of the transformed code.
      */
-    public void storeCode(byte[] address, CodeVersion version, File codeJar) {
+    public void storeCode(byte[] address, CodeVersion version, byte[] codeJar) {
         codeStorage.put(new ByteArrayWrapper(address), new DappStorage(version, codeJar));
     }
 
@@ -97,7 +96,7 @@ public class TransformedDappStorage {
      * @param address the Dapp address.
      * @return the Jar file of the transformed code of the Dapp.
      */
-    public File loadCode(byte[] address) {
+    public byte[] loadCode(byte[] address) {
         ByteArrayWrapper wrapper = new ByteArrayWrapper(address);
         if (codeStorage.containsKey(wrapper)) {
             return codeStorage.get(wrapper).jarFile;

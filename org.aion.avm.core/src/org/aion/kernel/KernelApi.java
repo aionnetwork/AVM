@@ -2,16 +2,15 @@ package org.aion.kernel;
 
 import org.aion.avm.core.AvmResult;
 
-import java.io.File;
 
 /**
  * Interface for accessing kernel features.
  */
 public interface KernelApi {
 
-    void putTransformedCode(byte[] address, TransformedDappStorage.CodeVersion version, File code);
+    void putTransformedCode(byte[] address, TransformedDappStorage.CodeVersion version, byte[] code);
 
-    File getTransformedCode(byte[] address);
+    byte[] getTransformedCode(byte[] address);
 
     void putStorage(byte[] address, byte[] key, byte[] value);
 

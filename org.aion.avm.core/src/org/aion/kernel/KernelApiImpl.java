@@ -2,20 +2,19 @@ package org.aion.kernel;
 
 import org.aion.avm.core.AvmResult;
 
-import java.io.File;
 
 public class KernelApiImpl implements KernelApi {
 
     private TransformedDappStorage codeStorage = new TransformedDappStorage();
 
     @Override
-    public void putTransformedCode(byte[] address, TransformedDappStorage.CodeVersion version, File code) {
+    public void putTransformedCode(byte[] address, TransformedDappStorage.CodeVersion version, byte[] code) {
         codeStorage.storeCode(address, version, code);
     }
 
     // TODO: return both version and the file
     @Override
-    public File getTransformedCode(byte[] address) {
+    public byte[] getTransformedCode(byte[] address) {
         return codeStorage.loadCode(address);
     }
 

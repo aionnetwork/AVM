@@ -374,7 +374,7 @@ public class AvmImpl implements Avm {
                     + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * app.bytecodeSize * (1 + app.numberOfClasses) / 10);
 
             // store transformed dapp
-            File transformedDappJar = app.createJar(dappAddress);
+            byte[] transformedDappJar = app.createJar(dappAddress);
             cb.putTransformedCode(dappAddress, VERSION, transformedDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
@@ -407,8 +407,8 @@ public class AvmImpl implements Avm {
         // retrieve the transformed bytecode
         DappModule app;
         try {
-            File transformedDappJar = cb.getTransformedCode(tx.getTo());
-            app = DappModule.readFromJar(Helpers.readFileToBytes(transformedDappJar.getPath()));
+            byte[] transformedDappJar = cb.getTransformedCode(tx.getTo());
+            app = DappModule.readFromJar(transformedDappJar);
         } catch (IOException e) {
             return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
         }
@@ -457,6 +457,9 @@ public class AvmImpl implements Avm {
      * Represents a DApp module in memory.
      */
     static class DappModule {
+        // Note that we currently limit the size of an in-memory JAR to 1 MiB.
+        private static final int MAX_JAR_BYTES = 1024 * 1024;
+
         private final String mainClass;
 
         private Map<String, byte[]> classes;
@@ -504,23 +507,20 @@ public class AvmImpl implements Avm {
             this.classes = classes;
         }
 
-        private static final File DAPPS_DIR = new File("../dapps");
-
         /**
-         * Create a jar file from this Dapp module.
+         * Create the in-memory JAR for this DApp module.
          */
-        private File createJar(byte[] address) throws IOException {
+        private byte[] createJar(byte[] address) throws IOException {
             // manifest
             Manifest manifest = new Manifest();
             manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
             manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mainClass);
 
-            // file name from the address
-            DAPPS_DIR.mkdirs();
-            File jarFile = new File(DAPPS_DIR, Helpers.toHexString(address) + ".jar");
+            // Create a temporary memory location for this JAR.
+            ByteArrayOutputStream tempJarStream = new ByteArrayOutputStream(MAX_JAR_BYTES);
 
             // create the jar file
-            JarOutputStream target = new JarOutputStream(new FileOutputStream(jarFile), manifest);
+            JarOutputStream target = new JarOutputStream(tempJarStream, manifest);
 
             // add the classes
             for (String clazz : classes.keySet()) {
@@ -533,7 +533,7 @@ public class AvmImpl implements Avm {
             // close and return
             target.close();
 
-            return jarFile;
+            return tempJarStream.toByteArray();
         }
     }
 }

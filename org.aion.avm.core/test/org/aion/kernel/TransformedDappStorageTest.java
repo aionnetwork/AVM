@@ -4,8 +4,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.api.Address;
 import org.junit.Test;
 
-import java.io.File;
-
 import static org.junit.Assert.*;
 
 public class TransformedDappStorageTest {
@@ -16,7 +14,7 @@ public class TransformedDappStorageTest {
         byte[] byteArray2 = byteArray1.clone();
 
         TransformedDappStorage codeStorage = new TransformedDappStorage();
-        codeStorage.storeCode(byteArray1, TransformedDappStorage.CodeVersion.VERSION_1_0, new File("."));
+        codeStorage.storeCode(byteArray1, TransformedDappStorage.CodeVersion.VERSION_1_0, new byte[] {0x0});
         assertEquals(TransformedDappStorage.CodeVersion.VERSION_1_0, codeStorage.getCodeVersion(byteArray2));
     }
 
