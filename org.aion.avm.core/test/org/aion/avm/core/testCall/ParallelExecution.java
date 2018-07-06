@@ -21,7 +21,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Represents the world initState.
@@ -62,17 +61,18 @@ class InternalTransaction extends Transaction {
 public class ParallelExecution {
     private static final Logger logger = LoggerFactory.getLogger(ParallelExecution.class);
 
-    private static final int NUM_THREADS = 4; // TODO: tune this parameter
-    private static final ExecutorService threadPool = Executors.newFixedThreadPool(NUM_THREADS);
-    private static final AtomicInteger counter = new AtomicInteger(0);
+    private static final int NUM_THREADS = 4;
+    private static ExecutorService threadPool = Executors.newFixedThreadPool(NUM_THREADS);
 
     private List<Transaction> transactions;
     private State initState;
+    private int parallelism;
     private int startFrom;
 
-    public ParallelExecution(List<Transaction> transactions, State initState) {
+    public ParallelExecution(List<Transaction> transactions, State initState, int parallelism) {
         this.transactions = transactions;
         this.initState = initState;
+        this.parallelism = parallelism;
         this.startFrom = 0;
     }
 
@@ -88,7 +88,7 @@ public class ParallelExecution {
         while (startFrom < transactions.size()) {
             // set up workers
             List<Callable<TransactionResult>> callables = new ArrayList<>();
-            for (int i = 0; i < NUM_THREADS && startFrom + i < transactions.size(); i++) {
+            for (int i = 0; i < parallelism && startFrom + i < transactions.size(); i++) {
                 State track = state.track();
                 callables.add(new Worker(transactions.get(startFrom + i), track));
             }
@@ -145,13 +145,11 @@ public class ParallelExecution {
 
         @Override
         public TransactionResult call() throws Exception {
+            logger.debug("Transaction: " + tx);
+
             TransactionResult result = new TransactionResult();
             result.track = track;
             result.internalTransactions = new ArrayList<>();
-
-            // record stats
-            logger.debug("Transaction: " + tx);
-            counter.incrementAndGet();
 
             // Execute the transaction
             SimpleAvm avm = new SimpleAvm(tx.getEnergyLimit(), Contract.class);
@@ -207,9 +205,20 @@ public class ParallelExecution {
         return arr;
     }
 
-    public static void main(String[] args) {
-        int numAccounts = 32;
-        int numTransactions = 100;
+    public static void simpleCall() {
+        Transaction tx1 = new Transaction(Transaction.Type.CALL, address(1), address(2), new byte[0], address(3), 1000000);
+        Transaction tx2 = new Transaction(Transaction.Type.CALL, address(3), address(4), new byte[0], address(1), 1000000);
+        Transaction tx3 = new Transaction(Transaction.Type.CALL, address(3), address(5), new byte[0], new byte[0], 1000000);
+
+        ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(null), NUM_THREADS);
+        exec.execute();
+
+        threadPool.shutdown();
+    }
+
+    public static void randomCall(int numAccounts, int numTransactions, int numThreads) {
+        threadPool.shutdown();
+        threadPool = Executors.newFixedThreadPool(numThreads);
 
         List<Transaction> transactions = new ArrayList<>();
         Random r = new Random();
@@ -222,22 +231,38 @@ public class ParallelExecution {
             transactions.add(tx);
         }
 
-        ParallelExecution exec = new ParallelExecution(transactions, new State(null));
+        long t1 = System.currentTimeMillis();
+        ParallelExecution exec = new ParallelExecution(transactions, new State(null), numThreads);
         exec.execute();
+        long t2 = System.currentTimeMillis();
+        logger.info("# of accounts = {}, # of threads = {}, # of txs = {}, Time elapsed: {}ms",
+                numAccounts, numTransactions, numThreads, t2 - t1);
 
-        logger.info("Number of executions: " + counter.get());
         threadPool.shutdown();
     }
 
-    public static void main1(String[] args) {
-        Transaction tx1 = new Transaction(Transaction.Type.CALL, address(1), address(2), new byte[0], address(3), 1000000);
-        Transaction tx2 = new Transaction(Transaction.Type.CALL, address(3), address(4), new byte[0], address(1), 1000000);
-        Transaction tx3 = new Transaction(Transaction.Type.CALL, address(3), address(5), new byte[0], new byte[0], 1000000);
+    public static void main(String[] args) {
+        // simple case, for testing
+        logger.info("**** SIMPLE_TEST ****");
+        simpleCall();
 
-        ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(null));
-        exec.execute();
-
-        logger.info("Number of executions: " + counter.get());
-        threadPool.shutdown();
+        // scalability test
+        logger.info("**** SCALABILITY_TEST ****");
+        randomCall(100, 10000, NUM_THREADS); // warm up
+        logger.info("----");
+        randomCall(200, 1000, 1);
+        randomCall(200, 1000, 2);
+        randomCall(200, 1000, 4);
+        randomCall(200, 1000, 8);
+        logger.info("----");
+        randomCall(400, 1000, 1);
+        randomCall(400, 1000, 2);
+        randomCall(400, 1000, 4);
+        randomCall(400, 1000, 8);
+        logger.info("----");
+        randomCall(800, 1000, 1);
+        randomCall(800, 1000, 2);
+        randomCall(800, 1000, 4);
+        randomCall(800, 1000, 8);
     }
 }
