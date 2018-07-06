@@ -37,6 +37,3 @@ testreports/
 
 # ant
 .ant-targets-build.xml
-
-# runtime data
-dapps/
