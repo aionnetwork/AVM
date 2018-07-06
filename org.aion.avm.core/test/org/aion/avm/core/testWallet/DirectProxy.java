@@ -1,13 +1,17 @@
 package org.aion.avm.core.testWallet;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.api.IBlockchainRuntime;
 
 
 /**
  * Based on the CallProxy, to give a similar interface for even the direct call comparison.
  */
 public class DirectProxy {
+    public static void init(Address extra1, Address extra2, int requiredVotes, long dailyLimit) {
+        byte[] onto = CallEncoder.init(extra1, extra2, requiredVotes, dailyLimit);
+        Wallet.decode(onto);
+    }
+
     public static void payable(Address from, long value) {
         byte[] onto = CallEncoder.payable(from, value);
         Wallet.decode(onto);

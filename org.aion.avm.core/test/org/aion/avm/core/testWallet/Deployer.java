@@ -18,7 +18,6 @@ import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
@@ -72,9 +71,9 @@ public class Deployer {
         Address extra2 = buildAddress(3);
         int requiredVotes = 2;
         long dailyLimit = 5000;
-        // This helper to avoid creating/referencing the arraywrapper will init Wallet.
+        // Init the Wallet.
         Helper.blockchainRuntime = new TestingRuntime(sender, null, eventCounts);
-        Wallet.avoidArrayWrappingFactory(extra1, extra2, requiredVotes, dailyLimit);
+        DirectProxy.init(extra1, extra2, requiredVotes, dailyLimit);
         
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
@@ -244,9 +243,7 @@ public class Deployer {
         int requiredVotes = 2;
         long dailyLimit = 5000;
         Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts));
-        classProvider.get()
-            .getMethod(UserClassMappingVisitor.mapMethodName("avoidArrayWrappingFactory"), Address.class, Address.class, int.class, long.class)
-            .invoke(null, extra1, extra2, requiredVotes, dailyLimit);
+        CallProxy.init(classProvider, extra1, extra2, requiredVotes, dailyLimit);
         
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);

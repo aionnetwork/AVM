@@ -3,7 +3,6 @@ package org.aion.avm.core.testWallet;
 import java.util.function.Supplier;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 
@@ -13,6 +12,11 @@ import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
  * transformed contract space.
  */
 public class CallProxy {
+    public static void init(Supplier<Class<?>> loader, Address extra1, Address extra2, int requiredVotes, long dailyLimit) throws Exception {
+        byte[] onto = CallEncoder.init(extra1, extra2, requiredVotes, dailyLimit);
+        callDecode(loader, onto);
+    }
+
     public static void payable(Supplier<Class<?>> loader, Address from, long value) throws Exception {
         byte[] onto = CallEncoder.payable(from, value);
         callDecode(loader, onto);

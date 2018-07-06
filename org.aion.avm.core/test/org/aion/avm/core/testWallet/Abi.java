@@ -8,6 +8,7 @@ import org.aion.avm.api.Address;
  */
 public class Abi {
     // The first byte will be the method byte (just so we don't need to parse the string) - these are just in the order we were calling them.
+    public static final byte kWallet_init = 0x0;
     public static final byte kWallet_payable = 0x1;
     public static final byte kWallet_addOwner = 0x2;
     public static final byte kWallet_execute = 0x3;

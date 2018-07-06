@@ -8,6 +8,19 @@ import org.aion.avm.api.Address;
  * This is on its own, outside of CallProxy, since it can be used for both the transformed and direct variants of the call.
  */
 public class CallEncoder {
+    public static byte[] init(Address extra1, Address extra2, int requiredVotes, long dailyLimit) {
+        byte[] onto = new byte[1 + Integer.BYTES + Address.LENGTH + Address.LENGTH + Integer.BYTES + Long.BYTES];
+        Abi.Encoder encoder = Abi.buildEncoder(onto);
+        // We are encoding the Addresses as a 2-element array, so describe it that way to the encoder.
+        encoder
+            .encodeByte(Abi.kWallet_init)
+            .encodeInt(2)
+            .encodeAddress(extra1)
+            .encodeAddress(extra2)
+            .encodeInt(requiredVotes)
+            .encodeLong(dailyLimit);
+        return onto;
+    }
     public static byte[] payable(Address from, long value) {
         byte[] onto = new byte[1 + Address.LENGTH + Long.BYTES];
         Abi.Encoder encoder = Abi.buildEncoder(onto);

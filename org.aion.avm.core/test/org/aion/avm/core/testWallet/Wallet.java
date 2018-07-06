@@ -11,23 +11,6 @@ import org.aion.avm.userlib.AionMap;
  * interfaces.
  */
 public class Wallet {
-    /**
-     * Calling a reflection routine which has an array in it is a problem with how our arraywrapping works.
-     * This might not matter, in the future, but may be something we need to make easier to manage (maybe the arraywrappers have factories, or something).
-     */
-    public static void avoidArrayWrappingFactory(Address owner1, Address owner2, int votesRequiredPerOperation, long daylimit) {
-        Wallet.init(new Address[] {owner1, owner2}, votesRequiredPerOperation, daylimit);
-    }
-
-    /**
-     * This is a helper we use to invoke the init() method given that our arraywrapping makes creating the Address[] problematic.
-     * This method acts as a factory for us.
-     */
-    public static Address[] wrapTwoAddresses(Address owner1, Address owner2) {
-        return new Address[] {owner1, owner2};
-    }
-
-
     // Note that this key is really just a subset of uses of "Operation".
     private static AionMap<BytesKey, Transaction> transactions;
 
@@ -56,6 +39,18 @@ public class Wallet {
         byte methodByte = decoder.decodeByte();
         
         switch (methodByte) {
+        case Abi.kWallet_init : {
+            // We know that this is int (length), Address(*length), int, long.
+            int addressCount = decoder.decodeInt();
+            Address[] requestedOwners = new Address[addressCount];
+            for (int i = 0; i < addressCount; ++i) {
+                requestedOwners[i] = decoder.decodeAddress();
+            }
+            int votesRequiredPerOperation = decoder.decodeInt();
+            long daylimit = decoder.decodeLong();
+            Wallet.init(requestedOwners, votesRequiredPerOperation, daylimit);
+            break;
+        }
         case Abi.kWallet_payable : {
             Address from = decoder.decodeAddress();
             long value = decoder.decodeLong();
