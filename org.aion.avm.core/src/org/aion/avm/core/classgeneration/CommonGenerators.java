@@ -155,8 +155,6 @@ public class CommonGenerators {
         for (String name : kShadowEnumClassNames){
             byte[] cnt = Helpers.loadRequiredResourceAsBytes(name.replaceAll("\\.", "/") + ".class");
 
-            //Helpers.writeBytesToFile(cnt, "/tmp/round.class");
-
             byte[] bytecode = new ClassToolchain.Builder(cnt, ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new UserClassMappingVisitor(new HashSet<>()))
                     .addNextVisitor(new ClassShadowing(PackageConstants.kInternalSlashPrefix + "Helper"))
@@ -169,8 +167,6 @@ public class CommonGenerators {
                     .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                     .build()
                     .runAndGetBytecode();
-
-            Helpers.writeBytesToFile(bytecode, "/tmp/roundAfter.class");
 
             generatedClasses.put(name, bytecode);
         }

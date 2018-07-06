@@ -2,11 +2,8 @@ package org.aion.avm.core.shadowing.testPrimitive;
 
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
-import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.junit.*;
 
@@ -15,12 +12,8 @@ import java.lang.reflect.Method;
 import java.util.function.Function;
 
 public class PrimitiveShadowingTest {
-
-    private static AvmSharedClassLoader sharedClassLoader;
-
     @BeforeClass
     public static void setupClass() throws ClassNotFoundException {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         testReplaceJavaLang();
     }
 
@@ -63,9 +56,6 @@ public class PrimitiveShadowingTest {
 
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
         loader.addHandler(wrapperGenerator);
-
-        Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestResource.class.getName()), "/tmp/Prim.class");
-        Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestResource.ShortTest.Decode.class.getName()), "/tmp/Short.class");
 
         clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
     }

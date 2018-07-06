@@ -3,7 +3,6 @@ package org.aion.avm.core.arraywrapping;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.junit.*;
@@ -38,8 +37,6 @@ public class ArrayWrappingTest {
 
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
         loader.addHandler(wrapperGenerator);
-
-        Helpers.writeBytesToFile(loader.getUserClassBytecodeByOriginalName(TestResource.class.getName()), "/tmp/wrapped.class");
 
         helper = avm.getHelper();
         clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
