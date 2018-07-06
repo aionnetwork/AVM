@@ -20,7 +20,6 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.InvalidTxDataException;
 import org.aion.avm.internal.*;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
@@ -127,7 +126,6 @@ public class AvmImpl implements Avm {
         Map<String, Integer> map = new HashMap<String, Integer>();
         map.put("org/aion/avm/api/Address", 4);
         map.put("org/aion/avm/api/ABIDecoder", 4);
-        map.put("org/aion/avm/api/InvalidTxDataException", 4);
 
         return Collections.unmodifiableMap(map);
     }
@@ -425,10 +423,6 @@ public class AvmImpl implements Avm {
 
         // load class
         try {
-            if (tx.getData() == null) {
-                throw new InvalidTxDataException();
-            }
-
             String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
             Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
             // At a contract call, only choose the one without arguments.
@@ -439,14 +433,12 @@ public class AvmImpl implements Avm {
             byte[] ret = ((ByteArray) method.invoke(obj)).getUnderlying();
 
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
-        } catch (InvalidTxDataException e) {
-            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
-        }catch (InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             if (e.getCause() != null && e.getCause() instanceof Exception) return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
             return new AvmResult(AvmResult.Code.FAILURE, 0);
         } catch (OutOfEnergyError e) {
             return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
 
             return new AvmResult(AvmResult.Code.FAILURE, 0);
