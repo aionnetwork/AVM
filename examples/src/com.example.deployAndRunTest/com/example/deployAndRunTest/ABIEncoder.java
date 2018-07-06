@@ -22,7 +22,6 @@ public class ABIEncoder {
         return new byte[]{data};
     }
 
-
     public static byte[] encodeBoolean(boolean data) {
         return new byte[]{(byte) (data ? 1 : 0)};
     }
@@ -225,9 +224,7 @@ public class ABIEncoder {
                 }
                 byte[] descriptorZ = (argumentDescriptor + closeAngle).getBytes();
                 byte[] retZ = new byte[size + descriptorZ.length];
-                for (int i = 0; i < descriptorZ.length; i ++) {
-                    retZ[i] = descriptorZ[i];
-                }
+                System.arraycopy(descriptorZ, 0, retZ, 0, descriptorZ.length);
                 for (int i = 0, idx = descriptorZ.length; i < dataZ.length; i ++) {
                     for (int j = 0; j < dataZ[i].length; j ++, idx ++) {
                         retZ[idx] = (byte) (dataZ[i][j] ? 1 : 0);
@@ -243,9 +240,7 @@ public class ABIEncoder {
                 }
                 byte[] descriptorS = (argumentDescriptor + closeAngle).getBytes();
                 byte[] retS = new byte[size * 2 + descriptorS.length];
-                for (int i = 0; i < descriptorS.length; i ++) {
-                    retS[i] = descriptorS[i];
-                }
+                System.arraycopy(descriptorS, 0, retS, 0, descriptorS.length);
                 for (int i = 0, idx = descriptorS.length; i < dataS.length; i ++) {
                     for (int j = 0; j < dataS[i].length; j ++, idx += 2) {
                         retS[idx] = (byte) (dataS[i][j] >>> 8);
@@ -262,9 +257,7 @@ public class ABIEncoder {
                 }
                 byte[] descriptorI = (argumentDescriptor + closeAngle).getBytes();
                 byte[] retI = new byte[size * 4 + descriptorI.length];
-                for (int i = 0; i < descriptorI.length; i ++) {
-                    retI[i] = descriptorI[i];
-                }
+                System.arraycopy(descriptorI, 0, retI, 0, descriptorI.length);
                 for (int i = 0, idx = descriptorI.length; i < dataI.length; i ++) {
                     for (int j = 0; j < dataI[i].length; j ++, idx += 4) {
                         retI[idx] = (byte) (dataI[i][j] >>> 24);
@@ -283,9 +276,7 @@ public class ABIEncoder {
                 }
                 byte[] descriptorL = (argumentDescriptor + closeAngle).getBytes();
                 byte[] retL = new byte[size * 8 + descriptorL.length];
-                for (int i = 0; i < descriptorL.length; i ++) {
-                    retL[i] = descriptorL[i];
-                }
+                System.arraycopy(descriptorL, 0, retL, 0, descriptorL.length);
                 for (int i = 0, idx = descriptorL.length; i < dataL.length; i ++) {
                     for (int j = 0; j < dataL[i].length; j ++, idx += 8) {
                         retL[idx] = (byte) (dataL[i][j] >>> 56);
@@ -308,9 +299,7 @@ public class ABIEncoder {
                 }
                 byte[] descriptorF = (argumentDescriptor + closeAngle).getBytes();
                 byte[] retF = new byte[size * 4 + descriptorF.length];
-                for (int i = 0; i < descriptorF.length; i ++) {
-                    retF[i] = descriptorF[i];
-                }
+                System.arraycopy(descriptorF, 0, retF, 0, descriptorF.length);
                 for (int i = 0, idx = descriptorF.length; i < dataF.length; i ++) {
                     for (int j = 0; j < dataF[i].length; j ++, idx += 4) {
                         byte[] curF = encodeFloat(dataF[i][j]);
@@ -330,9 +319,7 @@ public class ABIEncoder {
                 }
                 byte[] descriptorD = (argumentDescriptor + closeAngle).getBytes();
                 byte[] retD = new byte[size * 8 + descriptorD.length];
-                for (int i = 0; i < descriptorD.length; i ++) {
-                    retD[i] = descriptorD[i];
-                }
+                System.arraycopy(descriptorD, 0, retD, 0, descriptorD.length);
                 for (int i = 0, idx = descriptorD.length; i < dataD.length; i ++) {
                     for (int j = 0; j < dataD[i].length; j ++, idx += 8) {
                         byte[] curD = encodeDouble(dataD[i][j]);
@@ -356,9 +343,7 @@ public class ABIEncoder {
                 }
                 byte[] descriptorB = (argumentDescriptor + closeAngle).getBytes();
                 byte[] retB = new byte[size + descriptorB.length];
-                for (int i = 0; i < descriptorB.length; i ++) {
-                    retB[i] = descriptorB[i];
-                }
+                System.arraycopy(descriptorB, 0, retB, 0, descriptorB.length);
                 for (int i = 0, idx = descriptorB.length; i < dataB.length; i ++) {
                     for (int j = 0; j < dataB[i].length; j ++, idx ++) {
                         retB[idx] = dataB[i][j];
@@ -448,13 +433,10 @@ public class ABIEncoder {
 
         // copy the descriptor and then the argumentBytes
         byte[] returnedBytes = new byte[descriptorB.length + size];
-        for (int i = 0; i < descriptorB.length; i ++) {
-            returnedBytes[i] = descriptorB[i];
-        }
+        System.arraycopy(descriptorB, 0, returnedBytes, 0, descriptorB.length);
         for (int i = 0, idx = descriptorB.length; i < numberOfArguments; i ++) {
-            for (int j = startByteIndex[i]; j < argumentBytes[i].length; j ++, idx ++) {
-                returnedBytes[idx] = argumentBytes[i][j];
-            }
+            System.arraycopy(argumentBytes[i], startByteIndex[i], returnedBytes, idx, argumentBytes[i].length - startByteIndex[i]);
+            idx += argumentBytes[i].length - startByteIndex[i];
         }
 
         return returnedBytes;
@@ -494,9 +476,7 @@ public class ABIEncoder {
 
             if (argsCount == argTypes.length) {
                 String[] argTypesNew = new String[argTypes.length + 10];
-                for (int i = 0; i < argTypes.length; i ++) {
-                    argTypesNew[i] = argTypes[i];
-                }
+                System.arraycopy(argTypes, 0, argTypesNew, 0, argTypes.length);
                 argTypes = argTypesNew;
             }
         }

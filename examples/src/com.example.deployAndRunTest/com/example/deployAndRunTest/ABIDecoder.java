@@ -191,9 +191,7 @@ public class ABIDecoder {
 
             if (argsCount == args.length - 1) {
                 Object[] argsNew = new Object[args.length + 10];
-                for (int i = 0; i < args.length; i ++) {
-                    argsNew[i] = args[i];
-                }
+                System.arraycopy(args, 0, argsNew, 0, args.length);
                 args = argsNew;
             }
         }
@@ -236,10 +234,7 @@ public class ABIDecoder {
             case BYTE:
                 checkRemainingDataSize(txData.length - start, BYTE_SIZE * m);
                 byte[] argB = new byte[m];
-                for (int idx = 0; idx < m; idx ++) {
-                    argB[idx] = txData[start];
-                    start += BYTE_SIZE;
-                }
+                System.arraycopy(txData, start, argB, 0, m);
                 args[argsCount] = argB;
                 break;
             case BOOLEAN:
@@ -324,10 +319,7 @@ public class ABIDecoder {
                     checkRemainingDataSize(txData.length - start, BYTE_SIZE * curM);
 
                     byte[] row = new byte[curM];
-                    for (int indexM = 0; indexM < curM; indexM ++) {
-                        row[indexM] = txData[start];
-                        start += BYTE_SIZE;
-                    }
+                    System.arraycopy(txData, start, row, 0, curM);
                     argB[indexN] = row;
                 }
                 args[argsCount] = argB;

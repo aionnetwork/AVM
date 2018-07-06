@@ -22,12 +22,8 @@ public class DeployAndRunTest {
 
     public char[] concatenate(char[][] s) {
         char[] res = new char[6];
-        for (int i = 0; i < s[0].length; i++) {
-            res[i] = s[0][i];
-        }
-        for (int i = s[0].length; i < (s[0].length + s[1].length) && i < res.length; i++) {
-            res[i] = s[1][i-s[0].length];
-        }
+        System.arraycopy(s[0], 0, res, 0, s[0].length);
+        System.arraycopy(s[1], 0, res, s[0].length, s[1].length);
         return res;
     }
 
