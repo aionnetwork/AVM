@@ -36,7 +36,10 @@ public class JarBuilder {
     private JarBuilder(Class<?> mainClass) {
         // Build the manifest.
         Manifest manifest = new Manifest();
-        manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mainClass.getName());
+        Attributes mainAttributes = manifest.getMainAttributes();
+        // Note that the manifest version seems to be required.  If it isn't specified, we don't see the main class.
+        mainAttributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        mainAttributes.put(Attributes.Name.MAIN_CLASS, mainClass.getName());
         
         // Create the underlying byte stream (hold onto this for serialization).
         this.byteStream = new ByteArrayOutputStream();
