@@ -156,7 +156,7 @@ public class ParallelExecution {
             // Execute the transaction
             SimpleAvm avm = new SimpleAvm(tx.getEnergyLimit(), Contract.class);
             avm.attachBlockchainRuntime(new SimpleRuntime(tx.getFrom(), tx.getTo(), tx.getEnergyLimit(), tx.getData()) {
-                // TODO: runtime should be based on the world initState
+                // TODO: runtime should be based on the state
                 @Override
                 public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray payload, long energyToSend) {
                     InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL, tx.getTo(), targetAddress.unwrap(), value.getUnderlying(), payload.getUnderlying(), energyToSend, tx);
@@ -207,7 +207,7 @@ public class ParallelExecution {
         return arr;
     }
 
-    public static void main0(String[] args) {
+    public static void main(String[] args) {
         int numAccounts = 32;
         int numTransactions = 100;
 
@@ -229,7 +229,7 @@ public class ParallelExecution {
         threadPool.shutdown();
     }
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         Transaction tx1 = new Transaction(Transaction.Type.CALL, address(1), address(2), new byte[0], address(3), 1000000);
         Transaction tx2 = new Transaction(Transaction.Type.CALL, address(3), address(4), new byte[0], address(1), 1000000);
         Transaction tx3 = new Transaction(Transaction.Type.CALL, address(3), address(5), new byte[0], new byte[0], 1000000);

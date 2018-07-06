@@ -129,6 +129,12 @@ public class Helpers {
         return internalName.replaceAll("/", ".");
     }
 
+    private static String helperClassName = Helper.class.getName();
+    private static byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
+
+    private static String blockchainRuntimeClassName = BlockchainRuntime.class.getName();
+    private static byte[] blockchainRuntimeBytes = Helpers.loadRequiredResourceAsBytes(blockchainRuntimeClassName.replaceAll("\\.", "/") + ".class");
+
     /**
      * A common helper used to construct a map of visible class bytecode for an AvmClassLoader instance.
      * Typically, this is used right before "instantiateHelper()", below (this creates/adds the class it loads).
@@ -138,13 +144,7 @@ public class Helpers {
      */
     public static Map<String, byte[]> mapIncludingHelperBytecode(Map<String, byte[]> inputMap) {
         Map<String, byte[]> modifiedMap = new HashMap<>(inputMap);
-
-        String helperClassName = Helper.class.getName();
-        byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
         modifiedMap.put(helperClassName, helperBytes);
-
-        String blockchainRuntimeClassName = BlockchainRuntime.class.getName();
-        byte[] blockchainRuntimeBytes = Helpers.loadRequiredResourceAsBytes(blockchainRuntimeClassName.replaceAll("\\.", "/") + ".class");
         modifiedMap.put(blockchainRuntimeClassName, blockchainRuntimeBytes);
 
         return modifiedMap;
