@@ -8,43 +8,43 @@ public class DeployAndRunTest {
 
     public static int bar;
 
-    public int add(int a, int b) {
+    public static int add(int a, int b) {
         return a + b;
     }
 
-    public int addArray(int[] a) {
+    public static int addArray(int[] a) {
         return a[0] + a[1];
     }
 
-    public int addArray2(int[][] a) {
+    public static int addArray2(int[][] a) {
         return a[0][0] + a[1][0];
     }
 
-    public char[] concatenate(char[][] s) {
+    public static char[] concatenate(char[][] s) {
         char[] res = new char[6];
         System.arraycopy(s[0], 0, res, 0, s[0].length);
         System.arraycopy(s[1], 0, res, s[0].length, s[1].length);
         return res;
     }
 
-    public char[][] swap(char[][] s) {
+    public static char[][] swap(char[][] s) {
         char[][] res = new char[2][];
         res[0] = s[1];
         res[1] = s[0];
         return res;
     }
 
-    public byte[] run() {
+    public static byte[] run() {
         return "Hello, world!".getBytes();
     }
 
-    public byte[] encodeArgs() throws InvalidTxDataException {
+    public static byte[] encodeArgs() throws InvalidTxDataException {
         String methodAPI = "int addArray(int[] a)";
         int[] a = new int[]{123, 1};
         return ABIEncoder.encodeMethodArguments(methodAPI, a);
     }
 
-    public byte[] main() throws InvalidTxDataException {
+    public static byte[] main() throws InvalidTxDataException {
         ABIDecoder.MethodCaller methodCaller = ABIDecoder.decode(BlockchainRuntime.getData());
         switch (methodCaller.methodName) {
             case "add":

@@ -34,7 +34,8 @@ public class Wallet {
      * @return The output of running the invoke (null for void methods).
      */
     public static byte[] decode(byte[] input) {
-        byte[] result = null;
+        // Most of our paths return nothing so just default to the empty byte array.
+        byte[] result = new byte[0];
         Abi.Decoder decoder = Abi.buildDecoder(input);
         byte methodByte = decoder.decodeByte();
         

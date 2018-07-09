@@ -8,15 +8,15 @@ public class HelloWorld {
 
     public static int bar;
 
-    public int add(int a, int b) {
+    public static int add(int a, int b) {
         return a + b;
     }
 
-    public byte[] run() {
+    public static byte[] run() {
         return "Hello, world!".getBytes();
     }
 
-    public byte[] main() throws InvalidTxDataException {
+    public static byte[] main() throws InvalidTxDataException {
         ABIDecoder.MethodCaller methodCaller = ABIDecoder.decode(BlockchainRuntime.getData());
         switch (methodCaller.methodName) {
             case "add":

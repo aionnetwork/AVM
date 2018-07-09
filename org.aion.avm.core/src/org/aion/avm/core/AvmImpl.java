@@ -425,12 +425,10 @@ public class AvmImpl implements Avm {
         try {
             String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
             Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
-            // At a contract call, only choose the one without arguments.
-            Object obj = clazz.getConstructor().newInstance();
 
-            // call contract main method
+            // Call contract static main method.  Note that this method is not allowed to return null.
             Method method = clazz.getMethod("avm_main");
-            byte[] ret = ((ByteArray) method.invoke(obj)).getUnderlying();
+            byte[] ret = ((ByteArray) method.invoke(null)).getUnderlying();
 
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
         } catch (InvocationTargetException e) {
