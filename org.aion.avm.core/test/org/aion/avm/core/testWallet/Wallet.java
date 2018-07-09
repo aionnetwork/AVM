@@ -30,12 +30,12 @@ public class Wallet {
     /**
      * The generic start symbol which processes the input using the ABI to calls out to other helpers.
      *
-     * @param input The ABI-encoded input.
      * @return The output of running the invoke (null for void methods).
      */
-    public static byte[] decode(byte[] input) {
+    public static byte[] decode() {
         // Most of our paths return nothing so just default to the empty byte array.
         byte[] result = new byte[0];
+        byte[] input = BlockchainRuntime.getData();
         Abi.Decoder decoder = Abi.buildDecoder(input);
         byte methodByte = decoder.decodeByte();
         

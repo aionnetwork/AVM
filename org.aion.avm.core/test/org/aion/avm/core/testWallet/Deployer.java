@@ -71,118 +71,119 @@ public class Deployer {
         int requiredVotes = 2;
         long dailyLimit = 5000;
         // Init the Wallet.
-        Helper.blockchainRuntime = new TestingRuntime(sender, null, eventCounts);
-        DirectProxy.init(extra1, extra2, requiredVotes, dailyLimit);
+        DirectProxy.init((input) -> {Helper.blockchainRuntime = new TestingRuntime(sender, input, eventCounts);},
+                extra1, extra2, requiredVotes, dailyLimit);
         
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
         long paymendValue = 5;
-        Helper.blockchainRuntime = new TestingRuntime(paymentFrom, new byte[] {5,6,42}, eventCounts);
-        DirectProxy.payable(paymentFrom, paymendValue);
+        DirectProxy.payable((input) -> {Helper.blockchainRuntime = new TestingRuntime(paymentFrom, input, eventCounts);},
+                paymentFrom, paymendValue);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kDeposit));
         
         // Try to add an owner - we need to call this twice to see the event output: sender and extra1.
         Address newOwner = buildAddress(5);
         try {
-            Helper.blockchainRuntime = new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts);
-            DirectProxy.addOwner(newOwner);
+            DirectProxy.addOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(sender, input, eventCounts);},
+                    newOwner);
         } catch (RequireFailedException e) {
             // Expected.
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerAdded));
-        Helper.blockchainRuntime = new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts);
-        DirectProxy.addOwner(newOwner);
+        DirectProxy.addOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(extra1, input, eventCounts);},
+                newOwner);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerAdded));
         
         // Send a normal transaction, which is under the limit, and observe that it goes through.
         Address transactionTo = buildAddress(6);
         long transactionSize = dailyLimit - 1;
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
-        Helper.blockchainRuntime = new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts);
-        DirectProxy.execute(transactionTo, transactionSize, new byte[] {1});
+        DirectProxy.execute((input) -> {Helper.blockchainRuntime = new TestingRuntime(sender, input, eventCounts);},
+                transactionTo, transactionSize, new byte[] {1});
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
         
         // Now, send another transaction, observe that it requires multisig confirmation, and confirm it with our new owner.
         Address confirmTransactionTo = buildAddress(7);
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kConfirmationNeeded));
-        Helper.blockchainRuntime = new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts);
-        byte[] toConfirm = DirectProxy.execute(confirmTransactionTo, transactionSize, new byte[] {1});
+        byte[] toConfirm = DirectProxy.execute((input) -> {Helper.blockchainRuntime = new TestingRuntime(sender, input, eventCounts);},
+                confirmTransactionTo, transactionSize, new byte[] {1});
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kConfirmationNeeded));
-        Helper.blockchainRuntime = new TestingRuntime(newOwner, new byte[] {5,6,42}, eventCounts);
-        boolean didConfirm = DirectProxy.confirm(toConfirm);
+        boolean didConfirm = DirectProxy.confirm((input) -> {Helper.blockchainRuntime = new TestingRuntime(newOwner, input, eventCounts);},
+                toConfirm);
         Assert.assertTrue(didConfirm);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kMultiTransact));
         
         // Change the count of required confirmations.
         try {
-            Helper.blockchainRuntime = new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts);
-            DirectProxy.changeRequirement(3);
+            DirectProxy.changeRequirement((input) -> {Helper.blockchainRuntime = new TestingRuntime(sender, input, eventCounts);},
+                    3);
         } catch (RequireFailedException e) {
             // Expected.
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kRequirementChanged));
-        Helper.blockchainRuntime = new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts);
-        DirectProxy.changeRequirement(3);
+        DirectProxy.changeRequirement((input) -> {Helper.blockchainRuntime = new TestingRuntime(extra1, input, eventCounts);},
+                3);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kRequirementChanged));
         
         // Change the owner.
         Address lateOwner = buildAddress(8);
-        Helper.blockchainRuntime = new TestingRuntime(lateOwner, new byte[] {5,6,42}, eventCounts);
-        Assert.assertTrue(sender.equals(DirectProxy.getOwner(0)));
+        Assert.assertTrue(sender.equals(DirectProxy.getOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(lateOwner, input, eventCounts);},
+                0)));
         try {
-            Helper.blockchainRuntime = new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts);
-            DirectProxy.changeOwner(sender, lateOwner);
+            DirectProxy.changeOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(sender, input, eventCounts);},
+                    sender, lateOwner);
             Assert.assertTrue(false);
         } catch (RequireFailedException e) {
             // Expected.
         }
         try {
-            Helper.blockchainRuntime = new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts);
-            DirectProxy.changeOwner(sender, lateOwner);
+            DirectProxy.changeOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(extra1, input, eventCounts);},
+                    sender, lateOwner);
             Assert.assertTrue(false);
         } catch (RequireFailedException e) {
             // Expected.
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerChanged));
-        Helper.blockchainRuntime = new TestingRuntime(extra2, new byte[] {5,6,42}, eventCounts);
-        DirectProxy.changeOwner(sender, lateOwner);
+        DirectProxy.changeOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(extra2, input, eventCounts);},
+                sender, lateOwner);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerChanged));
         
         // Try to remove an owner, but have someone revoke that so that it can't happen.
         try {
-            Helper.blockchainRuntime = new TestingRuntime(lateOwner, new byte[] {5,6,42}, eventCounts);
-            DirectProxy.removeOwner(extra1);
+            DirectProxy.removeOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(lateOwner, input, eventCounts);},
+                    extra1);
             Assert.assertTrue(false);
         } catch (RequireFailedException e) {
             // Expected.
         }
         try {
-            Helper.blockchainRuntime = new TestingRuntime(extra2, new byte[] {5,6,42}, eventCounts);
-            DirectProxy.removeOwner(extra1);
+            DirectProxy.removeOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(extra2, input, eventCounts);},
+                    extra1);
             Assert.assertTrue(false);
         } catch (RequireFailedException e) {
             // Expected.
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kRevoke));
-        Helper.blockchainRuntime = new TestingRuntime(lateOwner, new byte[] {5,6,42}, eventCounts);
-        DirectProxy.revoke(new byte[] {5,6,42});
+        DirectProxy.revoke((input) -> {Helper.blockchainRuntime = new TestingRuntime(lateOwner, input, eventCounts);},
+                CallEncoder.removeOwner(extra1)
+        );
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kRevoke));
         try {
             // This fails since one of the owners revoked.
-            Helper.blockchainRuntime = new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts);
-            DirectProxy.removeOwner(extra1);
+            DirectProxy.removeOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(extra1, input, eventCounts);},
+                    extra1);
             Assert.assertTrue(false);
         } catch (RequireFailedException e) {
             // Expected.
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerRemoved));
         // But this succeeds when they re-agree.
-        Helper.blockchainRuntime = new TestingRuntime(lateOwner, new byte[] {5,6,42}, eventCounts);
-        DirectProxy.removeOwner(extra1);
+        DirectProxy.removeOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(lateOwner, input, eventCounts);},
+                extra1);
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerRemoved));
-        Helper.blockchainRuntime = new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts);
-        Assert.assertTrue(extra2.equals(DirectProxy.getOwner(0)));
+        Assert.assertTrue(extra2.equals(DirectProxy.getOwner((input) -> {Helper.blockchainRuntime = new TestingRuntime(extra1, input, eventCounts);},
+                0)));
         
         // We should have seen 13 confirmations over the course of the test run.
         Assert.assertTrue(13 == loggingRuntime.getEventCount(EventLogger.kConfirmation));
@@ -238,72 +239,72 @@ public class Deployer {
         // We can now init the actual contract (the Wallet is the root so init it).
         int requiredVotes = 2;
         long dailyLimit = 5000;
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts));
-        CallProxy.init(classProvider, extra1, extra2, requiredVotes, dailyLimit);
+        CallProxy.init((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, input, eventCounts));},
+                classProvider, extra1, extra2, requiredVotes, dailyLimit);
         
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
         long paymentValue = 5;
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(paymentFrom, new byte[] {5,6,42}, eventCounts));
-        CallProxy.payable(classProvider, paymentFrom, paymentValue);
+        CallProxy.payable((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(paymentFrom, input, eventCounts));},
+                classProvider, paymentFrom, paymentValue);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kDeposit));
         
         // Try to add an owner - we need to call this twice to see the event output: sender and extra1.
         Address newOwner = buildAddress(5);
         try {
-            Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts));
-            CallProxy.addOwner(classProvider, newOwner);
+            CallProxy.addOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, input, eventCounts));},
+                    classProvider, newOwner);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kOwnerAdded));
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts));
-        CallProxy.addOwner(classProvider, newOwner);
+        CallProxy.addOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, input, eventCounts));},
+                classProvider, newOwner);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kOwnerAdded));
         
         // Send a normal transaction, which is under the limit, and observe that it goes through.
         Address transactionTo = buildAddress(6);
         long transactionSize = dailyLimit - 1;
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kSingleTransact));
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts));
-        CallProxy.execute(classProvider, transactionTo, transactionSize, new byte[] {1});
+        CallProxy.execute((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, input, eventCounts));},
+                classProvider, transactionTo, transactionSize, new byte[] {1});
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kSingleTransact));
         
         // Now, send another transaction, observe that it requires multisig confirmation, and confirm it with our new owner.
         Address confirmTransactionTo = buildAddress(7);
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kConfirmationNeeded));
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts));
-        byte[] toConfirm = CallProxy.execute(classProvider, confirmTransactionTo, transactionSize, new byte[] {1});
+        byte[] toConfirm = CallProxy.execute((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, input, eventCounts));},
+                classProvider, confirmTransactionTo, transactionSize, new byte[] {1});
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kSingleTransact));
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kConfirmationNeeded));
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(newOwner, new byte[] {5,6,42}, eventCounts));
-        boolean didConfirm = CallProxy.confirm(classProvider, toConfirm);
+        boolean didConfirm = CallProxy.confirm((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(newOwner, input, eventCounts));},
+                classProvider, toConfirm);
         Assert.assertTrue(didConfirm);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kMultiTransact));
         
         // Change the count of required confirmations.
         try {
-            Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts));
-            CallProxy.changeRequirement(classProvider, 3);
+            CallProxy.changeRequirement((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, input, eventCounts));},
+                    classProvider, 3);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kRequirementChanged));
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts));
-        CallProxy.changeRequirement(classProvider, 3);
+        CallProxy.changeRequirement((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, input, eventCounts));},
+                classProvider, 3);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kRequirementChanged));
         
         // Change the owner.
         Address lateOwner = buildAddress(8);
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts));
-        Assert.assertTrue(sender.equals(CallProxy.getOwner(classProvider, 0)));
+        Assert.assertTrue(sender.equals(CallProxy.getOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, input, eventCounts));},
+                classProvider, 0)));
         try {
-            Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, new byte[] {5,6,42}, eventCounts));
-            CallProxy.changeOwner(classProvider, sender, lateOwner);
+            CallProxy.changeOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(sender, input, eventCounts));},
+                    classProvider, sender, lateOwner);
             Assert.assertTrue(false);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
@@ -311,43 +312,43 @@ public class Deployer {
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         try {
-            Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts));
-            CallProxy.changeOwner(classProvider, sender, lateOwner);
+            CallProxy.changeOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, input, eventCounts));},
+                    classProvider, sender, lateOwner);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kOwnerChanged));
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra2, new byte[] {5,6,42}, eventCounts));
-        CallProxy.changeOwner(classProvider, sender, lateOwner);
+        CallProxy.changeOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra2, input, eventCounts));},
+                classProvider, sender, lateOwner);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kOwnerChanged));
         
         // Try to remove an owner, but have someone revoke that so that it can't happen.
         try {
-            Helpers.attachBlockchainRuntime(loader, new TestingRuntime(lateOwner, new byte[] {5,6,42}, eventCounts));
-            CallProxy.removeOwner(classProvider, extra1);
+            CallProxy.removeOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(lateOwner, input, eventCounts));},
+                    classProvider, extra1);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         try {
-            Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra2, new byte[] {5,6,42}, eventCounts));
-            CallProxy.removeOwner(classProvider, extra1);
+            CallProxy.removeOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra2, input, eventCounts));},
+                    classProvider, extra1);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + RequireFailedException.class.getName()).equals(e.getCause().getClass().getName()));
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kRevoke));
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(lateOwner, new byte[] {5,6,42}, eventCounts));
-        CallProxy.revoke(classProvider, new byte[] {5,6,42});
+        CallProxy.revoke((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(lateOwner, input, eventCounts));},
+                classProvider, CallEncoder.removeOwner(extra1));
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kRevoke));
         try {
             // This fails since one of the owners revoked.
-            Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts));
-            CallProxy.removeOwner(classProvider, extra1);
+            CallProxy.removeOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, input, eventCounts));},
+                    classProvider, extra1);
             Assert.assertTrue(false);
         } catch (InvocationTargetException e) {
             // Expected re-mapped RequireFailedException.
@@ -355,11 +356,11 @@ public class Deployer {
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kOwnerRemoved));
         // But this succeeds when they re-agree.
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(lateOwner, new byte[] {5,6,42}, eventCounts));
-        CallProxy.removeOwner(classProvider, extra1);
+        CallProxy.removeOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(lateOwner, input, eventCounts));},
+                classProvider, extra1);
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kOwnerRemoved));
-        Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, new byte[] {5,6,42}, eventCounts));
-        Assert.assertTrue(extra2.equals(CallProxy.getOwner(classProvider, 0)));
+        Assert.assertTrue(extra2.equals(CallProxy.getOwner((input) -> {Helpers.attachBlockchainRuntime(loader, new TestingRuntime(extra1, input, eventCounts));},
+                classProvider, 0)));
         
         // We should have seen 13 confirmations over the course of the test run.
         Assert.assertTrue(13 == externalRuntime.getEventCount(EventLogger.kConfirmation));

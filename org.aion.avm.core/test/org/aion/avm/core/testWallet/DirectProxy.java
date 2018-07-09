@@ -1,5 +1,7 @@
 package org.aion.avm.core.testWallet;
 
+import java.util.function.Consumer;
+
 import org.aion.avm.api.Address;
 
 
@@ -7,55 +9,65 @@ import org.aion.avm.api.Address;
  * Based on the CallProxy, to give a similar interface for even the direct call comparison.
  */
 public class DirectProxy {
-    public static void init(Address extra1, Address extra2, int requiredVotes, long dailyLimit) {
+    public static void init(Consumer<byte[]> inputConsumer, Address extra1, Address extra2, int requiredVotes, long dailyLimit) {
         byte[] onto = CallEncoder.init(extra1, extra2, requiredVotes, dailyLimit);
-        Wallet.decode(onto);
+        inputConsumer.accept(onto);
+        Wallet.decode();
     }
 
-    public static void payable(Address from, long value) {
+    public static void payable(Consumer<byte[]> inputConsumer, Address from, long value) {
         byte[] onto = CallEncoder.payable(from, value);
-        Wallet.decode(onto);
+        inputConsumer.accept(onto);
+        Wallet.decode();
     }
 
-    public static void addOwner(Address owner) {
+    public static void addOwner(Consumer<byte[]> inputConsumer, Address owner) {
         byte[] onto = CallEncoder.addOwner(owner);
-        Wallet.decode(onto);
+        inputConsumer.accept(onto);
+        Wallet.decode();
     }
 
-    public static byte[] execute(Address to, long value, byte[] data) {
+    public static byte[] execute(Consumer<byte[]> inputConsumer, Address to, long value, byte[] data) {
         byte[] onto = CallEncoder.execute(to, value, data);
-        return Wallet.decode(onto);
+        inputConsumer.accept(onto);
+        return Wallet.decode();
     }
 
-    public static boolean confirm(byte[] data) {
+    public static boolean confirm(Consumer<byte[]> inputConsumer, byte[] data) {
         byte[] onto = CallEncoder.confirm(data);
-        byte[] result = Wallet.decode(onto);
+        inputConsumer.accept(onto);
+        byte[] result = Wallet.decode();
         return (0x1 == result[0]);
     }
 
-    public static void changeRequirement(int newRequired) {
+    public static void changeRequirement(Consumer<byte[]> inputConsumer, int newRequired) {
         byte[] onto = CallEncoder.changeRequirement(newRequired);
-        Wallet.decode(onto);
+        inputConsumer.accept(onto);
+        Wallet.decode();
     }
 
-    public static Address getOwner(int ownerIndex) {
+    public static Address getOwner(Consumer<byte[]> inputConsumer, int ownerIndex) {
         byte[] onto = CallEncoder.getOwner(ownerIndex);
-        byte[] result = Wallet.decode(onto);
+        inputConsumer.accept(onto);
+        byte[] result = Wallet.decode();
         return new Address(result);
     }
 
-    public static void changeOwner(Address from, Address to) {
+    public static void changeOwner(Consumer<byte[]> inputConsumer, Address from, Address to) {
         byte[] onto = CallEncoder.changeOwner(from, to);
-        Wallet.decode(onto);
+        inputConsumer.accept(onto);
+        Wallet.decode();
     }
 
-    public static void removeOwner(Address owner) {
+    public static void removeOwner(Consumer<byte[]> inputConsumer, Address owner) {
         byte[] onto = CallEncoder.removeOwner(owner);
-        Wallet.decode(onto);
+        inputConsumer.accept(onto);
+        Wallet.decode();
     }
 
-    public static void revoke(byte[] transactionBytes) {
+    public static void revoke(Consumer<byte[]> inputConsumer, byte[] transactionBytes) {
         byte[] onto = CallEncoder.revoke(transactionBytes);
-        Wallet.decode(onto);
+        inputConsumer.accept(onto);
+        Wallet.decode();
     }
 }
