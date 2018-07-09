@@ -316,6 +316,13 @@ public class AvmImpl implements Avm {
         public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
             AvmResult result = cb.call(tx.getTo(), targetAddress.unwrap(), value, data.getUnderlying(), energyLimit);
 
+            // Reset the thread-local helper instance
+            IHelper.currentContractHelper.set(helper);
+
+            // charge energy consumed
+            long energyUsed = energyLimit - result.energyLeft;
+            helper.externalChargeEnergy(energyUsed);
+
             return new ByteArray(result.returnData);
         }
 

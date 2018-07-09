@@ -197,18 +197,10 @@ public class ParallelExecution {
     // TEST
     //============
 
-    private static byte[] address(int n) {
-        byte[] arr = new byte[32];
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] = (byte) n;
-        }
-        return arr;
-    }
-
     public static void simpleCall() {
-        Transaction tx1 = new Transaction(Transaction.Type.CALL, address(1), address(2), 0, address(3), 1000000);
-        Transaction tx2 = new Transaction(Transaction.Type.CALL, address(3), address(4), 0, address(1), 1000000);
-        Transaction tx3 = new Transaction(Transaction.Type.CALL, address(3), address(5), 0, new byte[0], 1000000);
+        Transaction tx1 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(3), 1000000);
+        Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(3), Helpers.address(4), 0, Helpers.address(1), 1000000);
+        Transaction tx3 = new Transaction(Transaction.Type.CALL, Helpers.address(3), Helpers.address(5), 0, new byte[0], 1000000);
 
         ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(null), NUM_THREADS);
         exec.execute();
@@ -227,7 +219,7 @@ public class ParallelExecution {
             int to = r.nextInt(numAccounts);
             int callee = r.nextInt(numAccounts);
 
-            Transaction tx = new Transaction(Transaction.Type.CALL, address(from), address(to), 0, address(callee), 1000000);
+            Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(from), Helpers.address(to), 0, Helpers.address(callee), 1000000);
             transactions.add(tx);
         }
 

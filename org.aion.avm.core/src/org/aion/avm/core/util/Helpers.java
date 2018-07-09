@@ -190,4 +190,13 @@ public class Helpers {
             RuntimeAssertionError.unexpected(t);
         }
     }
+
+    // for test suites only
+    public static byte[] address(int n) {
+        byte[] arr = new byte[32];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = (byte) n;
+        }
+        return arr;
+    }
 }
