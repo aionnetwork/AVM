@@ -32,7 +32,7 @@ public class Wallet {
      *
      * @return The output of running the invoke (null for void methods).
      */
-    public static byte[] decode() {
+    public static byte[] main() {
         // Most of our paths return nothing so just default to the empty byte array.
         byte[] result = new byte[0];
         byte[] input = BlockchainRuntime.getData();
@@ -107,7 +107,7 @@ public class Wallet {
             break;
         }
         default:
-            throw new AssertionError(methodByte);
+            throw new AssertionError("No method for byte: " + methodByte);
         }
         return result;
     }

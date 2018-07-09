@@ -79,7 +79,7 @@ public class CallProxy {
     private static byte[] callDecode(Supplier<Class<?>> loader) throws Exception {
         Class<?> walletClass = loader.get();
         ByteArray output = (ByteArray)walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("decode"))
+            .getMethod(UserClassMappingVisitor.mapMethodName("main"))
             .invoke(null);
         return (null != output)
                 ? output.getUnderlying()
