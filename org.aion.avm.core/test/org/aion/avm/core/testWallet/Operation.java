@@ -13,7 +13,12 @@ public class Operation extends ByteArrayWrapper {
         return new Operation(hash);
     }
 
-    public static Operation fromBytes(byte[] bytes) {
+    public static Operation fromRawBytes(byte[] bytes) {
+        byte[] hash = BlockchainRuntime.sha3(bytes);
+        return new Operation(hash);
+    }
+
+    public static Operation fromHashedBytes(byte[] bytes) {
         return new Operation(bytes);
     }
 

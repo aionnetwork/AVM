@@ -54,8 +54,8 @@ public class DirectProxy {
         Wallet.decode(onto);
     }
 
-    public static void revoke() {
-        byte[] onto = CallEncoder.revoke();
+    public static void revoke(byte[] transactionBytes) {
+        byte[] onto = CallEncoder.revoke(transactionBytes);
         Wallet.decode(onto);
     }
 }

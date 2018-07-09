@@ -101,7 +101,8 @@ public class Wallet {
             break;
         }
         case Abi.kWallet_revoke : {
-            Wallet.revoke();
+            byte[] transactionBytes = decoder.decodeRemainder();
+            Wallet.revoke(transactionBytes);
             break;
         }
         default:
@@ -111,8 +112,8 @@ public class Wallet {
     }
 
     // EXTERNAL - composed
-    public static void revoke() {
-        Multiowned.revoke();
+    public static void revoke(byte[] transactionBytes) {
+        Multiowned.revoke(transactionBytes);
     }
 
     // EXTERNAL - composed
@@ -190,7 +191,7 @@ public class Wallet {
                 transaction.value = value;
                 transaction.data = data;
                 Wallet.transactions.put(transactionKey, transaction);
-                EventLogger.confirmationNeeded(Operation.fromBytes(result), BlockchainRuntime.getSender(), value, to, data);
+                EventLogger.confirmationNeeded(Operation.fromHashedBytes(result), BlockchainRuntime.getSender(), value, to, data);
             }
         }
         return result;
@@ -215,7 +216,8 @@ public class Wallet {
     // to determine the body of the transaction from the hash provided.
     public static boolean confirm(byte[] h) {
         // (modifier)
-        Multiowned.onlyManyOwners(BlockchainRuntime.getSender(), Operation.fromBytes(h));
+        Operation operationToConfirm = Operation.fromRawBytes(h);
+        Multiowned.onlyManyOwners(BlockchainRuntime.getSender(), operationToConfirm);
         
         boolean result = false;
         BytesKey key = BytesKey.from(h);
@@ -225,7 +227,7 @@ public class Wallet {
             if (null == response) {
                 throw new RequireFailedException();
             }
-            EventLogger.multiTransact(BlockchainRuntime.getSender(), Operation.fromBytes(h), transaction.value, transaction.to, transaction.data);
+            EventLogger.multiTransact(BlockchainRuntime.getSender(), operationToConfirm, transaction.value, transaction.to, transaction.data);
             Wallet.transactions.remove(BytesKey.from(h));
             result = true;
         }

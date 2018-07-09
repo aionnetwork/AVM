@@ -36,12 +36,12 @@ public class Multiowned {
     }
 
     // PUBLIC INTERFACE
-    public static void revoke() {
+    public static void revoke(byte[] transactionBytes) {
         Address sender = BlockchainRuntime.getSender();
         // Make sure that they are an owner.
         if (Multiowned.owners.contains(sender)) {
             // See if we know about this operation.
-            Operation operation = Operation.fromMessage();
+            Operation operation = Operation.fromRawBytes(transactionBytes);
             PendingState state = Multiowned.ongoingOperations.get(operation);
             if (null != state) {
                 // Remove them from the confirmed set.

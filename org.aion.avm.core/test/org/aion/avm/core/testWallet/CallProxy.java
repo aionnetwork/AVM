@@ -59,8 +59,8 @@ public class CallProxy {
         callDecode(loader, onto);
     }
 
-    public static void revoke(Supplier<Class<?>> loader) throws Exception {
-        byte[] onto = CallEncoder.revoke();
+    public static void revoke(Supplier<Class<?>> loader, byte[] transactionBytes) throws Exception {
+        byte[] onto = CallEncoder.revoke(transactionBytes);
         callDecode(loader, onto);
     }
 

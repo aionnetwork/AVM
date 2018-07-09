@@ -89,11 +89,12 @@ public class CallEncoder {
             .encodeAddress(owner);
         return onto;
     }
-    public static byte[] revoke() {
-        byte[] onto = new byte[1];
+    public static byte[] revoke(byte[] transactionBytes) {
+        byte[] onto = new byte[1 + transactionBytes.length];
         Abi.Encoder encoder = Abi.buildEncoder(onto);
         encoder
             .encodeByte(Abi.kWallet_revoke);
+        encoder.encodeRemainder(transactionBytes);
         return onto;
     }
 }

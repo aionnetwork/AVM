@@ -166,7 +166,7 @@ public class Deployer {
         }
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kRevoke));
         Helper.blockchainRuntime = new TestingRuntime(lateOwner, new byte[] {5,6,42}, eventCounts);
-        DirectProxy.revoke();
+        DirectProxy.revoke(new byte[] {5,6,42});
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kRevoke));
         try {
             // This fails since one of the owners revoked.
@@ -342,7 +342,7 @@ public class Deployer {
         }
         Assert.assertTrue(0 == externalRuntime.getEventCount(EventLogger.kRevoke));
         Helpers.attachBlockchainRuntime(loader, new TestingRuntime(lateOwner, new byte[] {5,6,42}, eventCounts));
-        CallProxy.revoke(classProvider);
+        CallProxy.revoke(classProvider, new byte[] {5,6,42});
         Assert.assertTrue(1 == externalRuntime.getEventCount(EventLogger.kRevoke));
         try {
             // This fails since one of the owners revoked.
