@@ -29,7 +29,7 @@ public class KernelApiImpl implements KernelApi {
     }
 
     @Override
-    public AvmResult call(byte[] from, byte[] to, byte[] value, byte[] data, long energyLimit) {
+    public AvmResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
         return null;
     }
 

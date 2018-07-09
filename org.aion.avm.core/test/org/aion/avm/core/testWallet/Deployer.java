@@ -440,7 +440,7 @@ public class Deployer {
             return new ByteArray(result);
         }
         @Override
-        public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray payload, long energyToSend) {
+        public ByteArray avm_call(Address targetAddress, long value, ByteArray payload, long energyToSend) {
             // We probably want to capture/verify this more concretely but, for now, just return the payload to synthesize "something".
             return payload;
         }

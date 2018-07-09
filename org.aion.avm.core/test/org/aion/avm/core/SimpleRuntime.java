@@ -107,7 +107,7 @@ public class SimpleRuntime extends org.aion.avm.shadow.java.lang.Object implemen
     }
 
     @Override
-    public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray payload, long energyToSend) {
+    public ByteArray avm_call(Address targetAddress, long value, ByteArray payload, long energyToSend) {
         Assert.fail("This implementation doesn't handle this");
         return null;
     }

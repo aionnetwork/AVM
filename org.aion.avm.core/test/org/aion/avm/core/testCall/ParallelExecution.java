@@ -49,7 +49,7 @@ class State {
 class InternalTransaction extends Transaction {
     private Transaction parent;
 
-    public InternalTransaction(Type type, byte[] from, byte[] to, byte[] value, byte[] data, long energyLimit, Transaction parent) {
+    public InternalTransaction(Type type, byte[] from, byte[] to, long value, byte[] data, long energyLimit, Transaction parent) {
         super(type, from, to, value, data, energyLimit);
         this.parent = parent;
     }
@@ -156,8 +156,8 @@ public class ParallelExecution {
             avm.attachBlockchainRuntime(new SimpleRuntime(tx.getFrom(), tx.getTo(), tx.getEnergyLimit(), tx.getData()) {
                 // TODO: runtime should be based on the state
                 @Override
-                public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray payload, long energyToSend) {
-                    InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL, tx.getTo(), targetAddress.unwrap(), value.getUnderlying(), payload.getUnderlying(), energyToSend, tx);
+                public ByteArray avm_call(Address targetAddress, long value, ByteArray payload, long energyToSend) {
+                    InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL, tx.getTo(), targetAddress.unwrap(), value, payload.getUnderlying(), energyToSend, tx);
                     result.internalTransactions.add(internalTx);
                     logger.debug("Internal transaction: " + internalTx);
 
@@ -206,9 +206,9 @@ public class ParallelExecution {
     }
 
     public static void simpleCall() {
-        Transaction tx1 = new Transaction(Transaction.Type.CALL, address(1), address(2), new byte[0], address(3), 1000000);
-        Transaction tx2 = new Transaction(Transaction.Type.CALL, address(3), address(4), new byte[0], address(1), 1000000);
-        Transaction tx3 = new Transaction(Transaction.Type.CALL, address(3), address(5), new byte[0], new byte[0], 1000000);
+        Transaction tx1 = new Transaction(Transaction.Type.CALL, address(1), address(2), 0, address(3), 1000000);
+        Transaction tx2 = new Transaction(Transaction.Type.CALL, address(3), address(4), 0, address(1), 1000000);
+        Transaction tx3 = new Transaction(Transaction.Type.CALL, address(3), address(5), 0, new byte[0], 1000000);
 
         ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(null), NUM_THREADS);
         exec.execute();
@@ -227,7 +227,7 @@ public class ParallelExecution {
             int to = r.nextInt(numAccounts);
             int callee = r.nextInt(numAccounts);
 
-            Transaction tx = new Transaction(Transaction.Type.CALL, address(from), address(to), new byte[0], address(callee), 1000000);
+            Transaction tx = new Transaction(Transaction.Type.CALL, address(from), address(to), 0, address(callee), 1000000);
             transactions.add(tx);
         }
 

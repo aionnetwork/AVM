@@ -51,7 +51,7 @@ public class BlockchainRuntime {
         return Helper.blockchainRuntime.avm_sha3(data);
     }
 
-    public static ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray data, long energyLimit) {
+    public static ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
         return Helper.blockchainRuntime.avm_call(targetAddress, value, data, energyLimit);
     }
 
@@ -105,8 +105,8 @@ public class BlockchainRuntime {
         return avm_sha3(new ByteArray(data)).getUnderlying();
     }
 
-    public static byte[] call(Address targetAddress, byte[] value, byte[] data, long energyLimit) {
-        return avm_call(targetAddress, null, new ByteArray(data), energyLimit).getUnderlying();
+    public static byte[] call(Address targetAddress, long value, byte[] data, long energyLimit) {
+        return avm_call(targetAddress, value, new ByteArray(data), energyLimit).getUnderlying();
     }
 
     public static void log(byte[] index0, byte[] data) {

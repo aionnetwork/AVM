@@ -311,8 +311,8 @@ public class AvmImpl implements Avm {
         }
 
         @Override
-        public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray data, long energyLimit) {
-            AvmResult result = cb.call(tx.getTo(), targetAddress.unwrap(), value.getUnderlying(), data.getUnderlying(), energyLimit);
+        public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+            AvmResult result = cb.call(tx.getTo(), targetAddress.unwrap(), value, data.getUnderlying(), energyLimit);
 
             return new ByteArray(result.returnData);
         }

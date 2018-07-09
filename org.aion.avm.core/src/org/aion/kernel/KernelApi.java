@@ -16,7 +16,7 @@ public interface KernelApi {
 
     byte[] getStorage(byte[] address, byte[] key);
 
-    AvmResult call(byte[] from, byte[] to, byte[] value, byte[] data, long energyLimit);
+    AvmResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit);
 
     void updateCode(byte[] address, byte[] code);
 

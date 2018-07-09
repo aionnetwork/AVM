@@ -10,7 +10,7 @@ public class Contract {
     public static byte[] main() {
         byte[] data = BlockchainRuntime.getData();
         if (data != null && data.length != 0) {
-            BlockchainRuntime.call(new Address(data), new byte[0], new byte[0], 1000);
+            BlockchainRuntime.call(new Address(data), 0, new byte[0], 1000);
         }
 
         return  "done".getBytes();

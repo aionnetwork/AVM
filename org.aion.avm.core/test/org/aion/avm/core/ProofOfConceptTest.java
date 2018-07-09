@@ -71,7 +71,7 @@ public class ProofOfConceptTest {
     public void testDeployWritesCode() {
         byte[] testWalletJar = buildTestWalletJar();
         AvmImpl createAvm = new AvmImpl(sharedClassLoader);
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, new byte[0], testWalletJar, energyLimit);
+        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
         AvmResult createResult = createAvm.run(createTransaction, block, cb);
         Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
         Assert.assertNotNull(cb.getTransformedCode(to));

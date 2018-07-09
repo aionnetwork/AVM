@@ -176,7 +176,7 @@ public class Wallet {
         if (Daylimit.underLimit(value)) {
             EventLogger.singleTransact(BlockchainRuntime.getSender(), value, to, data);
             // yes - just execute the call.
-            byte[] response = BlockchainRuntime.call(to, null, data, value);
+            byte[] response = BlockchainRuntime.call(to, 0, data, value);
             if (null == response) {
                 throw new RequireFailedException();
             }
@@ -224,7 +224,7 @@ public class Wallet {
         BytesKey key = BytesKey.from(h);
         if (null != Wallet.transactions.get(key).to) {
             Transaction transaction = Wallet.transactions.get(key);
-            byte[] response = BlockchainRuntime.call(transaction.to, null, transaction.data, transaction.value);
+            byte[] response = BlockchainRuntime.call(transaction.to, 0, transaction.data, transaction.value);
             if (null == response) {
                 throw new RequireFailedException();
             }

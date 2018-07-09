@@ -27,11 +27,11 @@ public class CallTest {
         SimpleAvm avm = new SimpleAvm(energyLimit, Caller.class);
         avm.attachBlockchainRuntime(new SimpleRuntime(from, to, energyLimit) {
             @Override
-            public ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray data, long energyLimit) {
+            public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
                 callbackReceived = true;
 
                 assertEquals(new Address(new byte[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}), targetAddress);
-                assertEquals(new ByteArray(new byte[]{0, 0, 0, 2}), value);
+                assertEquals(2, value);
                 assertEquals(new ByteArray("hello".getBytes()), data);
                 assertEquals(10000, energyLimit);
 
@@ -57,7 +57,7 @@ public class CallTest {
         SimpleAvm avm = new SimpleAvm(energyLimit, Caller.class);
         avm.attachBlockchainRuntime(new SimpleRuntime(from, to, energyLimit) {
             @Override
-            public ByteArray avm_call(Address a, ByteArray v, ByteArray d, long e) {
+            public ByteArray avm_call(Address a, long v, ByteArray d, long e) {
                 callbackReceived = true;
 
                 try {

@@ -16,13 +16,13 @@ public class Transaction {
 
     byte[] to;
 
-    byte[] value;
+    long value;
 
     byte[] data;
 
     long energyLimit;
 
-    public Transaction(Type type, byte[] from, byte[] to, byte[] value, byte[] data, long energyLimit) {
+    public Transaction(Type type, byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
         this.type = type;
         this.from = from;
         this.to = to;
@@ -43,7 +43,7 @@ public class Transaction {
         return to;
     }
 
-    public byte[] getValue() {
+    public long getValue() {
         return value;
     }
 
@@ -61,7 +61,7 @@ public class Transaction {
                 "type=" + type +
                 ", from=" + Helpers.toHexString(Arrays.copyOf(from, 4)) +
                 ", to=" + Helpers.toHexString(Arrays.copyOf(to, 4)) +
-                ", value=" + Helpers.toHexString(value) +
+                ", value=" + Long.toHexString(value) +
                 ", data=" + Helpers.toHexString(data) +
                 ", energyLimit=" + energyLimit +
                 '}';

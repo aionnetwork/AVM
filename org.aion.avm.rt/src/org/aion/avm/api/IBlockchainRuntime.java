@@ -95,7 +95,7 @@ public interface IBlockchainRuntime extends IObject {
      * @param energyToSend The energy to send that contract.
      * @return The response of executing the contract.
      */
-    ByteArray avm_call(Address targetAddress, ByteArray value, ByteArray data, long energyToSend);
+    ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyToSend);
 
     /**
      * Logs information for offline analysis or external listening.
