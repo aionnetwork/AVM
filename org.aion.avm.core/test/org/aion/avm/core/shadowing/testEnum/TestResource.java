@@ -38,15 +38,15 @@ public class TestResource {
         ret = ret && (RoundingMode.HALF_UP == RoundingMode.valueOf("HALF_UP"));
         ret = ret && (RoundingMode.CEILING instanceof Object);
 
-//        RoundingMode[] es = (RoundingMode[]) RoundingMode.values();
-//        ret = ret && (es[0] == RoundingMode.UP);
-//        ret = ret && (es[1] == RoundingMode.DOWN);
-//        ret = ret && (es[2] == RoundingMode.CEILING);
-//        ret = ret && (es[3] == RoundingMode.FLOOR);
-//        ret = ret && (es[4] == RoundingMode.HALF_UP);
-//        ret = ret && (es[5] == RoundingMode.HALF_DOWN);
-//        ret = ret && (es[6] == RoundingMode.HALF_EVEN);
-//        ret = ret && (es[7] == RoundingMode.UNNECESSARY);
+        RoundingMode[] es = (RoundingMode[]) RoundingMode.values();
+        ret = ret && (es[0] == RoundingMode.UP);
+        ret = ret && (es[1] == RoundingMode.DOWN);
+        ret = ret && (es[2] == RoundingMode.CEILING);
+        ret = ret && (es[3] == RoundingMode.FLOOR);
+        ret = ret && (es[4] == RoundingMode.HALF_UP);
+        ret = ret && (es[5] == RoundingMode.HALF_DOWN);
+        ret = ret && (es[6] == RoundingMode.HALF_EVEN);
+        ret = ret && (es[7] == RoundingMode.UNNECESSARY);
 
         return ret;
     }

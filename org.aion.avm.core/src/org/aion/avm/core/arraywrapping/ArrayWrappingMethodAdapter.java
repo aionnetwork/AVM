@@ -10,6 +10,8 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
 import org.objectweb.asm.commons.Method;
 
+import java.util.Set;
+
 class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
     private Type typeA = Type.getType(org.aion.avm.arraywrapper.Array.class);
@@ -20,6 +22,10 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     private Type typeIA = Type.getType(IntArray.class);
     private Type typeLA = Type.getType(LongArray.class);
     private Type typeSA = Type.getType(ShortArray.class);
+
+    private static final Set<String> SHADOW_JDK_ENUM_DESC = Set.of(new String[] {
+            "()[Lorg/aion/avm/shadow/java/math/RoundingMode;",
+    });
 
 
     ArrayWrappingMethodAdapter(final MethodVisitor mv, final int access, final String name, final String desc)
@@ -178,9 +184,13 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     }
 
     @Override
-    //TODO: invokedynamic?
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        String desc = ArrayWrappingClassGenerator.updateMethodDesc(descriptor);
+        String desc = descriptor;
+        if (name.equals("avm_values") && SHADOW_JDK_ENUM_DESC.contains(descriptor)){
+            desc = "()[L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object;";
+        }
+
+        desc = ArrayWrappingClassGenerator.updateMethodDesc(desc);
         String newOwner = ArrayWrappingClassGenerator.getClassWrapper(owner);
         this.mv.visitMethodInsn(opcode, newOwner, name, desc, isInterface);
     }

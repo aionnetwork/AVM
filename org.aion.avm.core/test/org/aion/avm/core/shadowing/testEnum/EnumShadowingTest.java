@@ -4,6 +4,7 @@ import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.junit.*;
 

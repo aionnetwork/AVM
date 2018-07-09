@@ -322,7 +322,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     //internal
-    java.lang.String getUnderlying(){
+    public java.lang.String getUnderlying(){
         return v;
     }
 
