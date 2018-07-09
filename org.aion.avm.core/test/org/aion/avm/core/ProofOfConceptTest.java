@@ -76,4 +76,46 @@ public class ProofOfConceptTest {
         Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
         Assert.assertNotNull(cb.getTransformedCode(to));
     }
+
+    /**
+     * Tests that we can run init on the deployed code, albeit as a second transaction (since we haven't yet decided how to invoke init on deploy).
+     */
+    @Test
+    public void testDeployAndCallInit() {
+        // Constructor args.
+        byte[] extra1 = Helpers.randomBytes(Address.LENGTH);
+        byte[] extra2 = Helpers.randomBytes(Address.LENGTH);
+        int requiredVotes = 2;
+        long dailyLimit = 5000;
+        
+        byte[] testWalletJar = buildTestWalletJar();
+        AvmImpl createAvm = new AvmImpl(sharedClassLoader);
+        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
+        AvmResult createResult = createAvm.run(createTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
+        
+        AvmImpl initAvm = new AvmImpl(sharedClassLoader);
+        byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
+        Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, to, 0, initArgs, energyLimit);
+        AvmResult initResult = initAvm.run(initTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, initResult.code);
+    }
+
+
+    /**
+     * Note that this is copied from CallEncoder to allow us to create the input without needing to instantiate Address objects.
+     */
+    public static byte[] encodeInit(byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) {
+        byte[] onto = new byte[1 + Integer.BYTES + Address.LENGTH + Address.LENGTH + Integer.BYTES + Long.BYTES];
+        Abi.Encoder encoder = Abi.buildEncoder(onto);
+        // We are encoding the Addresses as a 2-element array, so describe it that way to the encoder.
+        encoder
+            .encodeByte(Abi.kWallet_init)
+            .encodeInt(2)
+            .encodeRemainder(extra1)
+            .encodeRemainder(extra2)
+            .encodeInt(requiredVotes)
+            .encodeLong(dailyLimit);
+        return onto;
+    }
 }
