@@ -1,7 +1,6 @@
 package org.aion.avm.core.testWallet;
 
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.IBlockchainRuntime;
 
 
 /**

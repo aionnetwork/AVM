@@ -1,8 +1,6 @@
 package org.aion.avm.arraywrapper;
 
-import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
-import org.aion.avm.shadow.java.lang.Object;
 
 import java.util.Arrays;
 
