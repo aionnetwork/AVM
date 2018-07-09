@@ -4,11 +4,17 @@ import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.AvmResult;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.core.util.ByteArrayWrapper;
+import org.aion.avm.core.util.Helpers;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class KernelApiImpl implements KernelApi {
 
     private TransformedDappStorage codeStorage = new TransformedDappStorage();
+    private Map<ByteArrayWrapper, byte[]> dappStorage = new HashMap<>();
 
     public AvmSharedClassLoader sharedClassLoader = null;
     public Block block = null;
@@ -26,12 +32,14 @@ public class KernelApiImpl implements KernelApi {
 
     @Override
     public void putStorage(byte[] address, byte[] key, byte[] value) {
-
+        ByteArrayWrapper k = new ByteArrayWrapper(Helpers.merge(address, key));
+        dappStorage.put(k, value);
     }
 
     @Override
     public byte[] getStorage(byte[] address, byte[] key) {
-        return new byte[0];
+        ByteArrayWrapper k = new ByteArrayWrapper(Helpers.merge(address, key));
+        return dappStorage.get(k);
     }
 
     @Override

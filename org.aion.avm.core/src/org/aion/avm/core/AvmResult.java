@@ -1,5 +1,7 @@
 package org.aion.avm.core;
 
+import org.aion.avm.core.util.Helpers;
+
 public class AvmResult {
 
     public enum  Code {
@@ -37,6 +39,7 @@ public class AvmResult {
         return "AvmResult{" +
                 "code=" + code +
                 ", energyLeft=" + energyLeft +
+                ", returnData=" + Helpers.toHexString(returnData) +
                 '}';
     }
 }
