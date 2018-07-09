@@ -48,4 +48,13 @@ public class EnumShadowingTest {
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
     }
+
+    @Test
+    public void testShadowJDKEnum() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Object obj = clazz.getConstructor().newInstance();
+        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testShadowJDKEnum"));
+
+        Object ret = method.invoke(obj);
+        Assert.assertEquals(ret, true);
+    }
 }

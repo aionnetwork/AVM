@@ -343,7 +343,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
             if (this.userDefinedClassSlashNames.contains(type)) {
                 return PackageConstants.kUserSlashPrefix + type;
 
-            } else if (type.startsWith(JAVA_LANG) || type.startsWith(JAVA_UTIL_FUNCTION)) {
+            } else if (type.startsWith(JAVA_LANG) || type.startsWith(JAVA_UTIL_FUNCTION) || type.startsWith(JAVA_MATH)) {
                 return shadowPackageSlash + type;
 
             } else if (type.startsWith(ORG_AION_AVM_API) || type.startsWith("org/aion/avm/shadow/")) {

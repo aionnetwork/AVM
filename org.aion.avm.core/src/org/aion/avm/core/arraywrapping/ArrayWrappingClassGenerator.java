@@ -1,7 +1,5 @@
 package org.aion.avm.core.arraywrapping;
 
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.ClassWriter;
@@ -409,7 +407,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     private static void genClone(ClassWriter cw, String wrapper) {
-        String cloneMethodName = UserClassMappingVisitor.mapMethodName("clone");
+        String cloneMethodName = "avm_clone";
         String cloneMethodDesc = "()Lorg/aion/avm/internal/IObject;";
         MethodVisitor methodVisitor = cw.visitMethod(ACC_PUBLIC, cloneMethodName, cloneMethodDesc, null, null);
         methodVisitor.visitCode();

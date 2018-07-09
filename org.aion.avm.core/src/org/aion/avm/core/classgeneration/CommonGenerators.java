@@ -102,9 +102,9 @@ public class CommonGenerators {
         Map<String, byte[]> shadowJDK = new HashMap<>();
 
         Map<String, byte[]> shadowException = generateShadowException();
-        Map<String, byte[]> shadowEnum = generateShadowEnum();
+        //Map<String, byte[]> shadowEnum = generateShadowEnum();
 
-        shadowJDK.putAll(shadowEnum);
+        //shadowJDK.putAll(shadowEnum);
         shadowJDK.putAll(shadowException);
 
         return shadowJDK;
