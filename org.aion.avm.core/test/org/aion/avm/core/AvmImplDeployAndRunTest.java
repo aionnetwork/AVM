@@ -72,7 +72,7 @@ public class AvmImplDeployAndRunTest {
 
         // call the "run" method
         byte[] txData = new byte[]{0x72, 0x75, 0x6E}; // "run"
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), 0, txData, energyLimit);
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.returnData, 0, txData, energyLimit);
         AvmResult result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
@@ -85,7 +85,7 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "add" with arguments
         byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "add<II>" + raw data 123, 1
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), 0, txData, energyLimit);
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.returnData, 0, txData, energyLimit);
         AvmResult result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
@@ -99,7 +99,7 @@ public class AvmImplDeployAndRunTest {
 
         // test encode method arguments
         byte[] txData = new byte[]{0x65, 0x6E, 0x63, 0x6F, 0x64, 0x65, 0x41, 0x72, 0x67, 0x73}; // encodeArgs
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), 0, txData, energyLimit);
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.returnData, 0, txData, energyLimit);
         AvmResult result = avm.run(tx, block, cb);
 
         byte[] expected = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
@@ -107,7 +107,7 @@ public class AvmImplDeployAndRunTest {
         assertEquals(true, correct);
 
         // test another method call, "addArray" with 1D array arguments
-        tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), 0, expected, energyLimit);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.returnData, 0, expected, energyLimit);
         result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
@@ -115,7 +115,7 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "addArray2" with 2D array arguments
         txData = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x32, 0x3C, 0x5B, 0x5B, 0x49, 0x31, 0x5D, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
-        tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), 0, txData, energyLimit);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.returnData, 0, txData, energyLimit);
         result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
@@ -124,7 +124,7 @@ public class AvmImplDeployAndRunTest {
         // test another method call, "concatenate" with 2D array arguments and 1D array return data
         txData = new byte[]{0x63, 0x6F, 0x6E, 0x63, 0x61, 0x74, 0x65, 0x6E, 0x61, 0x74, 0x65, 0x3C, 0x5B, 0x5B, 0x43, 0x33, 0x5D, 0x32, 0x5D, 0x3E,
                 0x63, 0x61, 0x74, 0x64, 0x6F, 0x67}; // "concatenate<[[C3]2]>" + raw data "cat" "dog"
-        tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), 0, txData, energyLimit);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.returnData, 0, txData, energyLimit);
         result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);
@@ -133,7 +133,7 @@ public class AvmImplDeployAndRunTest {
         // test another method call, "swap" with 2D array arguments and 2D array return data
         txData = new byte[]{0x73, 0x77, 0x61, 0x70, 0x3C, 0x5B, 0x5B, 0x43, 0x33, 0x5D, 0x32, 0x5D, 0x3E,
                 0x63, 0x61, 0x74, 0x64, 0x6F, 0x67}; // "swap<[[C3]2]>" + raw data "cat" "dog"
-        tx = new Transaction(Transaction.Type.CALL, from, deployResult.address.unwrap(), 0, txData, energyLimit);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.returnData, 0, txData, energyLimit);
         result = avm.run(tx, block, cb);
 
         assertEquals(AvmResult.Code.SUCCESS, result.code);

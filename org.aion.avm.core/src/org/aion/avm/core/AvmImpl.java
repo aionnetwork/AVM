@@ -246,11 +246,13 @@ public class AvmImpl implements Avm {
         private Transaction tx;
         private Block block;
         private KernelApi cb;
+        private IHelper helper;
 
-        public BlockchainRuntimeImpl(Transaction tx, Block block, KernelApi cb) {
+        public BlockchainRuntimeImpl(Transaction tx, Block block, KernelApi cb, IHelper helper) {
             this.tx = tx;
             this.block = block;
             this.cb = cb;
+            this.helper = helper;
         }
 
         @Override
@@ -323,10 +325,6 @@ public class AvmImpl implements Avm {
         }
     }
 
-    public static IBlockchainRuntime createBlockchainRuntime(Transaction tx, Block block, KernelApi cb) {
-        return new BlockchainRuntimeImpl(tx, block , cb);
-    }
-
     @Override
     public AvmResult run(Transaction tx, Block block, KernelApi cb) {
         switch (tx.getType()) {
@@ -342,7 +340,7 @@ public class AvmImpl implements Avm {
     public AvmResult create(Transaction tx, Block block, KernelApi cb) {
         try {
             // read dapp module
-            byte[] dappAddress = tx.getTo(); // TODO: CREATE does not specify address
+            byte[] dappAddress = tx.getTo(); // TODO: The contract address should be computed based on consensus rules
             byte[] dappCode = tx.getData();
             DappModule app = readDapp(dappCode);
             if (app == null) {
@@ -365,7 +363,7 @@ public class AvmImpl implements Avm {
             // Construct the per-contract class loader and access the per-contract IHelper instance.
             AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
             IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit());
-            Helpers.attachBlockchainRuntime(classLoader, createBlockchainRuntime(tx, block, cb));
+            Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(tx, block, cb, helper));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
@@ -380,7 +378,8 @@ public class AvmImpl implements Avm {
 
             // TODO: create invocation is temporarily disabled
 
-            return new AvmResult(AvmResult.Code.SUCCESS, tx.getEnergyLimit(), new Address(dappAddress));
+            // TODO: whether we should return the dapp address is subject to change
+            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), dappAddress);
         } catch (FatalAvmError e) {
             // These are unrecoverable errors (either a bug in our code or a lower-level error reported by the JVM).
             // (for now, we System.exit(-1), since this is what ethereumj does, but we may want a more graceful shutdown in the future)
@@ -419,7 +418,7 @@ public class AvmImpl implements Avm {
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, classLoader);
         classLoader.addHandler(wrapperGenerator);
         IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit());
-        Helpers.attachBlockchainRuntime(classLoader, createBlockchainRuntime(tx, block, cb));
+        Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(tx, block, cb, helper));
 
         // load class
         try {
