@@ -217,7 +217,7 @@ public class Deployer {
         loader.addHandler(wrapperGenerator);
 
         // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
-        Helpers.instantiateHelper(loader, 1_000_000L);
+        Helpers.instantiateHelper(loader, 1_000_000L, 1);
         // Note that this single externalRuntime instance doesn't really make sense - it is only useful in the cases where we aren't using
         // it for invocation context, just environment (energy counter, event logging, etc).
         TestingRuntime externalRuntime = new TestingRuntime(null, null, eventCounts);

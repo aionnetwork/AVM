@@ -58,7 +58,7 @@ public class SimpleAvm {
         this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());
 
         // set up helper
-        helper = Helpers.instantiateHelper(loader, energyLimit);
+        helper = Helpers.instantiateHelper(loader, energyLimit, 1);
     }
 
     public void attachBlockchainRuntime(IBlockchainRuntime rt) {

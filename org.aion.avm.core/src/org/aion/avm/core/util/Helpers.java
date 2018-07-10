@@ -158,14 +158,15 @@ public class Helpers {
      *
      * @param contractLoader The loader which will load all the code running within the contract.
      * @param energyLimit The energy limit
+     * @param nextHashCode The hashcode of the next object to be allocated (since this increments, across invocations)
      * @return The instance which will trampoline into the "Helper" statics called by the instrumented code within this contract.
      */
-    public static IHelper instantiateHelper(AvmClassLoader contractLoader, long energyLimit) {
+    public static IHelper instantiateHelper(AvmClassLoader contractLoader, long energyLimit, int nextHashCode) {
         IHelper helper = null;
         try {
             String helperClassName = Helper.class.getName();
             Class<?> helperClass = contractLoader.loadClass(helperClassName);
-            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, long.class).newInstance(contractLoader, energyLimit);
+            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, long.class, int.class).newInstance(contractLoader, energyLimit, nextHashCode);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);

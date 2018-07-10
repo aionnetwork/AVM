@@ -53,7 +53,7 @@ public class StringConstantVisitorTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, 1_000_000L);
+        new Helper(loader, 1_000_000L, 1);
         this.clazz = loader.loadUserClassByOriginalName(targetTestName);
         this.clazzNoStatic = loader.loadUserClassByOriginalName(targetNoStaticName);
     }

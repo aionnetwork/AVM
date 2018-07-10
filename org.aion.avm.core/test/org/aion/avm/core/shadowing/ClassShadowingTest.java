@@ -67,7 +67,7 @@ public class ClassShadowingTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, 1_000_000L);
+        new Helper(loader, 1_000_000L, 1);
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
         Object obj = clazz.getConstructor().newInstance();
 
@@ -118,7 +118,7 @@ public class ClassShadowingTest {
         };
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, 1_000_000L);
+        new Helper(loader, 1_000_000L, 1);
 
         Class<?> clazz = loader.loadClass(mappedClassName);
         Object obj = clazz.getConstructor().newInstance();
@@ -156,7 +156,7 @@ public class ClassShadowingTest {
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, 1_000_000L);
+        new Helper(loader, 1_000_000L, 1);
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
 
         Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getStringForNull"));

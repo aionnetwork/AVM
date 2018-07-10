@@ -80,7 +80,7 @@ public class ExceptionWrappingTest {
         this.loader.loadUserClassByOriginalName(runtimeExceptionClassDotName);
         
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(this.loader, 1_000_000L);
+        new Helper(this.loader, 1_000_000L, 1);
     }
 
     @After

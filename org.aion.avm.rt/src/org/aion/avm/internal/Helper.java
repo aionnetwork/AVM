@@ -23,7 +23,7 @@ public class Helper implements IHelper {
     // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
     private static AvmException forceExitState;
 
-    private static void initializeStaticState(ClassLoader loader, long nrgLeft) {
+    private static void initializeStaticState(ClassLoader loader, long nrgLeft, int nextHashCode) {
         // If we set the lateLoader twice, there is a serious problem in our configuration.
         RuntimeAssertionError.assertTrue(null == lateLoader);
         RuntimeAssertionError.assertTrue(null != loader);
@@ -31,7 +31,7 @@ public class Helper implements IHelper {
 
         energyLeft = nrgLeft;
         StackWatcher.reset();
-        nextHashCode = 1;
+        Helper.nextHashCode = nextHashCode;
         
         // Reset our interning state.
         internedStringWrappers = new IdentityHashMap<String, org.aion.avm.shadow.java.lang.String>();
@@ -163,9 +163,9 @@ public class Helper implements IHelper {
     }
 
     // Note that there are a few methods implementing the IHelper interface for calls coming from outside our loader.
-    public Helper(ClassLoader contractLoader, long energyLeft) {
+    public Helper(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
         // We don't use these within the instance state but it is a convenient initialization point.
-        Helper.initializeStaticState(contractLoader, energyLeft);
+        Helper.initializeStaticState(contractLoader, energyLeft, nextHashCode);
         IHelper.currentContractHelper.set(this);
     }
     @Override

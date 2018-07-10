@@ -214,7 +214,7 @@ public class HashCodeTest {
         AvmClassLoader loader2 = new AvmClassLoader(sharedClassLoader, classes);
         
         // First, run some tests in helper1.
-        IHelper helper1 = Helpers.instantiateHelper(loader1, 1_000_000L);
+        IHelper helper1 = Helpers.instantiateHelper(loader1, 1_000_000L, 1);
         Class<?> clazz1 = loader1.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode1 = clazz1.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         Object result = getOneHashCode1.invoke(null);
@@ -224,7 +224,7 @@ public class HashCodeTest {
         Assert.assertEquals(3, helper1.externalGetNextHashCode());
         
         // Now, create the helper2, show that it is independent, and run a test in that.
-        IHelper helper2 = Helpers.instantiateHelper(loader2, 1_000_000L);
+        IHelper helper2 = Helpers.instantiateHelper(loader2, 1_000_000L, 1);
         Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode2 = clazz2.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         Assert.assertEquals(1, helper2.externalGetNextHashCode());

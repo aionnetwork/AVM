@@ -14,7 +14,7 @@ import org.junit.Test;
 public class ReflectionStructureCodecTest {
     @Before
     public void setup() {
-        new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L);
+        new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
     }
 
     @After

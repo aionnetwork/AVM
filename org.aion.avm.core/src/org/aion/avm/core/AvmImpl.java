@@ -369,7 +369,9 @@ public class AvmImpl implements Avm {
 
             // Construct the per-contract class loader and access the per-contract IHelper instance.
             AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
-            IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit());
+            // We start the nextHashCode at 1.
+            int nextHashCode = 1;
+            IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), nextHashCode);
             Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(tx, block, cb, helper));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
@@ -424,7 +426,8 @@ public class AvmImpl implements Avm {
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, classLoader);
         classLoader.addHandler(wrapperGenerator);
-        IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit());
+        // TODO: start nextHashCode at 1 until we deserialize the previous state, here.
+        IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), 1);
         Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(tx, block, cb, helper));
 
         // load class
