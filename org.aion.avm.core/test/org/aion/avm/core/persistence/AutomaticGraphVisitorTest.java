@@ -41,4 +41,12 @@ public class AutomaticGraphVisitorTest {
         this.primaryClass.getMethod("avm_changeAgain", this.secondaryClass, int.class).invoke(null, secondary, 7);
         Assert.assertEquals(7, this.secondaryClass.getDeclaredField("avm_value").getInt(secondary));
     }
+
+    @Test
+    public void createSecondaryEmptyConstructor() throws Exception {
+        Object secondary = this.secondaryClass.getConstructor().newInstance();
+        Assert.assertEquals(0, this.secondaryClass.getDeclaredField("avm_value").getInt(secondary));
+        this.secondaryClass.getMethod("avm_setValue", int.class).invoke(secondary, 1);
+        Assert.assertEquals(1, this.secondaryClass.getDeclaredField("avm_value").getInt(secondary));
+    }
 }

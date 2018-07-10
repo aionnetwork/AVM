@@ -1,6 +1,7 @@
 package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.ClassToolchain;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 
@@ -19,7 +20,48 @@ import org.objectweb.asm.Opcodes;
  * accounting in pretty large ways for what are essentially our own implementation details.
  */
 public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor {
+    private static final String INIT_NAME = "<init>";
+    private static final String ZERO_ARG_DESCRIPTOR = "()V";
+
+    private boolean isInterface;
+    private String superClassName;
+    private boolean didDefineEmptyConstructor;
+
     public AutomaticGraphVisitor() {
         super(Opcodes.ASM6);
+    }
+
+    @Override
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        // Note that we don'tw ant to change interfaces - clearly, they have no constructors.
+        this.isInterface = (0 != (Opcodes.ACC_INTERFACE & access));
+        // We just want to extract the superclass name.
+        this.superClassName = superName;
+        super.visit(version, access, name, signature, superName, interfaces);
+    }
+
+    @Override
+    public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+        // We are just snooping on these to see if the zero-arg constructor is defined.
+        if (INIT_NAME.equals(name) && ZERO_ARG_DESCRIPTOR.equals(descriptor)) {
+            this.didDefineEmptyConstructor = true;
+        }
+        return super.visitMethod(access, name, descriptor, signature, exceptions);
+    }
+
+    @Override
+    public void visitEnd() {
+        // If the user didn't define one of these, we need to generate one, here.
+        if (!this.isInterface && !this.didDefineEmptyConstructor) {
+            // This logic is similar to StubGenerator.
+            MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, INIT_NAME, ZERO_ARG_DESCRIPTOR, null, null);
+            methodVisitor.visitCode();
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superClassName, INIT_NAME, ZERO_ARG_DESCRIPTOR, false);
+            methodVisitor.visitInsn(Opcodes.RETURN);
+            methodVisitor.visitMaxs(1, 1);
+            methodVisitor.visitEnd();
+        }
+        super.visitEnd();
     }
 }
