@@ -168,7 +168,7 @@ public class Helpers {
             helper = (IHelper) helperClass.getConstructor(ClassLoader.class, long.class).newInstance(contractLoader, energyLimit);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
-            RuntimeAssertionError.unexpected(t);
+            throw RuntimeAssertionError.unexpected(t);
         }
         return helper;
     }
@@ -187,7 +187,7 @@ public class Helpers {
             helperClass.getField("blockchainRuntime").set(null, rt);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
-            RuntimeAssertionError.unexpected(t);
+            throw RuntimeAssertionError.unexpected(t);
         }
     }
 

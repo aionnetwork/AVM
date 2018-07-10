@@ -14,7 +14,12 @@ public class RuntimeAssertionError extends FatalAvmError {
         }
     }
 
-    public static void unexpected(Throwable t) {
+    /**
+     * Note that this method internally throws, but also defines that it will return the exception, so the caller can satisfy
+     * the compiler by throwing the response (important for reachability detection).
+     * This idea is useful in cases where all paths throw.
+     */
+    public static RuntimeAssertionError unexpected(Throwable t) {
         throw new RuntimeAssertionError("Unexpected Throwable", t);
     }
 

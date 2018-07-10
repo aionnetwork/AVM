@@ -101,7 +101,7 @@ public class Helper implements IHelper {
             }
         } catch (Throwable err) {
             // Unrecoverable internal error.
-            RuntimeAssertionError.unexpected(err);
+            throw RuntimeAssertionError.unexpected(err);
         }
         if (null != exceptionToRethrow) {
             throw exceptionToRethrow;
@@ -130,7 +130,7 @@ public class Helper implements IHelper {
             result = (Throwable)wrapperClass.getConstructor(Object.class).newInstance(arg);
         } catch (Throwable err) {
             // Unrecoverable internal error.
-            RuntimeAssertionError.unexpected(err);
+            throw RuntimeAssertionError.unexpected(err);
         } 
         return result;
     }

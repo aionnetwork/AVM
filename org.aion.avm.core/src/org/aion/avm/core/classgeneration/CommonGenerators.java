@@ -119,7 +119,7 @@ public class CommonGenerators {
                 superclassName = Class.forName(className).getSuperclass().getName();
             } catch (ClassNotFoundException e) {
                 // We are operating on built-in exception classes so, if these are missing, there is something wrong with the JDK.
-                RuntimeAssertionError.unexpected(e);
+                throw RuntimeAssertionError.unexpected(e);
             }
             
             // Generate the shadow.

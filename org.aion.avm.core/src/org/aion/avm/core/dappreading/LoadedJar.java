@@ -46,7 +46,7 @@ public class LoadedJar {
             result = null;
         } catch (IOException e) {
             // This shouldn't happen from our in-memory representation.
-            RuntimeAssertionError.unexpected(e);
+            throw RuntimeAssertionError.unexpected(e);
         }
         return result;
     }
