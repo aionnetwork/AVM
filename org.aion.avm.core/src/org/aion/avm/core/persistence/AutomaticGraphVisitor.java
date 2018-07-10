@@ -1,6 +1,7 @@
 package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.ClassToolchain;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -38,6 +39,14 @@ public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor 
         // We just want to extract the superclass name.
         this.superClassName = superName;
         super.visit(version, access, name, signature, superName, interfaces);
+    }
+
+    @Override
+    public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+        // Filter out the "final" from all fields.
+        // (note that we may way to skip this, for statics, and exclude them from the serialization system).
+        int newAccess = (~Opcodes.ACC_FINAL) & access; 
+        return super.visitField(newAccess, name, descriptor, signature, value);
     }
 
     @Override

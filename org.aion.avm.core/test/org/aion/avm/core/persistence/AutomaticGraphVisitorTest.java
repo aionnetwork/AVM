@@ -1,5 +1,7 @@
 package org.aion.avm.core.persistence;
 
+import java.lang.reflect.Field;
+
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.junit.Assert;
@@ -24,6 +26,15 @@ public class AutomaticGraphVisitorTest {
     public void createPrimary() throws Exception {
         Object primary = this.primaryClass.getConstructor().newInstance();
         Assert.assertEquals(42, this.primaryClass.getDeclaredField("avm_value").getInt(primary));
+    }
+
+    @Test
+    public void manipulatePrimaryFinalField() throws Exception {
+        Object primary = this.primaryClass.getConstructor().newInstance();
+        Field valueField = this.primaryClass.getDeclaredField("avm_value");
+        Assert.assertEquals(42,valueField.getInt(primary));
+        valueField.setInt(primary, 100);
+        Assert.assertEquals(100,valueField.getInt(primary));
     }
 
     @Test
