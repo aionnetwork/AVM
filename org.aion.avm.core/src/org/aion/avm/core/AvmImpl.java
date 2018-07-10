@@ -14,6 +14,7 @@ import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
@@ -227,6 +228,7 @@ public class AvmImpl implements Avm {
                     .addNextVisitor(new ClassShadowing(HELPER_CLASS))
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, parentClassResolver, generatedClassesSink))
+                    .addNextVisitor(new AutomaticGraphVisitor())
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
