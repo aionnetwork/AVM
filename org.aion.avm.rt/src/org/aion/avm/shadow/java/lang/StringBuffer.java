@@ -13,7 +13,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public StringBuffer(String str) {
-        this.v = new java.lang.StringBuffer(str.getUnderlying());
+        this.v = new java.lang.StringBuffer(str.getV());
     }
 
     public StringBuffer(CharSequence seq) {
@@ -93,7 +93,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public synchronized StringBuffer avm_append(CharSequence s, int start, int end){
-        this.v = this.v.append(s.avm_toString().getUnderlying(), start, end);
+        this.v = this.v.append(s.avm_toString().getV(), start, end);
         return this;
     }
 
@@ -153,7 +153,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public synchronized StringBuffer avm_replace(int start, int end, String str) {
-        this.v = this.v.replace(start, end, str.getUnderlying());
+        this.v = this.v.replace(start, end, str.getV());
         return this;
     }
 
@@ -183,7 +183,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public synchronized StringBuffer avm_insert(int offset, String str) {
-        this.v.insert(offset, str.getUnderlying());
+        this.v.insert(offset, str.getV());
         return this;
     }
 
@@ -233,19 +233,19 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public int avm_indexOf(String str) {
-        return this.v.indexOf(str.getUnderlying());
+        return this.v.indexOf(str.getV());
     }
 
     public synchronized int avm_indexOf(String str, int fromIndex) {
-        return this.v.indexOf(str.getUnderlying(), fromIndex);
+        return this.v.indexOf(str.getV(), fromIndex);
     }
 
     public int avm_lastIndexOf(String str) {
-        return this.v.lastIndexOf(str.getUnderlying());
+        return this.v.lastIndexOf(str.getV());
     }
 
     public synchronized int avm_lastIndexOf(String str, int fromIndex) {
-        return this.v.lastIndexOf(str.getUnderlying(), fromIndex);
+        return this.v.lastIndexOf(str.getV(), fromIndex);
     }
 
     public synchronized StringBuffer avm_reverse() {
@@ -268,7 +268,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
 
 
     //========================================================
-    // Methods below are deprecated, we don't shadow them
+    // Methods below are deprecated
     //========================================================
 
 

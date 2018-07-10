@@ -4,11 +4,11 @@ public abstract class Enum<E extends Enum<E>> extends Object {
 
     private final String name;
 
+    private final int ordinal;
+
     public final String avm_name() {
         return name;
     }
-
-    private final int ordinal;
 
     public final int avm_ordinal() {
         return ordinal;
@@ -24,7 +24,7 @@ public abstract class Enum<E extends Enum<E>> extends Object {
     }
 
     public final boolean avm_equals(Object other) {
-        return this==other;
+        return this == other;
     }
 
     public final int avm_hashCode() {
@@ -46,8 +46,6 @@ public abstract class Enum<E extends Enum<E>> extends Object {
         throw new IllegalArgumentException(
                 "No enum constant " + enumType.avm_getName() + "." + name);
     }
-
-
 
     @SuppressWarnings("deprecation")
     protected final void finalize() { }

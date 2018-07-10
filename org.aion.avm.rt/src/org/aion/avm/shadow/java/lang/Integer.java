@@ -43,29 +43,29 @@ public class Integer extends Number implements Comparable<Integer> {
     }
 
     public static int avm_parseInt(String s, int radix) throws NumberFormatException {
-        return java.lang.Integer.parseInt(s.getUnderlying(), radix);
+        return java.lang.Integer.parseInt(s.getV(), radix);
     }
 
     public static int avm_parseInt(String s) throws NumberFormatException {
-        return java.lang.Integer.parseInt(s.getUnderlying());
+        return java.lang.Integer.parseInt(s.getV());
     }
 
     public static int avm_parseInt(CharSequence s, int beginIndex, int endIndex, int radix)
             throws NumberFormatException {
-        return java.lang.Integer.parseInt(s.avm_toString().getUnderlying(), beginIndex, endIndex, radix);
+        return java.lang.Integer.parseInt(s.avm_toString().getV(), beginIndex, endIndex, radix);
     }
 
     public static int avm_parseUnsignedInt(String s, int radix){
-        return java.lang.Integer.parseUnsignedInt(s.getUnderlying(), radix);
+        return java.lang.Integer.parseUnsignedInt(s.getV(), radix);
     }
 
     public static int avm_parseUnsignedInt(String s){
-        return java.lang.Integer.parseUnsignedInt(s.getUnderlying());
+        return java.lang.Integer.parseUnsignedInt(s.getV());
     }
 
     public static int avm_parseUnsignedInt(CharSequence s, int beginIndex, int endIndex, int radix)
             throws NumberFormatException {
-        return java.lang.Integer.parseUnsignedInt(s.avm_toString().getUnderlying(), beginIndex, endIndex, radix);
+        return java.lang.Integer.parseUnsignedInt(s.avm_toString().getV(), beginIndex, endIndex, radix);
     }
 
     public static Integer avm_valueOf(String s, int radix) throws NumberFormatException {
@@ -80,57 +80,55 @@ public class Integer extends Number implements Comparable<Integer> {
         return new Integer(i);
     }
 
-    private final int value;
-
-    public Integer(int value) {
-        this.value = value;
+    public Integer(int v) {
+        this.v = v;
     }
 
     public Integer(String s) throws NumberFormatException {
-        this.value = avm_parseInt(s, 10);
+        this.v = avm_parseInt(s, 10);
     }
 
     public byte avm_byteValue() {
-        return (byte)value;
+        return (byte) v;
     }
 
     public short avm_shortValue() {
-        return (short)value;
+        return (short) v;
     }
 
     public int avm_intValue() {
-        return value;
+        return v;
     }
 
     public long avm_longValue() {
-        return (long)value;
+        return (long) v;
     }
 
     public float avm_floatValue() {
-        return (float)value;
+        return (float) v;
     }
 
     public double avm_doubleValue() {
-        return (double)value;
+        return (double) v;
     }
 
     public String avm_toString() {
-        return avm_toString(value);
+        return avm_toString(v);
     }
 
     public boolean avm_equals(IObject obj) {
         if (obj instanceof Integer) {
-            return value == ((Integer)obj).avm_intValue();
+            return v == ((Integer)obj).avm_intValue();
         }
         return false;
     }
 
     public static Integer avm_decode(String nm) throws NumberFormatException {
-        return new Integer(java.lang.Integer.decode(nm.getUnderlying()).intValue());
+        return new Integer(java.lang.Integer.decode(nm.getV()).intValue());
     }
 
     public int avm_compareTo(Integer anotherInteger) {
-        return avm_compare(this.value, anotherInteger.value);
+        return avm_compare(this.v, anotherInteger.v);
     }
 
     public static int avm_compare(int x, int y) {
@@ -203,14 +201,16 @@ public class Integer extends Number implements Comparable<Integer> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
+    private final int v;
+
     @Override
     public boolean equals(java.lang.Object obj) {
-        return obj instanceof Integer && this.value == ((Integer) obj).value;
+        return obj instanceof Integer && this.v == ((Integer) obj).v;
     }
 
     @Override
     public java.lang.String toString() {
-        return java.lang.Integer.toString(this.value);
+        return java.lang.Integer.toString(this.v);
     }
 
     //========================================================

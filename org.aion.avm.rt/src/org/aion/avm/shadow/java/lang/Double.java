@@ -3,10 +3,9 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IObject;
 
 public class Double extends Number implements Comparable<Double>{
-    private double value;
 
     public Double(double d){
-        value = d;
+        this.v = d;
     }
 
     public static final int avm_BYTES = java.lang.Double.BYTES;
@@ -52,7 +51,7 @@ public class Double extends Number implements Comparable<Double>{
 
     public static double avm_parseDouble(String a)
     {
-        return java.lang.Double.parseDouble(a.getUnderlying());
+        return java.lang.Double.parseDouble(a.getV());
     }
 
     public static boolean avm_isNaN(double v)
@@ -69,44 +68,44 @@ public class Double extends Number implements Comparable<Double>{
     }
 
     public boolean avm_isNaN() {
-        return avm_isNaN(value);
+        return avm_isNaN(v);
     }
 
     public boolean avm_isInfinite() {
-        return avm_isInfinite(value);
+        return avm_isInfinite(v);
     }
 
     public String avm_toString()
     {
-        return avm_toString(value);
+        return avm_toString(v);
     }
 
     public byte avm_byteValue() {
-        return (byte)value;
+        return (byte) v;
     }
 
     public short avm_shortValue() {
-        return (short)value;
+        return (short) v;
     }
 
     public int avm_intValue() {
-        return (int)value;
+        return (int) v;
     }
 
     public long avm_longValue() {
-        return (long)value;
+        return (long) v;
     }
 
     public float avm_floatValue() {
-        return (float)value;
+        return (float) v;
     }
 
     public double avm_doubleValue() {
-        return value;
+        return v;
     }
 
     public int avm_hashCode() {
-        return Double.avm_hashCode(value);
+        return Double.avm_hashCode(v);
     }
 
     public static int avm_hashCode(double value) {
@@ -115,8 +114,8 @@ public class Double extends Number implements Comparable<Double>{
 
     public boolean equals(IObject obj) {
         return (obj instanceof Double)
-                && (avm_doubleToLongBits(((Double)obj).value) ==
-                avm_doubleToLongBits(value));
+                && (avm_doubleToLongBits(((Double)obj).v) ==
+                avm_doubleToLongBits(v));
     }
 
     public static long avm_doubleToLongBits(double value) {
@@ -132,7 +131,7 @@ public class Double extends Number implements Comparable<Double>{
     }
 
     public int avm_compareTo(Double anotherDouble) {
-        return avm_compare(value, anotherDouble.value);
+        return avm_compare(v, anotherDouble.v);
     }
 
     public static int avm_compare(double d1, double d2){
@@ -150,6 +149,12 @@ public class Double extends Number implements Comparable<Double>{
     public static double avm_min(double a, double b) {
         return Math.avm_min(a, b);
     }
+
+    //========================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    private double v;
 
     //========================================================
     // Methods below are excluded from shadowing

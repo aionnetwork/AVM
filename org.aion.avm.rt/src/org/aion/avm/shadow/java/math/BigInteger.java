@@ -25,7 +25,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
 
     public BigInteger(String val, int radix) {
-        v = new java.math.BigInteger(val.getUnderlying(), radix);
+        v = new java.math.BigInteger(val.getV(), radix);
     }
 
     public BigInteger(String val) {

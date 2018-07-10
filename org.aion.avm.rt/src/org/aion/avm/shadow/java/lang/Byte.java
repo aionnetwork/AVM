@@ -19,7 +19,7 @@ public final class Byte extends Object implements Comparable<Byte> {
     }
 
     public static byte avm_parseByte(String s, int radix){
-        return java.lang.Byte.parseByte(s.getUnderlying(), radix);
+        return java.lang.Byte.parseByte(s.getV(), radix);
     }
 
     public static byte avm_parseByte(String s) throws NumberFormatException {
@@ -36,50 +36,48 @@ public final class Byte extends Object implements Comparable<Byte> {
     }
 
     public static Byte avm_decode(String nm) throws NumberFormatException {
-        return new Byte(java.lang.Byte.decode(nm.getUnderlying()).byteValue());
+        return new Byte(java.lang.Byte.decode(nm.getV()).byteValue());
     }
 
-    private final byte value;
-
-    public Byte(byte value) {
-        this.value = value;
+    public Byte(byte v) {
+        this.v = v;
     }
 
     public Byte(String s) throws NumberFormatException {
-        this.value = avm_parseByte(s, 10);
+        this.v = avm_parseByte(s, 10);
     }
 
     public byte avm_byteValue() {
-        return value;
+        return v;
     }
 
     public short avm_shortValue() {
-        return (short)value;
+        return (short) v;
     }
 
     public int avm_intValue() {
-        return (int)value;
+        return (int) v;
     }
 
     public long avm_longValue() {
-        return (long)value;
+        return (long) v;
     }
 
     public float avm_floatValue() {
-        return (float)value;
+        return (float) v;
     }
 
     public double avm_doubleValue() {
-        return (double)value;
+        return (double) v;
     }
 
     public String avm_toString() {
-        return Integer.avm_toString((int)value);
+        return Integer.avm_toString((int) v);
     }
 
     @Override
     public int avm_hashCode() {
-        return Byte.avm_hashCode(value);
+        return Byte.avm_hashCode(v);
     }
 
     public static int avm_hashCode(byte value) {
@@ -88,13 +86,13 @@ public final class Byte extends Object implements Comparable<Byte> {
 
     public boolean avm_equals(IObject obj) {
         if (obj instanceof Byte) {
-            return value == ((Byte)obj).avm_byteValue();
+            return v == ((Byte)obj).avm_byteValue();
         }
         return false;
     }
 
     public int avm_compareTo(Byte anotherByte) {
-        return avm_compare(this.value, anotherByte.value);
+        return avm_compare(this.v, anotherByte.v);
     }
 
     public static int avm_compare(byte x, byte y) {
@@ -116,6 +114,12 @@ public final class Byte extends Object implements Comparable<Byte> {
     public static final int avm_SIZE = java.lang.Byte.SIZE;
 
     public static final int avm_BYTES = java.lang.Byte.BYTES;
+
+    //=======================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    private final byte v;
 
     //========================================================
     // Methods below are excluded from shadowing

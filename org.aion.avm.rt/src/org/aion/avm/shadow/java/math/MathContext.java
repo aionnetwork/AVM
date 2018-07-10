@@ -35,7 +35,7 @@ public final class MathContext extends Object {
     }
 
     public MathContext(String val) {
-        v = new java.math.MathContext(val.getUnderlying());
+        v = new java.math.MathContext(val.getV());
         precision = v.getPrecision();
         roundingMode = RoundingMode.avm_valueOf(new String("avm_" + v.getRoundingMode().name()));
         return;

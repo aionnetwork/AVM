@@ -6,8 +6,7 @@ public final class Math extends Object {
 
     public static final double avm_PI = java.lang.Math.PI;
 
-    private Math() {
-    }
+    private Math() {}
 
     public static double avm_IEEEremainder(double a, double b) {
         return java.lang.Math.IEEEremainder(a, b);
@@ -249,11 +248,6 @@ public final class Math extends Object {
         return java.lang.Math.pow(a, b);
     }
 
-    public static double avm_random() {
-        // TODO: how to deal with random number generator
-        return 0;
-    }
-
     public static double avm_rint(double a) {
         return java.lang.Math.rint(a);
     }
@@ -329,4 +323,10 @@ public final class Math extends Object {
     public static float avm_ulp(float a) {
         return java.lang.Math.ulp(a);
     }
+
+    //========================================================
+    // Methods below are excluded from shadowing
+    //========================================================
+
+    //public static double random()
 }

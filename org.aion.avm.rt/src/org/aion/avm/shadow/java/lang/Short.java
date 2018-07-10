@@ -8,7 +8,6 @@ public class Short extends Number {
 
     public static final short avm_MAX_VALUE = java.lang.Short.MAX_VALUE;
 
-    // TODO
     public static final Class<Short> avm_TYPE = new Class(java.lang.Short.TYPE);
 
     public static String avm_toString(short s) {
@@ -16,7 +15,7 @@ public class Short extends Number {
     }
 
     public static short avm_parseShort(String s, int radix) throws NumberFormatException {
-        return java.lang.Short.parseShort(s.getUnderlying(), radix);
+        return java.lang.Short.parseShort(s.getV(), radix);
     }
 
     public static short avm_parseShort(String s) throws NumberFormatException {
@@ -36,49 +35,47 @@ public class Short extends Number {
     }
 
     public static Short avm_decode(String nm) throws NumberFormatException {
-        return new Short(java.lang.Short.decode(nm.getUnderlying()).shortValue());
+        return new Short(java.lang.Short.decode(nm.getV()).shortValue());
     }
 
-    private final short value;
-
-    public Short(short value) {
-        this.value = value;
+    public Short(short v) {
+        this.v = v;
     }
 
     public Short(String s) throws NumberFormatException {
-        this.value = avm_parseShort(s, 10);
+        this.v = avm_parseShort(s, 10);
     }
 
     public byte avm_byteValue() {
-        return (byte)value;
+        return (byte) v;
     }
 
     public short avm_shortValue() {
-        return value;
+        return v;
     }
 
     public int avm_intValue() {
-        return (int)value;
+        return (int) v;
     }
 
     public long avm_longValue() {
-        return (long)value;
+        return (long) v;
     }
 
     public float avm_floatValue() {
-        return (float)value;
+        return (float) v;
     }
 
     public double avm_doubleValue() {
-        return (double)value;
+        return (double) v;
     }
 
     public String avm_toString() {
-        return Integer.avm_toString((int)value);
+        return Integer.avm_toString((int) v);
     }
 
     public int avm_hashCode() {
-        return Short.avm_hashCode(value);
+        return Short.avm_hashCode(v);
     }
 
     public static int avm_hashCode(short value) {
@@ -87,13 +84,13 @@ public class Short extends Number {
 
     public boolean avm_equals(IObject obj) {
         if (obj instanceof Short) {
-            return value == ((Short)obj).avm_shortValue();
+            return v == ((Short)obj).avm_shortValue();
         }
         return false;
     }
 
     public int avm_compareTo(Short anotherShort) {
-        return avm_compare(this.value, anotherShort.value);
+        return avm_compare(this.v, anotherShort.v);
     }
 
     public static int avm_compare(short x, short y) {
@@ -119,6 +116,12 @@ public class Short extends Number {
     public static long avm_toUnsignedLong(short x) {
         return ((long) x) & 0xffffL;
     }
+
+    //=======================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    private final short v;
 
     //========================================================
     // Methods below are excluded from shadowing

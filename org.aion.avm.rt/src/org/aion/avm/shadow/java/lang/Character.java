@@ -75,8 +75,6 @@ public class Character extends Object {
 
     public static final byte avm_FINAL_QUOTE_PUNCTUATION = 30;
 
-    static final int avm_ERROR = 0xFFFFFFFF;
-
     public static final byte avm_DIRECTIONALITY_UNDEFINED = -1;
 
     public static final byte avm_DIRECTIONALITY_LEFT_TO_RIGHT = 0;
@@ -143,10 +141,8 @@ public class Character extends Object {
 
     public static final int avm_MAX_CODE_POINT = 0X10FFFF;
 
-    private final char value;
-
     public Character(char c) {
-        this.value = c;
+        this.v = c;
     }
 
     public static Character avm_valueOf(char c) {
@@ -154,12 +150,12 @@ public class Character extends Object {
     }
 
     public char avm_charValue() {
-        return value;
+        return v;
     }
 
     @Override
     public int avm_hashCode() {
-        return Character.avm_hashCode(value);
+        return Character.avm_hashCode(v);
     }
 
     public static int avm_hashCode(char value) {
@@ -168,13 +164,13 @@ public class Character extends Object {
 
     public boolean equals(IObject obj) {
         if (obj instanceof Character) {
-            return value == ((Character)obj).avm_charValue();
+            return v == ((Character)obj).avm_charValue();
         }
         return false;
     }
 
     public String avm_toString() {
-        char buf[] = {value};
+        char buf[] = {v};
         CharArray a = new CharArray(buf);
         return String.avm_valueOf(a);
     }
@@ -220,7 +216,7 @@ public class Character extends Object {
     }
 
     public static int avm_codePointAt(CharSequence seq, int index) {
-        return java.lang.Character.codePointAt(seq.avm_toString().getUnderlying(), index);
+        return java.lang.Character.codePointAt(seq.avm_toString().getV(), index);
     }
 
     public static int avm_codePointAt(CharArray c, int index) {
@@ -232,7 +228,7 @@ public class Character extends Object {
     }
 
     public static int avm_codePointBefore(CharSequence seq, int index) {
-        return java.lang.Character.codePointAt(seq.avm_toString().getUnderlying(), index);
+        return java.lang.Character.codePointAt(seq.avm_toString().getV(), index);
     }
 
     public static int avm_codePointBefore(CharArray c, int index) {
@@ -260,7 +256,7 @@ public class Character extends Object {
     }
 
     public static int avm_codePointCount(CharSequence seq, int beginIndex, int endIndex){
-        return java.lang.Character.codePointCount(seq.avm_toString().getUnderlying(), beginIndex, endIndex);
+        return java.lang.Character.codePointCount(seq.avm_toString().getV(), beginIndex, endIndex);
     }
 
     public static int avm_codePointCount(CharArray a, int offset, int count) {
@@ -268,7 +264,7 @@ public class Character extends Object {
     }
 
     public static int avm_offsetByCodePoints(CharSequence seq, int index, int codePointOffset) {
-        return java.lang.Character.offsetByCodePoints(seq.avm_toString().getUnderlying(), index, codePointOffset);
+        return java.lang.Character.offsetByCodePoints(seq.avm_toString().getV(), index, codePointOffset);
     }
 
     public static int avm_offsetByCodePoints(CharArray a, int start, int count,
@@ -486,7 +482,7 @@ public class Character extends Object {
     }
 
     public int avm_compareTo(Character anotherCharacter) {
-        return avm_compare(this.value, anotherCharacter.value);
+        return avm_compare(this.v, anotherCharacter.v);
     }
 
     public static int avm_compare(char x, char y) {
@@ -506,21 +502,23 @@ public class Character extends Object {
     }
 
     public static int avm_codePointOf(String name) {
-        return java.lang.Character.codePointOf(name.getUnderlying());
+        return java.lang.Character.codePointOf(name.getV());
     }
 
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
 
+    private final char v;
+
     @Override
     public boolean equals(java.lang.Object obj) {
-        return obj instanceof Character && this.value == ((Character) obj).value;
+        return obj instanceof Character && this.v == ((Character) obj).v;
     }
 
     @Override
     public java.lang.String toString() {
-        return java.lang.Character.toString(this.value);
+        return java.lang.Character.toString(this.v);
     }
 
 

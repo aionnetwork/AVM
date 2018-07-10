@@ -26,10 +26,8 @@ public class Float extends Number implements Comparable<Float> {
 
     public static final Class<Float> avm_TYPE = new Class(java.lang.Float.TYPE);
 
-    private final float value;
-
     public Float(float f){
-        this.value = f;
+        this.v = f;
     }
 
     public static String avm_toString(float f){
@@ -49,7 +47,7 @@ public class Float extends Number implements Comparable<Float> {
     }
 
     public static float avm_parseFloat(String s) throws NumberFormatException {
-        return java.lang.Float.parseFloat(s.getUnderlying());
+        return java.lang.Float.parseFloat(s.getV());
     }
 
     public static boolean avm_isNaN(float v) {
@@ -65,43 +63,43 @@ public class Float extends Number implements Comparable<Float> {
     }
 
     public boolean avm_isNaN() {
-        return avm_isNaN(value);
+        return avm_isNaN(v);
     }
 
     public boolean avm_isInfinite() {
-        return avm_isInfinite(value);
+        return avm_isInfinite(v);
     }
 
     public String avm_toString() {
-        return Float.avm_toString(value);
+        return Float.avm_toString(v);
     }
 
     public byte avm_byteValue() {
-        return (byte)value;
+        return (byte) v;
     }
 
     public short avm_shortValue() {
-        return (short)value;
+        return (short) v;
     }
 
     public int avm_intValue() {
-        return (int)value;
+        return (int) v;
     }
 
     public long avm_longValue() {
-        return (long)value;
+        return (long) v;
     }
 
     public float avm_floatValue() {
-        return value;
+        return v;
     }
 
     public double avm_doubleValue() {
-        return (double)value;
+        return (double) v;
     }
 
     public int avm_hashCode() {
-        return Float.avm_hashCode(value);
+        return Float.avm_hashCode(v);
     }
 
     public static int avm_hashCode(float value) {
@@ -110,7 +108,7 @@ public class Float extends Number implements Comparable<Float> {
 
     public boolean avm_equals(IObject obj) {
         return (obj instanceof Float)
-                && (avm_floatToIntBits(((Float)obj).value) == avm_floatToIntBits(value));
+                && (avm_floatToIntBits(((Float)obj).v) == avm_floatToIntBits(v));
     }
 
     public static int avm_floatToIntBits(float value) {
@@ -126,7 +124,7 @@ public class Float extends Number implements Comparable<Float> {
     }
 
     public int avm_compareTo(Float anotherFloat) {
-        return Float.avm_compare(value, anotherFloat.value);
+        return Float.avm_compare(v, anotherFloat.v);
     }
 
     public static int avm_compare(float f1, float f2) {
@@ -144,6 +142,13 @@ public class Float extends Number implements Comparable<Float> {
     public static float avm_min(float a, float b) {
         return Math.avm_min(a, b);
     }
+
+
+    //========================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    private float v;
 
     //========================================================
     // Methods below are excluded from shadowing

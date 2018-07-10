@@ -32,11 +32,11 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal(String val){
-        v = new java.math.BigDecimal(val.getUnderlying());
+        v = new java.math.BigDecimal(val.getV());
     }
 
     public BigDecimal(String val, MathContext mc){
-        v = new java.math.BigDecimal(val.getUnderlying(), mc.getV());
+        v = new java.math.BigDecimal(val.getV(), mc.getV());
     }
 
     public BigDecimal(double val){
@@ -332,7 +332,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
 
 
     //========================================================
-    // Methods below are deprecated, we don't shadow them
+    // Methods below are deprecated
     //========================================================
 
     //public BigDecimal divide(BigDecimal divisor, int scale, int roundingMode)

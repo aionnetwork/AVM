@@ -13,14 +13,14 @@ public class String extends Object implements Comparable<String>, CharSequence {
 
     private Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-    private java.lang.String v;
+
 
     public String() {
         this.v = new java.lang.String();
     }
 
     public String(String original) {
-        this.v = new java.lang.String(original.getUnderlying());
+        this.v = new java.lang.String(original.getV());
     }
 
     public String(CharArray value) {
@@ -36,11 +36,11 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public String(ByteArray bytes, int offset, int length, String charsetName) throws UnsupportedEncodingException {
-        this.v = new java.lang.String(bytes.getUnderlying(), offset, length, charsetName.getUnderlying());
+        this.v = new java.lang.String(bytes.getUnderlying(), offset, length, charsetName.getV());
     }
 
     public String(ByteArray bytes, String charsetName) throws UnsupportedEncodingException {
-        this.v = new java.lang.String(bytes.getUnderlying(), charsetName.getUnderlying());
+        this.v = new java.lang.String(bytes.getUnderlying(), charsetName.getV());
     }
 
     public String(ByteArray bytes, int offset, int length){
@@ -92,14 +92,13 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public ByteArray avm_getBytes(String charsetName) throws UnsupportedEncodingException {
-        return new ByteArray(this.v.getBytes(charsetName.getUnderlying()));
+        return new ByteArray(this.v.getBytes(charsetName.getV()));
     }
 
     public ByteArray avm_getBytes(){
         return new ByteArray(this.v.getBytes());
     }
 
-    //TODO
     public boolean avm_equals(IObject anObject) {
         return anObject instanceof String && this.v.equals(((String) anObject).v);
     }
@@ -108,40 +107,40 @@ public class String extends Object implements Comparable<String>, CharSequence {
         return this.v.contentEquals(sb.getUnderlying());
     }
 
-    public boolean contentEquals(CharSequence cs){
-        return this.v.contentEquals(cs.avm_toString().getUnderlying());
+    public boolean avm_contentEquals(CharSequence cs){
+        return this.v.contentEquals(cs.avm_toString().getV());
     }
 
     public boolean avm_equalsIgnoreCase(String anotherString) {
-        return this.v.equalsIgnoreCase(anotherString.getUnderlying());
+        return this.v.equalsIgnoreCase(anotherString.getV());
     }
 
     public int avm_compareTo(String anotherString) {
-        return this.v.compareTo(anotherString.getUnderlying());
+        return this.v.compareTo(anotherString.getV());
     }
 
     public int avm_compareToIgnoreCase(String str){
-        return this.v.compareToIgnoreCase(str.getUnderlying());
+        return this.v.compareToIgnoreCase(str.getV());
     }
 
     public boolean avm_regionMatches(int toffset, String other, int ooffset, int len) {
-        return this.v.regionMatches(toffset, other.getUnderlying(), ooffset, len);
+        return this.v.regionMatches(toffset, other.getV(), ooffset, len);
     }
 
     public boolean avm_regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len) {
-        return this.v.regionMatches(ignoreCase, toffset, other.getUnderlying(), ooffset, len);
+        return this.v.regionMatches(ignoreCase, toffset, other.getV(), ooffset, len);
     }
 
     public boolean avm_startsWith(String prefix, int toffset) {
-        return this.v.startsWith(prefix.getUnderlying(), toffset);
+        return this.v.startsWith(prefix.getV(), toffset);
     }
 
     public boolean avm_startsWith(String prefix) {
-        return this.v.startsWith(prefix.getUnderlying());
+        return this.v.startsWith(prefix.getV());
     }
 
     public boolean avm_endsWith(String prefix) {
-        return this.v.endsWith(prefix.getUnderlying());
+        return this.v.endsWith(prefix.getV());
     }
 
     @Override
@@ -190,7 +189,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public String avm_concat(String str){
-        return new String(this.v.concat(str.getUnderlying()));
+        return new String(this.v.concat(str.getV()));
     }
 
     public String avm_replace(char oldChar, char newChar) {
@@ -206,16 +205,16 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public String avm_replaceFirst(String regex, String replacement){
-        return new String(this.v.replaceFirst(regex.getUnderlying(), replacement.getUnderlying()));
+        return new String(this.v.replaceFirst(regex.getV(), replacement.getV()));
     }
 
     public String avm_replaceAll(String regex, String replacement) {
-        return new String(this.v.replaceAll(regex.getUnderlying(), replacement.getUnderlying()));
+        return new String(this.v.replaceAll(regex.getV(), replacement.getV()));
     }
 
     public String avm_replace(CharSequence target, CharSequence replacement){
-        return new String(this.v.replace(target.avm_toString().getUnderlying(),
-                replacement.avm_toString().getUnderlying()));
+        return new String(this.v.replace(target.avm_toString().getV(),
+                replacement.avm_toString().getV()));
     }
 
     //public String[] split(String regex, int limit) {}
@@ -243,7 +242,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
 //    public static String avm_format(String format, Object... args) {
-//        return new String(java.lang.String.format(format.getUnderlying(), args));
+//        return new String(java.lang.String.format(format.getV(), args));
 //    }
 
     //TODO: IOBJECT?
@@ -291,13 +290,11 @@ public class String extends Object implements Comparable<String>, CharSequence {
         return new String(java.lang.String.valueOf(b));
     }
 
-    public String avm_intern(){
-        return new String(this.v.intern());
-    }
-
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
+
+    private java.lang.String v;
 
     // @Internal
     public String(java.lang.String underlying) {
@@ -322,7 +319,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     //internal
-    public java.lang.String getUnderlying(){
+    public java.lang.String getV(){
         return v;
     }
 
@@ -362,5 +359,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     //public IntStream codePoints()
 
     //public static String format(Locale l, String format, Object... args) {
+
+    //public String avm_intern()
 
 }

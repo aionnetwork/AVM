@@ -39,29 +39,29 @@ public class Long extends Number implements Comparable<Long> {
     }
 
     public static long avm_parseLong(String s, int radix) throws NumberFormatException{
-        return java.lang.Long.parseLong(s.getUnderlying(), radix);
+        return java.lang.Long.parseLong(s.getV(), radix);
     }
 
     public static long avm_parseLong(String s) throws NumberFormatException {
-        return java.lang.Long.parseLong(s.getUnderlying(), 10);
+        return java.lang.Long.parseLong(s.getV(), 10);
     }
 
     public static long avm_parseLong(CharSequence s, int beginIndex, int endIndex, int radix)
             throws NumberFormatException {
-        return java.lang.Long.parseLong(s.avm_toString().getUnderlying(), beginIndex, endIndex, radix);
+        return java.lang.Long.parseLong(s.avm_toString().getV(), beginIndex, endIndex, radix);
     }
 
     public static long avm_parseUnsignedLong(String s, int radix) throws NumberFormatException {
-        return java.lang.Long.parseUnsignedLong(s.getUnderlying(), radix);
+        return java.lang.Long.parseUnsignedLong(s.getV(), radix);
     }
 
     public static long avm_parseUnsignedLong(String s) throws NumberFormatException {
-        return java.lang.Long.parseUnsignedLong(s.getUnderlying(), 10);
+        return java.lang.Long.parseUnsignedLong(s.getV(), 10);
     }
 
     public static long avm_parseUnsignedLong(CharSequence s, int beginIndex, int endIndex, int radix)
             throws NumberFormatException {
-        return java.lang.Long.parseUnsignedLong(s.avm_toString().getUnderlying(), beginIndex, endIndex, radix);
+        return java.lang.Long.parseUnsignedLong(s.avm_toString().getV(), beginIndex, endIndex, radix);
     }
 
     public static Long avm_valueOf(String s, int radix) throws NumberFormatException {
@@ -77,49 +77,49 @@ public class Long extends Number implements Comparable<Long> {
     }
 
     public static Long avm_decode(String nm) throws NumberFormatException {
-        return new Long(java.lang.Long.decode(nm.getUnderlying()).longValue());
+        return new Long(java.lang.Long.decode(nm.getV()).longValue());
     }
 
-    private final long value;
 
-    public Long(long value) {
-        this.value = value;
+
+    public Long(long v) {
+        this.v = v;
     }
 
     public Long(String s) throws NumberFormatException {
-        this.value = avm_parseLong(s, 10);
+        this.v = avm_parseLong(s, 10);
     }
 
     public byte avm_byteValue() {
-        return (byte)value;
+        return (byte) v;
     }
 
     public short avm_shortValue() {
-        return (short)value;
+        return (short) v;
     }
 
     public int avm_intValue() {
-        return (int)value;
+        return (int) v;
     }
 
     public long avm_longValue() {
-        return value;
+        return v;
     }
 
     public float avm_floatValue() {
-        return (float)value;
+        return (float) v;
     }
 
     public double avm_doubleValue() {
-        return (double)value;
+        return (double) v;
     }
 
     public String avm_toString() {
-        return avm_toString(value);
+        return avm_toString(v);
     }
 
     public int avm_hashCode() {
-        return avm_hashCode(value);
+        return avm_hashCode(v);
     }
 
     public static int avm_hashCode(long value) {
@@ -128,13 +128,13 @@ public class Long extends Number implements Comparable<Long> {
 
     public boolean avm_equals(IObject obj) {
         if (obj instanceof Long) {
-            return value == ((Long)obj).avm_longValue();
+            return v == ((Long)obj).avm_longValue();
         }
         return false;
     }
 
     public int avm_compareTo(Long anotherLong) {
-        return avm_compare(this.value, anotherLong.value);
+        return avm_compare(this.v, anotherLong.v);
     }
 
     public static int avm_compare(long x, long y) {
@@ -208,6 +208,12 @@ public class Long extends Number implements Comparable<Long> {
     public static long avm_min(long a, long b) {
         return Math.avm_min(a, b);
     }
+
+    //========================================================
+    // Methods below are used by runtime and test code only!
+    //========================================================
+
+    private final long v;
 
     //========================================================
     // Methods below are excluded from shadowing

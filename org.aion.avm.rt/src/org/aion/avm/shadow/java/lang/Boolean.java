@@ -10,10 +10,8 @@ public class Boolean extends Object implements Comparable<Boolean> {
 
     public static final Class<Boolean> avm_TYPE = new Class(java.lang.Boolean.TYPE);
 
-    private final boolean value;
-
     public Boolean(boolean b) {
-        this.value = b;
+        this.v = b;
     }
 
     public Boolean(String s) {
@@ -21,11 +19,11 @@ public class Boolean extends Object implements Comparable<Boolean> {
     }
 
     public static boolean avm_parseBoolean(String s){
-        return (s != null) && java.lang.Boolean.parseBoolean(s.getUnderlying());
+        return (s != null) && java.lang.Boolean.parseBoolean(s.getV());
     }
 
     public boolean avm_booleanValue() {
-        return value;
+        return v;
     }
 
     public static Boolean avm_valueOf(boolean b) {
@@ -41,12 +39,12 @@ public class Boolean extends Object implements Comparable<Boolean> {
     }
 
     public String avm_toString() {
-        return value ? (new String("true")) : (new String("false"));
+        return v ? (new String("true")) : (new String("false"));
     }
 
     @Override
     public int avm_hashCode() {
-        return Boolean.avm_hashCode(value);
+        return Boolean.avm_hashCode(v);
     }
 
     public static int avm_hashCode(boolean value) {
@@ -55,13 +53,13 @@ public class Boolean extends Object implements Comparable<Boolean> {
 
     public boolean avm_equals(IObject obj) {
         if (obj instanceof Boolean) {
-            return value == ((Boolean)obj).avm_booleanValue();
+            return v == ((Boolean)obj).avm_booleanValue();
         }
         return false;
     }
 
     public int avm_compareTo(Boolean b) {
-        return avm_compare(this.value, b.value);
+        return avm_compare(this.v, b.v);
     }
 
     public static int avm_compare(boolean x, boolean y) {
@@ -84,14 +82,16 @@ public class Boolean extends Object implements Comparable<Boolean> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
+    private final boolean v;
+
     @Override
     public boolean equals(java.lang.Object obj) {
-        return obj instanceof Boolean && this.value == ((Boolean) obj).value;
+        return obj instanceof Boolean && this.v == ((Boolean) obj).v;
     }
 
     @Override
     public java.lang.String toString() {
-        return java.lang.Boolean.toString(this.value);
+        return java.lang.Boolean.toString(this.v);
     }
 
     //========================================================

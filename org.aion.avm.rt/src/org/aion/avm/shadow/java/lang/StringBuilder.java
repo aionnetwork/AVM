@@ -13,11 +13,11 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public StringBuilder(String str) {
-        this.underlying = new java.lang.StringBuilder(str.getUnderlying());
+        this.underlying = new java.lang.StringBuilder(str.getV());
     }
 
     public StringBuilder(CharSequence seq){
-        this.underlying = new java.lang.StringBuilder(seq.avm_toString().getUnderlying());
+        this.underlying = new java.lang.StringBuilder(seq.avm_toString().getV());
     }
 
     //TODO: IOBJECT?
@@ -27,7 +27,7 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public StringBuilder avm_append(String str) {
-        this.underlying.append(str.getUnderlying());
+        this.underlying.append(str.getV());
         return this;
     }
 
@@ -52,7 +52,7 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public StringBuilder avm_append(CharSequence s, int start, int end){
-        this.underlying.append(s.avm_toString().getUnderlying(), start, end);
+        this.underlying.append(s.avm_toString().getV(), start, end);
         return this;
     }
 
@@ -102,7 +102,7 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public StringBuilder avm_replace(int start, int end, String str) {
-        this.underlying = this.underlying.replace(start, end, str.getUnderlying());
+        this.underlying = this.underlying.replace(start, end, str.getV());
         return this;
     }
 
@@ -120,7 +120,7 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public StringBuilder avm_insert(int offset, String str) {
-        this.underlying.insert(offset, str.getUnderlying());
+        this.underlying.insert(offset, str.getV());
         return this;
     }
 
@@ -130,12 +130,12 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public StringBuilder avm_insert(int dstOffset, CharSequence s) {
-        this.underlying.insert(dstOffset, s.avm_toString().getUnderlying());
+        this.underlying.insert(dstOffset, s.avm_toString().getV());
         return this;
     }
 
     public StringBuilder avm_insert(int dstOffset, CharSequence s, int start, int end) {
-        this.underlying.insert(dstOffset, s.avm_subSequence(start, end).avm_toString().getUnderlying());
+        this.underlying.insert(dstOffset, s.avm_subSequence(start, end).avm_toString().getV());
         return this;
     }
 
@@ -170,19 +170,19 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public int avm_indexOf(String str) {
-        return this.underlying.indexOf(str.getUnderlying());
+        return this.underlying.indexOf(str.getV());
     }
 
     public synchronized int avm_indexOf(String str, int fromIndex) {
-        return this.underlying.indexOf(str.getUnderlying(), fromIndex);
+        return this.underlying.indexOf(str.getV(), fromIndex);
     }
 
     public int avm_lastIndexOf(String str) {
-        return this.underlying.lastIndexOf(str.getUnderlying());
+        return this.underlying.lastIndexOf(str.getV());
     }
 
     public synchronized int avm_lastIndexOf(String str, int fromIndex) {
-        return this.underlying.lastIndexOf(str.getUnderlying(), fromIndex);
+        return this.underlying.lastIndexOf(str.getV(), fromIndex);
     }
 
     public synchronized StringBuilder avm_reverse() {
@@ -217,9 +217,8 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     //========================================================
-    // Methods below are deprecated, we don't shadow them
+    // Methods below are deprecated
     //========================================================
-
 
 
     //========================================================
