@@ -9,9 +9,16 @@ import org.aion.avm.internal.IObject;
  */
 public class Object extends java.lang.Object implements IObject {
     private final int hashCode;
+    // Note that isLoaded and instanceId are not used yet but here to test ReflectionStructureCodec.
+    @SuppressWarnings("unused")
+    private boolean isLoaded;
+    @SuppressWarnings("unused")
+    private long instanceId;
 
     public Object() {
         this.hashCode = IHelper.currentContractHelper.get().externalGetNextHashCode();
+        this.isLoaded = true;
+        this.instanceId = 0l;
     }
 
     @Override
