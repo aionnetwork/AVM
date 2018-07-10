@@ -14,6 +14,7 @@ import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
@@ -387,6 +388,11 @@ public class AvmImpl implements Avm {
 
             // TODO: create invocation is temporarily disabled
 
+            // Save back the state before we return - we haven't saved anything so the instance count starts at 1.
+            long nextInstanceId = 1l;
+            // TODO:  Inject the actual serialization of the object graph at this point.
+            ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
+
             // TODO: whether we should return the dapp address is subject to change
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), dappAddress);
         } catch (FatalAvmError e) {
@@ -411,9 +417,10 @@ public class AvmImpl implements Avm {
 
     public AvmResult call(Transaction tx, Block block, KernelApi cb) {
         // retrieve the transformed bytecode
+        byte[] dappAddress = tx.getTo();
         DappModule app;
         try {
-            byte[] transformedDappJar = cb.getTransformedCode(tx.getTo());
+            byte[] transformedDappJar = cb.getTransformedCode(dappAddress);
             app = DappModule.readFromJar(transformedDappJar);
         } catch (IOException e) {
             return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
@@ -422,12 +429,15 @@ public class AvmImpl implements Avm {
         // As per usual, we need to get the special Helper class for each contract loader.
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
 
+        // Load the initial state of the environment.
+        ContractEnvironmentState initialState = ContractEnvironmentState.loadFromStorage(cb, dappAddress);
+        // TODO:  Inject the actual deserialization of the roots of the object graph (classes) at this point.
+
         // Construct the per-contract class loader and access the per-contract IHelper instance.
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, classLoader);
         classLoader.addHandler(wrapperGenerator);
-        // TODO: start nextHashCode at 1 until we deserialize the previous state, here.
-        IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), 1);
+        IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), initialState.nextHashCode);
         Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(tx, block, cb, helper));
 
         // load class
@@ -438,6 +448,10 @@ public class AvmImpl implements Avm {
             // Call contract static main method.  Note that this method is not allowed to return null.
             Method method = clazz.getMethod("avm_main");
             byte[] ret = ((ByteArray) method.invoke(null)).getUnderlying();
+
+            // Save back the state before we return.
+            // TODO:  Inject the actual serialization of the object graph at this point.
+            ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), initialState.nextInstanceId));
 
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
         } catch (InvocationTargetException e) {
