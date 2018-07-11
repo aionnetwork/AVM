@@ -64,7 +64,7 @@ public class RootClassCodecTest {
         KernelApiImpl kernel = new KernelApiImpl();
         byte[] address = new byte[] {1,2,3};
         RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), 1, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
-        byte[] result = kernel.getStorage(address, RootClassCodec.STORAGE_KEY);
+        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
                 // ReflectionStructureCodecTarget
@@ -119,7 +119,7 @@ public class RootClassCodecTest {
         };
         KernelApiImpl kernel = new KernelApiImpl();
         byte[] address = new byte[] {1,2,3};
-        kernel.putStorage(address, RootClassCodec.STORAGE_KEY, expected);
+        kernel.putStorage(address, StorageKeys.CLASS_STATICS, expected);
         
         // Populate the classes.
         RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));

@@ -10,13 +10,10 @@ import org.aion.kernel.KernelApi;
  * operations of the entire object graph (since both operations start at the root classes defined within the contract).
  * Only the class statics and maybe a few specialized instances will be populated here.  The graph is limited by installing instance
  * stubs into fields pointing at objects.
+ * 
+ * We will store the data for all classes in a single storage key to avoid small IO operations when they are never used partially.
  */
 public class RootClassCodec {
-    // We will store the data for all classes in a single storage key to avoid small IO operations when they are never used partially.
-    // TODO:  Determine a real STORAGE_KEY, once we know if/what organization is being applied to it.
-    // (public for unit test usage)
-    public static final byte[] STORAGE_KEY = new byte[] {11,12,13,14,15,16,17,18,19,10};
-
     /**
      * Populates the statics of the given classes with the primitives and instance stubs described by the on-disk data.
      * 
@@ -27,7 +24,7 @@ public class RootClassCodec {
      */
     public static void populateClassStaticsFromStorage(ClassLoader loader, KernelApi cb, byte[] address, List<Class<?>> classes) {
         // Extract the raw data.
-        byte[] rawData = cb.getStorage(address, STORAGE_KEY);
+        byte[] rawData = cb.getStorage(address, StorageKeys.CLASS_STATICS);
         ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, 0);
         StreamingPrimitiveCodec.Decoder decoder = StreamingPrimitiveCodec.buildDecoder(rawData);
         
@@ -58,6 +55,6 @@ public class RootClassCodec {
         
         // Save the raw bytes.
         byte[] rawData = encoder.toBytes();
-        cb.putStorage(address, STORAGE_KEY, rawData);
+        cb.putStorage(address, StorageKeys.CLASS_STATICS, rawData);
     }
 }

@@ -8,11 +8,8 @@ import org.aion.kernel.KernelApi;
  * Represents the part of the contract environment which must be persistent between invocations.
  */
 public class ContractEnvironmentState {
-    // TODO:  Determine a real STORAGE_KEY, once we know if/what organization is being applied to it.
-    private static final byte[] STORAGE_KEY = new byte[] {1,2,3,4,5,6,7,8,9,0};
-
     public static ContractEnvironmentState loadFromStorage(KernelApi cb, byte[] address) {
-        byte[] rawData = cb.getStorage(address, STORAGE_KEY);
+        byte[] rawData = cb.getStorage(address, StorageKeys.CONTRACT_ENVIRONMENT);
         Assert.assertTrue(rawData.length == (Integer.BYTES + Long.BYTES));
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
         int nextHashCode = decoder.decodeInt();
@@ -28,7 +25,7 @@ public class ContractEnvironmentState {
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
         encoder.encodeInt(state.nextHashCode);
         encoder.encodeInt(state.nextHashCode);
-        cb.putStorage(address, STORAGE_KEY, bytes);
+        cb.putStorage(address, StorageKeys.CONTRACT_ENVIRONMENT, bytes);
     }
 
 
