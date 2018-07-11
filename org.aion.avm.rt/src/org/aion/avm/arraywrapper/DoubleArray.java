@@ -46,6 +46,10 @@ public class DoubleArray extends Array {
         this.underlying = underlying;
     }
 
+    public double[] getUnderlying() {
+        return underlying;
+    }
+
     public void setUnderlyingAsObject(java.lang.Object u){
         this.underlying = (double[]) u;
     }

@@ -82,26 +82,28 @@ public class ProofOfConceptTest {
      */
     @Test
     public void testDeployAndCallInit() {
-        // Constructor args.
-        byte[] extra1 = Helpers.randomBytes(Address.LENGTH);
-        byte[] extra2 = Helpers.randomBytes(Address.LENGTH);
-        int requiredVotes = 2;
-        long dailyLimit = 5000;
-        
-        byte[] testWalletJar = buildTestWalletJar();
-        AvmImpl createAvm = new AvmImpl(sharedClassLoader);
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
-        AvmResult createResult = createAvm.run(createTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
+        if (AvmImpl.isABICodecInUserSpace) {
+            // Constructor args.
+            byte[] extra1 = Helpers.randomBytes(Address.LENGTH);
+            byte[] extra2 = Helpers.randomBytes(Address.LENGTH);
+            int requiredVotes = 2;
+            long dailyLimit = 5000;
 
-        // contract address is stored in return data
-        byte[] contractAddress = createResult.returnData;
-        
-        AvmImpl initAvm = new AvmImpl(sharedClassLoader);
-        byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
-        Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
-        AvmResult initResult = initAvm.run(initTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, initResult.code);
+            byte[] testWalletJar = buildTestWalletJar();
+            AvmImpl createAvm = new AvmImpl(sharedClassLoader);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
+            AvmResult createResult = createAvm.run(createTransaction, block, cb);
+            Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
+
+            // contract address is stored in return data
+            byte[] contractAddress = createResult.returnData;
+
+            AvmImpl initAvm = new AvmImpl(sharedClassLoader);
+            byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
+            Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
+            AvmResult initResult = initAvm.run(initTransaction, block, cb);
+            Assert.assertEquals(AvmResult.Code.SUCCESS, initResult.code);
+        }
     }
 
 

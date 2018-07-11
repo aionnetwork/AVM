@@ -47,6 +47,10 @@ public class ShortArray extends Array {
         this.underlying = underlying;
     }
 
+    public short[] getUnderlying() {
+        return underlying;
+    }
+
     public java.lang.Object getUnderlyingAsObject(){
         return underlying;
     }

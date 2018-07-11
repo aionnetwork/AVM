@@ -47,6 +47,13 @@ public class AvmImplDeployAndRunTest {
         return avm.run(tx, block, cb);
     }
 
+    public AvmResult deployTheDeployAndRunTestA2() {
+        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTestA2.jar");
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, jar, energyLimit);
+
+        return avm.run(tx, block, cb);
+    }
+
     @Test
     public void testDeploy() {
         AvmResult result = deployHelloWorld();
@@ -54,7 +61,7 @@ public class AvmImplDeployAndRunTest {
         assertEquals(AvmResult.Code.SUCCESS, result.code);
     }
 
-/* TODO: fix the following tests
+/* deploy invocation is not supported for now
     @Test
     public void testDeployWithMethodCall() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
@@ -81,20 +88,28 @@ public class AvmImplDeployAndRunTest {
 
     @Test
     public void testDeployAndRunWithArgs() {
-        AvmResult deployResult = deployHelloWorld();
+        if (AvmImpl.isABICodecInUserSpace) {
+            AvmResult deployResult = deployHelloWorld();
 
-        // test another method call, "add" with arguments
-        byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "add<II>" + raw data 123, 1
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.returnData, 0, txData, energyLimit);
-        AvmResult result = avm.run(tx, block, cb);
+            // test another method call, "add" with arguments
+            byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "add<II>" + raw data 123, 1
+            Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.returnData, 0, txData, energyLimit);
+            AvmResult result = avm.run(tx, block, cb);
 
-        assertEquals(AvmResult.Code.SUCCESS, result.code);
-        assertEquals(124, ByteBuffer.allocate(4).put(result.returnData).getInt(0));
+            assertEquals(AvmResult.Code.SUCCESS, result.code);
+            assertEquals(124, ByteBuffer.allocate(4).put(result.returnData).getInt(0));
+        }
     }
 
     @Test
-    public void testDeployAndRunWithArrayArgs() {
-        AvmResult deployResult = deployTheDeployAndRunTest();
+    public void testDeployAndRunTest() {
+        AvmResult deployResult;
+        if (AvmImpl.isABICodecInUserSpace) {
+            deployResult = deployTheDeployAndRunTest();
+        }
+        else {
+            deployResult = deployTheDeployAndRunTestA2();
+        }
         assertEquals(AvmResult.Code.SUCCESS, deployResult.code);
 
         // test encode method arguments

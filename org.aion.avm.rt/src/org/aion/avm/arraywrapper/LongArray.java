@@ -46,6 +46,10 @@ public class LongArray extends Array {
         this.underlying = underlying;
     }
 
+    public long[] getUnderlying() {
+        return underlying;
+    }
+
     public void setUnderlyingAsObject(java.lang.Object u){
         this.underlying = (long[]) u;
     }

@@ -46,6 +46,10 @@ public class FloatArray extends Array {
         this.underlying = underlying;
     }
 
+    public float[] getUnderlying() {
+        return underlying;
+    }
+
     public void setUnderlyingAsObject(java.lang.Object u){
         this.underlying = (float[]) u;
     }
