@@ -9,7 +9,7 @@ import org.objectweb.asm.Opcodes;
 /**
  * This visitor is responsible for reshaping the contract code such that our "automatic graph" persistence design can be applied.
  * Specifically, this means the following transformations:
- * 1)  Add an empty constructor, if there isn't one, already (just calling superclass).
+ * 1)  Add a special constructor, which cannot already be present, just calling its superclass counterpart.
  * 2)  Remove "final" from all fields (at least instance fields - we may be able to treat static fields differently).
  * 3)  Prepend all PUTFIELD/GETFIELD instructions with a call to "lazyLoad()" on the receiver object
  * 
@@ -21,11 +21,11 @@ import org.objectweb.asm.Opcodes;
 public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor {
     private static final String CLINIT_NAME = "<clinit>";
     private static final String INIT_NAME = "<init>";
-    private static final String ZERO_ARG_DESCRIPTOR = "()V";
+    // The special constructor takes (IDeserializer deserializer, int hashCode, long instanceId).
+    private static final String SPECIAL_CONSTRUCTOR_DESCRIPTOR = "(Lorg/aion/avm/internal/IDeserializer;IJ)V";
 
     private boolean isInterface;
     private String superClassName;
-    private boolean didDefineEmptyConstructor;
 
     public AutomaticGraphVisitor() {
         super(Opcodes.ASM6);
@@ -50,10 +50,6 @@ public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor 
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-        // We are just snooping on these to see if the zero-arg constructor is defined.
-        if (INIT_NAME.equals(name) && ZERO_ARG_DESCRIPTOR.equals(descriptor)) {
-            this.didDefineEmptyConstructor = true;
-        }
         // If this is the <clinit>, we don't want to inject the lazyLoad calls (nothing visible there could be a stub).
         return CLINIT_NAME.equals(name)
                 ? super.visitMethod(access, name, descriptor, signature, exceptions)
@@ -62,15 +58,18 @@ public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor 
 
     @Override
     public void visitEnd() {
-        // If the user didn't define one of these, we need to generate one, here.
-        if (!this.isInterface && !this.didDefineEmptyConstructor) {
+        // If this isn't an interface, define the special constructor here.
+        if (!this.isInterface) {
             // This logic is similar to StubGenerator.
-            MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, INIT_NAME, ZERO_ARG_DESCRIPTOR, null, null);
+            MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, INIT_NAME, SPECIAL_CONSTRUCTOR_DESCRIPTOR, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superClassName, INIT_NAME, ZERO_ARG_DESCRIPTOR, false);
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
+            methodVisitor.visitVarInsn(Opcodes.ILOAD, 2);
+            methodVisitor.visitVarInsn(Opcodes.LLOAD, 3);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superClassName, INIT_NAME, SPECIAL_CONSTRUCTOR_DESCRIPTOR, false);
             methodVisitor.visitInsn(Opcodes.RETURN);
-            methodVisitor.visitMaxs(1, 1);
+            methodVisitor.visitMaxs(5, 5);
             methodVisitor.visitEnd();
         }
         super.visitEnd();

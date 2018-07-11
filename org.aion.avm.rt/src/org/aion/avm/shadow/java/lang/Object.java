@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
@@ -18,6 +19,13 @@ public class Object extends java.lang.Object implements IObject {
         this.hashCode = IHelper.currentContractHelper.get().externalGetNextHashCode();
         this.isLoaded = true;
         this.instanceId = 0l;
+    }
+
+    // Special constructor only invoked when instantiating this as an intance stub.
+    public Object(IDeserializer deserializer, int hashCode, long instanceId) {
+        this.hashCode = hashCode;
+        this.isLoaded = false;
+        this.instanceId = instanceId;
     }
 
     @Override
