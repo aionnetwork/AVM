@@ -13,6 +13,9 @@ import org.aion.avm.core.testWallet.Multiowned;
 import org.aion.avm.core.testWallet.Operation;
 import org.aion.avm.core.testWallet.RequireFailedException;
 import org.aion.avm.core.testWallet.Wallet;
+import org.aion.avm.core.testICO.PepeCoin;
+import org.aion.avm.core.testICO.ICOAbi;
+import org.aion.avm.core.testICO.ICOController;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -123,4 +126,55 @@ public class ProofOfConceptTest {
             .encodeLong(dailyLimit);
         return onto;
     }
+
+
+    private byte[] buildTestICOJar() {
+        return JarBuilder.buildJarForMainAndClasses(ICOController.class,
+                PepeCoin.class,
+                ICOAbi.class,
+                AionMap.class,
+                ByteArrayHelpers.class
+        );
+    }
+
+    @Test
+    public void testDeployICO() {
+        byte[] testICOJar = buildTestICOJar();
+        AvmImpl createAvm = new AvmImpl(sharedClassLoader);
+        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testICOJar, energyLimit);
+        AvmResult createResult = createAvm.run(createTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
+        Assert.assertNotNull(cb.getTransformedCode(to));
+    }
+
+    public static byte[] encodeICOTotalSupply() {
+        byte[] onto = new byte[1];
+        ICOAbi.Encoder encoder = ICOAbi.buildEncoder(onto);
+        // We are encoding the Addresses as a 2-element array, so describe it that way to the encoder.
+        encoder.encodeByte(ICOAbi.kICO_totalSupply);
+        return onto;
+    }
+
+    @Test
+    public void testICODeployAndCallTotalSupply() {
+
+        if (AvmImpl.isABICodecInUserSpace) {
+            byte[] testICOJar = buildTestICOJar();
+            AvmImpl createAvm = new AvmImpl(sharedClassLoader);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testICOJar, energyLimit);
+            AvmResult createResult = createAvm.run(createTransaction, block, cb);
+            Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
+
+            // contract address is stored in return data
+            byte[] contractAddress = createResult.returnData;
+
+            AvmImpl initAvm = new AvmImpl(sharedClassLoader);
+            byte[] args = encodeICOTotalSupply();
+            Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, args, energyLimit);
+            AvmResult initResult = initAvm.run(initTransaction, block, cb);
+            Assert.assertEquals(AvmResult.Code.SUCCESS, initResult.code);
+        }
+    }
+
+
 }
