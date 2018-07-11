@@ -16,13 +16,13 @@ import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
+import org.aion.avm.core.persistence.RootClassCodec;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.InvalidClassException;
 import org.aion.avm.internal.*;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelApi;
@@ -399,7 +399,11 @@ public class AvmImpl implements Avm {
 
             // Save back the state before we return - we haven't saved anything so the instance count starts at 1.
             long nextInstanceId = 1l;
-            // TODO:  Inject the actual serialization of the object graph at this point.
+            // -first, save out the classes
+            // TODO: Make this fully walk the graph
+            // TODO: Get the updated "nextInstanceId" after everything is written to storage.
+            RootClassCodec.saveClassStaticsToStorage(classLoader, nextInstanceId, cb, dappAddress, getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()));
+            // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
             // TODO: whether we should return the dapp address is subject to change
@@ -446,6 +450,10 @@ public class AvmImpl implements Avm {
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, classLoader);
         classLoader.addHandler(wrapperGenerator);
+        
+        // Load all the user-defined classes (these are required for both loading and storing state).
+        List<Class<?>> aphabeticalContractClasses = getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
+
         IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), initialState.nextHashCode);
         Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(tx, block, cb, helper));
 
@@ -483,7 +491,11 @@ public class AvmImpl implements Avm {
             }
 
             // Save back the state before we return.
-            // TODO:  Inject the actual serialization of the object graph at this point.
+            // -first, save out the classes
+            // TODO: Make this fully walk the graph
+            // TODO: Get the updated "nextInstanceId" after everything is written to storage.
+            RootClassCodec.saveClassStaticsToStorage(classLoader, initialState.nextInstanceId, cb, dappAddress, aphabeticalContractClasses);
+            // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), initialState.nextInstanceId));
 
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
@@ -798,5 +810,30 @@ public class AvmImpl implements Avm {
 
         // return the array list
         return argList.toArray();
+    }
+
+    /**
+     * Sorts the user contract class names given in "classNames", alphabetically, and then looks up each of their corresponding class objects in
+     * classLoader.  Note that only class names within the "user" namespace are considered.
+     * 
+     * @param classLoader The class loader where the classes exist.
+     * @param className The names of the classes which should be loaded. 
+     * @return The class objects, in alphabetical order by their names.
+     */
+    private static List<Class<?>> getAlphabeticalUserTransformedClasses(AvmClassLoader classLoader, Set<String> classNames) {
+        List<String> nameList = new ArrayList<>(classNames);
+        Collections.sort(nameList);
+        List<Class<?>> classList = new ArrayList<>();
+        for (String name : nameList) {
+            if (name.startsWith(PackageConstants.kUserDotPrefix)) {
+                try {
+                    classList.add(classLoader.loadClass(name));
+                } catch (ClassNotFoundException e) {
+                    // We can't fail to find something which we know we put in there.
+                    RuntimeAssertionError.unexpected(e);
+                }
+            }
+        }
+        return classList;
     }
 }
