@@ -11,16 +11,15 @@ import org.objectweb.asm.Opcodes;
  * Specifically, this means the following transformations:
  * 1)  Add an empty constructor, if there isn't one, already (just calling superclass).
  * 2)  Remove "final" from all fields (at least instance fields - we may be able to treat static fields differently).
- * 3)  Generate specialized "get()/set()" methods for all instance fields, with the same visibility.
- * 4)  Convert all external (not within the same object) PUTFIELD/GETFIELD calls with calls to these generated methods.
- * 5)  Inject a local instance call to "lazyLoad()", at the beginning of each method (maybe we can make this only public),
- *     including the generated field methods.
+ * 3)  Prepend all PUTFIELD/GETFIELD instructions with a call to "lazyLoad()" on the receiver object
+ * 
  * Note that this transformation doesn't depend on the persistence model being applied.  So long as "lazyLoad()" is a safe no-op,
  * there is no harm in enabling this without the corresponding persistence logic.
  * This should probably be put late in the pipeline since these transformations are substantial, and could change energy and stack
  * accounting in pretty large ways for what are essentially our own implementation details.
  */
 public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor {
+    private static final String CLINIT_NAME = "<clinit>";
     private static final String INIT_NAME = "<init>";
     private static final String ZERO_ARG_DESCRIPTOR = "()V";
 
@@ -55,7 +54,10 @@ public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor 
         if (INIT_NAME.equals(name) && ZERO_ARG_DESCRIPTOR.equals(descriptor)) {
             this.didDefineEmptyConstructor = true;
         }
-        return super.visitMethod(access, name, descriptor, signature, exceptions);
+        // If this is the <clinit>, we don't want to inject the lazyLoad calls (nothing visible there could be a stub).
+        return CLINIT_NAME.equals(name)
+                ? super.visitMethod(access, name, descriptor, signature, exceptions)
+                : new LazyLoadingMethodVisitor(super.visitMethod(access, name, descriptor, signature, exceptions));
     }
 
     @Override

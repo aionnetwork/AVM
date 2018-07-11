@@ -10,7 +10,6 @@ import org.aion.avm.internal.IObject;
 public class Object extends java.lang.Object implements IObject {
     private final int hashCode;
     // Note that isLoaded and instanceId are not used yet but here to test ReflectionStructureCodec.
-    @SuppressWarnings("unused")
     private boolean isLoaded;
     @SuppressWarnings("unused")
     private long instanceId;
@@ -81,5 +80,12 @@ public class Object extends java.lang.Object implements IObject {
         return (obj instanceof IObject)
                 ? avm_equals((IObject)obj)
                 : false;
+    }
+
+    public void lazyLoad() {
+        if (!this.isLoaded) {
+            // This is currently empty but will be used, later on, as part of the persistence model implementation.
+            this.isLoaded = true;
+        }
     }
 }
