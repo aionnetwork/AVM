@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
@@ -231,7 +232,7 @@ public class ReflectionStructureCodec {
             // Create the new stub and put it in the map.
             Class<?> contentClass = this.classLoader.loadClass(className);
             // NOTE:  This line is why all our shadow objects and all the transformed user code needs an empty constructor.
-            stub = (org.aion.avm.shadow.java.lang.Object)contentClass.getConstructor().newInstance();
+            stub = (org.aion.avm.shadow.java.lang.Object)contentClass.getConstructor(IDeserializer.class, int.class, long.class).newInstance(null, 0, instanceId);
             this.isLoadedField.setBoolean(stub, false);
             this.instanceIdField.setLong(stub, instanceId);
             this.instanceStubMap.put(instanceId, stub);

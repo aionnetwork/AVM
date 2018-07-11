@@ -1,5 +1,7 @@
 package org.aion.avm.core.persistence;
 
+import org.aion.avm.internal.IDeserializer;
+
 
 /**
  * Used within ReflectionStructureCodecTest.
@@ -25,4 +27,13 @@ public class ReflectionStructureCodecTarget extends org.aion.avm.shadow.java.lan
     public long i_seven;
     public double i_eight;
     public ReflectionStructureCodecTarget i_nine;
+
+    // Normal constructor.
+    public ReflectionStructureCodecTarget() {
+    }
+
+    // We need to manually define the deserialization constructor since we aren't a transformed test.
+    public ReflectionStructureCodecTarget(IDeserializer deserializer, int hashCode, long instanceId) {
+        super(deserializer, hashCode, instanceId);
+    }
 }

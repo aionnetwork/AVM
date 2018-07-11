@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.arraywrapper.IntArray;
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
 
 import java.io.UnsupportedEncodingException;
@@ -17,6 +18,11 @@ public class String extends Object implements Comparable<String>, CharSequence {
 
     public String() {
         this.v = new java.lang.String();
+    }
+
+    // Deserializer support.
+    public String(IDeserializer deserializer, int hashCode, long instanceId) {
+        super(deserializer, hashCode, instanceId);
     }
 
     public String(String original) {
