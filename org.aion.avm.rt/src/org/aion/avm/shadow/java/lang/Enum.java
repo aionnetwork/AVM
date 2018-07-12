@@ -1,10 +1,13 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
+
+
 public abstract class Enum<E extends Enum<E>> extends Object {
 
-    private final String name;
-
-    private final int ordinal;
+    // (note that these are not final since we want to be able to deserialize this type)
+    private String name;
+    private int ordinal;
 
     public final String avm_name() {
         return name;
@@ -17,6 +20,11 @@ public abstract class Enum<E extends Enum<E>> extends Object {
     protected Enum(String name, int ordinal) {
         this.name = name;
         this.ordinal = ordinal;
+    }
+
+    // Deserializer support.
+    public Enum(IDeserializer deserializer, int hashCode, long instanceId) {
+        super(deserializer, hashCode, instanceId);
     }
 
     public String avm_toString() {

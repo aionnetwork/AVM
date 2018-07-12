@@ -10,6 +10,7 @@ import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
@@ -180,6 +181,10 @@ public class ClassShadowingTest {
         one.setAccessible(true);
         Object instance = one.newInstance(new org.aion.avm.shadow.java.lang.String("TEST"), 99, new org.aion.avm.shadow.java.lang.String("TEST"));
         Assert.assertNotNull(instance);
+        
+        // Try the deserialization constructor.
+        Object stub = clazz.getConstructor(IDeserializer.class, int.class, long.class).newInstance(null, 5, 6l);
+        Assert.assertNotNull(stub);
     }
 
     @Test
@@ -195,6 +200,10 @@ public class ClassShadowingTest {
         one.setAccessible(true);
         Object instance = one.newInstance(new org.aion.avm.shadow.java.lang.String("TEST"), 99, new org.aion.avm.shadow.java.lang.String("TEST"));
         Assert.assertNotNull(instance);
+        
+        // Try the deserialization constructor.
+        Object stub = clazz.getConstructor(IDeserializer.class, int.class, long.class).newInstance(null, 5, 6l);
+        Assert.assertNotNull(stub);
     }
 
     public static class Testing {
