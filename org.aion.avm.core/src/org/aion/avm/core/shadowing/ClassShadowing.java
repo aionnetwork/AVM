@@ -61,8 +61,10 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
         String[] newInterfaces = replacedInterfaces.toArray(String[]::new);
 
+        // If this is an enum, our reparenting will make it a normal class so remove this access bit.
+        int newAccess = ~Opcodes.ACC_ENUM & access;
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
-        super.visit(version, access, name, null, newSuperName, newInterfaces);
+        super.visit(version, newAccess, name, null, newSuperName, newInterfaces);
     }
 
     @Override
@@ -139,5 +141,13 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
         return super.visitField(access, name, newDescriptor, null, value);
+    }
+
+    @Override
+    public void visitInnerClass(String name, String outerName, String innerName, int access) {
+        // Note that, in case the inner class is an enum, we need to also clear the ACC_ENUM modifier here, otherwise the class still gets the enum modifier, at runtime.
+        int newAccess = ~Opcodes.ACC_ENUM & access;
+        // TODO:  Do we need to carry over any other logic from the visit() to here?
+        super.visitInnerClass(name, outerName, innerName, newAccess);
     }
 }

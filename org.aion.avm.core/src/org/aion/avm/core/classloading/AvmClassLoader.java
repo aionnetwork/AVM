@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 
 /**
@@ -14,6 +15,9 @@ import org.aion.avm.internal.PackageConstants;
  * bytecode instrumentation/analysis phase.
  */
 public class AvmClassLoader extends ClassLoader {
+    // The ENUM modifier is defined in Class, but that is private so here is our copy of the constant.
+    private static final int CLASS_IS_ENUM = 0x00004000;
+
     private Map<String, byte[]> classes;
     private ArrayList<Function<String, byte[]>> handlers;
 
@@ -60,6 +64,8 @@ public class AvmClassLoader extends ClassLoader {
         } else if (this.classes.containsKey(name)) {
             byte[] injected = this.classes.get(name);
             result = defineClass(name, injected, 0, injected.length);
+            // Note that this class loader should only be able to see classes we have transformed.  This means no enums.
+            RuntimeAssertionError.assertTrue(0 == (CLASS_IS_ENUM & result.getModifiers()));
             this.cache.put(name, result);
         } else {
 
