@@ -3,7 +3,6 @@ package org.aion.avm.core;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.internal.PackageConstants;
 
 
@@ -38,11 +37,6 @@ public class ClassWhiteList {
      * @return True if we are allowed to access this class due to it being in our JDK white-list.
      */
     public boolean isJdkClass(String slashClassName) {
-        // Enum class within shadow JDK will be visited
-        String dotClassName = slashClassName.replace('/', '.');
-        if (CommonGenerators.kShadowEnumClassNames.contains(dotClassName)){
-            return false;
-        }
         return slashClassName.startsWith(PackageConstants.kShadowSlashPrefix);
     }
 
