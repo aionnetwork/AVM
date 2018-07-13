@@ -3,8 +3,10 @@ package org.aion.avm.core.classloading;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.util.Assert;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 
 /**
@@ -17,9 +19,19 @@ public class AvmSharedClassLoader extends ClassLoader {
     // Since we are using our own loadClass, we need our own cache.
     private final Map<String, Class<?>> cache;
 
+    private ArrayList<Function<String, byte[]>> handlers;
+
     public AvmSharedClassLoader(Map<String, byte[]> classes) {
         this.classes = classes;
         this.cache = new HashMap<>();
+
+        this.handlers = new ArrayList<>();
+        registerHandlers();
+    }
+
+    private void registerHandlers(){
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, this);
+        this.handlers.add(wrapperGenerator);
     }
 
     @Override
@@ -37,11 +49,19 @@ public class AvmSharedClassLoader extends ClassLoader {
             result = defineClass(name, injected, 0, injected.length);
             this.cache.put(name, result);
         } else {
+            // All user space class should be loaded with contract loader
             Assert.assertTrue(!name.contains("org.aion.avm.user"));
-            byte[] code = ArrayWrappingClassGenerator.arrayWrappingFactory(name, this);
-            if (code != null) {
-                result = defineClass(name, code, 0, code.length);
-                this.cache.put(name, result);
+
+            // Before falling back to the parent, try the dynamic.
+            for (Function<String, byte[]> handler : handlers) {
+                byte[] code = handler.apply(name);
+                if (code != null) {
+                    result = defineClass(name, code, 0, code.length);
+
+                    Assert.assertTrue(!this.cache.containsKey(name));
+                    this.cache.put(name, result);
+                    break;
+                }
             }
 
             if (null == result) {

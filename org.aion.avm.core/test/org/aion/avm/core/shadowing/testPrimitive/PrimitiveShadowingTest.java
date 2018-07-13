@@ -1,7 +1,6 @@
 package org.aion.avm.core.shadowing.testPrimitive;
 
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.internal.Helper;
@@ -9,7 +8,6 @@ import org.junit.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.function.Function;
 
 public class PrimitiveShadowingTest {
     @BeforeClass
@@ -53,9 +51,6 @@ public class PrimitiveShadowingTest {
                 TestResource.ShortTest.ByteSwap.class
         );
         AvmClassLoader loader = avm.getClassLoader();
-
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
-        loader.addHandler(wrapperGenerator);
 
         clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
     }

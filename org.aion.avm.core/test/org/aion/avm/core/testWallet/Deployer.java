@@ -4,14 +4,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.ClassHierarchyForest;
-import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -213,8 +211,6 @@ public class Deployer {
         Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar)));
         
         AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, transformedClasses);
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
-        loader.addHandler(wrapperGenerator);
 
         // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
         Helpers.instantiateHelper(loader, 1_000_000L, 1);

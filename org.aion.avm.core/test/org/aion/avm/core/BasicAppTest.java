@@ -1,10 +1,8 @@
 package org.aion.avm.core;
 
 import java.lang.reflect.Method;
-import java.util.function.Function;
 
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.api.Address;
@@ -31,9 +29,6 @@ public class BasicAppTest {
     public void setup() throws Exception {
         SimpleAvm avm = new SimpleAvm(10000L, BasicAppTestTarget.class, AionMap.class);
         AvmClassLoader loader = avm.getClassLoader();
-        
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
-        loader.addHandler(wrapperGenerator);
         
         this.clazz = loader.loadUserClassByOriginalName(BasicAppTestTarget.class.getName());
         // NOTE:  The user's side is pre-shadow so it uses "byte[]" whereas we look up "ByteArray", here.

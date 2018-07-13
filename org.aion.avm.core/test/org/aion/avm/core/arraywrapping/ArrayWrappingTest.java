@@ -9,7 +9,6 @@ import org.junit.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.function.Function;
 
 
 public class ArrayWrappingTest {
@@ -34,10 +33,6 @@ public class ArrayWrappingTest {
                 TestResource.Z.class
         );
         AvmClassLoader loader = avm.getClassLoader();
-
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
-        loader.addHandler(wrapperGenerator);
-
         helper = avm.getHelper();
         clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
     }

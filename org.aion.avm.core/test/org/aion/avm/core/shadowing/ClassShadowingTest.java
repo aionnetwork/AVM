@@ -2,7 +2,6 @@ package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -172,8 +171,6 @@ public class ClassShadowingTest {
     public void testEnumHandling() throws Exception {
         SimpleAvm avm = new SimpleAvm(1000000L, TestResourceEnum.class);
         AvmClassLoader loader = avm.getClassLoader();
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
-        loader.addHandler(wrapperGenerator);
         Class<?> clazz = loader.loadUserClassByOriginalName(TestResourceEnum.class.getName());
         
         // Try the normal constructor (private, so set accessible).
@@ -191,8 +188,6 @@ public class ClassShadowingTest {
     public void testEnumHandling_internal() throws Exception {
         SimpleAvm avm = new SimpleAvm(1000000L, TestContainer.class, TestContainer.InternalEnum.class);
         AvmClassLoader loader = avm.getClassLoader();
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
-        loader.addHandler(wrapperGenerator);
         Class<?> clazz = loader.loadUserClassByOriginalName(TestContainer.InternalEnum.class.getName());
         
         // Try the normal constructor (private, so set accessible).

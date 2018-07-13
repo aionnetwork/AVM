@@ -1,7 +1,6 @@
 package org.aion.avm.core.shadowing.testMath;
 
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -11,7 +10,6 @@ import org.junit.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.function.Function;
 
 public class MathShadowingTest {
 
@@ -33,9 +31,6 @@ public class MathShadowingTest {
     public void testReplaceJavaLang() throws ClassNotFoundException {
         SimpleAvm avm = new SimpleAvm(10000L, TestResource.class);
         AvmClassLoader loader = avm.getClassLoader();
-
-        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, loader);
-        loader.addHandler(wrapperGenerator);
 
         this.clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
     }

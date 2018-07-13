@@ -3,6 +3,7 @@ package org.aion.avm.core.classloading;
 import java.util.*;
 import java.util.function.Function;
 
+import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -36,14 +37,17 @@ public class AvmClassLoader extends ClassLoader {
         this.classes = classes;
         this.handlers = handlers;
         this.cache = new HashMap<>();
+
+        registerHandlers();
     }
 
     public AvmClassLoader(AvmSharedClassLoader parent, Map<String, byte[]> classes) {
         this(parent, classes, new ArrayList<>());
     }
 
-    public void addHandler(Function<String, byte[]> h){
-        this.handlers.add(h);
+    private void registerHandlers(){
+        Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, this);
+        this.handlers.add(wrapperGenerator);
     }
 
     @Override
