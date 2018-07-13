@@ -66,13 +66,12 @@ public class ReflectionStructureCodec {
 
 
     private void safeSerialize(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException {
-        // If clzz is null. we are trying to serialize the superclass of a interface
-        if (null == clazz){
-            return;
-        }
-
-        // We need to serialize from the shadow root so find that here (we also treat is specially).
-        if (org.aion.avm.shadow.java.lang.Object.class == clazz) {
+        // This method is recursive since we are looking to find the root where we need to begin:
+        // -for Objects this is the shadow Object
+        // -for interfaces, it is when we hit null (since they have no super-class but the interface may have statics)
+        boolean isAtTop = (org.aion.avm.shadow.java.lang.Object.class == clazz)
+                || (null == clazz);
+        if (isAtTop) {
             // Perform the special logic for the root object.
             // There are no shadow static fields of note.
             if (null != object) {
@@ -154,8 +153,12 @@ public class ReflectionStructureCodec {
     }
 
     private void safeDeserialize(StreamingPrimitiveCodec.Decoder decoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
-        // We need to deserialize from the shadow root so find that here (we also treat is specially).
-        if (org.aion.avm.shadow.java.lang.Object.class == clazz) {
+        // This method is recursive since we are looking to find the root where we need to begin:
+        // -for Objects this is the shadow Object
+        // -for interfaces, it is when we hit null (since they have no super-class but the interface may have statics)
+        boolean isAtTop = (org.aion.avm.shadow.java.lang.Object.class == clazz)
+                || (null == clazz);
+        if (isAtTop) {
             // Perform the special logic for the root object.
             // There are no shadow static fields of note.
             if (null != object) {
