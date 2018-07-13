@@ -36,7 +36,7 @@ public abstract class Enum<E extends Enum<E>> extends Object {
     }
 
     public final int avm_hashCode() {
-        return super.hashCode();
+        return this.ordinal;
     }
 
     @Override
