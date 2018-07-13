@@ -70,6 +70,10 @@ public class RootClassCodec {
         byte[] rawData = encoder.toBytes();
         cb.putStorage(address, StorageKeys.CLASS_STATICS, rawData);
         
-        // TODO:  Drain the queue (this change is just for plumbing since the serialization work isn't complete).
+        // Now, drain the queue.
+        while (!instancesToWrite.isEmpty()) {
+            org.aion.avm.shadow.java.lang.Object instance = instancesToWrite.poll();
+            codec.serializeInstance(instance, instanceSink);
+        }
     }
 }
