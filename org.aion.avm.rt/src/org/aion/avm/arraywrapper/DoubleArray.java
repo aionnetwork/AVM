@@ -28,7 +28,7 @@ public class DoubleArray extends Array {
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        super.deserializeSelf(ByteArray.class, deserializer);
+        super.deserializeSelf(DoubleArray.class, deserializer);
         
         // TODO:  We probably want faster array copies.
         int length = deserializer.readInt();
@@ -39,7 +39,7 @@ public class DoubleArray extends Array {
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
-        super.serializeSelf(IntArray.class, serializer, nextObjectQueue);
+        super.serializeSelf(DoubleArray.class, serializer, nextObjectQueue);
         
         // TODO:  We probably want faster array copies.
         serializer.writeInt(this.underlying.length);

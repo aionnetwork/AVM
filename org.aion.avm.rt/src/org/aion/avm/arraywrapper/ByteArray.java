@@ -39,7 +39,7 @@ public class ByteArray extends Array {
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
-        super.serializeSelf(IntArray.class, serializer, nextObjectQueue);
+        super.serializeSelf(ByteArray.class, serializer, nextObjectQueue);
         
         // TODO:  We probably want faster array copies.
         serializer.writeInt(this.underlying.length);
