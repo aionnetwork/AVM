@@ -93,159 +93,210 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public int avm_length(){
+        lazyLoad();
         return v.length();
     }
 
     public boolean avm_isEmpty() {
+        lazyLoad();
         return v.isEmpty();
     }
 
     public char avm_charAt(int index) {
+        lazyLoad();
         return this.v.charAt(index);
     }
 
     public int avm_codePointAt(int index) {
+        lazyLoad();
         return this.v.codePointAt(index);
     }
 
     public int avm_codePointBefore(int index) {
+        lazyLoad();
         return this.v.codePointBefore(index);
     }
 
     public int avm_codePointCount(int beginIndex, int endIndex) {
+        lazyLoad();
         return this.v.codePointCount(beginIndex, endIndex);
     }
 
     public int avm_offsetByCodePoints(int index, int codePointOffset){
+        lazyLoad();
         return this.v.offsetByCodePoints(index, codePointOffset);
     }
 
     public void avm_getChars(int srcBegin, int srcEnd, CharArray dst, int dstBegin) {
+        lazyLoad();
         this.v.getChars(srcBegin, srcEnd, dst.getUnderlying(), dstBegin);
     }
 
     public ByteArray avm_getBytes(String charsetName) throws UnsupportedEncodingException {
+        lazyLoad();
         return new ByteArray(this.v.getBytes(charsetName.getV()));
     }
 
     public ByteArray avm_getBytes(){
+        lazyLoad();
         return new ByteArray(this.v.getBytes());
     }
 
     public boolean avm_equals(IObject anObject) {
+        lazyLoad();
         return anObject instanceof String && this.v.equals(((String) anObject).v);
     }
 
     public boolean avm_contentEquals(StringBuffer sb) {
+        lazyLoad();
         return this.v.contentEquals(sb.getUnderlying());
     }
 
     public boolean avm_contentEquals(CharSequence cs){
+        lazyLoad();
         return this.v.contentEquals(cs.avm_toString().getV());
     }
 
     public boolean avm_equalsIgnoreCase(String anotherString) {
+        lazyLoad();
         return this.v.equalsIgnoreCase(anotherString.getV());
     }
 
     public int avm_compareTo(String anotherString) {
+        lazyLoad();
         return this.v.compareTo(anotherString.getV());
     }
 
     public int avm_compareToIgnoreCase(String str){
+        lazyLoad();
         return this.v.compareToIgnoreCase(str.getV());
     }
 
     public boolean avm_regionMatches(int toffset, String other, int ooffset, int len) {
+        lazyLoad();
         return this.v.regionMatches(toffset, other.getV(), ooffset, len);
     }
 
     public boolean avm_regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len) {
+        lazyLoad();
         return this.v.regionMatches(ignoreCase, toffset, other.getV(), ooffset, len);
     }
 
     public boolean avm_startsWith(String prefix, int toffset) {
+        lazyLoad();
         return this.v.startsWith(prefix.getV(), toffset);
     }
 
     public boolean avm_startsWith(String prefix) {
+        lazyLoad();
         return this.v.startsWith(prefix.getV());
     }
 
     public boolean avm_endsWith(String prefix) {
+        lazyLoad();
         return this.v.endsWith(prefix.getV());
     }
 
     @Override
     public int avm_hashCode() {
+        lazyLoad();
         return this.v.hashCode();
     }
 
     public int avm_indexOf(int ch) {
+        lazyLoad();
         return this.v.indexOf(ch);
     }
 
     public int avm_indexOf(int ch, int fromIndex) {
+        lazyLoad();
         return this.v.indexOf(ch, fromIndex);
     }
 
     public int avm_lastIndexOf(int ch) {
+        lazyLoad();
         return this.v.lastIndexOf(ch);
     }
 
     public int avm_lastIndexOf(int ch, int fromIndex) {
+        lazyLoad();
         return this.v.lastIndexOf(ch, fromIndex);
     }
 
     public int avm_indexOf(String str) {
+        lazyLoad();
+        str.lazyLoad();
         return this.v.indexOf(str.v);
     }
 
     public int avm_lastIndexOf(String str) {
+        lazyLoad();
+        str.lazyLoad();
         return this.v.lastIndexOf(str.v);
     }
 
     public int avm_lastIndexOf(String str, int fromIndex) {
+        lazyLoad();
+        str.lazyLoad();
         return this.v.lastIndexOf(str.v, fromIndex);
     }
 
     public String avm_substring(int beginIndex) {
+        lazyLoad();
         return new String(this.v.substring(beginIndex));
     }
 
     public String avm_substring(int beginIndex, int endIndex) {
+        lazyLoad();
         return new String(this.v.substring(beginIndex, endIndex));
     }
 
     public CharSequence avm_subSequence(int beginIndex, int endIndex){
+        lazyLoad();
         return this.avm_substring(beginIndex, endIndex);
     }
 
     public String avm_concat(String str){
+        lazyLoad();
+        str.lazyLoad();
         return new String(this.v.concat(str.getV()));
     }
 
     public String avm_replace(char oldChar, char newChar) {
+        lazyLoad();
         return new String(this.v.replace(oldChar, newChar));
     }
 
     public boolean avm_matches(String regex){
+        lazyLoad();
+        regex.lazyLoad();
         return this.v.matches(regex.v);
     }
 
     public boolean avm_contains(CharSequence s){
+        lazyLoad();
+        ((Object)s).lazyLoad();
         return avm_indexOf(s.avm_toString()) >= 0;
     }
 
     public String avm_replaceFirst(String regex, String replacement){
+        lazyLoad();
+        regex.lazyLoad();
+        replacement.lazyLoad();
         return new String(this.v.replaceFirst(regex.getV(), replacement.getV()));
     }
 
     public String avm_replaceAll(String regex, String replacement) {
+        lazyLoad();
+        regex.lazyLoad();
+        replacement.lazyLoad();
         return new String(this.v.replaceAll(regex.getV(), replacement.getV()));
     }
 
     public String avm_replace(CharSequence target, CharSequence replacement){
+        lazyLoad();
+        ((Object)target).lazyLoad();
+        ((Object)replacement).lazyLoad();
         return new String(this.v.replace(target.avm_toString().getV(),
                 replacement.avm_toString().getV()));
     }
@@ -255,14 +306,17 @@ public class String extends Object implements Comparable<String>, CharSequence {
     //public String[] split(String regex){}
 
     public String avm_toLowerCase(){
+        lazyLoad();
         return new String(this.v.toLowerCase());
     }
 
     public String avm_toUpperCase(){
+        lazyLoad();
         return new String(this.v.toUpperCase());
     }
 
     public String avm_trim() {
+        lazyLoad();
         return new String(this.v.trim());
     }
 
@@ -271,6 +325,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public CharArray avm_toCharArray() {
+        lazyLoad();
         return new CharArray(this.v.toCharArray());
     }
 
@@ -280,22 +335,27 @@ public class String extends Object implements Comparable<String>, CharSequence {
 
     //TODO: IOBJECT?
     public static String avm_valueOf(Object obj) {
+        obj.lazyLoad();
         return new String(java.lang.String.valueOf(obj));
     }
 
     public static String avm_valueOf(CharArray a){
+        a.lazyLoad();
         return new String(java.lang.String.valueOf(a.getUnderlying()));
     }
 
     public static String avm_valueOf(CharArray data, int offset, int count){
+        data.lazyLoad();
         return new String(java.lang.String.valueOf(data.getUnderlying(), offset, count));
     }
 
     public static String avm_copyValueOf(CharArray data, int offset, int count){
+        data.lazyLoad();
         return new String(java.lang.String.copyValueOf(data.getUnderlying(), offset, count));
     }
 
     public static String avm_copyValueOf(CharArray a){
+        a.lazyLoad();
         return new String(java.lang.String.copyValueOf(a.getUnderlying()));
     }
 
@@ -348,6 +408,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     // NOTE:  This toString() cannot be called by the contract code (it will call avm_toString()) but our runtime and test code can call this.
     @Override
     public java.lang.String toString() {
+        lazyLoad();
         return this.v;
     }
 

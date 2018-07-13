@@ -49,22 +49,27 @@ public class ObjectArray extends Array {
     public ObjectArray(){};
 
     public int length() {
+        lazyLoad();
         return this.underlying.length;
     }
 
     public Object get(int idx) {
+        lazyLoad();
         return this.underlying[idx];
     }
 
     public void set(int idx, Object val) {
+        lazyLoad();
         this.underlying[idx] = val;
     }
 
     public IObject avm_clone() {
+        lazyLoad();
         return new ObjectArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     public IObject clone() {
+        lazyLoad();
         return new ObjectArray(Arrays.copyOf(underlying, underlying.length));
     }
 
@@ -77,14 +82,17 @@ public class ObjectArray extends Array {
     }
 
     public Object[] getUnderlying() {
+        lazyLoad();
         return underlying;
     }
 
     public void setUnderlyingAsObject(java.lang.Object u){
+        lazyLoad();
         this.underlying = (Object[]) u;
     }
 
     public java.lang.Object getUnderlyingAsObject(){
+        lazyLoad();
         return underlying;
     }
 }

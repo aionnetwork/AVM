@@ -440,18 +440,21 @@ public class AvmImpl implements Avm {
         // As per usual, we need to get the special Helper class for each contract loader.
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
 
-        // Load the initial state of the environment.
-        ContractEnvironmentState initialState = ContractEnvironmentState.loadFromStorage(cb, dappAddress);
-        // TODO:  Inject the actual deserialization of the roots of the object graph (classes) at this point.
-
         // Construct the per-contract class loader and access the per-contract IHelper instance.
         AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
         
         // Load all the user-defined classes (these are required for both loading and storing state).
         List<Class<?>> aphabeticalContractClasses = getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
 
+        // Load the initial state of the environment.
+        ContractEnvironmentState initialState = ContractEnvironmentState.loadFromStorage(cb, dappAddress);
+        
+        // TODO:  We might be able to move this setup of IHelper to later in the load once we get rid of the <clinit> (requires energy).
         IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), initialState.nextHashCode);
         Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(tx, block, cb, helper));
+
+        // Now that we can load classes for the contract, load and populate all their classes.
+        RootClassCodec.populateClassStaticsFromStorage(classLoader, cb, dappAddress, aphabeticalContractClasses);
 
         // load class
         try {

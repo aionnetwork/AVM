@@ -150,11 +150,13 @@ public class Character extends Object {
     }
 
     public char avm_charValue() {
+        lazyLoad();
         return v;
     }
 
     @Override
     public int avm_hashCode() {
+        lazyLoad();
         return Character.avm_hashCode(v);
     }
 
@@ -170,6 +172,7 @@ public class Character extends Object {
     }
 
     public String avm_toString() {
+        lazyLoad();
         char buf[] = {v};
         CharArray a = new CharArray(buf);
         return String.avm_valueOf(a);

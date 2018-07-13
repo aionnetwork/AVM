@@ -49,32 +49,39 @@ public class ByteArray extends Array {
     }
 
     public int length() {
+        lazyLoad();
         return this.underlying.length;
     }
 
     public byte get(int idx) {
+        lazyLoad();
         return this.underlying[idx];
     }
 
     public void set(int idx, byte val) {
+        lazyLoad();
         this.underlying[idx] = val;
     }
 
     public IObject avm_clone() {
+        lazyLoad();
         return new ByteArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     public IObject clone() {
+        lazyLoad();
         return new ByteArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     @Override
     public boolean equals(java.lang.Object obj) {
+        lazyLoad();
         return obj instanceof ByteArray && Arrays.equals(this.underlying, ((ByteArray) obj).underlying);
     }
 
     @Override
     public java.lang.String toString() {
+        lazyLoad();
         return Arrays.toString(this.underlying);
     }
 
@@ -87,14 +94,17 @@ public class ByteArray extends Array {
     }
 
     public byte[] getUnderlying() {
+        lazyLoad();
         return underlying;
     }
 
     public void setUnderlyingAsObject(java.lang.Object u){
+        lazyLoad();
         this.underlying = (byte[]) u;
     }
 
     public java.lang.Object getUnderlyingAsObject(){
+        lazyLoad();
         return underlying;
     }
 }

@@ -53,6 +53,7 @@ public class IntArray extends Array {
     }
 
     public int get(int idx) {
+        lazyLoad();
         return this.underlying[idx];
     }
 

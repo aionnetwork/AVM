@@ -10,10 +10,12 @@ public abstract class Enum<E extends Enum<E>> extends Object {
     private int ordinal;
 
     public final String avm_name() {
+        lazyLoad();
         return name;
     }
 
     public final int avm_ordinal() {
+        lazyLoad();
         return ordinal;
     }
 
@@ -28,14 +30,17 @@ public abstract class Enum<E extends Enum<E>> extends Object {
     }
 
     public String avm_toString() {
+        lazyLoad();
         return name;
     }
 
     public final boolean avm_equals(Object other) {
+        lazyLoad();
         return this == other;
     }
 
     public final int avm_hashCode() {
+        lazyLoad();
         return this.ordinal;
     }
 
