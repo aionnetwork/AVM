@@ -2,9 +2,16 @@ package org.aion.avm.internal;
 
 
 /**
- * For now, this is just a placeholder type for use in a generated constructor (one we know that the user contract can't directly reference).
- * Eventually, it will play a larger role in the lazy (and sometimes eager - in the case of Class) instance deserialization logic.
+ * Passed to the stub constructor of an object which exists in storage.
+ * This is used by said object to request that it be inflated to a full object.
  */
 public interface IDeserializer {
-
+    /**
+     * Called by the shadow Object lazyLoad() routine to request that it be deserialized.
+     * This call will result in deserializeSelf() being invoked on that instance.
+     * 
+     * @param instance The instance to load.
+     * @param instanceId The persistence identifier of instance.
+     */
+    void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId);
 }

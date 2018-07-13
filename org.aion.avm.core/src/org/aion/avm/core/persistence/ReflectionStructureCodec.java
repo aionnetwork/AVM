@@ -2,12 +2,15 @@ package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelApi;
 
@@ -22,13 +25,16 @@ import org.aion.kernel.KernelApi;
  * 
  * TODO:  Test the benefit of caching the reflected field access instances for user-defined classes (there is a great deal of re-use).
  */
-public class ReflectionStructureCodec {
+public class ReflectionStructureCodec implements IDeserializer {
     private final ClassLoader classLoader;
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> instanceStubMap;
     private final KernelApi kernel;
     private final byte[] address;
-    private final Field hashCodeField;
-    private final Field isLoadedField;
+    // We cache the method entry-point we will use to invoke the load operation on any instance.
+    private final Method deserializeSelf;
+    private final Method serializeSelf;
+    // We only hold the deserializerField because we need to check if it is null when traversing the graph for objects to serialize.
+    private final Field deserializerField;
     private final Field instanceIdField;
     private long nextInstanceId;
 
@@ -38,13 +44,13 @@ public class ReflectionStructureCodec {
         this.kernel = kernel;
         this.address = address;
         try {
-            this.hashCodeField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("hashCode");
-            this.hashCodeField.setAccessible(true);
-            this.isLoadedField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("isLoaded");
-            this.isLoadedField.setAccessible(true);
+            this.deserializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("deserializeSelf", IObjectDeserializer.class);
+            this.serializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("serializeSelf", IObjectSerializer.class);
+            this.deserializerField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("deserializer");
+            this.deserializerField.setAccessible(true);
             this.instanceIdField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("instanceId");
             this.instanceIdField.setAccessible(true);
-        } catch (NoSuchFieldException | SecurityException e) {
+        } catch (NoSuchFieldException | SecurityException | NoSuchMethodException e) {
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
         }
@@ -80,9 +86,16 @@ public class ReflectionStructureCodec {
             // Perform the special logic for the root object.
             // There are no shadow static fields of note.
             if (null != object) {
-                // We only want the "hashCode" since "isLoaded" must be transient and "instanceId" is stored in the referring slot.
-                int hashCode = this.hashCodeField.getInt(object);
-                encoder.encodeInt(hashCode);
+                // Note that this is a temporary stop-gap to show how the serialization system crosses the boundary:
+                // We call serializeSelf so that the Object can encode its hashCode but this will be further
+                // generalized, later.
+                SingleInstanceSerializer objectSerializer = new SingleInstanceSerializer(encoder);
+                try {
+                    this.serializeSelf.invoke(object, objectSerializer);
+                } catch (InvocationTargetException e) {
+                    // Runtime errors in the serialization path are not recoverable.
+                    throw RuntimeAssertionError.unexpected(e);
+                }
             }
         } else {
             // Call the superclass and serialize this class.
@@ -167,9 +180,16 @@ public class ReflectionStructureCodec {
             // Perform the special logic for the root object.
             // There are no shadow static fields of note.
             if (null != object) {
-                // We only want the "hashCode" since "isLoaded" must be transient and "instanceId" is stored in the referring slot.
-                int hashCode = decoder.decodeInt();
-                this.hashCodeField.setInt(object, hashCode);
+                // Note that this is a temporary stop-gap to show how the deserialization system crosses the boundary:
+                // We call deserializeSelf so that the Object can decode its hashCode but this will be further
+                // generalized, later.
+                SingleInstanceDeserializer objectDeserializer = new SingleInstanceDeserializer(decoder);
+                try {
+                    this.deserializeSelf.invoke(object, objectDeserializer);
+                } catch (InvocationTargetException e) {
+                    // Runtime errors in the serialization path are not recoverable.
+                    throw RuntimeAssertionError.unexpected(e);
+                }
             }
         } else {
             // Call the superclass and serialize this class.
@@ -245,11 +265,21 @@ public class ReflectionStructureCodec {
             // Create the new stub and put it in the map.
             Class<?> contentClass = this.classLoader.loadClass(className);
             // NOTE:  This line is why all our shadow objects and all the transformed user code needs an empty constructor.
-            stub = (org.aion.avm.shadow.java.lang.Object)contentClass.getConstructor(IDeserializer.class, long.class).newInstance(null, instanceId);
-            this.isLoadedField.setBoolean(stub, false);
-            this.instanceIdField.setLong(stub, instanceId);
+            stub = (org.aion.avm.shadow.java.lang.Object)contentClass.getConstructor(IDeserializer.class, long.class).newInstance(this, instanceId);
             this.instanceStubMap.put(instanceId, stub);
         }
         return stub;
+    }
+
+    @Override
+    public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
+        // This instance cannot be 0 since that implies we are deserializing a new object.
+        // (we also want to define negative numbers as something special, in the future).
+        RuntimeAssertionError.assertTrue(instanceId > 0);
+        
+        // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
+        byte[] rawData = this.kernel.getStorage(address, StorageKeys.forInstance(instanceId));
+        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
+        deserialize(decoder, instance.getClass(), instance);
     }
 }

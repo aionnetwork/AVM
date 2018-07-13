@@ -1,5 +1,7 @@
 package org.aion.avm.core.persistence;
 
+import java.nio.charset.StandardCharsets;
+
 
 /**
  * A single place where we manage mapping special-case and general-case keys into the global namespace.
@@ -10,4 +12,9 @@ package org.aion.avm.core.persistence;
 public class StorageKeys {
     public static final byte[] CLASS_STATICS = new byte[] {11,12,13,14,15,16,17,18,19,10};
     public static final byte[] CONTRACT_ENVIRONMENT = new byte[] {1,2,3,4,5,6,7,8,9,0};
+
+    public static byte[] forInstance(long instanceId) {
+        String key = "instance_" + instanceId;
+        return key.getBytes(StandardCharsets.UTF_8);
+    }
 }

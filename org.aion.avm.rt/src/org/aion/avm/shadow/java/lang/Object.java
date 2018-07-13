@@ -3,6 +3,8 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 
 
 /**
@@ -10,21 +12,19 @@ import org.aion.avm.internal.IObject;
  */
 public class Object extends java.lang.Object implements IObject {
     private int hashCode;
-    // Note that isLoaded and instanceId are not used yet but here to test ReflectionStructureCodec.
-    private boolean isLoaded;
-    @SuppressWarnings("unused")
-    private long instanceId;
+    public long instanceId;
+    // We hold on to this deserializer until we need to load the instance (this is cleared after lazyLoad() completes).
+    private IDeserializer deserializer;
 
     public Object() {
         this.hashCode = IHelper.currentContractHelper.get().externalGetNextHashCode();
-        this.isLoaded = true;
         this.instanceId = 0l;
     }
 
     // Special constructor only invoked when instantiating this as an instance stub.
     public Object(IDeserializer deserializer, long instanceId) {
-        this.isLoaded = false;
         this.instanceId = instanceId;
+        this.deserializer = deserializer;
     }
 
     @Override
@@ -89,10 +89,29 @@ public class Object extends java.lang.Object implements IObject {
                 : false;
     }
 
-    public void lazyLoad() {
-        if (!this.isLoaded) {
-            // This is currently empty but will be used, later on, as part of the persistence model implementation.
-            this.isLoaded = true;
+    /**
+     * The call which causes this instance to become loaded.
+     * Note that this is final since the protected "deserializeSelf" should be over-ridden.
+     */
+    public final void lazyLoad() {
+        if (null != this.deserializer) {
+            // Tell the deserializer to invoke the deserialization pipeline (which may call back to us).
+            this.deserializer.startDeserializeInstance(this, this.instanceId);
+            this.deserializer = null;
         }
+    }
+
+    public void deserializeSelf(IObjectDeserializer deserializer) {
+        // We only operate on our hashCode.
+        this.hashCode = deserializer.readInt();
+        
+        // TODO:  In the future, this is where we need to hook into the automatic deserialization mechanism.
+    }
+
+    public void serializeSelf(IObjectSerializer serializer) {
+        // We only operate on our hashCode.
+        serializer.writeInt(this.hashCode);
+        
+        // TODO:  In the future, this is where we need to hook into the automatic serialization mechanism.
     }
 }
