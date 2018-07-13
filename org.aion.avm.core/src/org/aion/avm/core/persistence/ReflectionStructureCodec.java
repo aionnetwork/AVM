@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.kernel.KernelApi;
 
 
 /**
@@ -24,14 +25,18 @@ import org.aion.avm.internal.RuntimeAssertionError;
 public class ReflectionStructureCodec {
     private final ClassLoader classLoader;
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> instanceStubMap;
+    private final KernelApi kernel;
+    private final byte[] address;
     private final Field hashCodeField;
     private final Field isLoadedField;
     private final Field instanceIdField;
     private long nextInstanceId;
 
-    public ReflectionStructureCodec(ClassLoader classLoader, long nextInstanceId) {
+    public ReflectionStructureCodec(ClassLoader classLoader, KernelApi kernel, byte[] address, long nextInstanceId) {
         this.classLoader = classLoader;
         this.instanceStubMap = new HashMap<>();
+        this.kernel = kernel;
+        this.address = address;
         try {
             this.hashCodeField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("hashCode");
             this.hashCodeField.setAccessible(true);

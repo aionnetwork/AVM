@@ -25,7 +25,7 @@ public class RootClassCodec {
     public static void populateClassStaticsFromStorage(ClassLoader loader, KernelApi cb, byte[] address, List<Class<?>> classes) {
         // Extract the raw data.
         byte[] rawData = cb.getStorage(address, StorageKeys.CLASS_STATICS);
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, 0);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, cb, address, 0);
         StreamingPrimitiveCodec.Decoder decoder = StreamingPrimitiveCodec.buildDecoder(rawData);
         
         // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
@@ -45,7 +45,7 @@ public class RootClassCodec {
      */
     public static void saveClassStaticsToStorage(ClassLoader loader, long nextInstanceId, KernelApi cb, byte[] address, List<Class<?>> classes) {
         // Build the encoder.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, nextInstanceId);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, cb, address, nextInstanceId);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
         
         // We will serialize the classes, in-order (the order of the serialization/deserialization must always be the same).
