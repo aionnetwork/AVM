@@ -35,7 +35,7 @@ public class AvmSharedClassLoader extends ClassLoader {
     }
 
     @Override
-    public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    synchronized public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         // NOTE:  We override this, instead of findClass, since we want to circumvent the normal delegation process of class loaders.
         Class<?> result = null;
         boolean shouldResolve = resolve;
