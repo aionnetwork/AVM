@@ -813,7 +813,7 @@ public class AvmImpl implements Avm {
      * classLoader.  Note that only class names within the "user" namespace are considered.
      * 
      * @param classLoader The class loader where the classes exist.
-     * @param className The names of the classes which should be loaded. 
+     * @param classNames The names of the classes which should be loaded.
      * @return The class objects, in alphabetical order by their names.
      */
     private static List<Class<?>> getAlphabeticalUserTransformedClasses(AvmClassLoader classLoader, Set<String> classNames) {

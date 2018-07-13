@@ -1,6 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -9,14 +10,11 @@ import org.objectweb.asm.Label;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ArrayWrappingClassGenerator implements Opcodes {
     private static boolean DEBUG = false;
 
     static private String[] PRIMITIVES = {"I", "J", "Z", "B", "S", "D", "F", "C"};
-    static private String HELPER = PackageConstants.kInternalSlashPrefix + "Helper";
     static private HashMap<String, String> CLASS_WRAPPER_MAP = new HashMap<>();
     static private HashMap<String, String> INTERFACE_WRAPPER_MAP = new HashMap<>();
 
@@ -204,11 +202,11 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     private static void generateClass(ClassWriter cw, String wrapper, String zuper, int d){
         // Static factory for one dimensional array
         // We always generate one D factory for corner case like int[][][][] a = new int[10][][][];
-        genSDFac(cw, wrapper, 1);
+        genSingleDimensionFactory(cw, wrapper, 1);
 
         if (d > 1) {
             //Static factory for multidimensional array
-            genMDFac(cw, wrapper, d);
+            genMultiDimensionFactory(cw, wrapper, d);
         }
 
         //Constructor
@@ -218,12 +216,8 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         genClone(cw, wrapper);
     }
 
-    private static void generateInterface(){
-
-    }
-
-    private static void genSDFac(ClassWriter cw, String wrapper, int d){
-        String facDesc = ArrayWrappingClassGenerator.getFacDesc(wrapper, d);
+    private static void genSingleDimensionFactory(ClassWriter cw, String wrapper, int d){
+        String facDesc = ArrayWrappingClassGenerator.getFactoryDescriptor(wrapper, d);
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC | ACC_STATIC, "initArray", facDesc, null, null);
         mv.visitCode();
         mv.visitTypeInsn(NEW, wrapper);
@@ -244,7 +238,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         mv.visitEnd();
     }
 
-    private static void genMDFac(ClassWriter cw, String wrapper, int d){
+    private static void genMultiDimensionFactory(ClassWriter cw, String wrapper, int d){
         // Code template for $$$MyObject.initArray (3D array of MyObject)
         // Note that for D = n array, n dimension parameter will be passed into initArray
         //
@@ -256,7 +250,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         //    return ret;
         // }
 
-        String facDesc = ArrayWrappingClassGenerator.getFacDesc(wrapper, d);
+        String facDesc = ArrayWrappingClassGenerator.getFactoryDescriptor(wrapper, d);
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC | ACC_STATIC, "initArray", facDesc, null, null);
         mv.visitCode();
 
@@ -346,7 +340,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
                 break;
         }
         childWrapper = PackageConstants.kArrayWrapperSlashPrefix + childWrapper;
-        childFacDesc = ArrayWrappingClassGenerator.getFacDesc(childWrapper, d - 1);
+        childFacDesc = ArrayWrappingClassGenerator.getFactoryDescriptor(childWrapper, d - 1);
 
         mv.visitMethodInsn(INVOKESTATIC, childWrapper, "initArray", childFacDesc, false);
 
@@ -384,7 +378,6 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         methodVisitor.visitInsn(RETURN);
         methodVisitor.visitMaxs(2, 2);
         methodVisitor.visitEnd();
-
 
         methodVisitor = cw.visitMethod(ACC_PUBLIC, initName, "([Ljava/lang/Object;)V", null, null);
         methodVisitor.visitCode();
@@ -438,55 +431,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     static java.lang.String updateMethodDesc(java.lang.String desc) {
-        //\[*L[^;]+;|\[[ZBCSIFDJ]|[ZBCSIFDJ]
-        StringBuilder sb = new StringBuilder();
-        java.lang.String wrapperName;
-        java.lang.String cur;
-
-        int beginIndex = desc.indexOf('(');
-        int endIndex = desc.lastIndexOf(')');
-
-        // Method descriptor has to contain () pair
-        if(beginIndex == -1 || endIndex == -1) {
-            System.err.println(beginIndex);
-            System.err.println(endIndex);
-            throw new RuntimeException();
-        }
-        sb.append(desc, 0, beginIndex);
-        sb.append('(');
-
-        // Parse param
-        java.lang.String para = desc.substring(beginIndex + 1, endIndex);
-        Pattern pattern = Pattern.compile("\\[*L[^;]+;|\\[*[ZBCSIFDJ]|[ZBCSIFDJ]");
-        Matcher paraMatcher = pattern.matcher(para);
-
-        while(paraMatcher.find())
-        {
-            cur = paraMatcher.group();
-            if(cur.startsWith("[")) {
-                cur = "L" + getClassWrapper(cur) + ";";
-            }
-            sb.append(cur);
-        }
-        sb.append(')');
-
-        // Parse return type if there is any
-        if (endIndex < (desc.length() - 1)){
-            java.lang.String ret = desc.substring(endIndex + 1);
-            if (ret.equals("V")){
-                sb.append(ret);
-            }
-            Matcher retMatcher = pattern.matcher(ret);
-            if (retMatcher.find()){
-                cur = retMatcher.group();
-                if(cur.startsWith("[")) {
-                    cur = "L" + getClassWrapper(cur) + ";";
-                }
-                sb.append(cur);
-            }
-        }
-        //System.out.println(sb.toString());
-        return sb.toString();
+        return mapDescriptor(desc);
     }
 
     // Return the wrapper descriptor of an array
@@ -504,9 +449,39 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             CLASS_WRAPPER_MAP.put(desc, newClassWrapper(desc));
             ret = CLASS_WRAPPER_MAP.get(desc);
         }
-
-        //System.out.println("Wrapper name : " + ret);
         return ret;
+    }
+
+    private static java.lang.String getObjectArrayWrapper(java.lang.String type, int dim){
+        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "L" + type);
+    }
+
+    private static java.lang.String getByteArrayWrapper(int dim){
+        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "B");
+    }
+
+    private static java.lang.String getCharArrayWrapper(int dim){
+        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "C");
+    }
+
+    private static java.lang.String getIntArrayWrapper(int dim){
+        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "I");
+    }
+
+    private static java.lang.String getDoubleArrayWrapper(int dim){
+        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "D");
+    }
+
+    private static java.lang.String getFloatArrayWrapper(int dim){
+        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "F");
+    }
+
+    private static java.lang.String getLongArrayWrapper(int dim){
+        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "J");
+    }
+
+    private static java.lang.String getShortArrayWrapper(int dim){
+        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "S");
     }
 
     // Return the wrapper descriptor of an array
@@ -525,19 +500,16 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             ret = INTERFACE_WRAPPER_MAP.get(desc);
         }
 
-        //System.out.println("Wrapper name : " + ret);
         return ret;
     }
 
     // Return the wrapper descriptor of an array
-    static java.lang.String getFacDesc(java.lang.String wrapper, int d){
+    static java.lang.String getFactoryDescriptor(java.lang.String wrapper, int d){
         String facDesc = new String(new char[d]).replace("\0", "I");
         facDesc = "(" + facDesc + ")L" + wrapper + ";";
         return facDesc;
     }
 
-
-    //TODO:: is this enough?
     private static java.lang.String newClassWrapper(java.lang.String desc){
         //System.out.println(desc);
         StringBuilder sb = new StringBuilder();
@@ -547,13 +519,12 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         if((desc.charAt(1) == 'L') || (desc.charAt(1) == '[')){
             sb.append(desc.replace('[', '$'));
         }else{
-            Assert.unreachable("newClassWrapper :" + desc);
+            Assert.unreachable("newClassWrapper: " + desc);
         }
 
         return sb.toString();
     }
 
-    //TODO:: is this enough?
     private static java.lang.String newInterfaceWrapper(java.lang.String desc){
         //System.out.println(desc);
         StringBuilder sb = new StringBuilder();
@@ -591,4 +562,136 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
         return ret;
     }
+
+    private static String mapDescriptor(String descriptor) {
+        StringBuilder builder = DescriptorParser.parse(descriptor, new DescriptorParser.Callbacks<>() {
+            @Override
+            public StringBuilder readObject(int arrayDimensions, String type, StringBuilder userData) {
+                if (arrayDimensions > 0) {
+                    userData.append(DescriptorParser.OBJECT_START);
+                }
+                userData.append(getObjectArrayWrapper(type, arrayDimensions));
+                userData.append(DescriptorParser.OBJECT_END);
+                return userData;
+            }
+
+            @Override
+            public StringBuilder readBoolean(int arrayDimensions, StringBuilder userData) {
+                if (arrayDimensions > 0) {
+                    userData.append(DescriptorParser.OBJECT_START);
+                    userData.append(getByteArrayWrapper(arrayDimensions));
+                    userData.append(DescriptorParser.OBJECT_END);
+                }else {
+                    userData.append(DescriptorParser.BOOLEAN);
+                }
+                return userData;
+            }
+
+            @Override
+            public StringBuilder readShort(int arrayDimensions, StringBuilder userData) {
+                if (arrayDimensions > 0) {
+                    userData.append(DescriptorParser.OBJECT_START);
+                    userData.append(getShortArrayWrapper(arrayDimensions));
+                    userData.append(DescriptorParser.OBJECT_END);
+                }else{
+                    userData.append(DescriptorParser.SHORT);
+                }
+                return userData;
+            }
+
+            @Override
+            public StringBuilder readLong(int arrayDimensions, StringBuilder userData) {
+                if (arrayDimensions > 0) {
+                    userData.append(DescriptorParser.OBJECT_START);
+                    userData.append(getLongArrayWrapper(arrayDimensions));
+                    userData.append(DescriptorParser.OBJECT_END);
+                }else{
+                    userData.append(DescriptorParser.LONG);
+                }
+                return userData;
+            }
+
+            @Override
+            public StringBuilder readInteger(int arrayDimensions, StringBuilder userData) {
+                if (arrayDimensions > 0) {
+                    userData.append(DescriptorParser.OBJECT_START);
+                    userData.append(getIntArrayWrapper(arrayDimensions));
+                    userData.append(DescriptorParser.OBJECT_END);
+                }else{
+                    userData.append(DescriptorParser.INTEGER);
+                }
+                return userData;
+            }
+
+            @Override
+            public StringBuilder readFloat(int arrayDimensions, StringBuilder userData) {
+                if (arrayDimensions > 0) {
+                    userData.append(DescriptorParser.OBJECT_START);
+                    userData.append(getFloatArrayWrapper(arrayDimensions));
+                    userData.append(DescriptorParser.OBJECT_END);
+                }else{
+                    userData.append(DescriptorParser.FLOAT);
+                }
+
+                return userData;
+            }
+
+            @Override
+            public StringBuilder readDouble(int arrayDimensions, StringBuilder userData) {
+                if (arrayDimensions > 0) {
+                    userData.append(DescriptorParser.OBJECT_START);
+                    userData.append(getDoubleArrayWrapper(arrayDimensions));
+                    userData.append(DescriptorParser.OBJECT_END);
+                }else{
+                    userData.append(DescriptorParser.DOUBLE);
+                }
+                return userData;
+            }
+
+            @Override
+            public StringBuilder readChar(int arrayDimensions, StringBuilder userData) {
+                if (arrayDimensions > 0) {
+                    userData.append(DescriptorParser.OBJECT_START);
+                    userData.append(getCharArrayWrapper(arrayDimensions));
+                    userData.append(DescriptorParser.OBJECT_END);
+                }else{
+                    userData.append(DescriptorParser.CHAR);
+                }
+                return userData;
+            }
+
+            @Override
+            public StringBuilder readByte(int arrayDimensions, StringBuilder userData) {
+                if (arrayDimensions > 0) {
+                    userData.append(DescriptorParser.OBJECT_START);
+                    userData.append(getByteArrayWrapper(arrayDimensions));
+                    userData.append(DescriptorParser.OBJECT_END);
+                }else{
+                    userData.append(DescriptorParser.BYTE);
+                }
+                return userData;
+            }
+
+            @Override
+            public StringBuilder argumentStart(StringBuilder userData) {
+                userData.append(DescriptorParser.ARGS_START);
+                return userData;
+            }
+            @Override
+            public StringBuilder argumentEnd(StringBuilder userData) {
+                userData.append(DescriptorParser.ARGS_END);
+                return userData;
+            }
+            @Override
+            public StringBuilder readVoid(StringBuilder userData) {
+                userData.append(DescriptorParser.VOID);
+                return userData;
+            }
+
+        }, new StringBuilder());
+
+        return builder.toString();
+    }
+
+
 }

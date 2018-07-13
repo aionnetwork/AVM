@@ -234,7 +234,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             d++;
         }
         String wName = ArrayWrappingClassGenerator.getClassWrapper(descriptor);
-        String facDesc = ArrayWrappingClassGenerator.getFacDesc(wName, sd);
+        String facDesc = ArrayWrappingClassGenerator.getFactoryDescriptor(wName, sd);
 
         this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc, false);
     }
