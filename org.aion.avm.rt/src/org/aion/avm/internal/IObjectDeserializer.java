@@ -17,5 +17,13 @@ public interface IObjectDeserializer {
      */
     void beginAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass);
 
+    byte readByte();
+
+    short readShort();
+
+    char readChar();
+
     int readInt();
+
+    long readLong();
 }

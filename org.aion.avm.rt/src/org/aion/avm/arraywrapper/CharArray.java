@@ -2,8 +2,12 @@ package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 
 import java.util.Arrays;
+import java.util.function.Consumer;
+
 
 public class CharArray extends Array {
 
@@ -21,6 +25,27 @@ public class CharArray extends Array {
     // Deserializer support.
     public CharArray(IDeserializer deserializer, long instanceId) {
         super(deserializer, instanceId);
+    }
+
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(ByteArray.class, deserializer);
+        
+        // TODO:  We probably want faster array copies.
+        int length = deserializer.readInt();
+        this.underlying = new char[length];
+        for (int i = 0; i < length; ++i) {
+            this.underlying[i] = deserializer.readChar();
+        }
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+        super.serializeSelf(IntArray.class, serializer, nextObjectQueue);
+        
+        // TODO:  We probably want faster array copies.
+        serializer.writeInt(this.underlying.length);
+        for (int i = 0; i < this.underlying.length; ++i) {
+            serializer.writeChar(this.underlying[i]);
+        }
     }
 
     public int length() {

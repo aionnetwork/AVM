@@ -24,8 +24,28 @@ public class SingleInstanceSerializer implements IObjectSerializer {
     }
 
     @Override
+    public void writeByte(byte value) {
+        this.encoder.encodeByte(value);
+    }
+
+    @Override
+    public void writeShort(short value) {
+        this.encoder.encodeShort(value);
+    }
+
+    @Override
+    public void writeChar(char value) {
+        this.encoder.encodeChar(value);
+    }
+
+    @Override
     public void writeInt(int value) {
         this.encoder.encodeInt(value);
+    }
+
+    @Override
+    public void writeLong(long value) {
+        this.encoder.encodeLong(value);
     }
 
 

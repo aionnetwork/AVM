@@ -20,5 +20,13 @@ public interface IObjectSerializer {
      */
     void beginAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue);
 
+    void writeByte(byte value);
+
+    void writeShort(short value);
+
+    void writeChar(char value);
+
     void writeInt(int value);
+
+    void writeLong(long value);
 }

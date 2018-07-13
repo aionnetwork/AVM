@@ -22,8 +22,28 @@ public class SingleInstanceDeserializer implements IObjectDeserializer {
     }
 
     @Override
+    public byte readByte() {
+        return this.decoder.decodeByte();
+    }
+
+    @Override
+    public short readShort() {
+        return this.decoder.decodeShort();
+    }
+
+    @Override
+    public char readChar() {
+        return this.decoder.decodeChar();
+    }
+
+    @Override
     public int readInt() {
         return this.decoder.decodeInt();
+    }
+
+    @Override
+    public long readLong() {
+        return this.decoder.decodeLong();
     }
 
 
