@@ -7,6 +7,7 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObjectDeserializer;
@@ -26,6 +27,11 @@ import org.aion.kernel.KernelApi;
  * TODO:  Test the benefit of caching the reflected field access instances for user-defined classes (there is a great deal of re-use).
  */
 public class ReflectionStructureCodec implements IDeserializer {
+    private static IDeserializer DONE_MARKER = new IDeserializer() {
+        @Override
+        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
+        }};
+
     private final ClassLoader classLoader;
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> instanceStubMap;
     private final KernelApi kernel;
@@ -45,7 +51,7 @@ public class ReflectionStructureCodec implements IDeserializer {
         this.address = address;
         try {
             this.deserializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("deserializeSelf", IObjectDeserializer.class);
-            this.serializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("serializeSelf", IObjectSerializer.class);
+            this.serializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("serializeSelf", IObjectSerializer.class, Consumer.class);
             this.deserializerField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("deserializer");
             this.deserializerField.setAccessible(true);
             this.instanceIdField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("instanceId");
@@ -57,9 +63,9 @@ public class ReflectionStructureCodec implements IDeserializer {
         this.nextInstanceId = nextInstanceId;
     }
 
-    public void serializeClass(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz) {
+    public void serializeClass(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
-            safeSerialize(encoder, clazz, null);
+            safeSerialize(encoder, clazz, null, nextObjectQueue);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
@@ -76,7 +82,7 @@ public class ReflectionStructureCodec implements IDeserializer {
     }
 
 
-    private void safeSerialize(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException {
+    private void safeSerialize(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) throws IllegalArgumentException, IllegalAccessException {
         // This method is recursive since we are looking to find the root where we need to begin:
         // -for Objects this is the shadow Object
         // -for interfaces, it is when we hit null (since they have no super-class but the interface may have statics)
@@ -91,7 +97,7 @@ public class ReflectionStructureCodec implements IDeserializer {
                 // generalized, later.
                 SingleInstanceSerializer objectSerializer = new SingleInstanceSerializer(encoder);
                 try {
-                    this.serializeSelf.invoke(object, objectSerializer);
+                    this.serializeSelf.invoke(object, objectSerializer, nextObjectQueue);
                 } catch (InvocationTargetException e) {
                     // Runtime errors in the serialization path are not recoverable.
                     throw RuntimeAssertionError.unexpected(e);
@@ -99,12 +105,12 @@ public class ReflectionStructureCodec implements IDeserializer {
             }
         } else {
             // Call the superclass and serialize this class.
-            safeSerialize(encoder, clazz.getSuperclass(), object);
-            safeSerializeOneClass(encoder, clazz, object);
+            safeSerialize(encoder, clazz.getSuperclass(), object, nextObjectQueue);
+            safeSerializeOneClass(encoder, clazz, object, nextObjectQueue);
         }
     }
 
-    private void safeSerializeOneClass(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException {
+    private void safeSerializeOneClass(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) throws IllegalArgumentException, IllegalAccessException {
         // Note that we serialize objects and classes the same way, just looking for instance versus static fields.
         int expectedModifier = (null == object)
                 ? Modifier.STATIC
@@ -149,13 +155,13 @@ public class ReflectionStructureCodec implements IDeserializer {
                     // Shape:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
                     // Null:  (int)0.
                     org.aion.avm.shadow.java.lang.Object contents = (org.aion.avm.shadow.java.lang.Object)field.get(object);
-                    deflateInstanceAsStub(encoder, contents);
+                    deflateInstanceAsStub(encoder, contents, nextObjectQueue);
                 }
             }
         } 
     }
 
-    private void deflateInstanceAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object contents) {
+    private void deflateInstanceAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object contents, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
             if (null != contents) {
                 String typeName = contents.getClass().getName();
@@ -170,6 +176,12 @@ public class ReflectionStructureCodec implements IDeserializer {
                     this.instanceIdField.setLong(contents, instanceId);
                 }
                 encoder.encodeLong(instanceId);
+                
+                // If this instance has been loaded, set it to not loaded and add it to the queue.
+                if (null == this.deserializerField.get(contents)) {
+                    this.deserializerField.set(contents, DONE_MARKER);
+                    nextObjectQueue.accept(contents);
+                }
             } else {
                 encoder.encodeInt(0);
             }
@@ -301,9 +313,9 @@ public class ReflectionStructureCodec implements IDeserializer {
         deserializeInstance(instance, rawData);
     }
 
-    public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance) {
+    public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         try {
-            byte[] serialized = internalSerializeInstance(instance);
+            byte[] serialized = internalSerializeInstance(instance, nextObjectSink);
             long instanceId = this.instanceIdField.getLong(instance);
             this.kernel.putStorage(this.address, StorageKeys.forInstance(instanceId), serialized);
         } catch (IllegalAccessException | IllegalArgumentException e) {
@@ -313,10 +325,10 @@ public class ReflectionStructureCodec implements IDeserializer {
     }
 
     // Note that this is only public so tests can use it.
-    public byte[] internalSerializeInstance(org.aion.avm.shadow.java.lang.Object instance) {
+    public byte[] internalSerializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
         try {
-            safeSerialize(encoder, instance.getClass(), instance);
+            safeSerialize(encoder, instance.getClass(), instance, nextObjectSink);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
             throw RuntimeAssertionError.unexpected(e);

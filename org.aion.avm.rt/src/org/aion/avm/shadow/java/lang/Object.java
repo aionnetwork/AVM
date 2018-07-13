@@ -1,5 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
+import java.util.function.Consumer;
+
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
@@ -108,7 +110,7 @@ public class Object extends java.lang.Object implements IObject {
         // TODO:  In the future, this is where we need to hook into the automatic deserialization mechanism.
     }
 
-    public void serializeSelf(IObjectSerializer serializer) {
+    public void serializeSelf(IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         // We only operate on our hashCode.
         serializer.writeInt(this.hashCode);
         

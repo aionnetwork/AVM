@@ -2,6 +2,7 @@ package org.aion.avm.core.persistence;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 import org.aion.avm.internal.Helper;
 
@@ -12,6 +13,11 @@ import org.junit.Test;
 
 
 public class ReflectionStructureCodecTest {
+    /**
+     * Note that most of these tests aren't interested in recursive serialize so this will skip that.
+     */
+    private static final Consumer<org.aion.avm.shadow.java.lang.Object> NULL_CONSUMER = (instance) -> {};
+
     @Before
     public void setup() {
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
@@ -39,7 +45,7 @@ public class ReflectionStructureCodecTest {
         
         ReflectionStructureCodec codec = new ReflectionStructureCodec(ReflectionStructureCodecTarget.class.getClassLoader(), null, null, 1);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
-        codec.serializeClass(encoder, ReflectionStructureCodecTarget.class);
+        codec.serializeClass(encoder, ReflectionStructureCodecTarget.class, NULL_CONSUMER);
         byte[] result = encoder.toBytes();
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -228,7 +234,7 @@ public class ReflectionStructureCodecTest {
 
 
     private static byte[] serializeSinceInstanceHelper(ReflectionStructureCodec codec, ReflectionStructureCodecTarget instance) {
-        return codec.internalSerializeInstance(instance);
+        return codec.internalSerializeInstance(instance, NULL_CONSUMER);
     }
 
     private static int readIntAtOffset(byte[] bytes, int offset) {

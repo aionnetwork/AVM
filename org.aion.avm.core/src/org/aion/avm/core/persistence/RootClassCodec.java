@@ -1,6 +1,9 @@
 package org.aion.avm.core.persistence;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.function.Consumer;
 
 import org.aion.kernel.KernelApi;
 
@@ -23,9 +26,11 @@ public class RootClassCodec {
      * @param classes The list of classes to populate (order must always be the same).
      */
     public static void populateClassStaticsFromStorage(ClassLoader loader, KernelApi cb, byte[] address, List<Class<?>> classes) {
-        // Extract the raw data.
-        byte[] rawData = cb.getStorage(address, StorageKeys.CLASS_STATICS);
+        // Create the codec which will make up the long-lived deserialization approach, within the system.
         ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, cb, address, 0);
+        
+        // Extract the raw data for the class statics.
+        byte[] rawData = cb.getStorage(address, StorageKeys.CLASS_STATICS);
         StreamingPrimitiveCodec.Decoder decoder = StreamingPrimitiveCodec.buildDecoder(rawData);
         
         // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
@@ -48,13 +53,23 @@ public class RootClassCodec {
         ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, cb, address, nextInstanceId);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
         
+        // Create the queue of instances reachable from here and consumer abstraction.
+        Queue<org.aion.avm.shadow.java.lang.Object> instancesToWrite = new LinkedList<>();
+        Consumer<org.aion.avm.shadow.java.lang.Object> instanceSink = new Consumer<>() {
+            @Override
+            public void accept(org.aion.avm.shadow.java.lang.Object t) {
+                instancesToWrite.add(t);
+            }};
+        
         // We will serialize the classes, in-order (the order of the serialization/deserialization must always be the same).
         for (Class<?> clazz : classes) {
-            codec.serializeClass(encoder, clazz);
+            codec.serializeClass(encoder, clazz, instanceSink);
         }
         
         // Save the raw bytes.
         byte[] rawData = encoder.toBytes();
         cb.putStorage(address, StorageKeys.CLASS_STATICS, rawData);
+        
+        // TODO:  Drain the queue (this change is just for plumbing since the serialization work isn't complete).
     }
 }
