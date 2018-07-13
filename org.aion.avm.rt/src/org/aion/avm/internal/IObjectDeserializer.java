@@ -26,4 +26,6 @@ public interface IObjectDeserializer {
     int readInt();
 
     long readLong();
+
+    org.aion.avm.shadow.java.lang.Object readStub();
 }

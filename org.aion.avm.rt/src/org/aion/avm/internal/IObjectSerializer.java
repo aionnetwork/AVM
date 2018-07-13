@@ -29,4 +29,6 @@ public interface IObjectSerializer {
     void writeInt(int value);
 
     void writeLong(long value);
+
+    void writeStub(org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue);
 }

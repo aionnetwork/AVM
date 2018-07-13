@@ -48,6 +48,11 @@ public class SingleInstanceSerializer implements IObjectSerializer {
         this.encoder.encodeLong(value);
     }
 
+    @Override
+    public void writeStub(org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+        this.automaticPart.encodeAsStub(this.encoder, object, nextObjectQueue);
+    }
+
 
     /**
      * This is the interface we must be given to handle the "automatic" part of the serialization.
@@ -65,5 +70,15 @@ public class SingleInstanceSerializer implements IObjectSerializer {
          * @param nextObjectQueue The queue which will accept any other object instances found while serializing instance.
          */
         void partialAutomaticSerializeInstance(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue);
+
+        /**
+         * Encodes the given object in the given encoder as a reference stub, passing the instance into nextObjectQueue if the receiver determines that it need to be serialized.
+         * This is only called at the end of an invocation, when the graph is being serialized for storage.
+         * 
+         * @param encoder The encoder to use.
+         * @param object The object instance which should be encoded as a stub.
+         * @param nextObjectQueue The queue which will accept the object, if the receiver determines it also needs to be serialized.
+         */
+        void encodeAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue);
     }
 }

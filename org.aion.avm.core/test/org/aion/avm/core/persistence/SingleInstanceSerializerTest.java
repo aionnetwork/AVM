@@ -9,10 +9,9 @@ import org.aion.avm.arraywrapper.DoubleArray;
 import org.aion.avm.arraywrapper.FloatArray;
 import org.aion.avm.arraywrapper.IntArray;
 import org.aion.avm.arraywrapper.LongArray;
+import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.arraywrapper.ShortArray;
-import org.aion.avm.core.persistence.StreamingPrimitiveCodec.Encoder;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.shadow.java.lang.Object;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,7 +21,16 @@ import org.junit.Test;
 public class SingleInstanceSerializerTest {
     private static final SingleInstanceSerializer.IAutomatic NULL_AUTOMATIC = new SingleInstanceSerializer.IAutomatic() {
         @Override
-        public void partialAutomaticSerializeInstance(Encoder encoder, Object instance, Class<?> firstManualClass, Consumer<Object> nextObjectQueue) {
+        public void partialAutomaticSerializeInstance(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+        }
+        @Override
+        public void encodeAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+            // For this test, we will just write a 0x1 or 0x0 depending on whether or not object was null (since this is a unit test of the flow, not the encoding).
+            if (null != object) {
+                encoder.encodeByte((byte)0x1);
+            } else {
+                encoder.encodeByte((byte)0x0);
+            }
         }};
 
     @Before
@@ -176,6 +184,25 @@ public class SingleInstanceSerializerTest {
                 0x45,
                 0x53,
                 0x54,
+        };
+        Assert.assertTrue(Arrays.equals(expected, result));
+    }
+
+    @Test
+    public void serializeObjectArray() {
+        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder);
+        ObjectArray holder = new ObjectArray(2);
+        ObjectArray bytes = new ObjectArray(new Object[] {holder, null});
+        bytes.serializeSelf(null, target, null);
+        byte[] result = encoder.toBytes();
+        
+        // (note that we are using the fake stub encoding, in NULL_AUTOMATIC).
+        byte[] expected = {
+                0x0, 0x0, 0x0, 0x2, //hashcode
+                0x0, 0x0, 0x0, 0x2, //length
+                0x1, // instance
+                0x0, // null
         };
         Assert.assertTrue(Arrays.equals(expected, result));
     }

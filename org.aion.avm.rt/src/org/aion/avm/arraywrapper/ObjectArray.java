@@ -2,8 +2,12 @@ package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 
 import java.util.Arrays;
+import java.util.function.Consumer;
+
 
 public class ObjectArray extends Array {
 
@@ -21,6 +25,27 @@ public class ObjectArray extends Array {
     // Deserializer support.
     public ObjectArray(IDeserializer deserializer, long instanceId) {
         super(deserializer, instanceId);
+    }
+
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(ObjectArray.class, deserializer);
+        
+        // TODO:  We probably want faster array copies.
+        int length = deserializer.readInt();
+        this.underlying = new Object[length];
+        for (int i = 0; i < length; ++i) {
+            this.underlying[i] = deserializer.readStub();
+        }
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+        super.serializeSelf(ObjectArray.class, serializer, nextObjectQueue);
+        
+        // TODO:  We probably want faster array copies.
+        serializer.writeInt(this.underlying.length);
+        for (int i = 0; i < this.underlying.length; ++i) {
+            serializer.writeStub((org.aion.avm.shadow.java.lang.Object)this.underlying[i], nextObjectQueue);
+        }
     }
 
     public ObjectArray(){};

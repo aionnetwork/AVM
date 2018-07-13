@@ -361,4 +361,14 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             throw RuntimeAssertionError.unexpected(e);
         }
     }
+
+    @Override
+    public void encodeAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+        deflateInstanceAsStub(encoder, object, nextObjectQueue);
+    }
+
+    @Override
+    public org.aion.avm.shadow.java.lang.Object decodeStub(StreamingPrimitiveCodec.Decoder decoder) {
+        return inflateStubAsInstance(decoder);
+    }
 }

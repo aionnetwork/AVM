@@ -8,10 +8,9 @@ import org.aion.avm.arraywrapper.DoubleArray;
 import org.aion.avm.arraywrapper.FloatArray;
 import org.aion.avm.arraywrapper.IntArray;
 import org.aion.avm.arraywrapper.LongArray;
+import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.arraywrapper.ShortArray;
-import org.aion.avm.core.persistence.StreamingPrimitiveCodec.Decoder;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.shadow.java.lang.Object;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,7 +20,15 @@ import org.junit.Test;
 public class SingleInstanceDeserializerTest {
     private static final SingleInstanceDeserializer.IAutomatic NULL_AUTOMATIC = new SingleInstanceDeserializer.IAutomatic() {
         @Override
-        public void partialAutomaticDeserializeInstance(Decoder decoder, Object instance, Class<?> firstManualClass) {
+        public void partialAutomaticDeserializeInstance(StreamingPrimitiveCodec.Decoder decoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
+        }
+        @Override
+        public org.aion.avm.shadow.java.lang.Object decodeStub(StreamingPrimitiveCodec.Decoder decoder) {
+            // We just check null, or not, by looking at the next byte:  if 0x1, return an ObjectArray, if 0x0, return null.
+            byte next = decoder.decodeByte();
+            return (0x0 == next) 
+                    ? null
+                    : new ObjectArray(1);
         }};
 
     @Before
@@ -161,5 +168,23 @@ public class SingleInstanceDeserializerTest {
         org.aion.avm.shadow.java.lang.String bytes = new org.aion.avm.shadow.java.lang.String((String)null);
         bytes.deserializeSelf(null, target);
         Assert.assertEquals("TEST", bytes.getV());
+    }
+
+    @Test
+    public void serializeObjectArray() {
+        // (note that we are using the fake stub encoding, in NULL_AUTOMATIC).
+        byte[] expected = {
+                0x0, 0x0, 0x0, 0x2, //hashcode
+                0x0, 0x0, 0x0, 0x2, //length
+                0x1, // instance
+                0x0, // null
+        };
+        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
+        SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
+        ObjectArray bytes = new ObjectArray(null);
+        bytes.deserializeSelf(null, target);
+        Assert.assertEquals(2, bytes.length());
+        Assert.assertNotNull(bytes.get(0));
+        Assert.assertNull(bytes.get(1));
     }
 }
