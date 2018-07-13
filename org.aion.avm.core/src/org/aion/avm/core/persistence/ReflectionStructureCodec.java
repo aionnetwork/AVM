@@ -149,25 +149,34 @@ public class ReflectionStructureCodec implements IDeserializer {
                     // Shape:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
                     // Null:  (int)0.
                     org.aion.avm.shadow.java.lang.Object contents = (org.aion.avm.shadow.java.lang.Object)field.get(object);
-                    if (null != contents) {
-                        String typeName = contents.getClass().getName();
-                        byte[] utf8Name = typeName.getBytes(StandardCharsets.UTF_8);
-                        encoder.encodeInt(utf8Name.length);
-                        encoder.encodeBytes(utf8Name);
-                        long instanceId = this.instanceIdField.getLong(contents);
-                        if (0 == instanceId) {
-                            // We have to assign this.
-                            instanceId = this.nextInstanceId;
-                            this.nextInstanceId += 1;
-                            this.instanceIdField.setLong(contents, instanceId);
-                        }
-                        encoder.encodeLong(instanceId);
-                    } else {
-                        encoder.encodeInt(0);
-                    }
+                    deflateInstanceAsStub(encoder, contents);
                 }
             }
         } 
+    }
+
+    private void deflateInstanceAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object contents) {
+        try {
+            if (null != contents) {
+                String typeName = contents.getClass().getName();
+                byte[] utf8Name = typeName.getBytes(StandardCharsets.UTF_8);
+                encoder.encodeInt(utf8Name.length);
+                encoder.encodeBytes(utf8Name);
+                long instanceId = this.instanceIdField.getLong(contents);
+                if (0 == instanceId) {
+                    // We have to assign this.
+                    instanceId = this.nextInstanceId;
+                    this.nextInstanceId += 1;
+                    this.instanceIdField.setLong(contents, instanceId);
+                }
+                encoder.encodeLong(instanceId);
+            } else {
+                encoder.encodeInt(0);
+            }
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // If there are any problems with this access, we must have resolved it before getting to this point.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 
     private void safeDeserialize(StreamingPrimitiveCodec.Decoder decoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
@@ -243,20 +252,30 @@ public class ReflectionStructureCodec implements IDeserializer {
                     }
                     // Shape:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
                     // Null:  (int)0.
-                    org.aion.avm.shadow.java.lang.Object instanceToStore = null;
-                    int length = decoder.decodeInt();
-                    if (0 != length) {
-                        // Decode this (note that we will need to look up the instance stub).
-                        byte[] utf8Name = new byte[length];
-                        decoder.decodeBytesInto(utf8Name);
-                        String className = new String(utf8Name, StandardCharsets.UTF_8);
-                        long instanceId = decoder.decodeLong();
-                        instanceToStore = findInstanceStub(className, instanceId);
-                    }
+                    org.aion.avm.shadow.java.lang.Object instanceToStore = inflateStubAsInstance(decoder);
                     field.set(object, instanceToStore);
                 }
             }
         } 
+    }
+
+    private org.aion.avm.shadow.java.lang.Object inflateStubAsInstance(StreamingPrimitiveCodec.Decoder decoder) {
+        try {
+            org.aion.avm.shadow.java.lang.Object instanceToStore = null;
+            int length = decoder.decodeInt();
+            if (0 != length) {
+                // Decode this (note that we will need to look up the instance stub).
+                byte[] utf8Name = new byte[length];
+                decoder.decodeBytesInto(utf8Name);
+                String className = new String(utf8Name, StandardCharsets.UTF_8);
+                long instanceId = decoder.decodeLong();
+                instanceToStore = findInstanceStub(className, instanceId);
+            }
+            return instanceToStore;
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            // If there are any problems with this access, we must have resolved it before getting to this point.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 
     private org.aion.avm.shadow.java.lang.Object findInstanceStub(String className, long instanceId) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
