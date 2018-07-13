@@ -183,7 +183,7 @@ public class ClassShadowingTest {
         Assert.assertNotNull(instance);
         
         // Try the deserialization constructor.
-        Object stub = clazz.getConstructor(IDeserializer.class, int.class, long.class).newInstance(null, 5, 6l);
+        Object stub = clazz.getConstructor(IDeserializer.class, long.class).newInstance(null, 6l);
         Assert.assertNotNull(stub);
     }
 
@@ -202,7 +202,7 @@ public class ClassShadowingTest {
         Assert.assertNotNull(instance);
         
         // Try the deserialization constructor.
-        Object stub = clazz.getConstructor(IDeserializer.class, int.class, long.class).newInstance(null, 5, 6l);
+        Object stub = clazz.getConstructor(IDeserializer.class, long.class).newInstance(null, 6l);
         Assert.assertNotNull(stub);
     }
 

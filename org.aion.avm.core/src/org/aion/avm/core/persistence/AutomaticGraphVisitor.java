@@ -22,7 +22,7 @@ public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor 
     private static final String CLINIT_NAME = "<clinit>";
     private static final String INIT_NAME = "<init>";
     // The special constructor takes (IDeserializer deserializer, int hashCode, long instanceId).
-    private static final String SPECIAL_CONSTRUCTOR_DESCRIPTOR = "(Lorg/aion/avm/internal/IDeserializer;IJ)V";
+    private static final String SPECIAL_CONSTRUCTOR_DESCRIPTOR = "(Lorg/aion/avm/internal/IDeserializer;J)V";
 
     private boolean isInterface;
     private String superClassName;
@@ -65,11 +65,10 @@ public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor 
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-            methodVisitor.visitVarInsn(Opcodes.ILOAD, 2);
-            methodVisitor.visitVarInsn(Opcodes.LLOAD, 3);
+            methodVisitor.visitVarInsn(Opcodes.LLOAD, 2);
             methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superClassName, INIT_NAME, SPECIAL_CONSTRUCTOR_DESCRIPTOR, false);
             methodVisitor.visitInsn(Opcodes.RETURN);
-            methodVisitor.visitMaxs(5, 5);
+            methodVisitor.visitMaxs(4, 4);
             methodVisitor.visitEnd();
         }
         super.visitEnd();

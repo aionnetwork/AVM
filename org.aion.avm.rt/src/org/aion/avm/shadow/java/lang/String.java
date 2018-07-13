@@ -21,8 +21,8 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     // Deserializer support.
-    public String(IDeserializer deserializer, int hashCode, long instanceId) {
-        super(deserializer, hashCode, instanceId);
+    public String(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 
     public String(String original) {

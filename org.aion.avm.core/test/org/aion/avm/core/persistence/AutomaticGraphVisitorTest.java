@@ -56,7 +56,7 @@ public class AutomaticGraphVisitorTest {
 
     @Test
     public void createSecondarySpecialConstructor() throws Exception {
-        Object secondary = this.secondaryClass.getConstructor(IDeserializer.class, int.class, long.class).newInstance(null, 5, 6l);
+        Object secondary = this.secondaryClass.getConstructor(IDeserializer.class, long.class).newInstance(null, 6l);
         Assert.assertEquals(0, this.secondaryClass.getDeclaredField("avm_value").getInt(secondary));
         this.secondaryClass.getMethod("avm_setValue", int.class).invoke(secondary, 1);
         Assert.assertEquals(1, this.secondaryClass.getDeclaredField("avm_value").getInt(secondary));

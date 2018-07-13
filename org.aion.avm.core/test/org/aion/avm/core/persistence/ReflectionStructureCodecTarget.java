@@ -33,7 +33,7 @@ public class ReflectionStructureCodecTarget extends org.aion.avm.shadow.java.lan
     }
 
     // We need to manually define the deserialization constructor since we aren't a transformed test.
-    public ReflectionStructureCodecTarget(IDeserializer deserializer, int hashCode, long instanceId) {
-        super(deserializer, hashCode, instanceId);
+    public ReflectionStructureCodecTarget(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 }

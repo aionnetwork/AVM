@@ -9,7 +9,7 @@ import org.aion.avm.internal.IObject;
  * The shadow implementation of the {@link java.lang.Object}.
  */
 public class Object extends java.lang.Object implements IObject {
-    private final int hashCode;
+    private int hashCode;
     // Note that isLoaded and instanceId are not used yet but here to test ReflectionStructureCodec.
     private boolean isLoaded;
     @SuppressWarnings("unused")
@@ -21,9 +21,8 @@ public class Object extends java.lang.Object implements IObject {
         this.instanceId = 0l;
     }
 
-    // Special constructor only invoked when instantiating this as an intance stub.
-    public Object(IDeserializer deserializer, int hashCode, long instanceId) {
-        this.hashCode = hashCode;
+    // Special constructor only invoked when instantiating this as an instance stub.
+    public Object(IDeserializer deserializer, long instanceId) {
         this.isLoaded = false;
         this.instanceId = instanceId;
     }

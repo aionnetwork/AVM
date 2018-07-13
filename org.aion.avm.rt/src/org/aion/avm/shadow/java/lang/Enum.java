@@ -23,8 +23,8 @@ public abstract class Enum<E extends Enum<E>> extends Object {
     }
 
     // Deserializer support.
-    public Enum(IDeserializer deserializer, int hashCode, long instanceId) {
-        super(deserializer, hashCode, instanceId);
+    public Enum(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 
     public String avm_toString() {
