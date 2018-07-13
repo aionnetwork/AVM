@@ -160,4 +160,23 @@ public class SingleInstanceSerializerTest {
         };
         Assert.assertTrue(Arrays.equals(expected, result));
     }
+
+    @Test
+    public void serializeShadowString() {
+        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder);
+        org.aion.avm.shadow.java.lang.String bytes = new org.aion.avm.shadow.java.lang.String("TEST");
+        bytes.serializeSelf(null, target, null);
+        byte[] result = encoder.toBytes();
+        
+        byte[] expected = {
+                0x0, 0x0, 0x0, 0x1, //hashcode
+                0x0, 0x0, 0x0, 0x4, //UTF-8 length
+                0x54,
+                0x45,
+                0x53,
+                0x54,
+        };
+        Assert.assertTrue(Arrays.equals(expected, result));
+    }
 }

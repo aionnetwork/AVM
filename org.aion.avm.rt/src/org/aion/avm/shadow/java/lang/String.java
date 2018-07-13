@@ -5,10 +5,14 @@ import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.arraywrapper.IntArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
+
 
 public class String extends Object implements Comparable<String>, CharSequence {
 
@@ -23,6 +27,29 @@ public class String extends Object implements Comparable<String>, CharSequence {
     // Deserializer support.
     public String(IDeserializer deserializer, long instanceId) {
         super(deserializer, instanceId);
+    }
+
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(String.class, deserializer);
+        
+        // TODO:  We probably want faster array copies.
+        int length = deserializer.readInt();
+        byte[] data = new byte[length];
+        for (int i = 0; i < length; ++i) {
+            data[i] = deserializer.readByte();
+        }
+        this.v = new java.lang.String(data, DEFAULT_CHARSET);
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+        super.serializeSelf(String.class, serializer, nextObjectQueue);
+        
+        // TODO:  We probably want faster array copies.
+        byte[] data = this.v.getBytes(DEFAULT_CHARSET);
+        serializer.writeInt(data.length);
+        for (int i = 0; i < data.length; ++i) {
+            serializer.writeByte(data[i]);
+        }
     }
 
     public String(String original) {

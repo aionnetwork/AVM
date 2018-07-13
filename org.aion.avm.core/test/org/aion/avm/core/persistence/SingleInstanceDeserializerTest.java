@@ -145,4 +145,21 @@ public class SingleInstanceDeserializerTest {
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new double[] {1.0,2.0,3.0}, bytes.getUnderlying()));
     }
+
+    @Test
+    public void deserializeShadowString() {
+        byte[] expected = {
+                0x0, 0x0, 0x0, 0x1, //hashcode
+                0x0, 0x0, 0x0, 0x4, //UTF-8 length
+                0x54,
+                0x45,
+                0x53,
+                0x54,
+        };
+        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
+        SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
+        org.aion.avm.shadow.java.lang.String bytes = new org.aion.avm.shadow.java.lang.String((String)null);
+        bytes.deserializeSelf(null, target);
+        Assert.assertEquals("TEST", bytes.getV());
+    }
 }
