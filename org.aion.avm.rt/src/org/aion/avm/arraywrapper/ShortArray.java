@@ -1,6 +1,6 @@
 package org.aion.avm.arraywrapper;
 
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
 
 import java.util.Arrays;
@@ -16,6 +16,11 @@ public class ShortArray extends Array {
 
     public ShortArray(int c) {
         this.underlying = new short[c];
+    }
+
+    // Deserializer support.
+    public ShortArray(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 
     public int length() {

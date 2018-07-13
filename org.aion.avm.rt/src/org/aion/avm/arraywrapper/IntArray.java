@@ -1,6 +1,6 @@
 package org.aion.avm.arraywrapper;
 
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
 
 import java.util.Arrays;
@@ -16,6 +16,11 @@ public class IntArray extends Array {
 
     public IntArray(int c) {
         this.underlying = new int[c];
+    }
+
+    // Deserializer support.
+    public IntArray(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 
     public int length() {

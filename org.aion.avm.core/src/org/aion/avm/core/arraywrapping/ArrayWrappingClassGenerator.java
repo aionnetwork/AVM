@@ -374,20 +374,22 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     private static void genConstructor(ClassWriter cw, String superName){
-        MethodVisitor methodVisitor = cw.visitMethod(ACC_PUBLIC, "<init>", "(I)V", null, null);
+        String initName = "<init>";
+        
+        MethodVisitor methodVisitor = cw.visitMethod(ACC_PUBLIC, initName, "(I)V", null, null);
         methodVisitor.visitCode();
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitVarInsn(ILOAD, 1);
-        methodVisitor.visitMethodInsn(INVOKESPECIAL, superName, "<init>", "(I)V", false);
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, superName, initName, "(I)V", false);
         methodVisitor.visitInsn(RETURN);
         methodVisitor.visitMaxs(2, 2);
         methodVisitor.visitEnd();
 
 
-        methodVisitor = cw.visitMethod(ACC_PUBLIC, "<init>", "([Ljava/lang/Object;)V", null, null);
+        methodVisitor = cw.visitMethod(ACC_PUBLIC, initName, "([Ljava/lang/Object;)V", null, null);
         methodVisitor.visitCode();
         methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitMethodInsn(INVOKESPECIAL, superName, "<init>", "()V", false);
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, superName, initName, "()V", false);
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitVarInsn(ALOAD, 1);
         methodVisitor.visitFieldInsn(PUTFIELD, "org/aion/avm/arraywrapper/ObjectArray", "underlying", "[Ljava/lang/Object;");
@@ -395,15 +397,25 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         methodVisitor.visitMaxs(2, 2);
         methodVisitor.visitEnd();
 
-        methodVisitor = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+        methodVisitor = cw.visitMethod(ACC_PUBLIC, initName, "()V", null, null);
         methodVisitor.visitCode();
         methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitMethodInsn(INVOKESPECIAL, superName, "<init>", "()V", false);
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, superName, initName, "()V", false);
         methodVisitor.visitInsn(RETURN);
         methodVisitor.visitMaxs(1, 1);
         methodVisitor.visitEnd();
 
-
+        // Create the deserialization constructor (as seen in AutomaticGraphVisitor).
+        String deserializationConstructorDescriptor = "(Lorg/aion/avm/internal/IDeserializer;J)V";
+        methodVisitor = cw.visitMethod(Opcodes.ACC_PUBLIC, initName, deserializationConstructorDescriptor, null, null);
+        methodVisitor.visitCode();
+        methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+        methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
+        methodVisitor.visitVarInsn(Opcodes.LLOAD, 2);
+        methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, initName, deserializationConstructorDescriptor, false);
+        methodVisitor.visitInsn(Opcodes.RETURN);
+        methodVisitor.visitMaxs(4, 4);
+        methodVisitor.visitEnd();
     }
 
     private static void genClone(ClassWriter cw, String wrapper) {

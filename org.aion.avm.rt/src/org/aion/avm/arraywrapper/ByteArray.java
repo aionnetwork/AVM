@@ -1,5 +1,6 @@
 package org.aion.avm.arraywrapper;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
 
 import java.util.Arrays;
@@ -15,6 +16,11 @@ public class ByteArray extends Array {
 
     public ByteArray(int c) {
         this.underlying = new byte[c];
+    }
+
+    // Deserializer support.
+    public ByteArray(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 
     public int length() {
