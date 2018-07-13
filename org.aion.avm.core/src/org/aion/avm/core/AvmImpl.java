@@ -217,6 +217,7 @@ public class AvmImpl implements Avm {
             dynamicHierarchyBuilder.addClass(classDotName, superClassDotName, bytecode);
         };
         Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
+        Set<String> preRenameUserClassSet = classes.keySet();
         ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy);
         Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy);
 
@@ -226,7 +227,7 @@ public class AvmImpl implements Avm {
 
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new RejectionClassVisitor())
-                    .addNextVisitor(new UserClassMappingVisitor(preRenameUserDefinedClasses))
+                    .addNextVisitor(new UserClassMappingVisitor(preRenameUserClassSet))
                     .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
@@ -543,7 +544,7 @@ public class AvmImpl implements Avm {
         private static DappModule readFromJar(byte[] jar) throws IOException {
             LoadedJar loadedJar = LoadedJar.fromBytes(jar);
             ClassHierarchyForest forest = ClassHierarchyForest.createForestFrom(loadedJar);
-            Map<String, byte[]> classes = forest.toFlatMapWithoutRoots();
+            Map<String, byte[]> classes = loadedJar.classBytesByQualifiedNames;
             String mainClass = loadedJar.mainClassName;
 
             return new DappModule(classes, mainClass, forest, jar.length, classes.size());

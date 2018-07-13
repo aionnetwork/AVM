@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.testICO.IAionToken;
 import org.aion.avm.core.testWallet.Abi;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
 import org.aion.avm.core.testWallet.ByteArrayWrapper;
@@ -130,6 +131,7 @@ public class ProofOfConceptTest {
 
     private byte[] buildTestICOJar() {
         return JarBuilder.buildJarForMainAndClasses(ICOController.class,
+                IAionToken.class,
                 PepeCoin.class,
                 ICOAbi.class,
                 AionMap.class,

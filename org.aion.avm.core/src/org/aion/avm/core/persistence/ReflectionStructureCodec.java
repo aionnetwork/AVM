@@ -66,6 +66,11 @@ public class ReflectionStructureCodec {
 
 
     private void safeSerialize(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException {
+        // If clzz is null. we are trying to serialize the superclass of a interface
+        if (null == clazz){
+            return;
+        }
+
         // We need to serialize from the shadow root so find that here (we also treat is specially).
         if (org.aion.avm.shadow.java.lang.Object.class == clazz) {
             // Perform the special logic for the root object.

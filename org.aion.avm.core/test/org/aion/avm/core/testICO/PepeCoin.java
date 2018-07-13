@@ -4,7 +4,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
 
-public class PepeCoin{
+public class PepeCoin implements IAionToken{
 
     public static final String SYMBOL = "PEPE";
 

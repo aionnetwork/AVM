@@ -54,6 +54,11 @@ public final class ClassHierarchyForest extends Forest<String, byte[]> {
                 final var parentNode = new Node<>(curParentName, classNameToBytes.get(curParentName));
                 final var childNode = new Node<>(entry.getKey(), klass);
                 add(parentNode, childNode);
+            }else{
+                // Interface will be added into forest as child of Object
+                final var parentNode = new Node<>(Object.class.getName(), classNameToBytes.get(Object.class.getName()));
+                final var childNode = new Node<>(entry.getKey(), klass);
+                add(parentNode, childNode);
             }
         }
     }
