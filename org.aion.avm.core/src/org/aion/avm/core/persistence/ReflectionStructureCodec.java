@@ -57,18 +57,18 @@ public class ReflectionStructureCodec implements IDeserializer {
         this.nextInstanceId = nextInstanceId;
     }
 
-    public void serialize(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) {
+    public void serializeClass(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz) {
         try {
-            safeSerialize(encoder, clazz, object);
+            safeSerialize(encoder, clazz, null);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
         }
     }
 
-    public void deserialize(StreamingPrimitiveCodec.Decoder decoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) {
+    public void deserializeClass(StreamingPrimitiveCodec.Decoder decoder, Class<?> clazz) {
         try {
-            safeDeserialize(decoder, clazz, object);
+            safeDeserialize(decoder, clazz, null);
         } catch (IllegalArgumentException | IllegalAccessException | ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
@@ -298,7 +298,43 @@ public class ReflectionStructureCodec implements IDeserializer {
         
         // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
         byte[] rawData = this.kernel.getStorage(address, StorageKeys.forInstance(instanceId));
-        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
-        deserialize(decoder, instance.getClass(), instance);
+        deserializeInstance(instance, rawData);
+    }
+
+    public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance) {
+        try {
+            byte[] serialized = internalSerializeInstance(instance);
+            long instanceId = this.instanceIdField.getLong(instance);
+            this.kernel.putStorage(this.address, StorageKeys.forInstance(instanceId), serialized);
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            // If there are any problems with this access, we must have resolved it before getting to this point.
+            throw RuntimeAssertionError.unexpected(e);
+        }
+    }
+
+    // Note that this is only public so tests can use it.
+    public byte[] internalSerializeInstance(org.aion.avm.shadow.java.lang.Object instance) {
+        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        try {
+            safeSerialize(encoder, instance.getClass(), instance);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // If there are any problems with this access, we must have resolved it before getting to this point.
+            throw RuntimeAssertionError.unexpected(e);
+        }
+        return encoder.toBytes();
+    }
+
+    // Note that this is only public so tests can use it.
+    public void deserializeInstance(org.aion.avm.shadow.java.lang.Object instance, byte[] rawData) {
+        // To see it referenced here, we must have saved this data, in the past.
+        RuntimeAssertionError.assertTrue(null != rawData);
+        
+        try {
+            StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
+            safeDeserialize(decoder, instance.getClass(), instance);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassNotFoundException | InstantiationException | NoSuchMethodException | SecurityException e) {
+            // If there are any problems with this access, we must have resolved it before getting to this point.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 }

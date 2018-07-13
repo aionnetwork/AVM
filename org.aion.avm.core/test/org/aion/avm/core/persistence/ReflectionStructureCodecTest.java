@@ -39,7 +39,7 @@ public class ReflectionStructureCodecTest {
         
         ReflectionStructureCodec codec = new ReflectionStructureCodec(ReflectionStructureCodecTarget.class.getClassLoader(), null, null, 1);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
-        codec.serialize(encoder, ReflectionStructureCodecTarget.class, null);
+        codec.serializeClass(encoder, ReflectionStructureCodecTarget.class);
         byte[] result = encoder.toBytes();
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -77,9 +77,7 @@ public class ReflectionStructureCodecTest {
         target.i_nine = new ReflectionStructureCodecTarget();
         
         ReflectionStructureCodec codec = new ReflectionStructureCodec(ReflectionStructureCodecTarget.class.getClassLoader(), null, null, 1);
-        StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
-        codec.serialize(encoder, target.getClass(), target);
-        byte[] result = encoder.toBytes();
+        byte[] result = serializeSinceInstanceHelper(codec, target);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         // This is the same as what we got for the class except that this also has a hashcode.
         byte[] expected = {
@@ -119,10 +117,9 @@ public class ReflectionStructureCodecTest {
                 0x0, 0x0, 0x0, 0x3c, 0x6f, 0x72, 0x67, 0x2e, 0x61, 0x69, 0x6f, 0x6e, 0x2e, 0x61, 0x76, 0x6d, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x63, 0x65, 0x2e, 0x52, 0x65, 0x66, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x75, 0x72, 0x65, 0x43, 0x6f, 0x64, 0x65, 0x63, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1 //i_nine
         };
         ReflectionStructureCodec deserializer = new ReflectionStructureCodec(ReflectionStructureCodecTarget.class.getClassLoader(), null, null, 1);
-        StreamingPrimitiveCodec.Decoder decoder = StreamingPrimitiveCodec.buildDecoder(expected);
         // Note that the deserializer always assumes it is operating on stubs so create the instance and pass it in.
         ReflectionStructureCodecTarget target = new ReflectionStructureCodecTarget();
-        deserializer.deserialize(decoder, target.getClass(), target);
+        deserializer.deserializeInstance(target, expected);
         
         Assert.assertEquals(1, target.avm_hashCode());
         Assert.assertEquals(true, target.i_one);
@@ -222,20 +219,16 @@ public class ReflectionStructureCodecTest {
                 0x0, 0x0, 0x0, 0x3c, 0x6f, 0x72, 0x67, 0x2e, 0x61, 0x69, 0x6f, 0x6e, 0x2e, 0x61, 0x76, 0x6d, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x63, 0x65, 0x2e, 0x52, 0x65, 0x66, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x75, 0x72, 0x65, 0x43, 0x6f, 0x64, 0x65, 0x63, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1 //i_nine
         };
         ReflectionStructureCodec deserializer = new ReflectionStructureCodec(ReflectionStructureCodecTarget.class.getClassLoader(), null, null, 1);
-        StreamingPrimitiveCodec.Decoder decoder1 = StreamingPrimitiveCodec.buildDecoder(expected1);
         ReflectionStructureCodecTarget target1 = new ReflectionStructureCodecTarget();
-        deserializer.deserialize(decoder1, target1.getClass(), target1);
-        StreamingPrimitiveCodec.Decoder decoder2 = StreamingPrimitiveCodec.buildDecoder(expected2);
+        deserializer.deserializeInstance(target1, expected1);
         ReflectionStructureCodecTarget target2 = new ReflectionStructureCodecTarget();
-        deserializer.deserialize(decoder2, target2.getClass(), target2);
+        deserializer.deserializeInstance(target2, expected2);
         Assert.assertTrue(target1.i_nine == target2.i_nine);
     }
 
 
     private static byte[] serializeSinceInstanceHelper(ReflectionStructureCodec codec, ReflectionStructureCodecTarget instance) {
-        StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
-        codec.serialize(encoder, instance.getClass(), instance);
-        return encoder.toBytes();
+        return codec.internalSerializeInstance(instance);
     }
 
     private static int readIntAtOffset(byte[] bytes, int offset) {

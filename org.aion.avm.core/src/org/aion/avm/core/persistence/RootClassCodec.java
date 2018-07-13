@@ -30,7 +30,7 @@ public class RootClassCodec {
         
         // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
         for (Class<?> clazz : classes) {
-            codec.deserialize(decoder, clazz, null);
+            codec.deserializeClass(decoder, clazz);
         }
     }
 
@@ -50,7 +50,7 @@ public class RootClassCodec {
         
         // We will serialize the classes, in-order (the order of the serialization/deserialization must always be the same).
         for (Class<?> clazz : classes) {
-            codec.serialize(encoder, clazz, null);
+            codec.serializeClass(encoder, clazz);
         }
         
         // Save the raw bytes.
