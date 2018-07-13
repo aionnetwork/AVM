@@ -103,17 +103,23 @@ public class Object extends java.lang.Object implements IObject {
         }
     }
 
-    public void deserializeSelf(IObjectDeserializer deserializer) {
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
         // We only operate on our hashCode.
         this.hashCode = deserializer.readInt();
         
-        // TODO:  In the future, this is where we need to hook into the automatic deserialization mechanism.
+        // NOTE:  It would probably be a better design to special-case the handling of the hashCode, in the automatic implementation,
+        // since this otherwise means that we have a "real" implementation which we pretend is not "real" so we can automatically
+        // deserialize our sub-class.  This should improve performance, though.
+        deserializer.beginAutomatically(this, firstRealImplementation);
     }
 
-    public void serializeSelf(IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         // We only operate on our hashCode.
         serializer.writeInt(this.hashCode);
         
-        // TODO:  In the future, this is where we need to hook into the automatic serialization mechanism.
+        // NOTE:  It would probably be a better design to special-case the handling of the hashCode, in the automatic implementation,
+        // since this otherwise means that we have a "real" implementation which we pretend is not "real" so we can automatically
+        // serialize our sub-class.  This should improve performance, though.
+        serializer.beginAutomatically(this, firstRealImplementation, nextObjectQueue);
     }
 }
