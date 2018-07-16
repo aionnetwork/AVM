@@ -15,6 +15,7 @@ import org.aion.avm.core.testWallet.Operation;
 import org.aion.avm.core.testWallet.RequireFailedException;
 import org.aion.avm.core.testWallet.Wallet;
 import org.aion.avm.core.testICO.PepeCoin;
+import org.aion.avm.core.testICO.MemeCoin;
 import org.aion.avm.core.testICO.ICOAbi;
 import org.aion.avm.core.testICO.ICOController;
 import org.aion.avm.core.util.Helpers;
@@ -131,6 +132,7 @@ public class ProofOfConceptTest {
         return JarBuilder.buildJarForMainAndClasses(ICOController.class,
                 IAionToken.class,
                 PepeCoin.class,
+                MemeCoin.class,
                 ICOAbi.class,
                 AionMap.class,
                 ByteArrayHelpers.class

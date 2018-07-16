@@ -5,6 +5,8 @@ import org.aion.avm.api.BlockchainRuntime;
 
 public class AvmImplTestResource {
 
+    public static void init(){}
+
     public static byte[] main() {
         byte[] calldata = BlockchainRuntime.getData();
 

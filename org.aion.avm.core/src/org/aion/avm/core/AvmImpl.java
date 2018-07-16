@@ -393,7 +393,13 @@ public class AvmImpl implements Avm {
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * tx.getData().length);
 
-            // TODO: create invocation is temporarily disabled
+            // TODO: create invocation need further discussion
+
+            String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
+            Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
+
+            Method method = clazz.getMethod("avm_init");
+            method.invoke(null);
 
             // Save back the state before we return - we haven't saved anything so the instance count starts at 1.
             long nextInstanceId = 1l;

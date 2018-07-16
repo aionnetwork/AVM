@@ -4,10 +4,11 @@ import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
 
-public class PepeCoin implements IAionToken{
-    public static final String SYMBOL = "PEPE";
+public class MemeCoin implements IAionToken{
 
-    public static final String NAME = "Pepe Coin";
+    public static final String SYMBOL = "MEME";
+
+    public static final String NAME = "Meme Coin";
 
     public final Address minter;
 
@@ -17,7 +18,7 @@ public class PepeCoin implements IAionToken{
 
     private AionMap<Address, AionMap<Address, Long>> allowance;
 
-    public PepeCoin(Address minter){
+    public MemeCoin(Address minter){
         this.ledger = new AionMap<>();
         this.allowance = new AionMap<>();
         this.minter = minter;

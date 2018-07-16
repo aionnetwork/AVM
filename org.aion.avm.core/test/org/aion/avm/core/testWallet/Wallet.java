@@ -14,6 +14,10 @@ public class Wallet {
     // Note that this key is really just a subset of uses of "Operation".
     private static AionMap<BytesKey, Transaction> transactions;
 
+    public static void init(){
+
+    }
+
     // The contract "Constructor".  Note that this should only be called once, when initially deployed (in Ethereum world, the arguments are
     // just pass as part of the deployment payload, after the code).
     public static void init(Address[] requestedOwners, int votesRequiredPerOperation, long daylimit) {

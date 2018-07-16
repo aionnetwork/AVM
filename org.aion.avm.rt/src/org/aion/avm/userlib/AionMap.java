@@ -117,4 +117,12 @@ public class AionMap<K, V> {
         this.keys = new Object[kStartSize];
         this.values = new Object[kStartSize];
     }
+
+    public Object[] getKeys() {
+        return keys;
+    }
+
+    public boolean containsKey(K key){
+        return (this.get(key) != null);
+    }
 }
