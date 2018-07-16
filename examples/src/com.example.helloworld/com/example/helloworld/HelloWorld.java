@@ -11,15 +11,15 @@ public class HelloWorld {
 
     public static int bar;
 
-    public static byte[] add(int a, int b) {
+    public byte[] add(int a, int b) {
         return ABIEncoder.encodeInt(a + b);
     }
 
-    public static byte[] run() {
+    public byte[] run() {
         return "Hello, world!".getBytes();
     }
 
-    public byte[] main() throws InvalidTxDataException {
-        return ABIDecoder.decodeAndRun(this.getClass(), BlockchainRuntime.getData());
+    public static byte[] main() throws InvalidTxDataException {
+        return ABIDecoder.decodeAndRun(new HelloWorld(), BlockchainRuntime.getData());
     }
 }

@@ -138,6 +138,6 @@ public class AvmImplTest {
         assertArrayEquals("CALL".getBytes(), result2.returnData);
 
         assertTrue(currentContractHelper == IHelper.currentContractHelper.get()); // same instance
-        assertEquals(999487 - 500000 / 2 - 176 - 116, result2.energyLeft); // NOTE: the numbers are not calculated, but for fee schedule change detection.
+        assertEquals(999487 - 500000 / 2 - 176, result2.energyLeft); // NOTE: the numbers are not calculated, but for fee schedule change detection.
     }
 }

@@ -460,10 +460,9 @@ public class AvmImpl implements Avm {
         try {
             String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
             Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
-            Object obj = clazz.getConstructor().newInstance();
 
             Method method = clazz.getMethod("avm_main");
-            byte[] ret = ((ByteArray) method.invoke(obj)).getUnderlying();
+            byte[] ret = ((ByteArray) method.invoke(null)).getUnderlying();
 
             // Save back the state before we return.
             // -first, save out the classes

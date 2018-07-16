@@ -1,9 +1,11 @@
 package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.*;
+import org.aion.avm.internal.IObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class ABIDecoder {
@@ -60,8 +62,8 @@ public class ABIDecoder {
     /*
      * Runtime-facing implementation.
      */
-    public static ByteArray avm_decodeAndRun(org.aion.avm.shadow.java.lang.Class clazz, ByteArray txData) throws InvalidTxDataException{
-        return decodeAndRun(clazz, txData.getUnderlying());
+    public static ByteArray avm_decodeAndRun(IObject obj, ByteArray txData) throws InvalidTxDataException{
+        return decodeAndRun(obj, txData.getUnderlying());
     }
 
     public static MethodCaller avm_decode(ByteArray txData) throws InvalidTxDataException{
@@ -72,22 +74,25 @@ public class ABIDecoder {
     /*
      * Underlying implementation.
      */
-    public static ByteArray decodeAndRun(org.aion.avm.shadow.java.lang.Class clazz, byte[] txData) throws InvalidTxDataException{
+    public static ByteArray decodeAndRun(IObject obj, byte[] txData) throws InvalidTxDataException{
         MethodCaller methodCaller = decode(txData);
 
         String newMethodName = "avm_" + methodCaller.methodName;
         String newArgDescriptor = methodCaller.argsDescriptor;
 
         // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
-        Method method = matchMethodSelector(clazz, newMethodName, newArgDescriptor);
+        Method method = matchMethodSelector(obj.avm_getClass(), newMethodName, newArgDescriptor);
 
         ByteArray ret = null;
+        if (Modifier.isStatic(method.getModifiers())) {
+            obj = null;
+        }
         try {
             if (methodCaller.arguments == null) {
-                ret = (ByteArray) method.invoke(null);
+                ret = (ByteArray) method.invoke(obj);
             }
             else {
-                ret = (ByteArray) method.invoke(null, convertArguments(methodCaller.arguments));
+                ret = (ByteArray) method.invoke(obj, convertArguments(methodCaller.arguments));
             }
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new InvalidTxDataException();

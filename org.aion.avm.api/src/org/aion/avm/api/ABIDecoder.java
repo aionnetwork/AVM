@@ -7,7 +7,7 @@ public class ABIDecoder {
         public Object[] arguments;
     }
 
-    public static byte[] decodeAndRun(Class<?> clazz, byte[] txData) {
+    public static byte[] decodeAndRun(Object object, byte[] txData) {
         return null;
     }
 

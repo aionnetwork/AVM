@@ -11,7 +11,7 @@ public class DeployAndRunTest {
 
     public static int bar;
 
-    public static byte[] add(int a, int b) {
+    public byte[] add(int a, int b) {
         return ABIEncoder.encodeInt(a + b);
     }
 
@@ -19,18 +19,18 @@ public class DeployAndRunTest {
         return ABIEncoder.encodeInt(a[0] + a[1]);
     }
 
-    public static byte[] addArray2(int[][] a) {
+    public byte[] addArray2(int[][] a) {
         return ABIEncoder.encodeInt(a[0][0] + a[1][0]);
     }
 
-    public static byte[] concatenate(char[][] s) {
+    public byte[] concatenate(char[][] s) {
         char[] res = new char[6];
         System.arraycopy(s[0], 0, res, 0, s[0].length);
         System.arraycopy(s[1], 0, res, s[0].length, s[1].length);
         return ABIEncoder.encode1DArray(res, ABIEncoder.ABITypes.CHAR);
     }
 
-    public static byte[] swap(char[][] s) {
+    public byte[] swap(char[][] s) {
         char[][] res = new char[2][];
         res[0] = s[1];
         res[1] = s[0];
@@ -47,7 +47,7 @@ public class DeployAndRunTest {
         return ABIEncoder.encodeMethodArguments(methodAPI, a);
     }
 
-    public byte[] main() throws InvalidTxDataException {
-        return ABIDecoder.decodeAndRun(this.getClass(), BlockchainRuntime.getData());
+    public static byte[] main() throws InvalidTxDataException {
+        return ABIDecoder.decodeAndRun(new DeployAndRunTest(), BlockchainRuntime.getData());
     }
 }
