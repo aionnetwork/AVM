@@ -92,6 +92,14 @@ public class TestExceptionResource {
         throw new UserDefinedRuntimeException(message);
     }
 
+    /**
+     * Used to demonstrate what happens when an NPE is thrown by the VM and we don't catch it (issue-141).
+     */
+    public static void originalNull() {
+        ((Object)null).hashCode();
+    }
+
+
     public static class UserDefinedException extends Throwable {
         private static final long serialVersionUID = 1L;
         public UserDefinedException(String message) {

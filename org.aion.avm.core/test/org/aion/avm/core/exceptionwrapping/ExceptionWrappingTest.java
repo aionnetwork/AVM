@@ -210,6 +210,52 @@ public class ExceptionWrappingTest {
         Assert.assertEquals("two", result.toString());
     }
 
+    /**
+     * issue-141:  The case where we see the original exception, since nobody tries to catch it.
+     */
+    @Test
+    public void testOriginalNull_commonPipeline() throws Exception {
+        SimpleAvm avm = new SimpleAvm(1000_000L
+                , TestExceptionResource.class
+                , TestExceptionResource.UserDefinedException.class
+                , TestExceptionResource.UserDefinedRuntimeException.class
+        );
+        
+        Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestExceptionResource.class.getName());
+        
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Method originalNull = clazz.getMethod(UserClassMappingVisitor.mapMethodName("originalNull"));
+        
+        try {
+            originalNull.invoke(null);
+        } catch (InvocationTargetException e) {
+            Assert.assertTrue(NullPointerException.class.getName().equals(e.getCause().getClass().getName()));
+        }
+    }
+
+    /**
+     * issue-141:  The case where we see the remapped exception, since the user caught and re-threw it.
+     */
+    @Test
+    public void testInnerCatch_commonPipeline() throws Exception {
+        SimpleAvm avm = new SimpleAvm(1000_000L
+                , TestExceptionResource.class
+                , TestExceptionResource.UserDefinedException.class
+                , TestExceptionResource.UserDefinedRuntimeException.class
+        );
+        
+        Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestExceptionResource.class.getName());
+        
+        // We need to use reflection to call this, since the class was loaded by this other classloader.
+        Method originalNull = clazz.getMethod(UserClassMappingVisitor.mapMethodName("innerCatch"));
+        
+        try {
+            originalNull.invoke(null);
+        } catch (InvocationTargetException e) {
+            Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + NullPointerException.class.getName()).equals(e.getCause().getClass().getName()));
+        }
+    }
+
 
     // Note that we will delegate to the common Helper class to ensure that we maintain overall correctness.
     public static class TestHelpers {
@@ -260,7 +306,6 @@ public class ExceptionWrappingTest {
                 dynamicHierarchyBuilder.addClass(dotName, superDotName, bytes);
             };
             ParentPointers parentPointers = new ParentPointers(ClassWhiteList.extractDeclaredClasses(this.classHierarchy), this.classHierarchy);
-            ClassWhiteList classWhiteList = new ClassWhiteList();
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                     .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(this.classHierarchy)))
                     .addNextVisitor(new ConstantVisitor(TestHelpers.CLASS_NAME))
