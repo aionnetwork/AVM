@@ -1,6 +1,6 @@
 package org.aion.avm.api;
 
-public class ABIA2Decoder {
+public class ABIDecoder {
     public static class MethodCaller {
         public String methodName;
         public String argsDescriptor;

@@ -6,7 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class ABIA2Decoder {
+public class ABIDecoder {
     /*
      * ABI arguments descriptor symbols and the elementary type sizes.
      */
@@ -551,14 +551,14 @@ public class ABIA2Decoder {
 
         // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
         Map<Character, String[]> elementaryTypesMap = new HashMap<>();
-        elementaryTypesMap.put(ABIA2Decoder.BYTE,      new String[]{"B", "byte", "ByteArray"});
-        elementaryTypesMap.put(ABIA2Decoder.BOOLEAN,   new String[]{"Z", "boolean", "ByteArray"});
-        elementaryTypesMap.put(ABIA2Decoder.CHAR,      new String[]{"C", "char", "CharArray"});
-        elementaryTypesMap.put(ABIA2Decoder.SHORT,     new String[]{"S", "short", "ShortArray"});
-        elementaryTypesMap.put(ABIA2Decoder.INT,       new String[]{"I", "int", "IntArray"});
-        elementaryTypesMap.put(ABIA2Decoder.FLOAT,     new String[]{"F", "float", "FloatArray"});
-        elementaryTypesMap.put(ABIA2Decoder.LONG,      new String[]{"J", "long", "LongArray"});
-        elementaryTypesMap.put(ABIA2Decoder.DOUBLE,    new String[]{"D", "double", "DoubleArray"});
+        elementaryTypesMap.put(ABIDecoder.BYTE,      new String[]{"B", "byte", "ByteArray"});
+        elementaryTypesMap.put(ABIDecoder.BOOLEAN,   new String[]{"Z", "boolean", "ByteArray"});
+        elementaryTypesMap.put(ABIDecoder.CHAR,      new String[]{"C", "char", "CharArray"});
+        elementaryTypesMap.put(ABIDecoder.SHORT,     new String[]{"S", "short", "ShortArray"});
+        elementaryTypesMap.put(ABIDecoder.INT,       new String[]{"I", "int", "IntArray"});
+        elementaryTypesMap.put(ABIDecoder.FLOAT,     new String[]{"F", "float", "FloatArray"});
+        elementaryTypesMap.put(ABIDecoder.LONG,      new String[]{"J", "long", "LongArray"});
+        elementaryTypesMap.put(ABIDecoder.DOUBLE,    new String[]{"D", "double", "DoubleArray"});
 
         String ARRAY_WRAPPER_PREFIX = "org.aion.avm.arraywrapper.";
 
@@ -575,7 +575,7 @@ public class ABIA2Decoder {
                 for (int idx = 0; idx < argsDescriptor.length(); idx++) {
                     char c = argsDescriptor.charAt(idx);
                     switch (c) {
-                        case ABIA2Decoder.ARRAY_S:
+                        case ABIDecoder.ARRAY_S:
                             String pType = parameterTypes[parIdx].getName();
                             if (pType.charAt(0) == '[') {
                                 pType = pType.substring(1);
@@ -592,7 +592,7 @@ public class ABIA2Decoder {
                             }
 
                             char eType;
-                            if (argsDescriptor.charAt(++idx) == ABIA2Decoder.ARRAY_S) {
+                            if (argsDescriptor.charAt(++idx) == ABIDecoder.ARRAY_S) {
                                 if (pType.charAt(0) == '$' && pType.charAt(1) == '$') {
                                     pType = pType.substring(2);
                                 }
@@ -601,12 +601,12 @@ public class ABIA2Decoder {
                                     break;
                                 }
                                 eType = argsDescriptor.charAt(++idx);
-                                idx = argsDescriptor.indexOf(ABIA2Decoder.ARRAY_E, idx);
+                                idx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, idx);
                             }
                             else {
                                 eType = argsDescriptor.charAt(idx);
                             }
-                            idx = argsDescriptor.indexOf(ABIA2Decoder.ARRAY_E, idx);
+                            idx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, idx);
 
                             if (pType.charAt(0) == 'L') {
                                 pType = pType.substring(1);

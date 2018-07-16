@@ -4,9 +4,8 @@ import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.IObject;
 
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 
-public class ABIA2Encoder {
+public class ABIEncoder {
     public enum ABITypes {
         avm_BYTE    ('B'),
         avm_BOOLEAN ('Z'),
@@ -501,7 +500,7 @@ public class ABIA2Encoder {
                 }
 
                 String encoded = new String(encodedData);
-                int m = encoded.indexOf(ABIA2Decoder.DESCRIPTOR_E);
+                int m = encoded.indexOf(ABIDecoder.DESCRIPTOR_E);
                 encoded = encoded.substring(0, m+1);
 
                 descriptor += encoded.substring(1, m);

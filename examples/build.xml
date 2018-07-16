@@ -12,7 +12,7 @@
     </target>
 
     <target name="build"
-            depends="build_helloworld, build_simpletoken, build_twoclasses, build_foresttest, build_heapsizecalctest, build_avmstartuptest, build_deployAndRunTest, build_deployAndRunTestA2"/>
+            depends="build_helloworld, build_simpletoken, build_twoclasses, build_foresttest, build_heapsizecalctest, build_avmstartuptest, build_deployAndRunTest"/>
 
     <target name="build_avmstartuptest">
         <local name="main"/>
@@ -79,31 +79,6 @@
         <local name="main"/>
         <property name="name" value="com.example.deployAndRunTest"/>
         <property name="main" value="com.example.deployAndRunTest.DeployAndRunTest"/>
-
-        <mkdir dir="${dir.local.build}/${name}"/>
-
-        <echo message="Compiling ${name}..."/>
-        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
-               srcdir="${dir.local.src}/${name}"
-               destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
-            <modulepath>
-                <pathelement location="${dir.global.jar}/org-aion-avm-api.jar"/>
-            </modulepath>
-        </javac>
-
-        <echo message="Packing ${name}..."/>
-        <jar destfile="${dir.local.build}/${name}.jar" basedir="${dir.local.build}/${name}">
-            <manifest>
-                <attribute name="Main-Class" value="${main}"/>
-            </manifest>
-        </jar>
-    </target>
-
-    <target name="build_deployAndRunTestA2">
-        <local name="name"/>
-        <local name="main"/>
-        <property name="name" value="com.example.deployAndRunTestA2"/>
-        <property name="main" value="com.example.deployAndRunTestA2.DeployAndRunTestA2"/>
 
         <mkdir dir="${dir.local.build}/${name}"/>
 

@@ -1,6 +1,6 @@
 package org.aion.avm.api;
 
-public class ABIA2Encoder {
+public class ABIEncoder {
     public enum ABITypes {
         BYTE    ('B'),
         BOOLEAN ('Z'),

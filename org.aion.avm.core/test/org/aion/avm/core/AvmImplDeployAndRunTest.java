@@ -47,13 +47,6 @@ public class AvmImplDeployAndRunTest {
         return avm.run(tx, block, cb);
     }
 
-    public AvmResult deployTheDeployAndRunTestA2() {
-        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTestA2.jar");
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, jar, energyLimit);
-
-        return avm.run(tx, block, cb);
-    }
-
     @Test
     public void testDeploy() {
         AvmResult result = deployHelloWorld();
@@ -101,8 +94,7 @@ public class AvmImplDeployAndRunTest {
 
     @Test
     public void testDeployAndRunTest() {
-        //AvmResult deployResult = deployTheDeployAndRunTest();
-        AvmResult deployResult = deployTheDeployAndRunTestA2();
+        AvmResult deployResult = deployTheDeployAndRunTest();
         assertEquals(AvmResult.Code.SUCCESS, deployResult.code);
 
         // test encode method arguments
