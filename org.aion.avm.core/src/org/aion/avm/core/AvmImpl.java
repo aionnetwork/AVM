@@ -223,7 +223,12 @@ public class AvmImpl implements Avm {
             // Note that transformClasses requires that the input class names by the .-style names.
             Assert.assertTrue(-1 == name.indexOf("/"));
 
-            byte[] bytecode = new ClassToolchain.Builder(classes.get(name), ClassReader.EXPAND_FRAMES)
+            // We need to parse with EXPAND_FRAMES, since the StackWatcherClassAdapter uses a MethodNode to parse methods.
+            // We also add SKIP_DEBUG since we aren't using debug data and skipping it removes extraneous labels which would otherwise
+            // cause the BlockBuildingMethodVisitor to build lots of small blocks instead of a few big ones (each block incurs a Helper
+            // static call, which is somewhat expensive - this is how we bill for energy).
+            int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
+            byte[] bytecode = new ClassToolchain.Builder(classes.get(name), parsingOptions)
                     .addNextVisitor(new RejectionClassVisitor())
                     .addNextVisitor(new UserClassMappingVisitor(preRenameUserClassSet))
                     .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
@@ -236,7 +241,7 @@ public class AvmImpl implements Avm {
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
-            bytecode = new ClassToolchain.Builder(bytecode, ClassReader.EXPAND_FRAMES)
+            bytecode = new ClassToolchain.Builder(bytecode, parsingOptions)
                     .addNextVisitor(new ArrayWrappingClassAdapterRef())
                     .addNextVisitor(new ArrayWrappingClassAdapter())
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, parentClassResolver, dynamicHierarchyBuilder))
