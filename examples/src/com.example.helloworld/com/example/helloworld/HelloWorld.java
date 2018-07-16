@@ -19,6 +19,9 @@ public class HelloWorld {
         return "Hello, world!".getBytes();
     }
 
+    public static void init() {
+    }
+
     public static byte[] main() throws InvalidTxDataException {
         return ABIDecoder.decodeAndRun(new HelloWorld(), BlockchainRuntime.getData());
     }

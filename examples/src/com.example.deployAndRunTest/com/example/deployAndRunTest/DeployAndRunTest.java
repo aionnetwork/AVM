@@ -41,6 +41,9 @@ public class DeployAndRunTest {
         return "Hello, world!".getBytes();
     }
 
+    public static void init() {
+    }
+
     public static byte[] encodeArgs(){
         String methodAPI = "int addArray(int[] a)";
         int[] a = new int[]{123, 1};
