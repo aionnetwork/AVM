@@ -5,6 +5,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -89,5 +90,9 @@ public class Class<T> extends Object {
     @Override
     public java.lang.String toString() {
         return this.underlying.toString();
+    }
+
+    public Method[] getMethods() {
+        return this.underlying.getMethods();
     }
 }

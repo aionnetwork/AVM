@@ -1,5 +1,11 @@
 package org.aion.avm.api;
 
+import org.aion.avm.arraywrapper.*;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+
 public class ABIA2Decoder {
     /*
      * ABI arguments descriptor symbols and the elementary type sizes.
@@ -49,6 +55,45 @@ public class ABIA2Decoder {
             this.argsDescriptor = argsDescriptor;
             this.arguments  = arguments;
         }
+    }
+
+    /*
+     * Runtime-facing implementation.
+     */
+    public static ByteArray avm_decodeAndRun(org.aion.avm.shadow.java.lang.Class clazz, ByteArray txData) throws InvalidTxDataException{
+        return decodeAndRun(clazz, txData.getUnderlying());
+    }
+
+    public static MethodCaller avm_decode(ByteArray txData) throws InvalidTxDataException{
+        return decode(txData.getUnderlying());
+    }
+
+
+    /*
+     * Underlying implementation.
+     */
+    public static ByteArray decodeAndRun(org.aion.avm.shadow.java.lang.Class clazz, byte[] txData) throws InvalidTxDataException{
+        MethodCaller methodCaller = decode(txData);
+
+        String newMethodName = "avm_" + methodCaller.methodName;
+        String newArgDescriptor = methodCaller.argsDescriptor;
+
+        // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
+        Method method = matchMethodSelector(clazz, newMethodName, newArgDescriptor);
+
+        ByteArray ret = null;
+        try {
+            if (methodCaller.arguments == null) {
+                ret = (ByteArray) method.invoke(null);
+            }
+            else {
+                ret = (ByteArray) method.invoke(null, convertArguments(methodCaller.arguments));
+            }
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            throw new InvalidTxDataException();
+        }
+
+        return ret;
     }
 
     public static MethodCaller decode(byte[] txData) throws InvalidTxDataException{
@@ -495,6 +540,227 @@ public class ABIA2Decoder {
         if(remainingDataSize < minRequiredDataSize) {
             throw new InvalidTxDataException();
         }
+    }
+
+
+    /**
+     * A helper method to match the method selector with the main-class methods.
+     */
+    public static Method matchMethodSelector(org.aion.avm.shadow.java.lang.Class clazz, String methodName, String argsDescriptor) {
+        Method[] methods = clazz.getMethods();
+
+        // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
+        Map<Character, String[]> elementaryTypesMap = new HashMap<>();
+        elementaryTypesMap.put(ABIA2Decoder.BYTE,      new String[]{"B", "byte", "ByteArray"});
+        elementaryTypesMap.put(ABIA2Decoder.BOOLEAN,   new String[]{"Z", "boolean", "ByteArray"});
+        elementaryTypesMap.put(ABIA2Decoder.CHAR,      new String[]{"C", "char", "CharArray"});
+        elementaryTypesMap.put(ABIA2Decoder.SHORT,     new String[]{"S", "short", "ShortArray"});
+        elementaryTypesMap.put(ABIA2Decoder.INT,       new String[]{"I", "int", "IntArray"});
+        elementaryTypesMap.put(ABIA2Decoder.FLOAT,     new String[]{"F", "float", "FloatArray"});
+        elementaryTypesMap.put(ABIA2Decoder.LONG,      new String[]{"J", "long", "LongArray"});
+        elementaryTypesMap.put(ABIA2Decoder.DOUBLE,    new String[]{"D", "double", "DoubleArray"});
+
+        String ARRAY_WRAPPER_PREFIX = "org.aion.avm.arraywrapper.";
+
+        for (Method method : methods) {
+            if (method.getName().equals(methodName)) {
+                Class<?>[] parameterTypes = method.getParameterTypes();
+
+                if ((parameterTypes == null || parameterTypes.length == 0) && (argsDescriptor==null || argsDescriptor.isEmpty())) {
+                    return method;
+                }
+
+                int parIdx = 0;
+                boolean matched = true;
+                for (int idx = 0; idx < argsDescriptor.length(); idx++) {
+                    char c = argsDescriptor.charAt(idx);
+                    switch (c) {
+                        case ABIA2Decoder.ARRAY_S:
+                            String pType = parameterTypes[parIdx].getName();
+                            if (pType.charAt(0) == '[') {
+                                pType = pType.substring(1);
+                            } else if (pType.startsWith(ARRAY_WRAPPER_PREFIX)) {
+                                pType = pType.substring(ARRAY_WRAPPER_PREFIX.length());
+                            } else {
+                                matched = false;
+                                break;
+                            }
+
+                            if (argsDescriptor.length() - idx < 2) {
+                                matched = false;
+                                break;
+                            }
+
+                            char eType;
+                            if (argsDescriptor.charAt(++idx) == ABIA2Decoder.ARRAY_S) {
+                                if (pType.charAt(0) == '$' && pType.charAt(1) == '$') {
+                                    pType = pType.substring(2);
+                                }
+                                else {
+                                    matched = false;
+                                    break;
+                                }
+                                eType = argsDescriptor.charAt(++idx);
+                                idx = argsDescriptor.indexOf(ABIA2Decoder.ARRAY_E, idx);
+                            }
+                            else {
+                                eType = argsDescriptor.charAt(idx);
+                            }
+                            idx = argsDescriptor.indexOf(ABIA2Decoder.ARRAY_E, idx);
+
+                            if (pType.charAt(0) == 'L') {
+                                pType = pType.substring(1);
+                            }
+
+                            if (!(Arrays.asList(elementaryTypesMap.get(eType)).contains(pType))) {
+                                matched = false;
+                                break;
+                            }
+                            break;
+                        default:
+                            if (!(Arrays.asList(elementaryTypesMap.get(c)).contains(parameterTypes[parIdx].getName()))) {
+                                matched = false;
+                                break;
+                            }
+                    }
+                    if (!matched) {
+                        break;
+                    }
+                    else {
+                        parIdx ++;
+                        if (parIdx == parameterTypes.length) {
+                            break;
+                        }
+                    }
+                }
+                if (matched && parIdx == parameterTypes.length) {
+                    return method;
+                }
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * Convert the method call arguments, 1) take care of the array wrapping; 2) convert to an array list.
+     *
+     * @param arguments
+     * @return
+     */
+    private static Object[] convertArguments(Object... arguments)
+            throws InvalidTxDataException {
+        List<Object> argList = new LinkedList<>(Arrays.asList(arguments));
+        int originalSize = argList.size();
+
+        for (int index = 0; index < originalSize; index ++) {
+            Object obj = argList.get(index);
+
+            // need to remove the empty ones at the end of the list; ABI does not allow null arguments
+            if (obj == null) {
+                argList.remove(index);
+                continue;
+            }
+
+            // generate the array wrapping objects
+            if (obj.getClass().isArray()) {
+                Object newObj = null;
+                String originalClassName = obj.getClass().getName();
+                switch (originalClassName) {
+                    case "[C":
+                        newObj = new CharArray((char[]) obj);
+                        argList.set(index, obj);
+                        break;
+                    case "[D":
+                        newObj = new DoubleArray((double[]) obj);
+                        argList.set(index, obj);
+                        break;
+                    case "[F":
+                        newObj = new FloatArray((float[]) obj);
+                        argList.set(index, obj);
+                        break;
+                    case "[I":
+                        newObj = new IntArray((int[]) obj);
+                        argList.set(index, obj);
+                        break;
+                    case "[J":
+                        newObj = new LongArray((long[]) obj);
+                        argList.set(index, obj);
+                        break;
+                    case "[S":
+                        newObj = new ShortArray((short[]) obj);
+                        argList.set(index, obj);
+                        break;
+                    case "[B":
+                    case "[Z":
+                        newObj = new ByteArray((byte[]) obj);
+                        argList.set(index, obj);
+                        break;
+                    default:
+                        if (!originalClassName.matches("\\[\\[[BZCDFIJS]")) {
+                            throw new InvalidTxDataException();
+                        }
+
+                        //TODO convert 2D array objects to the wrapped ones
+/*
+                        // this is a 2D array
+                        String arrayWrapperClassName = "org.aion.avm.arraywrapper.$$" + originalClassName.charAt(originalClassName.length()-1);
+                        Class<?> clazz = sharedClassLoader.loadClass(arrayWrapperClassName);
+
+                        Method initArray = clazz.getMethod("initArray", int.class);
+                        Method set = clazz.getMethod("set", int.class, Object.class);
+
+                        int firstDimension = ((Object[])obj).length;
+                        newObj = initArray.invoke(null, firstDimension);
+                        switch (originalClassName) {
+                            case "[[B":
+                            case "[[Z":
+                                for (int i = 0; i < firstDimension; i++) {
+                                    set.invoke(newObj, i, new ByteArray(((byte[][])obj)[i]));
+                                }
+                                break;
+                            case "[[C":
+                                for (int i = 0; i < firstDimension; i++) {
+                                    set.invoke(newObj, i, new CharArray(((char[][])obj)[i]));
+                                }
+                                break;
+                            case "[[D":
+                                for (int i = 0; i < firstDimension; i++) {
+                                    set.invoke(newObj, i, new DoubleArray(((double[][])obj)[i]));
+                                }
+                                break;
+                            case "[[F":
+                                for (int i = 0; i < firstDimension; i++) {
+                                    set.invoke(newObj, i, new FloatArray(((float[][])obj)[i]));
+                                }
+                                break;
+                            case "[[I":
+                                for (int i = 0; i < firstDimension; i++) {
+                                    set.invoke(newObj, i, new IntArray(((int[][])obj)[i]));
+                                }
+                                break;
+                            case "[[J":
+                                for (int i = 0; i < firstDimension; i++) {
+                                    set.invoke(newObj, i, new LongArray(((long[][])obj)[i]));
+                                }
+                                break;
+                            case "[[S":
+                                for (int i = 0; i < firstDimension; i++) {
+                                    set.invoke(newObj, i, new ShortArray(((short[][])obj)[i]));
+                                }
+                                break;
+                        }*/
+
+                        break;
+                }
+
+                // replace the original object with the new one
+                argList.set(index, newObj);
+            }
+        }
+
+        // return the array list
+        return argList.toArray();
     }
 }
 

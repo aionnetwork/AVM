@@ -7,6 +7,10 @@ public class ABIA2Decoder {
         public Object[] arguments;
     }
 
+    public static byte[] decodeAndRun(Class<?> clazz, byte[] txData) {
+        return null;
+    }
+
     public static MethodCaller decode(byte[] txData) {
         return null;
     }

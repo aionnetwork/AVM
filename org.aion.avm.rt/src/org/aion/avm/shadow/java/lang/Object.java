@@ -31,7 +31,7 @@ public class Object extends java.lang.Object implements IObject {
 
     @Override
     public Class<?> avm_getClass() {
-        return null;
+        return IHelper.currentContractHelper.get().externalWrapAsClass(this.getClass());
     }
 
     @Override

@@ -177,6 +177,10 @@ public class Helper implements IHelper {
         return Helper.energyLeft();
     }
     @Override
+    public org.aion.avm.shadow.java.lang.Class<?> externalWrapAsClass(Class<?> input) {
+        return Helper.wrapAsClass(input);
+    }
+    @Override
     public org.aion.avm.shadow.java.lang.String externalWrapAsString(String input) {
         return Helper.wrapAsString(input);
     }

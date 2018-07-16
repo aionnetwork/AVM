@@ -470,7 +470,11 @@ public class Deployer {
             Assert.unreachable("This shouldn't be called in this test.");
             return 0;
         }
-
+        @Override
+        public org.aion.avm.shadow.java.lang.Class<?> externalWrapAsClass(Class<?> input) {
+            Assert.unreachable("This shouldn't be called in this test.");
+            return null;
+        }
         @Override
         public org.aion.avm.shadow.java.lang.String externalWrapAsString(String input) {
             Assert.unreachable("This shouldn't be called in this test.");
