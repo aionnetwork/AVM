@@ -65,6 +65,10 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         this.nextInstanceId = nextInstanceId;
     }
 
+    public long getNextInstanceId() {
+        return this.nextInstanceId;
+    }
+
     public void serializeClass(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
             safeSerialize(encoder, clazz, null, null, nextObjectQueue);

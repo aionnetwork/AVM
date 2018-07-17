@@ -22,9 +22,6 @@ public class ContractEnvironmentState {
                 .encodeInt(state.nextHashCode)
                 .encodeLong(state.nextInstanceId)
                 .toBytes();
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
-        encoder.encodeInt(state.nextHashCode);
-        encoder.encodeInt(state.nextHashCode);
         cb.putStorage(address, StorageKeys.CONTRACT_ENVIRONMENT, bytes);
     }
 

@@ -67,7 +67,10 @@ public class RootClassCodecTest {
         
         KernelApiImpl kernel = new KernelApiImpl();
         byte[] address = new byte[] {1,2,3};
-        RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), 1, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
+        long initialInstanceId = 1l;
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
+        // Note that this attempt to serialize has no instances so the counter should be unchanged.
+        Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -145,5 +148,46 @@ public class RootClassCodecTest {
         Assert.assertEquals(5.0f, RootClassCodecTarget.s_six, 0.01f);
         Assert.assertEquals(5, RootClassCodecTarget.s_seven);
         Assert.assertEquals(5.0d, RootClassCodecTarget.s_eight, 0.01f);
+    }
+
+    /**
+     * Serialize a single class which references an instance to verify correct shape but also correct nextInstanceId accounting.
+     */
+    @Test
+    public void serializeClassWithInstance() {
+        ReflectionStructureCodecTarget.s_one = true;
+        ReflectionStructureCodecTarget.s_two = 5;
+        ReflectionStructureCodecTarget.s_three = 5;
+        ReflectionStructureCodecTarget.s_four = 5;
+        ReflectionStructureCodecTarget.s_five = 5;
+        ReflectionStructureCodecTarget.s_six = 5.0f;
+        ReflectionStructureCodecTarget.s_seven = 5;
+        ReflectionStructureCodecTarget.s_eight = 5.0d;
+        ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
+        
+        KernelApiImpl kernel = new KernelApiImpl();
+        byte[] address = new byte[] {1,2,3};
+        long initialInstanceId = 1l;
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class));
+        // We serialized a single instance so we expect the nextInstanceId to be advanced.
+        Assert.assertEquals(1 + initialInstanceId, nextInstanceId);
+        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
+        byte[] expected = {
+                // ReflectionStructureCodecTarget
+                0x1, //s_one
+                0x5, //s_two
+                0x0, 0x5, //s_three
+                0x0, 0x5, //s_four
+                0x0, 0x0, 0x0, 0x5, //s_five
+                0x40, (byte)0xa0, 0x0, 0x0, //s_six
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //s_seven
+                0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
+                //s_nine:
+                0x0, 0x0, 0x0, 0x3c, //s_nine (class name length)
+                0x6f, 0x72, 0x67, 0x2e, 0x61, 0x69, 0x6f, 0x6e, 0x2e, 0x61, 0x76, 0x6d, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x63, 0x65, 0x2e, 0x52, 0x65, 0x66, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x75, 0x72, 0x65, 0x43, 0x6f, 0x64, 0x65, 0x63, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, //s_nine (class name UTF8)
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, //s_nine (instanceId)
+        };
+        Assert.assertTrue(Arrays.equals(expected, result));
     }
 }

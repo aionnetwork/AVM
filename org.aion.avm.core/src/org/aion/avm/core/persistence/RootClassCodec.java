@@ -47,8 +47,9 @@ public class RootClassCodec {
      * @param cb The kernel storage API.
      * @param address The address of the contract.
      * @param classes The list of classes to save (order must always be the same).
+     * @return The new nextInstanceId to save for the next invocation.
      */
-    public static void saveClassStaticsToStorage(ClassLoader loader, long nextInstanceId, KernelApi cb, byte[] address, List<Class<?>> classes) {
+    public static long saveClassStaticsToStorage(ClassLoader loader, long nextInstanceId, KernelApi cb, byte[] address, List<Class<?>> classes) {
         // Build the encoder.
         ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, cb, address, nextInstanceId);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
@@ -75,5 +76,8 @@ public class RootClassCodec {
             org.aion.avm.shadow.java.lang.Object instance = instancesToWrite.poll();
             codec.serializeInstance(instance, instanceSink);
         }
+        
+        // We need to pull out the nextInstanceId so that it can be set in the codec, when we are next invoked.
+        return codec.getNextInstanceId();
     }
 }

@@ -391,12 +391,11 @@ public class AvmImpl implements Avm {
             Method method = clazz.getMethod("avm_init");
             method.invoke(null);
 
-            // Save back the state before we return - we haven't saved anything so the instance count starts at 1.
-            long nextInstanceId = 1l;
+            // Save back the state before we return.
             // -first, save out the classes
             // TODO: Make this fully walk the graph
-            // TODO: Get the updated "nextInstanceId" after everything is written to storage.
-            RootClassCodec.saveClassStaticsToStorage(classLoader, nextInstanceId, cb, dappAddress, getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()));
+            long initialInstanceId = 1l;
+            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(classLoader, initialInstanceId, cb, dappAddress, getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()));
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
@@ -464,9 +463,9 @@ public class AvmImpl implements Avm {
             // -first, save out the classes
             // TODO: Make this fully walk the graph
             // TODO: Get the updated "nextInstanceId" after everything is written to storage.
-            RootClassCodec.saveClassStaticsToStorage(classLoader, initialState.nextInstanceId, cb, dappAddress, aphabeticalContractClasses);
+            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(classLoader, initialState.nextInstanceId, cb, dappAddress, aphabeticalContractClasses);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), initialState.nextInstanceId));
+            ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
             return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
         } catch (OutOfEnergyError e) {
