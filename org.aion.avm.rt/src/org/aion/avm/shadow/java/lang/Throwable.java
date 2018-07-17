@@ -1,5 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IHelper;
+
 
 /**
  * Our shadow implementation of java.lang.Throwable.
@@ -11,6 +13,11 @@ package org.aion.avm.shadow.java.lang;
  * It does, however, mean that we can't expose stack traces since those are part of the VM-generated exceptions.
  */
 public class Throwable extends Object {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
+
     private final String message;
     private Throwable cause;
 

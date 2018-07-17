@@ -4,6 +4,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.arraywrapper.IntArray;
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
@@ -15,6 +16,10 @@ import java.util.function.Consumer;
 
 
 public class String extends Object implements Comparable<String>, CharSequence {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     private Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 

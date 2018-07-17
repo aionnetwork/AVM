@@ -1,8 +1,14 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
+
 public class Integer extends Number implements Comparable<Integer> {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static final int avm_MAX_VALUE = java.lang.Integer.MAX_VALUE;
 

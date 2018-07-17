@@ -13,6 +13,11 @@ import org.aion.avm.internal.IObjectSerializer;
  * The shadow implementation of the {@link java.lang.Object}.
  */
 public class Object extends java.lang.Object implements IObject {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
+
     private int hashCode;
     public long instanceId;
     // We hold on to this deserializer until we need to load the instance (this is cleared after lazyLoad() completes).

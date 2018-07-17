@@ -1,8 +1,14 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
+
 public class Float extends Number implements Comparable<Float> {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static final float avm_POSITIVE_INFINITY = java.lang.Float.POSITIVE_INFINITY;
 

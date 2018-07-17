@@ -1,9 +1,16 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.Array;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
+
 public final class System extends Object{
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
+
     private System() {
     }
 

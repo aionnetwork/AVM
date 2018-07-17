@@ -1,11 +1,18 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.ObjectArray;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.shadow.java.lang.Enum;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Class;
 
+
 public class RoundingMode extends org.aion.avm.shadow.java.lang.Enum<RoundingMode>{
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
+
     public static final RoundingMode avm_UP;
     public static final RoundingMode avm_DOWN;
     public static final RoundingMode avm_CEILING;

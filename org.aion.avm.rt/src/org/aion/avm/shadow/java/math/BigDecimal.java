@@ -1,12 +1,18 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.CharArray;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.Comparable;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Number;
 
+
 public class BigDecimal extends Number implements Comparable<BigDecimal>{
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static final BigDecimal avm_ZERO;
 

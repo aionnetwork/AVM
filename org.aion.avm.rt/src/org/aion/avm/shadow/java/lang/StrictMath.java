@@ -1,6 +1,14 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IHelper;
+
+
 public final class StrictMath {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
+
     private StrictMath() {}
 
     public static final double avm_E = java.lang.StrictMath.E;

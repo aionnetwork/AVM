@@ -1,9 +1,15 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
+
 public class Character extends Object {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static final int avm_MIN_RADIX = 2;
 

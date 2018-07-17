@@ -1,11 +1,16 @@
 package org.aion.avm.shadow.java.math;
 
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.Object;
 import org.aion.avm.shadow.java.lang.String;
 
 
 public final class MathContext extends Object {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static final MathContext avm_UNLIMITED =
             new MathContext(0, RoundingMode.avm_HALF_UP);

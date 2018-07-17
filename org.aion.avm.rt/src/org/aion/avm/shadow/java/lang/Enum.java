@@ -1,9 +1,14 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IHelper;
 
 
 public abstract class Enum<E extends Enum<E>> extends Object {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     // (note that these are not final since we want to be able to deserialize this type)
     private String name;

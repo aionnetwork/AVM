@@ -1,8 +1,14 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
+import org.aion.avm.internal.IHelper;
+
 
 public class StringBuilder extends Object implements CharSequence, Appendable{
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public StringBuilder() {
         this.underlying = new java.lang.StringBuilder();

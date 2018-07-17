@@ -1,8 +1,14 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
+
 public class Long extends Number implements Comparable<Long> {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static final long avm_MIN_VALUE = 0x8000000000000000L;
 

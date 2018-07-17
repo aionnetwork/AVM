@@ -1,8 +1,14 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
+
 public final class Byte extends Object implements Comparable<Byte> {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static final byte avm_MIN_VALUE = java.lang.Byte.MIN_VALUE;
 

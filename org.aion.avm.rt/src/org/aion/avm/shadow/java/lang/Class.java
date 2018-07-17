@@ -11,6 +11,11 @@ import java.util.Map;
 
 
 public class Class<T> extends Object {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
+
     private final java.lang.Class<T> underlying;
 
     public Class(java.lang.Class<T> underlying) {

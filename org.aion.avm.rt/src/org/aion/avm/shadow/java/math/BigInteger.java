@@ -1,12 +1,18 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.Comparable;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Number;
 
+
 public class BigInteger extends Number implements Comparable<BigInteger> {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public BigInteger(ByteArray val, int off, int len) {
         v = new java.math.BigInteger(val.getUnderlying(), off, len);

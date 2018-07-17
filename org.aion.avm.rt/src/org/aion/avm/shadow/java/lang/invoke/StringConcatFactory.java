@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang.invoke;
 
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.shadow.java.lang.String;
 
 import java.lang.invoke.ConstantCallSite;
@@ -8,10 +9,15 @@ import java.lang.invoke.MethodType;
 import java.lang.invoke.StringConcatException;
 import java.util.Arrays;
 
+
 /**
  * @author Roman Katerinenko
  */
 public final class StringConcatFactory {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static String concat(java.lang.String recipe, // for future use
                                 Object[] constants, // for future use

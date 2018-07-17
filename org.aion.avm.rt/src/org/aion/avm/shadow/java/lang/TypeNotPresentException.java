@@ -1,10 +1,17 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IHelper;
+
 
 /**
  * Our shadow implementation of java.lang.TypeNotPresentException.
  */
 public class TypeNotPresentException extends RuntimeException {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
+
     private String typeName;
 
     public TypeNotPresentException(String typeName, Throwable cause) {

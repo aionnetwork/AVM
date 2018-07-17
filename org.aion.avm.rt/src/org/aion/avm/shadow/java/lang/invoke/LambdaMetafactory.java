@@ -2,10 +2,17 @@ package org.aion.avm.shadow.java.lang.invoke;
 
 import java.lang.invoke.LambdaConversionException;
 
+import org.aion.avm.internal.IHelper;
+
+
 /**
  * @author Roman Katerinenko
  */
 public class LambdaMetafactory {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static java.lang.invoke.CallSite avm_metafactory(java.lang.invoke.MethodHandles.Lookup owner,
                                                             String invokedName,
