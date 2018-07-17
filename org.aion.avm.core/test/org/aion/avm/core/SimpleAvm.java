@@ -14,18 +14,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+
 public class SimpleAvm {
-
-    private final Map<String, byte[]> classes;
-
     private final AvmClassLoader loader;
     private final IHelper helper;
     private final Set<String> transformedClassNames;
 
     public SimpleAvm(long energyLimit, Class<?>... classes) {
-        this.classes = new HashMap<>();
+        Map<String, byte[]> preTransformedClassBytecode = new HashMap<>();
 
-        Stream.of(classes).forEach(clazz -> this.classes.put(clazz.getName(),
+        Stream.of(classes).forEach(clazz -> preTransformedClassBytecode.put(clazz.getName(),
                 Helpers.loadRequiredResourceAsBytes(clazz.getName().replaceAll("\\.", "/") + ".class")));
 
         // build shared class loader
@@ -33,7 +31,7 @@ public class SimpleAvm {
 
         // build class hierarchy
         HierarchyTreeBuilder builder = new HierarchyTreeBuilder();
-        this.classes.entrySet().stream().forEach(e -> {
+        preTransformedClassBytecode.entrySet().stream().forEach(e -> {
             try {
                 // NOTE: we load the class to figure out the super class instead of by static analysis.
                 Class<?> clazz = SimpleAvm.class.getClassLoader().loadClass(e.getKey());
@@ -52,7 +50,7 @@ public class SimpleAvm {
         AvmImpl avm = new AvmImpl(sharedClassLoader);
 
         // transform classes
-        Map<String, byte[]> transformedClasses = avm.transformClasses(this.classes, classHierarchy);
+        Map<String, byte[]> transformedClasses = avm.transformClasses(preTransformedClassBytecode, classHierarchy);
         Map<String, byte[]> finalContractClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
         this.loader = new AvmClassLoader(sharedClassLoader, finalContractClasses);
         this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());
@@ -63,10 +61,6 @@ public class SimpleAvm {
 
     public void attachBlockchainRuntime(IBlockchainRuntime rt) {
         Helpers.attachBlockchainRuntime(loader, rt);
-    }
-
-    public Map<String, byte[]> getClasses() {
-        return classes;
     }
 
     public AvmClassLoader getClassLoader() {
