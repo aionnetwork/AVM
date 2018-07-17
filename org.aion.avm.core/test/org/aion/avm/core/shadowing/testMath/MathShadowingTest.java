@@ -36,4 +36,12 @@ public class MathShadowingTest {
         Assert.assertEquals(ret, true);
     }
 
+    /**
+     * Creates a basic MathContext, just to prove that it is correctly formed.
+     */
+    @Test
+    public void createSimpleContext() throws Exception {
+        Object result = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMathContext")).invoke(null);
+        Assert.assertNotNull(result);
+    }
 }

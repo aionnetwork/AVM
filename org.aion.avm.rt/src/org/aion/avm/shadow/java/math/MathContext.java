@@ -22,23 +22,20 @@ public final class MathContext extends Object {
     public MathContext(int setPrecision) {
         v = new java.math.MathContext(setPrecision);
         precision = v.getPrecision();
-        roundingMode = RoundingMode.avm_valueOf(new String("avm_" + v.getRoundingMode().name()));
-        return;
+        roundingMode = RoundingMode.avm_valueOf(new String(v.getRoundingMode().name()));
     }
 
     public MathContext(int setPrecision,
                        RoundingMode setRoundingMode) {
         v = new java.math.MathContext(setPrecision, setRoundingMode.getV());
         precision = v.getPrecision();
-        roundingMode = RoundingMode.avm_valueOf(new String("avm_" + v.getRoundingMode().name()));
-        return;
+        roundingMode = RoundingMode.avm_valueOf(new String(v.getRoundingMode().name()));
     }
 
     public MathContext(String val) {
         v = new java.math.MathContext(val.getV());
         precision = v.getPrecision();
-        roundingMode = RoundingMode.avm_valueOf(new String("avm_" + v.getRoundingMode().name()));
-        return;
+        roundingMode = RoundingMode.avm_valueOf(new String(v.getRoundingMode().name()));
     }
 
     public int avm_getPrecision() {
