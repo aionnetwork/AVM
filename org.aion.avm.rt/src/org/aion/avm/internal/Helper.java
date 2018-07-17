@@ -192,6 +192,11 @@ public class Helper implements IHelper {
     public void externalSetEnergy(long energy){
         Helper.setEnergy(energy);
     }
+    @Override
+    public void externalBootstrapOnly() {
+        // This implementation is for per-contract invocation, meaning it is not acceptable for the bootstrap phase.
+        RuntimeAssertionError.assertTrue(false);
+    }
 
 
     // Private helpers used internally.

@@ -483,5 +483,9 @@ public class Deployer {
             // Just return anything.
             return 0;
         }
+        @Override
+        public void externalBootstrapOnly() {
+            Assert.unreachable("This shouldn't be called in this test.");
+        }
     }
 }

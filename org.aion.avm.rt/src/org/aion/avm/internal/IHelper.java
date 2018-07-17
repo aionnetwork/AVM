@@ -30,4 +30,10 @@ public interface IHelper {
     public org.aion.avm.shadow.java.lang.String externalWrapAsString(java.lang.String input);
 
     public int externalGetNextHashCode();
+
+    /**
+     * Optionally called by bootstrapping operations to validate that the IHelper instance they are using is appropriate for bootstrap operations.
+     * Typically, an implementation which was for contract execution, only, would throw a runtime exception when this is called.
+     */
+    public void externalBootstrapOnly();
 }
