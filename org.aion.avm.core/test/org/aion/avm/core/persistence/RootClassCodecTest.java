@@ -2,6 +2,7 @@ package org.aion.avm.core.persistence;
 
 import java.util.Arrays;
 
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.Helper;
 import org.aion.kernel.KernelApiImpl;
 import org.junit.After;
@@ -13,6 +14,9 @@ import org.junit.Test;
 public class RootClassCodecTest {
     @Before
     public void setup() {
+        // Force the initialization of the NodeEnvironment singleton.
+        Assert.assertNotNull(NodeEnvironment.singleton);
+        
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
         // Clear statics, since our tests interact with them.
         ReflectionStructureCodecTarget.s_one = false;

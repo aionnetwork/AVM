@@ -10,6 +10,7 @@ import org.aion.avm.arraywrapper.IntArray;
 import org.aion.avm.arraywrapper.LongArray;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.arraywrapper.ShortArray;
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
@@ -33,6 +34,9 @@ public class SingleInstanceDeserializerTest {
 
     @Before
     public void setup() {
+        // Force the initialization of the NodeEnvironment singleton.
+        Assert.assertNotNull(NodeEnvironment.singleton);
+        
         new Helper(SingleInstanceDeserializerTest.class.getClassLoader(), 1_000_000L, 1);
     }
 

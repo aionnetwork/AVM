@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.Helper;
 
 import org.junit.After;
@@ -20,6 +21,9 @@ public class ReflectionStructureCodecTest {
 
     @Before
     public void setup() {
+        // Force the initialization of the NodeEnvironment singleton.
+        Assert.assertNotNull(NodeEnvironment.singleton);
+        
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
     }
 

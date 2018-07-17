@@ -1,5 +1,6 @@
 package org.aion.avm.core.shadowing.testEnum;
 
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
@@ -19,6 +20,9 @@ public class EnumShadowingTest {
 
     @Before
     public void testReplaceJavaLang() throws ClassNotFoundException {
+        // Force the initialization of the NodeEnvironment singleton.
+        Assert.assertNotNull(NodeEnvironment.singleton);
+        
         SimpleAvm avm = new SimpleAvm(1000000L, TestResource.class, TestEnum.class);
         AvmClassLoader loader = avm.getClassLoader();
 
