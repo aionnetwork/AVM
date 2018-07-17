@@ -144,13 +144,13 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                     long val = Double.doubleToLongBits(actual);
                     encoder.encodeLong(val);
                 } else {
+                    org.aion.avm.shadow.java.lang.Object contents = (org.aion.avm.shadow.java.lang.Object)field.get(object);
                     // This should be a shadow object.
-                    if (!org.aion.avm.shadow.java.lang.Object.class.isAssignableFrom(type)) {
-                        throw new RuntimeAssertionError("Attempted to encode non-shadow object: " + type);
+                    if (contents != null && !org.aion.avm.shadow.java.lang.Object.class.isAssignableFrom(contents.getClass())) {
+                        throw new RuntimeAssertionError("Attempted to encode non-shadow object: " + contents.getClass());
                     }
                     // Shape:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
                     // Null:  (int)0.
-                    org.aion.avm.shadow.java.lang.Object contents = (org.aion.avm.shadow.java.lang.Object)field.get(object);
                     deflateInstanceAsStub(encoder, contents, nextObjectQueue);
                 }
             }
@@ -247,11 +247,6 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                     double actual = Double.longBitsToDouble(val);
                     field.setDouble(object, actual);
                 } else {
-                    
-                    // This should be a shadow object.
-                    if (!org.aion.avm.shadow.java.lang.Object.class.isAssignableFrom(type)) {
-                        throw new RuntimeAssertionError("Attempted to decode non-shadow object: " + type);
-                    }
                     // Shape:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
                     // Null:  (int)0.
                     org.aion.avm.shadow.java.lang.Object instanceToStore = inflateStubAsInstance(decoder);
