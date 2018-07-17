@@ -1,6 +1,5 @@
 package org.aion.avm.core.rejection;
 
-import org.aion.avm.core.ClassWhiteList;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Handle;
@@ -140,10 +139,14 @@ public class RejectionMethodVisitor extends MethodVisitor {
 
 
     private void checkOpcode(int opcode) {
-        // For now, we just reject on JSR and RET.
         if (false
+                // We reject JSR and RET (although these haven't been generated in a long time, anyway, and aren't allowed in new class files).
                 || (Opcodes.JSR == opcode)
                 || (Opcodes.RET == opcode)
+                
+                // We also want to reject instructions which could interact with the thread state:  MONITORENTER, MONITOREXIT.
+                || (Opcodes.MONITORENTER == opcode)
+                || (Opcodes.MONITOREXIT == opcode)
         ) {
             RejectedClassException.blacklistedOpcode(opcode);
         }

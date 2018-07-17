@@ -145,6 +145,14 @@ public class RejectionClassVisitorTest {
         commonFilterBytes(className, raw);
     }
 
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_monitorOperations() throws Exception {
+        String className = RejectMonitorOperations.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        // Expected to fail since a method uses monitor bytecodes, which isn't allowed.
+        commonFilterBytes(className, raw);
+    }
+
 
     private void compareClasses(ClassNode inputNode, ClassNode outputNode) {
         // Access is unchanged.
