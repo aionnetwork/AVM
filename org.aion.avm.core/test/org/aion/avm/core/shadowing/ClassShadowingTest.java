@@ -1,10 +1,9 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
@@ -26,12 +25,10 @@ import java.util.function.Function;
 
 
 public class ClassShadowingTest {
-    private static AvmSharedClassLoader sharedClassLoader;
     private static String runtimeClassName;
 
     @BeforeClass
     public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         runtimeClassName = Helpers.fulllyQualifiedNameToInternalName(Testing.class.getName());
     }
 
@@ -66,7 +63,7 @@ public class ClassShadowingTest {
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(PackageConstants.kUserDotPrefix + className, transformer.apply(bytecode));
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);
@@ -110,7 +107,7 @@ public class ClassShadowingTest {
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(mappedClassName, transformer.apply(bytecode));
 
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);
@@ -148,7 +145,7 @@ public class ClassShadowingTest {
         classes.put(PackageConstants.kUserDotPrefix + className, transformed);
         classes.put(PackageConstants.kUserDotPrefix + innerClassName, transformer.apply(innerBytecode));
 
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);

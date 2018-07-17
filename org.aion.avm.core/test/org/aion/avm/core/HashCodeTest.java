@@ -17,7 +17,6 @@ import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 
@@ -25,13 +24,6 @@ import org.junit.Test;
  * Tests the hashCode behaviour of the contract code.  Includes a tests that our helpers/instrumentation don't invalidate Java assumptions.
  */
 public class HashCodeTest {
-    private static AvmSharedClassLoader sharedClassLoader;
-
-    @BeforeClass
-    public static void setupClass() throws Exception {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
-    }
-
     private Class<?> clazz;
 
     @Before
@@ -290,7 +282,7 @@ public class HashCodeTest {
 
     private byte[] getTransformedTestClass(String className) {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        AvmImpl avm = new AvmImpl(sharedClassLoader);
+        AvmImpl avm = new AvmImpl();
         Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", raw)
                 .asMutableForest();

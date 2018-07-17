@@ -1,7 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.classgeneration.CommonGenerators;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
@@ -15,15 +13,14 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
+
 public class AvmImplDeployAndRunTest {
-    private static AvmSharedClassLoader sharedClassLoader;
     private static AvmImpl avm;
     private static KernelApiImpl cb;
 
     @BeforeClass
     public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
-        avm = new AvmImpl(sharedClassLoader);
+        avm = new AvmImpl();
         cb = new KernelApiImpl();
     }
 

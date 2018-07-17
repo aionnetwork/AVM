@@ -1,9 +1,8 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
@@ -19,13 +18,10 @@ import java.util.function.Function;
 
 
 public class StringConstantVisitorTest {
-    private static AvmSharedClassLoader sharedClassLoader;
-
     private static String runtimeClassName;
 
     @BeforeClass
     public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         runtimeClassName = PackageConstants.kInternalSlashPrefix + "Helper";
     }
 
@@ -50,7 +46,7 @@ public class StringConstantVisitorTest {
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(PackageConstants.kUserDotPrefix + targetTestName, transformer.apply(targetTestBytes));
         classes.put(PackageConstants.kUserDotPrefix + targetNoStaticName, transformer.apply(targetNoStaticBytes));
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);

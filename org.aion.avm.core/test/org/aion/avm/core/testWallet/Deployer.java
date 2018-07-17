@@ -10,9 +10,8 @@ import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.ClassHierarchyForest;
-import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.Assert;
@@ -189,7 +188,6 @@ public class Deployer {
 
     private static void invokeTransformed(String[] args) throws Throwable {
         Map<String, Integer> eventCounts = new HashMap<>();
-        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         
         byte[] jarBytes = JarBuilder.buildJarForMainAndClasses(Wallet.class
                 , Multiowned.class
@@ -207,10 +205,10 @@ public class Deployer {
         );
         LoadedJar jar = LoadedJar.fromBytes(jarBytes);
         
-        AvmImpl avm = new AvmImpl(sharedClassLoader);
+        AvmImpl avm = new AvmImpl();
         Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar)));
         
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, transformedClasses);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(transformedClasses);
 
         // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
         Helpers.instantiateHelper(loader, 1_000_000L, 1);

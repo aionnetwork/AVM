@@ -1,9 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.IBlockchainRuntime;
-import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
@@ -26,9 +24,6 @@ public class SimpleAvm {
         Stream.of(classes).forEach(clazz -> preTransformedClassBytecode.put(clazz.getName(),
                 Helpers.loadRequiredResourceAsBytes(clazz.getName().replaceAll("\\.", "/") + ".class")));
 
-        // build shared class loader
-        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
-
         // build class hierarchy
         HierarchyTreeBuilder builder = new HierarchyTreeBuilder();
         preTransformedClassBytecode.entrySet().stream().forEach(e -> {
@@ -47,12 +42,12 @@ public class SimpleAvm {
         Forest<String, byte[]> classHierarchy = builder.asMutableForest();
 
         // create a new AVM
-        AvmImpl avm = new AvmImpl(sharedClassLoader);
+        AvmImpl avm = new AvmImpl();
 
         // transform classes
         Map<String, byte[]> transformedClasses = avm.transformClasses(preTransformedClassBytecode, classHierarchy);
         Map<String, byte[]> finalContractClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
-        this.loader = new AvmClassLoader(sharedClassLoader, finalContractClasses);
+        this.loader = NodeEnvironment.singleton.createInvocationClassLoader(finalContractClasses);
         this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());
 
         // set up helper

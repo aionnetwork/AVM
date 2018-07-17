@@ -4,12 +4,11 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.Forest;
 import org.aion.avm.core.HierarchyTreeBuilder;
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.ParentPointers;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.TypeAwareClassWriter;
-import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
@@ -33,13 +32,6 @@ import java.util.Set;
 
 
 public class ExceptionWrappingTest {
-    private static AvmSharedClassLoader sharedClassLoader;
-
-    @BeforeClass
-    public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
-    }
-
     private AvmClassLoader loader;
     private Class<?> testClass;
 
@@ -73,7 +65,7 @@ public class ExceptionWrappingTest {
         Map<String, byte[]> classes = new HashMap<>();
         classes.putAll(transformer.getLateGeneratedClasses());
         
-        this.loader = new AvmClassLoader(sharedClassLoader, classes);
+        this.loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         // Load the test class and the exceptions.
         this.testClass = this.loader.loadUserClassByOriginalName(classDotName);
         this.loader.loadUserClassByOriginalName(exceptionClassDotName);
@@ -311,8 +303,7 @@ public class ExceptionWrappingTest {
                     .addNextVisitor(new ConstantVisitor(TestHelpers.CLASS_NAME))
                     .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, parentPointers, generatedClassesSink))
                     .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME))
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                            sharedClassLoader, parentPointers, dynamicHierarchyBuilder))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers, dynamicHierarchyBuilder))
                     .build();
             this.transformedClasses.put(PackageConstants.kUserDotPrefix + name, toolchain.runAndGetBytecode());
         }

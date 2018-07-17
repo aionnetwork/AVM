@@ -1,9 +1,6 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.core.classgeneration.CommonGenerators;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.AvmException;
@@ -28,16 +25,15 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+
 /**
  * @author Roman Katerinenko
  */
 public class AvmImplTest {
-    private static AvmSharedClassLoader sharedClassLoader;
     private static Block block;
 
     @BeforeClass
     public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     }
 
@@ -75,7 +71,7 @@ public class AvmImplTest {
     public void testPersistentEnergyLimit() {
         // Set up the runtime.
         Map<String, byte[]> contractClasses = Helpers.mapIncludingHelperBytecode(Collections.emptyMap());
-        IHelper helper = Helpers.instantiateHelper(new AvmClassLoader(sharedClassLoader, contractClasses), 5L, 1);
+        IHelper helper = Helpers.instantiateHelper(NodeEnvironment.singleton.createInvocationClassLoader(contractClasses), 5L, 1);
 
         // Prove that we can charge 0 without issue.
         helper.externalChargeEnergy(0);
@@ -94,7 +90,6 @@ public class AvmImplTest {
         try {
             helper.externalChargeEnergy(0);
         } catch (OutOfEnergyError e) {
-            new AvmImpl(sharedClassLoader);
             catchCount += 1;
             // And have the same exception.
             assertEquals(error, e);
@@ -120,19 +115,18 @@ public class AvmImplTest {
                 return result;
             }
         };
-        kernel.sharedClassLoader = sharedClassLoader;
         kernel.block = block;
 
         // deploy
         Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, jar, 1000000);
-        AvmImpl avm1 = new AvmImpl(sharedClassLoader);
+        AvmImpl avm1 = new AvmImpl();
         AvmResult result1 = avm1.run(tx1, block, kernel);
         assertEquals(AvmResult.Code.SUCCESS, result1.code);
         assertArrayEquals(Helpers.address(2), result1.returnData);
 
         // call (1 -> 2 -> 2)
         Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(2), 1000000);
-        AvmImpl avm2 = new AvmImpl(sharedClassLoader);
+        AvmImpl avm2 = new AvmImpl();
         AvmResult result2 = avm2.run(tx2, block, kernel);
         assertEquals(AvmResult.Code.SUCCESS, result2.code);
         assertArrayEquals("CALL".getBytes(), result2.returnData);

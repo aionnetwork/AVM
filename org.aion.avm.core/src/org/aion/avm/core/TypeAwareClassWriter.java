@@ -2,7 +2,6 @@ package org.aion.avm.core;
 
 import java.util.Stack;
 
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.objectweb.asm.ClassWriter;
@@ -13,14 +12,12 @@ import org.objectweb.asm.ClassWriter;
  * to compute this relationship between our generated classes, before they can be loaded.
  */
 public class TypeAwareClassWriter extends ClassWriter {
-    private final AvmSharedClassLoader sharedClassLoader;
     private final ParentPointers staticClassHierarchy;
     // WARNING:  This dynamicHierarchyBuilder is changing, externally, while we hold a reference to it.
     private final HierarchyTreeBuilder dynamicHierarchyBuilder;
 
-    public TypeAwareClassWriter(int flags, AvmSharedClassLoader sharedClassLoader, ParentPointers parentClassResolver, HierarchyTreeBuilder dynamicHierarchyBuilder) {
+    public TypeAwareClassWriter(int flags, ParentPointers parentClassResolver, HierarchyTreeBuilder dynamicHierarchyBuilder) {
         super(flags);
-        this.sharedClassLoader = sharedClassLoader;
         this.staticClassHierarchy = parentClassResolver;
         this.dynamicHierarchyBuilder = dynamicHierarchyBuilder;
     }
@@ -99,7 +96,7 @@ public class TypeAwareClassWriter extends ClassWriter {
         
         String superName = null;
         try {
-            Class<?> clazz = Class.forName(name, true, this.sharedClassLoader);
+            Class<?> clazz = NodeEnvironment.singleton.loadSharedClass(name);
             superName = clazz.getSuperclass().getName();
         } catch (ClassNotFoundException e) {
             // We can return null, in this case.

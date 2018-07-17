@@ -1,7 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.classgeneration.CommonGenerators;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testICO.IAionToken;
 import org.aion.avm.core.testWallet.Abi;
@@ -36,12 +34,10 @@ import org.junit.Test;
  * See issue-124 for more of the background.
  */
 public class ProofOfConceptTest {
-    private static AvmSharedClassLoader sharedClassLoader;
     private static KernelApiImpl cb;
 
     @BeforeClass
     public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         cb = new KernelApiImpl();
     }
 
@@ -75,7 +71,7 @@ public class ProofOfConceptTest {
     @Test
     public void testDeployWritesCode() {
         byte[] testWalletJar = buildTestWalletJar();
-        AvmImpl createAvm = new AvmImpl(sharedClassLoader);
+        AvmImpl createAvm = new AvmImpl();
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
         AvmResult createResult = createAvm.run(createTransaction, block, cb);
         Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
@@ -94,7 +90,7 @@ public class ProofOfConceptTest {
         long dailyLimit = 5000;
 
         byte[] testWalletJar = buildTestWalletJar();
-        AvmImpl createAvm = new AvmImpl(sharedClassLoader);
+        AvmImpl createAvm = new AvmImpl();
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
         AvmResult createResult = createAvm.run(createTransaction, block, cb);
         Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
@@ -102,7 +98,7 @@ public class ProofOfConceptTest {
         // contract address is stored in return data
         byte[] contractAddress = createResult.returnData;
 
-        AvmImpl initAvm = new AvmImpl(sharedClassLoader);
+        AvmImpl initAvm = new AvmImpl();
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
         Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
         AvmResult initResult = initAvm.run(initTransaction, block, cb);
@@ -142,7 +138,7 @@ public class ProofOfConceptTest {
     @Test
     public void testDeployICO() {
         byte[] testICOJar = buildTestICOJar();
-        AvmImpl createAvm = new AvmImpl(sharedClassLoader);
+        AvmImpl createAvm = new AvmImpl();
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testICOJar, energyLimit);
         AvmResult createResult = createAvm.run(createTransaction, block, cb);
         Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
@@ -160,7 +156,7 @@ public class ProofOfConceptTest {
     @Test
     public void testICODeployAndCallTotalSupply() {
         byte[] testICOJar = buildTestICOJar();
-        AvmImpl createAvm = new AvmImpl(sharedClassLoader);
+        AvmImpl createAvm = new AvmImpl();
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testICOJar, energyLimit);
         AvmResult createResult = createAvm.run(createTransaction, block, cb);
         Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
@@ -168,7 +164,7 @@ public class ProofOfConceptTest {
         // contract address is stored in return data
         byte[] contractAddress = createResult.returnData;
 
-        AvmImpl initAvm = new AvmImpl(sharedClassLoader);
+        AvmImpl initAvm = new AvmImpl();
         byte[] args = encodeICOTotalSupply();
         Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, args, energyLimit);
         AvmResult initResult = initAvm.run(initTransaction, block, cb);

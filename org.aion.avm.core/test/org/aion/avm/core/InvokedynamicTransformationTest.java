@@ -2,8 +2,6 @@ package org.aion.avm.core;
 
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
-import org.aion.avm.core.classgeneration.CommonGenerators;
-import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
@@ -39,12 +37,10 @@ import static org.junit.Assert.*;
  */
 public class InvokedynamicTransformationTest {
     private static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
-    private static AvmSharedClassLoader sharedClassLoader;
 
     @BeforeClass
     public static void init() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
-        final var avmClassLoader = new AvmClassLoader(sharedClassLoader, new HashMap<>());
+        final var avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
         new Helper(avmClassLoader, 1_000_000L, 1);
     }
 
@@ -69,7 +65,6 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        sharedClassLoader,
                         new ParentPointers(Collections.singleton(className), classHierarchy),
                         new HierarchyTreeBuilder()))
                 .build()
@@ -99,7 +94,6 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        sharedClassLoader,
                         new ParentPointers(Collections.singleton(className), classHierarchy),
                         new HierarchyTreeBuilder()))
                 .build()
@@ -142,13 +136,13 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addNextVisitor(new StackWatcherClassAdapter())
                 .addNextVisitor(new ExceptionWrapping(HELPER_CLASS_NAME, parentPointers, generatedClassConsumer))
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, parentPointers, dynamicHierarchyBuilder))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers, dynamicHierarchyBuilder))
                 .build()
                 .runAndGetBytecode();
         bytecode = new ClassToolchain.Builder(bytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new ArrayWrappingClassAdapterRef())
                 .addNextVisitor(new ArrayWrappingClassAdapter())
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, sharedClassLoader, parentPointers, dynamicHierarchyBuilder))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers, dynamicHierarchyBuilder))
                 .build()
                 .runAndGetBytecode();
         return bytecode;

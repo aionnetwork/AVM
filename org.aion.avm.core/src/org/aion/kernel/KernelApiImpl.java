@@ -2,7 +2,6 @@ package org.aion.kernel;
 
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.AvmResult;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
@@ -16,7 +15,6 @@ public class KernelApiImpl implements KernelApi {
     private TransformedDappStorage codeStorage = new TransformedDappStorage();
     private Map<ByteArrayWrapper, byte[]> dappStorage = new HashMap<>();
 
-    public AvmSharedClassLoader sharedClassLoader = null;
     public Block block = null;
 
     @Override
@@ -44,11 +42,10 @@ public class KernelApiImpl implements KernelApi {
 
     @Override
     public AvmResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
-        Assert.assertTrue(sharedClassLoader != null);
         Assert.assertTrue(block != null);
 
         Transaction internalTx = new Transaction(Transaction.Type.CALL, from, to, value, data, energyLimit);
-        AvmImpl avm = new AvmImpl(sharedClassLoader);
+        AvmImpl avm = new AvmImpl();
         return avm.run(internalTx, block, this); // TODO: passing this instance is wrong
     }
 

@@ -5,7 +5,6 @@ import org.aion.avm.arraywrapper.*;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
@@ -46,12 +45,6 @@ public class AvmImpl implements Avm {
     private static final TransformedDappStorage.CodeVersion VERSION = TransformedDappStorage.CodeVersion.VERSION_1_0;
 
     /**
-     * We will re-use this top-level class loader for all contracts as the classes within it are state-less and have no dependencies on a contract.
-     * It is provided by the caller of our constructor, meaning it gets to decide if the same AvmImpl is reused, or not.
-     */
-    private final AvmSharedClassLoader sharedClassLoader;
-
-    /**
      * Extracts the DApp module in compressed format into the designated folder.
      *
      * @param jar the DApp module in JAR format
@@ -60,10 +53,6 @@ public class AvmImpl implements Avm {
     static DappModule readDapp(byte[] jar) throws IOException {
         Objects.requireNonNull(jar);
         return DappModule.readFromJar(jar);
-    }
-
-    public AvmImpl(AvmSharedClassLoader sharedClassLoader) {
-        this.sharedClassLoader = sharedClassLoader;
     }
 
     /**
@@ -233,13 +222,13 @@ public class AvmImpl implements Avm {
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, parentClassResolver, generatedClassesSink))
                     .addNextVisitor(new AutomaticGraphVisitor())
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, parentClassResolver, dynamicHierarchyBuilder))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
             bytecode = new ClassToolchain.Builder(bytecode, parsingOptions)
                     .addNextVisitor(new ArrayWrappingClassAdapterRef())
                     .addNextVisitor(new ArrayWrappingClassAdapter())
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, this.sharedClassLoader, parentClassResolver, dynamicHierarchyBuilder))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
             String mappedName = PackageConstants.kUserDotPrefix + name;
@@ -375,7 +364,7 @@ public class AvmImpl implements Avm {
             Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
 
             // Construct the per-contract class loader and access the per-contract IHelper instance.
-            AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
+            AvmClassLoader classLoader = NodeEnvironment.singleton.createInvocationClassLoader(allClasses);
 
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
@@ -447,7 +436,7 @@ public class AvmImpl implements Avm {
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
 
         // Construct the per-contract class loader and access the per-contract IHelper instance.
-        AvmClassLoader classLoader = new AvmClassLoader(this.sharedClassLoader, allClasses);
+        AvmClassLoader classLoader = NodeEnvironment.singleton.createInvocationClassLoader(allClasses);
         
         // Load all the user-defined classes (these are required for both loading and storing state).
         List<Class<?>> aphabeticalContractClasses = getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
