@@ -83,6 +83,11 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
             RejectedClassException.forbiddenMethodOverride(name);
         }
         
+        // Check that this method isn't synchronized, since we don't allow monitor operations.
+        if (0 != (Opcodes.ACC_SYNCHRONIZED & access)) {
+            RejectedClassException.invalidMethodFlag(name, "ACC_SYNCHRONIZED");
+        }
+        
         // Null the signature, since we don't use it and don't want to make sure it is safe.
         MethodVisitor mv = super.visitMethod(access, name, descriptor, null, exceptions);
         return new RejectionMethodVisitor(mv);

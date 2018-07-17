@@ -24,6 +24,10 @@ public class RejectedClassException extends RuntimeException {
         throw new RejectedClassException("Attempted to override forbidden method: " + methodName);
     }
 
+    public static void invalidMethodFlag(String methodName, String flagName) {
+        throw new RejectedClassException("Method \"" + methodName + "\" has invalid/forbidden access flag: " + flagName);
+    }
+
 
     public RejectedClassException(String message) {
         super(message);

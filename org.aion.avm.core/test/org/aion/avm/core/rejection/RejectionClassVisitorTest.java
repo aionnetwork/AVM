@@ -23,9 +23,6 @@ import org.objectweb.asm.tree.TryCatchBlockNode;
 
 
 public class RejectionClassVisitorTest {
-
-    private static final String runtimeClassName = PackageConstants.kInternalSlashPrefix + "Helper";
-
     private UserClassMappingVisitor mapper = null;
 
     @Test
@@ -138,6 +135,14 @@ public class RejectionClassVisitorTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] result = commonFilterBytes(className, raw);
         Assert.assertNotNull(result);
+    }
+
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_synchronizedMethod() throws Exception {
+        String className = RejectSynchronizedMethod.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        // Expected to fail since a method is marked as "synchronized" which isn't allowed.
+        commonFilterBytes(className, raw);
     }
 
 
