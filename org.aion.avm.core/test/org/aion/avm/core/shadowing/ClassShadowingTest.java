@@ -110,14 +110,7 @@ public class ClassShadowingTest {
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(mappedClassName, transformer.apply(bytecode));
 
-        Set<String> loadedClasses = new HashSet<>();
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes) {
-            @Override
-            public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-                loadedClasses.add(name);
-                return super.loadClass(name, resolve);
-            }
-        };
+        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
 
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);
