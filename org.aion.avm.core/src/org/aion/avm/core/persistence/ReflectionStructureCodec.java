@@ -30,6 +30,9 @@ import org.aion.kernel.KernelApi;
  * TODO:  Test the benefit of caching the reflected field access instances for user-defined classes (there is a great deal of re-use).
  */
 public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDeserializer.IAutomatic, SingleInstanceSerializer.IAutomatic {
+    // This DEBUG flag will probably evolve into something different, later on, but is now provided for greater visibility during testing.
+    private static boolean DEBUG = false;
+
     private static IDeserializer DONE_MARKER = new IDeserializer() {
         @Override
         public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
@@ -75,6 +78,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     public void serializeClass(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+        if (DEBUG) {
+            System.out.println("SERIALIZE CLASS: " + clazz.getName());
+        }
         try {
             // Note that only direct class statics are serialized with the class:  superclass statics are saved in the superclass.
             // Hence, just call the serializer, directly.
@@ -86,6 +92,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     public void deserializeClass(StreamingPrimitiveCodec.Decoder decoder, Class<?> clazz) {
+        if (DEBUG) {
+            System.out.println("DESERIALIZE CLASS: " + clazz.getName());
+        }
         try {
             // Note that only direct class statics are deserialized with the class:  superclass statics are loaded from the superclass.
             // Hence, just call the deserializer, directly.
@@ -185,6 +194,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                     this.instanceIdField.setLong(contents, instanceId);
                 }
                 encoder.encodeLong(instanceId);
+                if (DEBUG) {
+                    System.out.println(" WRITESTUB(" + instanceId + "): " + typeName);
+                }
                 
                 // If this instance is non-negative (JDK constant) and has been loaded, set it to not loaded and add it to the queue.
                 if ((instanceId > 0) && (null == this.deserializerField.get(contents))) {
@@ -297,6 +309,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 Class<?> contentClass = this.classLoader.loadClass(className);
                 stub = (org.aion.avm.shadow.java.lang.Object)contentClass.getConstructor(IDeserializer.class, long.class).newInstance(this, instanceId);
                 this.instanceStubMap.put(instanceId, stub);
+                if (DEBUG) {
+                    System.out.println(" READSTUB(" + instanceId + "): " + className);
+                }
             }
         } else {
             stub = this.shadowConstantMap.get(instanceId);
@@ -314,13 +329,19 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         
         // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
         byte[] rawData = this.kernel.getStorage(address, StorageKeys.forInstance(instanceId));
+        if (DEBUG) {
+            System.out.println("DESERIALIZE(" + instanceId + ")");
+        }
         deserializeInstance(instance, rawData);
     }
 
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         try {
-            byte[] serialized = internalSerializeInstance(instance, nextObjectSink);
             long instanceId = this.instanceIdField.getLong(instance);
+            if (DEBUG) {
+                System.out.println("SERIALIZE(" + instanceId + ")");
+            }
+            byte[] serialized = internalSerializeInstance(instance, nextObjectSink);
             this.kernel.putStorage(this.address, StorageKeys.forInstance(instanceId), serialized);
         } catch (IllegalAccessException | IllegalArgumentException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
