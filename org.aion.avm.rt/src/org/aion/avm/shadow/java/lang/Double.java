@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
@@ -159,6 +160,10 @@ public class Double extends Number implements Comparable<Double>{
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
+
+    public Double(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
 
     private double v;
 

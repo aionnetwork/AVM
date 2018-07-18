@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
@@ -125,7 +126,12 @@ public final class Byte extends Object implements Comparable<Byte> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    private final byte v;
+    public Byte(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+        lazyLoad();
+    }
+
+    private byte v;
 
     //========================================================
     // Methods below are excluded from shadowing

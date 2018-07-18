@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
@@ -203,11 +204,15 @@ public class Integer extends Number implements Comparable<Integer> {
         return Math.avm_min(a, b);
     }
 
-    //=======================================================
+    //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    private final int v;
+    public Integer(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
+
+    private int v;
 
     @Override
     public boolean equals(java.lang.Object obj) {

@@ -87,10 +87,6 @@ public class Long extends Number implements Comparable<Long> {
         return new Long(java.lang.Long.decode(nm.getV()).longValue());
     }
 
-    public Long(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
-    }
-
     public Long(long v) {
         this.v = v;
     }
@@ -221,6 +217,10 @@ public class Long extends Number implements Comparable<Long> {
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
+
+    public Long(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
 
     private long v;
 

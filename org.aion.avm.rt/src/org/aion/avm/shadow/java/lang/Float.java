@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
@@ -153,6 +154,10 @@ public class Float extends Number implements Comparable<Float> {
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
+
+    public Float(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
 
     private float v;
 

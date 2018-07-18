@@ -1,6 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
@@ -518,7 +519,12 @@ public class Character extends Object {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    private final char v;
+    public Character(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+        lazyLoad();
+    }
+
+    private char v;
 
     @Override
     public boolean equals(java.lang.Object obj) {

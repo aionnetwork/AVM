@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
@@ -88,7 +89,12 @@ public class Boolean extends Object implements Comparable<Boolean> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    private final boolean v;
+    public Boolean(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+        lazyLoad();
+    }
+
+    private boolean v;
 
     @Override
     public boolean equals(java.lang.Object obj) {

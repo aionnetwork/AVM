@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
@@ -127,7 +128,11 @@ public class Short extends Number {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    private final short v;
+    public Short(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
+
+    private short v;
 
     //========================================================
     // Methods below are excluded from shadowing
