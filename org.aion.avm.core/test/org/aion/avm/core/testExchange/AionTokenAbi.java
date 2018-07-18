@@ -1,10 +1,10 @@
-package org.aion.avm.core.testICO;
+package org.aion.avm.core.testExchange;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
 
 
-public class ICOAbi {
+public class AionTokenAbi {
 
     public static final byte kICO_init = 0x0;
     public static final byte kICO_totalSupply = 0x1;

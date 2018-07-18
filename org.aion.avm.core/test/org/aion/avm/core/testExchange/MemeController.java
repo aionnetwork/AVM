@@ -1,47 +1,46 @@
-package org.aion.avm.core.testICO;
+package org.aion.avm.core.testExchange;
 
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
 
-public class ICOController {
+public class MemeController {
 
     private static IAionToken coinbase;
 
     public static void init(){
-        coinbase = new PepeCoin(BlockchainRuntime.getSender());
+        coinbase = new MemeCoin(BlockchainRuntime.getSender());
     }
 
     public static byte[] main(){
         byte[] result = new byte[0];
         byte[] input = BlockchainRuntime.getData();
-        ICOAbi.Decoder decoder = ICOAbi.buildDecoder(input);
+        AionTokenAbi.Decoder decoder = AionTokenAbi.buildDecoder(input);
         byte methodByte = decoder.decodeByte();
-        boolean res = true;
 
         switch (methodByte) {
-            case ICOAbi.kICO_totalSupply:
+            case AionTokenAbi.kICO_totalSupply:
                 // We know that this is int (length), Address(*length), int, long.;
                 result = ByteArrayHelpers.encodeLong(coinbase.totalSupply());
                 break;
-            case ICOAbi.kICO_balanceOf:
+            case AionTokenAbi.kICO_balanceOf:
                 result = ByteArrayHelpers.encodeLong(coinbase.balanceOf(decoder.decodeAddress()));
                 break;
-            case ICOAbi.kICO_allowance:
+            case AionTokenAbi.kICO_allowance:
                 result = ByteArrayHelpers.encodeLong(coinbase.allowance(decoder.decodeAddress(), decoder.decodeAddress()));
                 break;
-            case ICOAbi.kICO_transfer:
+            case AionTokenAbi.kICO_transfer:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.transfer(decoder.decodeAddress(), decoder.decodeLong()));
                 break;
-            case ICOAbi.kICO_approve:
+            case AionTokenAbi.kICO_approve:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.approve(decoder.decodeAddress(), decoder.decodeLong()));
                 break;
-            case ICOAbi.kICO_transferFrom:
+            case AionTokenAbi.kICO_transferFrom:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.transferFrom(decoder.decodeAddress(), decoder.decodeAddress(), decoder.decodeLong()));
                 break;
-            case ICOAbi.kICO_openAccount:
+            case AionTokenAbi.kICO_openAccount:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.openAccount(decoder.decodeAddress()));
                 break;
-            case ICOAbi.kICO_mint:
+            case AionTokenAbi.kICO_mint:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.mint(decoder.decodeAddress(), decoder.decodeLong()));
                 break;
             default:

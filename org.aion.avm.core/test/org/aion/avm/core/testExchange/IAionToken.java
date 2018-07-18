@@ -1,4 +1,4 @@
-package org.aion.avm.core.testICO;
+package org.aion.avm.core.testExchange;
 
 import org.aion.avm.api.Address;
 
