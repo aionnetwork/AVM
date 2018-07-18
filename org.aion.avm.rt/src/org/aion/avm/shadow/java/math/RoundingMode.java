@@ -7,6 +7,8 @@ import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Class;
 
 
+// Note that we want to suppress the deprecation warnings since the original RoundingMode also does:  they both depend on deprecated BigDecimal constants.
+@SuppressWarnings("deprecation")
 public class RoundingMode extends org.aion.avm.shadow.java.lang.Enum<RoundingMode>{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
@@ -39,7 +41,7 @@ public class RoundingMode extends org.aion.avm.shadow.java.lang.Enum<RoundingMod
     }
 
     public static RoundingMode avm_valueOf(String request){
-        return (RoundingMode) Enum.avm_valueOf(new Class(RoundingMode.class), request);
+        return (RoundingMode) Enum.avm_valueOf(new Class<>(RoundingMode.class), request);
     }
 
     public static RoundingMode avm_valueOf(int idx){
