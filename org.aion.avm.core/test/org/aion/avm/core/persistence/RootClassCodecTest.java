@@ -19,23 +19,7 @@ public class RootClassCodecTest {
         
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
         // Clear statics, since our tests interact with them.
-        ReflectionStructureCodecTarget.s_one = false;
-        ReflectionStructureCodecTarget.s_two = 0;
-        ReflectionStructureCodecTarget.s_three = 0;
-        ReflectionStructureCodecTarget.s_four = 0;
-        ReflectionStructureCodecTarget.s_five = 0;
-        ReflectionStructureCodecTarget.s_six = 0.0f;
-        ReflectionStructureCodecTarget.s_seven = 0;
-        ReflectionStructureCodecTarget.s_eight = 0.0d;
-        ReflectionStructureCodecTarget.s_nine = null;
-        RootClassCodecTarget.s_one = false;
-        RootClassCodecTarget.s_two = 0;
-        RootClassCodecTarget.s_three = 0;
-        RootClassCodecTarget.s_four = 0;
-        RootClassCodecTarget.s_five = 0;
-        RootClassCodecTarget.s_six = 0.0f;
-        RootClassCodecTarget.s_seven = 0;
-        RootClassCodecTarget.s_eight = 0.0d;
+        clearStaticState();
     }
 
     @After
@@ -189,5 +173,139 @@ public class RootClassCodecTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, //s_nine (instanceId)
         };
         Assert.assertTrue(Arrays.equals(expected, result));
+    }
+
+    /**
+     * Serialize and deserialize the target and sub-class and instance, to make sure that we handle the hierarchy properly.
+     */
+    @Test
+    public void serializeDeserializeSubClassAndInstance() {
+        ReflectionStructureCodecTarget.s_one = true;
+        ReflectionStructureCodecTarget.s_two = 5;
+        ReflectionStructureCodecTarget.s_three = 5;
+        ReflectionStructureCodecTarget.s_four = 5;
+        ReflectionStructureCodecTarget.s_five = 5;
+        ReflectionStructureCodecTarget.s_six = 5.0f;
+        ReflectionStructureCodecTarget.s_seven = 5;
+        ReflectionStructureCodecTarget.s_eight = 5.0d;
+        ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
+        ReflectionStructureCodecTarget.s_nine.i_one = ReflectionStructureCodecTarget.s_one;
+        ReflectionStructureCodecTarget.s_nine.i_two = ReflectionStructureCodecTarget.s_two;
+        ReflectionStructureCodecTarget.s_nine.i_three = ReflectionStructureCodecTarget.s_three;
+        ReflectionStructureCodecTarget.s_nine.i_four = ReflectionStructureCodecTarget.s_four;
+        ReflectionStructureCodecTarget.s_nine.i_five = ReflectionStructureCodecTarget.s_five;
+        ReflectionStructureCodecTarget.s_nine.i_six = ReflectionStructureCodecTarget.s_six;
+        ReflectionStructureCodecTarget.s_nine.i_seven = ReflectionStructureCodecTarget.s_seven;
+        ReflectionStructureCodecTarget.s_nine.i_eight = ReflectionStructureCodecTarget.s_eight;
+        ReflectionStructureCodecTarget.s_nine.i_nine = ReflectionStructureCodecTarget.s_nine;
+        
+        ReflectionStructureCodecTargetSub.s_one = false;
+        ReflectionStructureCodecTargetSub.s_two = 9;
+        ReflectionStructureCodecTargetSub.s_three = 9;
+        ReflectionStructureCodecTargetSub.s_four = 9;
+        ReflectionStructureCodecTargetSub.s_five = 9;
+        ReflectionStructureCodecTargetSub.s_six = 9.0f;
+        ReflectionStructureCodecTargetSub.s_seven = 9;
+        ReflectionStructureCodecTargetSub.s_eight = 9.0d;
+        ReflectionStructureCodecTargetSub.s_nine = new ReflectionStructureCodecTargetSub();
+        ReflectionStructureCodecTargetSub.s_nine.i_one = ReflectionStructureCodecTargetSub.s_one;
+        ReflectionStructureCodecTargetSub.s_nine.i_two = ReflectionStructureCodecTargetSub.s_two;
+        ReflectionStructureCodecTargetSub.s_nine.i_three = ReflectionStructureCodecTargetSub.s_three;
+        ReflectionStructureCodecTargetSub.s_nine.i_four = ReflectionStructureCodecTargetSub.s_four;
+        ReflectionStructureCodecTargetSub.s_nine.i_five = ReflectionStructureCodecTargetSub.s_five;
+        ReflectionStructureCodecTargetSub.s_nine.i_six = ReflectionStructureCodecTargetSub.s_six;
+        ReflectionStructureCodecTargetSub.s_nine.i_seven = ReflectionStructureCodecTargetSub.s_seven;
+        ReflectionStructureCodecTargetSub.s_nine.i_eight = ReflectionStructureCodecTargetSub.s_eight;
+        ReflectionStructureCodecTargetSub.s_nine.i_nine = ReflectionStructureCodecTargetSub.s_nine;
+        
+        KernelApiImpl kernel = new KernelApiImpl();
+        byte[] address = new byte[] {1,2,3};
+        long initialInstanceId = 1l;
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        // We serialized 2 instances so we expect the nextInstanceId to be advanced.
+        Assert.assertEquals(2 + initialInstanceId, nextInstanceId);
+        
+        // Now, clear the class states and reload this.
+        clearStaticState();
+        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        
+        // Verify that their static are as we expect.
+        Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
+        Assert.assertEquals(5, ReflectionStructureCodecTarget.s_two);
+        Assert.assertEquals(5, ReflectionStructureCodecTarget.s_three);
+        Assert.assertEquals(5, ReflectionStructureCodecTarget.s_four);
+        Assert.assertEquals(5, ReflectionStructureCodecTarget.s_five);
+        Assert.assertEquals(5.0f, ReflectionStructureCodecTarget.s_six, 0.01f);
+        Assert.assertEquals(5, ReflectionStructureCodecTarget.s_seven);
+        Assert.assertEquals(5.0d, ReflectionStructureCodecTarget.s_eight, 0.01f);
+        Assert.assertEquals(false, ReflectionStructureCodecTargetSub.s_one);
+        Assert.assertEquals(9, ReflectionStructureCodecTargetSub.s_two);
+        Assert.assertEquals(9, ReflectionStructureCodecTargetSub.s_three);
+        Assert.assertEquals(9, ReflectionStructureCodecTargetSub.s_four);
+        Assert.assertEquals(9, ReflectionStructureCodecTargetSub.s_five);
+        Assert.assertEquals(9.0f, ReflectionStructureCodecTargetSub.s_six, 0.01f);
+        Assert.assertEquals(9, ReflectionStructureCodecTargetSub.s_seven);
+        Assert.assertEquals(9.0d, ReflectionStructureCodecTargetSub.s_eight, 0.01f);
+        
+        // Verify that the instances are as we expect.
+        ReflectionStructureCodecTarget parent = ReflectionStructureCodecTarget.s_nine;
+        parent.lazyLoad();
+        ReflectionStructureCodecTargetSub sub = ReflectionStructureCodecTargetSub.s_nine;
+        sub.lazyLoad();
+        Assert.assertEquals(true, parent.i_one);
+        Assert.assertEquals(5, parent.i_two);
+        Assert.assertEquals(5, parent.i_three);
+        Assert.assertEquals(5, parent.i_four);
+        Assert.assertEquals(5, parent.i_five);
+        Assert.assertEquals(5.0f, parent.i_six, 0.01f);
+        Assert.assertEquals(5, parent.i_seven);
+        Assert.assertEquals(5.0d, parent.i_eight, 0.01f);
+        Assert.assertTrue(parent == parent.i_nine);
+        Assert.assertEquals(false, sub.i_one);
+        Assert.assertEquals(9, sub.i_two);
+        Assert.assertEquals(9, sub.i_three);
+        Assert.assertEquals(9, sub.i_four);
+        Assert.assertEquals(9, sub.i_five);
+        Assert.assertEquals(9.0f, sub.i_six, 0.01f);
+        Assert.assertEquals(9, sub.i_seven);
+        Assert.assertEquals(9.0d, sub.i_eight, 0.01f);
+        Assert.assertTrue(sub == sub.i_nine);
+        
+        // Re-serialize these to prove that the instanceId doesn't increment (since we aren't adding any new objects to the graph).
+        long finalInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), nextInstanceId, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        // We serialized 2 instances so we expect the nextInstanceId to be advanced.
+        Assert.assertEquals(nextInstanceId, finalInstanceId);
+    }
+
+
+    private static void clearStaticState() {
+        ReflectionStructureCodecTarget.s_one = false;
+        ReflectionStructureCodecTarget.s_two = 0;
+        ReflectionStructureCodecTarget.s_three = 0;
+        ReflectionStructureCodecTarget.s_four = 0;
+        ReflectionStructureCodecTarget.s_five = 0;
+        ReflectionStructureCodecTarget.s_six = 0.0f;
+        ReflectionStructureCodecTarget.s_seven = 0;
+        ReflectionStructureCodecTarget.s_eight = 0.0d;
+        ReflectionStructureCodecTarget.s_nine = null;
+        
+        ReflectionStructureCodecTargetSub.s_one = false;
+        ReflectionStructureCodecTargetSub.s_two = 0;
+        ReflectionStructureCodecTargetSub.s_three = 0;
+        ReflectionStructureCodecTargetSub.s_four = 0;
+        ReflectionStructureCodecTargetSub.s_five = 0;
+        ReflectionStructureCodecTargetSub.s_six = 0.0f;
+        ReflectionStructureCodecTargetSub.s_seven = 0;
+        ReflectionStructureCodecTargetSub.s_eight = 0.0d;
+        ReflectionStructureCodecTargetSub.s_nine = null;
+        
+        RootClassCodecTarget.s_one = false;
+        RootClassCodecTarget.s_two = 0;
+        RootClassCodecTarget.s_three = 0;
+        RootClassCodecTarget.s_four = 0;
+        RootClassCodecTarget.s_five = 0;
+        RootClassCodecTarget.s_six = 0.0f;
+        RootClassCodecTarget.s_seven = 0;
+        RootClassCodecTarget.s_eight = 0.0d;
     }
 }
