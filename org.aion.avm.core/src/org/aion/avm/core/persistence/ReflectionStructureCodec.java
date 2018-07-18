@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -335,8 +336,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 decoder.decodeBytesInto(utf8Name);
                 String className = new String(utf8Name, StandardCharsets.UTF_8);
                 
-                // Create an instance of the Class (TODO:  issue-146 will change this to use more aggressive interning).
-                instanceToStore = new org.aion.avm.shadow.java.lang.Class<>(Class.forName(className));
+                // Create an instance of the Class (we rely on the helper since this needs to be interned, per-contract).
+                Class<?> jdkClass = Class.forName(className);
+                instanceToStore = IHelper.currentContractHelper.get().externalWrapAsClass(jdkClass);
             } else if (0 == stubDescriptor) {
                 // This is a null object:
                 // -nothing else to read.

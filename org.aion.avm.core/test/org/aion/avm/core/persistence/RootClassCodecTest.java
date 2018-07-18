@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.IHelper;
 import org.aion.kernel.KernelApiImpl;
 import org.junit.After;
 import org.junit.Assert;
@@ -326,11 +327,11 @@ public class RootClassCodecTest {
 
     /**
      * Populate one of the classes with a reference to a class, and verify that it decodes properly, given the special-case.
-     * TODO:  issue-146 will expand on this to make the shadow classes instance-equal.
      */
     @Test
     public void serializeDeserializeReferenceToClass() {
-        RootClassCodecTarget.s_nine = new org.aion.avm.shadow.java.lang.Class<>(String.class);
+        org.aion.avm.shadow.java.lang.Class<?> originalClassRef = IHelper.currentContractHelper.get().externalWrapAsClass(String.class);
+        RootClassCodecTarget.s_nine = originalClassRef;
         
         KernelApiImpl kernel = new KernelApiImpl();
         byte[] address = new byte[] {1,2,3};
@@ -359,7 +360,7 @@ public class RootClassCodecTest {
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
         RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), kernel, address, Arrays.asList(RootClassCodecTarget.class));
-        Assert.assertTrue(String.class == ((org.aion.avm.shadow.java.lang.Class<?>)RootClassCodecTarget.s_nine).getRealClass());
+        Assert.assertTrue(originalClassRef == RootClassCodecTarget.s_nine);
     }
 
 
