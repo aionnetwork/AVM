@@ -217,6 +217,9 @@ public class RootClassCodecTest {
         ReflectionStructureCodecTargetSub.s_nine.i_seven = ReflectionStructureCodecTargetSub.s_seven;
         ReflectionStructureCodecTargetSub.s_nine.i_eight = ReflectionStructureCodecTargetSub.s_eight;
         ReflectionStructureCodecTargetSub.s_nine.i_nine = ReflectionStructureCodecTargetSub.s_nine;
+        // Verify writing to the superclass shape still works correctly.
+        ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_five = 42;
+        ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine = ReflectionStructureCodecTarget.s_nine;
         
         KernelApiImpl kernel = new KernelApiImpl();
         byte[] address = new byte[] {1,2,3};
@@ -270,6 +273,8 @@ public class RootClassCodecTest {
         Assert.assertEquals(9, sub.i_seven);
         Assert.assertEquals(9.0d, sub.i_eight, 0.01f);
         Assert.assertTrue(sub == sub.i_nine);
+        Assert.assertEquals(42, ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_five);
+        Assert.assertTrue(ReflectionStructureCodecTarget.s_nine == ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine);
         
         // Re-serialize these to prove that the instanceId doesn't increment (since we aren't adding any new objects to the graph).
         long finalInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), nextInstanceId, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
