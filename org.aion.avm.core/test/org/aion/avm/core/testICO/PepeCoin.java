@@ -9,9 +9,9 @@ public class PepeCoin implements IAionToken{
 
     public static final String NAME = "Pepe Coin";
 
-    public final Address minter;
-
     public static final long TOTAL_SUPPLY = 10000000L;
+
+    public final Address minter;
 
     private AionMap<Address, Long> ledger;
 
@@ -23,12 +23,42 @@ public class PepeCoin implements IAionToken{
         this.minter = minter;
     }
 
+    private boolean checkAccount(Address toCheck){
+        return ledger.containsKey(toCheck);
+    }
+
+    public boolean mint(Address receiver, long tokens){
+        if (BlockchainRuntime.getSender().equals(this.minter)){
+            long receiverBalance = this.ledger.get(receiver);
+            if ((tokens > 0) && (receiverBalance + tokens > 0)){
+                this.ledger.put(receiver, receiverBalance + tokens);
+                BlockchainRuntime.log("mint".getBytes(), receiver.unwrap());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean openAccount(Address request){
+        if (BlockchainRuntime.getSender().equals(this.minter)){
+            if (!checkAccount(request)){
+                this.ledger.put(request, 0L);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public long totalSupply(){
         return TOTAL_SUPPLY;
     }
 
     public long balanceOf(Address tokenOwner){
-        return this.ledger.get(tokenOwner);
+        if (this.ledger.containsKey(tokenOwner)){
+            return this.ledger.get(tokenOwner);
+        }
+
+        return -1;
     }
 
     public long allowance(Address tokenOwner, Address spender){
@@ -37,6 +67,10 @@ public class PepeCoin implements IAionToken{
 
     public boolean transfer(Address receiver, long tokens){
         Address sender = BlockchainRuntime.getSender();
+
+        if (!(checkAccount(sender) && checkAccount(receiver))){
+            return false;
+        }
 
         long senderBalance = this.ledger.get(sender);
         long receiverBalance = this.ledger.get(receiver);

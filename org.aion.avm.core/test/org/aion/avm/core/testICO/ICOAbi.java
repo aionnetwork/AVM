@@ -3,6 +3,7 @@ package org.aion.avm.core.testICO;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
 
+
 public class ICOAbi {
 
     public static final byte kICO_init = 0x0;
@@ -12,6 +13,8 @@ public class ICOAbi {
     public static final byte kICO_transfer = 0x4;
     public static final byte kICO_approve = 0x5;
     public static final byte kICO_transferFrom = 0x6;
+    public static final byte kICO_openAccount = 0x7;
+    public static final byte kICO_mint = 0x8;
 
     public static Decoder buildDecoder(byte[] input) {
         return new Decoder(input);

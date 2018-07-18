@@ -24,6 +24,32 @@ public class MemeCoin implements IAionToken{
         this.minter = minter;
     }
 
+    private boolean checkAccount(Address toCheck){
+        return ledger.containsKey(toCheck);
+    }
+
+    public boolean mint(Address receiver, long tokens){
+        if (BlockchainRuntime.getSender().equals(this.minter)){
+            long receiverBalance = this.ledger.get(receiver);
+
+            if ((tokens > 0) && (receiverBalance + tokens > 0)){
+                this.ledger.put(receiver, receiverBalance + tokens);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean openAccount(Address request){
+        if (BlockchainRuntime.getSender().equals(this.minter)){
+            if (!checkAccount(request)){
+                this.ledger.put(request, 0L);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public long totalSupply(){
         return TOTAL_SUPPLY;
     }

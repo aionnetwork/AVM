@@ -61,6 +61,13 @@ public class ByteArrayHelpers {
         return longBytes;
     }
 
+    public static byte[] encodeBoolean(boolean b) {
+        byte[] boolBytes = new byte[] {
+                (byte) (b ? 1 : 0)
+        };
+        return boolBytes;
+    }
+
     public static long decodeLong(byte[] eightBytes) {
         return (long)((0xff & eightBytes[0]) << 56)
                 | (long)((0xff & eightBytes[1]) << 48)
@@ -70,6 +77,10 @@ public class ByteArrayHelpers {
                 | (long)((0xff & eightBytes[5]) << 16)
                 | (long)((0xff & eightBytes[6]) << 8)
                 | (long)((0xff & eightBytes[7]) << 0);
+    }
+
+    public static boolean decodeBoolean(byte[] boolBytes) {
+        return boolBytes[0] == (byte)1;
     }
 
     public static byte[] arraySlice(byte[] src, int srcPos, int length) {

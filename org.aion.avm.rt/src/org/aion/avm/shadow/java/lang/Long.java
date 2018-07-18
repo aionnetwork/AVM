@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
@@ -86,7 +87,9 @@ public class Long extends Number implements Comparable<Long> {
         return new Long(java.lang.Long.decode(nm.getV()).longValue());
     }
 
-
+    public Long(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
 
     public Long(long v) {
         this.v = v;
@@ -219,7 +222,7 @@ public class Long extends Number implements Comparable<Long> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    private final long v;
+    private long v;
 
     //========================================================
     // Methods below are excluded from shadowing

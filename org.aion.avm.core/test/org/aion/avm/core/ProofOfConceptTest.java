@@ -47,6 +47,11 @@ public class ProofOfConceptTest {
     private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 5_000_000;
 
+    private byte[] minter = Helpers.randomBytes(Address.LENGTH);
+    private byte[] coinbaseAddress = Helpers.randomBytes(Address.LENGTH);
+    private byte[] usr1 = Helpers.randomBytes(Address.LENGTH);
+    private byte[] usr2 = Helpers.randomBytes(Address.LENGTH);
+
     private byte[] buildTestWalletJar() {
         return JarBuilder.buildJarForMainAndClasses(Wallet.class
                 , Multiowned.class
@@ -135,41 +140,157 @@ public class ProofOfConceptTest {
         );
     }
 
-    @Test
-    public void testDeployICO() {
+    private byte[] initCoinbase(){
         byte[] testICOJar = buildTestICOJar();
         AvmImpl createAvm = new AvmImpl();
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testICOJar, energyLimit);
+        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, coinbaseAddress, 0, testICOJar, energyLimit);
         AvmResult createResult = createAvm.run(createTransaction, block, cb);
         Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
-        Assert.assertNotNull(cb.getTransformedCode(to));
+        return createResult.returnData;
     }
 
-    public static byte[] encodeICOTotalSupply() {
-        byte[] onto = new byte[1];
-        ICOAbi.Encoder encoder = ICOAbi.buildEncoder(onto);
-        // We are encoding the Addresses as a 2-element array, so describe it that way to the encoder.
+
+    private AvmResult callTotalSupply() {
+        AvmImpl callAvm = new AvmImpl();
+        byte[] args = new byte[1];
+        ICOAbi.Encoder encoder = ICOAbi.buildEncoder(args);
         encoder.encodeByte(ICOAbi.kICO_totalSupply);
-        return onto;
+
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, usr2, coinbaseAddress, 0, args, energyLimit);
+        AvmResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        return callResult;
+    }
+
+    private AvmResult callBalanceOf(byte[] toQuery) {
+        AvmImpl callAvm = new AvmImpl();
+
+        byte[] args = new byte[1 + Address.LENGTH];
+        ICOAbi.Encoder encoder = ICOAbi.buildEncoder(args);
+        encoder.encodeByte(ICOAbi.kICO_balanceOf);
+        encoder.encodeAddress(new Address(toQuery));
+
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, coinbaseAddress, 0, args, energyLimit);
+        AvmResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        return callResult;
+    }
+
+    private AvmResult callOpenAccount(byte[] toOpen) {
+        AvmImpl callAvm = new AvmImpl();
+
+        byte[] args = new byte[1 + Address.LENGTH];
+        ICOAbi.Encoder encoder = ICOAbi.buildEncoder(args);
+        encoder.encodeByte(ICOAbi.kICO_openAccount);
+        encoder.encodeAddress(new Address(toOpen));
+
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, coinbaseAddress, 0, args, energyLimit);
+        AvmResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        return callResult;
+    }
+
+    private AvmResult callMint(byte[] receiver) {
+        AvmImpl callAvm = new AvmImpl();
+
+        byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
+        ICOAbi.Encoder encoder = ICOAbi.buildEncoder(args);
+        encoder.encodeByte(ICOAbi.kICO_mint);
+        encoder.encodeAddress(new Address(receiver));
+        encoder.encodeLong(5000L);
+
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, coinbaseAddress, 0, args, energyLimit);
+        AvmResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        return callResult;
+    }
+
+    private AvmResult callTransfer(byte[] sender, byte[] receiver, long amount) {
+        AvmImpl callAvm = new AvmImpl();
+
+        byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
+        ICOAbi.Encoder encoder = ICOAbi.buildEncoder(args);
+        encoder.encodeByte(ICOAbi.kICO_transfer);
+        encoder.encodeAddress(new Address(receiver));
+        encoder.encodeLong(amount);
+
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, coinbaseAddress, 0, args, energyLimit);
+        AvmResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        return callResult;
     }
 
     @Test
-    public void testICODeployAndCallTotalSupply() {
-        byte[] testICOJar = buildTestICOJar();
-        AvmImpl createAvm = new AvmImpl();
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testICOJar, energyLimit);
-        AvmResult createResult = createAvm.run(createTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
+    public void testERC20(){
 
-        // contract address is stored in return data
-        byte[] contractAddress = createResult.returnData;
+        AvmResult res = null;
 
-        AvmImpl initAvm = new AvmImpl();
-        byte[] args = encodeICOTotalSupply();
-        Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, args, energyLimit);
-        AvmResult initResult = initAvm.run(initTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, initResult.code);
+        initCoinbase();
+
+        res = callTotalSupply();
+
+        Assert.assertEquals(PepeCoin.TOTAL_SUPPLY, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callBalanceOf(usr1);
+
+        Assert.assertEquals(-1L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callOpenAccount(usr1);
+
+        Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+
+        res = callBalanceOf(usr1);
+
+        Assert.assertEquals(0L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callOpenAccount(usr1);
+
+        Assert.assertEquals(false, ByteArrayHelpers.decodeBoolean(res.returnData));
+
+        res = callBalanceOf(usr2);
+
+        Assert.assertEquals(-1L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callOpenAccount(usr2);
+
+        Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+
+        res = callOpenAccount(usr2);
+
+        Assert.assertEquals(false, ByteArrayHelpers.decodeBoolean(res.returnData));
+
+        res = callMint(usr1);
+
+        Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+
+        res = callBalanceOf(usr1);
+
+        Assert.assertEquals(5000L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callMint(usr2);
+
+        Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+
+        res = callMint(usr2);
+
+        Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+
+        res = callBalanceOf(usr2);
+
+        Assert.assertEquals(10000L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callTransfer(usr1, usr2, 2000L);
+
+        Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+
+        res = callBalanceOf(usr1);
+
+        Assert.assertEquals(3000L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callBalanceOf(usr2);
+
+        Assert.assertEquals(12000L, ByteArrayHelpers.decodeLong(res.returnData));
+
     }
-
 
 }

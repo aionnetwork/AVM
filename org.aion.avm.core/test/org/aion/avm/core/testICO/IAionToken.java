@@ -16,4 +16,8 @@ public interface IAionToken {
 
     boolean transferFrom(Address spender, Address to, long tokens);
 
+    boolean mint(Address receiver, long tokens);
+
+    boolean openAccount(Address request);
+
 }

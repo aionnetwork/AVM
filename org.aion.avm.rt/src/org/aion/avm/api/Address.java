@@ -1,9 +1,9 @@
 package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.Object;
-
 
 /**
  * The address has a very specific meaning, within the environment, so we wrap a ByteArray to produce this more specific type.
@@ -16,7 +16,7 @@ public class Address extends Object {
     // Runtime-facing implementation.
     public static final int avm_LENGTH = 32;
 
-    private final ByteArray underlying;
+    private ByteArray underlying;
 
     /**
      * The constructor which user code can call, directly, to create an Address object.
@@ -53,9 +53,12 @@ public class Address extends Object {
 
     @Override
     public boolean avm_equals(IObject obj) {
+        lazyLoad();
+
         boolean isEqual = this == obj;
         if (!isEqual && (obj instanceof Address)) {
             Address other = (Address)obj;
+            other.lazyLoad();
             if (this.underlying.length() == other.underlying.length()) {
                 isEqual = true;
                 byte[] us = this.underlying.getUnderlying();
@@ -89,5 +92,11 @@ public class Address extends Object {
      */
     public byte[] unwrap() {
         return this.underlying.getUnderlying();
+    }
+
+
+    // Support for deserialization
+    public Address(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 }
