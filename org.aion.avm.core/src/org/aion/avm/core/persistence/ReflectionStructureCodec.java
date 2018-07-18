@@ -38,6 +38,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
         }};
     private static final int STUB_DESCRIPTOR_CONSTANT = -1;
+    private static final int STUB_DESCRIPTOR_CLASS = -2;
 
     private final ClassLoader classLoader;
     // All keys in instanceStubMap are positive values.
@@ -183,6 +184,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private void deflateInstanceAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object contents, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
             // See issue-147 for more information regarding this interpretation:
+            // - -2: (int)-2, (int) buffer length, (n) UTF-8 class name buffer
             // - null: (int)0.
             // - >0: (int) buffer length, (n) UTF-8 instance class name buffer, (long) instanceId.
             // - -1: (int)-1, (long) instanceId (of constant - negative).
@@ -192,7 +194,19 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             } else {
                 // Check the instanceId to see if this is a special-case.
                 long instanceId = this.instanceIdField.getLong(contents);
-                if (instanceId >= 0) {
+                // We have to check for the class first, since the other checks just look at special instanceIds.
+                if (contents instanceof org.aion.avm.shadow.java.lang.Class) {
+                    // This is a reference to a Class.
+                    encoder.encodeInt(STUB_DESCRIPTOR_CLASS);
+                    
+                    // Get the class name.
+                    String className = ((org.aion.avm.shadow.java.lang.Class<?>)contents).getRealClass().getName();
+                    byte[] utf8Name = className.getBytes(StandardCharsets.UTF_8);
+                    
+                    // Write the length and the bytes.
+                    encoder.encodeInt(utf8Name.length);
+                    encoder.encodeBytes(utf8Name);
+                } else if (instanceId >= 0) {
                     // This a normal reference (although might need an instanceId assigned).
                     String typeName = contents.getClass().getName();
                     byte[] utf8Name = typeName.getBytes(StandardCharsets.UTF_8);
@@ -305,12 +319,25 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private org.aion.avm.shadow.java.lang.Object inflateStubAsInstance(StreamingPrimitiveCodec.Decoder decoder) {
         try {
             // See issue-147 for more information regarding this interpretation:
+            // - -2: (int)-2, (int) buffer length, (n) UTF-8 class name buffer
             // - null: (int)0.
             // - >0:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
             // - -1: (int)-1, (long) instanceId (of constant - negative).
             org.aion.avm.shadow.java.lang.Object instanceToStore = null;
             int stubDescriptor = decoder.decodeInt();
-            if (0 == stubDescriptor) {
+            // Note that we handle the "STUB_DESCRIPTOR_CLASS" case, here, so that it matches the shape of the deflate method.
+            if (STUB_DESCRIPTOR_CLASS == stubDescriptor) {
+                // This is a reference to a Class.
+                // -load the size of the class name.
+                int classNameLength = decoder.decodeInt();
+                // -load the bytes as a string.
+                byte[] utf8Name = new byte[classNameLength];
+                decoder.decodeBytesInto(utf8Name);
+                String className = new String(utf8Name, StandardCharsets.UTF_8);
+                
+                // Create an instance of the Class (TODO:  issue-146 will change this to use more aggressive interning).
+                instanceToStore = new org.aion.avm.shadow.java.lang.Class<>(Class.forName(className));
+            } else if (0 == stubDescriptor) {
                 // This is a null object:
                 // -nothing else to read.
             } else if (stubDescriptor > 0) {
