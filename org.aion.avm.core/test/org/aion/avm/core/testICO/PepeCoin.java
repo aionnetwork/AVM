@@ -23,8 +23,12 @@ public class PepeCoin implements IAionToken{
         this.minter = minter;
     }
 
-    private boolean checkAccount(Address toCheck){
-        return ledger.containsKey(toCheck);
+    private boolean checkAccount(Address... toCheck){
+        boolean res = true;
+        for (Address cur : toCheck){
+            res = res && ledger.containsKey(cur);
+        }
+        return res;
     }
 
     public boolean mint(Address receiver, long tokens){
@@ -54,21 +58,34 @@ public class PepeCoin implements IAionToken{
     }
 
     public long balanceOf(Address tokenOwner){
-        if (this.ledger.containsKey(tokenOwner)){
-            return this.ledger.get(tokenOwner);
+
+        if (!checkAccount(tokenOwner)){
+            return -1;
         }
 
-        return -1;
+        return this.ledger.get(tokenOwner);
     }
 
     public long allowance(Address tokenOwner, Address spender){
+        if (!checkAccount(tokenOwner, spender)){
+            return -1;
+        }
+
+        if (!this.allowance.containsKey(tokenOwner)){
+            return 0;
+        }
+
+        if (!this.allowance.get(tokenOwner).containsKey(spender)){
+            return 0;
+        }
+
         return this.allowance.get(tokenOwner).get(spender);
     }
 
     public boolean transfer(Address receiver, long tokens){
         Address sender = BlockchainRuntime.getSender();
 
-        if (!(checkAccount(sender) && checkAccount(receiver))){
+        if (!checkAccount(sender, receiver)){
             return false;
         }
 
@@ -85,21 +102,38 @@ public class PepeCoin implements IAionToken{
     }
 
     public boolean approve(Address spender, long tokens){
-        this.allowance.get(BlockchainRuntime.getSender()).put(spender, tokens);
+        Address sender = BlockchainRuntime.getSender();
+
+        if (!checkAccount(sender, spender)){
+            return false;
+        }
+
+        if (!this.allowance.containsKey(sender)){
+            AionMap<Address, Long> newEntry = new AionMap<>();
+            this.allowance.put(sender, newEntry);
+        }
+
+        this.allowance.get(sender).put(spender, tokens);
+
         return true;
     }
 
     public boolean transferFrom(Address from, Address to, long tokens){
         Address sender = BlockchainRuntime.getSender();
 
+        if (!checkAccount(sender, from, to)){
+            return false;
+        }
+
         long fromBalance = this.ledger.get(from);
         long toBalance = this.ledger.get(to);
-        long limit = this.allowance.get(from).get(sender);
+
+        long limit = allowance(from, sender);
 
         if ((fromBalance > tokens) && (limit > tokens) && (toBalance + tokens > 0)){
             this.ledger.put(from, fromBalance - tokens);
             this.allowance.get(from).put(sender, limit - tokens);
-            this.ledger.put(to, toBalance - tokens);
+            this.ledger.put(to, toBalance + tokens);
             return true;
         }
 

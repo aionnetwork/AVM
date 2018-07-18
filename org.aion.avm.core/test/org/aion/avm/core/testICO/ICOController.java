@@ -27,16 +27,16 @@ public class ICOController {
                 result = ByteArrayHelpers.encodeLong(coinbase.balanceOf(decoder.decodeAddress()));
                 break;
             case ICOAbi.kICO_allowance:
-                coinbase.allowance(decoder.decodeAddress(), decoder.decodeAddress());
+                result = ByteArrayHelpers.encodeLong(coinbase.allowance(decoder.decodeAddress(), decoder.decodeAddress()));
                 break;
             case ICOAbi.kICO_transfer:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.transfer(decoder.decodeAddress(), decoder.decodeLong()));
                 break;
             case ICOAbi.kICO_approve:
-                res = coinbase.approve(decoder.decodeAddress(), decoder.decodeLong());
+                result = ByteArrayHelpers.encodeBoolean(coinbase.approve(decoder.decodeAddress(), decoder.decodeLong()));
                 break;
             case ICOAbi.kICO_transferFrom:
-                res = coinbase.transferFrom(decoder.decodeAddress(), decoder.decodeAddress(), decoder.decodeLong());
+                result = ByteArrayHelpers.encodeBoolean(coinbase.transferFrom(decoder.decodeAddress(), decoder.decodeAddress(), decoder.decodeLong()));
                 break;
             case ICOAbi.kICO_openAccount:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.openAccount(decoder.decodeAddress()));

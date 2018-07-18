@@ -51,6 +51,7 @@ public class ProofOfConceptTest {
     private byte[] coinbaseAddress = Helpers.randomBytes(Address.LENGTH);
     private byte[] usr1 = Helpers.randomBytes(Address.LENGTH);
     private byte[] usr2 = Helpers.randomBytes(Address.LENGTH);
+    private byte[] usr3 = Helpers.randomBytes(Address.LENGTH);
 
     private byte[] buildTestWalletJar() {
         return JarBuilder.buildJarForMainAndClasses(Wallet.class
@@ -220,6 +221,52 @@ public class ProofOfConceptTest {
         return callResult;
     }
 
+    private AvmResult callAllowance(byte[] owner, byte[] spender) {
+        AvmImpl callAvm = new AvmImpl();
+
+        byte[] args = new byte[1 + Address.LENGTH + Address.LENGTH];
+        ICOAbi.Encoder encoder = ICOAbi.buildEncoder(args);
+        encoder.encodeByte(ICOAbi.kICO_allowance);
+        encoder.encodeAddress(new Address(owner));
+        encoder.encodeAddress(new Address(spender));
+
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, coinbaseAddress, 0, args, energyLimit);
+        AvmResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        return callResult;
+    }
+
+    private AvmResult callApprove(byte[] owner, byte[] spender, long amount) {
+        AvmImpl callAvm = new AvmImpl();
+
+        byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
+        ICOAbi.Encoder encoder = ICOAbi.buildEncoder(args);
+        encoder.encodeByte(ICOAbi.kICO_approve);
+        encoder.encodeAddress(new Address(spender));
+        encoder.encodeLong(amount);
+
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, coinbaseAddress, 0, args, energyLimit);
+        AvmResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        return callResult;
+    }
+
+    private AvmResult callTransferfrom(byte[] executor, byte[] from, byte[] to, long amount) {
+        AvmImpl callAvm = new AvmImpl();
+
+        byte[] args = new byte[1 + Address.LENGTH + Address.LENGTH + Long.BYTES];
+        ICOAbi.Encoder encoder = ICOAbi.buildEncoder(args);
+        encoder.encodeByte(ICOAbi.kICO_transferFrom);
+        encoder.encodeAddress(new Address(from));
+        encoder.encodeAddress(new Address(to));
+        encoder.encodeLong(amount);
+
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, executor, coinbaseAddress, 0, args, energyLimit);
+        AvmResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        return callResult;
+    }
+
     @Test
     public void testERC20(){
 
@@ -255,9 +302,9 @@ public class ProofOfConceptTest {
 
         Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
 
-        res = callOpenAccount(usr2);
+        res = callOpenAccount(usr3);
 
-        Assert.assertEquals(false, ByteArrayHelpers.decodeBoolean(res.returnData));
+        Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
 
         res = callMint(usr1);
 
@@ -290,6 +337,35 @@ public class ProofOfConceptTest {
         res = callBalanceOf(usr2);
 
         Assert.assertEquals(12000L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callAllowance(usr1, usr2);
+
+        Assert.assertEquals(0L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callApprove(usr1, usr3, 1000L);
+
+        Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+
+        res = callAllowance(usr1, usr3);
+
+        Assert.assertEquals(1000L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callTransferfrom(usr3, usr1, usr2, 500L);
+
+        Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+
+        res = callAllowance(usr1, usr3);
+
+        Assert.assertEquals(500L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callBalanceOf(usr1);
+
+        Assert.assertEquals(2500L, ByteArrayHelpers.decodeLong(res.returnData));
+
+        res = callBalanceOf(usr2);
+
+        Assert.assertEquals(12500L, ByteArrayHelpers.decodeLong(res.returnData));
+
 
     }
 
