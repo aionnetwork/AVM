@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
@@ -35,7 +36,10 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         }};
 
     private final ClassLoader classLoader;
+    // All keys in instanceStubMap are positive values.
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> instanceStubMap;
+    // All keys in shadowConstantMap are negative values.
+    private final Map<Long, org.aion.avm.shadow.java.lang.Object> shadowConstantMap;
     private final KernelApi kernel;
     private final byte[] address;
     // We cache the method entry-point we will use to invoke the load operation on any instance.
@@ -49,6 +53,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     public ReflectionStructureCodec(ClassLoader classLoader, KernelApi kernel, byte[] address, long nextInstanceId) {
         this.classLoader = classLoader;
         this.instanceStubMap = new HashMap<>();
+        this.shadowConstantMap = NodeEnvironment.singleton.getConstantMap();
         this.kernel = kernel;
         this.address = address;
         try {
@@ -181,8 +186,8 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 }
                 encoder.encodeLong(instanceId);
                 
-                // If this instance has been loaded, set it to not loaded and add it to the queue.
-                if (null == this.deserializerField.get(contents)) {
+                // If this instance is non-negative (JDK constant) and has been loaded, set it to not loaded and add it to the queue.
+                if ((instanceId > 0) && (null == this.deserializerField.get(contents))) {
                     this.deserializerField.set(contents, DONE_MARKER);
                     nextObjectQueue.accept(contents);
                 }
@@ -284,13 +289,19 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     private org.aion.avm.shadow.java.lang.Object findInstanceStub(String className, long instanceId) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-        org.aion.avm.shadow.java.lang.Object stub = this.instanceStubMap.get(instanceId);
-        if (null == stub) {
-            // Create the new stub and put it in the map.
-            Class<?> contentClass = this.classLoader.loadClass(className);
-            // NOTE:  This line is why all our shadow objects and all the transformed user code needs an empty constructor.
-            stub = (org.aion.avm.shadow.java.lang.Object)contentClass.getConstructor(IDeserializer.class, long.class).newInstance(this, instanceId);
-            this.instanceStubMap.put(instanceId, stub);
+        org.aion.avm.shadow.java.lang.Object stub = null;
+        if (instanceId > 0) {
+            stub = this.instanceStubMap.get(instanceId);
+            if (null == stub) {
+                // Create the new stub and put it in the map.
+                Class<?> contentClass = this.classLoader.loadClass(className);
+                stub = (org.aion.avm.shadow.java.lang.Object)contentClass.getConstructor(IDeserializer.class, long.class).newInstance(this, instanceId);
+                this.instanceStubMap.put(instanceId, stub);
+            }
+        } else {
+            stub = this.shadowConstantMap.get(instanceId);
+            // Note that we can't fail to find a constant.
+            RuntimeAssertionError.assertTrue(null != stub);
         }
         return stub;
     }

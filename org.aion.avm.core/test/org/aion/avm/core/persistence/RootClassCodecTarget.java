@@ -14,4 +14,6 @@ public class RootClassCodecTarget extends org.aion.avm.shadow.java.lang.Object {
     public static float s_six;
     public static long s_seven;
     public static double s_eight;
+    // We will allow ourselves to store an arbitrary object to test instance mapping of JDK constants, etc.
+    public static org.aion.avm.shadow.java.lang.Object s_nine;
 }

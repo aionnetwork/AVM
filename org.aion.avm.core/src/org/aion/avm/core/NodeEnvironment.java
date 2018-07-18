@@ -1,5 +1,7 @@
 package org.aion.avm.core;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
@@ -21,6 +23,7 @@ public class NodeEnvironment {
     public static final NodeEnvironment singleton = new NodeEnvironment();
 
     private final AvmSharedClassLoader sharedClassLoader;
+    private final Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap;
 
     private NodeEnvironment() {
         this.sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
@@ -30,6 +33,8 @@ public class NodeEnvironment {
             // This would be a fatal startup error.
             Assert.unexpected(e);
         }
+        // Create the constant map.
+        this.constantMap = Collections.unmodifiableMap(initializeConstantState());
     }
 
     // This is an example of the more "factory-like" nature of the NodeEnvironment.
@@ -46,6 +51,10 @@ public class NodeEnvironment {
      */
     public boolean isClassFromSharedLoader(Class<?> clazz) {
         return (this.sharedClassLoader == clazz.getClassLoader());
+    }
+
+    public Map<Long, org.aion.avm.shadow.java.lang.Object> getConstantMap() {
+        return this.constantMap;
     }
 
 
@@ -131,5 +140,36 @@ public class NodeEnvironment {
             Class<?> instance = Class.forName(clazz.getName(), initialize, loader);
             Assert.assertTrue(clazz == instance);
         }
+    }
+
+    private Map<Long, org.aion.avm.shadow.java.lang.Object> initializeConstantState() {
+        Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap = new HashMap<>();
+        
+        // Assign the special "negative instanceId" values which we use for shadow JDK constants (public static objects and enum instances).
+        // NOTE:  This list needs to be manually updated and we specify it as a list since these values CANNOT change, once assigned (these represent the serialized symbolic references from contracts).
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TRUE, -1l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_FALSE, -2l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_ZERO, -3l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_ONE, -4l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_TEN, -5l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_UNLIMITED, -6l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL32, -7l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL64, -8l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL128, -89l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UP, -10l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_DOWN, -11l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_CEILING, -12l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_FLOOR, -13l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_UP, -14l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_DOWN, -15l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN, -16l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UNNECESSARY, -17l);
+        
+        return constantMap;
+    }
+
+    private void setConstantInstanceId(Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap, org.aion.avm.shadow.java.lang.Object object, long instanceId) {
+        object.instanceId = instanceId;
+        constantMap.put(instanceId, object);
     }
 }
