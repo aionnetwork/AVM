@@ -10,6 +10,7 @@ import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelApiImpl;
 import org.aion.kernel.Transaction;
+import org.aion.kernel.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -105,11 +106,11 @@ public class AvmImplTest {
     public void testHelperStateRestore() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmImplTestResource.class);
         KernelApiImpl kernel = new KernelApiImpl() {
-            public AvmResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
+            public TransactionResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
                 currentContractHelper = IHelper.currentContractHelper.get();
                 currentEnergyLeft = currentContractHelper.externalGetEnergyRemaining();
 
-                AvmResult result = super.call(from, to, value, data, energyLimit);
+                TransactionResult result = super.call(from, to, value, data, energyLimit);
                 result.energyLeft = energyLimit / 2;
 
                 return result;
@@ -120,15 +121,15 @@ public class AvmImplTest {
         // deploy
         Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, jar, 1000000);
         AvmImpl avm1 = new AvmImpl();
-        AvmResult result1 = avm1.run(tx1, block, kernel);
-        assertEquals(AvmResult.Code.SUCCESS, result1.code);
+        TransactionResult result1 = avm1.run(tx1, block, kernel);
+        assertEquals(TransactionResult.Code.SUCCESS, result1.code);
         assertArrayEquals(Helpers.address(2), result1.returnData);
 
         // call (1 -> 2 -> 2)
         Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(2), 1000000);
         AvmImpl avm2 = new AvmImpl();
-        AvmResult result2 = avm2.run(tx2, block, kernel);
-        assertEquals(AvmResult.Code.SUCCESS, result2.code);
+        TransactionResult result2 = avm2.run(tx2, block, kernel);
+        assertEquals(TransactionResult.Code.SUCCESS, result2.code);
         assertArrayEquals("CALL".getBytes(), result2.returnData);
 
         assertTrue(currentContractHelper == IHelper.currentContractHelper.get()); // same instance

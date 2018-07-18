@@ -1,7 +1,5 @@
 package org.aion.kernel;
 
-import org.aion.avm.core.AvmResult;
-
 
 /**
  * Interface for accessing kernel features.
@@ -16,7 +14,7 @@ public interface KernelApi {
 
     byte[] getStorage(byte[] address, byte[] key);
 
-    AvmResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit);
+    TransactionResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit);
 
     void updateCode(byte[] address, byte[] code);
 

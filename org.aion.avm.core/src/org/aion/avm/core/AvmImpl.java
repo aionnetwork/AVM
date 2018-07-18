@@ -25,12 +25,12 @@ import org.aion.avm.internal.*;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelApi;
 import org.aion.kernel.Transaction;
+import org.aion.kernel.TransactionResult;
 import org.aion.kernel.TransformedDappStorage;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.jar.Attributes;
@@ -311,7 +311,7 @@ public class AvmImpl implements Avm {
 
         @Override
         public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
-            AvmResult result = cb.call(tx.getTo(), targetAddress.unwrap(), value, data.getUnderlying(), energyLimit);
+            TransactionResult result = cb.call(tx.getTo(), targetAddress.unwrap(), value, data.getUnderlying(), energyLimit);
 
             // Reset the thread-local helper instance
             IHelper.currentContractHelper.set(helper);
@@ -330,30 +330,30 @@ public class AvmImpl implements Avm {
     }
 
     @Override
-    public AvmResult run(Transaction tx, Block block, KernelApi cb) {
+    public TransactionResult run(Transaction tx, Block block, KernelApi cb) {
         switch (tx.getType()) {
             case CREATE:
                 return create(tx, block, cb);
             case CALL:
                 return call(tx, block, cb);
             default:
-                return new AvmResult(AvmResult.Code.INVALID_TX, 0);
+                return new TransactionResult(TransactionResult.Code.INVALID_TX, 0);
         }
     }
 
-    public AvmResult create(Transaction tx, Block block, KernelApi cb) {
+    public TransactionResult create(Transaction tx, Block block, KernelApi cb) {
         try {
             // read dapp module
             byte[] dappAddress = tx.getTo(); // TODO: The contract address should be computed based on consensus rules
             byte[] dappCode = tx.getData();
             DappModule app = readDapp(dappCode);
             if (app == null) {
-                return new AvmResult(AvmResult.Code.INVALID_JAR, 0);
+                return new TransactionResult(TransactionResult.Code.INVALID_JAR, 0);
             }
 
             // validate dapp module
             if (!validateDapp(app)) {
-                return new AvmResult(AvmResult.Code.INVALID_CODE, 0);
+                return new TransactionResult(TransactionResult.Code.INVALID_CODE, 0);
             }
             ClassHierarchyForest dappClassesForest = app.getClassHierarchyForest();
 
@@ -388,8 +388,12 @@ public class AvmImpl implements Avm {
             String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
             Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
 
-            Method method = clazz.getMethod("avm_init");
-            method.invoke(null);
+            try {
+                Method method = clazz.getMethod("avm_init");
+                method.invoke(null);
+            } catch (NoSuchMethodException e) {
+
+            }
 
             // Save back the state before we return.
             // -first, save out the classes
@@ -400,7 +404,7 @@ public class AvmImpl implements Avm {
             ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
             // TODO: whether we should return the dapp address is subject to change
-            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), dappAddress);
+            return new TransactionResult(TransactionResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), dappAddress);
         } catch (FatalAvmError e) {
             // These are unrecoverable errors (either a bug in our code or a lower-level error reported by the JVM).
             // (for now, we System.exit(-1), since this is what ethereumj does, but we may want a more graceful shutdown in the future)
@@ -408,10 +412,10 @@ public class AvmImpl implements Avm {
             System.exit(-1);
             return null;
         } catch (OutOfEnergyError e) {
-            return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
+            return new TransactionResult(TransactionResult.Code.OUT_OF_ENERGY, 0);
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
-            return new AvmResult(AvmResult.Code.FAILURE, 0);
+            return new TransactionResult(TransactionResult.Code.FAILURE, 0);
         } catch (Throwable t) {
             // There should be no other reachable kind of exception.  If we reached this point, something very strange is happening so log
             // this and bring us down.
@@ -421,7 +425,7 @@ public class AvmImpl implements Avm {
         }
     }
 
-    public AvmResult call(Transaction tx, Block block, KernelApi cb) {
+    public TransactionResult call(Transaction tx, Block block, KernelApi cb) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
         DappModule app;
@@ -429,7 +433,7 @@ public class AvmImpl implements Avm {
             byte[] transformedDappJar = cb.getTransformedCode(dappAddress);
             app = DappModule.readFromJar(transformedDappJar);
         } catch (IOException e) {
-            return new AvmResult(AvmResult.Code.INVALID_CALL, 0);
+            return new TransactionResult(TransactionResult.Code.INVALID_CALL, 0);
         }
 
         // As per usual, we need to get the special Helper class for each contract loader.
@@ -467,13 +471,13 @@ public class AvmImpl implements Avm {
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
-            return new AvmResult(AvmResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
+            return new TransactionResult(TransactionResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
         } catch (OutOfEnergyError e) {
-            return new AvmResult(AvmResult.Code.OUT_OF_ENERGY, 0);
+            return new TransactionResult(TransactionResult.Code.OUT_OF_ENERGY, 0);
         } catch (Exception e) {
             e.printStackTrace();
 
-            return new AvmResult(AvmResult.Code.FAILURE, 0);
+            return new TransactionResult(TransactionResult.Code.FAILURE, 0);
         }
     }
 

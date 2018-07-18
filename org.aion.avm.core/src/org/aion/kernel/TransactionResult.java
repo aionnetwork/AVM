@@ -1,8 +1,8 @@
-package org.aion.avm.core;
+package org.aion.kernel;
 
 import org.aion.avm.core.util.Helpers;
 
-public class AvmResult {
+public class TransactionResult {
 
     public enum  Code {
         SUCCESS, INVALID_TX, INVALID_JAR, INVALID_CODE, INVALID_CALL, OUT_OF_ENERGY, FAILURE
@@ -11,24 +11,24 @@ public class AvmResult {
     /**
      * The execution result code.
      */
-    Code code;
+    public Code code;
 
     /**
      * The remaining energy after execution.
      */
-    long energyLeft;
+    public long energyLeft;
 
     /**
      * Return data.
      */
-    byte[] returnData;
+    public byte[] returnData;
 
-    public AvmResult(Code code, long energyLeft) {
+    public TransactionResult(Code code, long energyLeft) {
         this.code = code;
         this.energyLeft = energyLeft;
     }
 
-    public AvmResult(Code code, long energyLeft, byte[] returnData) {
+    public TransactionResult(Code code, long energyLeft, byte[] returnData) {
         this.code = code;
         this.energyLeft = energyLeft;
         this.returnData = returnData;
@@ -36,7 +36,7 @@ public class AvmResult {
 
     @Override
     public String toString() {
-        return "AvmResult{" +
+        return "TransactionResult{" +
                 "code=" + code +
                 ", energyLeft=" + energyLeft +
                 ", returnData=" + Helpers.toHexString(returnData) +

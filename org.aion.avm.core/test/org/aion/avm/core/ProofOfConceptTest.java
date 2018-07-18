@@ -24,6 +24,7 @@ import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelApiImpl;
 import org.aion.kernel.Transaction;
+import org.aion.kernel.TransactionResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -79,8 +80,8 @@ public class ProofOfConceptTest {
         byte[] testWalletJar = buildTestWalletJar();
         AvmImpl createAvm = new AvmImpl();
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
-        AvmResult createResult = createAvm.run(createTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
+        TransactionResult createResult = createAvm.run(createTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.code);
         Assert.assertNotNull(cb.getTransformedCode(to));
     }
 
@@ -98,8 +99,8 @@ public class ProofOfConceptTest {
         byte[] testWalletJar = buildTestWalletJar();
         AvmImpl createAvm = new AvmImpl();
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
-        AvmResult createResult = createAvm.run(createTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
+        TransactionResult createResult = createAvm.run(createTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.code);
 
         // contract address is stored in return data
         byte[] contractAddress = createResult.returnData;
@@ -107,8 +108,8 @@ public class ProofOfConceptTest {
         AvmImpl initAvm = new AvmImpl();
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
         Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
-        AvmResult initResult = initAvm.run(initTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, initResult.code);
+        TransactionResult initResult = initAvm.run(initTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.code);
     }
 
 
@@ -145,25 +146,25 @@ public class ProofOfConceptTest {
         byte[] testICOJar = buildTestICOJar();
         AvmImpl createAvm = new AvmImpl();
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, coinbaseAddress, 0, testICOJar, energyLimit);
-        AvmResult createResult = createAvm.run(createTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, createResult.code);
+        TransactionResult createResult = createAvm.run(createTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.code);
         return createResult.returnData;
     }
 
 
-    private AvmResult callTotalSupply() {
+    private TransactionResult callTotalSupply() {
         AvmImpl callAvm = new AvmImpl();
         byte[] args = new byte[1];
         ICOAbi.Encoder encoder = ICOAbi.buildEncoder(args);
         encoder.encodeByte(ICOAbi.kICO_totalSupply);
 
         Transaction callTransaction = new Transaction(Transaction.Type.CALL, usr2, coinbaseAddress, 0, args, energyLimit);
-        AvmResult callResult = callAvm.run(callTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
         return callResult;
     }
 
-    private AvmResult callBalanceOf(byte[] toQuery) {
+    private TransactionResult callBalanceOf(byte[] toQuery) {
         AvmImpl callAvm = new AvmImpl();
 
         byte[] args = new byte[1 + Address.LENGTH];
@@ -172,12 +173,12 @@ public class ProofOfConceptTest {
         encoder.encodeAddress(new Address(toQuery));
 
         Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, coinbaseAddress, 0, args, energyLimit);
-        AvmResult callResult = callAvm.run(callTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
         return callResult;
     }
 
-    private AvmResult callOpenAccount(byte[] toOpen) {
+    private TransactionResult callOpenAccount(byte[] toOpen) {
         AvmImpl callAvm = new AvmImpl();
 
         byte[] args = new byte[1 + Address.LENGTH];
@@ -186,12 +187,12 @@ public class ProofOfConceptTest {
         encoder.encodeAddress(new Address(toOpen));
 
         Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, coinbaseAddress, 0, args, energyLimit);
-        AvmResult callResult = callAvm.run(callTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
         return callResult;
     }
 
-    private AvmResult callMint(byte[] receiver) {
+    private TransactionResult callMint(byte[] receiver) {
         AvmImpl callAvm = new AvmImpl();
 
         byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
@@ -201,12 +202,12 @@ public class ProofOfConceptTest {
         encoder.encodeLong(5000L);
 
         Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, coinbaseAddress, 0, args, energyLimit);
-        AvmResult callResult = callAvm.run(callTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
         return callResult;
     }
 
-    private AvmResult callTransfer(byte[] sender, byte[] receiver, long amount) {
+    private TransactionResult callTransfer(byte[] sender, byte[] receiver, long amount) {
         AvmImpl callAvm = new AvmImpl();
 
         byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
@@ -216,12 +217,12 @@ public class ProofOfConceptTest {
         encoder.encodeLong(amount);
 
         Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, coinbaseAddress, 0, args, energyLimit);
-        AvmResult callResult = callAvm.run(callTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
         return callResult;
     }
 
-    private AvmResult callAllowance(byte[] owner, byte[] spender) {
+    private TransactionResult callAllowance(byte[] owner, byte[] spender) {
         AvmImpl callAvm = new AvmImpl();
 
         byte[] args = new byte[1 + Address.LENGTH + Address.LENGTH];
@@ -231,12 +232,12 @@ public class ProofOfConceptTest {
         encoder.encodeAddress(new Address(spender));
 
         Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, coinbaseAddress, 0, args, energyLimit);
-        AvmResult callResult = callAvm.run(callTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
         return callResult;
     }
 
-    private AvmResult callApprove(byte[] owner, byte[] spender, long amount) {
+    private TransactionResult callApprove(byte[] owner, byte[] spender, long amount) {
         AvmImpl callAvm = new AvmImpl();
 
         byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
@@ -246,12 +247,12 @@ public class ProofOfConceptTest {
         encoder.encodeLong(amount);
 
         Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, coinbaseAddress, 0, args, energyLimit);
-        AvmResult callResult = callAvm.run(callTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
         return callResult;
     }
 
-    private AvmResult callTransferfrom(byte[] executor, byte[] from, byte[] to, long amount) {
+    private TransactionResult callTransferfrom(byte[] executor, byte[] from, byte[] to, long amount) {
         AvmImpl callAvm = new AvmImpl();
 
         byte[] args = new byte[1 + Address.LENGTH + Address.LENGTH + Long.BYTES];
@@ -262,15 +263,15 @@ public class ProofOfConceptTest {
         encoder.encodeLong(amount);
 
         Transaction callTransaction = new Transaction(Transaction.Type.CALL, executor, coinbaseAddress, 0, args, energyLimit);
-        AvmResult callResult = callAvm.run(callTransaction, block, cb);
-        Assert.assertEquals(AvmResult.Code.SUCCESS, callResult.code);
+        TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
         return callResult;
     }
 
     @Test
     public void testERC20(){
 
-        AvmResult res = null;
+        TransactionResult res = null;
 
         initCoinbase();
 

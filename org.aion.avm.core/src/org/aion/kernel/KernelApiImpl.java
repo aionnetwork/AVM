@@ -1,7 +1,6 @@
 package org.aion.kernel;
 
 import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.AvmResult;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
@@ -41,7 +40,7 @@ public class KernelApiImpl implements KernelApi {
     }
 
     @Override
-    public AvmResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
+    public TransactionResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
         Assert.assertTrue(block != null);
 
         Transaction internalTx = new Transaction(Transaction.Type.CALL, from, to, value, data, energyLimit);
