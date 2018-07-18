@@ -71,7 +71,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     public void serializeClass(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
-            safeSerialize(encoder, clazz, null, null, nextObjectQueue);
+            // Note that only direct class statics are serialized with the class:  superclass statics are saved in the superclass.
+            // Hence, just call the serializer, directly.
+            safeSerializeOneClass(encoder, clazz, null, nextObjectQueue);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
@@ -80,7 +82,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     public void deserializeClass(StreamingPrimitiveCodec.Decoder decoder, Class<?> clazz) {
         try {
-            safeDeserialize(decoder, clazz, null, null);
+            // Note that only direct class statics are deserialized with the class:  superclass statics are loaded from the superclass.
+            // Hence, just call the deserializer, directly.
+            safeDeserializeOneClass(decoder, clazz, null);
         } catch (IllegalArgumentException | IllegalAccessException | ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);

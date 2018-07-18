@@ -227,6 +227,10 @@ public class RootClassCodecTest {
         long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
         // We serialized 2 instances so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(2 + initialInstanceId, nextInstanceId);
+        // Check the size of the saved static data (should only store local copies of statics, not superclass statics, per class).
+        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        // (note that this is "309" if the superclass static fields are redundantly stored in sub-classes).
+        Assert.assertEquals(207, result.length);
         
         // Now, clear the class states and reload this.
         clearStaticState();
