@@ -37,6 +37,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         @Override
         public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
         }};
+    private static final int STUB_DESCRIPTOR_CONSTANT = -1;
 
     private final ClassLoader classLoader;
     // All keys in instanceStubMap are positive values.
@@ -181,30 +182,50 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     private void deflateInstanceAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object contents, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
-            if (null != contents) {
-                String typeName = contents.getClass().getName();
-                byte[] utf8Name = typeName.getBytes(StandardCharsets.UTF_8);
-                encoder.encodeInt(utf8Name.length);
-                encoder.encodeBytes(utf8Name);
-                long instanceId = this.instanceIdField.getLong(contents);
-                if (0 == instanceId) {
-                    // We have to assign this.
-                    instanceId = this.nextInstanceId;
-                    this.nextInstanceId += 1;
-                    this.instanceIdField.setLong(contents, instanceId);
-                }
-                encoder.encodeLong(instanceId);
-                if (DEBUG) {
-                    System.out.println(" WRITESTUB(" + instanceId + "): " + typeName);
-                }
-                
-                // If this instance is non-negative (JDK constant) and has been loaded, set it to not loaded and add it to the queue.
-                if ((instanceId > 0) && (null == this.deserializerField.get(contents))) {
-                    this.deserializerField.set(contents, DONE_MARKER);
-                    nextObjectQueue.accept(contents);
-                }
-            } else {
+            // See issue-147 for more information regarding this interpretation:
+            // - null: (int)0.
+            // - >0: (int) buffer length, (n) UTF-8 instance class name buffer, (long) instanceId.
+            // - -1: (int)-1, (long) instanceId (of constant - negative).
+            if (null == contents) {
+                // Null is just the 0 int.
                 encoder.encodeInt(0);
+            } else {
+                // Check the instanceId to see if this is a special-case.
+                long instanceId = this.instanceIdField.getLong(contents);
+                if (instanceId >= 0) {
+                    // This a normal reference (although might need an instanceId assigned).
+                    String typeName = contents.getClass().getName();
+                    byte[] utf8Name = typeName.getBytes(StandardCharsets.UTF_8);
+                    if (0 == instanceId) {
+                        // We have to assign this.
+                        instanceId = this.nextInstanceId;
+                        this.nextInstanceId += 1;
+                        this.instanceIdField.setLong(contents, instanceId);
+                    }
+                    
+                    // Now, serialize the standard form.
+                    encoder.encodeInt(utf8Name.length);
+                    encoder.encodeBytes(utf8Name);
+                    encoder.encodeLong(instanceId);
+                    
+                    if (DEBUG) {
+                        System.out.println(" WRITESTUB(" + instanceId + "): " + typeName);
+                    }
+                    
+                    // If this instance has been loaded, set it to not loaded and add it to the queue.
+                    if (null == this.deserializerField.get(contents)) {
+                        this.deserializerField.set(contents, DONE_MARKER);
+                        nextObjectQueue.accept(contents);
+                    }
+                } else if (instanceId < 0) {
+                    // This is a reference to a constant.
+                    encoder.encodeInt(STUB_DESCRIPTOR_CONSTANT);
+                    // Write the constant instanceId.
+                    encoder.encodeLong(instanceId);
+                } else {
+                    // Unknown.
+                    RuntimeAssertionError.assertTrue(false);
+                }
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
@@ -283,15 +304,42 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     private org.aion.avm.shadow.java.lang.Object inflateStubAsInstance(StreamingPrimitiveCodec.Decoder decoder) {
         try {
+            // See issue-147 for more information regarding this interpretation:
+            // - null: (int)0.
+            // - >0:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
+            // - -1: (int)-1, (long) instanceId (of constant - negative).
             org.aion.avm.shadow.java.lang.Object instanceToStore = null;
-            int length = decoder.decodeInt();
-            if (0 != length) {
-                // Decode this (note that we will need to look up the instance stub).
-                byte[] utf8Name = new byte[length];
+            int stubDescriptor = decoder.decodeInt();
+            if (0 == stubDescriptor) {
+                // This is a null object:
+                // -nothing else to read.
+            } else if (stubDescriptor > 0) {
+                // This is a normal object:
+                // -descriptor is type name length.
+                int typeNameLength = stubDescriptor;
+                // -load that many bytes as the name
+                byte[] utf8Name = new byte[typeNameLength];
                 decoder.decodeBytesInto(utf8Name);
                 String className = new String(utf8Name, StandardCharsets.UTF_8);
+                // -load the instanceId.
                 long instanceId = decoder.decodeLong();
+                
+                // This instance might already exist so ask our helper which will instantiate, if need be.
                 instanceToStore = findInstanceStub(className, instanceId);
+            } else if (STUB_DESCRIPTOR_CONSTANT == stubDescriptor) {
+                // This is a constant reference:
+                // -load the constant instance ID.
+                long instanceId = decoder.decodeLong();
+                // Constants have negative instance IDs.
+                RuntimeAssertionError.assertTrue(instanceId < 0);
+                
+                // Look this up in the constant map.
+                instanceToStore = this.shadowConstantMap.get(instanceId);
+                // We can't fail to find these.
+                RuntimeAssertionError.assertTrue(null != instanceToStore);
+            } else {
+                // Unknown.
+                RuntimeAssertionError.assertTrue(false);
             }
             return instanceToStore;
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -301,22 +349,18 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     private org.aion.avm.shadow.java.lang.Object findInstanceStub(String className, long instanceId) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-        org.aion.avm.shadow.java.lang.Object stub = null;
-        if (instanceId > 0) {
-            stub = this.instanceStubMap.get(instanceId);
-            if (null == stub) {
-                // Create the new stub and put it in the map.
-                Class<?> contentClass = this.classLoader.loadClass(className);
-                stub = (org.aion.avm.shadow.java.lang.Object)contentClass.getConstructor(IDeserializer.class, long.class).newInstance(this, instanceId);
-                this.instanceStubMap.put(instanceId, stub);
-                if (DEBUG) {
-                    System.out.println(" READSTUB(" + instanceId + "): " + className);
-                }
+        // We can only call this helper with positive instanceId.
+        RuntimeAssertionError.assertTrue(instanceId > 0);
+        
+        org.aion.avm.shadow.java.lang.Object stub = this.instanceStubMap.get(instanceId);
+        if (null == stub) {
+            // Create the new stub and put it in the map.
+            Class<?> contentClass = this.classLoader.loadClass(className);
+            stub = (org.aion.avm.shadow.java.lang.Object)contentClass.getConstructor(IDeserializer.class, long.class).newInstance(this, instanceId);
+            this.instanceStubMap.put(instanceId, stub);
+            if (DEBUG) {
+                System.out.println(" READSTUB(" + instanceId + "): " + className);
             }
-        } else {
-            stub = this.shadowConstantMap.get(instanceId);
-            // Note that we can't fail to find a constant.
-            RuntimeAssertionError.assertTrue(null != stub);
         }
         return stub;
     }
