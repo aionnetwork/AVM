@@ -363,6 +363,42 @@ public class RootClassCodecTest {
         Assert.assertTrue(originalClassRef == RootClassCodecTarget.s_nine);
     }
 
+    /**
+     * Populate one of the classes with a reference to a constant class, and verify that it decodes properly, given the special-case.
+     */
+    @Test
+    public void serializeDeserializeReferenceToConstantClass() {
+        RootClassCodecTarget.s_nine = org.aion.avm.shadow.java.lang.Byte.avm_TYPE;
+        
+        KernelApiImpl kernel = new KernelApiImpl();
+        byte[] address = new byte[] {1,2,3};
+        long initialInstanceId = 1l;
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(RootClassCodecTarget.class));
+        // Note that this attempt to serialize has no instances so the counter should be unchanged.
+        Assert.assertEquals(initialInstanceId, nextInstanceId);
+        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
+        byte[] expected = {
+                // RootClassCodecTarget
+                0x0, //s_one
+                0x0, //s_two
+                0x0, 0x0, //s_three
+                0x0, 0x0, //s_four
+                0x0, 0x0, 0x0, 0x0, //s_five
+                0x0, 0x0, 0x0, 0x0, //s_six
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_seven
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
+                (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, //s_nine (-1 since this is a constant)
+                (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xed,  //s_nine (constant instanceId is negative)
+        };
+        Assert.assertTrue(Arrays.equals(expected, result));
+        
+        // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
+        clearStaticState();
+        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), kernel, address, Arrays.asList(RootClassCodecTarget.class));
+        Assert.assertTrue(org.aion.avm.shadow.java.lang.Byte.avm_TYPE == RootClassCodecTarget.s_nine);
+    }
+
 
     private static void clearStaticState() {
         ReflectionStructureCodecTarget.s_one = false;
