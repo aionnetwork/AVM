@@ -35,4 +35,22 @@ public class MiscellaneousShadowTest {
         boolean didCastObject = (Boolean)cast.invoke(null, stringClass, object);
         Assert.assertFalse(didCastObject);
     }
+
+    /**
+     * Checks that the java.lang.Class.getSuperclass() method works as expected on our shadow instance.
+     */
+    @Test
+    public void testSuperclass() throws Exception {
+        Object string = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnString")).invoke(null);
+        Object object = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnObject")).invoke(null);
+        Method getClass = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("getClass"), org.aion.avm.internal.IObject.class);
+        Method getSuperclass = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("getSuperclass"), org.aion.avm.shadow.java.lang.Class.class);
+        
+        Object stringClass = getClass.invoke(null, string);
+        Object objectClass = getClass.invoke(null, object);
+        Object stringSuper = getSuperclass.invoke(null, stringClass);
+        Object objectSuper = getSuperclass.invoke(null, objectClass);
+        Assert.assertTrue(objectClass == stringSuper);
+        Assert.assertTrue(null == objectSuper);
+    }
 }

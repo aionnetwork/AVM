@@ -28,7 +28,6 @@ public class Class<T> extends Object {
     }
 
     public String avm_toString() {
-        //java.lang.System.out.println(underlying.getName() + " is loaded from " + underlying.getClassLoader());
         return null;
     }
 
@@ -38,7 +37,15 @@ public class Class<T> extends Object {
 
     public java.lang.Class<T> getRealClass(){return this.underlying;}
 
-    public Class<T> getSuperclass(){return new Class(this.underlying.getSuperclass());}
+    @SuppressWarnings("unchecked")
+    public Class<T> avm_getSuperclass() {
+        // Note that we need to return null if the underlying is the shadow object root.
+        Class<T> toReturn = null;
+        if (org.aion.avm.shadow.java.lang.Object.class != this.underlying) {
+            toReturn = (Class<T>) IHelper.currentContractHelper.get().externalWrapAsClass(this.underlying.getSuperclass());
+        }
+        return toReturn;
+    }
 
     //=======================================================
     // Methods below are used by Enum
@@ -52,6 +59,7 @@ public class Class<T> extends Object {
                         avm_getName() + " is not an enum type");
             directory = new HashMap<>(2 * universe.length());
             for (int i = 0; i < universe.length(); i++){
+                @SuppressWarnings("unchecked")
                 T constant = (T) universe.get(i);
                 directory.put(((Enum<?>)constant).avm_name(), constant);
             }

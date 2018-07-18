@@ -25,4 +25,12 @@ public class TestResource {
         }
         return success;
     }
+
+    public static Class<?> getClass(Object instance) {
+        return instance.getClass();
+    }
+
+    public static Class<?> getSuperclass(Class<?> clazz) {
+        return clazz.getSuperclass();
+    }
 }
