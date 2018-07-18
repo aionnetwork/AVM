@@ -19,6 +19,8 @@ public abstract class Array extends Object implements Cloneable{
 
     public abstract void setUnderlyingAsObject(java.lang.Object u);
 
+    public abstract java.lang.Object getAsObject(int idx);
+
     public abstract int length();
 
     public abstract IObject avm_clone();

@@ -11,8 +11,8 @@ public class HelloWorld {
 
     public static int bar;
 
-    public byte[] add(int a, int b) {
-        return ABIEncoder.encodeInt(a + b);
+    public int add(int a, int b) {
+        return a + b;
     }
 
     public byte[] run() {
@@ -23,6 +23,6 @@ public class HelloWorld {
     }
 
     public static byte[] main() throws InvalidTxDataException {
-        return ABIDecoder.decodeAndRun(new HelloWorld(), BlockchainRuntime.getData());
+        return ABIEncoder.encodeOneObject(ABIDecoder.decodeAndRun(new HelloWorld(), BlockchainRuntime.getData()));
     }
 }

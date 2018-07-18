@@ -3,7 +3,6 @@ package org.aion.avm.api;
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.IObject;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -83,22 +82,22 @@ public class ABIDecoder {
         // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
         Method method = matchMethodSelector(obj.avm_getClass(), newMethodName, newArgDescriptor);
 
-        ByteArray ret = null;
+        Object ret = null;
         if (Modifier.isStatic(method.getModifiers())) {
             obj = null;
         }
         try {
             if (methodCaller.arguments == null) {
-                ret = (ByteArray) method.invoke(obj);
+                ret = method.invoke(obj);
             }
             else {
-                ret = (ByteArray) method.invoke(obj, convertArguments(methodCaller.arguments));
+                ret = method.invoke(obj, convertArguments(methodCaller.arguments));
             }
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        } catch (Exception e) {
             throw new InvalidTxDataException();
         }
 
-        return ret;
+        return new ByteArray(ABIEncoder.encodeOneObject(ret)[1]);
     }
 
     public static MethodCaller decode(byte[] txData) throws InvalidTxDataException{

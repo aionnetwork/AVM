@@ -11,30 +11,30 @@ public class DeployAndRunTest {
 
     public static int bar;
 
-    public byte[] add(int a, int b) {
-        return ABIEncoder.encodeInt(a + b);
+    public int add(int a, int b) {
+        return a + b;
     }
 
-    public static byte[] addArray(int[] a) {
-        return ABIEncoder.encodeInt(a[0] + a[1]);
+    public static int addArray(int[] a, int b) {
+        return a[0] + a[1] + b;
     }
 
-    public byte[] addArray2(int[][] a) {
-        return ABIEncoder.encodeInt(a[0][0] + a[1][0]);
+    public int addArray2(int[][] a) {
+        return a[0][0] + a[1][0];
     }
 
-    public byte[] concatenate(char[][] s) {
+    public char[] concatenate(char[][] s) {
         char[] res = new char[6];
         System.arraycopy(s[0], 0, res, 0, s[0].length);
         System.arraycopy(s[1], 0, res, s[0].length, s[1].length);
-        return ABIEncoder.encode1DArray(res, ABIEncoder.ABITypes.CHAR);
+        return res;
     }
 
-    public byte[] swap(char[][] s) {
+    public char[][] swap(char[][] s) {
         char[][] res = new char[2][];
         res[0] = s[1];
         res[1] = s[0];
-        return ABIEncoder.encode2DArray(res, ABIEncoder.ABITypes.CHAR);
+        return res;
     }
 
     public static byte[] run() {
@@ -45,9 +45,10 @@ public class DeployAndRunTest {
     }
 
     public static byte[] encodeArgs(){
-        String methodAPI = "int addArray(int[] a)";
+        String methodName = "addArray";
         int[] a = new int[]{123, 1};
-        return ABIEncoder.encodeMethodArguments(methodAPI, a);
+        int b = 5;
+        return ABIEncoder.encodeMethodArguments(methodName, a, b);
     }
 
     public static byte[] main() throws InvalidTxDataException {

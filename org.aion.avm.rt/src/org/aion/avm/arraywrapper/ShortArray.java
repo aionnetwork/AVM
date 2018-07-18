@@ -88,4 +88,9 @@ public class ShortArray extends Array {
     public void setUnderlyingAsObject(java.lang.Object u){
         this.underlying = (short[]) u;
     }
+
+    public java.lang.Object getAsObject(int idx){
+        lazyLoad();
+        return this.underlying[idx];
+    }
 }

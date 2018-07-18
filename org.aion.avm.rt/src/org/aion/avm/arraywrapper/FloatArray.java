@@ -87,4 +87,9 @@ public class FloatArray extends Array {
     public java.lang.Object getUnderlyingAsObject(){
         return underlying;
     }
+
+    public java.lang.Object getAsObject(int idx){
+        lazyLoad();
+        return this.underlying[idx];
+    }
 }

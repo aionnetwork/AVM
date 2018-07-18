@@ -107,4 +107,9 @@ public class ByteArray extends Array {
         lazyLoad();
         return underlying;
     }
+
+    public java.lang.Object getAsObject(int idx){
+        lazyLoad();
+        return this.underlying[idx];
+    }
 }
