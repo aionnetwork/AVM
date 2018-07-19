@@ -15,7 +15,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.KernelApi;
+import org.aion.kernel.TransactionContext;
 
 
 /**
@@ -48,7 +48,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> instanceStubMap;
     // All keys in shadowConstantMap are negative values.
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> shadowConstantMap;
-    private final KernelApi kernel;
+    private final TransactionContext kernel;
     private final byte[] address;
     // We cache the method entry-point we will use to invoke the load operation on any instance.
     private final Method deserializeSelf;
@@ -58,7 +58,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private final Field instanceIdField;
     private long nextInstanceId;
 
-    public ReflectionStructureCodec(ClassLoader classLoader, KernelApi kernel, byte[] address, long nextInstanceId) {
+    public ReflectionStructureCodec(ClassLoader classLoader, TransactionContext kernel, byte[] address, long nextInstanceId) {
         this.classLoader = classLoader;
         this.instanceStubMap = new HashMap<>();
         this.shadowConstantMap = NodeEnvironment.singleton.getConstantMap();

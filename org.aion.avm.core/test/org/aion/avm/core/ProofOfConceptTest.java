@@ -23,12 +23,11 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelApiImpl;
+import org.aion.kernel.TransactionContext;
+import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -42,13 +41,6 @@ import org.junit.runner.RunWith;
 public class ProofOfConceptTest {
 
     public static class POCWallet {
-
-        private static KernelApiImpl cb;
-
-        @BeforeClass
-        public static void setupClass() {
-            cb = new KernelApiImpl();
-        }
 
         // For now, we will just reuse the from, to, and block for each call (in the future, this will change).
         private byte[] from = Helpers.randomBytes(Address.LENGTH);
@@ -80,11 +72,13 @@ public class ProofOfConceptTest {
         @Test
         public void testDeployWritesCode() {
             byte[] testWalletJar = buildTestWalletJar();
-            AvmImpl createAvm = new AvmImpl();
+
             Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
-            TransactionResult createResult = createAvm.run(createTransaction, block, cb);
+            TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+            TransactionResult createResult = new AvmImpl().run(createContext);
+
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
-            Assert.assertNotNull(cb.getTransformedCode(to));
+            Assert.assertNotNull(createContext.getTransformedCode(to));
         }
 
         /**
@@ -99,18 +93,18 @@ public class ProofOfConceptTest {
             long dailyLimit = 5000;
 
             byte[] testWalletJar = buildTestWalletJar();
-            AvmImpl createAvm = new AvmImpl();
             Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
-            TransactionResult createResult = createAvm.run(createTransaction, block, cb);
+            TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+            TransactionResult createResult = new AvmImpl().run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
 
             // contract address is stored in return data
             byte[] contractAddress = createResult.getReturnData();
 
-            AvmImpl initAvm = new AvmImpl();
             byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
             Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
-            TransactionResult initResult = initAvm.run(initTransaction, block, cb);
+            TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
+            TransactionResult initResult = new AvmImpl().run(initContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
         }
 
@@ -135,13 +129,6 @@ public class ProofOfConceptTest {
 
     public static class POCExchange {
 
-        private KernelApiImpl cb;
-
-        @Before
-        public void setup() {
-            cb = new KernelApiImpl();
-        }
-
         private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
         private long energyLimit = 5_000_000;
 
@@ -165,56 +152,52 @@ public class ProofOfConceptTest {
             }
 
             private byte[] initCoin(byte[] jar){
-                AvmImpl createAvm = new AvmImpl();
                 Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, pepeCoinAddr, 0, jar, energyLimit);
-                TransactionResult createResult = createAvm.run(createTransaction, block, cb);
+                TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+                TransactionResult createResult = new AvmImpl().run(createContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
                 return createResult.getReturnData();
             }
 
             public TransactionResult callTotalSupply() {
-                AvmImpl callAvm = new AvmImpl();
                 byte[] args = new byte[1];
                 AionTokenAbi.Encoder encoder = AionTokenAbi.buildEncoder(args);
                 encoder.encodeByte(AionTokenAbi.kICO_totalSupply);
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-                TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+                TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+                TransactionResult callResult = new AvmImpl().run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
             private TransactionResult callBalanceOf(byte[] toQuery) {
-                AvmImpl callAvm = new AvmImpl();
-
                 byte[] args = new byte[1 + Address.LENGTH];
                 AionTokenAbi.Encoder encoder = AionTokenAbi.buildEncoder(args);
                 encoder.encodeByte(AionTokenAbi.kICO_balanceOf);
                 encoder.encodeAddress(new Address(toQuery));
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-                TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+                TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+                TransactionResult callResult = new AvmImpl().run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
             private TransactionResult callOpenAccount(byte[] toOpen) {
-                AvmImpl callAvm = new AvmImpl();
-
                 byte[] args = new byte[1 + Address.LENGTH];
                 AionTokenAbi.Encoder encoder = AionTokenAbi.buildEncoder(args);
                 encoder.encodeByte(AionTokenAbi.kICO_openAccount);
                 encoder.encodeAddress(new Address(toOpen));
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-                TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+                TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+                TransactionResult callResult = new AvmImpl().run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
             private TransactionResult callMint(byte[] receiver) {
-                AvmImpl callAvm = new AvmImpl();
-
                 byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
                 AionTokenAbi.Encoder encoder = AionTokenAbi.buildEncoder(args);
                 encoder.encodeByte(AionTokenAbi.kICO_mint);
@@ -222,14 +205,13 @@ public class ProofOfConceptTest {
                 encoder.encodeLong(5000L);
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-                TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+                TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+                TransactionResult callResult = new AvmImpl().run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
             private TransactionResult callTransfer(byte[] sender, byte[] receiver, long amount) {
-                AvmImpl callAvm = new AvmImpl();
-
                 byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
                 AionTokenAbi.Encoder encoder = AionTokenAbi.buildEncoder(args);
                 encoder.encodeByte(AionTokenAbi.kICO_transfer);
@@ -237,14 +219,13 @@ public class ProofOfConceptTest {
                 encoder.encodeLong(amount);
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit);
-                TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+                TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+                TransactionResult callResult = new AvmImpl().run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
             private TransactionResult callAllowance(byte[] owner, byte[] spender) {
-                AvmImpl callAvm = new AvmImpl();
-
                 byte[] args = new byte[1 + Address.LENGTH + Address.LENGTH];
                 AionTokenAbi.Encoder encoder = AionTokenAbi.buildEncoder(args);
                 encoder.encodeByte(AionTokenAbi.kICO_allowance);
@@ -252,14 +233,13 @@ public class ProofOfConceptTest {
                 encoder.encodeAddress(new Address(spender));
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-                TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+                TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+                TransactionResult callResult = new AvmImpl().run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
             private TransactionResult callApprove(byte[] owner, byte[] spender, long amount) {
-                AvmImpl callAvm = new AvmImpl();
-
                 byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
                 AionTokenAbi.Encoder encoder = AionTokenAbi.buildEncoder(args);
                 encoder.encodeByte(AionTokenAbi.kICO_approve);
@@ -267,14 +247,13 @@ public class ProofOfConceptTest {
                 encoder.encodeLong(amount);
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, addr, 0, args, energyLimit);
-                TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+                TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+                TransactionResult callResult = new AvmImpl().run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
             private TransactionResult callTransferFrom(byte[] executor, byte[] from, byte[] to, long amount) {
-                AvmImpl callAvm = new AvmImpl();
-
                 byte[] args = new byte[1 + Address.LENGTH + Address.LENGTH + Long.BYTES];
                 AionTokenAbi.Encoder encoder = AionTokenAbi.buildEncoder(args);
                 encoder.encodeByte(AionTokenAbi.kICO_transferFrom);
@@ -283,7 +262,8 @@ public class ProofOfConceptTest {
                 encoder.encodeLong(amount);
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, executor, addr, 0, args, energyLimit);
-                TransactionResult callResult = callAvm.run(callTransaction, block, cb);
+                TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+                TransactionResult callResult = new AvmImpl().run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }

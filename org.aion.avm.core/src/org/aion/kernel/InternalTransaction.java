@@ -5,7 +5,19 @@ package org.aion.kernel;
  */
 public class InternalTransaction extends Transaction {
 
-    public InternalTransaction(Type type, byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
+    private Transaction parent;
+    private boolean rejected ;
+
+    public InternalTransaction(Type type, byte[] from, byte[] to, long value, byte[] data, long energyLimit, Transaction parent) {
         super(type, from, to, value, data, energyLimit);
+        this.parent = parent;
+    }
+
+    public void markAsRejected() {
+        this.rejected = true;
+    }
+
+    public boolean isRejected() {
+        return rejected;
     }
 }

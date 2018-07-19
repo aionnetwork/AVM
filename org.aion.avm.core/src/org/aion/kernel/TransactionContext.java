@@ -4,7 +4,11 @@ package org.aion.kernel;
 /**
  * Interface for accessing kernel features.
  */
-public interface KernelApi {
+public interface TransactionContext {
+
+    Transaction getTransaction();
+
+    Block getBlock();
 
     void putTransformedCode(byte[] address, DappCode.CodeVersion version, byte[] code);
 

@@ -23,7 +23,7 @@ import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelApi;
+import org.aion.kernel.TransactionContext;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 import org.aion.kernel.DappCode;
@@ -227,10 +227,10 @@ public class AvmImpl implements Avm {
 
         private Transaction tx;
         private Block block;
-        private KernelApi cb;
+        private TransactionContext cb;
         private IHelper helper;
 
-        public BlockchainRuntimeImpl(Transaction tx, Block block, KernelApi cb, IHelper helper) {
+        public BlockchainRuntimeImpl(Transaction tx, Block block, TransactionContext cb, IHelper helper) {
             this.tx = tx;
             this.block = block;
             this.cb = cb;
@@ -314,7 +314,10 @@ public class AvmImpl implements Avm {
     }
 
     @Override
-    public TransactionResult run(Transaction tx, Block block, KernelApi cb) {
+    public TransactionResult run(TransactionContext ctx) {
+
+        Transaction tx = ctx.getTransaction();
+        Block block = ctx.getBlock();
 
         // only one result (mutable) shall be created per transaction execution
         TransactionResult result = new TransactionResult();
@@ -323,10 +326,10 @@ public class AvmImpl implements Avm {
 
         switch (tx.getType()) {
             case CREATE:
-                create(tx, block, cb, result);
+                create(tx, block, ctx, result);
                 break;
             case CALL:
-                call(tx, block, cb, result);
+                call(tx, block, ctx, result);
                 break;
             default:
                 result.setStatusCode(TransactionResult.Code.INVALID_TX);
@@ -337,7 +340,7 @@ public class AvmImpl implements Avm {
         return result;
     }
 
-    public void create(Transaction tx, Block block, KernelApi cb, TransactionResult result) {
+    public void create(Transaction tx, Block block, TransactionContext cb, TransactionResult result) {
         try {
             // read dapp module
             byte[] dappAddress = tx.getTo(); // TODO: The contract address should be computed based on consensus rules
@@ -441,7 +444,7 @@ public class AvmImpl implements Avm {
         }
     }
 
-    public void call(Transaction tx, Block block, KernelApi cb, TransactionResult result) {
+    public void call(Transaction tx, Block block, TransactionContext cb, TransactionResult result) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
         ImmortalDappModule app;

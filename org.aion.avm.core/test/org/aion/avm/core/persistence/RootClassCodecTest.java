@@ -5,7 +5,7 @@ import java.util.Arrays;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
-import org.aion.kernel.KernelApiImpl;
+import org.aion.kernel.TransactionContextImpl;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,14 +49,14 @@ public class RootClassCodecTest {
         RootClassCodecTarget.s_six = 5.0f;
         RootClassCodecTarget.s_seven = 5;
         RootClassCodecTarget.s_eight = 5.0d;
-        
-        KernelApiImpl kernel = new KernelApiImpl();
+
+        TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
                 // ReflectionStructureCodecTarget
@@ -111,12 +111,12 @@ public class RootClassCodecTest {
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
                 0x0, 0x0, 0x0, 0x0, //s_nine (null)
         };
-        KernelApiImpl kernel = new KernelApiImpl();
+        TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
-        kernel.putStorage(address, StorageKeys.CLASS_STATICS, expected);
+        context.putStorage(address, StorageKeys.CLASS_STATICS, expected);
         
         // Populate the classes.
-        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
+        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), context, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -152,13 +152,13 @@ public class RootClassCodecTest {
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
-        KernelApiImpl kernel = new KernelApiImpl();
+        TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class));
         // We serialized a single instance so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(1 + initialInstanceId, nextInstanceId);
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
                 // ReflectionStructureCodecTarget
@@ -224,20 +224,20 @@ public class RootClassCodecTest {
         ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_five = 42;
         ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine = ReflectionStructureCodecTarget.s_nine;
         
-        KernelApiImpl kernel = new KernelApiImpl();
+        TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
         // We serialized 2 instances so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(2 + initialInstanceId, nextInstanceId);
         // Check the size of the saved static data (should only store local copies of statics, not superclass statics, per class).
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
         // (note that this is "309" if the superclass static fields are redundantly stored in sub-classes).
         Assert.assertEquals(207, result.length);
         
         // Now, clear the class states and reload this.
         clearStaticState();
-        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), context, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -284,7 +284,7 @@ public class RootClassCodecTest {
         Assert.assertTrue(ReflectionStructureCodecTarget.s_nine == ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine);
         
         // Re-serialize these to prove that the instanceId doesn't increment (since we aren't adding any new objects to the graph).
-        long finalInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), nextInstanceId, kernel, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        long finalInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), nextInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
         // We serialized 2 instances so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(nextInstanceId, finalInstanceId);
     }
@@ -296,13 +296,13 @@ public class RootClassCodecTest {
     public void serializeDeserializeReferenceToJdkConstant() {
         RootClassCodecTarget.s_nine = org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN;
         
-        KernelApiImpl kernel = new KernelApiImpl();
+        TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(RootClassCodecTarget.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
                 // RootClassCodecTarget
@@ -321,7 +321,7 @@ public class RootClassCodecTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), kernel, address, Arrays.asList(RootClassCodecTarget.class));
+        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), context, address, Arrays.asList(RootClassCodecTarget.class));
         Assert.assertTrue(org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN == RootClassCodecTarget.s_nine);
     }
 
@@ -333,13 +333,13 @@ public class RootClassCodecTest {
         org.aion.avm.shadow.java.lang.Class<?> originalClassRef = IHelper.currentContractHelper.get().externalWrapAsClass(String.class);
         RootClassCodecTarget.s_nine = originalClassRef;
         
-        KernelApiImpl kernel = new KernelApiImpl();
+        TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(RootClassCodecTarget.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
                 // RootClassCodecTarget
@@ -359,7 +359,7 @@ public class RootClassCodecTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), kernel, address, Arrays.asList(RootClassCodecTarget.class));
+        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), context, address, Arrays.asList(RootClassCodecTarget.class));
         Assert.assertTrue(originalClassRef == RootClassCodecTarget.s_nine);
     }
 
@@ -370,13 +370,13 @@ public class RootClassCodecTest {
     public void serializeDeserializeReferenceToConstantClass() {
         RootClassCodecTarget.s_nine = org.aion.avm.shadow.java.lang.Byte.avm_TYPE;
         
-        KernelApiImpl kernel = new KernelApiImpl();
+        TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, kernel, address, Arrays.asList(RootClassCodecTarget.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
                 // RootClassCodecTarget
@@ -395,7 +395,7 @@ public class RootClassCodecTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), kernel, address, Arrays.asList(RootClassCodecTarget.class));
+        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), context, address, Arrays.asList(RootClassCodecTarget.class));
         Assert.assertTrue(org.aion.avm.shadow.java.lang.Byte.avm_TYPE == RootClassCodecTarget.s_nine);
     }
 

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
 
-import org.aion.kernel.KernelApi;
+import org.aion.kernel.TransactionContext;
 
 
 /**
@@ -25,7 +25,7 @@ public class RootClassCodec {
      * @param address The address of the contract.
      * @param classes The list of classes to populate (order must always be the same).
      */
-    public static void populateClassStaticsFromStorage(ClassLoader loader, KernelApi cb, byte[] address, List<Class<?>> classes) {
+    public static void populateClassStaticsFromStorage(ClassLoader loader, TransactionContext cb, byte[] address, List<Class<?>> classes) {
         // Create the codec which will make up the long-lived deserialization approach, within the system.
         ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, cb, address, 0);
         
@@ -49,7 +49,7 @@ public class RootClassCodec {
      * @param classes The list of classes to save (order must always be the same).
      * @return The new nextInstanceId to save for the next invocation.
      */
-    public static long saveClassStaticsToStorage(ClassLoader loader, long nextInstanceId, KernelApi cb, byte[] address, List<Class<?>> classes) {
+    public static long saveClassStaticsToStorage(ClassLoader loader, long nextInstanceId, TransactionContext cb, byte[] address, List<Class<?>> classes) {
         // Build the encoder.
         ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, cb, address, nextInstanceId);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();

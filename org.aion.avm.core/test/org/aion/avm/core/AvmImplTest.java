@@ -8,7 +8,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelApiImpl;
+import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 import org.junit.BeforeClass;
@@ -102,33 +102,40 @@ public class AvmImplTest {
     private IHelper currentContractHelper = null;
     private long currentEnergyLeft = 0;
 
+
+    private class CustomContext extends TransactionContextImpl {
+
+        public CustomContext(Transaction tx, Block block) {
+            super(tx, block);
+        }
+
+        @Override
+        public TransactionResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
+            currentContractHelper = IHelper.currentContractHelper.get();
+            currentEnergyLeft = currentContractHelper.externalGetEnergyRemaining();
+
+            TransactionResult result = super.call(from, to, value, data, energyLimit);
+            result.setEnergyUsed(energyLimit / 2);
+
+            return result;
+        }
+    }
+
     @Test
     public void testHelperStateRestore() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmImplTestResource.class);
-        KernelApiImpl kernel = new KernelApiImpl() {
-            public TransactionResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
-                currentContractHelper = IHelper.currentContractHelper.get();
-                currentEnergyLeft = currentContractHelper.externalGetEnergyRemaining();
-
-                TransactionResult result = super.call(from, to, value, data, energyLimit);
-                result.setEnergyUsed(energyLimit / 2);
-
-                return result;
-            }
-        };
-        kernel.block = block;
 
         // deploy
         Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, jar, 1000000);
         AvmImpl avm1 = new AvmImpl();
-        TransactionResult result1 = avm1.run(tx1, block, kernel);
+        TransactionResult result1 = avm1.run(new CustomContext(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
         assertArrayEquals(Helpers.address(2), result1.getReturnData());
 
         // call (1 -> 2 -> 2)
         Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(2), 1000000);
         AvmImpl avm2 = new AvmImpl();
-        TransactionResult result2 = avm2.run(tx2, block, kernel);
+        TransactionResult result2 = avm2.run(new CustomContext(tx2, block));
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
 

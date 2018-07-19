@@ -5,35 +5,47 @@ import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ArrayList;
 
 
-public class KernelApiImpl implements KernelApi {
+public class TransactionContextImpl implements TransactionContext {
 
-    private DappCode codeStorage = new DappCode();
-    private Map<ByteArrayWrapper, byte[]> dappStorage = new HashMap<>();
-    private ArrayList<String> logStorage = new ArrayList<>();
+    // shared across-context
+    private static DappCode dappCode = new DappCode();
+    private static Map<ByteArrayWrapper, byte[]> dappStorage = new HashMap<>();
 
-    public Block block = null;
+    // TODO: either move this to transaction result; or we make transaction result immutable by moving all dynamic info to context
+    private ArrayList<String> logs = new ArrayList<>();
 
-    public KernelApiImpl(Block cb){
-        block = cb;
+    private Transaction tx;
+    private Block block;
+
+    public TransactionContextImpl(Transaction tx, Block block){
+        this.tx = tx;
+        this.block = block;
     }
 
-    public KernelApiImpl(){
+    @Override
+    public Transaction getTransaction() {
+        return tx;
+    }
+
+    @Override
+    public Block getBlock() {
+        return block;
     }
 
     @Override
     public void putTransformedCode(byte[] address, DappCode.CodeVersion version, byte[] code) {
-        codeStorage.storeCode(address, version, code);
+        dappCode.storeCode(address, version, code);
     }
 
     // TODO: return both version and the file
     @Override
     public byte[] getTransformedCode(byte[] address) {
-        return codeStorage.loadCode(address);
+        return dappCode.loadCode(address);
     }
 
     @Override
@@ -52,9 +64,8 @@ public class KernelApiImpl implements KernelApi {
     public TransactionResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
         Assert.assertTrue(block != null);
 
-        Transaction internalTx = new Transaction(Transaction.Type.CALL, from, to, value, data, energyLimit);
-        AvmImpl avm = new AvmImpl();
-        return avm.run(internalTx, block, this); // TODO: passing this instance is wrong
+        Transaction internalTx = new InternalTransaction(Transaction.Type.CALL, from, to, value, data, energyLimit, tx);
+        return new AvmImpl().run(new TransactionContextImpl(internalTx, block));
     }
 
     @Override
@@ -73,11 +84,11 @@ public class KernelApiImpl implements KernelApi {
         logBuilder.append("Address: " + Helpers.toHexString(address) + "\n");
         logBuilder.append("Source: " + new String(index0)+ "\n");
         logBuilder.append("Data: " + new String(data)+ "\n");
-        logStorage.add(logBuilder.toString());
+        logs.add(logBuilder.toString());
     }
 
     public void printLog() {
-        for (String s: logStorage){
+        for (String s: logs){
             System.out.println(s);
         }
     }
