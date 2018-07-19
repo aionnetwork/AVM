@@ -18,11 +18,9 @@ public interface TransactionContext {
 
     byte[] getStorage(byte[] address, byte[] key);
 
-    TransactionResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit);
+    TransactionResult call(InternalTransaction internalTx);
 
     void updateCode(byte[] address, byte[] code);
 
     void selfdestruct(byte[] address, byte[] beneficiary);
-
-    void log(byte[] address, byte[] index0, byte[] data);
 }

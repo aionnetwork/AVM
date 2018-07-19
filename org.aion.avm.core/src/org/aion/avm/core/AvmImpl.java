@@ -23,6 +23,8 @@ import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
 import org.aion.kernel.Block;
+import org.aion.kernel.InternalTransaction;
+import org.aion.kernel.Log;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
@@ -225,16 +227,20 @@ public class AvmImpl implements Avm {
 
     public static class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object implements IBlockchainRuntime {
 
+        private TransactionContext context;
+        private IHelper helper;
+        private TransactionResult result;
+
         private Transaction tx;
         private Block block;
-        private TransactionContext cb;
-        private IHelper helper;
 
-        public BlockchainRuntimeImpl(Transaction tx, Block block, TransactionContext cb, IHelper helper) {
-            this.tx = tx;
-            this.block = block;
-            this.cb = cb;
+        public BlockchainRuntimeImpl(TransactionContext context, IHelper helper, TransactionResult result) {
+            this.context = context;
             this.helper = helper;
+            this.result = result;
+
+            this.tx = context.getTransaction();
+            this.block = context.getBlock();
         }
 
         @Override
@@ -260,22 +266,22 @@ public class AvmImpl implements Avm {
 
         @Override
         public ByteArray avm_getStorage(ByteArray key) {
-            return new ByteArray(cb.getStorage(tx.getTo(), key.getUnderlying()));
+            return new ByteArray(context.getStorage(tx.getTo(), key.getUnderlying()));
         }
 
         @Override
         public void avm_putStorage(ByteArray key, ByteArray value) {
-            cb.putStorage(tx.getTo(), key.getUnderlying(), value.getUnderlying());
+            context.putStorage(tx.getTo(), key.getUnderlying(), value.getUnderlying());
         }
 
         @Override
         public void avm_updateCode(ByteArray newCode) {
-            cb.updateCode(tx.getTo(), newCode.getUnderlying());
+            context.updateCode(tx.getTo(), newCode.getUnderlying());
         }
 
         @Override
         public void avm_selfDestruct(Address beneficiary) {
-            cb.selfdestruct(tx.getTo(), beneficiary.unwrap());
+            context.selfdestruct(tx.getTo(), beneficiary.unwrap());
         }
 
         @Override
@@ -296,20 +302,36 @@ public class AvmImpl implements Avm {
 
         @Override
         public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
-            TransactionResult result = cb.call(tx.getTo(), targetAddress.unwrap(), value, data.getUnderlying(), energyLimit);
+            // construct the internal transaction
+            InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL,
+                    tx.getTo(),
+                    targetAddress.unwrap(),
+                    value,
+                    data.getUnderlying(),
+                    energyLimit,
+                    tx);
+            result.addInternalTransaction(internalTx);
 
-            // Reset the thread-local helper instance
+            // execute the internal transaction
+            TransactionResult newResult = context.call(internalTx);
+
+            // merge the results
+            result.merge(newResult);
+
+            // reset the thread-local helper instance
             IHelper.currentContractHelper.set(helper);
 
             // charge energy consumed
-            helper.externalChargeEnergy(result.getEnergyUsed());
+            helper.externalChargeEnergy(newResult.getEnergyUsed());
 
-            return new ByteArray(result.getReturnData());
+            return new ByteArray(newResult.getReturnData());
         }
 
         @Override
         public void avm_log(ByteArray index0, ByteArray data) {
-            cb.log(tx.getTo(), index0.getUnderlying(), data.getUnderlying());
+            Log log = new Log(tx.getTo(), List.of(index0.getUnderlying()), data.getUnderlying());
+
+            result.addLog(log);
         }
     }
 
@@ -340,7 +362,7 @@ public class AvmImpl implements Avm {
         return result;
     }
 
-    public void create(Transaction tx, Block block, TransactionContext cb, TransactionResult result) {
+    public void create(Transaction tx, Block block, TransactionContext ctx, TransactionResult result) {
         try {
             // read dapp module
             byte[] dappAddress = tx.getTo(); // TODO: The contract address should be computed based on consensus rules
@@ -373,7 +395,7 @@ public class AvmImpl implements Avm {
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
             IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), nextHashCode);
-            Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(tx, block, cb, helper));
+            Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(ctx, helper, result));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
@@ -395,7 +417,7 @@ public class AvmImpl implements Avm {
 
             // store transformed dapp
             byte[] immortalDappJar = immortalDapp.createJar(dappAddress);
-            cb.putTransformedCode(dappAddress, VERSION, immortalDappJar);
+            ctx.putTransformedCode(dappAddress, VERSION, immortalDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * tx.getData().length);
@@ -416,9 +438,9 @@ public class AvmImpl implements Avm {
             // -first, save out the classes
             // TODO: Make this fully walk the graph
             long initialInstanceId = 1l;
-            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(classLoader, initialInstanceId, cb, dappAddress, getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()));
+            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(classLoader, initialInstanceId, ctx, dappAddress, getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()));
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
+            ContractEnvironmentState.saveToStorage(ctx, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
             // TODO: whether we should return the dapp address is subject to change
             result.setStatusCode(TransactionResult.Code.SUCCESS);
@@ -444,12 +466,12 @@ public class AvmImpl implements Avm {
         }
     }
 
-    public void call(Transaction tx, Block block, TransactionContext cb, TransactionResult result) {
+    public void call(Transaction tx, Block block, TransactionContext ctx, TransactionResult result) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
         ImmortalDappModule app;
         try {
-            byte[] immortalDappJar = cb.getTransformedCode(dappAddress);
+            byte[] immortalDappJar = ctx.getTransformedCode(dappAddress);
             app = ImmortalDappModule.readFromJar(immortalDappJar);
         } catch (IOException e) {
             result.setStatusCode(TransactionResult.Code.INVALID_CALL);
@@ -467,14 +489,14 @@ public class AvmImpl implements Avm {
         List<Class<?>> aphabeticalContractClasses = getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
 
         // Load the initial state of the environment.
-        ContractEnvironmentState initialState = ContractEnvironmentState.loadFromStorage(cb, dappAddress);
+        ContractEnvironmentState initialState = ContractEnvironmentState.loadFromStorage(ctx, dappAddress);
         
         // TODO:  We might be able to move this setup of IHelper to later in the load once we get rid of the <clinit> (requires energy).
         IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), initialState.nextHashCode);
-        Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(tx, block, cb, helper));
+        Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(ctx, helper, result));
 
         // Now that we can load classes for the contract, load and populate all their classes.
-        RootClassCodec.populateClassStaticsFromStorage(classLoader, cb, dappAddress, aphabeticalContractClasses);
+        RootClassCodec.populateClassStaticsFromStorage(classLoader, ctx, dappAddress, aphabeticalContractClasses);
 
         // load class
         try {
@@ -488,9 +510,9 @@ public class AvmImpl implements Avm {
             // -first, save out the classes
             // TODO: Make this fully walk the graph
             // TODO: Get the updated "nextInstanceId" after everything is written to storage.
-            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(classLoader, initialState.nextInstanceId, cb, dappAddress, aphabeticalContractClasses);
+            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(classLoader, initialState.nextInstanceId, ctx, dappAddress, aphabeticalContractClasses);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
+            ContractEnvironmentState.saveToStorage(ctx, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setReturnData(ret);

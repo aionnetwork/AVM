@@ -7,6 +7,7 @@ import org.aion.avm.core.util.Helpers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -16,13 +17,10 @@ public class TransactionContextImpl implements TransactionContext {
     private static DappCode dappCode = new DappCode();
     private static Map<ByteArrayWrapper, byte[]> dappStorage = new HashMap<>();
 
-    // TODO: either move this to transaction result; or we make transaction result immutable by moving all dynamic info to context
-    private ArrayList<String> logs = new ArrayList<>();
-
     private Transaction tx;
     private Block block;
 
-    public TransactionContextImpl(Transaction tx, Block block){
+    public TransactionContextImpl(Transaction tx, Block block) {
         this.tx = tx;
         this.block = block;
     }
@@ -61,10 +59,7 @@ public class TransactionContextImpl implements TransactionContext {
     }
 
     @Override
-    public TransactionResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
-        Assert.assertTrue(block != null);
-
-        Transaction internalTx = new InternalTransaction(Transaction.Type.CALL, from, to, value, data, energyLimit, tx);
+    public TransactionResult call(InternalTransaction internalTx) {
         return new AvmImpl().run(new TransactionContextImpl(internalTx, block));
     }
 
@@ -76,20 +71,5 @@ public class TransactionContextImpl implements TransactionContext {
     @Override
     public void selfdestruct(byte[] address, byte[] beneficiary) {
 
-    }
-
-    @Override
-    public void log(byte[] address, byte[] index0, byte[] data) {
-        StringBuilder logBuilder = new StringBuilder();
-        logBuilder.append("Address: " + Helpers.toHexString(address) + "\n");
-        logBuilder.append("Source: " + new String(index0)+ "\n");
-        logBuilder.append("Data: " + new String(data)+ "\n");
-        logs.add(logBuilder.toString());
-    }
-
-    public void printLog() {
-        for (String s: logs){
-            System.out.println(s);
-        }
     }
 }

@@ -36,6 +36,22 @@ public class TransactionResult {
      */
     private List<InternalTransaction> internalTransactions = new ArrayList<>();
 
+    public void merge(TransactionResult other) {
+        internalTransactions.addAll(other.getInternalTransactions());
+
+        if (other.statusCode == Code.SUCCESS) {
+            logs.addAll(other.getLogs());
+        }
+    }
+
+    public void addLog(Log log) {
+        this.logs.add(log);
+    }
+
+    public void addInternalTransaction(InternalTransaction tx) {
+        this.internalTransactions.add(tx);
+    }
+
     public TransactionResult() {
         this.statusCode = Code.SUCCESS;
     }

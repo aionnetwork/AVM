@@ -8,6 +8,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.kernel.Block;
+import org.aion.kernel.InternalTransaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
@@ -110,12 +111,12 @@ public class AvmImplTest {
         }
 
         @Override
-        public TransactionResult call(byte[] from, byte[] to, long value, byte[] data, long energyLimit) {
+        public TransactionResult call(InternalTransaction internalTx) {
             currentContractHelper = IHelper.currentContractHelper.get();
             currentEnergyLeft = currentContractHelper.externalGetEnergyRemaining();
 
-            TransactionResult result = super.call(from, to, value, data, energyLimit);
-            result.setEnergyUsed(energyLimit / 2);
+            TransactionResult result = super.call(internalTx);
+            result.setEnergyUsed(internalTx.getEnergyLimit() / 2);
 
             return result;
         }
