@@ -7,14 +7,23 @@ import org.aion.avm.core.util.Helpers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
 
 
 public class KernelApiImpl implements KernelApi {
 
     private TransformedDappStorage codeStorage = new TransformedDappStorage();
     private Map<ByteArrayWrapper, byte[]> dappStorage = new HashMap<>();
+    private ArrayList<String> logStorage = new ArrayList<>();
 
     public Block block = null;
+
+    public KernelApiImpl(Block cb){
+        block = cb;
+    }
+
+    public KernelApiImpl(){
+    }
 
     @Override
     public void putTransformedCode(byte[] address, TransformedDappStorage.CodeVersion version, byte[] code) {
@@ -60,6 +69,16 @@ public class KernelApiImpl implements KernelApi {
 
     @Override
     public void log(byte[] address, byte[] index0, byte[] data) {
+        StringBuilder logBuilder = new StringBuilder();
+        logBuilder.append("Address: " + Helpers.toHexString(address) + "\n");
+        logBuilder.append("Source: " + new String(index0)+ "\n");
+        logBuilder.append("Data: " + new String(data)+ "\n");
+        logStorage.add(logBuilder.toString());
+    }
 
+    public void printLog() {
+        for (String s: logStorage){
+            System.out.println(s);
+        }
     }
 }
