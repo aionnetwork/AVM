@@ -98,5 +98,6 @@ public class Address extends Object {
     // Support for deserialization
     public Address(IDeserializer deserializer, long instanceId) {
         super(deserializer, instanceId);
+        lazyLoad();
     }
 }
