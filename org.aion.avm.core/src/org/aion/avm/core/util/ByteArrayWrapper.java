@@ -1,7 +1,5 @@
 package org.aion.avm.core.util;
 
-import org.aion.kernel.TransformedDappStorage;
-
 import java.util.Arrays;
 
 /**

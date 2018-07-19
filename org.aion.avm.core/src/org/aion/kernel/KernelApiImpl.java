@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class KernelApiImpl implements KernelApi {
 
-    private TransformedDappStorage codeStorage = new TransformedDappStorage();
+    private DappCode codeStorage = new DappCode();
     private Map<ByteArrayWrapper, byte[]> dappStorage = new HashMap<>();
     private ArrayList<String> logStorage = new ArrayList<>();
 
@@ -26,7 +26,7 @@ public class KernelApiImpl implements KernelApi {
     }
 
     @Override
-    public void putTransformedCode(byte[] address, TransformedDappStorage.CodeVersion version, byte[] code) {
+    public void putTransformedCode(byte[] address, DappCode.CodeVersion version, byte[] code) {
         codeStorage.storeCode(address, version, code);
     }
 

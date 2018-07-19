@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * An emulator of the transformed Dapp Jar storage.
  */
-public class TransformedDappStorage {
+public class DappCode {
     /**
      * An enum of the code version.
      */
@@ -28,24 +28,24 @@ public class TransformedDappStorage {
     }
 
     /**
-     * DappStorage includes the code version and the transformed jar file.
+     * Dapp includes the code version and the transformed jar file.
      */
-    public class DappStorage {
+    public class Dapp {
         private CodeVersion version;
         private byte[] jarFile;
 
-        public DappStorage(CodeVersion version, byte[] jarFile) {
+        public Dapp(CodeVersion version, byte[] jarFile) {
             this.version = version;
             this.jarFile = jarFile;
         }
     }
 
-    private Map<ByteArrayWrapper, DappStorage> codeStorage;
+    private Map<ByteArrayWrapper, Dapp> codeStorage;
 
     /**
      * Constructor.
      */
-    public TransformedDappStorage() {
+    public DappCode() {
         this.codeStorage = new HashMap<>();
     }
 
@@ -56,7 +56,7 @@ public class TransformedDappStorage {
      * @param codeJar the Jar file of the transformed code.
      */
     public void storeCode(byte[] address, CodeVersion version, byte[] codeJar) {
-        codeStorage.put(new ByteArrayWrapper(address), new DappStorage(version, codeJar));
+        codeStorage.put(new ByteArrayWrapper(address), new Dapp(version, codeJar));
     }
 
     /**

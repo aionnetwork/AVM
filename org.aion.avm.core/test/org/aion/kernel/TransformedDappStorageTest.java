@@ -13,9 +13,9 @@ public class TransformedDappStorageTest {
         byte[] byteArray1 = Helpers.randomBytes(Address.LENGTH);
         byte[] byteArray2 = byteArray1.clone();
 
-        TransformedDappStorage codeStorage = new TransformedDappStorage();
-        codeStorage.storeCode(byteArray1, TransformedDappStorage.CodeVersion.VERSION_1_0, new byte[] {0x0});
-        assertEquals(TransformedDappStorage.CodeVersion.VERSION_1_0, codeStorage.getCodeVersion(byteArray2));
+        DappCode codeStorage = new DappCode();
+        codeStorage.storeCode(byteArray1, DappCode.CodeVersion.VERSION_1_0, new byte[] {0x0});
+        assertEquals(DappCode.CodeVersion.VERSION_1_0, codeStorage.getCodeVersion(byteArray2));
     }
 
 }

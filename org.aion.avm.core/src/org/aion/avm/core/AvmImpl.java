@@ -26,7 +26,7 @@ import org.aion.kernel.Block;
 import org.aion.kernel.KernelApi;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
-import org.aion.kernel.TransformedDappStorage;
+import org.aion.kernel.DappCode;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -38,7 +38,7 @@ import java.util.*;
 public class AvmImpl implements Avm {
     private static final String HELPER_CLASS = PackageConstants.kInternalSlashPrefix + "Helper";
 
-    private static final TransformedDappStorage.CodeVersion VERSION = TransformedDappStorage.CodeVersion.VERSION_1_0;
+    private static final DappCode.CodeVersion VERSION = DappCode.CodeVersion.VERSION_1_0;
 
     /**
      * Validates all classes, including but not limited to:

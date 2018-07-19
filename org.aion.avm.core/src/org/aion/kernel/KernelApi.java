@@ -6,7 +6,7 @@ package org.aion.kernel;
  */
 public interface KernelApi {
 
-    void putTransformedCode(byte[] address, TransformedDappStorage.CodeVersion version, byte[] code);
+    void putTransformedCode(byte[] address, DappCode.CodeVersion version, byte[] code);
 
     byte[] getTransformedCode(byte[] address);
 
