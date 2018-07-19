@@ -9,6 +9,7 @@ import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
+import org.aion.avm.core.miscvisitors.ClinitStrippingVisitor;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
@@ -360,9 +361,23 @@ public class AvmImpl implements Avm {
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
                     + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * rawDapp.bytecodeSize * (1 + rawDapp.numberOfClasses) / 10);
 
+            // Create the immortal version of the transformed DApp code by stripping the <clinit>.
+            Map<String, byte[]> immortalClasses = new HashMap<>();
+            for (Map.Entry<String, byte[]> elt : transformedClasses.entrySet()) {
+                String className = elt.getKey();
+                byte[] transformedClass = elt.getValue();
+                byte[] immortalClass = new ClassToolchain.Builder(transformedClass, 0)
+                        .addNextVisitor(new ClinitStrippingVisitor())
+                        .addWriter(new ClassWriter(0))
+                        .build()
+                        .runAndGetBytecode();
+                immortalClasses.put(className, immortalClass);
+            }
+            ImmortalDappModule immortalDapp = ImmortalDappModule.fromImmortalClasses(immortalClasses, transformedDapp.mainClass);
+
             // store transformed dapp
-            byte[] transformedDappJar = transformedDapp.createJar(dappAddress);
-            cb.putTransformedCode(dappAddress, VERSION, transformedDappJar);
+            byte[] immortalDappJar = immortalDapp.createJar(dappAddress);
+            cb.putTransformedCode(dappAddress, VERSION, immortalDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * tx.getData().length);
@@ -412,10 +427,10 @@ public class AvmImpl implements Avm {
     public TransactionResult call(Transaction tx, Block block, KernelApi cb) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
-        TransformedDappModule app;
+        ImmortalDappModule app;
         try {
-            byte[] transformedDappJar = cb.getTransformedCode(dappAddress);
-            app = TransformedDappModule.readFromJar(transformedDappJar);
+            byte[] immortalDappJar = cb.getTransformedCode(dappAddress);
+            app = ImmortalDappModule.readFromJar(immortalDappJar);
         } catch (IOException e) {
             return new TransactionResult(TransactionResult.Code.INVALID_CALL, 0);
         }
