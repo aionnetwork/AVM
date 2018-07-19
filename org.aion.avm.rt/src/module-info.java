@@ -6,5 +6,4 @@ module org.aion.avm.rt {
     exports org.aion.avm.shadow.java.lang.invoke;
     exports org.aion.avm.shadow.java.math;
     exports org.aion.avm.api;
-    exports org.aion.avm.userlib;
 }

@@ -15,6 +15,9 @@
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.api/build.xml" target="clean">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.userlib/build.xml" target="clean">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
         <delete dir="${dir.global.build}"/>
     </target>
 
@@ -23,6 +26,9 @@
 
         <delete dir="${dir.global.build.main}"/>
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.rt/build.xml" target="clean_buildmain">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.userlib/build.xml" target="clean_buildmain">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.core/build.xml" target="clean_buildmain">
@@ -36,7 +42,7 @@
     <target name="test">
         <echo message="Building tests for ${ant.project.name}..."/>
 
-        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.rt/build.xml" target="test">
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.userlib/build.xml" target="test">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.core/build.xml" target="test">

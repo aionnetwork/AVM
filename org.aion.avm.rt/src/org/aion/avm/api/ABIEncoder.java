@@ -102,11 +102,15 @@ public class ABIEncoder{
         // copy the method name
         int pos = (methodName + "<").getBytes().length;
         System.arraycopy((methodName + "<").getBytes(), 0, ret, 0, pos);
+
+        // copy the descriptors
         for (int idx = 0; idx < arguments.length(); pos += encodedData[idx][0].length, idx ++) {
             System.arraycopy(encodedData[idx][0], 0, ret, pos, encodedData[idx][0].length);
         }
         System.arraycopy(">".getBytes(), 0, ret, pos, ">".getBytes().length);
         pos += ">".getBytes().length;
+
+        // copy the encoded data
         for (int idx = 0; idx < arguments.length(); pos += encodedData[idx][1].length, idx ++) {
             System.arraycopy(encodedData[idx][1], 0, ret, pos, encodedData[idx][1].length);
         }
