@@ -2,6 +2,9 @@ package org.aion.kernel;
 
 import org.aion.avm.core.util.Helpers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TransactionResult {
 
     public enum  Code {
@@ -9,37 +12,72 @@ public class TransactionResult {
     }
 
     /**
-     * The execution result code.
+     * The status code.
      */
-    public Code code;
+    private Code statusCode;
 
     /**
-     * The remaining energy after execution.
+     * The return data.
      */
-    public long energyLeft;
+    private byte[] returnData;
 
     /**
-     * Return data.
+     * The cumulative energy used.
      */
-    public byte[] returnData;
+    private long energyUsed;
 
-    public TransactionResult(Code code, long energyLeft) {
-        this.code = code;
-        this.energyLeft = energyLeft;
+    /**
+     * The logs emitted during execution.
+     */
+    private List<Log> logs = new ArrayList<>();
+
+    /**
+     * The internal transactions created during execution.
+     */
+    private List<InternalTransaction> internalTransactions = new ArrayList<>();
+
+    public TransactionResult() {
+        this.statusCode = Code.SUCCESS;
     }
 
-    public TransactionResult(Code code, long energyLeft, byte[] returnData) {
-        this.code = code;
-        this.energyLeft = energyLeft;
+    public Code getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(Code statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public byte[] getReturnData() {
+        return returnData;
+    }
+
+    public void setReturnData(byte[] returnData) {
         this.returnData = returnData;
+    }
+
+    public long getEnergyUsed() {
+        return energyUsed;
+    }
+
+    public void setEnergyUsed(long energyUsed) {
+        this.energyUsed = energyUsed;
+    }
+
+    public List<Log> getLogs() {
+        return logs;
+    }
+
+    public List<InternalTransaction> getInternalTransactions() {
+        return internalTransactions;
     }
 
     @Override
     public String toString() {
         return "TransactionResult{" +
-                "code=" + code +
-                ", energyLeft=" + energyLeft +
+                "statusCode=" + statusCode +
                 ", returnData=" + Helpers.toHexString(returnData) +
+                ", energyUsed=" + energyUsed +
                 '}';
     }
 }

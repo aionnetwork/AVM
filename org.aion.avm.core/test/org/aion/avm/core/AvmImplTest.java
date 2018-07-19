@@ -111,7 +111,7 @@ public class AvmImplTest {
                 currentEnergyLeft = currentContractHelper.externalGetEnergyRemaining();
 
                 TransactionResult result = super.call(from, to, value, data, energyLimit);
-                result.energyLeft = energyLimit / 2;
+                result.setEnergyUsed(energyLimit / 2);
 
                 return result;
             }
@@ -122,17 +122,17 @@ public class AvmImplTest {
         Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, jar, 1000000);
         AvmImpl avm1 = new AvmImpl();
         TransactionResult result1 = avm1.run(tx1, block, kernel);
-        assertEquals(TransactionResult.Code.SUCCESS, result1.code);
-        assertArrayEquals(Helpers.address(2), result1.returnData);
+        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        assertArrayEquals(Helpers.address(2), result1.getReturnData());
 
         // call (1 -> 2 -> 2)
         Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(2), 1000000);
         AvmImpl avm2 = new AvmImpl();
         TransactionResult result2 = avm2.run(tx2, block, kernel);
-        assertEquals(TransactionResult.Code.SUCCESS, result2.code);
-        assertArrayEquals("CALL".getBytes(), result2.returnData);
+        assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
+        assertArrayEquals("CALL".getBytes(), result2.getReturnData());
 
         assertTrue(currentContractHelper == IHelper.currentContractHelper.get()); // same instance
-        assertEquals(999487 - 500000 / 2 - 176, result2.energyLeft); // NOTE: the numbers are not calculated, but for fee schedule change detection.
+        assertEquals(999487 - 500000 / 2 - 176, tx2.getEnergyLimit() - result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
     }
 }

@@ -83,7 +83,7 @@ public class ProofOfConceptTest {
             AvmImpl createAvm = new AvmImpl();
             Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
             TransactionResult createResult = createAvm.run(createTransaction, block, cb);
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.code);
+            Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
             Assert.assertNotNull(cb.getTransformedCode(to));
         }
 
@@ -102,16 +102,16 @@ public class ProofOfConceptTest {
             AvmImpl createAvm = new AvmImpl();
             Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
             TransactionResult createResult = createAvm.run(createTransaction, block, cb);
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.code);
+            Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
 
             // contract address is stored in return data
-            byte[] contractAddress = createResult.returnData;
+            byte[] contractAddress = createResult.getReturnData();
 
             AvmImpl initAvm = new AvmImpl();
             byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
             Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
             TransactionResult initResult = initAvm.run(initTransaction, block, cb);
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.code);
+            Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
         }
 
 
@@ -168,8 +168,8 @@ public class ProofOfConceptTest {
                 AvmImpl createAvm = new AvmImpl();
                 Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, pepeCoinAddr, 0, jar, energyLimit);
                 TransactionResult createResult = createAvm.run(createTransaction, block, cb);
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.code);
-                return createResult.returnData;
+                Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+                return createResult.getReturnData();
             }
 
             public TransactionResult callTotalSupply() {
@@ -180,7 +180,7 @@ public class ProofOfConceptTest {
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
                 TransactionResult callResult = callAvm.run(callTransaction, block, cb);
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
+                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
@@ -194,7 +194,7 @@ public class ProofOfConceptTest {
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
                 TransactionResult callResult = callAvm.run(callTransaction, block, cb);
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
+                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
@@ -208,7 +208,7 @@ public class ProofOfConceptTest {
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
                 TransactionResult callResult = callAvm.run(callTransaction, block, cb);
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
+                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
@@ -223,7 +223,7 @@ public class ProofOfConceptTest {
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
                 TransactionResult callResult = callAvm.run(callTransaction, block, cb);
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
+                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
@@ -238,7 +238,7 @@ public class ProofOfConceptTest {
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit);
                 TransactionResult callResult = callAvm.run(callTransaction, block, cb);
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
+                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
@@ -253,7 +253,7 @@ public class ProofOfConceptTest {
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
                 TransactionResult callResult = callAvm.run(callTransaction, block, cb);
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
+                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
@@ -268,7 +268,7 @@ public class ProofOfConceptTest {
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, addr, 0, args, energyLimit);
                 TransactionResult callResult = callAvm.run(callTransaction, block, cb);
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
+                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
@@ -284,7 +284,7 @@ public class ProofOfConceptTest {
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, executor, addr, 0, args, energyLimit);
                 TransactionResult callResult = callAvm.run(callTransaction, block, cb);
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.code);
+                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
                 return callResult;
             }
 
@@ -320,95 +320,95 @@ public class ProofOfConceptTest {
 
             res = pepe.callTotalSupply();
 
-            Assert.assertEquals(PepeCoin.TOTAL_SUPPLY, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(PepeCoin.TOTAL_SUPPLY, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callBalanceOf(usr1);
 
-            Assert.assertEquals(-1L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(-1L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callOpenAccount(usr1);
 
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callBalanceOf(usr1);
 
-            Assert.assertEquals(0L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(0L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callOpenAccount(usr1);
 
-            Assert.assertEquals(false, ByteArrayHelpers.decodeBoolean(res.returnData));
+            Assert.assertEquals(false, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callBalanceOf(usr2);
 
-            Assert.assertEquals(-1L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(-1L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callOpenAccount(usr2);
 
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callOpenAccount(usr3);
 
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callMint(usr1);
 
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callBalanceOf(usr1);
 
-            Assert.assertEquals(5000L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(5000L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callMint(usr2);
 
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callMint(usr2);
 
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callBalanceOf(usr2);
 
-            Assert.assertEquals(10000L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(10000L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callTransfer(usr1, usr2, 2000L);
 
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callBalanceOf(usr1);
 
-            Assert.assertEquals(3000L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(3000L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callBalanceOf(usr2);
 
-            Assert.assertEquals(12000L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(12000L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callAllowance(usr1, usr2);
 
-            Assert.assertEquals(0L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(0L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callApprove(usr1, usr3, 1000L);
 
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callAllowance(usr1, usr3);
 
-            Assert.assertEquals(1000L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(1000L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callTransferFrom(usr3, usr1, usr2, 500L);
 
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.returnData));
+            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callAllowance(usr1, usr3);
 
-            Assert.assertEquals(500L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(500L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callBalanceOf(usr1);
 
-            Assert.assertEquals(2500L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(2500L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callBalanceOf(usr2);
 
-            Assert.assertEquals(12500L, ByteArrayHelpers.decodeLong(res.returnData));
+            Assert.assertEquals(12500L, ByteArrayHelpers.decodeLong(res.getReturnData()));
         }
 
         @Test

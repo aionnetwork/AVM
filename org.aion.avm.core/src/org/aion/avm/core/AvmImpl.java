@@ -302,10 +302,9 @@ public class AvmImpl implements Avm {
             IHelper.currentContractHelper.set(helper);
 
             // charge energy consumed
-            long energyUsed = energyLimit - result.energyLeft;
-            helper.externalChargeEnergy(energyUsed);
+            helper.externalChargeEnergy(result.getEnergyUsed());
 
-            return new ByteArray(result.returnData);
+            return new ByteArray(result.getReturnData());
         }
 
         @Override
@@ -316,29 +315,45 @@ public class AvmImpl implements Avm {
 
     @Override
     public TransactionResult run(Transaction tx, Block block, KernelApi cb) {
+
+        // only one result (mutable) shall be created per transaction execution
+        TransactionResult result = new TransactionResult();
+
+        // TODO: charge basic transaction cost
+
         switch (tx.getType()) {
             case CREATE:
-                return create(tx, block, cb);
+                create(tx, block, cb, result);
+                break;
             case CALL:
-                return call(tx, block, cb);
+                call(tx, block, cb, result);
+                break;
             default:
-                return new TransactionResult(TransactionResult.Code.INVALID_TX, 0);
+                result.setStatusCode(TransactionResult.Code.INVALID_TX);
+                result.setEnergyUsed(tx.getEnergyLimit());
+                break;
         }
+
+        return result;
     }
 
-    public TransactionResult create(Transaction tx, Block block, KernelApi cb) {
+    public void create(Transaction tx, Block block, KernelApi cb, TransactionResult result) {
         try {
             // read dapp module
             byte[] dappAddress = tx.getTo(); // TODO: The contract address should be computed based on consensus rules
             byte[] dappCode = tx.getData();
             RawDappModule rawDapp = RawDappModule.readFromJar(dappCode);
             if (rawDapp == null) {
-                return new TransactionResult(TransactionResult.Code.INVALID_JAR, 0);
+                result.setStatusCode(TransactionResult.Code.INVALID_JAR);
+                result.setEnergyUsed(tx.getEnergyLimit());
+                return;
             }
 
             // validate dapp module
             if (!validateDapp(rawDapp)) {
-                return new TransactionResult(TransactionResult.Code.INVALID_CODE, 0);
+                result.setStatusCode(TransactionResult.Code.INVALID_CODE);
+                result.setEnergyUsed(tx.getEnergyLimit());
+                return;
             }
             ClassHierarchyForest dappClassesForest = rawDapp.classHierarchyForest;
 
@@ -403,28 +418,30 @@ public class AvmImpl implements Avm {
             ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
             // TODO: whether we should return the dapp address is subject to change
-            return new TransactionResult(TransactionResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), dappAddress);
+            result.setStatusCode(TransactionResult.Code.SUCCESS);
+            result.setEnergyUsed(tx.getEnergyLimit() - helper.externalGetEnergyRemaining());
+            result.setReturnData(dappAddress);
         } catch (FatalAvmError e) {
             // These are unrecoverable errors (either a bug in our code or a lower-level error reported by the JVM).
             // (for now, we System.exit(-1), since this is what ethereumj does, but we may want a more graceful shutdown in the future)
             e.printStackTrace();
             System.exit(-1);
-            return null;
         } catch (OutOfEnergyError e) {
-            return new TransactionResult(TransactionResult.Code.OUT_OF_ENERGY, 0);
+            result.setStatusCode(TransactionResult.Code.OUT_OF_ENERGY);
+            result.setEnergyUsed(tx.getEnergyLimit());
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
-            return new TransactionResult(TransactionResult.Code.FAILURE, 0);
+            result.setStatusCode(TransactionResult.Code.FAILURE);
+            result.setEnergyUsed(tx.getEnergyLimit());
         } catch (Throwable t) {
             // There should be no other reachable kind of exception.  If we reached this point, something very strange is happening so log
             // this and bring us down.
             t.printStackTrace();
             System.exit(1);
-            return null;
         }
     }
 
-    public TransactionResult call(Transaction tx, Block block, KernelApi cb) {
+    public void call(Transaction tx, Block block, KernelApi cb, TransactionResult result) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
         ImmortalDappModule app;
@@ -432,7 +449,9 @@ public class AvmImpl implements Avm {
             byte[] immortalDappJar = cb.getTransformedCode(dappAddress);
             app = ImmortalDappModule.readFromJar(immortalDappJar);
         } catch (IOException e) {
-            return new TransactionResult(TransactionResult.Code.INVALID_CALL, 0);
+            result.setStatusCode(TransactionResult.Code.INVALID_CALL);
+            result.setEnergyUsed(tx.getEnergyLimit());
+            return;
         }
 
         // As per usual, we need to get the special Helper class for each contract loader.
@@ -470,13 +489,15 @@ public class AvmImpl implements Avm {
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(cb, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
-            return new TransactionResult(TransactionResult.Code.SUCCESS, helper.externalGetEnergyRemaining(), ret);
+            result.setStatusCode(TransactionResult.Code.SUCCESS);
+            result.setReturnData(ret);
+            result.setEnergyUsed(tx.getEnergyLimit() - helper.externalGetEnergyRemaining());
         } catch (OutOfEnergyError e) {
-            return new TransactionResult(TransactionResult.Code.OUT_OF_ENERGY, 0);
+            result.setStatusCode(TransactionResult.Code.OUT_OF_ENERGY);
+            result.setEnergyUsed(tx.getEnergyLimit());
         } catch (Exception e) {
-            e.printStackTrace();
-
-            return new TransactionResult(TransactionResult.Code.FAILURE, 0);
+            result.setStatusCode(TransactionResult.Code.FAILURE);
+            result.setEnergyUsed(tx.getEnergyLimit());
         }
     }
 
