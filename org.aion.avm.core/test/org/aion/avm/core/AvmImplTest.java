@@ -43,10 +43,10 @@ public class AvmImplTest {
         final var module = "com.example.avmstartuptest";
         final Path path = Paths.get(format("%s/%s.jar", "../examples/build", module));
         final byte[] jar = Files.readAllBytes(path);
-        final AvmImpl.DappModule dappModule = AvmImpl.readDapp(jar);
+        final RawDappModule dappModule = RawDappModule.readFromJar(jar);
         final var mainClassName = "com.example.avmstartuptest.MainClass";
-        assertEquals(mainClassName, dappModule.getMainClass());
-        Map<String, byte[]> classes = dappModule.getClasses();
+        assertEquals(mainClassName, dappModule.mainClass);
+        Map<String, byte[]> classes = dappModule.classes;
         assertEquals(1, classes.size());
         final var expectedSizeOfFile = 424;
         assertEquals(expectedSizeOfFile, classes.get(mainClassName).length);

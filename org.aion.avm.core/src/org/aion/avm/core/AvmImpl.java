@@ -5,7 +5,6 @@ import org.aion.avm.arraywrapper.*;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.instrument.ClassMetering;
@@ -33,27 +32,12 @@ import org.objectweb.asm.ClassWriter;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 
 
 public class AvmImpl implements Avm {
     private static final String HELPER_CLASS = PackageConstants.kInternalSlashPrefix + "Helper";
 
     private static final TransformedDappStorage.CodeVersion VERSION = TransformedDappStorage.CodeVersion.VERSION_1_0;
-
-    /**
-     * Extracts the DApp module in compressed format into the designated folder.
-     *
-     * @param jar the DApp module in JAR format
-     * @return the parsed DApp module if this operation is successful, otherwise null
-     */
-    static DappModule readDapp(byte[] jar) throws IOException {
-        Objects.requireNonNull(jar);
-        return DappModule.readFromJar(jar);
-    }
 
     /**
      * Validates all classes, including but not limited to:
@@ -71,7 +55,7 @@ public class AvmImpl implements Avm {
      * @param dapp the classes of DApp
      * @return true if the DApp is valid, otherwise false
      */
-    public boolean validateDapp(DappModule dapp) {
+    public boolean validateDapp(RawDappModule dapp) {
 
         // TODO: Rom, complete module validation
 
@@ -346,20 +330,20 @@ public class AvmImpl implements Avm {
             // read dapp module
             byte[] dappAddress = tx.getTo(); // TODO: The contract address should be computed based on consensus rules
             byte[] dappCode = tx.getData();
-            DappModule app = readDapp(dappCode);
-            if (app == null) {
+            RawDappModule rawDapp = RawDappModule.readFromJar(dappCode);
+            if (rawDapp == null) {
                 return new TransactionResult(TransactionResult.Code.INVALID_JAR, 0);
             }
 
             // validate dapp module
-            if (!validateDapp(app)) {
+            if (!validateDapp(rawDapp)) {
                 return new TransactionResult(TransactionResult.Code.INVALID_CODE, 0);
             }
-            ClassHierarchyForest dappClassesForest = app.getClassHierarchyForest();
+            ClassHierarchyForest dappClassesForest = rawDapp.classHierarchyForest;
 
             // transform
-            Map<String, byte[]> transformedClasses = transformClasses(app.getClasses(), dappClassesForest);
-            app.setClasses(transformedClasses);
+            Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest);
+            TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
             // As per usual, we need to get the special Helper class for each contract loader.
             Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
@@ -374,10 +358,10 @@ public class AvmImpl implements Avm {
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
-                    + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * app.bytecodeSize * (1 + app.numberOfClasses) / 10);
+                    + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * rawDapp.bytecodeSize * (1 + rawDapp.numberOfClasses) / 10);
 
             // store transformed dapp
-            byte[] transformedDappJar = app.createJar(dappAddress);
+            byte[] transformedDappJar = transformedDapp.createJar(dappAddress);
             cb.putTransformedCode(dappAddress, VERSION, transformedDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
@@ -385,7 +369,7 @@ public class AvmImpl implements Avm {
 
             // TODO: create invocation need further discussion
 
-            String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
+            String mappedUserMainClass = PackageConstants.kUserDotPrefix + transformedDapp.mainClass;
             Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
 
             try {
@@ -428,10 +412,10 @@ public class AvmImpl implements Avm {
     public TransactionResult call(Transaction tx, Block block, KernelApi cb) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
-        DappModule app;
+        TransformedDappModule app;
         try {
             byte[] transformedDappJar = cb.getTransformedCode(dappAddress);
-            app = DappModule.readFromJar(transformedDappJar);
+            app = TransformedDappModule.readFromJar(transformedDappJar);
         } catch (IOException e) {
             return new TransactionResult(TransactionResult.Code.INVALID_CALL, 0);
         }
@@ -478,90 +462,6 @@ public class AvmImpl implements Avm {
             e.printStackTrace();
 
             return new TransactionResult(TransactionResult.Code.FAILURE, 0);
-        }
-    }
-
-    /**
-     * Represents a DApp module in memory.
-     */
-    static class DappModule {
-        // Note that we currently limit the size of an in-memory JAR to 1 MiB.
-        private static final int MAX_JAR_BYTES = 1024 * 1024;
-
-        private final String mainClass;
-
-        private Map<String, byte[]> classes;
-
-        private ClassHierarchyForest classHierarchyForest;
-
-        // For billing purpose
-        final long bytecodeSize;
-        final long numberOfClasses;
-
-        private DappModule(Map<String, byte[]> classes, String mainClass) {
-            this(classes, mainClass, null, 0, 0);
-        }
-
-        private DappModule(Map<String, byte[]> classes, String mainClass, ClassHierarchyForest classHierarchyForest, long bytecodeSize, long numberOfClasses) {
-            this.classes = classes;
-            this.mainClass = mainClass;
-            this.classHierarchyForest = classHierarchyForest;
-            this.bytecodeSize = bytecodeSize;
-            this.numberOfClasses = numberOfClasses;
-        }
-
-        private static DappModule readFromJar(byte[] jar) throws IOException {
-            LoadedJar loadedJar = LoadedJar.fromBytes(jar);
-            ClassHierarchyForest forest = ClassHierarchyForest.createForestFrom(loadedJar);
-            Map<String, byte[]> classes = loadedJar.classBytesByQualifiedNames;
-            String mainClass = loadedJar.mainClassName;
-
-            return new DappModule(classes, mainClass, forest, jar.length, classes.size());
-        }
-
-        Map<String, byte[]> getClasses() {
-            return Collections.unmodifiableMap(classes);
-        }
-
-        String getMainClass() {
-            return mainClass;
-        }
-
-        ClassHierarchyForest getClassHierarchyForest() {
-            return classHierarchyForest;
-        }
-
-        private void setClasses(Map<String, byte[]> classes) {
-            this.classes = classes;
-        }
-
-        /**
-         * Create the in-memory JAR for this DApp module.
-         */
-        private byte[] createJar(byte[] address) throws IOException {
-            // manifest
-            Manifest manifest = new Manifest();
-            manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-            manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mainClass);
-
-            // Create a temporary memory location for this JAR.
-            ByteArrayOutputStream tempJarStream = new ByteArrayOutputStream(MAX_JAR_BYTES);
-
-            // create the jar file
-            JarOutputStream target = new JarOutputStream(tempJarStream, manifest);
-
-            // add the classes
-            for (String clazz : classes.keySet()) {
-                JarEntry entry = new JarEntry(clazz.replace('.', '/') + ".class");
-                target.putNextEntry(entry);
-                target.write(classes.get(clazz));
-                target.closeEntry();
-            }
-
-            // close and return
-            target.close();
-
-            return tempJarStream.toByteArray();
         }
     }
 
