@@ -3,6 +3,7 @@ module org.aion.avm.core {
     exports org.aion.avm.core.dappreading;
 
     requires org.aion.avm.rt;
+    requires org.aion.avm.userlib;
 
     // external modules
     requires slf4j.api;
