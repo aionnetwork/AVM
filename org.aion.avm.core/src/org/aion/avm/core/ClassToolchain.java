@@ -73,7 +73,13 @@ public final class ClassToolchain {
             super(api, null);
         }
 
-        private void setDelegate(ClassVisitor delegate) {
+        /**
+         * We need to open up access to the setDelegate() so unit tests can still operate on components as though they were part of a
+         * standard ASM pipeline for some testing scenarios which are really only possible if we can issue the callbacks, directly,
+         * instead of starting with class bytes.
+         * NOTE:  Should only be used for testing.
+         */
+        public void setDelegate(ClassVisitor delegate) {
             this.cv = delegate;
         }
 

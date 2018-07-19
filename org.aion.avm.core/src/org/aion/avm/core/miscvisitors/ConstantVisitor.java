@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.MethodNode;
 
 
 /**
@@ -32,13 +32,13 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
     private static final String wrapStringMethodName = "wrapAsString";
     private static final String wrapStringMethodDescriptor = "(Ljava/lang/String;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;";
 
-    private static final String postRenameClassDescriptor = "L" + PackageConstants.kShadowSlashPrefix + "java/lang/Class;";
     private static final String wrapClassMethodName = "wrapAsClass";
     private static final String wrapClassMethodDescriptor = "(Ljava/lang/Class;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/Class;";
 
     private final Map<String, String> staticFieldNamesToConstantValues;
     private final String runtimeClassName;
     private String thisClassName;
+    private MethodNode cachedClinit;
 
     public ConstantVisitor(String runtimeClassName) {
         super(Opcodes.ASM6);
@@ -73,21 +73,13 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-        MethodVisitor visitor = super.visitMethod(access, name, descriptor, signature, exceptions);
-        // The special-case we want to handle is the <clinit>: prepending the constant loads.
+        // If this is a clinit, capture it into the MethodNode, for later use.  Otherwise, pass it on as normal.
+        MethodVisitor visitor = null;
         if (kClinitName.equals(name)) {
-            // Prepend the ldc+putstatic pairs.
-            for (Map.Entry<String, String> elt : this.staticFieldNamesToConstantValues.entrySet()) {
-                // load constant
-                visitor.visitLdcInsn(elt.getValue());
-
-                // wrap as shadow string
-                visitor.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, wrapStringMethodName, wrapStringMethodDescriptor, false);
-
-                // set the field
-                visitor.visitFieldInsn(Opcodes.PUTSTATIC, this.thisClassName, elt.getKey(), postRenameStringDescriptor);
-            }
-            this.staticFieldNamesToConstantValues.clear();
+            this.cachedClinit = new MethodNode(access, name, descriptor, signature, exceptions);
+            visitor = this.cachedClinit;
+        } else {
+            visitor = super.visitMethod(access, name, descriptor, signature, exceptions);
         }
 
         return new MethodVisitor(Opcodes.ASM6, visitor) {
@@ -95,10 +87,7 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
             public void visitLdcInsn(Object value) {
                 if (value instanceof Type && ((Type) value).getSort() == Type.OBJECT) {
                     // class constants
-                    String descriptor = ((Type) value).getDescriptor();
-
                     // TODO: should we load the original class or the shadow class?
-
                     super.visitLdcInsn(value);
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, wrapClassMethodName, wrapClassMethodDescriptor, false);
                 } else if (value instanceof String) {
@@ -116,13 +105,32 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
     @Override
     public void visitEnd() {
         // Note that visitEnd happens immediately after visitMethod, so we can synthesize the <clinit> here, if it is needed.
-        // If we didn't see the <clinit>, we will need to generate one (we determine this if we have unstored constants in our map).
-        if (!this.staticFieldNamesToConstantValues.isEmpty()) {
-            // We can use our own implementation, so long as we add the return and Maxs calls.
-            MethodVisitor clinitVisitor = this.visitMethod(kClinitAccess, kClinitName, kClinitDescriptor, null, null);
-            clinitVisitor.visitInsn(Opcodes.RETURN);
-            clinitVisitor.visitMaxs(1, 0);
-            clinitVisitor.visitEnd();
+        // We want to write the <clinit> if either there was one (which we cached) or we have constant values to dump into it.
+        if ((null != this.cachedClinit) || !this.staticFieldNamesToConstantValues.isEmpty()) {
+            // Create the actual visitor for the clinit.
+            MethodVisitor clinitVisitor = super.visitMethod(kClinitAccess, kClinitName, kClinitDescriptor, null, null);
+            
+            // Prepend the ldc+putstatic pairs.
+            for (Map.Entry<String, String> elt : this.staticFieldNamesToConstantValues.entrySet()) {
+                // load constant
+                clinitVisitor.visitLdcInsn(elt.getValue());
+
+                // wrap as shadow string
+                clinitVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, wrapStringMethodName, wrapStringMethodDescriptor, false);
+
+                // set the field
+                clinitVisitor.visitFieldInsn(Opcodes.PUTSTATIC, this.thisClassName, elt.getKey(), postRenameStringDescriptor);
+            }
+            this.staticFieldNamesToConstantValues.clear(); 
+            
+            // Dump the remaining <clinit> into the visitor or synthesize the end of it, if we don't have a cached one.
+            if (null != this.cachedClinit) {
+                this.cachedClinit.accept(clinitVisitor);
+            } else {
+                clinitVisitor.visitInsn(Opcodes.RETURN);
+                clinitVisitor.visitMaxs(1, 0);
+                clinitVisitor.visitEnd();
+            }
         }
         super.visitEnd();
     }
