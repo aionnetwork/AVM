@@ -15,7 +15,7 @@ public class ABIEncoder{
                 return new byte[]{(byte)data};
             }
         },
-        avm_BOOLEAN ('Z', 1, new String[]{"boolean", "java.lang.Boolean", "org.aion.avm.shadow.java.lang.Boolean"}) {
+        avm_BOOLEAN ('Z', 1, new String[]{"boolean", "java.lang.Boolean", "org.aion.avm.shadow.java.lang.Boolean", "[Z", "[[Z"}) {
             @Override
             public byte[] encode(Object data) {
                 return new byte[]{(byte) (((boolean)data) ? 1 : 0)};
@@ -77,7 +77,7 @@ public class ABIEncoder{
      * Runtime-facing implementation.
      */
     public static ByteArray avm_encodeMethodArguments(org.aion.avm.shadow.java.lang.String methodAPI, ObjectArray arguments)  throws InvalidTxDataException {
-        return new ByteArray(encodeMethodArguments(methodAPI.toString(), arguments));
+        return new ByteArray(encodeMethodArguments(methodAPI.toString(), arguments.getUnderlying()));
     }
 
     public static ByteArray avm_encodeOneObject(IObject data) throws InvalidTxDataException {
@@ -88,12 +88,16 @@ public class ABIEncoder{
     /*
      * Underlying implementation.
      */
-    public static byte[] encodeMethodArguments(String methodName, ObjectArray arguments)  throws InvalidTxDataException {
+    public static byte[] encodeMethodArguments(String methodName, Object... arguments)  throws InvalidTxDataException {
+        if (arguments == null) {
+            return methodName.getBytes();
+        }
+
         // encode each argument
-        byte[][][] encodedData = new byte[arguments.length()][][];
+        byte[][][] encodedData = new byte[arguments.length][][];
         int numOfBytes = 0;
-        for (int idx = 0; idx < arguments.length(); idx++) {
-            encodedData[idx] = encodeOneObject(arguments.get(idx));
+        for (int idx = 0; idx < arguments.length; idx++) {
+            encodedData[idx] = encodeOneObject(arguments[idx]);
             numOfBytes += encodedData[idx][0].length + encodedData[idx][1].length;
         }
 
@@ -104,14 +108,14 @@ public class ABIEncoder{
         System.arraycopy((methodName + "<").getBytes(), 0, ret, 0, pos);
 
         // copy the descriptors
-        for (int idx = 0; idx < arguments.length(); pos += encodedData[idx][0].length, idx ++) {
+        for (int idx = 0; idx < arguments.length; pos += encodedData[idx][0].length, idx ++) {
             System.arraycopy(encodedData[idx][0], 0, ret, pos, encodedData[idx][0].length);
         }
         System.arraycopy(">".getBytes(), 0, ret, pos, ">".getBytes().length);
         pos += ">".getBytes().length;
 
         // copy the encoded data
-        for (int idx = 0; idx < arguments.length(); pos += encodedData[idx][1].length, idx ++) {
+        for (int idx = 0; idx < arguments.length; pos += encodedData[idx][1].length, idx ++) {
             System.arraycopy(encodedData[idx][1], 0, ret, pos, encodedData[idx][1].length);
         }
         return ret;
@@ -133,45 +137,44 @@ public class ABIEncoder{
             // data should not be an array
             byte[][] ret = new byte[2][];
             ABITypes type = mapABITypes(className);
-            if (type != null) {
-                ret[0] = Character.toString(type.symbol).getBytes();
-                if (className.startsWith("org.aion.avm.shadow.java.lang.")) {
-                    switch (className.substring(30)) {
-                        case "Byte":
-                            ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Byte)data).avm_byteValue());
-                            break;
-                        case "Boolean":
-                            ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Boolean)data).avm_booleanValue());
-                            break;
-                        case "Char":
-                            ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Character)data).avm_charValue());
-                            break;
-                        case "Short":
-                            ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Short)data).avm_shortValue());
-                            break;
-                        case "Integer":
-                            ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Integer)data).avm_intValue());
-                            break;
-                        case "Long":
-                            ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Long)data).avm_longValue());
-                            break;
-                        case "Float":
-                            ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Float)data).avm_floatValue());
-                            break;
-                        case "Double":
-                            ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Double)data).avm_doubleValue());
-                            break;
-                        default:
-                            throw new InvalidTxDataException();
-                    }
-                } else {
-                    ret[1] = type.encode(data);
-                }
-                return ret;
-            }
-            else {
+            if (type == null) {
                 throw new InvalidTxDataException();
             }
+
+            ret[0] = Character.toString(type.symbol).getBytes();
+            if (className.startsWith("org.aion.avm.shadow.java.lang.")) {
+                switch (className.substring(30)) {
+                    case "Byte":
+                        ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Byte)data).avm_byteValue());
+                        break;
+                    case "Boolean":
+                        ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Boolean)data).avm_booleanValue());
+                        break;
+                    case "Char":
+                        ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Character)data).avm_charValue());
+                        break;
+                    case "Short":
+                        ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Short)data).avm_shortValue());
+                        break;
+                    case "Integer":
+                        ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Integer)data).avm_intValue());
+                        break;
+                    case "Long":
+                        ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Long)data).avm_longValue());
+                        break;
+                    case "Float":
+                        ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Float)data).avm_floatValue());
+                        break;
+                    case "Double":
+                        ret[1] = type.encode(((org.aion.avm.shadow.java.lang.Double)data).avm_doubleValue());
+                        break;
+                    default:
+                        throw new InvalidTxDataException();
+                }
+            } else {
+                ret[1] = type.encode(data);
+            }
+            return ret;
         }
     }
 

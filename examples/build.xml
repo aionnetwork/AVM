@@ -12,7 +12,7 @@
     </target>
 
     <target name="build"
-            depends="build_helloworld, build_simpletoken, build_twoclasses, build_foresttest, build_heapsizecalctest, build_avmstartuptest, build_deployAndRunTest"/>
+            depends="build_helloworld, build_simpletoken, build_twoclasses, build_foresttest, build_heapsizecalctest, build_avmstartuptest, build_deployAndRunTest, build_testExchange"/>
 
     <target name="build_avmstartuptest">
         <local name="main"/>
@@ -34,6 +34,8 @@
                 <attribute name="Main-Class" value="${main}"/>
             </manifest>
         </jar>
+
+        <delete dir="${dir.local.build}/${name}"/>
     </target>
 
     <target name="build_foresttest">
@@ -53,6 +55,8 @@
 
         <echo message="Packing ${name}..."/>
         <jar destfile="${dir.local.build}/${name}.jar" basedir="${dir.local.build}/${name}"/>
+
+        <delete dir="${dir.local.build}/${name}"/>
     </target>
 
     <target name="build_heapsizecalctest">
@@ -72,6 +76,8 @@
 
         <echo message="Packing ${name}..."/>
         <jar destfile="${dir.local.build}/${name}.jar" basedir="${dir.local.build}/${name}"/>
+
+        <delete dir="${dir.local.build}/${name}"/>
     </target>
 
     <target name="build_deployAndRunTest">
@@ -97,6 +103,8 @@
                 <attribute name="Main-Class" value="${main}"/>
             </manifest>
         </jar>
+
+        <delete dir="${dir.local.build}/${name}"/>
     </target>
 
     <target name="build_helloworld">
@@ -122,6 +130,8 @@
                 <attribute name="Main-Class" value="${main}"/>
             </manifest>
         </jar>
+
+        <delete dir="${dir.local.build}/${name}"/>
     </target>
 
     <target name="build_simpletoken">
@@ -147,6 +157,8 @@
                 <attribute name="Main-Class" value="${main}"/>
             </manifest>
         </jar>
+
+        <delete dir="${dir.local.build}/${name}"/>
     </target>
 
     <target name="build_twoclasses">
@@ -172,5 +184,53 @@
                 <attribute name="Main-Class" value="${main}"/>
             </manifest>
         </jar>
+
+        <delete dir="${dir.local.build}/${name}"/>
+    </target>
+
+    <target name="build_testExchange">
+        <local name="name"/>
+        <local name="main"/>
+        <property name="name" value="com.example.testExchange"/>
+
+        <mkdir dir="${dir.local.build}/${name}"/>
+
+        <echo message="Copying userlib/AionMap.java and change the package..."/>
+        <copy file="../org.aion.avm.userlib/src/org/aion/avm/userlib/AionMap.java"
+              todir="${dir.local.src}/${name}/com/example/testExchange">
+            <filterchain>
+                <replacestring from="org.aion.avm.userlib" to="com.example.testExchange"/>
+            </filterchain>
+        </copy>
+
+        <echo message="Compiling ${name}..."/>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.local.src}/${name}"
+               destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
+            <modulepath>
+                <pathelement location="${dir.global.jar}/org-aion-avm-api.jar"/>
+                <pathelement location="${dir.global.jar}/org-aion-avm-userlib.jar"/>
+            </modulepath>
+        </javac>
+
+        <mkdir dir="${dir.local.build}/testExchangeJar"/>
+        <echo message="Packing com.example.pepe.jar..."/>
+        <jar destfile="${dir.local.build}/testExchangeJar/com.example.pepe.jar"
+             basedir="${dir.local.build}/${name}"
+             excludes="**/MemeCoin.class, **/MemeController.class">
+            <manifest>
+                <attribute name="Main-Class" value="com.example.testExchange.PepeController"/>
+            </manifest>
+        </jar>
+        <echo message="Packing com.example.meme.jar..."/>
+        <jar destfile="${dir.local.build}/testExchangeJar/com.example.meme.jar"
+             basedir="${dir.local.build}/${name}"
+             excludes="**/PepeCoin.class, **/PepeController.class">
+            <manifest>
+                <attribute name="Main-Class" value="com.example.testExchange.MemeController"/>
+            </manifest>
+        </jar>
+
+        <delete dir="${dir.local.build}/${name}"/>
     </target>
 </project>
