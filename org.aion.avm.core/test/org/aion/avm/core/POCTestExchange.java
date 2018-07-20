@@ -45,7 +45,7 @@ public class POCTestExchange {
         CoinContract(byte[] contractAddr, byte[] minter, byte[] jar){
             this.addr = contractAddr;
             this.minter = minter;
-            initCoin(jar);
+            this.addr = initCoin(jar);
         }
 
         private byte[] initCoin(byte[] jar){

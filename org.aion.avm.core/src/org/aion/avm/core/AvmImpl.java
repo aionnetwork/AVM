@@ -365,7 +365,8 @@ public class AvmImpl implements Avm {
     public void create(Transaction tx, Block block, TransactionContext ctx, TransactionResult result) {
         try {
             // read dapp module
-            byte[] dappAddress = tx.getTo(); // TODO: The contract address should be computed based on consensus rules
+            //TODO: If we make dapp storage into two-level Key Value storage, we can detect duplicated dappAddress
+            byte[] dappAddress = Helpers.randomBytes(Address.LENGTH);
             byte[] dappCode = tx.getData();
             RawDappModule rawDapp = RawDappModule.readFromJar(dappCode);
             if (rawDapp == null) {

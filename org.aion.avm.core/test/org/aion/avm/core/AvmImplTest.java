@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.testWallet.ByteArrayHelpers;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.IHelper;
@@ -132,7 +133,9 @@ public class AvmImplTest {
         AvmImpl avm1 = new AvmImpl();
         TransactionResult result1 = avm1.run(new CustomContext(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
-        assertArrayEquals(Helpers.address(2), result1.getReturnData());
+
+        Address contractAddr = new Address(result1.getReturnData());
+
         // Account for the cost:  deployment, clinit, init call.
         // BytecodeFeeScheduler:  PROCESS + (PROCESSDATA * bytecodeSize * (1 + numberOfClasses) / 10)
         long deploymentProcessCost = 32000 + (10 * jar.length * (1 + 1) / 10);
@@ -144,7 +147,7 @@ public class AvmImplTest {
 
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
-        Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(2), transaction2EnergyLimit);
+        Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, contractAddr.unwrap(), transaction2EnergyLimit);
         AvmImpl avm2 = new AvmImpl();
         TransactionResult result2 = avm2.run(new CustomContext(tx2, block));
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());

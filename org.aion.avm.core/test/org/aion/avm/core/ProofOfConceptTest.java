@@ -73,7 +73,7 @@ public class ProofOfConceptTest {
             TransactionResult createResult = new AvmImpl().run(createContext);
 
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
-            Assert.assertNotNull(createContext.getTransformedCode(to));
+            Assert.assertNotNull(createContext.getTransformedCode(createResult.getReturnData()));
         }
 
         /**
@@ -127,9 +127,6 @@ public class ProofOfConceptTest {
         private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
         private long energyLimit = 5_000_000;
 
-        private byte[] pepeCoinAddr = Helpers.randomBytes(Address.LENGTH);
-        private byte[] memeCoinAddr = Helpers.randomBytes(Address.LENGTH);
-        private byte[] exchangeAddr = Helpers.randomBytes(Address.LENGTH);
         private byte[] pepeMinter = Helpers.randomBytes(Address.LENGTH);
         private byte[] memeMinter = Helpers.randomBytes(Address.LENGTH);
         private byte[] exchangeOwner = Helpers.randomBytes(Address.LENGTH);
@@ -144,15 +141,15 @@ public class ProofOfConceptTest {
             ExchangeContract(byte[] contractAddr, byte[] owner, byte[] jar){
                 this.addr = contractAddr;
                 this.owner = owner;
-                initExchange(jar);
+                this.addr = initExchange(jar);
             }
 
-            private TransactionResult initExchange(byte[] jar){
+            private byte[] initExchange(byte[] jar){
                 Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, 0, jar, energyLimit);
                 TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
                 TransactionResult createResult = new AvmImpl().run(createContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
-                return createResult;
+                return createResult.getReturnData();
             }
 
             public TransactionResult callListCoin(String name, byte[] coinAddr) {
@@ -210,7 +207,7 @@ public class ProofOfConceptTest {
             CoinContract(byte[] contractAddr, byte[] minter, byte[] jar){
                 this.addr = contractAddr;
                 this.minter = minter;
-                initCoin(jar);
+                this.addr = initCoin(jar);
             }
 
             private byte[] initCoin(byte[] jar){
@@ -367,7 +364,7 @@ public class ProofOfConceptTest {
         @Test
         public void testERC20() {
             TransactionResult res;
-            CoinContract pepe = new CoinContract(pepeCoinAddr, pepeMinter, buildPepeJar());
+            CoinContract pepe = new CoinContract(null, pepeMinter, buildPepeJar());
 
             res = pepe.callTotalSupply();
             Assert.assertEquals(PepeCoin.TOTAL_SUPPLY, ByteArrayHelpers.decodeLong(res.getReturnData()));
@@ -420,9 +417,9 @@ public class ProofOfConceptTest {
         @Test
         public void testExchange() {
 
-            CoinContract pepe = new CoinContract(pepeCoinAddr, pepeMinter, buildPepeJar());
-            CoinContract meme = new CoinContract(memeCoinAddr, memeMinter, buildMemeJar());
-            ExchangeContract ex = new ExchangeContract(exchangeAddr, exchangeOwner, buildExchangeJar());
+            CoinContract pepe = new CoinContract(null, pepeMinter, buildPepeJar());
+            CoinContract meme = new CoinContract(null, memeMinter, buildMemeJar());
+            ExchangeContract ex = new ExchangeContract(null, exchangeOwner, buildExchangeJar());
 
             TransactionResult res;
 
@@ -435,17 +432,17 @@ public class ProofOfConceptTest {
             Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
             res = pepe.callOpenAccount(usr2);
             Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
-            res = pepe.callOpenAccount(exchangeAddr);
+            res = pepe.callOpenAccount(ex.addr);
             Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             pepe.callMint(usr1, 5000L);
             pepe.callMint(usr2, 5000L);
 
-            res = pepe.callApprove(usr1, exchangeAddr, 2000L);
+            res = pepe.callApprove(usr1, ex.addr, 2000L);
             Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
             res = ex.callRequestTransfer("PEPE", usr1, usr2, 1000L);
             Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
-            res = pepe.callAllowance(usr1, exchangeAddr);
+            res = pepe.callAllowance(usr1, ex.addr);
             Assert.assertEquals(2000L, ByteArrayHelpers.decodeLong(res.getReturnData()));
             res = ex.callProcessExchangeTransaction(exchangeOwner);
             Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
@@ -454,10 +451,9 @@ public class ProofOfConceptTest {
             Assert.assertEquals(4000L, ByteArrayHelpers.decodeLong(res.getReturnData()));
             res = pepe.callBalanceOf(usr2);
             Assert.assertEquals(6000L, ByteArrayHelpers.decodeLong(res.getReturnData()));
-            res = pepe.callAllowance(usr1, exchangeAddr);
+            res = pepe.callAllowance(usr1, ex.addr);
             Assert.assertEquals(1000L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
         }
     }
-
 }
