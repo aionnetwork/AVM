@@ -127,20 +127,34 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmImplTestResource.class);
 
         // deploy
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, jar, 1000000);
+        long transaction1EnergyLimit = 1_000_000l;
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, jar, transaction1EnergyLimit);
         AvmImpl avm1 = new AvmImpl();
         TransactionResult result1 = avm1.run(new CustomContext(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
         assertArrayEquals(Helpers.address(2), result1.getReturnData());
+        // Account for the cost:  deployment, clinit, init call.
+        // BytecodeFeeScheduler:  PROCESS + (PROCESSDATA * bytecodeSize * (1 + numberOfClasses) / 10)
+        long deploymentProcessCost = 32000 + (10 * jar.length * (1 + 1) / 10);
+        // BytecodeFeeScheduler:  CODEDEPOSIT * data.length;
+        long deploymentStorageCost = 200 * jar.length;
+        long clinitCost = 0l;
+        long initCost = 50;
+        assertEquals(deploymentProcessCost + deploymentStorageCost + clinitCost + initCost, result1.getEnergyUsed());
 
         // call (1 -> 2 -> 2)
-        Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(2), 1000000);
+        long transaction2EnergyLimit = 1_000_000l;
+        Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(2), transaction2EnergyLimit);
         AvmImpl avm2 = new AvmImpl();
         TransactionResult result2 = avm2.run(new CustomContext(tx2, block));
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
+        // Account for the cost:  (blocks in call method) + runtime.call
+        long costOfBlocks = 111l + 57l + 521l;
+        // Note that this runtime call is 250000l whereas the actual cost of the receiver execution is:  111l + 57l + 176.
+        long costOfRuntimeCall = 250000l;
+        assertEquals(costOfBlocks + costOfRuntimeCall, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 
         assertTrue(currentContractHelper == IHelper.currentContractHelper.get()); // same instance
-        assertEquals(999487 - 500000 / 2 - 176, tx2.getEnergyLimit() - result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
     }
 }

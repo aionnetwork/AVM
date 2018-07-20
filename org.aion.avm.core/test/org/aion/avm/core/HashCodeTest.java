@@ -17,7 +17,6 @@ import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 
@@ -50,16 +49,18 @@ public class HashCodeTest {
 
     @Test
     public void testCommonHash() throws Exception {
+        // There are currently no objects allocated before the test starts.
+        int usedHashCount = 0;
         Assert.assertNotNull(clazz);
         Method getOneHashCode = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         
         Object result = getOneHashCode.invoke(null);
-        Assert.assertEquals(1, ((Integer)result).intValue());
+        Assert.assertEquals(usedHashCount + 1, ((Integer)result).intValue());
         result = getOneHashCode.invoke(null);
-        Assert.assertEquals(2, ((Integer)result).intValue());
+        Assert.assertEquals(usedHashCount + 2, ((Integer)result).intValue());
         clazz.getConstructor().newInstance();
         result = getOneHashCode.invoke(null);
-        Assert.assertEquals(4, ((Integer)result).intValue());
+        Assert.assertEquals(usedHashCount + 4, ((Integer)result).intValue());
     }
 
     /**
@@ -195,6 +196,8 @@ public class HashCodeTest {
      */
     @Test
     public void testTwoIsolatedContracts() throws Exception {
+        // There are currently no objects allocated before the test starts.
+        int usedHashCount = 0;
         // Create the shared instance with the reusable classes.
         AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         
@@ -212,10 +215,10 @@ public class HashCodeTest {
         Class<?> clazz1 = loader1.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode1 = clazz1.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         Object result = getOneHashCode1.invoke(null);
-        Assert.assertEquals(1, ((Integer)result).intValue());
+        Assert.assertEquals(usedHashCount + 1, ((Integer)result).intValue());
         result = getOneHashCode1.invoke(null);
-        Assert.assertEquals(2, ((Integer)result).intValue());
-        Assert.assertEquals(3, helper1.externalGetNextHashCode());
+        Assert.assertEquals(usedHashCount + 2, ((Integer)result).intValue());
+        Assert.assertEquals(usedHashCount + 3, helper1.externalGetNextHashCode());
         
         // Now, create the helper2, show that it is independent, and run a test in that.
         IHelper helper2 = Helpers.instantiateHelper(loader2, 1_000_000L, 1);
@@ -223,7 +226,7 @@ public class HashCodeTest {
         Method getOneHashCode2 = clazz2.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         Assert.assertEquals(1, helper2.externalGetNextHashCode());
         result = getOneHashCode2.invoke(null);
-        Assert.assertEquals(2, ((Integer)result).intValue());
+        Assert.assertEquals(usedHashCount + 2, ((Integer)result).intValue());
     }
 
     /**
