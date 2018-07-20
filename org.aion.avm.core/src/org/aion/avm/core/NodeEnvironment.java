@@ -80,11 +80,6 @@ public class NodeEnvironment {
                 return null;
             }
             @Override
-            public org.aion.avm.shadow.java.lang.String externalWrapAsString(String input) {
-                // This is called when creating enum constants, etc.
-                return new org.aion.avm.shadow.java.lang.String(input);
-            }
-            @Override
             public int externalGetNextHashCode() {
                 // We will just return 1 for all identity hash codes, for now.
                 return 1;

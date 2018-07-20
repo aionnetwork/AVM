@@ -474,11 +474,6 @@ public class Deployer {
             return null;
         }
         @Override
-        public org.aion.avm.shadow.java.lang.String externalWrapAsString(String input) {
-            Assert.unreachable("This shouldn't be called in this test.");
-            return null;
-        }
-        @Override
         public int externalGetNextHashCode() {
             // Just return anything.
             return 0;

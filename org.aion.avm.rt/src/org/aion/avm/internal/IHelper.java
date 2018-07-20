@@ -27,8 +27,6 @@ public interface IHelper {
 
     public org.aion.avm.shadow.java.lang.Class<?> externalWrapAsClass(Class<?> input);
 
-    public org.aion.avm.shadow.java.lang.String externalWrapAsString(java.lang.String input);
-
     public int externalGetNextHashCode();
 
     /**

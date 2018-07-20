@@ -14,8 +14,15 @@ public class Helper implements IHelper {
     private static int nextHashCode;
 
     /**
-     * We can't return a different wrapper for the same string instance so we need to intern these mappings to give back the same wrapper, each time.
-     * It would probably be a good idea build an implementation of this which has WeakReference keys so we don't keep around unreachable wrappers.
+     * Note that we need to consider instance equality for strings and classes:
+     * -String instance quality isn't normally important but some cases, such as constant identifiers, are sometimes expected to be instance-equal.
+     *  In our implementation, we are only going to preserve this for the <clinit> methods of the contract classes and, other than that, actively
+     *  avoid any observable instance equality beyond instance preservation in the object graph (no relying on the same Class instance giving the
+     *  same String instance back on successive calls, for example).
+     * -Class instance equality is generally more important since classes don't otherwise have a clear definition of "equality"
+     * Therefore, we will only create a map for interning strings if we suspect that this is the first call (a 1 nextHashCode - we may make this
+     * explicit, in the future) but we will always create the map for interning classes.
+     * The persistence layer also knows that classes are encoded differently so it will correctly resolve instance through this interning map.
      */
     private static IdentityHashMap<String, org.aion.avm.shadow.java.lang.String> internedStringWrappers;
     private static IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers;
@@ -34,7 +41,11 @@ public class Helper implements IHelper {
         Helper.nextHashCode = nextHashCode;
         
         // Reset our interning state.
-        internedStringWrappers = new IdentityHashMap<String, org.aion.avm.shadow.java.lang.String>();
+        // Note that we want to fail on any attempt to use the interned string map which isn't the initial call (since <clinit> needs it but any
+        // other attempt to use it is an error).
+        if (1 == nextHashCode) {
+            internedStringWrappers = new IdentityHashMap<String, org.aion.avm.shadow.java.lang.String>();
+        }
         internedClassWrappers = new IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>>();
     }
 
@@ -58,6 +69,13 @@ public class Helper implements IHelper {
         return wrapper;
     }
 
+    /**
+     * Note:  This is called by instrumented <clinit> methods to intern String constants defined in the contract code.
+     * It should not be called anywhere else.
+     * 
+     * @param input The original String constant.
+     * @return The interned shadow String wrapper.
+     */
     public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
         org.aion.avm.shadow.java.lang.String wrapper = null;
         if (null != input) {
@@ -181,10 +199,6 @@ public class Helper implements IHelper {
         return Helper.wrapAsClass(input);
     }
     @Override
-    public org.aion.avm.shadow.java.lang.String externalWrapAsString(String input) {
-        return Helper.wrapAsString(input);
-    }
-    @Override
     public int externalGetNextHashCode() {
         return Helper.getNextHashCode();
     }
@@ -204,7 +218,7 @@ public class Helper implements IHelper {
         // First step is to convert the message and cause into shadow objects, as well.
         String originalMessage = t.getMessage();
         org.aion.avm.shadow.java.lang.String message = (null != originalMessage)
-                ? wrapAsString(originalMessage)
+                ? new org.aion.avm.shadow.java.lang.String(originalMessage)
                 : null;
         // (note that converting the cause is recusrive on the causal chain)
         Throwable originalCause = t.getCause();

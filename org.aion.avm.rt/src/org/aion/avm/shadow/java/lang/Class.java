@@ -23,8 +23,9 @@ public class Class<T> extends Object {
     }
 
     public String avm_getName() {
-        // Note that the class name is a constant so use the wrapper which will intern the instance.
-        return IHelper.currentContractHelper.get().externalWrapAsString(underlying.getName());
+        // Note that we actively try not to give the same instance of the name wrapper back (since the user could see implementation details of our
+        // contract life-cycle or the underlying JVM/ClassLoader.
+        return new org.aion.avm.shadow.java.lang.String(underlying.getName());
     }
 
     public String avm_toString() {

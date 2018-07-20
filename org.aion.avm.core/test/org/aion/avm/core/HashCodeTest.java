@@ -119,7 +119,7 @@ public class HashCodeTest {
     }
 
     /**
-     * Tests that Class.getName() instance return behaviour is consistent between normal Java and our contract environment.
+     * Tests that Class.getName() instance return behaviour returns a new instance on each call (see issue-133 for rationale).
      */
     @Test
     public void testClassGetName() throws Exception {
@@ -128,8 +128,10 @@ public class HashCodeTest {
         
         Object instance1 = compareClassName.invoke(null);
         boolean didMatchInContract = ((Boolean)instance1).booleanValue();
+        Assert.assertFalse(didMatchInContract);
         boolean didMatchInJava = HashCodeTestTarget.compareClassName();
-        Assert.assertEquals(didMatchInJava, didMatchInContract);
+        // Note that our behaviour is not strictly consistent with the JDK, but we define our implementation as more deterministic.
+        Assert.assertTrue(didMatchInJava);
     }
 
     /**
