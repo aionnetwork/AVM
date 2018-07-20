@@ -37,7 +37,6 @@ public class MemeCoin implements IAionToken{
             long receiverBalance = this.ledger.get(receiver);
             if ((tokens > 0) && (receiverBalance + tokens > 0)){
                 this.ledger.put(receiver, receiverBalance + tokens);
-                BlockchainRuntime.log("mint".getBytes(), receiver.unwrap());
                 return true;
             }
         }

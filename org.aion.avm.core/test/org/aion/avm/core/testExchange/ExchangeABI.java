@@ -4,17 +4,22 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
 
 
-public class AionTokenAbi {
+public class ExchangeABI {
 
-    public static final byte kICO_init = 0x0;
-    public static final byte kICO_totalSupply = 0x1;
-    public static final byte kICO_balanceOf = 0x2;
-    public static final byte kICO_allowance = 0x3;
-    public static final byte kICO_transfer = 0x4;
-    public static final byte kICO_approve = 0x5;
-    public static final byte kICO_transferFrom = 0x6;
-    public static final byte kICO_openAccount = 0x7;
-    public static final byte kICO_mint = 0x8;
+    public static final byte kToken_totalSupply = 0x1;
+    public static final byte kToken_balanceOf = 0x2;
+    public static final byte kToken_allowance = 0x3;
+    public static final byte kToken_transfer = 0x4;
+    public static final byte kToken_approve = 0x5;
+    public static final byte kToken_transferFrom = 0x6;
+    public static final byte kToken_openAccount = 0x7;
+    public static final byte kToken_mint = 0x8;
+
+    public static final byte kExchange_listCoin = 0x1;
+    public static final byte kExchange_postBid = 0x2;
+    public static final byte kExchange_postAsk = 0x3;
+    public static final byte kExchange_requestTransfer = 0x4;
+    public static final byte kExchange_processExchangeTransaction = 0x5;
 
     public static Decoder buildDecoder(byte[] input) {
         return new Decoder(input);
@@ -57,6 +62,12 @@ public class AionTokenAbi {
             return new Address(slice);
         }
 
+        public String decodeString(int l) {
+            byte[] slice = ByteArrayHelpers.arraySlice(this.input, this.cursor, l);
+            this.cursor += l;
+            return new String(slice);
+        }
+
         public byte[] decodeRemainder() {
             int length = this.input.length - this.cursor;
             byte[] slice = ByteArrayHelpers.arraySlice(this.input, this.cursor, length);
@@ -96,6 +107,13 @@ public class AionTokenAbi {
 
         public Encoder encodeAddress(Address arg) {
             byte[] slice = arg.unwrap();
+            System.arraycopy(slice, 0, this.onto, this.cursor, slice.length);
+            this.cursor += slice.length;
+            return this;
+        }
+
+        public Encoder encodeString(String s){
+            byte[] slice = s.getBytes();
             System.arraycopy(slice, 0, this.onto, this.cursor, slice.length);
             this.cursor += slice.length;
             return this;

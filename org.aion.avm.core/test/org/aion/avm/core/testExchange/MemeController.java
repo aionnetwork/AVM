@@ -14,33 +14,33 @@ public class MemeController {
     public static byte[] main(){
         byte[] result = new byte[0];
         byte[] input = BlockchainRuntime.getData();
-        AionTokenAbi.Decoder decoder = AionTokenAbi.buildDecoder(input);
+        ExchangeABI.Decoder decoder = ExchangeABI.buildDecoder(input);
         byte methodByte = decoder.decodeByte();
 
         switch (methodByte) {
-            case AionTokenAbi.kICO_totalSupply:
+            case ExchangeABI.kToken_totalSupply:
                 // We know that this is int (length), Address(*length), int, long.;
                 result = ByteArrayHelpers.encodeLong(coinbase.totalSupply());
                 break;
-            case AionTokenAbi.kICO_balanceOf:
+            case ExchangeABI.kToken_balanceOf:
                 result = ByteArrayHelpers.encodeLong(coinbase.balanceOf(decoder.decodeAddress()));
                 break;
-            case AionTokenAbi.kICO_allowance:
+            case ExchangeABI.kToken_allowance:
                 result = ByteArrayHelpers.encodeLong(coinbase.allowance(decoder.decodeAddress(), decoder.decodeAddress()));
                 break;
-            case AionTokenAbi.kICO_transfer:
+            case ExchangeABI.kToken_transfer:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.transfer(decoder.decodeAddress(), decoder.decodeLong()));
                 break;
-            case AionTokenAbi.kICO_approve:
+            case ExchangeABI.kToken_approve:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.approve(decoder.decodeAddress(), decoder.decodeLong()));
                 break;
-            case AionTokenAbi.kICO_transferFrom:
+            case ExchangeABI.kToken_transferFrom:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.transferFrom(decoder.decodeAddress(), decoder.decodeAddress(), decoder.decodeLong()));
                 break;
-            case AionTokenAbi.kICO_openAccount:
+            case ExchangeABI.kToken_openAccount:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.openAccount(decoder.decodeAddress()));
                 break;
-            case AionTokenAbi.kICO_mint:
+            case ExchangeABI.kToken_mint:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.mint(decoder.decodeAddress(), decoder.decodeLong()));
                 break;
             default:

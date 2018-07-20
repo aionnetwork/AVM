@@ -83,6 +83,14 @@ public class ByteArrayHelpers {
         return boolBytes[0] == (byte)1;
     }
 
+    public static byte[] encodeString(String s) {
+        return s.getBytes();
+    }
+
+    public static String decodeString(byte[] bytes) {
+        return new String(bytes);
+    }
+
     public static byte[] arraySlice(byte[] src, int srcPos, int length) {
         byte[] slice = new byte[length];
         for (int i = 0; i < length; ++i) {
