@@ -1,9 +1,11 @@
 package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.Object;
+import org.aion.avm.shadow.java.lang.String;
 
 /**
  * The address has a very specific meaning, within the environment, so we wrap a ByteArray to produce this more specific type.
@@ -71,6 +73,24 @@ public class Address extends Object {
         return isEqual;
     }
 
+    @Override
+    public String avm_toString() {
+        return toHexString(this.underlying.getUnderlying());
+    }
+
+    private static String toHexString(byte[] bytes) {
+        int length = bytes.length;
+
+        char[] hexChars = new char[length * 2];
+        for (int i = 0; i < length; i++) {
+            int v = bytes[i] & 0xFF;
+            hexChars[i * 2] = hexArray[v >>> 4];
+            hexChars[i * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(new CharArray(hexChars));
+    }
+
+    private static final char[] hexArray = "0123456789abcdef".toCharArray();
 
     // Compiler-facing implementation.
     public static final int LENGTH = avm_LENGTH;
