@@ -138,7 +138,7 @@ public class AvmImplTest {
         long deploymentProcessCost = 32000 + (10 * jar.length * (1 + 1) / 10);
         // BytecodeFeeScheduler:  CODEDEPOSIT * data.length;
         long deploymentStorageCost = 200 * jar.length;
-        long clinitCost = 0l;
+        long clinitCost = 188l;
         long initCost = 50;
         assertEquals(deploymentProcessCost + deploymentStorageCost + clinitCost + initCost, result1.getEnergyUsed());
 
@@ -150,8 +150,8 @@ public class AvmImplTest {
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
         // Account for the cost:  (blocks in call method) + runtime.call
-        long costOfBlocks = 111l + 57l + 521l;
-        // Note that this runtime call is 250000l whereas the actual cost of the receiver execution is:  111l + 57l + 176.
+        long costOfBlocks = 111l + 57l + 461l;
+        // Note that this runtime call is 250000l whereas the actual cost of the receiver execution is:  111l + 57l + 116l.
         long costOfRuntimeCall = 250000l;
         assertEquals(costOfBlocks + costOfRuntimeCall, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 

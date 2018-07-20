@@ -49,8 +49,8 @@ public class HashCodeTest {
 
     @Test
     public void testCommonHash() throws Exception {
-        // There are currently no objects allocated before the test starts.
-        int usedHashCount = 0;
+        // Note that we eagerly load 2 constant strings, so bump this up by 2.
+        int usedHashCount = 2;
         Assert.assertNotNull(clazz);
         Method getOneHashCode = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getOneHashCode"));
         
@@ -196,8 +196,8 @@ public class HashCodeTest {
      */
     @Test
     public void testTwoIsolatedContracts() throws Exception {
-        // There are currently no objects allocated before the test starts.
-        int usedHashCount = 0;
+        // Note that we eagerly load 2 constant strings, so bump this up by 2.
+        int usedHashCount = 2;
         // Create the shared instance with the reusable classes.
         AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         

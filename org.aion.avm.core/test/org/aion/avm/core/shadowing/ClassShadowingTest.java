@@ -74,8 +74,8 @@ public class ClassShadowingTest {
         Object ret = method.invoke(obj, -10);
         Assert.assertEquals(10, ret);
 
-        // Verify that we haven't created any wrapped instances, yet.
-        Assert.assertEquals(0, Testing.countWrappedStrings);
+        // Note that all string constants are wrapped in <clinit>, so we should see that, but classes are lazily wrapped so that is still 0.
+        Assert.assertEquals(1, Testing.countWrappedStrings);
         Assert.assertEquals(0, Testing.countWrappedClasses);
 
         // We can rely on our test-facing toString methods to look into what we got back.
