@@ -125,4 +125,23 @@ public class AionMap<K, V> {
     public boolean containsKey(K key){
         return (this.get(key) != null);
     }
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+
+        for (Object elt : this.keys) {
+            if (null != elt) {
+                sb.append("K: ");
+                sb.append(((K)elt).toString());
+                sb.append("\n");
+                sb.append("V: ");
+                sb.append(this.get((K)elt).toString());
+                sb.append("\n");
+            } else {
+                break;
+            }
+        }
+
+        return sb.toString();
+    }
 }
