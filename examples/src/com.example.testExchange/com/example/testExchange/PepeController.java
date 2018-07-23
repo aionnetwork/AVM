@@ -5,10 +5,10 @@ import org.aion.avm.api.BlockchainRuntime;
 
 public class PepeController {
 
-    private static IAionToken coinbase;
+    private static ERC20 coinbase;
 
     public static void init(){
-        coinbase = new PepeCoin(BlockchainRuntime.getSender());
+        coinbase = new ERC20Token("Pepe", "PEPE", 8, BlockchainRuntime.getSender());
     }
 
     public static byte[] main(){

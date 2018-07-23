@@ -4,7 +4,6 @@ import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.InvalidTxDataException;
-import org.aion.avm.core.testExchange.*;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.junit.Assert;
@@ -85,8 +84,8 @@ public class POCTestExchange {
             return callResult;
         }
 
-        private TransactionResult callMint(byte[] receiver) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("mint", new Address(receiver), 5000L);
+        private TransactionResult callMint(byte[] receiver, long amount) throws InvalidTxDataException {
+            byte[] args = ABIEncoder.encodeMethodArguments("mint", new Address(receiver), amount);
 
             Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
@@ -144,95 +143,42 @@ public class POCTestExchange {
         CoinContract pepe = new CoinContract(pepeCoinAddr, pepeMinter, pepeJar);
 
         res = pepe.callTotalSupply();
-
-        Assert.assertEquals(0, ABIDecoder.decodeOneObject(res.getReturnData()));
-
-        res = pepe.callBalanceOf(usr1);
-
-        Assert.assertEquals(-1L, ABIDecoder.decodeOneObject(res.getReturnData()));
-
-        res = pepe.callOpenAccount(usr1);
-
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-
-        res = pepe.callBalanceOf(usr1);
-
         Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
 
-        res = pepe.callOpenAccount(usr1);
-
-        Assert.assertEquals(false, ABIDecoder.decodeOneObject(res.getReturnData()));
-
-        res = pepe.callBalanceOf(usr2);
-
-        Assert.assertEquals(-1L, ABIDecoder.decodeOneObject(res.getReturnData()));
-
-        res = pepe.callOpenAccount(usr2);
-
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-
-        res = pepe.callOpenAccount(usr3);
-
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-
-        res = pepe.callMint(usr1);
-
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-
         res = pepe.callBalanceOf(usr1);
+        Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
+        res = pepe.callBalanceOf(usr1);
+        Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
 
+        res = pepe.callMint(usr1, 5000L);
+        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
+        res = pepe.callBalanceOf(usr1);
         Assert.assertEquals(5000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-
-        res = pepe.callMint(usr2);
-
+        res = pepe.callMint(usr2, 10000L);
         Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-
-        res = pepe.callMint(usr2);
-
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-
         res = pepe.callBalanceOf(usr2);
-
         Assert.assertEquals(10000L, ABIDecoder.decodeOneObject(res.getReturnData()));
 
         res = pepe.callTransfer(usr1, usr2, 2000L);
-
         Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-
         res = pepe.callBalanceOf(usr1);
-
         Assert.assertEquals(3000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-
         res = pepe.callBalanceOf(usr2);
-
         Assert.assertEquals(12000L, ABIDecoder.decodeOneObject(res.getReturnData()));
 
         res = pepe.callAllowance(usr1, usr2);
-
         Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
-
         res = pepe.callApprove(usr1, usr3, 1000L);
-
         Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-
         res = pepe.callAllowance(usr1, usr3);
-
         Assert.assertEquals(1000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-
         res = pepe.callTransferFrom(usr3, usr1, usr2, 500L);
-
         Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-
         res = pepe.callAllowance(usr1, usr3);
-
         Assert.assertEquals(500L, ABIDecoder.decodeOneObject(res.getReturnData()));
-
         res = pepe.callBalanceOf(usr1);
-
         Assert.assertEquals(2500L, ABIDecoder.decodeOneObject(res.getReturnData()));
-
         res = pepe.callBalanceOf(usr2);
-
         Assert.assertEquals(12500L, ABIDecoder.decodeOneObject(res.getReturnData()));
     }
 

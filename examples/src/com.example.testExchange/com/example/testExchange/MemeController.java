@@ -5,10 +5,10 @@ import org.aion.avm.api.BlockchainRuntime;
 
 public class MemeController {
 
-    private static IAionToken coinbase;
+    private static ERC20 coinbase;
 
     public static void init(){
-        coinbase = new MemeCoin(BlockchainRuntime.getSender());
+        coinbase = new ERC20Token("Meme", "MEME", 8, BlockchainRuntime.getSender());
     }
 
     public static byte[] main(){
