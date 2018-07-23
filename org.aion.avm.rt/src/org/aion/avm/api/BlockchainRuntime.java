@@ -55,8 +55,20 @@ public class BlockchainRuntime {
         return Helper.blockchainRuntime.avm_call(targetAddress, value, data, energyLimit);
     }
 
-    public static void avm_log(ByteArray index0, ByteArray data) {
-        Helper.blockchainRuntime.avm_log(index0, data);
+    public static void avm_log(ByteArray data) {
+        Helper.blockchainRuntime.avm_log(data);
+    }
+    public static void avm_log(ByteArray topic1, ByteArray data) {
+        Helper.blockchainRuntime.avm_log(topic1, data);
+    }
+    public static void avm_log(ByteArray topic1, ByteArray topic2, ByteArray data) {
+        Helper.blockchainRuntime.avm_log(topic1, topic2, data);
+    }
+    public static void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data) {
+        Helper.blockchainRuntime.avm_log(topic1, topic2, topic3, data);
+    }
+    public static void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data) {
+        Helper.blockchainRuntime.avm_log(topic1, topic2, topic3, topic4, data);
     }
 
     // Compiler-facing implementation.
@@ -109,7 +121,23 @@ public class BlockchainRuntime {
         return avm_call(targetAddress, value, new ByteArray(data), energyLimit).getUnderlying();
     }
 
-    public static void log(byte[] index0, byte[] data) {
-        avm_log(new ByteArray(index0), (null != data) ? new ByteArray(data) : null);
+    public static void log(byte[] data) {
+        avm_log(new ByteArray(data));
+    }
+
+    public static void log(byte[] topic1, byte[] data) {
+        avm_log(new ByteArray(topic1), new ByteArray(data));
+    }
+
+    public static void log(byte[] topic1, byte[] topic2, byte[] data) {
+        avm_log(new ByteArray(topic1), new ByteArray(topic2), new ByteArray(data));
+    }
+
+    public static void log(byte[] topic1, byte[] topic2, byte[] topic3, byte[] data) {
+        avm_log(new ByteArray(topic1), new ByteArray(topic2), new ByteArray(topic3), new ByteArray(data));
+    }
+
+    public static void log(byte[] topic1, byte[] topic2, byte[] topic3, byte[] topic4, byte[] data) {
+        avm_log(new ByteArray(topic1), new ByteArray(topic2), new ByteArray(topic3), new ByteArray(topic4), new ByteArray(data));
     }
 }

@@ -113,7 +113,27 @@ public class SimpleRuntime extends org.aion.avm.shadow.java.lang.Object implemen
     }
 
     @Override
+    public void avm_log(ByteArray data) {
+
+    }
+
+    @Override
     public void avm_log(ByteArray index0, ByteArray data) {
         Assert.fail("This implementation doesn't handle this");
+    }
+
+    @Override
+    public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray data) {
+
+    }
+
+    @Override
+    public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data) {
+
+    }
+
+    @Override
+    public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data) {
+
     }
 }

@@ -68,6 +68,18 @@ public class BlockchainRuntime {
         return null;
     }
 
-    public static void log(byte[] index0, byte[] data) {
+    public static void log(byte[] data) {
+    }
+
+    public static void log(byte[] topic1, byte[] data) {
+    }
+
+    public static void log(byte[] topic1, byte[] topic2, byte[] data) {
+    }
+
+    public static void log(byte[] topic1, byte[] topic2, byte[] topic3, byte[] data) {
+    }
+
+    public static void log(byte[] topic1, byte[] topic2, byte[] topic3, byte[] topic4, byte[] data) {
     }
 }

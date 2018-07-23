@@ -145,7 +145,7 @@ public class POCTestExchange {
 
         res = pepe.callTotalSupply();
 
-        Assert.assertEquals(PepeCoin.TOTAL_SUPPLY, ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(0, ABIDecoder.decodeOneObject(res.getReturnData()));
 
         res = pepe.callBalanceOf(usr1);
 

@@ -99,9 +99,16 @@ public interface IBlockchainRuntime extends IObject {
 
     /**
      * Logs information for offline analysis or external listening.
-     * 
-     * @param index0 One identifying element for the event.
+     *
      * @param data Arbitrary unstructed data assocated with the event.
      */
-    void avm_log(ByteArray index0, ByteArray data);
+    void avm_log(ByteArray data);
+
+    void avm_log(ByteArray topic1, ByteArray data);
+
+    void avm_log(ByteArray topic1, ByteArray topic2, ByteArray data);
+
+    void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data);
+
+    void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data);
 }

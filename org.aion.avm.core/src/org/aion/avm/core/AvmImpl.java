@@ -329,9 +329,32 @@ public class AvmImpl implements Avm {
         }
 
         @Override
-        public void avm_log(ByteArray index0, ByteArray data) {
-            Log log = new Log(tx.getTo(), List.of(index0.getUnderlying()), data.getUnderlying());
+        public void avm_log(ByteArray data) {
+            Log log = new Log(tx.getTo(), List.of(), data.getUnderlying());
+            result.addLog(log);
+        }
 
+        @Override
+        public void avm_log(ByteArray topic1, ByteArray data) {
+            Log log = new Log(tx.getTo(), List.of(topic1.getUnderlying()), data.getUnderlying());
+            result.addLog(log);
+        }
+
+        @Override
+        public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray data) {
+            Log log = new Log(tx.getTo(), List.of(topic1.getUnderlying(), topic2.getUnderlying()), data.getUnderlying());
+            result.addLog(log);
+        }
+
+        @Override
+        public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data) {
+            Log log = new Log(tx.getTo(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying()), data.getUnderlying());
+            result.addLog(log);
+        }
+
+        @Override
+        public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data) {
+            Log log = new Log(tx.getTo(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying(), topic4.getUnderlying()), data.getUnderlying());
             result.addLog(log);
         }
     }

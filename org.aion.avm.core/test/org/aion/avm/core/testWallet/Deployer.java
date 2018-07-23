@@ -361,6 +361,12 @@ public class Deployer {
             // We probably want to capture/verify this more concretely but, for now, just return the payload to synthesize "something".
             return payload;
         }
+
+        @Override
+        public void avm_log(ByteArray data) {
+
+        }
+
         @Override
         public void avm_log(ByteArray index0, ByteArray data) {
             String reconstituted = new String(index0.getUnderlying(), StandardCharsets.UTF_8);
@@ -369,6 +375,22 @@ public class Deployer {
             int newCount = ((null != oldCount) ? oldCount : 0) + 1;
             this.eventCounts.put(reconstituted, newCount);
         }
+
+        @Override
+        public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray data) {
+
+        }
+
+        @Override
+        public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data) {
+
+        }
+
+        @Override
+        public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data) {
+
+        }
+
         public int getEventCount(String event) {
             Integer count = this.eventCounts.get(event);
             return (null != count) ? count : 0;
