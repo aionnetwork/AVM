@@ -1,21 +1,18 @@
 package org.aion.kernel;
 
 import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class TransactionContextImpl implements TransactionContext {
 
     // shared across-context
     private static DappCode dappCode = new DappCode();
-    private static Map<ByteArrayWrapper, byte[]> dappStorage = new HashMap<>();
+    private static Map<ByteArrayWrapper, byte[]> dappStorage = new ConcurrentHashMap<>();
 
     private Transaction tx;
     private Block block;
