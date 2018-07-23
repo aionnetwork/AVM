@@ -296,8 +296,9 @@ public class AvmImpl implements Avm {
 
         @Override
         public ByteArray avm_sha3(ByteArray data) {
+            // For now, we just return the input data since some tests want to call this but we eventually need a real implementation (issue-152).
             // TODO: we can implement this inside vm
-            return null;
+            return data;
         }
 
         @Override

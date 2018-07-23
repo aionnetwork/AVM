@@ -1,5 +1,6 @@
 package org.aion.avm.core.persistence;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -390,7 +391,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         if (null == stub) {
             // Create the new stub and put it in the map.
             Class<?> contentClass = this.classLoader.loadClass(className);
-            stub = (org.aion.avm.shadow.java.lang.Object)contentClass.getConstructor(IDeserializer.class, long.class).newInstance(this, instanceId);
+            Constructor<?> con = contentClass.getConstructor(IDeserializer.class, long.class);
+            con.setAccessible(true);
+            stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(this, instanceId);
             this.instanceStubMap.put(instanceId, stub);
             if (DEBUG) {
                 System.out.println(" READSTUB(" + instanceId + "): " + className);

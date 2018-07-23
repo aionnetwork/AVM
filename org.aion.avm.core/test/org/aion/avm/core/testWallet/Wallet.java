@@ -242,7 +242,7 @@ public class Wallet {
 
     // Transaction structure to remember details of transaction lest it need be saved for a later call.
     // (this is public just for easy referencing in the Deployer's loader logic).
-    public static class Transaction {
+    private static class Transaction {
         public Address to;
         public long value;
         public byte[] data;

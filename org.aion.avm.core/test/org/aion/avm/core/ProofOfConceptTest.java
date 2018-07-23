@@ -6,6 +6,7 @@ import org.aion.avm.core.testWallet.Abi;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
 import org.aion.avm.core.testWallet.ByteArrayWrapper;
 import org.aion.avm.core.testWallet.BytesKey;
+import org.aion.avm.core.testWallet.CallEncoder;
 import org.aion.avm.core.testWallet.Daylimit;
 import org.aion.avm.core.testWallet.EventLogger;
 import org.aion.avm.core.testWallet.Multiowned;
@@ -103,11 +104,67 @@ public class ProofOfConceptTest {
             Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
         }
 
+        /**
+         * Tests that inner classes work properly within the serialization system (since their constructors need to be marked accessible).
+         */
+        @Test
+        public void testExecuteWithInnerClasses() {
+            // Constructor args.
+            byte[] extra1 = Helpers.randomBytes(Address.LENGTH);
+            byte[] extra2 = Helpers.randomBytes(Address.LENGTH);
+            int requiredVotes = 2;
+            long dailyLimit = 5000;
+            
+            // Deploy.
+            byte[] contractAddress = deployTestWallet();
+            
+            // Run the init.
+            runInit(contractAddress, extra1, extra2, requiredVotes, dailyLimit);
+            
+            // Call "execute" with something above the daily limit so we will create the "Transaction" inner class instance.
+            byte[] to = Helpers.randomBytes(Address.LENGTH);
+            byte[] data = Helpers.randomBytes(Address.LENGTH);
+            byte[] execArgs = encodeExecute(to, dailyLimit + 1, data);
+            Transaction executeTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, execArgs, energyLimit);
+            TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
+            TransactionResult executeResult = new AvmImpl().run(executeContext);
+            Assert.assertEquals(TransactionResult.Code.SUCCESS, executeResult.getStatusCode());
+            byte[] toConfirm = executeResult.getReturnData();
+            
+            // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
+            byte[] confirmArgs = CallEncoder.confirm(toConfirm);
+            Transaction confirmTransaction = new Transaction(Transaction.Type.CALL, extra1, contractAddress, 0, confirmArgs, energyLimit);
+            TransactionContext confirmContext = new TransactionContextImpl(confirmTransaction, block);
+            // TODO:  Change this once we have something reasonable to cross-call.  For now, this hits NPE since it isn't calling anything real.
+            TransactionResult confirmResult = new AvmImpl().run(confirmContext);
+            Assert.assertEquals(TransactionResult.Code.FAILURE, confirmResult.getStatusCode());
+        }
+
+
+        private void runInit(byte[] contractAddress, byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) {
+            byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
+            Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
+            TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
+            TransactionResult initResult = new AvmImpl().run(initContext);
+            Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
+        }
+
+        private byte[] deployTestWallet() {
+            byte[] testWalletJar = buildTestWalletJar();
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
+            TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+            TransactionResult createResult = new AvmImpl().run(createContext);
+            Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+            
+            // contract address is stored in return data
+            byte[] contractAddress = createResult.getReturnData();
+            return contractAddress;
+        }
 
         /**
          * Note that this is copied from CallEncoder to allow us to create the input without needing to instantiate Address objects.
          */
-        public static byte[] encodeInit(byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) {
+        private static byte[] encodeInit(byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) {
             byte[] onto = new byte[1 + Integer.BYTES + Address.LENGTH + Address.LENGTH + Integer.BYTES + Long.BYTES];
             Abi.Encoder encoder = Abi.buildEncoder(onto);
             // We are encoding the Addresses as a 2-element array, so describe it that way to the encoder.
@@ -118,6 +175,20 @@ public class ProofOfConceptTest {
                     .encodeRemainder(extra2)
                     .encodeInt(requiredVotes)
                     .encodeLong(dailyLimit);
+            return onto;
+        }
+
+        /**
+         * Note that this is mostly copied from CallEncoder.
+         */
+        private static byte[] encodeExecute(byte[] to, long value, byte[] data) {
+            byte[] onto = new byte[1 + Address.LENGTH + Long.BYTES + data.length];
+            Abi.Encoder encoder = Abi.buildEncoder(onto);
+            encoder
+                .encodeByte(Abi.kWallet_execute)
+                .encodeRemainder(to)
+                .encodeLong(value)
+                .encodeRemainder(data);
             return onto;
         }
     }
