@@ -261,7 +261,7 @@ public class AvmImpl implements Avm {
 
         @Override
         public ByteArray avm_getData() {
-            return new ByteArray(tx.getData());
+            return new ByteArray(tx.getType() == Transaction.Type.CREATE ? Helpers.decodeCodeAndData(tx.getData())[1] : tx.getData());
         }
 
         @Override
@@ -368,7 +368,7 @@ public class AvmImpl implements Avm {
             // read dapp module
             //TODO: If we make dapp storage into two-level Key Value storage, we can detect duplicated dappAddress
             byte[] dappAddress = Helpers.randomBytes(Address.LENGTH);
-            byte[] dappCode = tx.getData();
+            byte[] dappCode = Helpers.decodeCodeAndData(tx.getData())[0];
             RawDappModule rawDapp = RawDappModule.readFromJar(dappCode);
             if (rawDapp == null) {
                 result.setStatusCode(TransactionResult.Code.INVALID_JAR);

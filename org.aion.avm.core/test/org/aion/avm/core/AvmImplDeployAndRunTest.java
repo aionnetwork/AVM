@@ -25,14 +25,20 @@ public class AvmImplDeployAndRunTest {
 
     public TransactionResult deployHelloWorld() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, jar, energyLimit);
+        byte[] arguments = new byte[0];
+        byte[] txData = Helpers.encodeCodeAndData(jar, arguments);
+
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return new AvmImpl().run(context);
     }
 
     public TransactionResult deployTheDeployAndRunTest() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, jar, energyLimit);
+        byte[] arguments = new byte[0];
+        byte[] txData = Helpers.encodeCodeAndData(jar, arguments);
+
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return new AvmImpl().run(context);
     }

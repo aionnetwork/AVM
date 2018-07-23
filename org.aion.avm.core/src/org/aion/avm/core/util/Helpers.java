@@ -8,6 +8,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
@@ -215,5 +216,27 @@ public class Helpers {
         }
 
         return ret;
+    }
+
+    public static byte[] encodeCodeAndData(byte[] code, byte[] arguments) {
+        ByteBuffer buffer = ByteBuffer.allocate(4 + code.length + 4 + arguments.length);
+        buffer.putInt(code.length);
+        buffer.put(code);
+        buffer.putInt(arguments.length);
+        buffer.put(arguments);
+
+        return buffer.array();
+    }
+
+    public static byte[][] decodeCodeAndData(byte[] bytes) {
+        // TODO: add length check guard
+
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        byte[] code = new byte[buffer.getInt()];
+        buffer.get(code);
+        byte[] arguments = new byte[buffer.getInt()];
+        buffer.get(arguments);
+
+        return new byte[][]{code, arguments};
     }
 }

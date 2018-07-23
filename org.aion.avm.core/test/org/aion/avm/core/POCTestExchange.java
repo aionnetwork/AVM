@@ -45,11 +45,11 @@ public class POCTestExchange {
         CoinContract(byte[] contractAddr, byte[] minter, byte[] jar){
             this.addr = contractAddr;
             this.minter = minter;
-            this.addr = initCoin(jar);
+            this.addr = initCoin(jar, new byte[0]);
         }
 
-        private byte[] initCoin(byte[] jar){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, 0, jar, energyLimit);
+        private byte[] initCoin(byte[] jar, byte[] arguments){
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());

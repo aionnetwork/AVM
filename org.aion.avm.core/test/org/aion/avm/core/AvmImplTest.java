@@ -126,10 +126,12 @@ public class AvmImplTest {
     @Test
     public void testHelperStateRestore() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmImplTestResource.class);
+        byte[] arguments = new byte[0];
+        byte[] txData = Helpers.encodeCodeAndData(jar, arguments);
 
         // deploy
         long transaction1EnergyLimit = 1_000_000l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, jar, transaction1EnergyLimit);
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, transaction1EnergyLimit);
         AvmImpl avm1 = new AvmImpl();
         TransactionResult result1 = avm1.run(new CustomContext(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
@@ -140,7 +142,7 @@ public class AvmImplTest {
         // BytecodeFeeScheduler:  PROCESS + (PROCESSDATA * bytecodeSize * (1 + numberOfClasses) / 10)
         long deploymentProcessCost = 32000 + (10 * jar.length * (1 + 1) / 10);
         // BytecodeFeeScheduler:  CODEDEPOSIT * data.length;
-        long deploymentStorageCost = 200 * jar.length;
+        long deploymentStorageCost = 200 * txData.length;
         long clinitCost = 188l;
         long initCost = 50;
         assertEquals(deploymentProcessCost + deploymentStorageCost + clinitCost + initCost, result1.getEnergyUsed());

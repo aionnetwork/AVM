@@ -36,7 +36,7 @@ public class BasicPerfTest {
         // Deploy.
         for (int i = 0; i < THREAD_COUNT; ++i) {
             threads[i] = new TestRunnable();
-            threads[i].deploy(jar);
+            threads[i].deploy(jar, new byte[0]);
         }
         
         // Run.
@@ -55,11 +55,11 @@ public class BasicPerfTest {
 
     private static class TestRunnable extends Thread {
         private byte[] contractAddress;
-        public void deploy(byte[] jar) {
+        public void deploy(byte[] jar, byte[] arguments) {
             // Deploy.
             Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
-            Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), this.contractAddress, 0, jar, transaction1EnergyLimit);
+            Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), this.contractAddress, 0, Helpers.encodeCodeAndData(jar, arguments), transaction1EnergyLimit);
             AvmImpl avm1 = new AvmImpl();
             TransactionResult result1 = avm1.run(new TransactionContextImpl(tx1, block));
             Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());

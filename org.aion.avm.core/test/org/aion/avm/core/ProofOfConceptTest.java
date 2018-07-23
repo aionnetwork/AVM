@@ -68,8 +68,10 @@ public class ProofOfConceptTest {
         @Test
         public void testDeployWritesCode() {
             byte[] testWalletJar = buildTestWalletJar();
+            byte[] testWalletArguments = new byte[0];
 
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
+                    Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = new AvmImpl().run(createContext);
 
@@ -89,7 +91,9 @@ public class ProofOfConceptTest {
             long dailyLimit = 5000;
 
             byte[] testWalletJar = buildTestWalletJar();
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
+            byte[] testWalletArguments = new byte[0];
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
+                    Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = new AvmImpl().run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -151,7 +155,10 @@ public class ProofOfConceptTest {
 
         private byte[] deployTestWallet() {
             byte[] testWalletJar = buildTestWalletJar();
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, testWalletJar, energyLimit);
+            byte[] testWalletArguments = new byte[0];
+
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
+                    Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = new AvmImpl().run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -212,11 +219,11 @@ public class ProofOfConceptTest {
             ExchangeContract(byte[] contractAddr, byte[] owner, byte[] jar){
                 this.addr = contractAddr;
                 this.owner = owner;
-                this.addr = initExchange(jar);
+                this.addr = initExchange(jar, new byte[0]);
             }
 
-            private byte[] initExchange(byte[] jar){
-                Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, 0, jar, energyLimit);
+            private byte[] initExchange(byte[] jar, byte[] arguments){
+                Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit);
                 TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
                 TransactionResult createResult = new AvmImpl().run(createContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -278,11 +285,11 @@ public class ProofOfConceptTest {
             CoinContract(byte[] contractAddr, byte[] minter, byte[] jar){
                 this.addr = contractAddr;
                 this.minter = minter;
-                this.addr = initCoin(jar);
+                this.addr = initCoin(jar, new byte[0]);
             }
 
-            private byte[] initCoin(byte[] jar){
-                Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, 0, jar, energyLimit);
+            private byte[] initCoin(byte[] jar, byte[] arguments){
+                Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit);
                 TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
                 TransactionResult createResult = new AvmImpl().run(createContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
