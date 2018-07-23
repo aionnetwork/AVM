@@ -21,10 +21,11 @@ public class DirectProxy {
         Wallet.main();
     }
 
-    public static void addOwner(Consumer<byte[]> inputConsumer, Address owner) {
+    public static boolean addOwner(Consumer<byte[]> inputConsumer, Address owner) {
         byte[] onto = CallEncoder.addOwner(owner);
         inputConsumer.accept(onto);
-        Wallet.main();
+        byte[] result = Wallet.main();
+        return (null != result);
     }
 
     public static byte[] execute(Consumer<byte[]> inputConsumer, Address to, long value, byte[] data) {
@@ -40,10 +41,11 @@ public class DirectProxy {
         return (0x1 == result[0]);
     }
 
-    public static void changeRequirement(Consumer<byte[]> inputConsumer, int newRequired) {
+    public static boolean changeRequirement(Consumer<byte[]> inputConsumer, int newRequired) {
         byte[] onto = CallEncoder.changeRequirement(newRequired);
         inputConsumer.accept(onto);
-        Wallet.main();
+        byte[] result = Wallet.main();
+        return (null != result);
     }
 
     public static Address getOwner(Consumer<byte[]> inputConsumer, int ownerIndex) {
@@ -53,16 +55,18 @@ public class DirectProxy {
         return new Address(result);
     }
 
-    public static void changeOwner(Consumer<byte[]> inputConsumer, Address from, Address to) {
+    public static boolean changeOwner(Consumer<byte[]> inputConsumer, Address from, Address to) {
         byte[] onto = CallEncoder.changeOwner(from, to);
         inputConsumer.accept(onto);
-        Wallet.main();
+        byte[] result = Wallet.main();
+        return (null != result);
     }
 
-    public static void removeOwner(Consumer<byte[]> inputConsumer, Address owner) {
+    public static boolean removeOwner(Consumer<byte[]> inputConsumer, Address owner) {
         byte[] onto = CallEncoder.removeOwner(owner);
         inputConsumer.accept(onto);
-        Wallet.main();
+        byte[] result = Wallet.main();
+        return (null != result);
     }
 
     public static void revoke(Consumer<byte[]> inputConsumer, byte[] transactionBytes) {

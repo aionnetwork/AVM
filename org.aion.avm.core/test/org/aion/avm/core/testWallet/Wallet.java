@@ -34,9 +34,19 @@ public class Wallet {
     /**
      * The generic start symbol which processes the input using the ABI to calls out to other helpers.
      *
-     * @return The output of running the invoke (null for void methods).
+     * @return The output of running the invoke (null for void methods or require failed cases).
      */
     public static byte[] main() {
+        byte[] result = null;
+        try {
+            result = decodeMain();
+        } catch (RequireFailedException e) {
+            result = null;
+        }
+        return result;
+    }
+
+    private static byte[] decodeMain() {
         // Most of our paths return nothing so just default to the empty byte array.
         byte[] result = new byte[0];
         byte[] input = BlockchainRuntime.getData();

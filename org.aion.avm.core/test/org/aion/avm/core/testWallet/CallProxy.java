@@ -25,10 +25,11 @@ public class CallProxy {
         callDecode(loader);
     }
 
-    public static void addOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address owner) throws Exception {
+    public static boolean addOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address owner) throws Exception {
         byte[] onto = CallEncoder.addOwner(owner);
         inputConsumer.accept(onto);
-        callDecode(loader);
+        byte[] result = callDecode(loader);
+        return (null != result);
     }
 
     public static byte[] execute(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address to, long value, byte[] data) throws Exception {
@@ -44,10 +45,11 @@ public class CallProxy {
         return (0x1 == result[0]);
     }
 
-    public static void changeRequirement(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, int newRequired) throws Exception {
+    public static boolean changeRequirement(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, int newRequired) throws Exception {
         byte[] onto = CallEncoder.changeRequirement(newRequired);
         inputConsumer.accept(onto);
-        callDecode(loader);
+        byte[] result = callDecode(loader);
+        return (null != result);
     }
 
     public static Address getOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, int ownerIndex) throws Exception {
@@ -57,16 +59,18 @@ public class CallProxy {
         return new Address(result);
     }
 
-    public static void changeOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address from, Address to) throws Exception {
+    public static boolean changeOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address from, Address to) throws Exception {
         byte[] onto = CallEncoder.changeOwner(from, to);
         inputConsumer.accept(onto);
-        callDecode(loader);
+        byte[] result = callDecode(loader);
+        return (null != result);
     }
 
-    public static void removeOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address owner) throws Exception {
+    public static boolean removeOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address owner) throws Exception {
         byte[] onto = CallEncoder.removeOwner(owner);
         inputConsumer.accept(onto);
-        callDecode(loader);
+        byte[] result = callDecode(loader);
+        return (null != result);
     }
 
     public static void revoke(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, byte[] transactionBytes) throws Exception {
