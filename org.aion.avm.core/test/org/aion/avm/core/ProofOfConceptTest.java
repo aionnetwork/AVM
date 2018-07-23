@@ -321,19 +321,6 @@ public class ProofOfConceptTest {
                 return callResult;
             }
 
-            private TransactionResult callOpenAccount(byte[] toOpen) {
-                byte[] args = new byte[1 + Address.LENGTH];
-                ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
-                encoder.encodeByte(ExchangeABI.kToken_openAccount);
-                encoder.encodeAddress(new Address(toOpen));
-
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-                TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-                TransactionResult callResult = new AvmImpl().run(callContext);
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
-                return callResult;
-            }
-
             private TransactionResult callMint(byte[] receiver, long amount) {
                 byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
@@ -410,8 +397,8 @@ public class ProofOfConceptTest {
 
         private byte[] buildPepeJar() {
             return JarBuilder.buildJarForMainAndClasses(PepeController.class,
-                    IAionToken.class,
-                    PepeCoin.class,
+                    ERC20.class,
+                    ERC20Token.class,
                     ExchangeABI.class,
                     AionMap.class,
                     ByteArrayHelpers.class
@@ -420,8 +407,8 @@ public class ProofOfConceptTest {
 
         private byte[] buildMemeJar() {
             return JarBuilder.buildJarForMainAndClasses(MemeController.class,
-                    IAionToken.class,
-                    MemeCoin.class,
+                    ERC20.class,
+                    ERC20Token.class,
                     ExchangeABI.class,
                     AionMap.class,
                     ByteArrayHelpers.class
@@ -445,20 +432,12 @@ public class ProofOfConceptTest {
             CoinContract pepe = new CoinContract(null, pepeMinter, buildPepeJar());
 
             res = pepe.callTotalSupply();
-            Assert.assertEquals(PepeCoin.TOTAL_SUPPLY, ByteArrayHelpers.decodeLong(res.getReturnData()));
+            Assert.assertEquals(0L, ByteArrayHelpers.decodeLong(res.getReturnData()));
 
             res = pepe.callBalanceOf(usr1);
-            Assert.assertEquals(-1L, ByteArrayHelpers.decodeLong(res.getReturnData()));
-            res = pepe.callOpenAccount(usr1);
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
+            Assert.assertEquals(0L, ByteArrayHelpers.decodeLong(res.getReturnData()));
             res = pepe.callBalanceOf(usr1);
             Assert.assertEquals(0L, ByteArrayHelpers.decodeLong(res.getReturnData()));
-            res = pepe.callOpenAccount(usr1);
-            Assert.assertEquals(false, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
-            res = pepe.callOpenAccount(usr2);
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
-            res = pepe.callOpenAccount(usr3);
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             res = pepe.callMint(usr1, 5000L);
             Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
@@ -504,13 +483,6 @@ public class ProofOfConceptTest {
             res = ex.callListCoin("PEPE", pepe.addr);
             Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
             res = ex.callListCoin("MEME", meme.addr);
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
-
-            res = pepe.callOpenAccount(usr1);
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
-            res = pepe.callOpenAccount(usr2);
-            Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
-            res = pepe.callOpenAccount(ex.addr);
             Assert.assertEquals(true, ByteArrayHelpers.decodeBoolean(res.getReturnData()));
 
             pepe.callMint(usr1, 5000L);

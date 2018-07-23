@@ -5,10 +5,10 @@ import org.aion.avm.core.testWallet.ByteArrayHelpers;
 
 public class MemeController {
 
-    private static IAionToken coinbase;
+    private static ERC20 coinbase;
 
     public static void init(){
-        coinbase = new MemeCoin(BlockchainRuntime.getSender());
+        coinbase = new ERC20Token("Memo", "MEME", 8, BlockchainRuntime.getSender());
     }
 
     public static byte[] main(){
@@ -36,9 +36,6 @@ public class MemeController {
                 break;
             case ExchangeABI.kToken_transferFrom:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.transferFrom(decoder.decodeAddress(), decoder.decodeAddress(), decoder.decodeLong()));
-                break;
-            case ExchangeABI.kToken_openAccount:
-                result = ByteArrayHelpers.encodeBoolean(coinbase.openAccount(decoder.decodeAddress()));
                 break;
             case ExchangeABI.kToken_mint:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.mint(decoder.decodeAddress(), decoder.decodeLong()));

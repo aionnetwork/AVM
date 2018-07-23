@@ -5,10 +5,10 @@ import org.aion.avm.core.testWallet.ByteArrayHelpers;
 
 public class PepeController {
 
-    private static IAionToken coinbase;
+    private static ERC20 coinbase;
 
     public static void init(){
-        coinbase = new PepeCoin(BlockchainRuntime.getSender());
+        coinbase = new ERC20Token("Pepe", "PEPE", 8, BlockchainRuntime.getSender());
     }
 
     public static byte[] main(){
@@ -16,7 +16,6 @@ public class PepeController {
         byte[] input = BlockchainRuntime.getData();
         ExchangeABI.Decoder decoder = ExchangeABI.buildDecoder(input);
         byte methodByte = decoder.decodeByte();
-        boolean res = true;
 
         switch (methodByte) {
             case ExchangeABI.kToken_totalSupply:
@@ -37,9 +36,6 @@ public class PepeController {
                 break;
             case ExchangeABI.kToken_transferFrom:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.transferFrom(decoder.decodeAddress(), decoder.decodeAddress(), decoder.decodeLong()));
-                break;
-            case ExchangeABI.kToken_openAccount:
-                result = ByteArrayHelpers.encodeBoolean(coinbase.openAccount(decoder.decodeAddress()));
                 break;
             case ExchangeABI.kToken_mint:
                 result = ByteArrayHelpers.encodeBoolean(coinbase.mint(decoder.decodeAddress(), decoder.decodeLong()));

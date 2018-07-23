@@ -2,7 +2,13 @@ package org.aion.avm.core.testExchange;
 
 import org.aion.avm.api.Address;
 
-public interface IAionToken {
+public interface ERC20 {
+
+    String name();
+
+    String symbol();
+
+    int decimals();
 
     long totalSupply();
 
@@ -16,8 +22,6 @@ public interface IAionToken {
 
     boolean transferFrom(Address spender, Address to, long tokens);
 
+    // NOT PART OF ERC20
     boolean mint(Address receiver, long tokens);
-
-    boolean openAccount(Address request);
-
 }

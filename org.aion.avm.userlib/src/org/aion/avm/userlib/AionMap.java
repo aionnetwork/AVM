@@ -74,6 +74,10 @@ public class AionMap<K, V> {
         return found;
     }
 
+    public V getOrDefault(K key, V defaultValue) {
+        return containsKey(key) ? get(key) : defaultValue;
+    }
+
     @SuppressWarnings("unchecked")
     public V remove(K toRemove) {
         int foundIndex = -1;

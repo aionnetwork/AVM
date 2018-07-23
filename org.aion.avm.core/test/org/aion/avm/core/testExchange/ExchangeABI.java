@@ -12,7 +12,6 @@ public class ExchangeABI {
     public static final byte kToken_transfer = 0x4;
     public static final byte kToken_approve = 0x5;
     public static final byte kToken_transferFrom = 0x6;
-    public static final byte kToken_openAccount = 0x7;
     public static final byte kToken_mint = 0x8;
 
     public static final byte kExchange_listCoin = 0x1;
