@@ -4,7 +4,6 @@ import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.InvalidTxDataException;
-import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.testExchange.*;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
@@ -67,8 +66,7 @@ public class POCTestExchange {
         }
 
         private TransactionResult callBalanceOf(byte[] toQuery) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", new ByteArray(toQuery));
-            // TODO - consider to add "Address" to ABI
+            byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", new Address(toQuery));
 
             Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
@@ -78,7 +76,7 @@ public class POCTestExchange {
         }
 
         private TransactionResult callOpenAccount(byte[] toOpen) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("openAccount", new ByteArray(toOpen));
+            byte[] args = ABIEncoder.encodeMethodArguments("openAccount", new Address(toOpen));
 
             Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
@@ -88,7 +86,7 @@ public class POCTestExchange {
         }
 
         private TransactionResult callMint(byte[] receiver) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("mint", new ByteArray(receiver), 5000L);
+            byte[] args = ABIEncoder.encodeMethodArguments("mint", new Address(receiver), 5000L);
 
             Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
@@ -98,7 +96,7 @@ public class POCTestExchange {
         }
 
         private TransactionResult callTransfer(byte[] sender, byte[] receiver, long amount) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("transfer", new ByteArray(receiver), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("transfer", new Address(receiver), amount);
 
             Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
@@ -108,7 +106,7 @@ public class POCTestExchange {
         }
 
         private TransactionResult callAllowance(byte[] owner, byte[] spender) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("allowance", new ByteArray(owner), new ByteArray(spender));
+            byte[] args = ABIEncoder.encodeMethodArguments("allowance", new Address(owner), new Address(spender));
 
             Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
@@ -118,7 +116,7 @@ public class POCTestExchange {
         }
 
         private TransactionResult callApprove(byte[] owner, byte[] spender, long amount) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("approve", new ByteArray(spender), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("approve", new Address(spender), amount);
 
             Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, addr, 0, args, energyLimit);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
@@ -128,7 +126,7 @@ public class POCTestExchange {
         }
 
         private TransactionResult callTransferFrom(byte[] executor, byte[] from, byte[] to, long amount) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", new ByteArray(from), new ByteArray(to), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", new Address(from), new Address(to), amount);
 
             Transaction callTransaction = new Transaction(Transaction.Type.CALL, executor, addr, 0, args, energyLimit);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);

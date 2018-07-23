@@ -186,6 +186,24 @@ public class ABIEncoder{
                 }
                 return array;
             }
+        },
+        avm_ADDRESS ('A', Address.avm_LENGTH, new String[]{"A", "org.aion.avm.api.Address"}) {
+            @Override
+            public byte[] encode(Object data) {
+                return ((Address)data).unwrap();
+            }
+            @Override
+            public byte[] encodeShadowType(Object data) {
+                return encode(data);
+            }
+            @Override
+            public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
+                return new ABIDecoder.DecodedObjectInfo(new Address(Arrays.copyOfRange(data, startIndex, startIndex + Address.avm_LENGTH)), startIndex + Address.avm_LENGTH);
+            }
+            @Override
+            public Array constructWrappedArray(int size, Object[] data) {
+                return null;
+            }
         };
 
         public final char symbol;

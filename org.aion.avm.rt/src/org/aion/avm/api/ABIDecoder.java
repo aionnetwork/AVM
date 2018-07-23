@@ -81,7 +81,7 @@ public class ABIDecoder {
     }
 
     public static IObject avm_decodeOneObject(ByteArray txData) throws InvalidTxDataException{
-        return (IObject) decodeOneObject(txData.getUnderlying()); // TODO - wrap Object to IObject
+        return (IObject) decodeOneObject(txData.getUnderlying());
     }
 
 
@@ -287,6 +287,7 @@ public class ABIDecoder {
         elementaryTypesMap.put(ABIEncoder.ABITypes.avm_FLOAT.symbol,     new String[]{"F", "float", "FloatArray"});
         elementaryTypesMap.put(ABIEncoder.ABITypes.avm_LONG.symbol,      new String[]{"J", "long", "LongArray"});
         elementaryTypesMap.put(ABIEncoder.ABITypes.avm_DOUBLE.symbol,    new String[]{"D", "double", "DoubleArray"});
+        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_ADDRESS.symbol,   ABIEncoder.ABITypes.avm_ADDRESS.identifiers);
 
         String ARRAY_WRAPPER_PREFIX = "org.aion.avm.arraywrapper.";
 
@@ -301,55 +302,53 @@ public class ABIDecoder {
                 int parIdx = 0;
                 boolean matched = true;
                 for (int idx = 0; idx < argsDescriptor.length(); idx++) {
-                    char c = argsDescriptor.charAt(idx);
-                    switch (c) {
-                        case ABIDecoder.ARRAY_S:
-                            String pType = parameterTypes[parIdx].getName();
-                            if (pType.charAt(0) == '[') {
-                                pType = pType.substring(1);
-                            } else if (pType.startsWith(ARRAY_WRAPPER_PREFIX)) {
-                                pType = pType.substring(ARRAY_WRAPPER_PREFIX.length());
-                            } else {
-                                matched = false;
-                                break;
-                            }
+                    if (argsDescriptor.charAt(idx) == ABIDecoder.ARRAY_S) {
+                        String pType = parameterTypes[parIdx].getName();
+                        if (pType.charAt(0) == '[') {
+                            pType = pType.substring(1);
+                        } else if (pType.startsWith(ARRAY_WRAPPER_PREFIX)) {
+                            pType = pType.substring(ARRAY_WRAPPER_PREFIX.length());
+                        } else {
+                            matched = false;
+                            break;
+                        }
 
-                            if (argsDescriptor.length() - idx < 2) {
-                                matched = false;
-                                break;
-                            }
+                        if (argsDescriptor.length() - idx < 2) {
+                            matched = false;
+                            break;
+                        }
 
-                            char eType;
-                            if (argsDescriptor.charAt(++idx) == ABIDecoder.ARRAY_S) {
-                                if (pType.charAt(0) == '$' && pType.charAt(1) == '$') {
-                                    pType = pType.substring(2);
-                                }
-                                else {
-                                    matched = false;
-                                    break;
-                                }
-                                eType = argsDescriptor.charAt(++idx);
-                                idx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, idx);
+                        char eType;
+                        if (argsDescriptor.charAt(++idx) == ABIDecoder.ARRAY_S) {
+                            if (pType.charAt(0) == '$' && pType.charAt(1) == '$') {
+                                pType = pType.substring(2);
                             }
                             else {
-                                eType = argsDescriptor.charAt(idx);
+                                matched = false;
+                                break;
                             }
+                            eType = argsDescriptor.charAt(++idx);
                             idx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, idx);
+                        }
+                        else {
+                            eType = argsDescriptor.charAt(idx);
+                        }
+                        idx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, idx);
 
-                            if (pType.charAt(0) == 'L') {
-                                pType = pType.substring(1);
-                            }
+                        if (pType.charAt(0) == 'L') {
+                            pType = pType.substring(1);
+                        }
 
-                            if (!(Arrays.asList(elementaryTypesMap.get(eType)).contains(pType))) {
-                                matched = false;
-                                break;
-                            }
+                        if (!(Arrays.asList(elementaryTypesMap.get(eType)).contains(pType))) {
+                            matched = false;
                             break;
-                        default:
-                            if (!(Arrays.asList(elementaryTypesMap.get(c)).contains(parameterTypes[parIdx].getName()))) {
-                                matched = false;
-                                break;
-                            }
+                        }
+                    }
+                    else {
+                        if (!(Arrays.asList(elementaryTypesMap.get(argsDescriptor.charAt(idx))).contains(parameterTypes[parIdx].getName()))) {
+                            matched = false;
+                            break;
+                        }
                     }
                     if (!matched) {
                         break;
