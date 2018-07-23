@@ -37,16 +37,6 @@ public class Wallet {
      * @return The output of running the invoke (null for void methods or require failed cases).
      */
     public static byte[] main() {
-        byte[] result = null;
-        try {
-            result = decodeMain();
-        } catch (RequireFailedException e) {
-            result = null;
-        }
-        return result;
-    }
-
-    private static byte[] decodeMain() {
         // Most of our paths return nothing so just default to the empty byte array.
         byte[] result = new byte[0];
         byte[] input = BlockchainRuntime.getData();
@@ -74,7 +64,7 @@ public class Wallet {
         }
         case Abi.kWallet_addOwner : {
             Address owner = decoder.decodeAddress();
-            Wallet.addOwner(owner);
+            result = Wallet.addOwner(owner);
             break;
         }
         case Abi.kWallet_execute : {
@@ -92,7 +82,7 @@ public class Wallet {
         }
         case Abi.kWallet_changeRequirement : {
             int newRequired = decoder.decodeInt();
-            Wallet.changeRequirement(newRequired);
+            result = Wallet.changeRequirement(newRequired);
             break;
         }
         case Abi.kWallet_getOwner : {
@@ -107,12 +97,12 @@ public class Wallet {
         case Abi.kWallet_changeOwner : {
             Address from = decoder.decodeAddress();
             Address to = decoder.decodeAddress();
-            Wallet.changeOwner(from, to);
+            result = Wallet.changeOwner(from, to);
             break;
         }
         case Abi.kWallet_removeOwner : {
             Address owner = decoder.decodeAddress();
-            Wallet.removeOwner(owner);
+            result = Wallet.removeOwner(owner);
             break;
         }
         case Abi.kWallet_revoke : {
@@ -132,18 +122,39 @@ public class Wallet {
     }
 
     // EXTERNAL - composed
-    public static void addOwner(Address owner) {
-        Multiowned.addOwner(owner);
+    public static byte[] addOwner(Address owner) {
+        byte[] result = null;
+        try {
+            Multiowned.addOwner(owner);
+            result = new byte[0];
+        } catch (RequireFailedException e) {
+            result = null;
+        }
+        return result;
     }
 
     // EXTERNAL - composed
-    public static void removeOwner(Address owner) {
-        Multiowned.removeOwner(owner);
+    public static byte[] removeOwner(Address owner) {
+        byte[] result = null;
+        try {
+            Multiowned.removeOwner(owner);
+            result = new byte[0];
+        } catch (RequireFailedException e) {
+            result = null;
+        }
+        return result;
     }
 
     // EXTERNAL - composed
-    public static void changeRequirement(int newRequired) {
-        Multiowned.changeRequirement(newRequired);
+    public static byte[] changeRequirement(int newRequired) {
+        byte[] result = null;
+        try {
+            Multiowned.changeRequirement(newRequired);
+            result = new byte[0];
+        } catch (RequireFailedException e) {
+            result = null;
+        }
+        return result;
     }
 
     // EXTERNAL - composed
@@ -223,8 +234,15 @@ public class Wallet {
         return result;
     }
 
-    public static void changeOwner(Address from, Address to) {
-        Multiowned.changeOwner(from, to);
+    public static byte[] changeOwner(Address from, Address to) {
+        byte[] result = null;
+        try {
+            Multiowned.changeOwner(from, to);
+            result = new byte[0];
+        } catch (RequireFailedException e) {
+            result = null;
+        }
+        return result;
     }
 
     // confirm a transaction through just the hash. we use the previous transactions map, m_txs, in order
