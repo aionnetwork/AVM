@@ -1,5 +1,8 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.InvalidTxDataException;
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
@@ -54,7 +57,7 @@ public class AvmImplDeployAndRunTest {
     }*/
 
     @Test
-    public void testDeployAndRun() {
+    public void testDeployAndRun() throws InvalidTxDataException {
         TransactionResult deployResult = deployHelloWorld();
 
         // call the "run" method
@@ -64,11 +67,11 @@ public class AvmImplDeployAndRunTest {
         TransactionResult result = new AvmImpl().run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        assertEquals("Hello, world!", new String(result.getReturnData()));
+        assertEquals("Hello, world!", new String(((ByteArray) ABIDecoder.decodeOneObject(result.getReturnData())).getUnderlying()));
     }
 
     @Test
-    public void testDeployAndRunWithArgs() {
+    public void testDeployAndRunWithArgs() throws InvalidTxDataException {
         TransactionResult deployResult = deployHelloWorld();
 
         // test another method call, "add" with arguments
@@ -78,11 +81,11 @@ public class AvmImplDeployAndRunTest {
         TransactionResult result = new AvmImpl().run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        assertEquals(124, ByteBuffer.allocate(4).put(result.getReturnData()).getInt(0));
+        assertEquals(124, ABIDecoder.decodeOneObject(result.getReturnData()));
     }
 
     @Test
-    public void testDeployAndRunTest() {
+    public void testDeployAndRunTest() throws InvalidTxDataException {
         TransactionResult deployResult = deployTheDeployAndRunTest();
         assertEquals(TransactionResult.Code.SUCCESS, deployResult.getStatusCode());
 
@@ -95,7 +98,7 @@ public class AvmImplDeployAndRunTest {
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         byte[] expected = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x05};
         // "addArray<[I2]I>" + raw data 123, 1, 5
-        boolean correct = Arrays.equals(result.getReturnData(), expected);
+        boolean correct = Arrays.equals(((ByteArray) (ABIDecoder.decodeOneObject(result.getReturnData()))).getUnderlying(), expected);
         assertEquals(true, correct);
 
         // test another method call, "addArray" with 1D array arguments
@@ -104,7 +107,7 @@ public class AvmImplDeployAndRunTest {
         result = new AvmImpl().run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        assertEquals(129, ByteBuffer.allocate(4).put(result.getReturnData()).getInt(0));
+        assertEquals(129, ABIDecoder.decodeOneObject(result.getReturnData()));
 
 /* disable these tests before we have the 2D array object creation
         // test another method call, "addArray2" with 2D array arguments

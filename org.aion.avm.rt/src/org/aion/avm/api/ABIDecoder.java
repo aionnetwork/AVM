@@ -58,22 +58,66 @@ public class ABIDecoder {
         }
     }
 
+    public static class Descriptor {
+        public ABIEncoder.ABITypes type;// elementary types defined for AION contract ABI
+        public int dimension;           // 0: not an array; 1: 1D array; 2: 2D array
+        public int size;                // number of components (1D or 2D array)
+        public int[] rowSizes;          // 2D array: size of each component
+        public int encodedBytes;        // number of bytes of the encoded descriptor
+
+        Descriptor(ABIEncoder.ABITypes type, int dimension, int encodedBytes) {
+            this.type = type;
+            this.dimension = dimension;
+            this.encodedBytes = encodedBytes;
+        }
+
+        Descriptor(ABIEncoder.ABITypes type, int dimension, int size, int encodedBytes) {
+            this.type = type;
+            this.dimension = dimension;
+            this.size = size;
+            this.encodedBytes = encodedBytes;
+        }
+
+        Descriptor(ABIEncoder.ABITypes type, int dimension, int size, int[] rowSizes, int encodedBytes) {
+            this.type = type;
+            this.dimension = dimension;
+            this.size = size;
+            this.rowSizes = rowSizes;
+            this.encodedBytes = encodedBytes;
+        }
+    }
+
+    public static class DecodedObjectInfo {
+        Object object;
+        int endByteOfData;
+
+        DecodedObjectInfo(Object object, int endByteOfData) {
+            this.object = object;
+            this.endByteOfData = endByteOfData;
+        }
+    }
+
+
     /*
      * Runtime-facing implementation.
      */
     public static ByteArray avm_decodeAndRun(IObject obj, ByteArray txData) throws InvalidTxDataException{
-        return decodeAndRun(obj, txData.getUnderlying());
+        return new ByteArray(decodeAndRun(obj, txData.getUnderlying()));
     }
 
     public static MethodCaller avm_decode(ByteArray txData) throws InvalidTxDataException{
         return decode(txData.getUnderlying());
     }
 
+    public static IObject avm_decodeOneObject(ByteArray txData) throws InvalidTxDataException{
+        return (IObject) decodeOneObject(txData.getUnderlying()); // TODO - wrap Object to IObject
+    }
+
 
     /*
      * Underlying implementation.
      */
-    public static ByteArray decodeAndRun(IObject obj, byte[] txData) throws InvalidTxDataException{
+    public static byte[] decodeAndRun(IObject obj, byte[] txData) throws InvalidTxDataException{
         MethodCaller methodCaller = decode(txData);
 
         String newMethodName = "avm_" + methodCaller.methodName;
@@ -82,7 +126,7 @@ public class ABIDecoder {
         // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
         Method method = matchMethodSelector(obj.avm_getClass(), newMethodName, newArgDescriptor);
 
-        Object ret = null;
+        Object ret;
         if (Modifier.isStatic(method.getModifiers())) {
             obj = null;
         }
@@ -97,7 +141,7 @@ public class ABIDecoder {
             throw new InvalidTxDataException();
         }
 
-        return new ByteArray(ABIEncoder.encodeOneObject(ret)[1]);
+        return ABIEncoder.encodeOneObject(ret);
     }
 
     public static MethodCaller decode(byte[] txData) throws InvalidTxDataException{
@@ -115,147 +159,63 @@ public class ABIDecoder {
 
         String methodName = decoded.substring(0, m1);
         String argsDescriptor = decoded.substring(m1+1, m2);
+        int startByteOfData = decoded.substring(0, m2 + 1).getBytes().length;
 
-        Object[] arguments = getArguments(txData, m2+1, argsDescriptor);
+        Object[] arguments = decodeArguments(Arrays.copyOfRange(txData, startByteOfData, txData.length), argsDescriptor);
 
         return new MethodCaller(methodName, argsDescriptor, arguments);
     }
 
-    private static Object[] getArguments(byte[] txData, int start, String argsDescriptor) throws InvalidTxDataException{
-        Object[] args = new Object[10];
-        int argsCount = 0;
-
-        for (int idx = 0; idx < argsDescriptor.length(); idx++, argsCount++) {
-            char c = argsDescriptor.charAt(idx);
-
-            switch (c) {
-                case BYTE:
-                    checkRemainingDataSize(txData.length - start, BYTE_SIZE);
-
-                    args[argsCount] = txData[start];
-                    start += BYTE_SIZE;
-                    break;
-                case BOOLEAN:
-                    checkRemainingDataSize(txData.length - start, BOOLEAN_SIZE);
-
-                    boolean b = (txData[start] != 0);
-                    args[argsCount] = b;
-                    start += BOOLEAN_SIZE;
-                    break;
-                case CHAR:
-                    checkRemainingDataSize(txData.length - start, CHAR_SIZE_MIN);
-
-                    char c1 = getNextString(txData, start, 1).charAt(0);;
-                    args[argsCount] = c1;
-                    start += Character.toString(c1).getBytes().length;
-                    break;
-                case SHORT:
-                    checkRemainingDataSize(txData.length - start, SHORT_SIZE);
-
-                    args[argsCount] = getNextShort(txData, start);
-                    start += SHORT_SIZE;
-                    break;
-                case INT:
-                    checkRemainingDataSize(txData.length - start, INT_SIZE);
-
-                    args[argsCount] = getNextInt(txData, start);
-                    start += INT_SIZE;
-                    break;
-                case FLOAT:
-                    checkRemainingDataSize(txData.length - start, FLOAT_SIZE);
-
-                    args[argsCount] = getNextFloat(txData, start);
-                    start += FLOAT_SIZE;
-                    break;
-                case LONG:
-                    checkRemainingDataSize(txData.length - start, LONG_SIZE);
-
-                    args[argsCount] = getNextLong(txData, start);
-                    start += LONG_SIZE;
-                    break;
-                case DOUBLE:
-                    checkRemainingDataSize(txData.length - start, DOUBLE_SIZE);
-
-                    args[argsCount] = getNextDouble(txData, start);
-                    start += DOUBLE_SIZE;
-                    break;
-                case ARRAY_S:
-                    int arrayDimension = 1;
-                    char type;
-
-                    // shortest [XM]
-                    if (argsDescriptor.length() - idx < 4) {
-                        throw new InvalidTxDataException();
-                    }
-
-                    if (argsDescriptor.charAt(++ idx) == ARRAY_S) {
-                        arrayDimension ++;
-                        idx ++;
-                    }
-
-                    type = argsDescriptor.charAt(idx ++);
-
-                    int[] res = readNumFromDescriptor(argsDescriptor, ARRAY_E, idx);
-                    int m = res[0];
-                    idx = res[1];
-
-                    if (arrayDimension == 1) {
-                        start = get1DArrayData(txData, start, args, argsCount, type, m);
-                    }
-                    else {
-                        res = readNumFromDescriptor(argsDescriptor, ARRAY_E, idx + 1);
-                        int n = res[0];
-                        idx = res[1];
-
-                        int[] dimensions = new int[n];
-                        if (m == 0 && n > 0) {
-                            // this is a jagged array
-                            for (int i = 0; i < n; i ++) {
-                                if (argsDescriptor.charAt(++ idx) == JAGGED_D_S) {
-                                    res = readNumFromDescriptor(argsDescriptor, JAGGED_D_E, idx + 1);
-                                    dimensions[i] = res[0];
-                                    idx = res[1];
-                                }
-                                else {
-                                    throw new InvalidTxDataException();
-                                }
-                            }
-                        }
-                        else if (m > 0 && n > 0) {
-                            // this is a rectangular shape 2D array
-                            for (int i = 0; i < n; i ++) {
-                                dimensions[i] = m;
-                            }
-                        }
-                        else {
-                            throw new InvalidTxDataException();
-                        }
-
-                        start = get2DArrayData(txData, start, args, argsCount, type, dimensions, n);
-                    }
-                    break;
-                default:
-                    throw new InvalidTxDataException();
-            }
-
-            if (argsCount == args.length - 1) {
-                Object[] argsNew = new Object[args.length + 10];
-                System.arraycopy(args, 0, argsNew, 0, args.length);
-                args = argsNew;
-            }
-        }
-
-        Object[] argsNew = new Object[argsCount];
-        System.arraycopy(args, 0, argsNew, 0, argsCount);
-
-        return argsNew;
+    public static Object decodeOneObject(byte[] data) throws InvalidTxDataException{
+        Descriptor descriptor = readOneDescriptor(data, 0);
+        return decodeOneObjectWithDescriptor(data, descriptor.encodedBytes, descriptor).object;
     }
 
-    /*
-     * A helper method to read a number from the arguments descriptor.
+    /**
+     * A helper method to read one argument descriptor from the input data, starting from its index "start".
+     * All possible characters are encoded in UTF-8 as one byte for each. So the character index in the string
+     * is equal to the byte index in the byte array.
      */
-    private static int[] readNumFromDescriptor(String argsDescriptor, char stopChar, int startIdx) throws InvalidTxDataException {
-        int[] res = new int[2];
+    private static Descriptor readOneDescriptor(byte[] data, int start) throws InvalidTxDataException{
+        String decoded = new String(data).substring(start);
+
+        if (decoded.startsWith("[[")) {
+            // 2D array
+            int[] readNumM = readNumberFromDescriptor(decoded, ARRAY_E, 3);
+            int[] readNumN = readNumberFromDescriptor(decoded, ARRAY_E, readNumM[1] + 1);
+            int[] rowSizes = new int[readNumN[0]];
+            int encodedBytes;
+            if (readNumM[0] == 0) {
+                // jagged array descriptor format
+                int[] readNum = readNumberFromDescriptor(decoded, JAGGED_D_E, readNumN[1] + 2);
+                rowSizes[0] = readNum[0];
+                for (int i = 1; i < readNumN[0]; i ++) {
+                    readNum = readNumberFromDescriptor(decoded, JAGGED_D_E, readNum[1] + 2);
+                    rowSizes[i] = readNum[0];
+                }
+                encodedBytes = readNum[1] + 1;
+            } else {
+                Arrays.fill(rowSizes, readNumM[0]);
+                encodedBytes = readNumN[1] + 1;
+            }
+            return new Descriptor(ABIEncoder.mapABITypes(decoded.substring(2,3)), 2, readNumN[0], rowSizes, encodedBytes);
+        }
+        else if (decoded.startsWith("[")) {
+            // 1D array
+            int[] readNum = readNumberFromDescriptor(decoded, ARRAY_E, 2);
+            int encodedBytes = readNum[1] + 1;
+            return new Descriptor(ABIEncoder.mapABITypes(decoded.substring(1,2)), 1, readNum[0], encodedBytes);
+        }
+        else {
+            return new Descriptor(ABIEncoder.mapABITypes(decoded.substring(0,1)), 0, 1);
+        }
+    }
+
+    /**
+     * A helper method to read one number from the array arguments descriptor.
+     */
+    private static int[] readNumberFromDescriptor(String argsDescriptor, char stopChar, int startIdx) throws InvalidTxDataException {
+        int[] res = new int[2]; // res[0]: the number encoded as argsDescriptor.substring(startIdx, idxE); res[1]: the index of stopChar in the argsDescriptor
         int idxE = argsDescriptor.indexOf(stopChar, startIdx);
         if ( idxE == -1) {
             throw new InvalidTxDataException();
@@ -277,275 +237,68 @@ public class ABIDecoder {
 
     }
 
-    private static int get1DArrayData(byte[] txData, int start, Object[] args, int argsCount, char type, int m) throws InvalidTxDataException{
-        if (m <= 0) {
-            throw new InvalidTxDataException();
+    private static DecodedObjectInfo decodeOneObjectWithDescriptor(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
+        if (descriptor.dimension == 0) {
+            return descriptor.type.decode(data, startByteOfData);
         }
-
-        switch (type) {
-            case BYTE:
-                checkRemainingDataSize(txData.length - start, BYTE_SIZE * m);
-                byte[] argB = new byte[m];
-                System.arraycopy(txData, start, argB, 0, m);
-                args[argsCount] = argB;
-                break;
-            case BOOLEAN:
-                checkRemainingDataSize(txData.length - start, BOOLEAN_SIZE * m);
-                boolean[] argZ = new boolean[m];
-                for (int idx = 0; idx < m; idx ++) {
-                    argZ[idx] = (txData[start] != 0);
-                    start += BOOLEAN_SIZE;
-                }
-                args[argsCount] = argZ;
-                break;
-            case CHAR:
-                checkRemainingDataSize(txData.length - start, CHAR_SIZE_MIN * m);
-                String argC = getNextString(txData, start, m);
-                start += argC.getBytes().length;
-                args[argsCount] = argC.toCharArray();
-                break;
-            case SHORT:
-                checkRemainingDataSize(txData.length - start, SHORT_SIZE * m);
-                short[] argS = new short[m];
-                for (int idx = 0; idx < m; idx ++) {
-                    argS[idx] = getNextShort(txData, start);
-                    start += SHORT_SIZE;
-                }
-                args[argsCount] = argS;
-                break;
-            case INT:
-                checkRemainingDataSize(txData.length - start, INT_SIZE * m);
-                int[] argI = new int[m];
-                for (int idx = 0; idx < m; idx ++) {
-                    argI[idx] = getNextInt(txData, start);
-                    start += INT_SIZE;
-                }
-                args[argsCount] = argI;
-                break;
-            case FLOAT:
-                checkRemainingDataSize(txData.length - start, FLOAT_SIZE * m);
-                float[] argF = new float[m];
-                for (int idx = 0; idx < m; idx ++) {
-                    argF[idx] = getNextFloat(txData, start);
-                    start += FLOAT_SIZE;
-                }
-                args[argsCount] = argF;
-                break;
-            case LONG:
-                checkRemainingDataSize(txData.length - start, LONG_SIZE * m);
-                long[] argL = new long[m];
-                for (int idx = 0; idx < m; idx ++) {
-                    argL[idx] = getNextLong(txData, start);
-                    start += LONG_SIZE;
-                }
-                args[argsCount] = argL;
-                break;
-            case DOUBLE:
-                checkRemainingDataSize(txData.length - start, DOUBLE_SIZE * m);
-                double[] argD = new double[m];
-                for (int idx = 0; idx < m; idx ++) {
-                    argD[idx] = getNextDouble(txData, start);
-                    start += DOUBLE_SIZE;
-                }
-                args[argsCount] = argD;
-                break;
-            default:
-                throw new InvalidTxDataException();
+        else if (descriptor.dimension == 1) {
+            return decode1DArray(data, startByteOfData, descriptor);
         }
-        return start;
-    }
-
-    private static int get2DArrayData(byte[] txData, int start, Object[] args, int argsCount, char type, int[] m, int n) throws InvalidTxDataException{
-        if (n <= 0) {
-            throw new InvalidTxDataException();
-        }
-
-        switch (type) {
-            case BYTE:
-                byte[][] argB = new byte[n][];
-                for (int indexN = 0; indexN < n; indexN ++) {
-                    int curM = m[indexN];
-                    if (curM <= 0) {
-                        throw new InvalidTxDataException();
-                    }
-                    checkRemainingDataSize(txData.length - start, BYTE_SIZE * curM);
-
-                    byte[] row = new byte[curM];
-                    System.arraycopy(txData, start, row, 0, curM);
-                    argB[indexN] = row;
-                }
-                args[argsCount] = argB;
-                break;
-            case BOOLEAN:
-                boolean[][] argZ = new boolean[n][];
-                for (int indexN = 0; indexN < n; indexN ++) {
-                    int curM = m[indexN];
-                    if (curM <= 0) {
-                        throw new InvalidTxDataException();
-                    }
-                    checkRemainingDataSize(txData.length - start, BOOLEAN_SIZE * curM);
-
-                    boolean[] row = new boolean[curM];
-                    for (int indexM = 0; indexM < curM; indexM ++) {
-                        row[indexM] = (txData[start] != 0);
-                        start += BOOLEAN_SIZE;
-                    }
-                    argZ[indexN] = row;
-                }
-                args[argsCount] = argZ;
-                break;
-            case CHAR:
-                char[][] argC = new char[n][];
-                for (int indexN = 0; indexN < n; indexN ++) {
-                    int curM = m[indexN];
-                    if (curM <= 0) {
-                        throw new InvalidTxDataException();
-                    }
-                    checkRemainingDataSize(txData.length - start, CHAR_SIZE_MIN * curM);
-
-                    String s = getNextString(txData, start, curM);
-                    argC[indexN] = s.toCharArray();
-                    start += s.getBytes().length;
-                }
-                args[argsCount] = argC;
-                break;
-            case SHORT:
-                short[][] argS = new short[n][];
-                for (int indexN = 0; indexN < n; indexN ++) {
-                    int curM = m[indexN];
-                    if (curM <= 0) {
-                        throw new InvalidTxDataException();
-                    }
-                    checkRemainingDataSize(txData.length - start, SHORT_SIZE * curM);
-
-                    short[] row = new short[curM];
-                    for (int indexM = 0; indexM < curM; indexM ++) {
-                        row[indexM] = getNextShort(txData, start);
-                        start += SHORT_SIZE;
-                    }
-                    argS[indexN] = row;
-                }
-                args[argsCount] = argS;
-                break;
-            case INT:
-                int[][] argI = new int[n][];
-                for (int indexN = 0; indexN < n; indexN ++) {
-                    int curM = m[indexN];
-                    if (curM <= 0) {
-                        throw new InvalidTxDataException();
-                    }
-                    checkRemainingDataSize(txData.length - start, INT_SIZE * curM);
-
-                    int[] row = new int[curM];
-                    for (int indexM = 0; indexM < curM; indexM ++) {
-                        row[indexM] = getNextInt(txData, start);
-                        start += INT_SIZE;
-                    }
-                    argI[indexN] = row;
-                }
-                args[argsCount] = argI;
-                break;
-            case FLOAT:
-                float[][] argF = new float[n][];
-                for (int indexN = 0; indexN < n; indexN ++) {
-                    int curM = m[indexN];
-                    if (curM <= 0) {
-                        throw new InvalidTxDataException();
-                    }
-                    checkRemainingDataSize(txData.length - start, FLOAT_SIZE * curM);
-
-                    float[] row = new float[curM];
-                    for (int indexM = 0; indexM < curM; indexM++) {
-                        row[indexM] = getNextFloat(txData, start);
-                        start += FLOAT_SIZE;
-                    }
-                    argF[indexN] = row;
-                }
-                args[argsCount] = argF;
-                break;
-            case LONG:
-                long[][] argL = new long[n][];
-                for (int indexN = 0; indexN < n; indexN ++) {
-                    int curM = m[indexN];
-                    if (curM <= 0) {
-                        throw new InvalidTxDataException();
-                    }
-                    checkRemainingDataSize(txData.length - start, LONG_SIZE * curM);
-
-                    long[] row = new long[curM];
-                    for (int indexM = 0; indexM < curM; indexM++) {
-                        row[indexM] = getNextLong(txData, start);
-                        start += LONG_SIZE;
-                    }
-                    argL[indexN] = row;
-                }
-                args[argsCount] = argL;
-                break;
-            case DOUBLE:
-                double[][] argD = new double[n][];
-                for (int indexN = 0; indexN < n; indexN ++) {
-                    int curM = m[indexN];
-                    if (curM <= 0) {
-                        throw new InvalidTxDataException();
-                    }
-                    checkRemainingDataSize(txData.length - start, DOUBLE_SIZE * curM);
-
-                    double[] row = new double[curM];
-                    for (int indexM = 0; indexM < curM; indexM++) {
-                        row[indexM] = getNextDouble(txData, start);
-                        start += DOUBLE_SIZE;
-                    }
-                    argD[indexN] = row;
-                }
-                args[argsCount] = argD;
-                break;
-            default:
-                throw new InvalidTxDataException();
-        }
-        return start;
-    }
-
-    private static short getNextShort(byte[] txData, int start) {
-        return (short)((txData[start] << 8) & 0xFF00 | txData[start + 1] & 0xFF);
-    }
-
-    private static int getNextInt(byte[] txData, int start) {
-        return ((txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
-                (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF);
-    }
-
-    private static long getNextLong(byte[] txData, int start) {
-        return ((long)((txData[start] << 24) & 0xFF000000 | (txData[start + 1] << 16) & 0xFF0000 |
-                (txData[start + 2] << 8) & 0xFF00 | txData[start + 3] & 0xFF) << 32)
-                + (long)((txData[start + 4] << 24) & 0xFF000000 | (txData[start + 5] << 16) & 0xFF0000 |
-                (txData[start + 6] << 8) & 0xFF00 | txData[start + 7] & 0xFF);
-    }
-
-    private static float getNextFloat(byte[] txData, int start) {
-        return Float.intBitsToFloat(getNextInt(txData, start));
-    }
-
-    private static double getNextDouble(byte[] txData, int start) {
-        return Double.longBitsToDouble(getNextLong(txData, start));
-    }
-
-    private static String getNextString(byte[] txData, int start, int m) {
-        int newLength = Math.min(CHAR_SIZE_MAX * m, txData.length - start);
-        byte[] bytes = new byte[newLength];
-
-        for (int i = 0; i < newLength; i++) {
-            bytes[i] = txData[start + i];
-        }
-
-        return new String(bytes).substring(0, m);
-    }
-
-    private static void checkRemainingDataSize(int remainingDataSize, int minRequiredDataSize) throws InvalidTxDataException {
-        if(remainingDataSize < minRequiredDataSize) {
-            throw new InvalidTxDataException();
+        else {
+            return decode2DArray(data, startByteOfData, descriptor);
         }
     }
 
+    private static DecodedObjectInfo decode1DArray(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
+        int endByte = startByteOfData;
+        Object[] array = new Object[descriptor.size];
+        Descriptor componentDescriptor = new Descriptor(descriptor.type, 0, 1);
+        for (int idx = 0; idx < descriptor.size; idx ++) {
+            DecodedObjectInfo decodedObjectInfo = decodeOneObjectWithDescriptor(data, endByte, componentDescriptor);
+            array[idx] = decodedObjectInfo.object;
+            endByte = decodedObjectInfo.endByteOfData;
+        }
+        return new DecodedObjectInfo(descriptor.type.constructWrappedArray(descriptor.size, array), endByte);
+    }
+
+    private static DecodedObjectInfo decode2DArray(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
+        int endByte = startByteOfData;
+        Object[][] array = new Object[descriptor.size][];
+        for (int idx = 0; idx < descriptor.size; idx ++) {
+            DecodedObjectInfo decodedObjectInfo = decode1DArray(data, endByte, descriptor);
+            array[idx] = (Object[]) decodedObjectInfo.object;
+            endByte = decodedObjectInfo.endByteOfData;
+        }
+        return new DecodedObjectInfo(array, endByte);
+    }
+
+    private static Object[] decodeArguments(byte[] data, String argsDescriptor) throws InvalidTxDataException{
+        // read all descriptors
+        int encodedBytes = 0;
+        List<Descriptor> descriptorList = new ArrayList<>();
+        while (encodedBytes < argsDescriptor.getBytes().length) {
+            Descriptor descriptor = readOneDescriptor(argsDescriptor.getBytes(), encodedBytes);
+            descriptorList.add(descriptor);
+            encodedBytes += descriptor.encodedBytes;
+        }
+
+        if (descriptorList.size() == 0) {
+            return null;
+        }
+
+        // decode the arguments
+        Object[] args = new Object[descriptorList.size()];
+        int argIndex = 0;
+        int bytes = 0;
+        for (Descriptor descriptor: descriptorList) {
+            DecodedObjectInfo decodedObjectInfo = decodeOneObjectWithDescriptor(data, bytes, descriptor);
+            args[argIndex] = decodedObjectInfo.object;
+            argIndex ++;
+            bytes = decodedObjectInfo.endByteOfData;
+        }
+
+        return args;
+    }
 
     /**
      * A helper method to match the method selector with the main-class methods.
@@ -659,12 +412,6 @@ public class ABIDecoder {
 
         for (int index = 0; index < originalSize; index ++) {
             Object obj = argList.get(index);
-
-            // need to remove the empty ones at the end of the list; ABI does not allow null arguments
-            if (obj == null) {
-                argList.remove(index);
-                continue;
-            }
 
             // generate the array wrapping objects
             if (obj.getClass().isArray()) {
