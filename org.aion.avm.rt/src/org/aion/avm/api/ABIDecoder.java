@@ -8,35 +8,6 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class ABIDecoder {
-    /*
-     * ABI arguments descriptor symbols and the elementary type sizes.
-     */
-    public static final char BYTE = 'B';
-    public static final int  BYTE_SIZE = 1;
-
-    public static final char BOOLEAN = 'Z';
-    public static final int  BOOLEAN_SIZE = 1;
-
-    public static final char CHAR = 'C';
-    // UTF-8 is variable-length encoding; minimum 1 byte, maximum 6 bytes for 1 character
-    public static final int  CHAR_SIZE_MIN = 1;
-    public static final int  CHAR_SIZE_MAX = 6;
-
-    public static final char SHORT = 'S';
-    public static final int  SHORT_SIZE = 2;
-
-    public static final char INT = 'I';
-    public static final int  INT_SIZE = 4;
-
-    public static final char FLOAT = 'F';
-    public static final int  FLOAT_SIZE = 4;
-
-    public static final char LONG = 'L';
-    public static final int  LONG_SIZE = 8;
-
-    public static final char DOUBLE = 'D';
-    public static final int  DOUBLE_SIZE = 8;
-
     public static final char ARRAY_S = '[';
     public static final char ARRAY_E = ']';
 
@@ -308,14 +279,14 @@ public class ABIDecoder {
 
         // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
         Map<Character, String[]> elementaryTypesMap = new HashMap<>();
-        elementaryTypesMap.put(ABIDecoder.BYTE,      new String[]{"B", "byte", "ByteArray"});
-        elementaryTypesMap.put(ABIDecoder.BOOLEAN,   new String[]{"Z", "boolean", "ByteArray"});
-        elementaryTypesMap.put(ABIDecoder.CHAR,      new String[]{"C", "char", "CharArray"});
-        elementaryTypesMap.put(ABIDecoder.SHORT,     new String[]{"S", "short", "ShortArray"});
-        elementaryTypesMap.put(ABIDecoder.INT,       new String[]{"I", "int", "IntArray"});
-        elementaryTypesMap.put(ABIDecoder.FLOAT,     new String[]{"F", "float", "FloatArray"});
-        elementaryTypesMap.put(ABIDecoder.LONG,      new String[]{"J", "long", "LongArray"});
-        elementaryTypesMap.put(ABIDecoder.DOUBLE,    new String[]{"D", "double", "DoubleArray"});
+        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_BYTE.symbol,      new String[]{"B", "byte", "ByteArray"});
+        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_BOOLEAN.symbol,   new String[]{"Z", "boolean", "ByteArray"});
+        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_CHAR.symbol,      new String[]{"C", "char", "CharArray"});
+        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_SHORT.symbol,     new String[]{"S", "short", "ShortArray"});
+        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_INT.symbol,       new String[]{"I", "int", "IntArray"});
+        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_FLOAT.symbol,     new String[]{"F", "float", "FloatArray"});
+        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_LONG.symbol,      new String[]{"J", "long", "LongArray"});
+        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_DOUBLE.symbol,    new String[]{"D", "double", "DoubleArray"});
 
         String ARRAY_WRAPPER_PREFIX = "org.aion.avm.arraywrapper.";
 

@@ -188,9 +188,9 @@ public class ABIEncoder{
             }
         };
 
-        private final char symbol;
-        private final int  bytes;
-        private final String[] identifiers;
+        public final char symbol;
+        public final int  bytes;
+        public final String[] identifiers;
 
         ABITypes(char symbol, int bytes, String[] identifiers) {
             this.symbol = symbol;
@@ -209,8 +209,8 @@ public class ABIEncoder{
     /*
      * Runtime-facing implementation.
      */
-    public static ByteArray avm_encodeMethodArguments(org.aion.avm.shadow.java.lang.String methodAPI, ObjectArray arguments)  throws InvalidTxDataException {
-        return new ByteArray(encodeMethodArguments(methodAPI.toString(), arguments.getUnderlying()));
+    public static ByteArray avm_encodeMethodArguments(org.aion.avm.shadow.java.lang.String methodName, ObjectArray arguments)  throws InvalidTxDataException {
+        return new ByteArray(encodeMethodArguments(methodName.toString(), arguments.getUnderlying()));
     }
 
     public static ByteArray avm_encodeOneObject(IObject data) throws InvalidTxDataException {
