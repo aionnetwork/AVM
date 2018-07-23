@@ -88,4 +88,14 @@ public class AionList<E> {
         }
         return size;
     }
+
+    public boolean contains(E toFind) {
+        int foundIndex = -1;
+        for (int i = 0; (-1 == foundIndex) && (i < this.storage.length) && (null != this.storage[i]); ++i) {
+            if (toFind.equals(this.storage[i])) {
+                foundIndex = i;
+            }
+        }
+        return (-1 != foundIndex);
+    }
 }

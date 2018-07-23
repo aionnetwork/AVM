@@ -35,4 +35,23 @@ public class AionListTest {
         }
         Assert.assertEquals(0, list.size());
     }
+
+    /**
+     * Adds 50 elements, and verifies that only they are in the list.
+     */
+    @Test
+    public void checkListContains() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 100; ++i) {
+            if (0 == (i % 2)) {
+                list.add("int_ " + i);
+            }
+        }
+        Assert.assertEquals(50, list.size());
+        for (int i = 0; i < 100; ++i) {
+            boolean expected = (0 == (i % 2));
+            boolean found = list.contains("int_ " + i);
+            Assert.assertEquals(expected, found);
+        }
+    }
 }
