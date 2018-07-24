@@ -219,24 +219,54 @@ public class Helpers {
     }
 
     public static byte[] encodeCodeAndData(byte[] code, byte[] arguments) {
-        ByteBuffer buffer = ByteBuffer.allocate(4 + code.length + 4 + arguments.length);
+        ByteBuffer buffer;
+        if (arguments == null) {
+            buffer = ByteBuffer.allocate(4 + code.length);
+        }
+        else {
+            buffer = ByteBuffer.allocate(4 + code.length + 4 + arguments.length);
+        }
+
         buffer.putInt(code.length);
         buffer.put(code);
-        buffer.putInt(arguments.length);
-        buffer.put(arguments);
+
+        if (arguments != null) {
+            buffer.putInt(arguments.length);
+            buffer.put(arguments);
+        }
 
         return buffer.array();
     }
 
     public static byte[][] decodeCodeAndData(byte[] bytes) {
-        // TODO: add length check guard
-
+        if (bytes.length < 4) {
+            return null;
+        }
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        byte[] code = new byte[buffer.getInt()];
-        buffer.get(code);
-        byte[] arguments = new byte[buffer.getInt()];
-        buffer.get(arguments);
+        int codeLength = buffer.getInt();
 
-        return new byte[][]{code, arguments};
+        if (codeLength + 4 <= bytes.length) {
+            byte[] code = new byte[codeLength];
+            buffer.get(code);
+
+            int argLength;
+            if (codeLength + 8 <= bytes.length) {
+                argLength = buffer.getInt();
+                if (codeLength + 8 + argLength == bytes.length) {
+                    byte[] arguments = new byte[argLength];
+                    buffer.get(arguments);
+                    return new byte[][]{code, arguments};
+                }
+                else {
+                    return new byte[][]{code, null};
+                }
+            }
+            else {
+                return new byte[][]{code, null};
+            }
+        }
+        else {
+            return null;
+        }
     }
 }

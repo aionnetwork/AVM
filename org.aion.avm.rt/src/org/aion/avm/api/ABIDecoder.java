@@ -88,14 +88,14 @@ public class ABIDecoder {
     /*
      * Underlying implementation.
      */
-    public static byte[] decodeAndRun(IObject obj, byte[] txData) throws InvalidTxDataException{
+    public static byte[] decodeAndRun(Object obj, byte[] txData) throws InvalidTxDataException{
         MethodCaller methodCaller = decode(txData);
 
         String newMethodName = "avm_" + methodCaller.methodName;
         String newArgDescriptor = methodCaller.argsDescriptor;
 
         // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
-        Method method = matchMethodSelector(obj.avm_getClass(), newMethodName, newArgDescriptor);
+        Method method = matchMethodSelector(obj.getClass(), newMethodName, newArgDescriptor);
 
         Object ret;
         if (Modifier.isStatic(method.getModifiers())) {
@@ -274,7 +274,7 @@ public class ABIDecoder {
     /**
      * A helper method to match the method selector with the main-class methods.
      */
-    public static Method matchMethodSelector(org.aion.avm.shadow.java.lang.Class clazz, String methodName, String argsDescriptor) {
+    public static Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor) {
         Method[] methods = clazz.getMethods();
 
         // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
@@ -297,6 +297,9 @@ public class ABIDecoder {
 
                 if ((parameterTypes == null || parameterTypes.length == 0) && (argsDescriptor==null || argsDescriptor.isEmpty())) {
                     return method;
+                }
+                if (argsDescriptor == null || argsDescriptor.isEmpty()) {
+                    break;
                 }
 
                 int parIdx = 0;

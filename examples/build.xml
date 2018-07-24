@@ -214,20 +214,11 @@
         </javac>
 
         <mkdir dir="${dir.local.build}/testExchangeJar"/>
-        <echo message="Packing com.example.pepe.jar..."/>
-        <jar destfile="${dir.local.build}/testExchangeJar/com.example.pepe.jar"
-             basedir="${dir.local.build}/${name}"
-             excludes="**/MemeCoin.class, **/MemeController.class">
+        <echo message="Packing com.example.testERC20.jar..."/>
+        <jar destfile="${dir.local.build}/testExchangeJar/com.example.testERC20.jar"
+             basedir="${dir.local.build}/${name}">
             <manifest>
-                <attribute name="Main-Class" value="com.example.testExchange.PepeController"/>
-            </manifest>
-        </jar>
-        <echo message="Packing com.example.meme.jar..."/>
-        <jar destfile="${dir.local.build}/testExchangeJar/com.example.meme.jar"
-             basedir="${dir.local.build}/${name}"
-             excludes="**/PepeCoin.class, **/PepeController.class">
-            <manifest>
-                <attribute name="Main-Class" value="com.example.testExchange.MemeController"/>
+                <attribute name="Main-Class" value="com.example.testExchange.CoinController"/>
             </manifest>
         </jar>
 

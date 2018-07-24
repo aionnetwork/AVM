@@ -3,12 +3,12 @@ package com.example.testExchange;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
 
-public class PepeController {
+public class CoinController {
 
     private static ERC20 coinbase;
 
-    public static void init(){
-        coinbase = new ERC20Token("Pepe", "PEPE", 8, BlockchainRuntime.getSender());
+    public static void init(char[] name, char[] symbol, int decimals){
+        coinbase = new ERC20Token(new String(name), new String(symbol), decimals, BlockchainRuntime.getSender());
     }
 
     public static byte[] main(){

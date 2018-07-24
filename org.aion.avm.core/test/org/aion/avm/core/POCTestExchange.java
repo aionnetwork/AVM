@@ -14,14 +14,12 @@ public class POCTestExchange {
 
     private static AvmImpl avm;
 
-    private byte[] pepeJar;
-    private byte[] memeJar;
+    private byte[] testERC20Jar;
 
     @Before
     public void setup() {
         avm = new AvmImpl();
-        pepeJar = Helpers.readFileToBytes("../examples/build/testExchangeJar/com.example.pepe.jar");
-        memeJar = Helpers.readFileToBytes("../examples/build/testExchangeJar/com.example.meme.jar");
+        testERC20Jar = Helpers.readFileToBytes("../examples/build/testExchangeJar/com.example.testERC20.jar");
     }
 
     private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
@@ -40,10 +38,10 @@ public class POCTestExchange {
         private byte[] addr;
         private byte[] minter;
 
-        CoinContract(byte[] contractAddr, byte[] minter, byte[] jar){
+        CoinContract(byte[] contractAddr, byte[] minter, byte[] jar, byte[] arguments){
             this.addr = contractAddr;
             this.minter = minter;
-            this.addr = initCoin(jar, new byte[0]);
+            this.addr = initCoin(jar, arguments);
         }
 
         private byte[] initCoin(byte[] jar, byte[] arguments){
@@ -139,8 +137,8 @@ public class POCTestExchange {
     public void testERC20() throws InvalidTxDataException{
 
         TransactionResult res;
-
-        CoinContract pepe = new CoinContract(pepeCoinAddr, pepeMinter, pepeJar);
+        byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
+        CoinContract pepe = new CoinContract(pepeCoinAddr, pepeMinter, testERC20Jar, arguments);
 
         res = pepe.callTotalSupply();
         Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
@@ -184,8 +182,11 @@ public class POCTestExchange {
 
 
     @Test
-    public void testExchange() {
-        CoinContract pepe = new CoinContract(pepeCoinAddr, pepeMinter, pepeJar);
-        CoinContract meme = new CoinContract(memeCoinAddr, memeMinter, memeJar);
+    public void testExchange() throws InvalidTxDataException{
+        byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
+        CoinContract pepe = new CoinContract(pepeCoinAddr, pepeMinter, testERC20Jar, arguments);
+
+        arguments = ABIEncoder.encodeMethodArguments("", "Meme".toCharArray(), "MEME".toCharArray(), 8);
+        CoinContract meme = new CoinContract(memeCoinAddr, memeMinter, testERC20Jar, arguments);
     }
 }

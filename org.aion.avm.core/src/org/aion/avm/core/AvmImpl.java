@@ -392,6 +392,7 @@ public class AvmImpl implements Avm {
             //TODO: If we make dapp storage into two-level Key Value storage, we can detect duplicated dappAddress
             byte[] dappAddress = Helpers.randomBytes(Address.LENGTH);
             byte[] dappCode = Helpers.decodeCodeAndData(tx.getData())[0];
+
             RawDappModule rawDapp = RawDappModule.readFromJar(dappCode);
             if (rawDapp == null) {
                 result.setStatusCode(TransactionResult.Code.INVALID_JAR);
@@ -452,11 +453,15 @@ public class AvmImpl implements Avm {
             String mappedUserMainClass = PackageConstants.kUserDotPrefix + transformedDapp.mainClass;
             Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
 
-            try {
-                Method method = clazz.getMethod("avm_init");
-                method.invoke(null);
-            } catch (NoSuchMethodException e) {
-
+            ABIDecoder.MethodCaller methodCaller = ABIDecoder.decode(Helpers.decodeCodeAndData(tx.getData())[1]);
+            Method method = ABIDecoder.matchMethodSelector(clazz, "avm_init", methodCaller.argsDescriptor);
+            if (method != null) {
+                if (methodCaller.arguments == null) {
+                    method.invoke(null);
+                }
+                else {
+                    method.invoke(null, methodCaller.arguments);
+                }
             }
 
             // Save back the state before we return.

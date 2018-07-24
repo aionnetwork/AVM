@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class ABIEncoder{
     public enum ABITypes{
-        avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", "org.aion.avm.shadow.java.lang.Byte", "org.aion.avm.arraywrapper.ByteArray"}) {
+        avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", "org.aion.avm.shadow.java.lang.Byte", "org.aion.avm.arraywrapper.ByteArray", "[B", "[[B"}) {
             @Override
             public byte[] encode(Object data) {
                 return new byte[]{(byte)data};
@@ -18,6 +18,17 @@ public class ABIEncoder{
             @Override
             public byte[] encodeShadowType(Object data) {
                 return encode(((org.aion.avm.shadow.java.lang.Byte)data).avm_byteValue());
+            }
+            @Override
+            public byte[][] encode1DArray(Object data) {
+                byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
+
+                // encoded data bytes
+                ret[1] = (byte[]) data;
+                // descriptor bytes
+                ret[0] = ("[" + symbol + String.valueOf(ret[1].length) + "]").getBytes();
+
+                return ret;
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
@@ -42,6 +53,21 @@ public class ABIEncoder{
                 return encode(((org.aion.avm.shadow.java.lang.Boolean)data).avm_booleanValue());
             }
             @Override
+            public byte[][] encode1DArray(Object data) {
+                byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
+                boolean[] rawData = (boolean[]) data;
+
+                // descriptor bytes
+                ret[0] = ("[" + symbol + String.valueOf(rawData.length) + "]").getBytes();
+                // encoded data bytes
+                ret[1] = new byte[rawData.length * bytes];
+                for (int i = 0, idx = 0; idx < rawData.length; i += bytes, idx ++) {
+                    ret[1][i] = (byte) ((rawData[i]) ? 1 : 0);
+                }
+
+                return ret;
+            }
+            @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
                 return new ABIDecoder.DecodedObjectInfo(data[startIndex] != 0, startIndex + 1);
             }
@@ -54,7 +80,7 @@ public class ABIEncoder{
                 return array;
             }
         },
-        avm_CHAR    ('C', 0, new String[]{"C", "char", "java.lang.Character", "org.aion.avm.shadow.java.lang.Character", "org.aion.avm.arraywrapper.CharArray"}) { // variable length
+        avm_CHAR    ('C', 0, new String[]{"C", "char", "java.lang.Character", "org.aion.avm.shadow.java.lang.Character", "org.aion.avm.arraywrapper.CharArray", "[C", "[[C"}) { // variable length
             @Override
             public byte[] encode(Object data) {
                 return Character.toString((char)data).getBytes();
@@ -62,6 +88,18 @@ public class ABIEncoder{
             @Override
             public byte[] encodeShadowType(Object data) {
                 return encode(((org.aion.avm.shadow.java.lang.Character)data).avm_charValue());
+            }
+            @Override
+            public byte[][] encode1DArray(Object data) {
+                byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
+                char[] rawData = (char[]) data;
+
+                // descriptor bytes
+                ret[0] = ("[" + symbol + String.valueOf(rawData.length) + "]").getBytes();
+                // encoded data bytes
+                ret[1] = String.valueOf(rawData).getBytes();
+
+                return ret;
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
@@ -77,7 +115,7 @@ public class ABIEncoder{
                 return array;
             }
         },
-        avm_SHORT   ('S', 2, new String[]{"S", "short", "java.lang.Short", "org.aion.avm.shadow.java.lang.Short", "org.aion.avm.arraywrapper.ShortArray"}) {
+        avm_SHORT   ('S', 2, new String[]{"S", "short", "java.lang.Short", "org.aion.avm.shadow.java.lang.Short", "org.aion.avm.arraywrapper.ShortArray", "[S", "[[S"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(2).putShort((short)data).array();
@@ -85,6 +123,21 @@ public class ABIEncoder{
             @Override
             public byte[] encodeShadowType(Object data) {
                 return encode(((org.aion.avm.shadow.java.lang.Short)data).avm_shortValue());
+            }
+            @Override
+            public byte[][] encode1DArray(Object data) {
+                byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
+                short[] rawData = (short[]) data;
+
+                // descriptor bytes
+                ret[0] = ("[" + symbol + String.valueOf(rawData.length) + "]").getBytes();
+                // encoded data bytes
+                ret[1] = new byte[rawData.length * bytes];
+                for (int i = 0, idx = 0; idx < rawData.length; i += bytes, idx ++) {
+                    System.arraycopy(encode(rawData[idx]), 0, ret[1], i, bytes);
+                }
+
+                return ret;
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
@@ -99,7 +152,7 @@ public class ABIEncoder{
                 return array;
             }
         },
-        avm_INT     ('I', 4, new String[]{"I", "int", "java.lang.Integer", "org.aion.avm.shadow.java.lang.Integer", "org.aion.avm.arraywrapper.IntArray"}) {
+        avm_INT     ('I', 4, new String[]{"I", "int", "java.lang.Integer", "org.aion.avm.shadow.java.lang.Integer", "org.aion.avm.arraywrapper.IntArray", "[I", "[[I"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(4).putInt((int)data).array();
@@ -107,6 +160,21 @@ public class ABIEncoder{
             @Override
             public byte[] encodeShadowType(Object data) {
                 return encode(((org.aion.avm.shadow.java.lang.Integer)data).avm_intValue());
+            }
+            @Override
+            public byte[][] encode1DArray(Object data) {
+                byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
+                int[] rawData = (int[]) data;
+
+                // descriptor bytes
+                ret[0] = ("[" + symbol + String.valueOf(rawData.length) + "]").getBytes();
+                // encoded data bytes
+                ret[1] = new byte[rawData.length * bytes];
+                for (int i = 0, idx = 0; idx < rawData.length; i += bytes, idx ++) {
+                    System.arraycopy(encode(rawData[idx]), 0, ret[1], i, bytes);
+                }
+
+                return ret;
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
@@ -121,7 +189,7 @@ public class ABIEncoder{
                 return array;
             }
         },
-        avm_LONG    ('L', 8, new String[]{"L", "long", "java.lang.Long", "org.aion.avm.shadow.java.lang.Long", "org.aion.avm.arraywrapper.LongArray"}) {
+        avm_LONG    ('L', 8, new String[]{"L", "long", "java.lang.Long", "org.aion.avm.shadow.java.lang.Long", "org.aion.avm.arraywrapper.LongArray", "[J", "[[J"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(8).putLong((long)data).array();
@@ -129,6 +197,21 @@ public class ABIEncoder{
             @Override
             public byte[] encodeShadowType(Object data) {
                 return encode(((org.aion.avm.shadow.java.lang.Long)data).avm_longValue());
+            }
+            @Override
+            public byte[][] encode1DArray(Object data) {
+                byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
+                long[] rawData = (long[]) data;
+
+                // descriptor bytes
+                ret[0] = ("[" + symbol + String.valueOf(rawData.length) + "]").getBytes();
+                // encoded data bytes
+                ret[1] = new byte[rawData.length * bytes];
+                for (int i = 0, idx = 0; idx < rawData.length; i += bytes, idx ++) {
+                    System.arraycopy(encode(rawData[idx]), 0, ret[1], i, bytes);
+                }
+
+                return ret;
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
@@ -143,7 +226,7 @@ public class ABIEncoder{
                 return array;
             }
         },
-        avm_FLOAT   ('F', 4, new String[]{"F", "float", "java.lang.Float", "org.aion.avm.shadow.java.lang.Float", "org.aion.avm.arraywrapper.FloatArray"}) {
+        avm_FLOAT   ('F', 4, new String[]{"F", "float", "java.lang.Float", "org.aion.avm.shadow.java.lang.Float", "org.aion.avm.arraywrapper.FloatArray", "[F", "[[F"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(4).putFloat((float)data).array();
@@ -151,6 +234,21 @@ public class ABIEncoder{
             @Override
             public byte[] encodeShadowType(Object data) {
                 return encode(((org.aion.avm.shadow.java.lang.Float)data).avm_floatValue());
+            }
+            @Override
+            public byte[][] encode1DArray(Object data) {
+                byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
+                float[] rawData = (float[]) data;
+
+                // descriptor bytes
+                ret[0] = ("[" + symbol + String.valueOf(rawData.length) + "]").getBytes();
+                // encoded data bytes
+                ret[1] = new byte[rawData.length * bytes];
+                for (int i = 0, idx = 0; idx < rawData.length; i += bytes, idx ++) {
+                    System.arraycopy(encode(rawData[idx]), 0, ret[1], i, bytes);
+                }
+
+                return ret;
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
@@ -165,7 +263,7 @@ public class ABIEncoder{
                 return array;
             }
         },
-        avm_DOUBLE  ('D', 8, new String[]{"D", "double", "java.lang.Double", "org.aion.avm.shadow.java.lang.Double", "org.aion.avm.arraywrapper.DoubleArray"}) {
+        avm_DOUBLE  ('D', 8, new String[]{"D", "double", "java.lang.Double", "org.aion.avm.shadow.java.lang.Double", "org.aion.avm.arraywrapper.DoubleArray", "[D", "[[D"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(8).putDouble((double)data).array();
@@ -173,6 +271,21 @@ public class ABIEncoder{
             @Override
             public byte[] encodeShadowType(Object data) {
                 return encode(((org.aion.avm.shadow.java.lang.Double)data).avm_doubleValue());
+            }
+            @Override
+            public byte[][] encode1DArray(Object data) {
+                byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
+                double[] rawData = (double[]) data;
+
+                // descriptor bytes
+                ret[0] = ("[" + symbol + String.valueOf(rawData.length) + "]").getBytes();
+                // encoded data bytes
+                ret[1] = new byte[rawData.length * bytes];
+                for (int i = 0, idx = 0; idx < rawData.length; i += bytes, idx ++) {
+                    System.arraycopy(encode(rawData[idx]), 0, ret[1], i, bytes);
+                }
+
+                return ret;
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
@@ -197,6 +310,10 @@ public class ABIEncoder{
                 return encode(data);
             }
             @Override
+            public byte[][] encode1DArray(Object data) {
+                return null;
+            }
+            @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
                 return new ABIDecoder.DecodedObjectInfo(new Address(Arrays.copyOfRange(data, startIndex, startIndex + Address.avm_LENGTH)), startIndex + Address.avm_LENGTH);
             }
@@ -218,6 +335,7 @@ public class ABIEncoder{
 
         public abstract byte[] encode(Object data);
         public abstract byte[] encodeShadowType(Object data);
+        public abstract byte[][] encode1DArray(Object data);
         public abstract ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex);
         public abstract Array constructWrappedArray(int size, Object[] data);
     }
@@ -288,49 +406,39 @@ public class ABIEncoder{
             return encode2DArray((ObjectArray)data,
                     mapABITypes(((ObjectArray)data).getUnderlying().getClass().getName()));
         }
-        else if (className.startsWith("org.aion.avm.arraywrapper.")) {
-            // data is an 1D array
-            return encode1DArray((Array)data, mapABITypes(className));
-        }
         else {
-            // data should not be an array
-            byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
             ABITypes type = mapABITypes(className);
             if (type == null) {
                 throw new InvalidTxDataException();
             }
 
-            ret[0] = Character.toString(type.symbol).getBytes();
-            if (className.startsWith("org.aion.avm.shadow.java.lang.")) {
-                ret[1] = type.encodeShadowType(data);
-            } else {
-                // "java.lang.*" in this case. e.g. java.lang.[Integer|Byte|Boolean|Character|Short|Long|Float|Double]
-                // This method is also used by ABIDecoder.decodeAndRun(), which can pass in the data returned by
-                // method.invoke(), and this data can be one of these "java.lang.*" types.
-                ret[1] = type.encode(data);
+            if (className.startsWith("org.aion.avm.arraywrapper.")) {
+                // data is an 1D array
+                return type.encode1DArray(((Array)data).getUnderlyingAsObject());
+                //return encode1DArray((Array)data, type);
             }
-            return ret;
-        }
-    }
+            else if (className.startsWith("[[")) {
+                return null;//TODO - implement this when 2D array wrappers are ready
+            }
+            else if (className.startsWith("[")) {
+                return type.encode1DArray(data);
+            }
+            else {
+                // data should not be an array
+                byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
 
-    public static byte[][] encode1DArray(Array data, ABITypes type) {
-        byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
-
-        // descriptor bytes
-        ret[0] = ("[" + type.symbol + String.valueOf(data.length()) + "]").getBytes();
-
-        // encoded data bytes
-        if (type == ABITypes.avm_CHAR) {
-            ret[1] = String.valueOf(((CharArray)data).getUnderlying()).getBytes();
-        }
-        else {
-            ret[1] = new byte[data.length() * type.bytes];
-            for (int i = 0, idx = 0; idx < data.length(); i += type.bytes, idx ++) {
-                System.arraycopy(type.encode(data.getAsObject(idx)), 0, ret[1], i, type.bytes);
+                ret[0] = Character.toString(type.symbol).getBytes();
+                if (className.startsWith("org.aion.avm.shadow.java.lang.")) {
+                    ret[1] = type.encodeShadowType(data);
+                } else {
+                    // "java.lang.*" in this case. e.g. java.lang.[Integer|Byte|Boolean|Character|Short|Long|Float|Double]
+                    // This method is also used by ABIDecoder.decodeAndRun(), which can pass in the data returned by
+                    // method.invoke(), and this data can be of one of these "java.lang.*" types.
+                    ret[1] = type.encode(data);
+                }
+                return ret;
             }
         }
-
-        return ret;
     }
 
     public static byte[][] encode2DArray(ObjectArray data, ABITypes type) throws InvalidTxDataException {
