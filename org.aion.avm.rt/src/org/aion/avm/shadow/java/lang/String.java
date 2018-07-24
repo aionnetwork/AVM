@@ -424,6 +424,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
 
     //internal
     public java.lang.String getV(){
+        lazyLoad();
         return v;
     }
 
