@@ -56,7 +56,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        ByteArray bytes = new ByteArray(null);
+        ByteArray bytes = new ByteArray(null, 1l);
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new byte[] {1,2,3}, bytes.getUnderlying()));
     }
@@ -72,7 +72,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        ShortArray bytes = new ShortArray(null);
+        ShortArray bytes = new ShortArray(null, 1l);
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new short[] {1,2,3}, bytes.getUnderlying()));
     }
@@ -88,7 +88,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        CharArray bytes = new CharArray(null);
+        CharArray bytes = new CharArray(null, 1l);
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new char[] {1,2,3}, bytes.getUnderlying()));
     }
@@ -104,7 +104,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        IntArray bytes = new IntArray(null);
+        IntArray bytes = new IntArray(null, 1l);
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new int[] {1,2,3}, bytes.getUnderlying()));
     }
@@ -120,7 +120,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        FloatArray bytes = new FloatArray(null);
+        FloatArray bytes = new FloatArray(null, 1l);
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new float[] {1.0f,2.0f,3.0f}, bytes.getUnderlying()));
     }
@@ -136,7 +136,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        LongArray bytes = new LongArray(null);
+        LongArray bytes = new LongArray(null, 1l);
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new long[] {1,2,3}, bytes.getUnderlying()));
     }
@@ -152,7 +152,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        DoubleArray bytes = new DoubleArray(null);
+        DoubleArray bytes = new DoubleArray(null, 1l);
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new double[] {1.0,2.0,3.0}, bytes.getUnderlying()));
     }
@@ -185,7 +185,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        ObjectArray bytes = new ObjectArray(null);
+        ObjectArray bytes = new ObjectArray(null, 1l);
         bytes.deserializeSelf(null, target);
         Assert.assertEquals(2, bytes.length());
         Assert.assertNotNull(bytes.get(0));

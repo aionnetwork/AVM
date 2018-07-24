@@ -73,7 +73,10 @@ public class ABIDecoder {
      * Runtime-facing implementation.
      */
     public static ByteArray avm_decodeAndRun(IObject obj, ByteArray txData) throws InvalidTxDataException{
-        return new ByteArray(decodeAndRun(obj, txData.getUnderlying()));
+        byte[] result = decodeAndRun(obj, txData.getUnderlying());
+        return (null != result)
+                ? new ByteArray(result)
+                : null;
     }
 
     public static MethodCaller avm_decode(ByteArray txData) throws InvalidTxDataException{
@@ -112,7 +115,9 @@ public class ABIDecoder {
             throw new InvalidTxDataException();
         }
 
-        return ABIEncoder.encodeOneObject(ret);
+        return (null != ret)
+                ? ABIEncoder.encodeOneObject(ret)
+                : null;
     }
 
     public static MethodCaller decode(byte[] txData) throws InvalidTxDataException{

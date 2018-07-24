@@ -534,7 +534,10 @@ public class AvmImpl implements Avm {
             Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
 
             Method method = clazz.getMethod("avm_main");
-            byte[] ret = ((ByteArray) method.invoke(null)).getUnderlying();
+            ByteArray rawResult = (ByteArray) method.invoke(null);
+            byte[] ret = (null != rawResult)
+                    ? rawResult.getUnderlying()
+                    : null;
 
             // Save back the state before we return.
             // -first, save out the classes

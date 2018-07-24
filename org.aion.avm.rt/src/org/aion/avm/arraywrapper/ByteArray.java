@@ -4,6 +4,7 @@ import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
@@ -90,6 +91,7 @@ public class ByteArray extends Array {
     //========================================================
 
     public ByteArray(byte[] underlying) {
+        RuntimeAssertionError.assertTrue(null != underlying);
         this.underlying = underlying;
     }
 
@@ -99,6 +101,7 @@ public class ByteArray extends Array {
     }
 
     public void setUnderlyingAsObject(java.lang.Object u){
+        RuntimeAssertionError.assertTrue(null != u);
         lazyLoad();
         this.underlying = (byte[]) u;
     }
