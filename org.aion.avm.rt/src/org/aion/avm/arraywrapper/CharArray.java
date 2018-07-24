@@ -50,22 +50,27 @@ public class CharArray extends Array {
     }
 
     public int length() {
+        lazyLoad();
         return this.underlying.length;
     }
 
     public char get(int idx) {
+        lazyLoad();
         return this.underlying[idx];
     }
 
     public void set(int idx, char val) {
+        lazyLoad();
         this.underlying[idx] = val;
     }
 
     public IObject avm_clone() {
+        lazyLoad();
         return new CharArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     public IObject clone() {
+        lazyLoad();
         return new CharArray(Arrays.copyOf(underlying, underlying.length));
     }
 
@@ -79,15 +84,18 @@ public class CharArray extends Array {
     }
 
     public char[] getUnderlying() {
+        lazyLoad();
         return underlying;
     }
 
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
+        lazyLoad();
         this.underlying = (char[]) u;
     }
 
     public java.lang.Object getUnderlyingAsObject(){
+        lazyLoad();
         return underlying;
     }
 

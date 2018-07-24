@@ -50,6 +50,7 @@ public class IntArray extends Array {
     }
 
     public int length() {
+        lazyLoad();
         return this.underlying.length;
     }
 
@@ -59,14 +60,17 @@ public class IntArray extends Array {
     }
 
     public void set(int idx, int val) {
+        lazyLoad();
         this.underlying[idx] = val;
     }
 
     public IObject avm_clone() {
+        lazyLoad();
         return new IntArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     public IObject clone() {
+        lazyLoad();
         return new IntArray(Arrays.copyOf(underlying, underlying.length));
     }
 
@@ -80,15 +84,18 @@ public class IntArray extends Array {
     }
 
     public int[] getUnderlying() {
+        lazyLoad();
         return underlying;
     }
 
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
+        lazyLoad();
         this.underlying = (int[]) u;
     }
 
     public java.lang.Object getUnderlyingAsObject(){
+        lazyLoad();
         return underlying;
     }
 

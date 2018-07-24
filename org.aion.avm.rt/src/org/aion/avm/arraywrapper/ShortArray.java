@@ -50,23 +50,28 @@ public class ShortArray extends Array {
     }
 
     public int length() {
+        lazyLoad();
         return this.underlying.length;
     }
 
     public short get(int idx) {
+        lazyLoad();
         return this.underlying[idx];
     }
 
     public void set(int idx, short val) {
+        lazyLoad();
         this.underlying[idx] = val;
     }
 
     // Implementation of Cloneable
     public IObject clone() {
+        lazyLoad();
         return new ShortArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     public IObject avm_clone() {
+        lazyLoad();
         return new ShortArray(Arrays.copyOf(underlying, underlying.length));
     }
 
@@ -80,15 +85,18 @@ public class ShortArray extends Array {
     }
 
     public short[] getUnderlying() {
+        lazyLoad();
         return underlying;
     }
 
     public java.lang.Object getUnderlyingAsObject(){
+        lazyLoad();
         return underlying;
     }
 
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
+        lazyLoad();
         this.underlying = (short[]) u;
     }
 

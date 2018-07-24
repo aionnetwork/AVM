@@ -50,22 +50,27 @@ public class FloatArray extends Array {
     }
 
     public int length() {
+        lazyLoad();
         return this.underlying.length;
     }
 
     public float get(int idx) {
+        lazyLoad();
         return this.underlying[idx];
     }
 
     public void set(int idx, float val) {
+        lazyLoad();
         this.underlying[idx] = val;
     }
 
     public IObject avm_clone() {
+        lazyLoad();
         return new FloatArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     public IObject clone() {
+        lazyLoad();
         return new FloatArray(Arrays.copyOf(underlying, underlying.length));
     }
 
@@ -79,15 +84,18 @@ public class FloatArray extends Array {
     }
 
     public float[] getUnderlying() {
+        lazyLoad();
         return underlying;
     }
 
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
+        lazyLoad();
         this.underlying = (float[]) u;
     }
 
     public java.lang.Object getUnderlyingAsObject(){
+        lazyLoad();
         return underlying;
     }
 
