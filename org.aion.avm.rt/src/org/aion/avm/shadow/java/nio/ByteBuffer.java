@@ -4,7 +4,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
 
-public class ByteBuffer extends Buffer {
+public class ByteBuffer extends Buffer implements org.aion.avm.shadow.java.lang.Comparable<ByteBuffer>{
 
     public static ByteBuffer avm_allocate(int capacity) {
         return new ByteBuffer(java.nio.ByteBuffer.allocate(capacity));
@@ -248,7 +248,7 @@ public class ByteBuffer extends Buffer {
 
     public boolean avm_isReadOnly(){
         return v.isReadOnly();
-    };
+    }
 
 
     //========================================================
