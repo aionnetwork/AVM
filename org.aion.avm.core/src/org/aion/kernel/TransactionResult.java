@@ -92,7 +92,7 @@ public class TransactionResult {
     public String toString() {
         return "TransactionResult{" +
                 "statusCode=" + statusCode +
-                ", returnData=" + Helpers.toHexString(returnData) +
+                ", returnData=" + (returnData == null ? "NULL" : Helpers.toHexString(returnData)) +
                 ", energyUsed=" + energyUsed +
                 '}';
     }

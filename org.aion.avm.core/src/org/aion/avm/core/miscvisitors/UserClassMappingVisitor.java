@@ -37,6 +37,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
 
     private static final String JAVA_LANG = "java/lang/";
     private static final String JAVA_MATH = "java/math/";
+    private static final String JAVA_NIO = "java/nio/";
     private static final String JAVA_UTIL_FUNCTION = "java/util/function";
     private static final String ORG_AION_AVM_API = "org/aion/avm/api/";
 
@@ -343,7 +344,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
             if (this.userDefinedClassSlashNames.contains(type)) {
                 return PackageConstants.kUserSlashPrefix + type;
 
-            } else if (type.startsWith(JAVA_LANG) || type.startsWith(JAVA_UTIL_FUNCTION) || type.startsWith(JAVA_MATH)) {
+            } else if (type.startsWith(JAVA_LANG) || type.startsWith(JAVA_UTIL_FUNCTION) || type.startsWith(JAVA_MATH) || type.startsWith(JAVA_NIO)) {
                 return shadowPackageSlash + type;
 
             } else if (type.startsWith(ORG_AION_AVM_API) || type.startsWith("org/aion/avm/shadow/")) {
