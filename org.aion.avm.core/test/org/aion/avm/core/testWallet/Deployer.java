@@ -133,7 +133,7 @@ public class Deployer {
         Assert.assertTrue(!didRemove);
         Assert.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kRevoke));
         DirectProxy.revoke((input) -> {Helper.blockchainRuntime = new TestingRuntime(lateOwner, input, eventCounts);},
-                DirectEncoder.removeOwner(extra1)
+                CallEncoder.removeOwner(extra1)
         );
         Assert.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kRevoke));
         // This fails since one of the owners revoked.
