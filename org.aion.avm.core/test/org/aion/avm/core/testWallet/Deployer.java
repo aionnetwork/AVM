@@ -166,7 +166,6 @@ public class Deployer {
                 , RequireFailedException.class
                 , Daylimit.class
                 , EventLogger.class
-                , Abi.class
         );
         LoadedJar jar = LoadedJar.fromBytes(jarBytes);
         

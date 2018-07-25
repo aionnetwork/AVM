@@ -1,8 +1,8 @@
 package org.aion.avm.core;
 
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.*;
-import org.aion.avm.core.testWallet.Abi;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
 import org.aion.avm.core.testWallet.ByteArrayWrapper;
 import org.aion.avm.core.testWallet.BytesKey;
@@ -19,6 +19,7 @@ import org.aion.avm.shadow.java.lang.Class;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
 import org.aion.kernel.TransactionContext;
@@ -59,7 +60,6 @@ public class ProofOfConceptTest {
                     , RequireFailedException.class
                     , Daylimit.class
                     , EventLogger.class
-                    , Abi.class
             );
         }
 
@@ -135,7 +135,7 @@ public class ProofOfConceptTest {
             TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
             TransactionResult executeResult = new AvmImpl().run(executeContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, executeResult.getStatusCode());
-            byte[] toConfirm = executeResult.getReturnData();
+            byte[] toConfirm = ((ByteArray) ABIDecoder.decodeOneObject(executeResult.getReturnData())).getUnderlying();
             
             // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
             byte[] confirmArgs = CallEncoder.confirm(toConfirm);

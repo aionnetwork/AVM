@@ -1,100 +1,43 @@
 package org.aion.avm.core.testWallet;
 
+import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.InvalidTxDataException;
 
 
 /**
- * Creates the invocation encoding which Wallet.decode can crack, on the other side.
- * This is on its own, outside of CallProxy, since it can be used for both the transformed and direct variants of the call.
+ * Mostly a historical remnant from before we had the common ABIEncoder.
+ * Will be removed soon.
  */
 public class CallEncoder {
     public static byte[] init(Address extra1, Address extra2, int requiredVotes, long dailyLimit) throws InvalidTxDataException {
-        // Note that we are calling the initWrapper, so we pass the 2 Address instances, directly.
-        byte[] onto = new byte[1 + Address.LENGTH + Address.LENGTH + Integer.BYTES + Long.BYTES];
-        Abi.Encoder encoder = Abi.buildEncoder(onto);
-        encoder
-            .encodeByte(Abi.kWallet_init)
-            .encodeAddress(extra1)
-            .encodeAddress(extra2)
-            .encodeInt(requiredVotes)
-            .encodeLong(dailyLimit);
-        return onto;
+        return ABIEncoder.encodeMethodArguments("initWrapper", extra1, extra2, requiredVotes, dailyLimit);
     }
     public static byte[] payable(Address from, long value) throws InvalidTxDataException {
-        byte[] onto = new byte[1 + Address.LENGTH + Long.BYTES];
-        Abi.Encoder encoder = Abi.buildEncoder(onto);
-        encoder
-            .encodeByte(Abi.kWallet_payable)
-            .encodeAddress(from)
-            .encodeLong(value);
-        return onto;
+        return ABIEncoder.encodeMethodArguments("payable", from, value);
     }
     public static byte[] addOwner(Address owner) throws InvalidTxDataException {
-        byte[] onto = new byte[1 + Address.LENGTH];
-        Abi.Encoder encoder = Abi.buildEncoder(onto);
-        encoder
-            .encodeByte(Abi.kWallet_addOwner)
-            .encodeAddress(owner);
-        return onto;
+        return ABIEncoder.encodeMethodArguments("addOwner", owner);
     }
     public static byte[] execute(Address to, long value, byte[] data) throws InvalidTxDataException {
-        byte[] onto = new byte[1 + Address.LENGTH + Long.BYTES + data.length];
-        Abi.Encoder encoder = Abi.buildEncoder(onto);
-        encoder
-            .encodeByte(Abi.kWallet_execute)
-            .encodeAddress(to)
-            .encodeLong(value)
-            .encodeRemainder(data);
-        return onto;
+        return ABIEncoder.encodeMethodArguments("execute", to, value, data);
     }
     public static byte[] confirm(byte[] data) throws InvalidTxDataException {
-        byte[] onto = new byte[1 + data.length];
-        Abi.Encoder encoder = Abi.buildEncoder(onto);
-        encoder
-            .encodeByte(Abi.kWallet_confirm)
-            .encodeRemainder(data);
-        return onto;
+        return ABIEncoder.encodeMethodArguments("confirm", data);
     }
     public static byte[] changeRequirement(int newRequired) throws InvalidTxDataException {
-        byte[] onto = new byte[1 + Integer.BYTES];
-        Abi.Encoder encoder = Abi.buildEncoder(onto);
-        encoder
-            .encodeByte(Abi.kWallet_changeRequirement)
-            .encodeInt(newRequired);
-        return onto;
+        return ABIEncoder.encodeMethodArguments("changeRequirement", newRequired);
     }
     public static byte[] getOwner(int ownerIndex) throws InvalidTxDataException {
-        byte[] onto = new byte[1 + Integer.BYTES];
-        Abi.Encoder encoder = Abi.buildEncoder(onto);
-        encoder
-            .encodeByte(Abi.kWallet_getOwner)
-            .encodeInt(ownerIndex);
-        return onto;
+        return ABIEncoder.encodeMethodArguments("getOwner", ownerIndex);
     }
     public static byte[] changeOwner(Address from, Address to) throws InvalidTxDataException {
-        byte[] onto = new byte[1 + Address.LENGTH + Address.LENGTH];
-        Abi.Encoder encoder = Abi.buildEncoder(onto);
-        encoder
-            .encodeByte(Abi.kWallet_changeOwner)
-            .encodeAddress(from)
-            .encodeAddress(to);
-        return onto;
+        return ABIEncoder.encodeMethodArguments("changeOwner", from, to);
     }
     public static byte[] removeOwner(Address owner) throws InvalidTxDataException {
-        byte[] onto = new byte[1 + Address.LENGTH];
-        Abi.Encoder encoder = Abi.buildEncoder(onto);
-        encoder
-            .encodeByte(Abi.kWallet_removeOwner)
-            .encodeAddress(owner);
-        return onto;
+        return ABIEncoder.encodeMethodArguments("removeOwner", owner);
     }
     public static byte[] revoke(byte[] transactionBytes) throws InvalidTxDataException {
-        byte[] onto = new byte[1 + transactionBytes.length];
-        Abi.Encoder encoder = Abi.buildEncoder(onto);
-        encoder
-            .encodeByte(Abi.kWallet_revoke);
-        encoder.encodeRemainder(transactionBytes);
-        return onto;
+        return ABIEncoder.encodeMethodArguments("revoke", transactionBytes);
     }
 }
