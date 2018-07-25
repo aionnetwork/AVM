@@ -6,11 +6,7 @@ import org.aion.avm.core.testWallet.ByteArrayHelpers;
 
 public class ExchangeController {
 
-    private static Exchange base;
-
-    public static void init(){
-        base = new Exchange();
-    }
+    private static Exchange base = new Exchange();
 
     public static byte[] main() {
         byte[] result = new byte[0];

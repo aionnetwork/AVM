@@ -201,7 +201,7 @@ public class POCTestExchange {
 
         res = ex.callListCoin("PEPE", pepe.addr);
         Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-       res = ex.callListCoin("MEME", meme.addr);
+        res = ex.callListCoin("MEME", meme.addr);
         Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
 
         pepe.callMint(usr1, 5000L);

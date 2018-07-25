@@ -15,6 +15,10 @@ public class ABIDecoder {
         return null;
     }
 
+    public static Object[] decodeArguments(byte[] txData) {
+        return null;
+    }
+
     public static Object decodeOneObject(byte[] txData) {
         return null;
     }

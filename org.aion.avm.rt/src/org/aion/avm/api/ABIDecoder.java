@@ -89,6 +89,13 @@ public class ABIDecoder {
         return decode(txData.getUnderlying());
     }
 
+    public static ObjectArray avm_decodeArguments(ByteArray txData) throws InvalidTxDataException{
+        Object[] result = decodeArguments(txData.getUnderlying());
+        return (null != result)
+                ? new ObjectArray(result)
+                : null;
+    }
+
     public static IObject avm_decodeOneObject(ByteArray txData) throws InvalidTxDataException{
         Descriptor descriptor = readOneDescriptor(txData.getUnderlying(), 0);
         return decodeOneObjectWithDescriptor(txData.getUnderlying(), descriptor.encodedBytes, descriptor).iObject;
@@ -154,12 +161,12 @@ public class ABIDecoder {
         String argsDescriptor = decoded.substring(m1+1, m2);
         int startByteOfData = decoded.substring(0, m2 + 1).getBytes().length;
 
-        IObject[] arguments = decodeArguments(Arrays.copyOfRange(txData, startByteOfData, txData.length), argsDescriptor);
+        IObject[] arguments = decodeArgumentsWithDescriptor(Arrays.copyOfRange(txData, startByteOfData, txData.length), argsDescriptor);
 
         return new MethodCaller(methodName, argsDescriptor, arguments);
     }
 
-    private static IObject[] decodeArguments(byte[] data, String argsDescriptor) throws InvalidTxDataException{
+    private static IObject[] decodeArgumentsWithDescriptor(byte[] data, String argsDescriptor) throws InvalidTxDataException{
         // read all descriptors
         int encodedBytes = 0;
         List<Descriptor> descriptorList = new ArrayList<>();
@@ -185,6 +192,10 @@ public class ABIDecoder {
         }
 
         return args;
+    }
+
+    private static Object[] decodeArguments(byte[] data) throws InvalidTxDataException{
+        return decode(data).arguments;
     }
 
     /**

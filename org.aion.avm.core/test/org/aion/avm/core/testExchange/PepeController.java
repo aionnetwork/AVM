@@ -7,7 +7,7 @@ public class PepeController {
 
     private static ERC20 coinbase;
 
-    public static void init(){
+    static{
         coinbase = new ERC20Token("Pepe", "PEPE", 8, BlockchainRuntime.getSender());
     }
 

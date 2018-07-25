@@ -7,7 +7,7 @@ public class MemeController {
 
     private static ERC20 coinbase;
 
-    public static void init(){
+    static{
         coinbase = new ERC20Token("Memo", "MEME", 8, BlockchainRuntime.getSender());
     }
 

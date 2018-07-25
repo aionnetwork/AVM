@@ -451,28 +451,7 @@ public class AvmImpl implements Avm {
             // TODO: create invocation need further discussion
 
             String mappedUserMainClass = PackageConstants.kUserDotPrefix + transformedDapp.mainClass;
-            Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
-
-            ABIDecoder.MethodCaller methodCaller = ABIDecoder.decode(Helpers.decodeCodeAndData(tx.getData())[1]);
-            if (methodCaller == null) {
-                try{
-                    Method method = clazz.getMethod("avm_init");
-                    method.invoke(null);
-                } catch (NoSuchMethodException e) {
-                    // the contract doesn't have "init" method
-                }
-            }
-            else {
-                Method method = ABIDecoder.matchMethodSelector(clazz, "avm_init", methodCaller.argsDescriptor);
-                if (method != null) {
-                    if (methodCaller.arguments == null) {
-                        method.invoke(null);
-                    }
-                    else {
-                        method.invoke(null, ABIDecoder.convertArguments(method, methodCaller.arguments));
-                    }
-                }
-            }
+            Class<?> clazz = Class.forName(mappedUserMainClass, true, classLoader);
 
             // Save back the state before we return.
             // -first, save out the classes

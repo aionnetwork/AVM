@@ -5,11 +5,7 @@ import org.aion.avm.api.BlockchainRuntime;
 
 public class ExchangeController {
 
-    private static Exchange base;
-
-    public static void init() {
-        base = new Exchange();
-    }
+    private static Exchange base = new Exchange();
 
     public static byte[] main() {
         return ABIDecoder.decodeAndRun(base, BlockchainRuntime.getData());

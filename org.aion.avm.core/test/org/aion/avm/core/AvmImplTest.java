@@ -144,8 +144,7 @@ public class AvmImplTest {
         // BytecodeFeeScheduler:  CODEDEPOSIT * data.length;
         long deploymentStorageCost = 200 * txData.length;
         long clinitCost = 188l;
-        long initCost = 50;
-        assertEquals(deploymentProcessCost + deploymentStorageCost + clinitCost + initCost, result1.getEnergyUsed());
+        assertEquals(deploymentProcessCost + deploymentStorageCost + clinitCost, result1.getEnergyUsed());
 
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
