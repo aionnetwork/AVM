@@ -211,7 +211,7 @@ public class Wallet {
             // determine our operation hash.
             result = Operation.rawOperationForCurrentMessageAndBlock();
             BytesKey transactionKey = BytesKey.from(result);
-            if (!safeConfirm(result) && (null == Wallet.transactions.get(transactionKey))) {
+            if (!internalConfirm(result) && (null == Wallet.transactions.get(transactionKey))) {
                 Transaction transaction = new Transaction();
                 transaction.to = to;
                 transaction.value = value;
@@ -223,15 +223,8 @@ public class Wallet {
         return result;
     }
 
-    // TODO:  Determine if this is the correct emulation of semantics.  The Solidity test seems to act like the exception is the same as "return false".
-    private static boolean safeConfirm(byte[] h) {
-        boolean result = false;
-        try {
-            result = confirm(h);
-        } catch (RequireFailedException e) {
-            result = false;
-        }
-        return result;
+    public static boolean confirm(byte[] h) {
+        return internalConfirm(h);
     }
 
     public static byte[] changeOwner(Address from, Address to) {
@@ -247,22 +240,27 @@ public class Wallet {
 
     // confirm a transaction through just the hash. we use the previous transactions map, m_txs, in order
     // to determine the body of the transaction from the hash provided.
-    public static boolean confirm(byte[] h) {
-        // (modifier)
-        Operation operationToConfirm = Operation.fromRawBytes(h);
-        Multiowned.onlyManyOwners(BlockchainRuntime.getSender(), operationToConfirm);
-        
+    private static boolean internalConfirm(byte[] h) {
         boolean result = false;
-        BytesKey key = BytesKey.from(h);
-        if (null != Wallet.transactions.get(key).to) {
-            Transaction transaction = Wallet.transactions.get(key);
-            byte[] response = BlockchainRuntime.call(transaction.to, 0, transaction.data, transaction.value);
-            if (null == response) {
-                throw new RequireFailedException();
+        try {
+            // (modifier)
+            Operation operationToConfirm = Operation.fromRawBytes(h);
+            Multiowned.onlyManyOwners(BlockchainRuntime.getSender(), operationToConfirm);
+            
+            BytesKey key = BytesKey.from(h);
+            if (null != Wallet.transactions.get(key).to) {
+                Transaction transaction = Wallet.transactions.get(key);
+                byte[] response = BlockchainRuntime.call(transaction.to, 0, transaction.data, transaction.value);
+                if (null == response) {
+                    throw new RequireFailedException();
+                }
+                EventLogger.multiTransact(BlockchainRuntime.getSender(), operationToConfirm, transaction.value, transaction.to, transaction.data);
+                Wallet.transactions.remove(BytesKey.from(h));
+                result = true;
             }
-            EventLogger.multiTransact(BlockchainRuntime.getSender(), operationToConfirm, transaction.value, transaction.to, transaction.data);
-            Wallet.transactions.remove(BytesKey.from(h));
-            result = true;
+        } catch (RequireFailedException e) {
+            // In this case, the shape of the original contract seemed to act like false should be returned.
+            result = false;
         }
         return result;
     }
