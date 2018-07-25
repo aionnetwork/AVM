@@ -202,6 +202,21 @@
                 <replacestring from="org.aion.avm.userlib" to="com.example.testExchange"/>
             </filterchain>
         </copy>
+        <echo message="Copying ERC20Token.java and change the package..."/>
+        <copy file="../org.aion.avm.core/test/org/aion/avm/core/testExchange/ERC20Token.java"
+              todir="${dir.local.src}/${name}/com/example/testExchange">
+            <filterchain>
+                <replacestring from="org.aion.avm.core.testExchange" to="com.example.testExchange"/>
+                <replacestring from="import org.aion.avm.userlib.AionMap;" to=""/>
+            </filterchain>
+        </copy>
+        <echo message="Copying ERC20.java and change the package..."/>
+        <copy file="../org.aion.avm.core/test/org/aion/avm/core/testExchange/ERC20.java"
+              todir="${dir.local.src}/${name}/com/example/testExchange">
+            <filterchain>
+                <replacestring from="org.aion.avm.core.testExchange" to="com.example.testExchange"/>
+            </filterchain>
+        </copy>
 
         <echo message="Compiling ${name}..."/>
         <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
