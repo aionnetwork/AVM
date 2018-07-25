@@ -83,7 +83,7 @@ public class ProofOfConceptTest {
          * Tests that we can run init on the deployed code, albeit as a second transaction (since we haven't yet decided how to invoke init on deploy).
          */
         @Test
-        public void testDeployAndCallInit() {
+        public void testDeployAndCallInit() throws Exception {
             // Constructor args.
             byte[] extra1 = Helpers.randomBytes(Address.LENGTH);
             byte[] extra2 = Helpers.randomBytes(Address.LENGTH);
@@ -112,7 +112,7 @@ public class ProofOfConceptTest {
          * Tests that inner classes work properly within the serialization system (since their constructors need to be marked accessible).
          */
         @Test
-        public void testExecuteWithInnerClasses() {
+        public void testExecuteWithInnerClasses() throws Exception {
             // Constructor args.
             byte[] extra1 = Helpers.randomBytes(Address.LENGTH);
             byte[] extra2 = Helpers.randomBytes(Address.LENGTH);
@@ -145,7 +145,7 @@ public class ProofOfConceptTest {
         }
 
 
-        private void runInit(byte[] contractAddress, byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) {
+        private void runInit(byte[] contractAddress, byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) throws Exception {
             byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
             Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
             TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
@@ -171,7 +171,7 @@ public class ProofOfConceptTest {
         /**
          * Note that this is copied from CallEncoder to allow us to create the input without needing to instantiate Address objects.
          */
-        private static byte[] encodeInit(byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) {
+        private static byte[] encodeInit(byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) throws Exception {
             byte[] onto = new byte[1 + Integer.BYTES + Address.LENGTH + Address.LENGTH + Integer.BYTES + Long.BYTES];
             Abi.Encoder encoder = Abi.buildEncoder(onto);
             // We are encoding the Addresses as a 2-element array, so describe it that way to the encoder.
@@ -188,7 +188,7 @@ public class ProofOfConceptTest {
         /**
          * Note that this is mostly copied from CallEncoder.
          */
-        private static byte[] encodeExecute(byte[] to, long value, byte[] data) {
+        private static byte[] encodeExecute(byte[] to, long value, byte[] data) throws Exception {
             byte[] onto = new byte[1 + Address.LENGTH + Long.BYTES + data.length];
             Abi.Encoder encoder = Abi.buildEncoder(onto);
             encoder

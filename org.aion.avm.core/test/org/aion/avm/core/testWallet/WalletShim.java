@@ -1,5 +1,7 @@
 package org.aion.avm.core.testWallet;
 
+import org.aion.avm.api.InvalidTxDataException;
+
 
 /**
  * This just exposes access to the Wallet for calls from the DirectProxy.  The reason for this is that the ABI expects to call with the
@@ -7,7 +9,7 @@ package org.aion.avm.core.testWallet;
  * This shim does the wrapping/unwrapping for the calls into the core Wallet code.
  */
 public class WalletShim {
-    public static byte[] main() {
+    public static byte[] main() throws InvalidTxDataException {
         return Wallet.main();
     }
 }

@@ -54,7 +54,7 @@ public class Deployer {
     }
 
 
-    private static void invokeDirect(String[] args) {
+    private static void invokeDirect(String[] args) throws Throwable {
         // Note that this loggingRuntime is just to give us a consistent interface for reading the eventCounts.
         Map<String, Integer> eventCounts = new HashMap<>();
         TestingRuntime loggingRuntime = new TestingRuntime(null, null, eventCounts);

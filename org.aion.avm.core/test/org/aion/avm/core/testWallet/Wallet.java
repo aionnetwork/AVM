@@ -2,6 +2,7 @@ package org.aion.avm.core.testWallet;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.api.InvalidTxDataException;
 import org.aion.avm.userlib.AionMap;
 
 
@@ -36,7 +37,7 @@ public class Wallet {
      *
      * @return The output of running the invoke (null for void methods or require failed cases).
      */
-    public static byte[] main() {
+    public static byte[] main() throws InvalidTxDataException {
         // Most of our paths return nothing so just default to the empty byte array.
         byte[] result = new byte[0];
         byte[] input = BlockchainRuntime.getData();
