@@ -216,9 +216,18 @@
         <mkdir dir="${dir.local.build}/testExchangeJar"/>
         <echo message="Packing com.example.testERC20.jar..."/>
         <jar destfile="${dir.local.build}/testExchangeJar/com.example.testERC20.jar"
-             basedir="${dir.local.build}/${name}">
+             basedir="${dir.local.build}/${name}"
+             excludes="**/Exchange*.class">
             <manifest>
                 <attribute name="Main-Class" value="com.example.testExchange.CoinController"/>
+            </manifest>
+        </jar>
+        <echo message="Packing com.example.testExchange.jar..."/>
+        <jar destfile="${dir.local.build}/testExchangeJar/com.example.testExchange.jar"
+             basedir="${dir.local.build}/${name}"
+             excludes="**/ERC20.class,**/ERC20Token.class,**/CoinController.class">
+            <manifest>
+                <attribute name="Main-Class" value="com.example.testExchange.ExchangeController"/>
             </manifest>
         </jar>
 

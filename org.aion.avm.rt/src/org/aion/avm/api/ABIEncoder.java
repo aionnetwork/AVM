@@ -2,6 +2,10 @@ package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.shadow.java.lang.Double;
+import org.aion.avm.shadow.java.lang.Float;
+import org.aion.avm.shadow.java.lang.Integer;
+import org.aion.avm.shadow.java.lang.Long;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -32,13 +36,21 @@ public class ABIEncoder{
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
-                return new ABIDecoder.DecodedObjectInfo(data[startIndex], startIndex + 1);
+                return new ABIDecoder.DecodedObjectInfo(data[startIndex], new org.aion.avm.shadow.java.lang.Byte(data[startIndex]), startIndex + 1);
             }
             @Override
-            public Array constructWrappedArray(int size, Object[] data) {
-                ByteArray array = new ByteArray(size);
-                for (int i = 0; i < size; i++) {
+            public Array constructWrappedArray(Object[] data) {
+                ByteArray array = new ByteArray(data.length);
+                for (int i = 0; i < data.length; i++) {
                     array.set(i, (byte)data[i]);
+                }
+                return array;
+            }
+            @Override
+            public Object constructNativeArray(Object[] data) {
+                byte[] array = new byte[data.length];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (byte)data[i];
                 }
                 return array;
             }
@@ -69,13 +81,21 @@ public class ABIEncoder{
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
-                return new ABIDecoder.DecodedObjectInfo(data[startIndex] != 0, startIndex + 1);
+                return new ABIDecoder.DecodedObjectInfo(data[startIndex] != 0, new org.aion.avm.shadow.java.lang.Boolean(data[startIndex] != 0), startIndex + 1);
             }
             @Override
-            public Array constructWrappedArray(int size, Object[] data) {
-                ByteArray array = new ByteArray(size);
-                for (int i = 0; i < size; i++) {
+            public Array constructWrappedArray(Object[] data) {
+                ByteArray array = new ByteArray(data.length);
+                for (int i = 0; i < data.length; i++) {
                     array.set(i, (byte)data[i]);
+                }
+                return array;
+            }
+            @Override
+            public Object constructNativeArray(Object[] data) {
+                boolean[] array = new boolean[data.length];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (boolean)data[i];
                 }
                 return array;
             }
@@ -103,14 +123,22 @@ public class ABIEncoder{
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
-                Character c = (new String(Arrays.copyOfRange(data, startIndex, data.length))).charAt(0);
-                return new ABIDecoder.DecodedObjectInfo(c, startIndex + String.valueOf(c).getBytes().length);
+                char c = (new String(Arrays.copyOfRange(data, startIndex, data.length))).charAt(0);
+                return new ABIDecoder.DecodedObjectInfo(c, new org.aion.avm.shadow.java.lang.Character(c), startIndex + String.valueOf(c).getBytes().length);
             }
             @Override
-            public Array constructWrappedArray(int size, Object[] data) {
-                CharArray array = new CharArray(size);
-                for (int i = 0; i < size; i++) {
+            public Array constructWrappedArray(Object[] data) {
+                CharArray array = new CharArray(data.length);
+                for (int i = 0; i < data.length; i++) {
                     array.set(i, (char)data[i]);
+                }
+                return array;
+            }
+            @Override
+            public Object constructNativeArray(Object[] data) {
+                char[] array = new char[data.length];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (char)data[i];
                 }
                 return array;
             }
@@ -141,13 +169,22 @@ public class ABIEncoder{
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
-                return new ABIDecoder.DecodedObjectInfo(ByteBuffer.allocate(2).put(Arrays.copyOfRange(data, startIndex, startIndex + 2)).getShort(0), startIndex + 2);
+                short decoded = ByteBuffer.allocate(2).put(Arrays.copyOfRange(data, startIndex, startIndex + 2)).getShort(0);
+                return new ABIDecoder.DecodedObjectInfo(decoded, new org.aion.avm.shadow.java.lang.Short(decoded), startIndex + 2);
             }
             @Override
-            public Array constructWrappedArray(int size, Object[] data) {
-                ShortArray array = new ShortArray(size);
-                for (int i = 0; i < size; i++) {
+            public Array constructWrappedArray(Object[] data) {
+                ShortArray array = new ShortArray(data.length);
+                for (int i = 0; i < data.length; i++) {
                     array.set(i, (short)data[i]);
+                }
+                return array;
+            }
+            @Override
+            public Object constructNativeArray(Object[] data) {
+                short[] array = new short[data.length];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (short)data[i];
                 }
                 return array;
             }
@@ -178,13 +215,22 @@ public class ABIEncoder{
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
-                return new ABIDecoder.DecodedObjectInfo(ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, startIndex, startIndex + 4)).getInt(0), startIndex + 4);
+                int decoded = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, startIndex, startIndex + 4)).getInt(0);
+                return new ABIDecoder.DecodedObjectInfo(decoded, new Integer(decoded), startIndex + 4);
             }
             @Override
-            public Array constructWrappedArray(int size, Object[] data) {
-                IntArray array = new IntArray(size);
-                for (int i = 0; i < size; i++) {
+            public Array constructWrappedArray(Object[] data) {
+                IntArray array = new IntArray(data.length);
+                for (int i = 0; i < data.length; i++) {
                     array.set(i, (int)data[i]);
+                }
+                return array;
+            }
+            @Override
+            public Object constructNativeArray(Object[] data) {
+                int[] array = new int[data.length];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (int)data[i];
                 }
                 return array;
             }
@@ -215,13 +261,22 @@ public class ABIEncoder{
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
-                return new ABIDecoder.DecodedObjectInfo(ByteBuffer.allocate(8).put(Arrays.copyOfRange(data, startIndex, startIndex + 8)).getLong(0), startIndex + 8);
+                long decoded = ByteBuffer.allocate(8).put(Arrays.copyOfRange(data, startIndex, startIndex + 8)).getLong(0);
+                return new ABIDecoder.DecodedObjectInfo(decoded, new Long(decoded), startIndex + 8);
             }
             @Override
-            public Array constructWrappedArray(int size, Object[] data) {
-                LongArray array = new LongArray(size);
-                for (int i = 0; i < size; i++) {
+            public Array constructWrappedArray(Object[] data) {
+                LongArray array = new LongArray(data.length);
+                for (int i = 0; i < data.length; i++) {
                     array.set(i, (long)data[i]);
+                }
+                return array;
+            }
+            @Override
+            public Object constructNativeArray(Object[] data) {
+                long[] array = new long[data.length];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (long)data[i];
                 }
                 return array;
             }
@@ -252,13 +307,22 @@ public class ABIEncoder{
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
-                return new ABIDecoder.DecodedObjectInfo(ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, startIndex, startIndex + 4)).getFloat(0), startIndex + 4);
+                float decoded = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, startIndex, startIndex + 4)).getFloat(0);
+                return new ABIDecoder.DecodedObjectInfo(decoded, new Float(decoded), startIndex + 4);
             }
             @Override
-            public Array constructWrappedArray(int size, Object[] data) {
-                FloatArray array = new FloatArray(size);
-                for (int i = 0; i < size; i++) {
+            public Array constructWrappedArray(Object[] data) {
+                FloatArray array = new FloatArray(data.length);
+                for (int i = 0; i < data.length; i++) {
                     array.set(i, (float) data[i]);
+                }
+                return array;
+            }
+            @Override
+            public Object constructNativeArray(Object[] data) {
+                float[] array = new float[data.length];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (float)data[i];
                 }
                 return array;
             }
@@ -289,13 +353,22 @@ public class ABIEncoder{
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
-                return new ABIDecoder.DecodedObjectInfo(ByteBuffer.allocate(8).put(Arrays.copyOfRange(data, startIndex, startIndex + 8)).getDouble(0), startIndex + 8);
+                double decoded = ByteBuffer.allocate(8).put(Arrays.copyOfRange(data, startIndex, startIndex + 8)).getDouble(0);
+                return new ABIDecoder.DecodedObjectInfo(decoded, new Double(decoded), startIndex + 8);
             }
             @Override
-            public Array constructWrappedArray(int size, Object[] data) {
-                DoubleArray array = new DoubleArray(size);
-                for (int i = 0; i < size; i++) {
+            public Array constructWrappedArray(Object[] data) {
+                DoubleArray array = new DoubleArray(data.length);
+                for (int i = 0; i < data.length; i++) {
                     array.set(i, (double)data[i]);
+                }
+                return array;
+            }
+            @Override
+            public Object constructNativeArray(Object[] data) {
+                double[] array = new double[data.length];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (double)data[i];
                 }
                 return array;
             }
@@ -315,10 +388,15 @@ public class ABIEncoder{
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
-                return new ABIDecoder.DecodedObjectInfo(new Address(Arrays.copyOfRange(data, startIndex, startIndex + Address.avm_LENGTH)), startIndex + Address.avm_LENGTH);
+                Address decoded = new Address(Arrays.copyOfRange(data, startIndex, startIndex + Address.avm_LENGTH));
+                return new ABIDecoder.DecodedObjectInfo(decoded, decoded, startIndex + Address.avm_LENGTH);
             }
             @Override
-            public Array constructWrappedArray(int size, Object[] data) {
+            public Array constructWrappedArray(Object[] data) {
+                return null;
+            }
+            @Override
+            public Object constructNativeArray(Object[] data) {
                 return null;
             }
         };
@@ -337,7 +415,8 @@ public class ABIEncoder{
         public abstract byte[] encodeShadowType(Object data);
         public abstract byte[][] encode1DArray(Object data);
         public abstract ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex);
-        public abstract Array constructWrappedArray(int size, Object[] data);
+        public abstract Array constructWrappedArray(Object[] data);
+        public abstract Object constructNativeArray(Object[] data);
     }
 
     private static Map<String, ABITypes> ABITypesMap = null;

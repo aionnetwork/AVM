@@ -11,25 +11,23 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class POCTestExchange {
-
     private static AvmImpl avm;
-
     private byte[] testERC20Jar;
+    private byte[] testExchangeJar;
 
     @Before
     public void setup() {
         avm = new AvmImpl();
         testERC20Jar = Helpers.readFileToBytes("../examples/build/testExchangeJar/com.example.testERC20.jar");
+        testExchangeJar = Helpers.readFileToBytes("../examples/build/testExchangeJar/com.example.testExchange.jar");
     }
 
     private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 5_000_000;
 
-    private byte[] pepeCoinAddr = Helpers.randomBytes(Address.LENGTH);
-    private byte[] memeCoinAddr = Helpers.randomBytes(Address.LENGTH);
     private byte[] pepeMinter = Helpers.randomBytes(Address.LENGTH);
     private byte[] memeMinter = Helpers.randomBytes(Address.LENGTH);
-    private byte[] owner = Helpers.randomBytes(Address.LENGTH);
+    private byte[] exchangeOwner = Helpers.randomBytes(Address.LENGTH);
     private byte[] usr1 = Helpers.randomBytes(Address.LENGTH);
     private byte[] usr2 = Helpers.randomBytes(Address.LENGTH);
     private byte[] usr3 = Helpers.randomBytes(Address.LENGTH);
@@ -54,78 +52,88 @@ public class POCTestExchange {
 
         public TransactionResult callTotalSupply() throws InvalidTxDataException {
             byte[] args = ABIEncoder.encodeMethodArguments("totalSupply");
-
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-            TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-            TransactionResult callResult = avm.run(callContext);
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
-            return callResult;
+            return call(minter, args);
         }
 
         private TransactionResult callBalanceOf(byte[] toQuery) throws InvalidTxDataException {
             byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", new Address(toQuery));
-
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-            TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-            TransactionResult callResult = avm.run(callContext);
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
-            return callResult;
+            return call(minter, args);
         }
 
         private TransactionResult callOpenAccount(byte[] toOpen) throws InvalidTxDataException {
             byte[] args = ABIEncoder.encodeMethodArguments("openAccount", new Address(toOpen));
-
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-            TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-            TransactionResult callResult = avm.run(callContext);
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
-            return callResult;
+            return call(minter, args);
         }
 
         private TransactionResult callMint(byte[] receiver, long amount) throws InvalidTxDataException {
             byte[] args = ABIEncoder.encodeMethodArguments("mint", new Address(receiver), amount);
-
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-            TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-            TransactionResult callResult = avm.run(callContext);
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
-            return callResult;
+            return call(minter, args);
         }
 
         private TransactionResult callTransfer(byte[] sender, byte[] receiver, long amount) throws InvalidTxDataException {
             byte[] args = ABIEncoder.encodeMethodArguments("transfer", new Address(receiver), amount);
+            return call(sender, args);
+        }
 
+        private TransactionResult callAllowance(byte[] owner, byte[] spender) throws InvalidTxDataException {
+            byte[] args = ABIEncoder.encodeMethodArguments("allowance", new Address(owner), new Address(spender));
+            return call(minter, args);
+        }
+
+        private TransactionResult callApprove(byte[] owner, byte[] spender, long amount) throws InvalidTxDataException {
+            byte[] args = ABIEncoder.encodeMethodArguments("approve", new Address(spender), amount);
+            return call(owner, args);
+        }
+
+        private TransactionResult callTransferFrom(byte[] executor, byte[] from, byte[] to, long amount) throws InvalidTxDataException {
+            byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", new Address(from), new Address(to), amount);
+            return call(executor, args);
+        }
+
+        private TransactionResult call(byte[] sender, byte[] args) {
             Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
             TransactionResult callResult = avm.run(callContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
             return callResult;
         }
+    }
 
-        private TransactionResult callAllowance(byte[] owner, byte[] spender) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("allowance", new Address(owner), new Address(spender));
+    class ExchangeContract{
+        private byte[] addr;
+        private byte[] owner;
 
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
-            TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-            TransactionResult callResult = avm.run(callContext);
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
-            return callResult;
+        ExchangeContract(byte[] contractAddr, byte[] owner, byte[] jar){
+            this.addr = contractAddr;
+            this.owner = owner;
+            this.addr = initExchange(jar, null);
         }
 
-        private TransactionResult callApprove(byte[] owner, byte[] spender, long amount) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("approve", new Address(spender), amount);
-
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, addr, 0, args, energyLimit);
-            TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-            TransactionResult callResult = avm.run(callContext);
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
-            return callResult;
+        private byte[] initExchange(byte[] jar, byte[] arguments){
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit);
+            TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+            TransactionResult createResult = new AvmImpl().run(createContext);
+            Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+            return createResult.getReturnData();
         }
 
-        private TransactionResult callTransferFrom(byte[] executor, byte[] from, byte[] to, long amount) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", new Address(from), new Address(to), amount);
+        public TransactionResult callListCoin(String name, byte[] coinAddr) throws InvalidTxDataException {
+            byte[] args = ABIEncoder.encodeMethodArguments("listCoin", name.toCharArray(), new Address(coinAddr));
+            return call(owner,args);
+        }
 
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, executor, addr, 0, args, energyLimit);
+        public TransactionResult callRequestTransfer(String name, byte[] from,  byte[] to, long amount) throws InvalidTxDataException {
+            byte[] args = ABIEncoder.encodeMethodArguments("requestTransfer", name.toCharArray(), new Address(to), amount);
+            return call(from,args);
+        }
+
+        public TransactionResult callProcessExchangeTransaction(byte[] sender) throws InvalidTxDataException {
+            byte[] args = ABIEncoder.encodeMethodArguments("processExchangeTransaction");
+            return call(sender,args);
+        }
+
+        private TransactionResult call(byte[] sender, byte[] args) throws InvalidTxDataException {
+            Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
             TransactionResult callResult = avm.run(callContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -135,10 +143,9 @@ public class POCTestExchange {
 
     @Test
     public void testERC20() throws InvalidTxDataException{
-
         TransactionResult res;
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
-        CoinContract pepe = new CoinContract(pepeCoinAddr, pepeMinter, testERC20Jar, arguments);
+        CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
 
         res = pepe.callTotalSupply();
         Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
@@ -180,13 +187,40 @@ public class POCTestExchange {
         Assert.assertEquals(12500L, ABIDecoder.decodeOneObject(res.getReturnData()));
     }
 
-
     @Test
     public void testExchange() throws InvalidTxDataException{
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
-        CoinContract pepe = new CoinContract(pepeCoinAddr, pepeMinter, testERC20Jar, arguments);
+        CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
 
         arguments = ABIEncoder.encodeMethodArguments("", "Meme".toCharArray(), "MEME".toCharArray(), 8);
-        CoinContract meme = new CoinContract(memeCoinAddr, memeMinter, testERC20Jar, arguments);
+        CoinContract meme = new CoinContract(null, memeMinter, testERC20Jar, arguments);
+
+        ExchangeContract ex = new ExchangeContract(null, exchangeOwner, testExchangeJar);
+
+        TransactionResult res;
+
+        res = ex.callListCoin("PEPE", pepe.addr);
+        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
+       res = ex.callListCoin("MEME", meme.addr);
+        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
+
+        pepe.callMint(usr1, 5000L);
+        pepe.callMint(usr2, 5000L);
+
+        res = pepe.callApprove(usr1, ex.addr, 2000L);
+        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
+        res = ex.callRequestTransfer("PEPE", usr1, usr2, 1000L);
+        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
+        res = pepe.callAllowance(usr1, ex.addr);
+        Assert.assertEquals(2000L, ABIDecoder.decodeOneObject(res.getReturnData()));
+        res = ex.callProcessExchangeTransaction(exchangeOwner);
+        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
+
+        res = pepe.callBalanceOf(usr1);
+        Assert.assertEquals(4000L, ABIDecoder.decodeOneObject(res.getReturnData()));
+        res = pepe.callBalanceOf(usr2);
+        Assert.assertEquals(6000L, ABIDecoder.decodeOneObject(res.getReturnData()));
+        res = pepe.callAllowance(usr1, ex.addr);
+        Assert.assertEquals(1000L, ABIDecoder.decodeOneObject(res.getReturnData()));
     }
 }

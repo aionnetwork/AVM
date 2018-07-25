@@ -64,7 +64,7 @@ public class BlockchainRuntime {
         return null;
     }
 
-    public static byte[] call(Address to, byte[] value, byte[] data, long energyLimit) {
+    public static byte[] call(Address targetAddress, long value, byte[] data, long energyToSend) {
         return null;
     }
 

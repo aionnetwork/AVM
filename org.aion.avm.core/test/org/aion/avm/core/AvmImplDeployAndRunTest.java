@@ -73,7 +73,7 @@ public class AvmImplDeployAndRunTest {
         TransactionResult result = new AvmImpl().run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        assertEquals("Hello, world!", new String(((ByteArray) ABIDecoder.decodeOneObject(result.getReturnData())).getUnderlying()));
+        assertEquals("Hello, world!", new String((byte[]) ABIDecoder.decodeOneObject(result.getReturnData())));
     }
 
     @Test
@@ -104,7 +104,7 @@ public class AvmImplDeployAndRunTest {
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         byte[] expected = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x05};
         // "addArray<[I2]I>" + raw data 123, 1, 5
-        boolean correct = Arrays.equals(((ByteArray) (ABIDecoder.decodeOneObject(result.getReturnData()))).getUnderlying(), expected);
+        boolean correct = Arrays.equals((byte[])(ABIDecoder.decodeOneObject(result.getReturnData())), expected);
         assertEquals(true, correct);
 
         // test another method call, "addArray" with 1D array arguments

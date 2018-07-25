@@ -4,7 +4,6 @@ import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 
 public class ERC20Token implements ERC20 {
-
     public final String name;
     public final String symbol;
     public final int decimals;

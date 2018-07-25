@@ -135,7 +135,7 @@ public class ProofOfConceptTest {
             TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
             TransactionResult executeResult = new AvmImpl().run(executeContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, executeResult.getStatusCode());
-            byte[] toConfirm = ((ByteArray) ABIDecoder.decodeOneObject(executeResult.getReturnData())).getUnderlying();
+            byte[] toConfirm = (byte[]) ABIDecoder.decodeOneObject(executeResult.getReturnData());
             
             // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
             byte[] confirmArgs = CallEncoder.confirm(toConfirm);

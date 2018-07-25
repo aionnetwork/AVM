@@ -2,6 +2,10 @@ package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.shadow.java.lang.Boolean;
+import org.aion.avm.shadow.java.lang.Byte;
+import org.aion.avm.shadow.java.lang.Float;
+import org.aion.avm.shadow.java.lang.Short;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -20,9 +24,9 @@ public class ABIDecoder {
     public static class MethodCaller {
         public String methodName;
         public String argsDescriptor;
-        public Object[] arguments;
+        public IObject[] arguments;
 
-        MethodCaller(String methodName, String argsDescriptor, Object[] arguments) {
+        MethodCaller(String methodName, String argsDescriptor, IObject[] arguments) {
             this.methodName = methodName;
             this.argsDescriptor = argsDescriptor;
             this.arguments  = arguments;
@@ -59,11 +63,13 @@ public class ABIDecoder {
     }
 
     public static class DecodedObjectInfo {
-        Object object;
-        int endByteOfData;
+        Object object;      // decoded native object
+        IObject iObject;    // decoded shadow/wrapped object
+        int endByteOfData;  // the position in the encoded data byte buffer after this object is decoded
 
-        DecodedObjectInfo(Object object, int endByteOfData) {
+        DecodedObjectInfo(Object object, IObject iObject, int endByteOfData) {
             this.object = object;
+            this.iObject = iObject;
             this.endByteOfData = endByteOfData;
         }
     }
@@ -84,13 +90,15 @@ public class ABIDecoder {
     }
 
     public static IObject avm_decodeOneObject(ByteArray txData) throws InvalidTxDataException{
-        return (IObject) decodeOneObject(txData.getUnderlying());
+        Descriptor descriptor = readOneDescriptor(txData.getUnderlying(), 0);
+        return decodeOneObjectWithDescriptor(txData.getUnderlying(), descriptor.encodedBytes, descriptor).iObject;
     }
 
 
     /*
      * Underlying implementation.
      */
+
     public static byte[] decodeAndRun(Object obj, byte[] txData) throws InvalidTxDataException{
         MethodCaller methodCaller = decode(txData);
 
@@ -109,7 +117,7 @@ public class ABIDecoder {
                 ret = method.invoke(obj);
             }
             else {
-                ret = method.invoke(obj, convertArguments(methodCaller.arguments));
+                ret = method.invoke(obj, convertArguments(method, methodCaller.arguments));
             }
         } catch (Exception e) {
             throw new InvalidTxDataException();
@@ -120,7 +128,16 @@ public class ABIDecoder {
                 : null;
     }
 
+    /**
+     * Decoded arguments are the user space IObject ones.
+     * @param txData
+     * @return
+     * @throws InvalidTxDataException
+     */
     public static MethodCaller decode(byte[] txData) throws InvalidTxDataException{
+        if (txData == null || txData.length == 0) {
+            return null;
+        }
         String decoded = new String(txData);
 
         int m1 = decoded.indexOf(DESCRIPTOR_S);
@@ -137,11 +154,45 @@ public class ABIDecoder {
         String argsDescriptor = decoded.substring(m1+1, m2);
         int startByteOfData = decoded.substring(0, m2 + 1).getBytes().length;
 
-        Object[] arguments = decodeArguments(Arrays.copyOfRange(txData, startByteOfData, txData.length), argsDescriptor);
+        IObject[] arguments = decodeArguments(Arrays.copyOfRange(txData, startByteOfData, txData.length), argsDescriptor);
 
         return new MethodCaller(methodName, argsDescriptor, arguments);
     }
 
+    private static IObject[] decodeArguments(byte[] data, String argsDescriptor) throws InvalidTxDataException{
+        // read all descriptors
+        int encodedBytes = 0;
+        List<Descriptor> descriptorList = new ArrayList<>();
+        while (encodedBytes < argsDescriptor.getBytes().length) {
+            Descriptor descriptor = readOneDescriptor(argsDescriptor.getBytes(), encodedBytes);
+            descriptorList.add(descriptor);
+            encodedBytes += descriptor.encodedBytes;
+        }
+
+        if (descriptorList.size() == 0) {
+            return null;
+        }
+
+        // decode the arguments
+        IObject[] args = new IObject[descriptorList.size()];
+        int argIndex = 0;
+        int bytes = 0;
+        for (Descriptor descriptor: descriptorList) {
+            DecodedObjectInfo decodedObjectInfo = decodeOneObjectWithDescriptor(data, bytes, descriptor);
+            args[argIndex] = decodedObjectInfo.iObject;
+            argIndex ++;
+            bytes = decodedObjectInfo.endByteOfData;
+        }
+
+        return args;
+    }
+
+    /**
+     * Return the native object
+     * @param data
+     * @return
+     * @throws InvalidTxDataException
+     */
     public static Object decodeOneObject(byte[] data) throws InvalidTxDataException{
         Descriptor descriptor = readOneDescriptor(data, 0);
         return decodeOneObjectWithDescriptor(data, descriptor.encodedBytes, descriptor).object;
@@ -210,7 +261,6 @@ public class ABIDecoder {
             }
         }
         return res;
-
     }
 
     private static DecodedObjectInfo decodeOneObjectWithDescriptor(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
@@ -234,7 +284,7 @@ public class ABIDecoder {
             array[idx] = decodedObjectInfo.object;
             endByte = decodedObjectInfo.endByteOfData;
         }
-        return new DecodedObjectInfo(descriptor.type.constructWrappedArray(descriptor.size, array), endByte);
+        return new DecodedObjectInfo(descriptor.type.constructNativeArray(array), descriptor.type.constructWrappedArray(array), endByte);
     }
 
     private static DecodedObjectInfo decode2DArray(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
@@ -245,41 +295,13 @@ public class ABIDecoder {
             array[idx] = (Object[]) decodedObjectInfo.object;
             endByte = decodedObjectInfo.endByteOfData;
         }
-        return new DecodedObjectInfo(array, endByte);
-    }
-
-    private static Object[] decodeArguments(byte[] data, String argsDescriptor) throws InvalidTxDataException{
-        // read all descriptors
-        int encodedBytes = 0;
-        List<Descriptor> descriptorList = new ArrayList<>();
-        while (encodedBytes < argsDescriptor.getBytes().length) {
-            Descriptor descriptor = readOneDescriptor(argsDescriptor.getBytes(), encodedBytes);
-            descriptorList.add(descriptor);
-            encodedBytes += descriptor.encodedBytes;
-        }
-
-        if (descriptorList.size() == 0) {
-            return null;
-        }
-
-        // decode the arguments
-        Object[] args = new Object[descriptorList.size()];
-        int argIndex = 0;
-        int bytes = 0;
-        for (Descriptor descriptor: descriptorList) {
-            DecodedObjectInfo decodedObjectInfo = decodeOneObjectWithDescriptor(data, bytes, descriptor);
-            args[argIndex] = decodedObjectInfo.object;
-            argIndex ++;
-            bytes = decodedObjectInfo.endByteOfData;
-        }
-
-        return args;
+        return new DecodedObjectInfo(array, new ObjectArray(array), endByte); //TODO - constructWrapped2DArray after the 2D wrappers are available
     }
 
     /**
      * A helper method to match the method selector with the main-class methods.
      */
-    public static Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor) {
+    public static Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor) throws InvalidTxDataException{
         Method[] methods = clazz.getMethods();
 
         // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
@@ -307,8 +329,9 @@ public class ABIDecoder {
                     break;
                 }
 
-                int parIdx = 0;
                 boolean matched = true;
+                int parIdx = 0;
+
                 for (int idx = 0; idx < argsDescriptor.length(); idx++) {
                     if (argsDescriptor.charAt(idx) == ABIDecoder.ARRAY_S) {
                         String pType = parameterTypes[parIdx].getName();
@@ -378,113 +401,50 @@ public class ABIDecoder {
 
 
     /**
-     * Convert the method call arguments, 1) take care of the array wrapping; 2) convert to an array list.
+     * Convert the method call arguments to match with {@param method}
+     * Input arguments are the user space IObject ones; {@param method} is also in the user space. 1D & 2D arrays should already match (both are wrapped)
+     * However, the method parameter may be one of Java primitives. In this case, the argument needs to be converted from the shadow one to the primitive.
      *
+     * @param method
      * @param arguments
      * @return
      */
-    private static Object[] convertArguments(Object... arguments)
-            throws InvalidTxDataException {
+    public static Object[] convertArguments(Method method, IObject[] arguments){
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (arguments.length != parameterTypes.length) {
+            return null;
+        }
+
         List<Object> argList = new LinkedList<>(Arrays.asList(arguments));
-        int originalSize = argList.size();
-
-        for (int index = 0; index < originalSize; index ++) {
-            Object obj = argList.get(index);
-
-            // generate the array wrapping objects
-            if (obj.getClass().isArray()) {
-                Object newObj = null;
-                String originalClassName = obj.getClass().getName();
-                switch (originalClassName) {
-                    case "[C":
-                        newObj = new CharArray((char[]) obj);
-                        argList.set(index, obj);
-                        break;
-                    case "[D":
-                        newObj = new DoubleArray((double[]) obj);
-                        argList.set(index, obj);
-                        break;
-                    case "[F":
-                        newObj = new FloatArray((float[]) obj);
-                        argList.set(index, obj);
-                        break;
-                    case "[I":
-                        newObj = new IntArray((int[]) obj);
-                        argList.set(index, obj);
-                        break;
-                    case "[J":
-                        newObj = new LongArray((long[]) obj);
-                        argList.set(index, obj);
-                        break;
-                    case "[S":
-                        newObj = new ShortArray((short[]) obj);
-                        argList.set(index, obj);
-                        break;
-                    case "[B":
-                    case "[Z":
-                        newObj = new ByteArray((byte[]) obj);
-                        argList.set(index, obj);
-                        break;
-                    default:
-                        if (!originalClassName.matches("\\[\\[[BZCDFIJS]")) {
-                            throw new InvalidTxDataException();
-                        }
-
-                        //TODO convert 2D array objects to the wrapped ones
-/*
-                        // this is a 2D array
-                        String arrayWrapperClassName = "org.aion.avm.arraywrapper.$$" + originalClassName.charAt(originalClassName.length()-1);
-                        Class<?> clazz = sharedClassLoader.loadClass(arrayWrapperClassName);
-
-                        Method initArray = clazz.getMethod("initArray", int.class);
-                        Method set = clazz.getMethod("set", int.class, Object.class);
-
-                        int firstDimension = ((Object[])obj).length;
-                        newObj = initArray.invoke(null, firstDimension);
-                        switch (originalClassName) {
-                            case "[[B":
-                            case "[[Z":
-                                for (int i = 0; i < firstDimension; i++) {
-                                    set.invoke(newObj, i, new ByteArray(((byte[][])obj)[i]));
-                                }
-                                break;
-                            case "[[C":
-                                for (int i = 0; i < firstDimension; i++) {
-                                    set.invoke(newObj, i, new CharArray(((char[][])obj)[i]));
-                                }
-                                break;
-                            case "[[D":
-                                for (int i = 0; i < firstDimension; i++) {
-                                    set.invoke(newObj, i, new DoubleArray(((double[][])obj)[i]));
-                                }
-                                break;
-                            case "[[F":
-                                for (int i = 0; i < firstDimension; i++) {
-                                    set.invoke(newObj, i, new FloatArray(((float[][])obj)[i]));
-                                }
-                                break;
-                            case "[[I":
-                                for (int i = 0; i < firstDimension; i++) {
-                                    set.invoke(newObj, i, new IntArray(((int[][])obj)[i]));
-                                }
-                                break;
-                            case "[[J":
-                                for (int i = 0; i < firstDimension; i++) {
-                                    set.invoke(newObj, i, new LongArray(((long[][])obj)[i]));
-                                }
-                                break;
-                            case "[[S":
-                                for (int i = 0; i < firstDimension; i++) {
-                                    set.invoke(newObj, i, new ShortArray(((short[][])obj)[i]));
-                                }
-                                break;
-                        }*/
-
-                        break;
-                }
-
-                // replace the original object with the new one
-                argList.set(index, newObj);
+        for (int index = 0; index < argList.size(); index ++) {
+            // replace the original object with the new one
+            switch (parameterTypes[index].getName()) {
+                case "byte":
+                    argList.set(index, ((Byte)argList.get(index)).avm_byteValue());
+                    break;
+                case "boolean":
+                    argList.set(index, ((Boolean)argList.get(index)).avm_booleanValue());
+                    break;
+                case "short":
+                    argList.set(index, ((Short)argList.get(index)).avm_shortValue());
+                    break;
+                case "int":
+                    argList.set(index, ((org.aion.avm.shadow.java.lang.Integer)argList.get(index)).avm_intValue());
+                    break;
+                case "long":
+                    argList.set(index, ((org.aion.avm.shadow.java.lang.Long)argList.get(index)).avm_longValue());
+                    break;
+                case "float":
+                    argList.set(index, ((Float)argList.get(index)).avm_floatValue());
+                    break;
+                case "double":
+                    argList.set(index, ((org.aion.avm.shadow.java.lang.Double)argList.get(index)).avm_doubleValue());
+                    break;
+                case "char":
+                    argList.set(index, ((org.aion.avm.shadow.java.lang.Character)argList.get(index)).avm_charValue());
+                    break;
+                default:
+                    break;
             }
         }
 

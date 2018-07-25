@@ -454,13 +454,23 @@ public class AvmImpl implements Avm {
             Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
 
             ABIDecoder.MethodCaller methodCaller = ABIDecoder.decode(Helpers.decodeCodeAndData(tx.getData())[1]);
-            Method method = ABIDecoder.matchMethodSelector(clazz, "avm_init", methodCaller.argsDescriptor);
-            if (method != null) {
-                if (methodCaller.arguments == null) {
+            if (methodCaller == null) {
+                try{
+                    Method method = clazz.getMethod("avm_init");
                     method.invoke(null);
+                } catch (NoSuchMethodException e) {
+                    // the contract doesn't have "init" method
                 }
-                else {
-                    method.invoke(null, methodCaller.arguments);
+            }
+            else {
+                Method method = ABIDecoder.matchMethodSelector(clazz, "avm_init", methodCaller.argsDescriptor);
+                if (method != null) {
+                    if (methodCaller.arguments == null) {
+                        method.invoke(null);
+                    }
+                    else {
+                        method.invoke(null, ABIDecoder.convertArguments(method, methodCaller.arguments));
+                    }
                 }
             }
 
