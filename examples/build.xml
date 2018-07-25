@@ -12,7 +12,7 @@
     </target>
 
     <target name="build"
-            depends="build_helloworld, build_simpletoken, build_twoclasses, build_foresttest, build_heapsizecalctest, build_avmstartuptest, build_deployAndRunTest, build_testExchange"/>
+            depends="build_helloworld, build_simpletoken, build_twoclasses, build_foresttest, build_heapsizecalctest, build_avmstartuptest, build_deployAndRunTest, build_testExchange, build_testWallet"/>
 
     <target name="build_avmstartuptest">
         <local name="main"/>
@@ -243,6 +243,33 @@
              excludes="**/ERC20.class,**/ERC20Token.class,**/CoinController.class">
             <manifest>
                 <attribute name="Main-Class" value="com.example.testExchange.ExchangeController"/>
+            </manifest>
+        </jar>
+
+        <delete dir="${dir.local.build}/${name}"/>
+    </target>
+
+    <target name="build_testWallet">
+        <local name="name"/>
+        <local name="main"/>
+        <property name="name" value="com.example.testWallet"/>
+        <property name="main" value="com.example.testWallet.Main"/>
+
+        <mkdir dir="${dir.local.build}/${name}"/>
+
+        <echo message="Compiling ${name}..."/>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.local.src}/${name}"
+               destdir="${dir.local.build}/${name}" includes="**/*.java,module-info.java">
+            <modulepath>
+                <pathelement location="${dir.global.jar}/org-aion-avm-api.jar"/>
+            </modulepath>
+        </javac>
+
+        <echo message="Packing ${name}..."/>
+        <jar destfile="${dir.local.build}/${name}.jar" basedir="${dir.local.build}/${name}">
+            <manifest>
+                <attribute name="Main-Class" value="${main}"/>
             </manifest>
         </jar>
 
