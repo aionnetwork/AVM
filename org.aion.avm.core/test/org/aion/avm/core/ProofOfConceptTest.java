@@ -14,6 +14,8 @@ import org.aion.avm.core.testWallet.Operation;
 import org.aion.avm.core.testWallet.RequireFailedException;
 import org.aion.avm.core.testWallet.Wallet;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.IHelper;
+import org.aion.avm.shadow.java.lang.Class;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -169,32 +171,57 @@ public class ProofOfConceptTest {
         }
 
         /**
-         * Note that this is copied from CallEncoder to allow us to create the input without needing to instantiate Address objects.
+         * Just calls CallEncoder after faking up Address objects.
          */
-        private static byte[] encodeInit(byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) throws Exception {
-            byte[] onto = new byte[1 + Address.LENGTH + Address.LENGTH + Integer.BYTES + Long.BYTES];
-            Abi.Encoder encoder = Abi.buildEncoder(onto);
-            encoder
-                    .encodeByte(Abi.kWallet_init)
-                    .encodeRemainder(extra1)
-                    .encodeRemainder(extra2)
-                    .encodeInt(requiredVotes)
-                    .encodeLong(dailyLimit);
-            return onto;
+        private static byte[] encodeInit(byte[] extra1Bytes, byte[] extra2Bytes, int requiredVotes, long dailyLimit) throws Exception {
+            Address extra1 = createAddressInFakeContract(extra1Bytes);
+            Address extra2 = createAddressInFakeContract(extra2Bytes);
+            
+            return CallEncoder.init(extra1, extra2, requiredVotes, dailyLimit);
         }
 
         /**
-         * Note that this is mostly copied from CallEncoder.
+         * Just calls CallEncoder after faking up Address objects.
          */
-        private static byte[] encodeExecute(byte[] to, long value, byte[] data) throws Exception {
-            byte[] onto = new byte[1 + Address.LENGTH + Long.BYTES + data.length];
-            Abi.Encoder encoder = Abi.buildEncoder(onto);
-            encoder
-                .encodeByte(Abi.kWallet_execute)
-                .encodeRemainder(to)
-                .encodeLong(value)
-                .encodeRemainder(data);
-            return onto;
+        private static byte[] encodeExecute(byte[] toBytes, long value, byte[] data) throws Exception {
+            Address to = createAddressInFakeContract(toBytes);
+            
+            return CallEncoder.execute(to, value, data);
+        }
+
+        private static Address createAddressInFakeContract(byte[] bytes) {
+            // Create a fake runtime for encoding the arguments (since these are shadow objects - they can only be instantiated within the context of a contract).
+            IHelper.currentContractHelper.set(new IHelper() {
+                @Override
+                public void externalChargeEnergy(long cost) {
+                    Assert.fail("Not in test");
+                }
+                @Override
+                public void externalSetEnergy(long energy) {
+                    Assert.fail("Not in test");
+                }
+                @Override
+                public long externalGetEnergyRemaining() {
+                    Assert.fail("Not in test");
+                    return 0;
+                }
+                @Override
+                public Class<?> externalWrapAsClass(java.lang.Class<?> input) {
+                    Assert.fail("Not in test");
+                    return null;
+                }
+                @Override
+                public int externalGetNextHashCode() {
+                    // Will be called.
+                    return 1;
+                }
+                @Override
+                public void externalBootstrapOnly() {
+                    Assert.fail("Not in test");
+                }});
+            Address instance = new Address(bytes);
+            IHelper.currentContractHelper.set(null);
+            return instance;
         }
     }
 
