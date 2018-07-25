@@ -172,12 +172,10 @@ public class ProofOfConceptTest {
          * Note that this is copied from CallEncoder to allow us to create the input without needing to instantiate Address objects.
          */
         private static byte[] encodeInit(byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) throws Exception {
-            byte[] onto = new byte[1 + Integer.BYTES + Address.LENGTH + Address.LENGTH + Integer.BYTES + Long.BYTES];
+            byte[] onto = new byte[1 + Address.LENGTH + Address.LENGTH + Integer.BYTES + Long.BYTES];
             Abi.Encoder encoder = Abi.buildEncoder(onto);
-            // We are encoding the Addresses as a 2-element array, so describe it that way to the encoder.
             encoder
                     .encodeByte(Abi.kWallet_init)
-                    .encodeInt(2)
                     .encodeRemainder(extra1)
                     .encodeRemainder(extra2)
                     .encodeInt(requiredVotes)

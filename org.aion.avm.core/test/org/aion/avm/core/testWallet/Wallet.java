@@ -33,6 +33,13 @@ public class Wallet {
     }
 
     /**
+     * Exists because the ABIEncoder can't encode Address[] but can encode Address.
+     */
+    public static void initWrapper(Address extra1, Address extra2, int requiredVotes, long dailyLimit) {
+        init(new Address[] {extra1, extra2}, requiredVotes, dailyLimit);
+    }
+
+    /**
      * The generic start symbol which processes the input using the ABI to calls out to other helpers.
      *
      * @return The output of running the invoke (null for void methods or require failed cases).
@@ -46,15 +53,12 @@ public class Wallet {
         
         switch (methodByte) {
         case Abi.kWallet_init : {
-            // We know that this is int (length), Address(*length), int, long.
-            int addressCount = decoder.decodeInt();
-            Address[] requestedOwners = new Address[addressCount];
-            for (int i = 0; i < addressCount; ++i) {
-                requestedOwners[i] = decoder.decodeAddress();
-            }
+            // We know that this is Address, Address, int, long.
+            Address extra1 = decoder.decodeAddress();
+            Address extra2 = decoder.decodeAddress();
             int votesRequiredPerOperation = decoder.decodeInt();
             long daylimit = decoder.decodeLong();
-            Wallet.init(requestedOwners, votesRequiredPerOperation, daylimit);
+            Wallet.initWrapper(extra1, extra2, votesRequiredPerOperation, daylimit);
             break;
         }
         case Abi.kWallet_payable : {

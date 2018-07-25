@@ -10,12 +10,11 @@ import org.aion.avm.api.InvalidTxDataException;
  */
 public class CallEncoder {
     public static byte[] init(Address extra1, Address extra2, int requiredVotes, long dailyLimit) throws InvalidTxDataException {
-        byte[] onto = new byte[1 + Integer.BYTES + Address.LENGTH + Address.LENGTH + Integer.BYTES + Long.BYTES];
+        // Note that we are calling the initWrapper, so we pass the 2 Address instances, directly.
+        byte[] onto = new byte[1 + Address.LENGTH + Address.LENGTH + Integer.BYTES + Long.BYTES];
         Abi.Encoder encoder = Abi.buildEncoder(onto);
-        // We are encoding the Addresses as a 2-element array, so describe it that way to the encoder.
         encoder
             .encodeByte(Abi.kWallet_init)
-            .encodeInt(2)
             .encodeAddress(extra1)
             .encodeAddress(extra2)
             .encodeInt(requiredVotes)

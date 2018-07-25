@@ -21,15 +21,12 @@ public class WalletShim {
         
         switch (methodByte) {
         case Abi.kWallet_init : {
-            // We know that this is int (length), Address(*length), int, long.
-            int addressCount = decoder.decodeInt();
-            Address[] requestedOwners = new Address[addressCount];
-            for (int i = 0; i < addressCount; ++i) {
-                requestedOwners[i] = decoder.decodeAddress();
-            }
+            // We know that this is Address, Address, int, long.
+            Address extra1 = decoder.decodeAddress();
+            Address extra2 = decoder.decodeAddress();
             int votesRequiredPerOperation = decoder.decodeInt();
             long daylimit = decoder.decodeLong();
-            WalletShim.avm_init(requestedOwners, votesRequiredPerOperation, daylimit);
+            WalletShim.avm_initWrapper(extra1, extra2, votesRequiredPerOperation, daylimit);
             break;
         }
         case Abi.kWallet_payable : {
@@ -96,8 +93,8 @@ public class WalletShim {
         return result;
     }
 
-    public static void avm_init(Address[] requestedOwners, int votesRequiredPerOperation, long daylimit) {
-        Wallet.init(requestedOwners, votesRequiredPerOperation, daylimit);
+    public static void avm_initWrapper(Address extra1, Address extra2, int requiredVotes, long dailyLimit) {
+        Wallet.initWrapper(extra1, extra2, requiredVotes, dailyLimit);
     }
 
     public static void avm_payable(Address from, long value) {
