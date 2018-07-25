@@ -11,67 +11,67 @@ import org.aion.avm.api.InvalidTxDataException;
  */
 public class DirectProxy {
     public static void init(Consumer<byte[]> inputConsumer, Address extra1, Address extra2, int requiredVotes, long dailyLimit) throws InvalidTxDataException {
-        byte[] onto = CallEncoder.init(extra1, extra2, requiredVotes, dailyLimit);
+        byte[] onto = DirectEncoder.init(extra1, extra2, requiredVotes, dailyLimit);
         inputConsumer.accept(onto);
         WalletShim.main();
     }
 
     public static void payable(Consumer<byte[]> inputConsumer, Address from, long value) throws InvalidTxDataException {
-        byte[] onto = CallEncoder.payable(from, value);
+        byte[] onto = DirectEncoder.payable(from, value);
         inputConsumer.accept(onto);
         WalletShim.main();
     }
 
     public static boolean addOwner(Consumer<byte[]> inputConsumer, Address owner) throws InvalidTxDataException {
-        byte[] onto = CallEncoder.addOwner(owner);
+        byte[] onto = DirectEncoder.addOwner(owner);
         inputConsumer.accept(onto);
         byte[] result = WalletShim.main();
         return (null != result);
     }
 
     public static byte[] execute(Consumer<byte[]> inputConsumer, Address to, long value, byte[] data) throws InvalidTxDataException {
-        byte[] onto = CallEncoder.execute(to, value, data);
+        byte[] onto = DirectEncoder.execute(to, value, data);
         inputConsumer.accept(onto);
         return WalletShim.main();
     }
 
     public static boolean confirm(Consumer<byte[]> inputConsumer, byte[] data) throws InvalidTxDataException {
-        byte[] onto = CallEncoder.confirm(data);
+        byte[] onto = DirectEncoder.confirm(data);
         inputConsumer.accept(onto);
         byte[] result = WalletShim.main();
         return (0x1 == result[0]);
     }
 
     public static boolean changeRequirement(Consumer<byte[]> inputConsumer, int newRequired) throws InvalidTxDataException {
-        byte[] onto = CallEncoder.changeRequirement(newRequired);
+        byte[] onto = DirectEncoder.changeRequirement(newRequired);
         inputConsumer.accept(onto);
         byte[] result = WalletShim.main();
         return (null != result);
     }
 
     public static Address getOwner(Consumer<byte[]> inputConsumer, int ownerIndex) throws InvalidTxDataException {
-        byte[] onto = CallEncoder.getOwner(ownerIndex);
+        byte[] onto = DirectEncoder.getOwner(ownerIndex);
         inputConsumer.accept(onto);
         byte[] result = WalletShim.main();
         return new Address(result);
     }
 
     public static boolean changeOwner(Consumer<byte[]> inputConsumer, Address from, Address to) throws InvalidTxDataException {
-        byte[] onto = CallEncoder.changeOwner(from, to);
+        byte[] onto = DirectEncoder.changeOwner(from, to);
         inputConsumer.accept(onto);
         byte[] result = WalletShim.main();
         return (null != result);
     }
 
     public static boolean removeOwner(Consumer<byte[]> inputConsumer, Address owner) throws InvalidTxDataException {
-        byte[] onto = CallEncoder.removeOwner(owner);
+        byte[] onto = DirectEncoder.removeOwner(owner);
         inputConsumer.accept(onto);
         byte[] result = WalletShim.main();
         return (null != result);
     }
 
     public static void revoke(Consumer<byte[]> inputConsumer, byte[] transactionBytes) throws InvalidTxDataException {
-        byte[] onto = CallEncoder.revoke(transactionBytes);
+        byte[] onto = DirectEncoder.revoke(transactionBytes);
         inputConsumer.accept(onto);
         WalletShim.main();
     }
