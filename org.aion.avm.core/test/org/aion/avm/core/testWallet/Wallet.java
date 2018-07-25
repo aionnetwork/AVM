@@ -64,7 +64,8 @@ public class Wallet {
         }
         case Abi.kWallet_addOwner : {
             Address owner = decoder.decodeAddress();
-            result = Wallet.addOwner(owner);
+            boolean output = Wallet.addOwner(owner);
+            result = output ? new byte[0] : null;
             break;
         }
         case Abi.kWallet_execute : {
@@ -82,7 +83,8 @@ public class Wallet {
         }
         case Abi.kWallet_changeRequirement : {
             int newRequired = decoder.decodeInt();
-            result = Wallet.changeRequirement(newRequired);
+            boolean output = Wallet.changeRequirement(newRequired);
+            result = output ? new byte[0] : null;
             break;
         }
         case Abi.kWallet_getOwner : {
@@ -97,12 +99,14 @@ public class Wallet {
         case Abi.kWallet_changeOwner : {
             Address from = decoder.decodeAddress();
             Address to = decoder.decodeAddress();
-            result = Wallet.changeOwner(from, to);
+            boolean output = Wallet.changeOwner(from, to);
+            result = output ? new byte[0] : null;
             break;
         }
         case Abi.kWallet_removeOwner : {
             Address owner = decoder.decodeAddress();
-            result = Wallet.removeOwner(owner);
+            boolean output = Wallet.removeOwner(owner);
+            result = output ? new byte[0] : null;
             break;
         }
         case Abi.kWallet_revoke : {
@@ -122,37 +126,37 @@ public class Wallet {
     }
 
     // EXTERNAL - composed
-    public static byte[] addOwner(Address owner) {
-        byte[] result = null;
+    public static boolean addOwner(Address owner) {
+        boolean result = false;
         try {
             Multiowned.addOwner(owner);
-            result = new byte[0];
+            result = true;
         } catch (RequireFailedException e) {
-            result = null;
+            result = false;
         }
         return result;
     }
 
     // EXTERNAL - composed
-    public static byte[] removeOwner(Address owner) {
-        byte[] result = null;
+    public static boolean removeOwner(Address owner) {
+        boolean result = false;
         try {
             Multiowned.removeOwner(owner);
-            result = new byte[0];
+            result = true;
         } catch (RequireFailedException e) {
-            result = null;
+            result = false;
         }
         return result;
     }
 
     // EXTERNAL - composed
-    public static byte[] changeRequirement(int newRequired) {
-        byte[] result = null;
+    public static boolean changeRequirement(int newRequired) {
+        boolean result = false;
         try {
             Multiowned.changeRequirement(newRequired);
-            result = new byte[0];
+            result = true;
         } catch (RequireFailedException e) {
-            result = null;
+            result = false;
         }
         return result;
     }
@@ -227,13 +231,13 @@ public class Wallet {
         return internalConfirm(h);
     }
 
-    public static byte[] changeOwner(Address from, Address to) {
-        byte[] result = null;
+    public static boolean changeOwner(Address from, Address to) {
+        boolean result = false;
         try {
             Multiowned.changeOwner(from, to);
-            result = new byte[0];
+            result = true;
         } catch (RequireFailedException e) {
-            result = null;
+            result = false;
         }
         return result;
     }
