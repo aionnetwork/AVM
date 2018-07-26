@@ -1,6 +1,7 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.util.Assert;
@@ -344,9 +345,10 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
             if (this.userDefinedClassSlashNames.contains(type)) {
                 return PackageConstants.kUserSlashPrefix + type;
 
-            } else if (type.startsWith(JAVA_LANG) || type.startsWith(JAVA_UTIL) || type.startsWith(JAVA_MATH) || type.startsWith(JAVA_NIO)) {
+            } else if (NodeEnvironment.singleton.isClassFromJCL(type)) {
                 return shadowPackageSlash + type;
 
+                // TODO: check API class names based on NodeEnvironment
             } else if (type.startsWith(ORG_AION_AVM_API) || type.startsWith("org/aion/avm/shadow/")) {
                 return type;
 

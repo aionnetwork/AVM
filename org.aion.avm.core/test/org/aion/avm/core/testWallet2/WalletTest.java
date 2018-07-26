@@ -1,5 +1,6 @@
 package org.aion.avm.core.testWallet2;
 
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.InvalidTxDataException;
@@ -28,7 +29,6 @@ public class WalletTest {
     private byte[] pendingTx = null;
 
     @Test
-    @Ignore
     public void testWallet() throws InvalidTxDataException {
         //================
         // DEPLOY
@@ -50,7 +50,8 @@ public class WalletTest {
         txContext = new TransactionContextImpl(tx, block);
         txResult = new AvmImpl().run(txContext);
         System.out.println(">> " + txResult);
-        pendingTx = txResult.getReturnData();
+        pendingTx = (byte[])ABIDecoder.decodeOneObject(txResult.getReturnData());
+        System.out.println(Helpers.toHexString(pendingTx));
 
         //================
         // CONFIRM #1
@@ -60,6 +61,7 @@ public class WalletTest {
         txContext = new TransactionContextImpl(tx, block);
         txResult = new AvmImpl().run(txContext);
         System.out.println(">> " + txResult);
+        System.out.println(ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         //================
         // CONFIRM #2
@@ -69,5 +71,6 @@ public class WalletTest {
         txContext = new TransactionContextImpl(tx, block);
         txResult = new AvmImpl().run(txContext);
         System.out.println(">> " + txResult);
+        System.out.println(ABIDecoder.decodeOneObject(txResult.getReturnData()));
     }
 }

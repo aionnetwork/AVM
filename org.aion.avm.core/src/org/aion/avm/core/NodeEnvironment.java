@@ -2,13 +2,19 @@ package org.aion.avm.core;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.PackageConstants;
 
 
 /**
@@ -25,10 +31,22 @@ public class NodeEnvironment {
     private final AvmSharedClassLoader sharedClassLoader;
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap;
 
+    private Set<String> jclClassNames;
+
     private NodeEnvironment() {
         this.sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         try {
-            loadShadowClasses(NodeEnvironment.class.getClassLoader());
+            this.jclClassNames = loadShadowClasses(NodeEnvironment.class.getClassLoader());
+
+            // we have to add the common generated exception/error classes as it's not pre-loaded
+            this.jclClassNames.addAll(Stream.of(CommonGenerators.kExceptionClassNames)
+                    .map(Helpers::fulllyQualifiedNameToInternalName)
+                    .collect(Collectors.toList()));
+
+            // TODO: confirm with Rom if this is correct
+            this.jclClassNames.add("java/lang/invoke/MethodHandles");
+            this.jclClassNames.add("java/lang/invoke/MethodHandles$Lookup");
+
         } catch (ClassNotFoundException e) {
             // This would be a fatal startup error.
             Assert.unexpected(e);
@@ -53,12 +71,22 @@ public class NodeEnvironment {
         return (this.sharedClassLoader == clazz.getClassLoader());
     }
 
+    /**
+     * Returns whether the class is from our custom JCL.
+     *
+     * @param classNameSlash
+     * @return
+     */
+    public boolean isClassFromJCL(String classNameSlash) {
+        return this.jclClassNames.contains(classNameSlash);
+    }
+
     public Map<Long, org.aion.avm.shadow.java.lang.Object> getConstantMap() {
         return this.constantMap;
     }
 
 
-    private static void loadShadowClasses(ClassLoader loader) throws ClassNotFoundException {
+    private static Set<String> loadShadowClasses(ClassLoader loader) throws ClassNotFoundException {
         // Create the fake IHelper.
         IHelper.currentContractHelper.set(new IHelper() {
             @Override
@@ -90,10 +118,11 @@ public class NodeEnvironment {
             }});
         
         // Load all the classes - even just mentioning these might cause them to be loaded, even before the Class.forName().
-        loadAndInitializeClasses(loader
+        Set<String> loadedClassNames = loadAndInitializeClasses(loader
                 , org.aion.avm.shadow.java.lang.Boolean.class
                 , org.aion.avm.shadow.java.lang.Byte.class
                 , org.aion.avm.shadow.java.lang.Character.class
+                , org.aion.avm.shadow.java.lang.CharSequence.class
                 , org.aion.avm.shadow.java.lang.Class.class
                 , org.aion.avm.shadow.java.lang.Double.class
                 , org.aion.avm.shadow.java.lang.Enum.class
@@ -105,6 +134,7 @@ public class NodeEnvironment {
                 , org.aion.avm.shadow.java.lang.Math.class
                 , org.aion.avm.shadow.java.lang.Number.class
                 , org.aion.avm.shadow.java.lang.Object.class
+                , org.aion.avm.shadow.java.lang.Runnable.class
                 , org.aion.avm.shadow.java.lang.RuntimeException.class
                 , org.aion.avm.shadow.java.lang.Short.class
                 , org.aion.avm.shadow.java.lang.StrictMath.class
@@ -122,19 +152,43 @@ public class NodeEnvironment {
                 , org.aion.avm.shadow.java.math.BigInteger.class
                 , org.aion.avm.shadow.java.math.MathContext.class
                 , org.aion.avm.shadow.java.math.RoundingMode.class
+
+                , org.aion.avm.shadow.java.nio.Buffer.class
+                , org.aion.avm.shadow.java.nio.ByteBuffer.class
+                , org.aion.avm.shadow.java.nio.ByteOrder.class
+                , org.aion.avm.shadow.java.nio.CharBuffer.class
+                , org.aion.avm.shadow.java.nio.DoubleBuffer.class
+                , org.aion.avm.shadow.java.nio.FloatBuffer.class
+                , org.aion.avm.shadow.java.nio.IntBuffer.class
+                , org.aion.avm.shadow.java.nio.LongBuffer.class
+                , org.aion.avm.shadow.java.nio.ShortBuffer.class
+
+                , org.aion.avm.shadow.java.util.Arrays.class
+
+                , org.aion.avm.shadow.java.util.function.Function.class
+
         );
         
         // Clean-up.
         IHelper.currentContractHelper.set(null);
+
+        return loadedClassNames;
     }
 
-    private static void loadAndInitializeClasses(ClassLoader loader, Class<?> ...classes) throws ClassNotFoundException {
+    private static Set<String> loadAndInitializeClasses(ClassLoader loader, Class<?> ...classes) throws ClassNotFoundException {
+        Set<String> classNames = new HashSet<>();
+
         // (note that the loader.loadClass() doesn't invoke <clinit> so we use Class.forName() - this "initialize" flag should do that).
         boolean initialize = true;
         for (Class<?> clazz : classes) {
             Class<?> instance = Class.forName(clazz.getName(), initialize, loader);
             Assert.assertTrue(clazz == instance);
+
+            String className = Helpers.fulllyQualifiedNameToInternalName(clazz.getName());
+            classNames.add(className.substring(PackageConstants.kShadowSlashPrefix.length()));
         }
+
+        return classNames;
     }
 
     private Map<Long, org.aion.avm.shadow.java.lang.Object> initializeConstantState() {
