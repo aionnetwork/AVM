@@ -22,7 +22,7 @@ public class Wallet {
      * Creates a wallet instance.
      *
      * @param owners                The initial owners
-     * @param confirmationsRequired The  number of confirmations required
+     * @param confirmationsRequired The number of confirmations required
      */
     public Wallet(Address[] owners, int confirmationsRequired) {
         for (Address owner : owners) {
@@ -51,7 +51,7 @@ public class Wallet {
     /**
      * Confirms a pending transaction.
      *
-     * @param id The pending transaction id.
+     * @param id The transaction id.
      */
     public boolean confirm(byte[] id) {
         // check access
@@ -65,8 +65,8 @@ public class Wallet {
             return false;
         }
 
-        // TODO: emit a log here
         pendingTx.confirmations.add(sender);
+        BlockchainRuntime.log("Confirm".getBytes(), sender.unwrap(), new byte[0]);
 
         if (pendingTx.confirmations.size() >= confirmationsRequired) {
             // remove the transaction

@@ -34,7 +34,7 @@ public class WalletTest {
         // DEPLOY
         //================
         byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, Wallet.class, Bytes32.class, AionSet.class, AionMap.class);
-        byte[] arguments = new byte[0]; // TODO: encode the owners and k
+        byte[] arguments = new byte[0]; // TODO: encode the owners and confirmsRequired
         byte[] data = Helpers.encodeCodeAndData(jar, arguments);
         Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0L, data, 2_000_000L);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
