@@ -446,7 +446,9 @@ public class ABIEncoder{
         int numOfBytes = 0;
         for (int idx = 0; idx < arguments.length; idx++) {
             encodedData[idx] = encodeOneObjectAndDescriptor(arguments[idx]);
-            numOfBytes += encodedData[idx][0].length + encodedData[idx][1].length;
+            if (encodedData[idx] != null) {
+                numOfBytes += encodedData[idx][0].length + encodedData[idx][1].length;
+            }
         }
 
         byte[] ret = new byte[(methodName + "<>").getBytes().length + numOfBytes];
@@ -456,15 +458,21 @@ public class ABIEncoder{
         System.arraycopy((methodName + "<").getBytes(), 0, ret, 0, pos);
 
         // copy the descriptors
-        for (int idx = 0; idx < arguments.length; pos += encodedData[idx][0].length, idx ++) {
-            System.arraycopy(encodedData[idx][0], 0, ret, pos, encodedData[idx][0].length);
+        for (int idx = 0; idx < arguments.length; idx ++) {
+            if (encodedData[idx] != null) {
+                System.arraycopy(encodedData[idx][0], 0, ret, pos, encodedData[idx][0].length);
+                pos += encodedData[idx][0].length;
+            }
         }
         System.arraycopy(">".getBytes(), 0, ret, pos, ">".getBytes().length);
         pos += ">".getBytes().length;
 
         // copy the encoded data
-        for (int idx = 0; idx < arguments.length; pos += encodedData[idx][1].length, idx ++) {
-            System.arraycopy(encodedData[idx][1], 0, ret, pos, encodedData[idx][1].length);
+        for (int idx = 0; idx < arguments.length; idx ++) {
+            if (encodedData[idx] != null) {
+                System.arraycopy(encodedData[idx][1], 0, ret, pos, encodedData[idx][1].length);
+                pos += encodedData[idx][1].length;
+            }
         }
         return ret;
     }
@@ -478,6 +486,9 @@ public class ABIEncoder{
     }
 
     public static byte[][] encodeOneObjectAndDescriptor(Object data) throws InvalidTxDataException {
+        if (data == null) {
+            return null;
+        }
         String className = data.getClass().getName();
 
         if (className.equals("org.aion.avm.arraywrapper.ObjectArray")) {

@@ -75,7 +75,7 @@ public class ByteBuffer extends Buffer implements org.aion.avm.shadow.java.lang.
         return v.hasArray();
     }
 
-    public org.aion.avm.shadow.java.lang.Object avm_array(){
+    public org.aion.avm.arraywrapper.ByteArray avm_array(){
         return new ByteArray((byte[])v.array());
     }
 

@@ -296,9 +296,10 @@ public class AvmImpl implements Avm {
 
         @Override
         public ByteArray avm_sha3(ByteArray data) {
-            // For now, we just return the input data since some tests want to call this but we eventually need a real implementation (issue-152).
+            // For now, we just return the first 32 bytes of the input data since some tests want to call this and require 32 bytes but we eventually need a real implementation (issue-152).
             // TODO: we can implement this inside vm
-            return data;
+
+            return new ByteArray(Arrays.copyOfRange(data.getUnderlying(), 0, 32));
         }
 
         @Override
