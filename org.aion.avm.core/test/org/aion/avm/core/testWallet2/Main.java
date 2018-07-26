@@ -5,7 +5,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.InvalidTxDataException;
 
-public class WalletController {
+public class Main {
 
     private static Wallet wallet;
 

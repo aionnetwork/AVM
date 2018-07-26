@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
  */
 public class Wallet {
 
-    private AionMap<ByteArrayWrapper, PendingTransaction> pendingTxs = new AionMap<>();
+    private AionMap<Bytes32, PendingTransaction> pendingTxs = new AionMap<>();
 
     private AionSet<Address> owners = new AionSet<>();
 
@@ -44,7 +44,7 @@ public class Wallet {
         PendingTransaction pendingTx = new PendingTransaction(to, value, data, energyLimit);
         byte[] id = pendingTx.getId();
 
-        pendingTxs.put(new ByteArrayWrapper(id), pendingTx);
+        pendingTxs.put(new Bytes32(id), pendingTx);
         return id;
     }
 
@@ -60,7 +60,7 @@ public class Wallet {
             return false;
         }
 
-        PendingTransaction pendingTx = pendingTxs.get(new ByteArrayWrapper(id));
+        PendingTransaction pendingTx = pendingTxs.get(new Bytes32(id));
         if (pendingTxs == null) {
             return false;
         }
@@ -70,7 +70,7 @@ public class Wallet {
 
         if (pendingTx.confirmations.size() >= confirmationsRequired) {
             // remove the transaction
-            pendingTxs.remove(new ByteArrayWrapper(id));
+            pendingTxs.remove(new Bytes32(id));
 
             // send the transaction
             BlockchainRuntime.call(pendingTx.to, pendingTx.value, pendingTx.data, pendingTx.energyLimit);
