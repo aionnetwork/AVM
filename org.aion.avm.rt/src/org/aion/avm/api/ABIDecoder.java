@@ -194,7 +194,7 @@ public class ABIDecoder {
         return args;
     }
 
-    private static Object[] decodeArguments(byte[] data) throws InvalidTxDataException{
+    public static Object[] decodeArguments(byte[] data) throws InvalidTxDataException{
         return decode(data).arguments;
     }
 

@@ -1,9 +1,9 @@
-package org.aion.avm.core.testWallet2;
+package com.example.testWallet;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
+
+
 
 import java.nio.ByteBuffer;
 
@@ -61,7 +61,7 @@ public class Wallet {
         }
 
         PendingTransaction pendingTx = pendingTxs.get(new Bytes32(id));
-        if (pendingTx == null) {
+        if (pendingTxs == null) {
             return false;
         }
 

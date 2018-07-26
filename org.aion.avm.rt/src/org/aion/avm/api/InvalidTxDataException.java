@@ -1,4 +1,4 @@
 package org.aion.avm.api;
 
-public class InvalidTxDataException extends Exception {
+public class InvalidTxDataException extends RuntimeException {
 }

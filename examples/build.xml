@@ -255,6 +255,40 @@
         <property name="name" value="com.example.testWallet"/>
         <property name="main" value="com.example.testWallet.Main"/>
 
+        <echo message="Copying source codes..."/>
+        <copy file="../org.aion.avm.userlib/src/org/aion/avm/userlib/AionMap.java"
+              todir="${dir.local.src}/${name}/com/example/testWallet">
+            <filterchain>
+                <replacestring from="org.aion.avm.userlib" to="com.example.testWallet"/>
+            </filterchain>
+        </copy>
+        <copy file="../org.aion.avm.userlib/src/org/aion/avm/userlib/AionSet.java"
+              todir="${dir.local.src}/${name}/com/example/testWallet">
+            <filterchain>
+                <replacestring from="org.aion.avm.userlib" to="com.example.testWallet"/>
+            </filterchain>
+        </copy>
+        <copy file="../org.aion.avm.core/test/org/aion/avm/core/testWallet2/Wallet.java"
+              todir="${dir.local.src}/${name}/com/example/testWallet">
+            <filterchain>
+                <replacestring from="org.aion.avm.core.testWallet2" to="com.example.testWallet"/>
+                <replacestring from="import org.aion.avm.userlib.AionMap;" to=""/>
+                <replacestring from="import org.aion.avm.userlib.AionSet;" to=""/>
+            </filterchain>
+        </copy>
+        <copy file="../org.aion.avm.core/test/org/aion/avm/core/testWallet2/Main.java"
+              todir="${dir.local.src}/${name}/com/example/testWallet">
+            <filterchain>
+                <replacestring from="org.aion.avm.core.testWallet2" to="com.example.testWallet"/>
+            </filterchain>
+        </copy>
+        <copy file="../org.aion.avm.core/test/org/aion/avm/core/testWallet2/Bytes32.java"
+              todir="${dir.local.src}/${name}/com/example/testWallet">
+            <filterchain>
+                <replacestring from="org.aion.avm.core.testWallet2" to="com.example.testWallet"/>
+            </filterchain>
+        </copy>
+
         <mkdir dir="${dir.local.build}/${name}"/>
 
         <echo message="Compiling ${name}..."/>

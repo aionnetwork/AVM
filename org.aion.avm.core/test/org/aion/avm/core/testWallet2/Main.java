@@ -10,13 +10,15 @@ public class Main {
     private static Wallet wallet;
 
     static {
-        // TODO: parse arguments from transaction data
+        Object[] arguments = ABIDecoder.decodeArguments(BlockchainRuntime.getData());
+        Address owner1 = (Address) arguments[0];
+        Address owner2 = (Address) arguments[1];
+        int confirmationsRequired = (int) arguments[2];
         Address[] owners = {
                 BlockchainRuntime.getSender(),
-                new Address(new byte[32]),
-                new Address(new byte[32])
+                owner1,
+                owner2
         };
-        int confirmationsRequired = 4;
 
         wallet = new Wallet(owners, confirmationsRequired);
     }
