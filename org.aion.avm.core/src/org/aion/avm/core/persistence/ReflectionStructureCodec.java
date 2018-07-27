@@ -264,35 +264,35 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 Class<?> type = field.getType();
                 if (boolean.class == type) {
                     boolean val = (0x1 == decoder.decodeByte());
-                    field.setBoolean(object, val);
+                    this.populator.setBoolean(field, object, val);
                 } else if (byte.class == type) {
                     byte val = decoder.decodeByte();
-                    field.setByte(object, val);
+                    this.populator.setByte(field, object, val);
                 } else if (short.class == type) {
                     short val = decoder.decodeShort();
-                    field.setShort(object, val);
+                    this.populator.setShort(field, object, val);
                 } else if (char.class == type) {
                     char val = decoder.decodeChar();
-                    field.setChar(object, val);
+                    this.populator.setChar(field, object, val);
                 } else if (int.class == type) {
                     int val = decoder.decodeInt();
-                    field.setInt(object, val);
+                    this.populator.setInt(field, object, val);
                 } else if (float.class == type) {
                     int val = decoder.decodeInt();
                     float actual = Float.intBitsToFloat(val);
-                    field.setFloat(object, actual);
+                    this.populator.setFloat(field, object, actual);
                 } else if (long.class == type) {
                     long val = decoder.decodeLong();
-                    field.setLong(object, val);
+                    this.populator.setLong(field, object, val);
                 } else if (double.class == type) {
                     long val = decoder.decodeLong();
                     double actual = Double.longBitsToDouble(val);
-                    field.setDouble(object, actual);
+                    this.populator.setDouble(field, object, actual);
                 } else {
                     // Shape:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
                     // Null:  (int)0.
                     org.aion.avm.shadow.java.lang.Object instanceToStore = inflateStubAsInstance(decoder);
-                    field.set(object, instanceToStore);
+                    this.populator.setObject(field, object, instanceToStore);
                 }
             }
         } 
@@ -441,7 +441,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     /**
      * An interface which must be provided when using the ReflectionStructureCodec to deserialize data.
-     * The implementation is responsible for building/finding various kinds of instances.
+     * The implementation is responsible for building/finding various kinds of instances as well as populating field with actual data.
      */
     public static interface IFieldPopulator {
         /**
@@ -475,5 +475,15 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
          * @return The representation of null (typically null).
          */
         org.aion.avm.shadow.java.lang.Object createNull();
+        
+        void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val) throws IllegalArgumentException, IllegalAccessException;
+        void setDouble(Field field, org.aion.avm.shadow.java.lang.Object object, double val) throws IllegalArgumentException, IllegalAccessException;
+        void setLong(Field field, org.aion.avm.shadow.java.lang.Object object, long val) throws IllegalArgumentException, IllegalAccessException;
+        void setFloat(Field field, org.aion.avm.shadow.java.lang.Object object, float val) throws IllegalArgumentException, IllegalAccessException;
+        void setInt(Field field, org.aion.avm.shadow.java.lang.Object object, int val) throws IllegalArgumentException, IllegalAccessException;
+        void setChar(Field field, org.aion.avm.shadow.java.lang.Object object, char val) throws IllegalArgumentException, IllegalAccessException;
+        void setShort(Field field, org.aion.avm.shadow.java.lang.Object object, short val) throws IllegalArgumentException, IllegalAccessException;
+        void setByte(Field field, org.aion.avm.shadow.java.lang.Object object, byte val) throws IllegalArgumentException, IllegalAccessException;
+        void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val) throws IllegalArgumentException, IllegalAccessException;
     }
 }
