@@ -42,16 +42,15 @@ public class RootClassCodec {
     /**
      * Serializes the static fields of the given classes and stores them on disk.
      * 
-     * @param loader The class loader to look up shape.
      * @param nextInstanceId The next instanceId to assign to an object which needs to be serialized.
      * @param cb The kernel storage API.
      * @param address The address of the contract.
      * @param classes The list of classes to save (order must always be the same).
      * @return The new nextInstanceId to save for the next invocation.
      */
-    public static long saveClassStaticsToStorage(ClassLoader loader, long nextInstanceId, TransactionContext cb, byte[] address, List<Class<?>> classes) {
+    public static long saveClassStaticsToStorage(long nextInstanceId, TransactionContext cb, byte[] address, List<Class<?>> classes) {
         // Build the encoder.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, cb, address, nextInstanceId);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(null, cb, address, nextInstanceId);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
         
         // Create the queue of instances reachable from here and consumer abstraction.

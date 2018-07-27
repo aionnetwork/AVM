@@ -53,7 +53,7 @@ public class RootClassCodecTest {
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -155,7 +155,7 @@ public class RootClassCodecTest {
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class));
         // We serialized a single instance so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(1 + initialInstanceId, nextInstanceId);
         byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -227,7 +227,7 @@ public class RootClassCodecTest {
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
         // We serialized 2 instances so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(2 + initialInstanceId, nextInstanceId);
         // Check the size of the saved static data (should only store local copies of statics, not superclass statics, per class).
@@ -284,7 +284,7 @@ public class RootClassCodecTest {
         Assert.assertTrue(ReflectionStructureCodecTarget.s_nine == ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine);
         
         // Re-serialize these to prove that the instanceId doesn't increment (since we aren't adding any new objects to the graph).
-        long finalInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), nextInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        long finalInstanceId = RootClassCodec.saveClassStaticsToStorage(nextInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
         // We serialized 2 instances so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(nextInstanceId, finalInstanceId);
     }
@@ -299,7 +299,7 @@ public class RootClassCodecTest {
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -336,7 +336,7 @@ public class RootClassCodecTest {
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -373,7 +373,7 @@ public class RootClassCodecTest {
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(RootClassCodecTest.class.getClassLoader(), initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
+        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);

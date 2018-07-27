@@ -458,7 +458,7 @@ public class AvmImpl implements Avm {
             // -first, save out the classes
             // TODO: Make this fully walk the graph
             long initialInstanceId = 1l;
-            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(classLoader, initialInstanceId, ctx, dappAddress, getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()));
+            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, ctx, dappAddress, getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()));
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(ctx, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
@@ -533,7 +533,7 @@ public class AvmImpl implements Avm {
             // -first, save out the classes
             // TODO: Make this fully walk the graph
             // TODO: Get the updated "nextInstanceId" after everything is written to storage.
-            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(classLoader, initialState.nextInstanceId, ctx, dappAddress, aphabeticalContractClasses);
+            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialState.nextInstanceId, ctx, dappAddress, aphabeticalContractClasses);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(ctx, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 

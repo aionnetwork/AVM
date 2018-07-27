@@ -47,7 +47,7 @@ public class ReflectionStructureCodecTest {
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(ReflectionStructureCodecTarget.class.getClassLoader(), null, null, 1);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(null, null, null, 1);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
         codec.serializeClass(encoder, ReflectionStructureCodecTarget.class, NULL_CONSUMER);
         byte[] result = encoder.toBytes();
@@ -86,7 +86,7 @@ public class ReflectionStructureCodecTest {
         target.i_eight = 5.0d;
         target.i_nine = new ReflectionStructureCodecTarget();
         
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(ReflectionStructureCodecTarget.class.getClassLoader(), null, null, 1);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(null, null, null, 1);
         byte[] result = serializeSinceInstanceHelper(codec, target);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         // This is the same as what we got for the class except that this also has a hashcode.
