@@ -179,7 +179,7 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
         return this.underlying.indexOf(str.getV());
     }
 
-    public synchronized int avm_indexOf(String str, int fromIndex) {
+    public int avm_indexOf(String str, int fromIndex) {
         return this.underlying.indexOf(str.getV(), fromIndex);
     }
 
@@ -187,16 +187,16 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
         return this.underlying.lastIndexOf(str.getV());
     }
 
-    public synchronized int avm_lastIndexOf(String str, int fromIndex) {
+    public int avm_lastIndexOf(String str, int fromIndex) {
         return this.underlying.lastIndexOf(str.getV(), fromIndex);
     }
 
-    public synchronized StringBuilder avm_reverse() {
+    public StringBuilder avm_reverse() {
         this.underlying.reverse();
         return this;
     }
 
-    public synchronized String avm_toString() {
+    public String avm_toString() {
         return new String(this);
     }
 
