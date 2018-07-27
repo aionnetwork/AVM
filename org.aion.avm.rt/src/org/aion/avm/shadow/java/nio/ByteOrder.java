@@ -1,8 +1,14 @@
 package org.aion.avm.shadow.java.nio;
 
 
+import org.aion.avm.internal.IHelper;
+
 public final class ByteOrder {
 
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static final ByteOrder avm_BIG_ENDIAN
             = new ByteOrder(java.nio.ByteOrder.BIG_ENDIAN);

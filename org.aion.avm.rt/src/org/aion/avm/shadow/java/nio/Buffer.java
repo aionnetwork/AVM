@@ -1,6 +1,13 @@
 package org.aion.avm.shadow.java.nio;
 
+import org.aion.avm.internal.IHelper;
+
 public abstract class Buffer extends org.aion.avm.shadow.java.lang.Object {
+
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public final int avm_capacity() {
         return v.capacity();

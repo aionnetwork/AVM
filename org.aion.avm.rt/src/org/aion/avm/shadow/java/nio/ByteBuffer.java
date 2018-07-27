@@ -1,10 +1,16 @@
 package org.aion.avm.shadow.java.nio;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
 
 public class ByteBuffer extends Buffer implements org.aion.avm.shadow.java.lang.Comparable<ByteBuffer>{
+
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static ByteBuffer avm_allocate(int capacity) {
         return new ByteBuffer(java.nio.ByteBuffer.allocate(capacity));

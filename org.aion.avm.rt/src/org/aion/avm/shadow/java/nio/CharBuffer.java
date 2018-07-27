@@ -1,6 +1,7 @@
 package org.aion.avm.shadow.java.nio;
 
 import org.aion.avm.arraywrapper.CharArray;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.CharSequence;
 import org.aion.avm.shadow.java.lang.String;
@@ -11,6 +12,11 @@ import org.aion.avm.shadow.java.lang.Readable;
 import java.io.IOException;
 
 public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Appendable, CharSequence, Readable{
+
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static CharBuffer avm_allocate(int capacity) {
         return new CharBuffer(java.nio.CharBuffer.allocate(capacity));

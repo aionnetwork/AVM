@@ -1,10 +1,16 @@
 package org.aion.avm.shadow.java.nio;
 
 import org.aion.avm.arraywrapper.DoubleArray;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
 
 public class DoubleBuffer extends Buffer {
+
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
 
     public static DoubleBuffer avm_allocate(int capacity) {
         return new DoubleBuffer(java.nio.DoubleBuffer.allocate(capacity));
