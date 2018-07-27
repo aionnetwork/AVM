@@ -244,6 +244,30 @@ public class ByteBuffer extends Buffer implements org.aion.avm.shadow.java.lang.
         return this;
     }
 
+    public CharBuffer avm_asCharBuffer(){
+        return new CharBuffer(((java.nio.ByteBuffer)v).asCharBuffer());
+    }
+
+    public ShortBuffer avm_asShortBuffer(){
+        return new ShortBuffer(((java.nio.ByteBuffer)v).asShortBuffer());
+    }
+
+    public IntBuffer avm_asIntBuffer(){
+        return new IntBuffer(((java.nio.ByteBuffer)v).asIntBuffer());
+    }
+
+    public LongBuffer avm_asLongBuffer(){
+        return new LongBuffer(((java.nio.ByteBuffer)v).asLongBuffer());
+    }
+
+    public FloatBuffer avm_asFloatBuffer(){
+        return new FloatBuffer(((java.nio.ByteBuffer)v).asFloatBuffer());
+    }
+
+    public DoubleBuffer avm_asDoubleBuffer(){
+        return new DoubleBuffer(((java.nio.ByteBuffer)v).asDoubleBuffer());
+    }
+
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
@@ -256,22 +280,9 @@ public class ByteBuffer extends Buffer implements org.aion.avm.shadow.java.lang.
         return v.isReadOnly();
     }
 
-
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================
 
     //public static ByteBuffer allocateDirect(int capacity)
-
-    //public abstract CharBuffer avm_asCharBuffer(){}
-
-    //public abstract ShortBuffer asShortBuffer(){}
-
-    //public abstract IntBuffer asIntBuffer();
-
-    //public abstract LongBuffer asLongBuffer();
-
-    //public abstract FloatBuffer asFloatBuffer();
-
-    //public abstract DoubleBuffer asDoubleBuffer();
 }
