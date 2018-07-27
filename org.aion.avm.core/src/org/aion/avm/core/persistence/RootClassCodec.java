@@ -26,8 +26,12 @@ public class RootClassCodec {
      * @param classes The list of classes to populate (order must always be the same).
      */
     public static void populateClassStaticsFromStorage(ClassLoader loader, TransactionContext cb, byte[] address, List<Class<?>> classes) {
+        // We will create the field populator to build objects with the correct canonicalizing caches.
+        CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(loader);
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(loader, cb, address, 0);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(populator, cb, address, 0);
+        // The populator needs to know to attach the codec, itself, as the IDeserializer of new instances.
+        populator.setDeserializer(codec);
         
         // Extract the raw data for the class statics.
         byte[] rawData = cb.getStorage(address, StorageKeys.CLASS_STATICS);

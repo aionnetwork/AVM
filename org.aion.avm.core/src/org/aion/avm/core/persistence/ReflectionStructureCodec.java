@@ -1,18 +1,13 @@
 package org.aion.avm.core.persistence;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 
-import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -41,11 +36,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private static final int STUB_DESCRIPTOR_CONSTANT = -1;
     private static final int STUB_DESCRIPTOR_CLASS = -2;
 
-    private final ClassLoader classLoader;
-    // All keys in instanceStubMap are positive values.
-    private final Map<Long, org.aion.avm.shadow.java.lang.Object> instanceStubMap;
-    // All keys in shadowConstantMap are negative values.
-    private final Map<Long, org.aion.avm.shadow.java.lang.Object> shadowConstantMap;
+    private final IFieldPopulator populator;
     private final TransactionContext kernel;
     private final byte[] address;
     // We cache the method entry-point we will use to invoke the load operation on any instance.
@@ -56,10 +47,8 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private final Field instanceIdField;
     private long nextInstanceId;
 
-    public ReflectionStructureCodec(ClassLoader classLoader, TransactionContext kernel, byte[] address, long nextInstanceId) {
-        this.classLoader = classLoader;
-        this.instanceStubMap = new HashMap<>();
-        this.shadowConstantMap = NodeEnvironment.singleton.getConstantMap();
+    public ReflectionStructureCodec(IFieldPopulator populator, TransactionContext kernel, byte[] address, long nextInstanceId) {
+        this.populator = populator;
         this.kernel = kernel;
         this.address = address;
         try {
@@ -326,6 +315,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             if (STUB_DESCRIPTOR_NULL == stubDescriptor) {
                 // This is a null object:
                 // -nothing else to read.
+                instanceToStore = this.populator.createNull();
             } else if (STUB_DESCRIPTOR_CONSTANT == stubDescriptor) {
                 // This is a constant reference:
                 // -load the constant instance ID.
@@ -333,8 +323,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 // Constants have negative instance IDs.
                 RuntimeAssertionError.assertTrue(instanceId < 0);
                 
-                // Look this up in the constant map.
-                instanceToStore = this.shadowConstantMap.get(instanceId);
+                instanceToStore = this.populator.createConstant(instanceId);
                 // We can't fail to find these.
                 RuntimeAssertionError.assertTrue(null != instanceToStore);
             } else if (STUB_DESCRIPTOR_CLASS == stubDescriptor) {
@@ -347,8 +336,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 String className = new String(utf8Name, StandardCharsets.UTF_8);
                 
                 // Create an instance of the Class (we rely on the helper since this needs to be interned, per-contract).
-                Class<?> jdkClass = Class.forName(className);
-                instanceToStore = IHelper.currentContractHelper.get().externalWrapAsClass(jdkClass);
+                instanceToStore = this.populator.createClass(className);
             } else {
                 // This is a normal object:
                 // -descriptor is type name length.
@@ -361,29 +349,13 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 long instanceId = decoder.decodeLong();
                 
                 // This instance might already exist so ask our helper which will instantiate, if need be.
-                instanceToStore = findInstanceStub(className, instanceId);
+                instanceToStore = this.populator.createRegularInstance(className, instanceId);
             }
             return instanceToStore;
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
             throw RuntimeAssertionError.unexpected(e);
         }
-    }
-
-    private org.aion.avm.shadow.java.lang.Object findInstanceStub(String className, long instanceId) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-        // We can only call this helper with positive instanceId.
-        RuntimeAssertionError.assertTrue(instanceId > 0);
-        
-        org.aion.avm.shadow.java.lang.Object stub = this.instanceStubMap.get(instanceId);
-        if (null == stub) {
-            // Create the new stub and put it in the map.
-            Class<?> contentClass = this.classLoader.loadClass(className);
-            Constructor<?> con = contentClass.getConstructor(IDeserializer.class, long.class);
-            con.setAccessible(true);
-            stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(this, instanceId);
-            this.instanceStubMap.put(instanceId, stub);
-        }
-        return stub;
     }
 
     @Override
@@ -464,5 +436,44 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     @Override
     public org.aion.avm.shadow.java.lang.Object decodeStub(StreamingPrimitiveCodec.Decoder decoder) {
         return inflateStubAsInstance(decoder);
+    }
+
+
+    /**
+     * An interface which must be provided when using the ReflectionStructureCodec to deserialize data.
+     * The implementation is responsible for building/finding various kinds of instances.
+     */
+    public static interface IFieldPopulator {
+        /**
+         * Called to create/find a regular instance of the given className and instanceId.
+         * Regular instances are non-null and are neither Class objects, nor explicit constants of the shadow JCL.
+         * 
+         * @param className The name of the type.
+         * @param instanceId The id of this specific instance.
+         * @return The created or found shadow object instance.
+         */
+        org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, long instanceId) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+        /**
+         * Called to create/find a Class object representing the given className.
+         * 
+         * @param className The name of the Class to be represented.
+         * @return The created or found shadow class object instance.
+         */
+        org.aion.avm.shadow.java.lang.Object createClass(String className) throws ClassNotFoundException;
+        /**
+         * Called to create/find an instance corresponding to the given constant instanceId.
+         * Note that constants are explicitly defined by the shadow JCL.
+         * 
+         * @param instanceId The instanceId of the constant.
+         * @return The created or found shadow object constant instance.
+         */
+        org.aion.avm.shadow.java.lang.Object createConstant(long instanceId);
+        /**
+         * Called to create a representation of a null object instance.
+         * Note that this is usually literally "null" but this call allows implementors the opportunity to act on this.
+         * 
+         * @return The representation of null (typically null).
+         */
+        org.aion.avm.shadow.java.lang.Object createNull();
     }
 }
