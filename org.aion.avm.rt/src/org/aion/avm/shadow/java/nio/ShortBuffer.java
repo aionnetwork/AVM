@@ -4,8 +4,9 @@ import org.aion.avm.arraywrapper.ShortArray;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
+import org.aion.avm.shadow.java.lang.Comparable;
 
-public class ShortBuffer extends Buffer {
+public class ShortBuffer extends Buffer implements Comparable<ShortBuffer> {
 
     static {
         // Shadow classes MUST be loaded during bootstrap phase.

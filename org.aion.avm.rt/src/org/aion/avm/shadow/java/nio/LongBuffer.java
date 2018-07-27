@@ -4,8 +4,9 @@ import org.aion.avm.arraywrapper.LongArray;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
+import org.aion.avm.shadow.java.lang.Comparable;
 
-public class LongBuffer extends Buffer {
+public class LongBuffer extends Buffer implements Comparable<LongBuffer> {
 
     static {
         // Shadow classes MUST be loaded during bootstrap phase.

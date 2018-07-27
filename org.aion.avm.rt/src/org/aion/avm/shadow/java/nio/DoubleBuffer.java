@@ -4,8 +4,9 @@ import org.aion.avm.arraywrapper.DoubleArray;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
+import org.aion.avm.shadow.java.lang.Comparable;
 
-public class DoubleBuffer extends Buffer {
+public class DoubleBuffer extends Buffer implements Comparable<DoubleBuffer> {
 
     static {
         // Shadow classes MUST be loaded during bootstrap phase.

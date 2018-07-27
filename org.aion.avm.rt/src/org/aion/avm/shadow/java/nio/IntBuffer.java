@@ -4,8 +4,9 @@ import org.aion.avm.arraywrapper.IntArray;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
+import org.aion.avm.shadow.java.lang.Comparable;
 
-public class IntBuffer extends Buffer {
+public class IntBuffer extends Buffer implements Comparable<IntBuffer> {
 
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
