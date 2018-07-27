@@ -12,7 +12,7 @@ public class CoinController {
         coinbase = new ERC20Token(new String((char[]) arguments[0]), new String((char[]) arguments[1]), (int) arguments[2], BlockchainRuntime.getSender());
     }
 
-    public static byte[] main(){
+    public static byte[] main() {
         return ABIDecoder.decodeAndRun(coinbase, BlockchainRuntime.getData());
     }
 }

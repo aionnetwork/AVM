@@ -196,6 +196,9 @@
         <mkdir dir="${dir.local.build}/${name}"/>
 
         <echo message="Copying userlib/AionMap.java and change the package..."/>
+        <delete dir="${dir.local.src}/${name}/com/example/testExchange/AionMap.java"/>
+        <delete dir="${dir.local.src}/${name}/com/example/testExchange/ERC20Token.java"/>
+        <delete dir="${dir.local.src}/${name}/com/example/testExchange/ERC20.java"/>
         <copy file="../org.aion.avm.userlib/src/org/aion/avm/userlib/AionMap.java"
               todir="${dir.local.src}/${name}/com/example/testExchange">
             <filterchain>
@@ -256,6 +259,7 @@
         <property name="main" value="com.example.testWallet.Main"/>
 
         <echo message="Copying source codes..."/>
+        <delete dir="${dir.local.src}/${name}/com/example/testWallet/*"/>
         <copy file="../org.aion.avm.userlib/src/org/aion/avm/userlib/AionMap.java"
               todir="${dir.local.src}/${name}/com/example/testWallet">
             <filterchain>

@@ -3,7 +3,6 @@ package com.example.testWallet;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.InvalidTxDataException;
 
 public class Main {
 
@@ -16,15 +15,14 @@ public class Main {
         int confirmationsRequired = (int) arguments[2];
         Address[] owners = {
                 BlockchainRuntime.getSender(),
-                new Address(new byte[32]),
-                new Address(new byte[32])
+                owner1,
+                owner2
         };
 
         wallet = new Wallet(owners, confirmationsRequired);
-       // TODO - here the code refers to runtime space ABIDecoder so this exception is thrown. However this exception needs to be unchecked at least
     }
 
-    public static byte[] main() throws InvalidTxDataException {
+    public static byte[] main() {
         return ABIDecoder.decodeAndRun(wallet, BlockchainRuntime.getData());
     }
 }

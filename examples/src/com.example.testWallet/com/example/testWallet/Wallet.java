@@ -61,7 +61,7 @@ public class Wallet {
         }
 
         PendingTransaction pendingTx = pendingTxs.get(new Bytes32(id));
-        if (pendingTxs == null) {
+        if (pendingTx == null) {
             return false;
         }
 
@@ -78,7 +78,6 @@ public class Wallet {
 
         return true;
     }
-
 
     /**
      * Represents a pending transaction.

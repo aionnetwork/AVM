@@ -3,7 +3,6 @@ package org.aion.avm.core.testWallet2;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.InvalidTxDataException;
 
 public class Main {
 
@@ -23,7 +22,7 @@ public class Main {
         wallet = new Wallet(owners, confirmationsRequired);
     }
 
-    public static byte[] main() throws InvalidTxDataException {
+    public static byte[] main() {
         return ABIDecoder.decodeAndRun(wallet, BlockchainRuntime.getData());
     }
 }

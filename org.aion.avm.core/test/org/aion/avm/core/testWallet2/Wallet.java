@@ -79,7 +79,6 @@ public class Wallet {
         return true;
     }
 
-
     /**
      * Represents a pending transaction.
      */
