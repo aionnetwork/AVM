@@ -87,7 +87,7 @@ public class WalletTest {
         tx = new Transaction(Transaction.Type.CALL, deployer, walletDapp.unwrap(), 0L, arguments, 2_000_000L);
         txContext = new TransactionContextImpl(tx, block);
         txResult = new AvmImpl().run(txContext);
-        System.out.println("\n>> Deployer to propose a transaction with the ID " + Helpers.toHexString((byte[]) ABIDecoder.decodeOneObject(txResult.getReturnData())));
+        System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.toHexString((byte[]) ABIDecoder.decodeOneObject(txResult.getReturnData())) + ")");
         byte[] pendingTx = (byte[]) ABIDecoder.decodeOneObject(txResult.getReturnData());
 
         //================
@@ -107,6 +107,8 @@ public class WalletTest {
         txContext = new TransactionContextImpl(tx, block);
         txResult = new AvmImpl().run(txContext);
         System.out.println(">> Transaction confirmed by Owner 2: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
+
+        System.out.println("\n>> Number of confirmations reach to " + confirmationsRequired + ". Transaction is processed.");
 
         //================
         // CHECK BALANCE
