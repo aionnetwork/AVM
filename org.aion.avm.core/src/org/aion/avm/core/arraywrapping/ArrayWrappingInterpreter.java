@@ -7,6 +7,11 @@ import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.BasicInterpreter;
 import org.objectweb.asm.tree.analysis.BasicValue;
 
+/**
+ * A bytecode interpreter used for array type inference.
+ *
+ * See {@link org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef} for its usage.
+ */
 
 public class ArrayWrappingInterpreter extends BasicInterpreter{
 
@@ -88,7 +93,6 @@ public class ArrayWrappingInterpreter extends BasicInterpreter{
             case DREM:
                 return BasicValue.DOUBLE_VALUE;
             case AALOAD:
-                //TODO: Double check this
                 return newValue(Type.getType(value1.toString().substring(1)));
             case LCMP:
             case FCMPL:

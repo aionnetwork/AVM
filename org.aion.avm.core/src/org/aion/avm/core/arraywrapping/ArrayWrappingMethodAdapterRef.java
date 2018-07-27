@@ -12,6 +12,19 @@ import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.BasicValue;
 import org.objectweb.asm.tree.analysis.Frame;
 
+/**
+ * A method visitor that replace access bytecode
+ *
+ * AALOAD
+ * AASTORE
+ *
+ * with corresponding array wrapper virtual call.
+ *
+ * Static analysis is required with {@link org.aion.avm.core.arraywrapping.ArrayWrappingInterpreter} so it can perform
+ * type inference.
+ *
+ */
+
 class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
 
     private String className;

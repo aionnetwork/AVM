@@ -5,6 +5,9 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+/**
+ * A class visitor that convert array from field/method signature into array wrapper.
+ */
 
 public class ArrayWrappingClassAdapter extends ClassToolchain.ToolChainClassVisitor {
 

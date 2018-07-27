@@ -12,6 +12,38 @@ import org.objectweb.asm.commons.Method;
 
 import java.util.Set;
 
+/**
+ * A method visitor that replace access bytecode
+ *
+ * The following bytecode
+ *
+ * BALOAD   BASTORE
+ * CALOAD   CASTORE
+ * DALOAD   DASTORE
+ * FALOAD   FASTORE
+ * IALOAD   IASTORE
+ * LALOAD   LASTORE
+ * SALOAD   SASTORE
+ *
+ * are replaced with virtual calls on array wrapper object.
+ *
+ * The following bytecode
+ *
+ * NEWARRAY
+ * ANEWARRAY
+ * MULTIANEWARRAY
+ *
+ * are replaced with static calls on array wrapper class.
+ *
+ * The following bytecode
+ *
+ * AALOAD
+ * AASTORE
+ *
+ * are handled by {@link org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef}
+ *
+ */
+
 class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
     private Type typeA = Type.getType(org.aion.avm.arraywrapper.Array.class);
@@ -238,6 +270,5 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
         this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc, false);
     }
-
 
 }
