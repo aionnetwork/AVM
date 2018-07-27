@@ -5,13 +5,18 @@ import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -268,5 +273,30 @@ public class Helpers {
         else {
             return null;
         }
+    }
+
+    /**
+     * Sorts the user contract class names given in "classNames", alphabetically, and then looks up each of their corresponding class objects in
+     * classLoader.  Note that only class names within the "user" namspace are considered.
+     * 
+     * @param classLoader The class loader where the classes exist.
+     * @param classNames The names of the classes which should be loaded.
+     * @return The class objects, in alphabetical order by their names.
+     */
+    public static List<Class<?>> getAlphabeticalUserTransformedClasses(AvmClassLoader classLoader, Set<String> classNames) {
+        List<String> nameList = new ArrayList<>(classNames);
+        Collections.sort(nameList);
+        List<Class<?>> classList = new ArrayList<>();
+        for (String name : nameList) {
+            if (name.startsWith(PackageConstants.kUserDotPrefix)) {
+                try {
+                    classList.add(classLoader.loadClass(name));
+                } catch (ClassNotFoundException e) {
+                    // We can't fail to find something which we know we put in there.
+                    RuntimeAssertionError.unexpected(e);
+                }
+            }
+        }
+        return classList;
     }
 }

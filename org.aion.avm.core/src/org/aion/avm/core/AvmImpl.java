@@ -458,7 +458,7 @@ public class AvmImpl implements Avm {
             // -first, save out the classes
             // TODO: Make this fully walk the graph
             long initialInstanceId = 1l;
-            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, ctx, dappAddress, getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()));
+            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, ctx, dappAddress, Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()));
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(ctx, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
@@ -506,7 +506,7 @@ public class AvmImpl implements Avm {
         AvmClassLoader classLoader = NodeEnvironment.singleton.createInvocationClassLoader(allClasses);
         
         // Load all the user-defined classes (these are required for both loading and storing state).
-        List<Class<?>> aphabeticalContractClasses = getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
+        List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
 
         // Load the initial state of the environment.
         ContractEnvironmentState initialState = ContractEnvironmentState.loadFromStorage(ctx, dappAddress);
@@ -547,30 +547,5 @@ public class AvmImpl implements Avm {
             result.setStatusCode(TransactionResult.Code.FAILURE);
             result.setEnergyUsed(tx.getEnergyLimit());
         }
-    }
-
-    /**
-     * Sorts the user contract class names given in "classNames", alphabetically, and then looks up each of their corresponding class objects in
-     * classLoader.  Note that only class names within the "user" namespace are considered.
-     * 
-     * @param classLoader The class loader where the classes exist.
-     * @param classNames The names of the classes which should be loaded.
-     * @return The class objects, in alphabetical order by their names.
-     */
-    private static List<Class<?>> getAlphabeticalUserTransformedClasses(AvmClassLoader classLoader, Set<String> classNames) {
-        List<String> nameList = new ArrayList<>(classNames);
-        Collections.sort(nameList);
-        List<Class<?>> classList = new ArrayList<>();
-        for (String name : nameList) {
-            if (name.startsWith(PackageConstants.kUserDotPrefix)) {
-                try {
-                    classList.add(classLoader.loadClass(name));
-                } catch (ClassNotFoundException e) {
-                    // We can't fail to find something which we know we put in there.
-                    RuntimeAssertionError.unexpected(e);
-                }
-            }
-        }
-        return classList;
     }
 }
