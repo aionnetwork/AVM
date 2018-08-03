@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 
-public class RootClassCodecTest {
+public class LoadedDAppTest {
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
@@ -41,19 +41,19 @@ public class RootClassCodecTest {
         ReflectionStructureCodecTarget.s_six = 5.0f;
         ReflectionStructureCodecTarget.s_seven = 5;
         ReflectionStructureCodecTarget.s_eight = 5.0d;
-        RootClassCodecTarget.s_one = true;
-        RootClassCodecTarget.s_two = 5;
-        RootClassCodecTarget.s_three = 5;
-        RootClassCodecTarget.s_four = 5;
-        RootClassCodecTarget.s_five = 5;
-        RootClassCodecTarget.s_six = 5.0f;
-        RootClassCodecTarget.s_seven = 5;
-        RootClassCodecTarget.s_eight = 5.0d;
+        LoadedDAppTarget.s_one = true;
+        LoadedDAppTarget.s_two = 5;
+        LoadedDAppTarget.s_three = 5;
+        LoadedDAppTarget.s_four = 5;
+        LoadedDAppTarget.s_five = 5;
+        LoadedDAppTarget.s_six = 5.0f;
+        LoadedDAppTarget.s_seven = 5;
+        LoadedDAppTarget.s_eight = 5.0d;
 
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
+        long nextInstanceId = new LoadedDApp(null, address, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class)).saveClassStaticsToStorage(initialInstanceId, context);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -69,7 +69,7 @@ public class RootClassCodecTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //s_seven
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
                 0x0, 0x0, 0x0, 0x0, //s_nine
-                // RootClassCodecTarget
+                // LoadedDAppTarget
                 0x1, //s_one
                 0x5, //s_two
                 0x0, 0x5, //s_three
@@ -100,7 +100,7 @@ public class RootClassCodecTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //s_seven
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
                 0x0, 0x0, 0x0, 0x0, //s_nine
-                // RootClassCodecTarget
+                // LoadedDAppTarget
                 0x1, //s_one
                 0x5, //s_two
                 0x0, 0x5, //s_three
@@ -116,7 +116,7 @@ public class RootClassCodecTest {
         context.putStorage(address, StorageKeys.CLASS_STATICS, expected);
         
         // Populate the classes.
-        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), context, address, Arrays.asList(ReflectionStructureCodecTarget.class, RootClassCodecTarget.class));
+        new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class)).populateClassStaticsFromStorage(context);
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -127,14 +127,14 @@ public class RootClassCodecTest {
         Assert.assertEquals(5.0f, ReflectionStructureCodecTarget.s_six, 0.01f);
         Assert.assertEquals(5, ReflectionStructureCodecTarget.s_seven);
         Assert.assertEquals(5.0d, ReflectionStructureCodecTarget.s_eight, 0.01f);
-        Assert.assertEquals(true, RootClassCodecTarget.s_one);
-        Assert.assertEquals(5, RootClassCodecTarget.s_two);
-        Assert.assertEquals(5, RootClassCodecTarget.s_three);
-        Assert.assertEquals(5, RootClassCodecTarget.s_four);
-        Assert.assertEquals(5, RootClassCodecTarget.s_five);
-        Assert.assertEquals(5.0f, RootClassCodecTarget.s_six, 0.01f);
-        Assert.assertEquals(5, RootClassCodecTarget.s_seven);
-        Assert.assertEquals(5.0d, RootClassCodecTarget.s_eight, 0.01f);
+        Assert.assertEquals(true, LoadedDAppTarget.s_one);
+        Assert.assertEquals(5, LoadedDAppTarget.s_two);
+        Assert.assertEquals(5, LoadedDAppTarget.s_three);
+        Assert.assertEquals(5, LoadedDAppTarget.s_four);
+        Assert.assertEquals(5, LoadedDAppTarget.s_five);
+        Assert.assertEquals(5.0f, LoadedDAppTarget.s_six, 0.01f);
+        Assert.assertEquals(5, LoadedDAppTarget.s_seven);
+        Assert.assertEquals(5.0d, LoadedDAppTarget.s_eight, 0.01f);
     }
 
     /**
@@ -155,7 +155,7 @@ public class RootClassCodecTest {
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class));
+        long nextInstanceId = new LoadedDApp(null, address, Arrays.asList(ReflectionStructureCodecTarget.class)).saveClassStaticsToStorage(initialInstanceId, context);
         // We serialized a single instance so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(1 + initialInstanceId, nextInstanceId);
         byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -227,7 +227,8 @@ public class RootClassCodecTest {
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, context);
         // We serialized 2 instances so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(2 + initialInstanceId, nextInstanceId);
         // Check the size of the saved static data (should only store local copies of statics, not superclass statics, per class).
@@ -237,7 +238,7 @@ public class RootClassCodecTest {
         
         // Now, clear the class states and reload this.
         clearStaticState();
-        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), context, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        dapp.populateClassStaticsFromStorage(context);
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -284,7 +285,7 @@ public class RootClassCodecTest {
         Assert.assertTrue(ReflectionStructureCodecTarget.s_nine == ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine);
         
         // Re-serialize these to prove that the instanceId doesn't increment (since we aren't adding any new objects to the graph).
-        long finalInstanceId = RootClassCodec.saveClassStaticsToStorage(nextInstanceId, context, address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        long finalInstanceId = dapp.saveClassStaticsToStorage(nextInstanceId, context);
         // We serialized 2 instances so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(nextInstanceId, finalInstanceId);
     }
@@ -294,18 +295,19 @@ public class RootClassCodecTest {
      */
     @Test
     public void serializeDeserializeReferenceToJdkConstant() {
-        RootClassCodecTarget.s_nine = org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN;
+        LoadedDAppTarget.s_nine = org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN;
         
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class));
+        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, context);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
-                // RootClassCodecTarget
+                // LoadedDAppTarget
                 0x0, //s_one
                 0x0, //s_two
                 0x0, 0x0, //s_three
@@ -321,8 +323,8 @@ public class RootClassCodecTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), context, address, Arrays.asList(RootClassCodecTarget.class));
-        Assert.assertTrue(org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN == RootClassCodecTarget.s_nine);
+        dapp.populateClassStaticsFromStorage(context);
+        Assert.assertTrue(org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN == LoadedDAppTarget.s_nine);
     }
 
     /**
@@ -331,18 +333,19 @@ public class RootClassCodecTest {
     @Test
     public void serializeDeserializeReferenceToClass() {
         org.aion.avm.shadow.java.lang.Class<?> originalClassRef = IHelper.currentContractHelper.get().externalWrapAsClass(String.class);
-        RootClassCodecTarget.s_nine = originalClassRef;
+        LoadedDAppTarget.s_nine = originalClassRef;
         
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class));
+        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, context);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
-                // RootClassCodecTarget
+                // LoadedDAppTarget
                 0x0, //s_one
                 0x0, //s_two
                 0x0, 0x0, //s_three
@@ -359,8 +362,8 @@ public class RootClassCodecTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), context, address, Arrays.asList(RootClassCodecTarget.class));
-        Assert.assertTrue(originalClassRef == RootClassCodecTarget.s_nine);
+        dapp.populateClassStaticsFromStorage(context);
+        Assert.assertTrue(originalClassRef == LoadedDAppTarget.s_nine);
     }
 
     /**
@@ -368,18 +371,19 @@ public class RootClassCodecTest {
      */
     @Test
     public void serializeDeserializeReferenceToConstantClass() {
-        RootClassCodecTarget.s_nine = org.aion.avm.shadow.java.lang.Byte.avm_TYPE;
+        LoadedDAppTarget.s_nine = org.aion.avm.shadow.java.lang.Byte.avm_TYPE;
         
         TransactionContextImpl context = new TransactionContextImpl(null, null);
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, context, address, Arrays.asList(RootClassCodecTarget.class));
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class));
+        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, context);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = context.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
-                // RootClassCodecTarget
+                // LoadedDAppTarget
                 0x0, //s_one
                 0x0, //s_two
                 0x0, 0x0, //s_three
@@ -395,8 +399,8 @@ public class RootClassCodecTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        RootClassCodec.populateClassStaticsFromStorage(RootClassCodecTest.class.getClassLoader(), context, address, Arrays.asList(RootClassCodecTarget.class));
-        Assert.assertTrue(org.aion.avm.shadow.java.lang.Byte.avm_TYPE == RootClassCodecTarget.s_nine);
+        dapp.populateClassStaticsFromStorage(context);
+        Assert.assertTrue(org.aion.avm.shadow.java.lang.Byte.avm_TYPE == LoadedDAppTarget.s_nine);
     }
 
 
@@ -421,13 +425,13 @@ public class RootClassCodecTest {
         ReflectionStructureCodecTargetSub.s_eight = 0.0d;
         ReflectionStructureCodecTargetSub.s_nine = null;
         
-        RootClassCodecTarget.s_one = false;
-        RootClassCodecTarget.s_two = 0;
-        RootClassCodecTarget.s_three = 0;
-        RootClassCodecTarget.s_four = 0;
-        RootClassCodecTarget.s_five = 0;
-        RootClassCodecTarget.s_six = 0.0f;
-        RootClassCodecTarget.s_seven = 0;
-        RootClassCodecTarget.s_eight = 0.0d;
+        LoadedDAppTarget.s_one = false;
+        LoadedDAppTarget.s_two = 0;
+        LoadedDAppTarget.s_three = 0;
+        LoadedDAppTarget.s_four = 0;
+        LoadedDAppTarget.s_five = 0;
+        LoadedDAppTarget.s_six = 0.0f;
+        LoadedDAppTarget.s_seven = 0;
+        LoadedDAppTarget.s_eight = 0.0d;
     }
 }

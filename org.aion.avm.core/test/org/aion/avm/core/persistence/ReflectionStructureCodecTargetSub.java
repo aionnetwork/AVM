@@ -4,7 +4,7 @@ import org.aion.avm.internal.IDeserializer;
 
 
 /**
- * Used within ReflectionStructureCodecTest and RootClassCodecTest.
+ * Used within ReflectionStructureCodecTest and LoadedDAppTest.
  * This is a sub-class of ReflectionStructureCodecTarget with the same fields and names to make sure that this isn't a serialization issue.
  */
 public class ReflectionStructureCodecTargetSub extends ReflectionStructureCodecTarget {

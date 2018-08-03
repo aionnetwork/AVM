@@ -14,7 +14,7 @@ import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
-import org.aion.avm.core.persistence.RootClassCodec;
+import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
@@ -458,7 +458,7 @@ public class AvmImpl implements Avm {
             // -first, save out the classes
             // TODO: Make this fully walk the graph
             long initialInstanceId = 1l;
-            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialInstanceId, ctx, dappAddress, Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()));
+            long nextInstanceId = new LoadedDApp(classLoader, dappAddress, Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet())).saveClassStaticsToStorage(initialInstanceId, ctx);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(ctx, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
@@ -516,7 +516,8 @@ public class AvmImpl implements Avm {
         Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(ctx, helper, result));
 
         // Now that we can load classes for the contract, load and populate all their classes.
-        RootClassCodec.populateClassStaticsFromStorage(classLoader, ctx, dappAddress, aphabeticalContractClasses);
+        LoadedDApp dapp = new LoadedDApp(classLoader, dappAddress, aphabeticalContractClasses);
+        dapp.populateClassStaticsFromStorage(ctx);
 
         // load class
         try {
@@ -533,7 +534,7 @@ public class AvmImpl implements Avm {
             // -first, save out the classes
             // TODO: Make this fully walk the graph
             // TODO: Get the updated "nextInstanceId" after everything is written to storage.
-            long nextInstanceId = RootClassCodec.saveClassStaticsToStorage(initialState.nextInstanceId, ctx, dappAddress, aphabeticalContractClasses);
+            long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, ctx);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(ctx, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 

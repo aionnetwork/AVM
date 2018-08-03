@@ -2,10 +2,10 @@ package org.aion.avm.core.persistence;
 
 
 /**
- * Used within RootClassCodecTest.
+ * Used within LoadedDAppTest.
  * Note that these all must be public, due to reflection restrictions on modern JDK.
  */
-public class RootClassCodecTarget extends org.aion.avm.shadow.java.lang.Object {
+public class LoadedDAppTarget extends org.aion.avm.shadow.java.lang.Object {
     public static boolean s_one;
     public static byte s_two;
     public static short s_three;
