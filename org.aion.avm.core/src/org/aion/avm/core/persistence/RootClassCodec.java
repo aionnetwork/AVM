@@ -1,7 +1,10 @@
 package org.aion.avm.core.persistence;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.function.Consumer;
 
@@ -29,7 +32,9 @@ public class RootClassCodec {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(loader);
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(populator, cb, address, 0);
+        // TODO:  This fieldCache needs to be part of something longer-lived.
+        Map<Class<?>, Field[]> fieldCache = new HashMap<>();
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, cb, address, 0);
         // The populator needs to know to attach the codec, itself, as the IDeserializer of new instances.
         populator.setDeserializer(codec);
         
@@ -54,7 +59,9 @@ public class RootClassCodec {
      */
     public static long saveClassStaticsToStorage(long nextInstanceId, TransactionContext cb, byte[] address, List<Class<?>> classes) {
         // Build the encoder.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(null, cb, address, nextInstanceId);
+        // TODO:  This fieldCache needs to be part of something longer-lived.
+        Map<Class<?>, Field[]> fieldCache = new HashMap<>();
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, null, cb, address, nextInstanceId);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
         
         // Create the queue of instances reachable from here and consumer abstraction.

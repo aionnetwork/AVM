@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -125,7 +126,9 @@ public class StorageWalker {
         };
         
         // Create the codec back-ended on the populator.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(populator, cb, address, 0);
+        // (note that it requires a fieldCache but we don't attempt to reuse this, in our case).
+        Map<Class<?>, Field[]> fieldCache = new HashMap<>();
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, cb, address, 0);
         
         // Extract the raw data for the class statics.
         byte[] staticData = cb.getStorage(address, StorageKeys.CLASS_STATICS);
