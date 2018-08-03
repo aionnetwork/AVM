@@ -21,12 +21,14 @@ public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IField
     private final ClassLoader loader;
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> instanceStubMap;
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> shadowConstantMap;
+    private final Map<String, Constructor<?>> constructorCacheMap;
     private IDeserializer deserializer;
 
     public CacheAwareFieldPopulator(ClassLoader loader) {
         this.loader = loader;
         this.instanceStubMap = new HashMap<>();
         this.shadowConstantMap = NodeEnvironment.singleton.getConstantMap();
+        this.constructorCacheMap = new HashMap<>();
     }
     public void setDeserializer(IDeserializer deserializer) {
         this.deserializer = deserializer;
@@ -36,9 +38,7 @@ public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IField
         org.aion.avm.shadow.java.lang.Object stub = this.instanceStubMap.get(instanceId);
         if (null == stub) {
             // Create the new stub and put it in the map.
-            Class<?> contentClass = this.loader.loadClass(className);
-            Constructor<?> con = contentClass.getConstructor(IDeserializer.class, long.class);
-            con.setAccessible(true);
+            Constructor<?> con = getConstructorForClassName(className);
             stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(this.deserializer, instanceId);
             this.instanceStubMap.put(instanceId, stub);
         }
@@ -94,5 +94,17 @@ public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IField
     @Override
     public void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val) throws IllegalArgumentException, IllegalAccessException {
         field.set(object, val);
+    }
+
+
+    private Constructor<?> getConstructorForClassName(String className) throws ClassNotFoundException, NoSuchMethodException, SecurityException {
+        Constructor<?> constructor = this.constructorCacheMap.get(className);
+        if (null == constructor) {
+            Class<?> contentClass = this.loader.loadClass(className);
+            constructor = contentClass.getConstructor(IDeserializer.class, long.class);
+            constructor.setAccessible(true);
+            this.constructorCacheMap.put(className, constructor);
+        }
+        return constructor;
     }
 }
