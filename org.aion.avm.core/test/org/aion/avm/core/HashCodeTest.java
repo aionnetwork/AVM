@@ -294,7 +294,7 @@ public class HashCodeTest {
                 .addClass(className, "java.lang.Object", raw)
                 .asMutableForest();
 
-        Map<String, byte[]> transformedClasses = avm.transformClasses(Collections.singletonMap(className, raw), classHierarchy);
+        Map<String, byte[]> transformedClasses = AvmImpl.transformClasses(Collections.singletonMap(className, raw), classHierarchy);
         
         // Note that the class is renamed during this transformation.
         return transformedClasses.get(PackageConstants.kUserDotPrefix + className);

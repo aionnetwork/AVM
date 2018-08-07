@@ -170,7 +170,7 @@ public class Deployer {
         LoadedJar jar = LoadedJar.fromBytes(jarBytes);
         
         AvmImpl avm = new AvmImpl();
-        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(avm.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar)));
+        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(AvmImpl.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar)));
         
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(transformedClasses);
 

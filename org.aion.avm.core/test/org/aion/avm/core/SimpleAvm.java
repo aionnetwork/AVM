@@ -45,7 +45,7 @@ public class SimpleAvm {
         AvmImpl avm = new AvmImpl();
 
         // transform classes
-        Map<String, byte[]> transformedClasses = avm.transformClasses(preTransformedClassBytecode, classHierarchy);
+        Map<String, byte[]> transformedClasses = AvmImpl.transformClasses(preTransformedClassBytecode, classHierarchy);
         Map<String, byte[]> finalContractClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
         this.loader = NodeEnvironment.singleton.createInvocationClassLoader(finalContractClasses);
         this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());

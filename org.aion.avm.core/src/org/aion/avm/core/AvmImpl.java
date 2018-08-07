@@ -56,7 +56,7 @@ public class AvmImpl implements Avm {
      * @param dapp the classes of DApp
      * @return true if the DApp is valid, otherwise false
      */
-    public boolean validateDapp(RawDappModule dapp) {
+    private static boolean validateDapp(RawDappModule dapp) {
 
         // TODO: Rom, complete module validation
 
@@ -70,7 +70,7 @@ public class AvmImpl implements Avm {
      *
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    public static Map<String, Integer> computeShadowObjectSizes() {
+    private static Map<String, Integer> computeShadowObjectSizes() {
         Map<String, Integer> map = new HashMap<String, Integer>();
         map.put("java/lang/Object", 4);
         map.put("java/lang/Class", 4);
@@ -97,7 +97,7 @@ public class AvmImpl implements Avm {
      *
      * @return
      */
-    public static Map<String, Integer> computeApiObjectSizes() {
+    private static Map<String, Integer> computeApiObjectSizes() {
         Map<String, Integer> map = new HashMap<String, Integer>();
         map.put("org/aion/avm/api/Address", 4);
         map.put("org/aion/avm/api/InvalidTxDataException", 4);
@@ -114,7 +114,7 @@ public class AvmImpl implements Avm {
      * @return The size of user objects
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    public static Map<String, Integer> computeUserObjectSizes(Forest<String, byte[]> classHierarchy,
+    private static Map<String, Integer> computeUserObjectSizes(Forest<String, byte[]> classHierarchy,
                                                              Map<String, Integer> shadowObjectSizes,
                                                              Map<String, Integer> apiObjectSizes)
     {
@@ -138,15 +138,7 @@ public class AvmImpl implements Avm {
         return userObjectSizes;
     }
 
-    public static Map<String, Integer> computeAllObjectsSizes(Forest<String, byte[]> forest) {
-        Map<String, Integer> map = new HashMap<>();
-        map.putAll(computeShadowObjectSizes());
-        map.putAll(computeApiObjectSizes());
-        map.putAll(computeUserObjectSizes(forest, computeShadowObjectSizes(), computeApiObjectSizes()));
-
-        return map;
-    }
-
+    // NOTE:  This is only public because InvokedynamicTransformationTest calls it.
     public static Map<String, Integer> computeAllPostRenameObjectSizes(Forest<String, byte[]> forest) {
         Map<String, Integer> preRenameShadowObjectSizes = computeShadowObjectSizes();
         Map<String, Integer> preRenameApiObjectSizes = computeApiObjectSizes();
@@ -164,12 +156,13 @@ public class AvmImpl implements Avm {
 
     /**
      * Replaces the <code>java.base</code> package with the shadow implementation.
+     * Note that this is public since some unit tests call it, directly.
      *
-     * @param classes        the class of DApp (names specified in .-style)
+     * @param classes The class of DApp (names specified in .-style)
      * @param preRenameClassHierarchy The pre-rename hierarchy of user-defined classes in the DApp (/-style).
      * @return the transformed classes and any generated classes (names specified in .-style)
      */
-    public Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> preRenameClassHierarchy) {
+    public static Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> preRenameClassHierarchy) {
 
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
@@ -250,7 +243,7 @@ public class AvmImpl implements Avm {
         return result;
     }
 
-    public void create(Transaction tx, Block block, TransactionContext ctx, TransactionResult result) {
+    private static void create(Transaction tx, Block block, TransactionContext ctx, TransactionResult result) {
         try {
             // read dapp module
             //TODO: If we make dapp storage into two-level Key Value storage, we can detect duplicated dappAddress
@@ -349,7 +342,7 @@ public class AvmImpl implements Avm {
         }
     }
 
-    public void call(Transaction tx, Block block, TransactionContext ctx, TransactionResult result) {
+    private static void call(Transaction tx, Block block, TransactionContext ctx, TransactionResult result) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
         ImmortalDappModule app;
