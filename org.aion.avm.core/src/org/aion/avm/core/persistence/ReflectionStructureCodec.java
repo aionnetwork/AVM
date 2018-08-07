@@ -12,7 +12,7 @@ import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.TransactionContext;
+import org.aion.kernel.KernelInterface;
 
 
 /**
@@ -40,7 +40,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
     private final Map<Class<?>, Field[]> fieldCache;
     private final IFieldPopulator populator;
-    private final TransactionContext kernel;
+    private final KernelInterface kernel;
     private final byte[] address;
     // We cache the method entry-point we will use to invoke the load operation on any instance.
     private final Method deserializeSelf;
@@ -50,7 +50,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private final Field instanceIdField;
     private long nextInstanceId;
 
-    public ReflectionStructureCodec(Map<Class<?>, Field[]> fieldCache, IFieldPopulator populator, TransactionContext kernel, byte[] address, long nextInstanceId) {
+    public ReflectionStructureCodec(Map<Class<?>, Field[]> fieldCache, IFieldPopulator populator, KernelInterface kernel, byte[] address, long nextInstanceId) {
         this.fieldCache = fieldCache;
         this.populator = populator;
         this.kernel = kernel;

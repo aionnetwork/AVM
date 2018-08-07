@@ -2,16 +2,15 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.InvalidTxDataException;
-import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
+import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 import org.junit.Test;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
@@ -30,7 +29,7 @@ public class AvmImplDeployAndRunTest {
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        return new AvmImpl().run(context);
+        return new AvmImpl(new KernelInterfaceImpl()).run(context);
     }
 
     public TransactionResult deployTheDeployAndRunTest() {
@@ -40,7 +39,7 @@ public class AvmImplDeployAndRunTest {
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        return new AvmImpl().run(context);
+        return new AvmImpl(new KernelInterfaceImpl()).run(context);
     }
 
     @Test
@@ -70,7 +69,7 @@ public class AvmImplDeployAndRunTest {
         byte[] txData = new byte[]{0x72, 0x75, 0x6E}; // "run"
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = new AvmImpl().run(context);
+        TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals("Hello, world!", new String((byte[]) ABIDecoder.decodeOneObject(result.getReturnData())));
@@ -84,7 +83,7 @@ public class AvmImplDeployAndRunTest {
         byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "add<II>" + raw data 123, 1
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = new AvmImpl().run(context);
+        TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals(124, ABIDecoder.decodeOneObject(result.getReturnData()));
@@ -99,7 +98,7 @@ public class AvmImplDeployAndRunTest {
         byte[] txData = new byte[]{0x65, 0x6E, 0x63, 0x6F, 0x64, 0x65, 0x41, 0x72, 0x67, 0x73}; // encodeArgs
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = new AvmImpl().run(context);
+        TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         byte[] expected = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x05};
@@ -110,7 +109,7 @@ public class AvmImplDeployAndRunTest {
         // test another method call, "addArray" with 1D array arguments
         tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, expected, energyLimit);
         context = new TransactionContextImpl(tx, block);
-        result = new AvmImpl().run(context);
+        result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals(129, ABIDecoder.decodeOneObject(result.getReturnData()));

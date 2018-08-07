@@ -25,6 +25,7 @@ import org.aion.kernel.TransactionContext;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 import org.aion.kernel.DappCode;
+import org.aion.kernel.KernelInterface;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -212,7 +213,7 @@ public class DAppCreator {
         return processedClasses;
     }
 
-    public static void create(Transaction tx, TransactionContext ctx, TransactionResult result) {
+    public static void create(KernelInterface kernel, Transaction tx, TransactionContext ctx, TransactionResult result) {
         try {
             // read dapp module
             //TODO: If we make dapp storage into two-level Key Value storage, we can detect duplicated dappAddress
@@ -247,7 +248,7 @@ public class DAppCreator {
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
             IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), nextHashCode);
-            Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(ctx, helper, result));
+            Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(kernel, ctx, helper, result));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
@@ -269,7 +270,7 @@ public class DAppCreator {
 
             // store transformed dapp
             byte[] immortalDappJar = immortalDapp.createJar(dappAddress);
-            ctx.putTransformedCode(dappAddress, VERSION, immortalDappJar);
+            kernel.putTransformedCode(dappAddress, VERSION, immortalDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * tx.getData().length);
@@ -282,9 +283,9 @@ public class DAppCreator {
             // -first, save out the classes
             // TODO: Make this fully walk the graph
             long initialInstanceId = 1l;
-            long nextInstanceId = new LoadedDApp(classLoader, dappAddress, Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet())).saveClassStaticsToStorage(initialInstanceId, ctx);
+            long nextInstanceId = new LoadedDApp(classLoader, dappAddress, Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet())).saveClassStaticsToStorage(initialInstanceId, kernel);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToStorage(ctx, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
+            ContractEnvironmentState.saveToStorage(kernel, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
             // TODO: whether we should return the dapp address is subject to change
             result.setStatusCode(TransactionResult.Code.SUCCESS);

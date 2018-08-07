@@ -1,11 +1,18 @@
 package org.aion.avm.core;
 
 import org.aion.kernel.TransactionContext;
+import org.aion.kernel.KernelInterface;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 
 
 public class AvmImpl implements Avm {
+    private final KernelInterface kernel;
+
+    public AvmImpl(KernelInterface kernel) {
+        this.kernel = kernel;
+    }
+
     @Override
     public TransactionResult run(TransactionContext ctx) {
 
@@ -18,10 +25,10 @@ public class AvmImpl implements Avm {
 
         switch (tx.getType()) {
             case CREATE:
-                DAppCreator.create(tx, ctx, result);
+                DAppCreator.create(this.kernel, tx, ctx, result);
                 break;
             case CALL:
-                DAppExecutor.call(tx, ctx, result);
+                DAppExecutor.call(this.kernel, tx, ctx, result);
                 break;
             default:
                 result.setStatusCode(TransactionResult.Code.INVALID_TX);

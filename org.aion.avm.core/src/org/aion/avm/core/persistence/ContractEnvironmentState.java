@@ -1,15 +1,15 @@
 package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.util.Assert;
-import org.aion.kernel.TransactionContext;
+import org.aion.kernel.KernelInterface;
 
 
 /**
  * Represents the part of the contract environment which must be persistent between invocations.
  */
 public class ContractEnvironmentState {
-    public static ContractEnvironmentState loadFromStorage(TransactionContext cb, byte[] address) {
-        byte[] rawData = cb.getStorage(address, StorageKeys.CONTRACT_ENVIRONMENT);
+    public static ContractEnvironmentState loadFromStorage(KernelInterface kernel, byte[] address) {
+        byte[] rawData = kernel.getStorage(address, StorageKeys.CONTRACT_ENVIRONMENT);
         Assert.assertTrue(rawData.length == (Integer.BYTES + Long.BYTES));
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
         int nextHashCode = decoder.decodeInt();
@@ -17,12 +17,12 @@ public class ContractEnvironmentState {
         return new ContractEnvironmentState(nextHashCode, nextInstanceId);
     }
 
-    public static void saveToStorage(TransactionContext cb, byte[] address, ContractEnvironmentState state) {
+    public static void saveToStorage(KernelInterface kernel, byte[] address, ContractEnvironmentState state) {
         byte[] bytes = new StreamingPrimitiveCodec.Encoder()
                 .encodeInt(state.nextHashCode)
                 .encodeLong(state.nextInstanceId)
                 .toBytes();
-        cb.putStorage(address, StorageKeys.CONTRACT_ENVIRONMENT, bytes);
+        kernel.putStorage(address, StorageKeys.CONTRACT_ENVIRONMENT, bytes);
     }
 
 

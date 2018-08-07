@@ -10,6 +10,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.kernel.Block;
 import org.aion.kernel.InternalTransaction;
+import org.aion.kernel.KernelInterface;
 import org.aion.kernel.Log;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
@@ -20,16 +21,15 @@ import org.aion.kernel.TransactionResult;
  * The implementation of IBlockchainRuntime which is appropriate for exposure as a shadow Object instance within a DApp.
  */
 public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object implements IBlockchainRuntime {
-
-    private TransactionContext context;
+    private final KernelInterface kernel;
     private IHelper helper;
     private TransactionResult result;
 
     private Transaction tx;
     private Block block;
 
-    public BlockchainRuntimeImpl(TransactionContext context, IHelper helper, TransactionResult result) {
-        this.context = context;
+    public BlockchainRuntimeImpl(KernelInterface kernel, TransactionContext context, IHelper helper, TransactionResult result) {
+        this.kernel = kernel;
         this.helper = helper;
         this.result = result;
 
@@ -60,22 +60,22 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
 
     @Override
     public ByteArray avm_getStorage(ByteArray key) {
-        return new ByteArray(context.getStorage(tx.getTo(), key.getUnderlying()));
+        return new ByteArray(this.kernel.getStorage(tx.getTo(), key.getUnderlying()));
     }
 
     @Override
     public void avm_putStorage(ByteArray key, ByteArray value) {
-        context.putStorage(tx.getTo(), key.getUnderlying(), value.getUnderlying());
+        this.kernel.putStorage(tx.getTo(), key.getUnderlying(), value.getUnderlying());
     }
 
     @Override
     public void avm_updateCode(ByteArray newCode) {
-        context.updateCode(tx.getTo(), newCode.getUnderlying());
+        this.kernel.updateCode(tx.getTo(), newCode.getUnderlying());
     }
 
     @Override
     public void avm_selfDestruct(Address beneficiary) {
-        context.selfdestruct(tx.getTo(), beneficiary.unwrap());
+        this.kernel.selfdestruct(tx.getTo(), beneficiary.unwrap());
     }
 
     @Override
@@ -109,7 +109,7 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
         result.addInternalTransaction(internalTx);
 
         // execute the internal transaction
-        TransactionResult newResult = context.call(internalTx);
+        TransactionResult newResult = this.kernel.call(internalTx, this.block);
 
         // merge the results
         result.merge(newResult);

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.function.Consumer;
 
-import org.aion.kernel.TransactionContext;
+import org.aion.kernel.KernelInterface;
 
 
 /**
@@ -49,18 +49,18 @@ public class LoadedDApp {
     /**
      * Populates the statics of the DApp classes with the primitives and instance stubs described by the on-disk data.
      * 
-     * @param transactionContext The kernel storage API.
+     * @param kernelInterface The kernel storage API.
      */
-    public void populateClassStaticsFromStorage(TransactionContext transactionContext) {
+    public void populateClassStaticsFromStorage(KernelInterface kernelInterface) {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(this.loader);
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, transactionContext, this.address, 0);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, kernelInterface, this.address, 0);
         // The populator needs to know to attach the codec, itself, as the IDeserializer of new instances.
         populator.setDeserializer(codec);
         
         // Extract the raw data for the class statics.
-        byte[] rawData = transactionContext.getStorage(this.address, StorageKeys.CLASS_STATICS);
+        byte[] rawData = kernelInterface.getStorage(this.address, StorageKeys.CLASS_STATICS);
         StreamingPrimitiveCodec.Decoder decoder = StreamingPrimitiveCodec.buildDecoder(rawData);
         
         // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
@@ -73,11 +73,11 @@ public class LoadedDApp {
      * Serializes the static fields of the DApp classes and stores them on disk.
      * 
      * @param nextInstanceId The next instanceId to assign to an object which needs to be serialized.
-     * @param transactionContext The kernel storage API.
+     * @param kernelInterface The kernel storage API.
      */
-    public long saveClassStaticsToStorage(long nextInstanceId, TransactionContext transactionContext) {
+    public long saveClassStaticsToStorage(long nextInstanceId, KernelInterface kernelInterface) {
         // Build the encoder.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, null, transactionContext, this.address, nextInstanceId);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, null, kernelInterface, this.address, nextInstanceId);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
         
         // Create the queue of instances reachable from here and consumer abstraction.
@@ -95,7 +95,7 @@ public class LoadedDApp {
         
         // Save the raw bytes.
         byte[] rawData = encoder.toBytes();
-        transactionContext.putStorage(this.address, StorageKeys.CLASS_STATICS, rawData);
+        kernelInterface.putStorage(this.address, StorageKeys.CLASS_STATICS, rawData);
         
         // Now, drain the queue.
         while (!instancesToWrite.isEmpty()) {

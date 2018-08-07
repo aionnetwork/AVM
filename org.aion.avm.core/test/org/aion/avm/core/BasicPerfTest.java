@@ -6,6 +6,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.Block;
+import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
@@ -60,7 +61,7 @@ public class BasicPerfTest {
             Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
             Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), this.contractAddress, 0, Helpers.encodeCodeAndData(jar, arguments), transaction1EnergyLimit);
-            AvmImpl avm1 = new AvmImpl();
+            AvmImpl avm1 = new AvmImpl(new KernelInterfaceImpl());
             TransactionResult result1 = avm1.run(new TransactionContextImpl(tx1, block));
             Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             this.contractAddress = result1.getReturnData();
@@ -72,7 +73,7 @@ public class BasicPerfTest {
                 Block block = new Block(i, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
                 long transaction1EnergyLimit = 1_000_000_000l;
                 Transaction tx1 = new Transaction(Transaction.Type.CALL, Helpers.address(1), this.contractAddress, 0, null, transaction1EnergyLimit);
-                AvmImpl avm1 = new AvmImpl();
+                AvmImpl avm1 = new AvmImpl(new KernelInterfaceImpl());
                 TransactionResult result1 = avm1.run(new TransactionContextImpl(tx1, block));
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             }

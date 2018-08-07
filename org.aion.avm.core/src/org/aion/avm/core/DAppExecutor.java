@@ -7,6 +7,7 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
 import org.aion.kernel.TransactionContext;
+import org.aion.kernel.KernelInterface;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 
@@ -16,12 +17,12 @@ import java.util.*;
 
 
 public class DAppExecutor {
-    public static void call(Transaction tx, TransactionContext ctx, TransactionResult result) {
+    public static void call(KernelInterface kernel, Transaction tx, TransactionContext ctx, TransactionResult result) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
         ImmortalDappModule app;
         try {
-            byte[] immortalDappJar = ctx.getTransformedCode(dappAddress);
+            byte[] immortalDappJar = kernel.getTransformedCode(dappAddress);
             app = ImmortalDappModule.readFromJar(immortalDappJar);
         } catch (IOException e) {
             result.setStatusCode(TransactionResult.Code.INVALID_CALL);
@@ -39,15 +40,15 @@ public class DAppExecutor {
         List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
 
         // Load the initial state of the environment.
-        ContractEnvironmentState initialState = ContractEnvironmentState.loadFromStorage(ctx, dappAddress);
+        ContractEnvironmentState initialState = ContractEnvironmentState.loadFromStorage(kernel, dappAddress);
         
         // TODO:  We might be able to move this setup of IHelper to later in the load once we get rid of the <clinit> (requires energy).
         IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), initialState.nextHashCode);
-        Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(ctx, helper, result));
+        Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(kernel, ctx, helper, result));
 
         // Now that we can load classes for the contract, load and populate all their classes.
         LoadedDApp dapp = new LoadedDApp(classLoader, dappAddress, aphabeticalContractClasses);
-        dapp.populateClassStaticsFromStorage(ctx);
+        dapp.populateClassStaticsFromStorage(kernel);
 
         // load class
         try {
@@ -64,9 +65,9 @@ public class DAppExecutor {
             // -first, save out the classes
             // TODO: Make this fully walk the graph
             // TODO: Get the updated "nextInstanceId" after everything is written to storage.
-            long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, ctx);
+            long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, kernel);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToStorage(ctx, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
+            ContractEnvironmentState.saveToStorage(kernel, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setReturnData(ret);

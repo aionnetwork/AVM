@@ -22,7 +22,7 @@ import org.aion.avm.core.persistence.StorageKeys;
 import org.aion.avm.core.persistence.StreamingPrimitiveCodec;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.kernel.TransactionContext;
+import org.aion.kernel.KernelInterface;
 
 
 /**
@@ -37,7 +37,7 @@ public class StorageWalker {
      * Called to walk the storage of dappAddress, accessed via context, and print a description of the object graph to output.
      * 
      * @param output Where the output will be written.
-     * @param context The storage abstraction used to read both the code and data.
+     * @param kernel The storage abstraction used to read both the code and data.
      * @param dappAddress The address of the application.
      * @throws IOException A problem reading the application code.
      * @throws NoSuchFieldException A problem interpreting the data.
@@ -45,17 +45,17 @@ public class StorageWalker {
      * @throws IllegalArgumentException A problem interpreting the data.
      * @throws IllegalAccessException A problem interpreting the data.
      */
-    public static void walkAllStaticsForDapp(PrintStream output, TransactionContext context, byte[] dappAddress) throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-        byte[] immortalDappJar = context.getTransformedCode(dappAddress);
+    public static void walkAllStaticsForDapp(PrintStream output, KernelInterface kernel, byte[] dappAddress) throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+        byte[] immortalDappJar = kernel.getTransformedCode(dappAddress);
         ImmortalDappModule app = ImmortalDappModule.readFromJar(immortalDappJar);
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
         AvmClassLoader classLoader = NodeEnvironment.singleton.createInvocationClassLoader(allClasses);
         List<Class<?>> alphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
-        doReadEntireStorage(output, classLoader, context, dappAddress, alphabeticalContractClasses);
+        doReadEntireStorage(output, classLoader, kernel, dappAddress, alphabeticalContractClasses);
     }
 
 
-    private static void doReadEntireStorage(PrintStream output, ClassLoader loader, TransactionContext cb, byte[] address, List<Class<?>> classes) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    private static void doReadEntireStorage(PrintStream output, ClassLoader loader, KernelInterface kernel, byte[] address, List<Class<?>> classes) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         // These objects are filled/used by the populator.
         Set<Long> processed = new HashSet<>();
         Queue<org.aion.avm.shadow.java.lang.Object> instanceQueue = new LinkedList<>();
@@ -128,10 +128,10 @@ public class StorageWalker {
         // Create the codec back-ended on the populator.
         // (note that it requires a fieldCache but we don't attempt to reuse this, in our case).
         Map<Class<?>, Field[]> fieldCache = new HashMap<>();
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, cb, address, 0);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, kernel, address, 0);
         
         // Extract the raw data for the class statics.
-        byte[] staticData = cb.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] staticData = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         StreamingPrimitiveCodec.Decoder staticDecoder = StreamingPrimitiveCodec.buildDecoder(staticData);
         for (Class<?> clazz : classes) {
             output.print("Class(" + shortenClassName(clazz.getName()) + "): ");
@@ -157,7 +157,7 @@ public class StorageWalker {
             boolean isCommonUserDefinedCase = (!className.startsWith(PackageConstants.kShadowDotPrefix) && !className.startsWith(PackageConstants.kArrayWrapperDotPrefix));
             if (isStringCase || isObjectArrayCase || isCommonUserDefinedCase) {
                 // We are going to process this instance so load its data and create its decoder.
-                byte[] instanceData = cb.getStorage(address, StorageKeys.forInstance(instanceId));
+                byte[] instanceData = kernel.getStorage(address, StorageKeys.forInstance(instanceId));
                 StreamingPrimitiveCodec.Decoder instanceDecoder = StreamingPrimitiveCodec.buildDecoder(instanceData);
                 
                 // We need to special-case the hashCode (normally handled by the shadow Object implementation).

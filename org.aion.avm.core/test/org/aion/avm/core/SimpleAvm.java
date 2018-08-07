@@ -41,9 +41,6 @@ public class SimpleAvm {
         });
         Forest<String, byte[]> classHierarchy = builder.asMutableForest();
 
-        // create a new AVM
-        AvmImpl avm = new AvmImpl();
-
         // transform classes
         Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(preTransformedClassBytecode, classHierarchy);
         Map<String, byte[]> finalContractClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
