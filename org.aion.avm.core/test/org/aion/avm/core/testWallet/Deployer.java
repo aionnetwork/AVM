@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.ClassHierarchyForest;
+import org.aion.avm.core.DAppCreator;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -169,8 +169,7 @@ public class Deployer {
         );
         LoadedJar jar = LoadedJar.fromBytes(jarBytes);
         
-        AvmImpl avm = new AvmImpl();
-        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(AvmImpl.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar)));
+        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(DAppCreator.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar)));
         
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(transformedClasses);
 

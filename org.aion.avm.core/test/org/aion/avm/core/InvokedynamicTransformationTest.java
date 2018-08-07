@@ -131,7 +131,7 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new RejectionClassVisitor())
                 .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
-                .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, AvmImpl.computeAllPostRenameObjectSizes(classHierarchy)))
+                .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, DAppCreator.computeAllPostRenameObjectSizes(classHierarchy)))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addNextVisitor(new StackWatcherClassAdapter())
