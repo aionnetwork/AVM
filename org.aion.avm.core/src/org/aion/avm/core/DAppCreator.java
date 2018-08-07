@@ -21,7 +21,6 @@ import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
-import org.aion.kernel.Block;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
@@ -213,7 +212,7 @@ public class DAppCreator {
         return processedClasses;
     }
 
-    public static void create(Transaction tx, Block block, TransactionContext ctx, TransactionResult result) {
+    public static void create(Transaction tx, TransactionContext ctx, TransactionResult result) {
         try {
             // read dapp module
             //TODO: If we make dapp storage into two-level Key Value storage, we can detect duplicated dappAddress
@@ -275,10 +274,9 @@ public class DAppCreator {
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * tx.getData().length);
 
-            // TODO: create invocation need further discussion
-
+            // Force the user's main class to load, with initialization, so that it runs the <clinit>.
             String mappedUserMainClass = PackageConstants.kUserDotPrefix + transformedDapp.mainClass;
-            Class<?> clazz = Class.forName(mappedUserMainClass, true, classLoader);
+            Class.forName(mappedUserMainClass, true, classLoader);
 
             // Save back the state before we return.
             // -first, save out the classes

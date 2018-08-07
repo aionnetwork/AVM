@@ -6,7 +6,6 @@ import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
-import org.aion.kernel.Block;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
@@ -17,7 +16,7 @@ import java.util.*;
 
 
 public class DAppExecutor {
-    public static void call(Transaction tx, Block block, TransactionContext ctx, TransactionResult result) {
+    public static void call(Transaction tx, TransactionContext ctx, TransactionResult result) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
         ImmortalDappModule app;
