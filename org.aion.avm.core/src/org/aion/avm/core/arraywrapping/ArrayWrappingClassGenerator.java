@@ -32,6 +32,16 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         CLASS_WRAPPER_MAP.put("[Ljava/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
         CLASS_WRAPPER_MAP.put("[L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
         CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/internal/IObject", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
+
+        CLASS_WRAPPER_MAP.put("[[I", PackageConstants.kArrayWrapperSlashPrefix + "IntArray2D");
+        CLASS_WRAPPER_MAP.put("[[B", PackageConstants.kArrayWrapperSlashPrefix + "ByteArray2D");
+        CLASS_WRAPPER_MAP.put("[[Z", PackageConstants.kArrayWrapperSlashPrefix + "ByteArray2D");
+        CLASS_WRAPPER_MAP.put("[[C", PackageConstants.kArrayWrapperSlashPrefix + "CharArray2D");
+        CLASS_WRAPPER_MAP.put("[[F", PackageConstants.kArrayWrapperSlashPrefix + "FloatArray2D");
+        CLASS_WRAPPER_MAP.put("[[S", PackageConstants.kArrayWrapperSlashPrefix + "ShortArray2D");
+        CLASS_WRAPPER_MAP.put("[[J", PackageConstants.kArrayWrapperSlashPrefix + "LongArray2D");
+        CLASS_WRAPPER_MAP.put("[[D", PackageConstants.kArrayWrapperSlashPrefix + "DoubleArray2D");
+
     }
 
     public static byte[] arrayWrappingFactory(String request, ClassLoader loader){
@@ -314,38 +324,12 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         String childFacDesc;
         childWrapper = wrapper.substring((PackageConstants.kArrayWrapperSlashPrefix + "$").length());
         Assert.assertTrue(childWrapper.startsWith("$"));
-
-        // If child is predefined array in api, replace them.
-        switch (childWrapper){
-            case "$I":
-                childWrapper = "IntArray";
-                break;
-            case "$B":
-                childWrapper = "ByteArray";
-                break;
-            case "$Z":
-                childWrapper = "ByteArray";
-                break;
-            case "$C":
-                childWrapper = "CharArray";
-                break;
-            case "$F":
-                childWrapper = "FloatArray";
-                break;
-            case "$J":
-                childWrapper = "LongArray";
-                break;
-            case "$S":
-                childWrapper = "ShortArray";
-                break;
-            case "$D":
-                childWrapper = "DoubleArray";
-                break;
-            case "$Ljava/lang/Object":
-                childWrapper = "ObjectArray";
-                break;
+        char[] childArray = childWrapper.toCharArray();
+        for(int i = 0; childArray[i] == '$' ; i++){
+            childArray[i] = '[';
         }
-        childWrapper = PackageConstants.kArrayWrapperSlashPrefix + childWrapper;
+        childWrapper = new String(childArray);
+        childWrapper = getClassWrapper(childWrapper);
         childFacDesc = ArrayWrappingClassGenerator.getFactoryDescriptor(childWrapper, d - 1);
 
         mv.visitMethodInsn(INVOKESTATIC, childWrapper, "initArray", childFacDesc, false);
