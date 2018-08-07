@@ -106,10 +106,10 @@ public class AvmImplTest {
 
     private class CustomKernel extends KernelInterfaceImpl {
         @Override
-        public TransactionResult call(InternalTransaction internalTx, Block parentBlock) {
+        public TransactionResult call(Avm avm, InternalTransaction internalTx, Block parentBlock) {
             currentContractHelper = IHelper.currentContractHelper.get();
 
-            TransactionResult result = super.call(internalTx, parentBlock);
+            TransactionResult result = super.call(avm, internalTx, parentBlock);
             result.setEnergyUsed(internalTx.getEnergyLimit() / 2);
 
             return result;

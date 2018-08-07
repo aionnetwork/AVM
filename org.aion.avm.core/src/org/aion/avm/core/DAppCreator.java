@@ -213,7 +213,7 @@ public class DAppCreator {
         return processedClasses;
     }
 
-    public static void create(KernelInterface kernel, Transaction tx, TransactionContext ctx, TransactionResult result) {
+    public static void create(KernelInterface kernel, Avm avm, Transaction tx, TransactionContext ctx, TransactionResult result) {
         try {
             // read dapp module
             //TODO: If we make dapp storage into two-level Key Value storage, we can detect duplicated dappAddress
@@ -248,7 +248,7 @@ public class DAppCreator {
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
             IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), nextHashCode);
-            Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(kernel, ctx, helper, result));
+            Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(kernel, avm, ctx, helper, result));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()

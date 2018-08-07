@@ -17,7 +17,7 @@ import java.util.*;
 
 
 public class DAppExecutor {
-    public static void call(KernelInterface kernel, Transaction tx, TransactionContext ctx, TransactionResult result) {
+    public static void call(KernelInterface kernel, Avm avm, Transaction tx, TransactionContext ctx, TransactionResult result) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
         ImmortalDappModule app;
@@ -44,7 +44,7 @@ public class DAppExecutor {
         
         // TODO:  We might be able to move this setup of IHelper to later in the load once we get rid of the <clinit> (requires energy).
         IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), initialState.nextHashCode);
-        Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(kernel, ctx, helper, result));
+        Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(kernel, avm, ctx, helper, result));
 
         // Now that we can load classes for the contract, load and populate all their classes.
         LoadedDApp dapp = new LoadedDApp(classLoader, dappAddress, aphabeticalContractClasses);

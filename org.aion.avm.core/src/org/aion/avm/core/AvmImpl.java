@@ -25,10 +25,10 @@ public class AvmImpl implements Avm {
 
         switch (tx.getType()) {
             case CREATE:
-                DAppCreator.create(this.kernel, tx, ctx, result);
+                DAppCreator.create(this.kernel, this, tx, ctx, result);
                 break;
             case CALL:
-                DAppExecutor.call(this.kernel, tx, ctx, result);
+                DAppExecutor.call(this.kernel, this, tx, ctx, result);
                 break;
             default:
                 result.setStatusCode(TransactionResult.Code.INVALID_TX);

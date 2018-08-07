@@ -1,5 +1,6 @@
 package org.aion.kernel;
 
+import org.aion.avm.core.Avm;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
@@ -38,9 +39,9 @@ public class KernelInterfaceImpl implements KernelInterface {
     }
 
     @Override
-    public TransactionResult call(InternalTransaction internalTx, Block parentBlock) {
-        // TODO:  Don't create another AvmImpl here (should use shared instance).
-        return new AvmImpl(this).run(new TransactionContextImpl(internalTx, parentBlock));
+    public TransactionResult call(Avm sourceVm, InternalTransaction internalTx, Block parentBlock) {
+        // Note that "run()" is defined as being reentrant.
+        return sourceVm.run(new TransactionContextImpl(internalTx, parentBlock));
     }
 
     @Override
