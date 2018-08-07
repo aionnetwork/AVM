@@ -121,12 +121,12 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmImplTestResource.class);
         byte[] arguments = new byte[0];
         byte[] txData = Helpers.encodeCodeAndData(jar, arguments);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new CustomKernel());
 
         // deploy
         long transaction1EnergyLimit = 1_000_000l;
         Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, transaction1EnergyLimit);
-        AvmImpl avm1 = new AvmImpl(new CustomKernel());
-        TransactionResult result1 = avm1.run(new TransactionContextImpl(tx1, block));
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
 
         Address contractAddr = new Address(result1.getReturnData());
@@ -142,8 +142,7 @@ public class AvmImplTest {
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
         Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, contractAddr.unwrap(), transaction2EnergyLimit);
-        AvmImpl avm2 = new AvmImpl(new CustomKernel());
-        TransactionResult result2 = avm2.run(new TransactionContextImpl(tx2, block));
+        TransactionResult result2 = avm.run(new TransactionContextImpl(tx2, block));
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
         // Account for the cost:  (blocks in call method) + runtime.call

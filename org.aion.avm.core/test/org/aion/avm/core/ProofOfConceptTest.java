@@ -93,13 +93,14 @@ public class ProofOfConceptTest {
             byte[] extra2 = Helpers.randomBytes(Address.LENGTH);
             int requiredVotes = 2;
             long dailyLimit = 5000;
+            Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
 
             byte[] testWalletJar = buildTestWalletJar();
             byte[] testWalletArguments = new byte[0];
             Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
                     Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-            TransactionResult createResult = new AvmImpl(new KernelInterfaceImpl()).run(createContext);
+            TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
 
             // contract address is stored in return data
@@ -108,7 +109,7 @@ public class ProofOfConceptTest {
             byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
             Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
             TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
-            TransactionResult initResult = new AvmImpl(new KernelInterfaceImpl()).run(initContext);
+            TransactionResult initResult = avm.run(initContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
         }
 
@@ -122,6 +123,7 @@ public class ProofOfConceptTest {
             byte[] extra2 = Helpers.randomBytes(Address.LENGTH);
             int requiredVotes = 2;
             long dailyLimit = 5000;
+            Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
             
             // Deploy.
             byte[] contractAddress = deployTestWallet();
@@ -135,7 +137,7 @@ public class ProofOfConceptTest {
             byte[] execArgs = encodeExecute(to, dailyLimit + 1, data);
             Transaction executeTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, execArgs, energyLimit);
             TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
-            TransactionResult executeResult = new AvmImpl(new KernelInterfaceImpl()).run(executeContext);
+            TransactionResult executeResult = avm.run(executeContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, executeResult.getStatusCode());
             byte[] toConfirm = (byte[]) ABIDecoder.decodeOneObject(executeResult.getReturnData());
             
@@ -144,7 +146,7 @@ public class ProofOfConceptTest {
             Transaction confirmTransaction = new Transaction(Transaction.Type.CALL, extra1, contractAddress, 0, confirmArgs, energyLimit);
             TransactionContext confirmContext = new TransactionContextImpl(confirmTransaction, block);
             // TODO:  Change this once we have something reasonable to cross-call.  For now, this hits NPE since it isn't calling anything real.
-            TransactionResult confirmResult = new AvmImpl(new KernelInterfaceImpl()).run(confirmContext);
+            TransactionResult confirmResult = avm.run(confirmContext);
             Assert.assertEquals(TransactionResult.Code.FAILURE, confirmResult.getStatusCode());
         }
 

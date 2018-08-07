@@ -15,6 +15,7 @@ import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.kernel.KernelInterface;
 
 
 /**
@@ -83,6 +84,18 @@ public class NodeEnvironment {
 
     public Map<Long, org.aion.avm.shadow.java.lang.Object> getConstantMap() {
         return this.constantMap;
+    }
+
+    /**
+     * Creates a new long-lived AVM instance.  The intention is that only one AVM instance will be created and reused for each transaction.
+     * NOTE:  This is only in the NodeEnvironment since it is a long-lived singleton but this method has no strong connection to it so it
+     * could be moved in the future.
+     * 
+     * @param kernel The kernel interface exposed by the consumer.
+     * @return The long-lived AVM instance.
+     */
+    public Avm buildAvmInstance(KernelInterface kernel) {
+        return new AvmImpl(kernel);
     }
 
 

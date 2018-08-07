@@ -4,7 +4,8 @@ import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.InvalidTxDataException;
-import org.aion.avm.core.AvmImpl;
+import org.aion.avm.core.Avm;
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -28,6 +29,7 @@ public class WalletTest {
 
     @Test
     public void testWallet() throws InvalidTxDataException {
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
 
         //================
         // DEPLOY
@@ -39,7 +41,7 @@ public class WalletTest {
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, pepeMinter, null, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit);
         TransactionContext txContext = new TransactionContextImpl(createTransaction, block);
-        TransactionResult txResult = new AvmImpl(new KernelInterfaceImpl()).run(txContext);
+        TransactionResult txResult = avm.run(txContext);
         Address tokenDapp = new Address(txResult.getReturnData());
         System.out.println(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.toHexString(txResult.getReturnData()) + ")");
 
@@ -50,7 +52,7 @@ public class WalletTest {
         arguments = ABIEncoder.encodeMethodArguments("", new Address(owner1), new Address(owner2), confirmationsRequired);
         Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0L, Helpers.encodeCodeAndData(jar, arguments), energyLimit);
         txContext = new TransactionContextImpl(tx, block);
-        txResult = new AvmImpl(new KernelInterfaceImpl()).run(txContext);
+        txResult = avm.run(txContext);
         Address walletDapp = new Address(txResult.getReturnData());
         System.out.println(">> Wallet Dapp is deployed. (Address " + Helpers.toHexString(txResult.getReturnData()) + ")");
         System.out.println(">> Owners List:");
@@ -65,19 +67,19 @@ public class WalletTest {
         arguments = ABIEncoder.encodeMethodArguments("mint", walletDapp, 5000L);
         tx = new Transaction(Transaction.Type.CALL, pepeMinter, tokenDapp.unwrap(), 0, arguments, energyLimit);
         txContext = new TransactionContextImpl(tx, block);
-        txResult = new AvmImpl(new KernelInterfaceImpl()).run(txContext);
+        txResult = avm.run(txContext);
         System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", walletDapp);
         tx = new Transaction(Transaction.Type.CALL, pepeMinter, tokenDapp.unwrap(), 0, arguments, energyLimit);
         txContext = new TransactionContextImpl(tx, block);
-        txResult = new AvmImpl(new KernelInterfaceImpl()).run(txContext);
+        txResult = avm.run(txContext);
         System.out.println(">> balance of wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", new Address(receiver));
         tx = new Transaction(Transaction.Type.CALL, pepeMinter, tokenDapp.unwrap(), 0, arguments, energyLimit);
         txContext = new TransactionContextImpl(tx, block);
-        txResult = new AvmImpl(new KernelInterfaceImpl()).run(txContext);
+        txResult = avm.run(txContext);
         System.out.println(">> balance of receiver: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         //================
@@ -87,7 +89,7 @@ public class WalletTest {
         arguments = ABIEncoder.encodeMethodArguments("propose", tokenDapp, 0L, data, energyLimit);
         tx = new Transaction(Transaction.Type.CALL, deployer, walletDapp.unwrap(), 0L, arguments, 2_000_000L);
         txContext = new TransactionContextImpl(tx, block);
-        txResult = new AvmImpl(new KernelInterfaceImpl()).run(txContext);
+        txResult = avm.run(txContext);
         System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.toHexString((byte[]) ABIDecoder.decodeOneObject(txResult.getReturnData())) + ")");
         byte[] pendingTx = (byte[]) ABIDecoder.decodeOneObject(txResult.getReturnData());
 
@@ -97,7 +99,7 @@ public class WalletTest {
         arguments = ABIEncoder.encodeMethodArguments("confirm", pendingTx);
         tx = new Transaction(Transaction.Type.CALL, owner1, walletDapp.unwrap(), 0L, arguments, energyLimit);
         txContext = new TransactionContextImpl(tx, block);
-        txResult = new AvmImpl(new KernelInterfaceImpl()).run(txContext);
+        txResult = avm.run(txContext);
         System.out.println(">> Transaction confirmed by Owner 1: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         //================
@@ -106,7 +108,7 @@ public class WalletTest {
         arguments = ABIEncoder.encodeMethodArguments("confirm", pendingTx);
         tx = new Transaction(Transaction.Type.CALL, owner2, walletDapp.unwrap(), 0L, arguments, energyLimit);
         txContext = new TransactionContextImpl(tx, block);
-        txResult = new AvmImpl(new KernelInterfaceImpl()).run(txContext);
+        txResult = avm.run(txContext);
         System.out.println(">> Transaction confirmed by Owner 2: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         System.out.println("\n>> Number of confirmations reach to " + confirmationsRequired + ". Transaction is processed.");
@@ -117,13 +119,13 @@ public class WalletTest {
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", walletDapp);
         tx = new Transaction(Transaction.Type.CALL, pepeMinter, tokenDapp.unwrap(), 0, arguments, energyLimit);
         txContext = new TransactionContextImpl(tx, block);
-        txResult = new AvmImpl(new KernelInterfaceImpl()).run(txContext);
+        txResult = avm.run(txContext);
         System.out.println("\n>> balance of wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", new Address(receiver));
         tx = new Transaction(Transaction.Type.CALL, pepeMinter, tokenDapp.unwrap(), 0, arguments, energyLimit);
         txContext = new TransactionContextImpl(tx, block);
-        txResult = new AvmImpl(new KernelInterfaceImpl()).run(txContext);
+        txResult = avm.run(txContext);
         System.out.println(">> balance of receiver: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
     }
 }

@@ -3,8 +3,10 @@ package org.aion.avm.core;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionResult;
 
+
 /**
- * High-level Aion Virtual Machine interface.
+ * The public interfaced exposed by the AVM for deploying or running transactions against DApps.
+ * Note that it is expected that the AVM instance will be created once and then reused for each transaction.
  */
 public interface Avm {
     /**

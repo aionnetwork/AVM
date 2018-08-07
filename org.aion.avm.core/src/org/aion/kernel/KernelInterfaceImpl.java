@@ -39,6 +39,7 @@ public class KernelInterfaceImpl implements KernelInterface {
 
     @Override
     public TransactionResult call(InternalTransaction internalTx, Block parentBlock) {
+        // TODO:  Don't create another AvmImpl here (should use shared instance).
         return new AvmImpl(this).run(new TransactionContextImpl(internalTx, parentBlock));
     }
 
