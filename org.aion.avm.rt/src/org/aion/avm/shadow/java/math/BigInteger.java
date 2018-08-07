@@ -255,6 +255,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     // Deserializer support.
     public BigInteger(IDeserializer deserializer, long instanceId) {
         super(deserializer, instanceId);
+        lazyLoad();
     }
 
     //========================================================

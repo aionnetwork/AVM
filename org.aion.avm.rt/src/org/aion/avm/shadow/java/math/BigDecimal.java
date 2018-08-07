@@ -334,6 +334,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     // Deserializer support.
     public BigDecimal(IDeserializer deserializer, long instanceId) {
         super(deserializer, instanceId);
+        lazyLoad();
     }
 
     static{
