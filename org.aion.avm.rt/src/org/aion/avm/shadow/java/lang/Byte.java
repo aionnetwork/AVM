@@ -26,7 +26,7 @@ public final class Byte extends Object implements Comparable<Byte> {
     }
 
     public static byte avm_parseByte(String s, int radix){
-        return java.lang.Byte.parseByte(s.getV(), radix);
+        return java.lang.Byte.parseByte(s.getUnderlying(), radix);
     }
 
     public static byte avm_parseByte(String s) throws NumberFormatException {
@@ -43,7 +43,7 @@ public final class Byte extends Object implements Comparable<Byte> {
     }
 
     public static Byte avm_decode(String nm) throws NumberFormatException {
-        return new Byte(java.lang.Byte.decode(nm.getV()).byteValue());
+        return new Byte(java.lang.Byte.decode(nm.getUnderlying()).byteValue());
     }
 
     public Byte(byte v) {

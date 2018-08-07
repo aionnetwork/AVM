@@ -50,29 +50,29 @@ public class Integer extends Number implements Comparable<Integer> {
     }
 
     public static int avm_parseInt(String s, int radix) throws NumberFormatException {
-        return java.lang.Integer.parseInt(s.getV(), radix);
+        return java.lang.Integer.parseInt(s.getUnderlying(), radix);
     }
 
     public static int avm_parseInt(String s) throws NumberFormatException {
-        return java.lang.Integer.parseInt(s.getV());
+        return java.lang.Integer.parseInt(s.getUnderlying());
     }
 
     public static int avm_parseInt(CharSequence s, int beginIndex, int endIndex, int radix)
             throws NumberFormatException {
-        return java.lang.Integer.parseInt(s.avm_toString().getV(), beginIndex, endIndex, radix);
+        return java.lang.Integer.parseInt(s.avm_toString().getUnderlying(), beginIndex, endIndex, radix);
     }
 
     public static int avm_parseUnsignedInt(String s, int radix){
-        return java.lang.Integer.parseUnsignedInt(s.getV(), radix);
+        return java.lang.Integer.parseUnsignedInt(s.getUnderlying(), radix);
     }
 
     public static int avm_parseUnsignedInt(String s){
-        return java.lang.Integer.parseUnsignedInt(s.getV());
+        return java.lang.Integer.parseUnsignedInt(s.getUnderlying());
     }
 
     public static int avm_parseUnsignedInt(CharSequence s, int beginIndex, int endIndex, int radix)
             throws NumberFormatException {
-        return java.lang.Integer.parseUnsignedInt(s.avm_toString().getV(), beginIndex, endIndex, radix);
+        return java.lang.Integer.parseUnsignedInt(s.avm_toString().getUnderlying(), beginIndex, endIndex, radix);
     }
 
     public static Integer avm_valueOf(String s, int radix) throws NumberFormatException {
@@ -131,7 +131,7 @@ public class Integer extends Number implements Comparable<Integer> {
     }
 
     public static Integer avm_decode(String nm) throws NumberFormatException {
-        return new Integer(java.lang.Integer.decode(nm.getV()).intValue());
+        return new Integer(java.lang.Integer.decode(nm.getUnderlying()).intValue());
     }
 
     public int avm_compareTo(Integer anotherInteger) {

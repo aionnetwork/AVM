@@ -54,7 +54,7 @@ public class Float extends Number implements Comparable<Float> {
     }
 
     public static float avm_parseFloat(String s) throws NumberFormatException {
-        return java.lang.Float.parseFloat(s.getV());
+        return java.lang.Float.parseFloat(s.getUnderlying());
     }
 
     public static boolean avm_isNaN(float v) {

@@ -1,6 +1,7 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.CharArray;
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.Comparable;
@@ -26,7 +27,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
 
     public BigDecimal(CharArray in, int offset, int len, MathContext mc) {
         v = new java.math.BigDecimal(in.getUnderlying(), offset, len,
-                mc.getV());
+                mc.getUnderlying());
     }
 
     public BigDecimal(CharArray in){
@@ -34,15 +35,15 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal(CharArray in, MathContext mc){
-        v = new java.math.BigDecimal(in.getUnderlying(), mc.getV());
+        v = new java.math.BigDecimal(in.getUnderlying(), mc.getUnderlying());
     }
 
     public BigDecimal(String val){
-        v = new java.math.BigDecimal(val.getV());
+        v = new java.math.BigDecimal(val.getUnderlying());
     }
 
     public BigDecimal(String val, MathContext mc){
-        v = new java.math.BigDecimal(val.getV(), mc.getV());
+        v = new java.math.BigDecimal(val.getUnderlying(), mc.getUnderlying());
     }
 
     public BigDecimal(double val){
@@ -50,23 +51,23 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal(double val, MathContext mc) {
-        v = new java.math.BigDecimal(val, mc.getV());
+        v = new java.math.BigDecimal(val, mc.getUnderlying());
     }
 
     public BigDecimal(BigInteger val) {
-        v = new java.math.BigDecimal(val.getV());
+        v = new java.math.BigDecimal(val.getUnderlying());
     }
 
     public BigDecimal(BigInteger val, MathContext mc){
-        v = new java.math.BigDecimal(val.getV(), mc.getV());
+        v = new java.math.BigDecimal(val.getUnderlying(), mc.getUnderlying());
     }
 
     public BigDecimal(BigInteger unscaledVal, int scale) {
-        v = new java.math.BigDecimal(unscaledVal.getV(), scale);
+        v = new java.math.BigDecimal(unscaledVal.getUnderlying(), scale);
     }
 
     public BigDecimal(BigInteger unscaledVal, int scale, MathContext mc) {
-        v = new java.math.BigDecimal(unscaledVal.getV(), scale, mc.getV());
+        v = new java.math.BigDecimal(unscaledVal.getUnderlying(), scale, mc.getUnderlying());
     }
 
     public BigDecimal(int val) {
@@ -74,7 +75,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal(int val, MathContext mc) {
-        v = new java.math.BigDecimal(val, mc.getV());
+        v = new java.math.BigDecimal(val, mc.getUnderlying());
     }
 
     public BigDecimal(long val) {
@@ -82,7 +83,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal(long val, MathContext mc) {
-        v = new java.math.BigDecimal(val, mc.getV());
+        v = new java.math.BigDecimal(val, mc.getUnderlying());
     }
 
     public static BigDecimal avm_valueOf(long unscaledVal, int scale) {
@@ -102,7 +103,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal add(BigDecimal augend, MathContext mc) {
-        return new BigDecimal(v.add(augend.v, mc.getV()));
+        return new BigDecimal(v.add(augend.v, mc.getUnderlying()));
     }
 
     public BigDecimal avm_subtract(BigDecimal subtrahend) {
@@ -110,7 +111,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal avm_subtract(BigDecimal subtrahend, MathContext mc) {
-        return new BigDecimal(v.subtract(subtrahend.v, mc.getV()));
+        return new BigDecimal(v.subtract(subtrahend.v, mc.getUnderlying()));
     }
 
     public BigDecimal avm_multiply(BigDecimal multiplicand) {
@@ -118,15 +119,15 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal avm_multiply(BigDecimal multiplicand, MathContext mc) {
-        return new BigDecimal(v.multiply(multiplicand.v, mc.getV()));
+        return new BigDecimal(v.multiply(multiplicand.v, mc.getUnderlying()));
     }
 
     public BigDecimal avm_divide(BigDecimal divisor, int scale, RoundingMode roundingMode){
-        return new BigDecimal(v.divide(divisor.v, scale, roundingMode.getV()));
+        return new BigDecimal(v.divide(divisor.v, scale, roundingMode.getUnderlying()));
     }
 
     public BigDecimal avm_divide(BigDecimal divisor, RoundingMode roundingMode) {
-        return new BigDecimal(v.divide(divisor.v, roundingMode.getV()));
+        return new BigDecimal(v.divide(divisor.v, roundingMode.getUnderlying()));
     }
 
     public BigDecimal avm_divide(BigDecimal divisor) {
@@ -134,7 +135,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal avm_divide(BigDecimal divisor, MathContext mc) {
-        return new BigDecimal(v.divide(divisor.v, mc.getV()));
+        return new BigDecimal(v.divide(divisor.v, mc.getUnderlying()));
     }
 
     public BigDecimal avm_divideToIntegralValue(BigDecimal divisor) {
@@ -142,7 +143,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal avm_divideToIntegralValue(BigDecimal divisor, MathContext mc) {
-        return new BigDecimal(v.divideToIntegralValue(divisor.v, mc.getV()));
+        return new BigDecimal(v.divideToIntegralValue(divisor.v, mc.getUnderlying()));
     }
 
     public BigDecimal avm_remainder(BigDecimal divisor) {
@@ -150,11 +151,11 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal avm_remainder(BigDecimal divisor, MathContext mc) {
-        return new BigDecimal(v.remainder(divisor.v, mc.getV()));
+        return new BigDecimal(v.remainder(divisor.v, mc.getUnderlying()));
     }
 
     public BigDecimal avm_sqrt(MathContext mc) {
-        return new BigDecimal(v.sqrt(mc.getV()));
+        return new BigDecimal(v.sqrt(mc.getUnderlying()));
     }
 
     public BigDecimal avm_pow(int n) {
@@ -162,7 +163,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal avm_pow(int n, MathContext mc) {
-        return new BigDecimal(v.pow(n, mc.getV()));
+        return new BigDecimal(v.pow(n, mc.getUnderlying()));
     }
 
     public BigDecimal avm_abs(){
@@ -170,7 +171,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal avm_abs(MathContext mc){
-        return new BigDecimal(v.abs(mc.getV()));
+        return new BigDecimal(v.abs(mc.getUnderlying()));
     }
 
     public BigDecimal avm_negate() {
@@ -178,7 +179,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal avm_negate(MathContext mc) {
-        return new BigDecimal(v.negate(mc.getV()));
+        return new BigDecimal(v.negate(mc.getUnderlying()));
     }
 
     public BigDecimal avm_plus() {
@@ -186,7 +187,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal avm_plus(MathContext mc) {
-        return new BigDecimal(v.negate(mc.getV()));
+        return new BigDecimal(v.negate(mc.getUnderlying()));
     }
 
     public int avm_signum() {
@@ -206,11 +207,11 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal avm_round(MathContext mc){
-        return new BigDecimal(v.round(mc.getV()));
+        return new BigDecimal(v.round(mc.getUnderlying()));
     }
 
     public BigDecimal avm_setScale(int newScale, RoundingMode roundingMode) {
-        return new BigDecimal(v.setScale(newScale, roundingMode.getV()));
+        return new BigDecimal(v.setScale(newScale, roundingMode.getUnderlying()));
     }
 
     public BigDecimal avm_setScale(int newScale){
@@ -320,14 +321,19 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    private final java.math.BigDecimal v;
+    private java.math.BigDecimal v;
 
     public BigDecimal(java.math.BigDecimal u) {
         v = u;
     }
 
-    public java.math.BigDecimal getV() {
+    public java.math.BigDecimal getUnderlying() {
         return v;
+    }
+
+    // Deserializer support.
+    public BigDecimal(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 
     static{

@@ -28,7 +28,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public String(String original) {
-        this.v = new java.lang.String(original.getV());
+        this.v = new java.lang.String(original.v);
     }
 
     public String(CharArray value) {
@@ -44,11 +44,11 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public String(ByteArray bytes, int offset, int length, String charsetName) throws UnsupportedEncodingException {
-        this.v = new java.lang.String(bytes.getUnderlying(), offset, length, charsetName.getV());
+        this.v = new java.lang.String(bytes.getUnderlying(), offset, length, charsetName.v);
     }
 
     public String(ByteArray bytes, String charsetName) throws UnsupportedEncodingException {
-        this.v = new java.lang.String(bytes.getUnderlying(), charsetName.getV());
+        this.v = new java.lang.String(bytes.getUnderlying(), charsetName.v);
     }
 
     public String(ByteArray bytes, int offset, int length){
@@ -109,7 +109,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
 
     public ByteArray avm_getBytes(String charsetName) throws UnsupportedEncodingException {
         lazyLoad();
-        return new ByteArray(this.v.getBytes(charsetName.getV()));
+        return new ByteArray(this.v.getBytes(charsetName.v));
     }
 
     public ByteArray avm_getBytes(){
@@ -136,47 +136,47 @@ public class String extends Object implements Comparable<String>, CharSequence {
 
     public boolean avm_contentEquals(CharSequence cs){
         lazyLoad();
-        return this.v.contentEquals(cs.avm_toString().getV());
+        return this.v.contentEquals(cs.avm_toString().getUnderlying());
     }
 
     public boolean avm_equalsIgnoreCase(String anotherString) {
         lazyLoad();
-        return this.v.equalsIgnoreCase(anotherString.getV());
+        return this.v.equalsIgnoreCase(anotherString.v);
     }
 
     public int avm_compareTo(String anotherString) {
         lazyLoad();
-        return this.v.compareTo(anotherString.getV());
+        return this.v.compareTo(anotherString.getUnderlying());
     }
 
     public int avm_compareToIgnoreCase(String str){
         lazyLoad();
-        return this.v.compareToIgnoreCase(str.getV());
+        return this.v.compareToIgnoreCase(str.v);
     }
 
     public boolean avm_regionMatches(int toffset, String other, int ooffset, int len) {
         lazyLoad();
-        return this.v.regionMatches(toffset, other.getV(), ooffset, len);
+        return this.v.regionMatches(toffset, other.v, ooffset, len);
     }
 
     public boolean avm_regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len) {
         lazyLoad();
-        return this.v.regionMatches(ignoreCase, toffset, other.getV(), ooffset, len);
+        return this.v.regionMatches(ignoreCase, toffset, other.v, ooffset, len);
     }
 
     public boolean avm_startsWith(String prefix, int toffset) {
         lazyLoad();
-        return this.v.startsWith(prefix.getV(), toffset);
+        return this.v.startsWith(prefix.v, toffset);
     }
 
     public boolean avm_startsWith(String prefix) {
         lazyLoad();
-        return this.v.startsWith(prefix.getV());
+        return this.v.startsWith(prefix.v);
     }
 
     public boolean avm_endsWith(String prefix) {
         lazyLoad();
-        return this.v.endsWith(prefix.getV());
+        return this.v.endsWith(prefix.v);
     }
 
     @Override
@@ -241,7 +241,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     public String avm_concat(String str){
         lazyLoad();
         str.lazyLoad();
-        return new String(this.v.concat(str.getV()));
+        return new String(this.v.concat(str.v));
     }
 
     public String avm_replace(char oldChar, char newChar) {
@@ -265,22 +265,22 @@ public class String extends Object implements Comparable<String>, CharSequence {
         lazyLoad();
         regex.lazyLoad();
         replacement.lazyLoad();
-        return new String(this.v.replaceFirst(regex.getV(), replacement.getV()));
+        return new String(this.v.replaceFirst(regex.v, replacement.v));
     }
 
     public String avm_replaceAll(String regex, String replacement) {
         lazyLoad();
         regex.lazyLoad();
         replacement.lazyLoad();
-        return new String(this.v.replaceAll(regex.getV(), replacement.getV()));
+        return new String(this.v.replaceAll(regex.v, replacement.v));
     }
 
     public String avm_replace(CharSequence target, CharSequence replacement){
         lazyLoad();
         ((Object)target).lazyLoad();
         ((Object)replacement).lazyLoad();
-        return new String(this.v.replace(target.avm_toString().getV(),
-                replacement.avm_toString().getV()));
+        return new String(this.v.replace(target.avm_toString().getUnderlying(),
+                replacement.avm_toString().getUnderlying()));
     }
 
     //public String[] split(String regex, int limit) {}
@@ -311,9 +311,6 @@ public class String extends Object implements Comparable<String>, CharSequence {
         return new CharArray(this.v.toCharArray());
     }
 
-//    public static String avm_format(String format, Object... args) {
-//        return new String(java.lang.String.format(format.getV(), args));
-//    }
 
     //TODO: IOBJECT?
     public static String avm_valueOf(Object obj) {
@@ -423,7 +420,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     //internal
-    public java.lang.String getV(){
+    public java.lang.String getUnderlying(){
         lazyLoad();
         return v;
     }
@@ -466,5 +463,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     //public static String format(Locale l, String format, Object... args) {
 
     //public String avm_intern()
+
+    //public static String format(String format, Object... args)
 
 }

@@ -19,7 +19,9 @@ public class Object extends java.lang.Object implements IObject {
     }
 
     private int hashCode;
+
     public long instanceId;
+
     // We hold on to this deserializer until we need to load the instance (this is cleared after lazyLoad() completes).
     private IDeserializer deserializer;
 

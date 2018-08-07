@@ -15,16 +15,10 @@ public class Class<T> extends Object {
         IHelper.currentContractHelper.get().externalBootstrapOnly();
     }
 
-    private final java.lang.Class<T> underlying;
-
-    public Class(java.lang.Class<T> underlying) {
-        this.underlying = underlying;
-    }
-
     public String avm_getName() {
         // Note that we actively try not to give the same instance of the name wrapper back (since the user could see implementation details of our
         // contract life-cycle or the underlying JVM/ClassLoader.
-        return new org.aion.avm.shadow.java.lang.String(underlying.getName());
+        return new org.aion.avm.shadow.java.lang.String(v.getName());
     }
 
     public String avm_toString() {
@@ -32,17 +26,17 @@ public class Class<T> extends Object {
     }
 
     public IObject avm_cast(IObject obj) {
-        return (IObject)this.underlying.cast(obj);
+        return (IObject)this.v.cast(obj);
     }
 
-    public java.lang.Class<T> getRealClass(){return this.underlying;}
+    public java.lang.Class<T> getRealClass(){return this.v;}
 
     @SuppressWarnings("unchecked")
     public Class<T> avm_getSuperclass() {
         // Note that we need to return null if the underlying is the shadow object root.
         Class<T> toReturn = null;
-        if (org.aion.avm.shadow.java.lang.Object.class != this.underlying) {
-            toReturn = (Class<T>) IHelper.currentContractHelper.get().externalWrapAsClass(this.underlying.getSuperclass());
+        if (org.aion.avm.shadow.java.lang.Object.class != this.v) {
+            toReturn = (Class<T>) IHelper.currentContractHelper.get().externalWrapAsClass(this.v.getSuperclass());
         }
         return toReturn;
     }
@@ -75,10 +69,10 @@ public class Class<T> extends Object {
         ObjectArray constants = enumConstants;
         if (constants == null) {
             try {
-                Field f = underlying.getDeclaredField("avm_$VALUES");
+                Field f = v.getDeclaredField("avm_$VALUES");
                 f.setAccessible(true);
 
-                java.lang.Object value = f.get(underlying);
+                java.lang.Object value = f.get(v);
                 ObjectArray temporaryConstants = (ObjectArray) value;
                 enumConstants = constants = temporaryConstants;
             }
@@ -98,10 +92,14 @@ public class Class<T> extends Object {
     // Methods below are used by runtime and test code only!
     //========================================================
 
+    public Class(java.lang.Class<T> v) {
+        this.v = v;
+    }
 
+    private final java.lang.Class<T> v;
 
     @Override
     public java.lang.String toString() {
-        return this.underlying.toString();
+        return this.v.toString();
     }
 }

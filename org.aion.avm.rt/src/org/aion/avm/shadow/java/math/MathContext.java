@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.math;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.Object;
@@ -32,13 +33,13 @@ public final class MathContext extends Object {
 
     public MathContext(int setPrecision,
                        RoundingMode setRoundingMode) {
-        v = new java.math.MathContext(setPrecision, setRoundingMode.getV());
+        v = new java.math.MathContext(setPrecision, setRoundingMode.getUnderlying());
         precision = v.getPrecision();
         roundingMode = RoundingMode.avm_valueOf(new String(v.getRoundingMode().name()));
     }
 
     public MathContext(String val) {
-        v = new java.math.MathContext(val.getV());
+        v = new java.math.MathContext(val.getUnderlying());
         precision = v.getPrecision();
         roundingMode = RoundingMode.avm_valueOf(new String(v.getRoundingMode().name()));
     }
@@ -73,12 +74,18 @@ public final class MathContext extends Object {
 
     private java.math.MathContext v;
 
-    final int precision;
+    private int precision;
 
-    final RoundingMode roundingMode;
+    private RoundingMode roundingMode;
 
-    public java.math.MathContext getV() {
+    public java.math.MathContext getUnderlying() {
         return v;
+    }
+
+    // Deserializer support.
+    public MathContext(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+        lazyLoad();
     }
 
     //========================================================

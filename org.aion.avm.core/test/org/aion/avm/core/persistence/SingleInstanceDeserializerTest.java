@@ -171,7 +171,7 @@ public class SingleInstanceDeserializerTest {
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         org.aion.avm.shadow.java.lang.String bytes = new org.aion.avm.shadow.java.lang.String((String)null);
         bytes.deserializeSelf(null, target);
-        Assert.assertEquals("TEST", bytes.getV());
+        Assert.assertEquals("TEST", bytes.getUnderlying());
     }
 
     @Test

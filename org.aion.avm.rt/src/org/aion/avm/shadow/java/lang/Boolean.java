@@ -26,7 +26,7 @@ public class Boolean extends Object implements Comparable<Boolean> {
     }
 
     public static boolean avm_parseBoolean(String s){
-        return (s != null) && java.lang.Boolean.parseBoolean(s.getV());
+        return (s != null) && java.lang.Boolean.parseBoolean(s.getUnderlying());
     }
 
     public boolean avm_booleanValue() {

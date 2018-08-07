@@ -1,6 +1,7 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.ObjectArray;
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.shadow.java.lang.Enum;
 import org.aion.avm.shadow.java.lang.String;
@@ -16,15 +17,22 @@ public class RoundingMode extends org.aion.avm.shadow.java.lang.Enum<RoundingMod
     }
 
     public static final RoundingMode avm_UP;
+
     public static final RoundingMode avm_DOWN;
+
     public static final RoundingMode avm_CEILING;
+
     public static final RoundingMode avm_FLOOR;
+
     public static final RoundingMode avm_HALF_UP;
+
     public static final RoundingMode avm_HALF_DOWN;
+
     public static final RoundingMode avm_HALF_EVEN;
+
     public static final RoundingMode avm_UNNECESSARY;
 
-    final int avm_oldMode;
+    int avm_oldMode;
 
     private java.math.RoundingMode v;
 
@@ -52,8 +60,14 @@ public class RoundingMode extends org.aion.avm.shadow.java.lang.Enum<RoundingMod
         }
     }
 
-    protected java.math.RoundingMode getV(){
+    protected java.math.RoundingMode getUnderlying(){
         return v;
+    }
+
+    // Deserializer support.
+    public RoundingMode(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+        lazyLoad();
     }
 
     static {

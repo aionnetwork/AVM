@@ -35,11 +35,11 @@ public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Append
     }
 
     public static CharBuffer avm_wrap(CharSequence csq, int start, int end) {
-        return new CharBuffer(java.nio.CharBuffer.wrap(csq.avm_toString().getV(), start, end));
+        return new CharBuffer(java.nio.CharBuffer.wrap(csq.avm_toString().getUnderlying(), start, end));
     }
 
     public static CharBuffer avm_wrap(CharSequence csq) {
-        return new CharBuffer(java.nio.CharBuffer.wrap(csq.avm_toString().getV()));
+        return new CharBuffer(java.nio.CharBuffer.wrap(csq.avm_toString().getUnderlying()));
     }
 
     public CharBuffer avm_slice(){
@@ -94,12 +94,12 @@ public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Append
     }
 
     public CharBuffer avm_put(String src, int start, int end) {
-        v = ((java.nio.CharBuffer)v).put(src.getV(), start, end);
+        v = ((java.nio.CharBuffer)v).put(src.getUnderlying(), start, end);
         return this;
     }
 
     public CharBuffer avm_put(String src) {
-        v = ((java.nio.CharBuffer)v).put(src.getV());
+        v = ((java.nio.CharBuffer)v).put(src.getUnderlying());
         return this;
     }
 
@@ -193,12 +193,12 @@ public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Append
     }
 
     public CharBuffer avm_append(CharSequence csq){
-        v = ((java.nio.CharBuffer)v).append(csq.avm_toString().getV());
+        v = ((java.nio.CharBuffer)v).append(csq.avm_toString().getUnderlying());
         return this;
     }
 
     public CharBuffer avm_append(CharSequence csq, int start, int end){
-        v = ((java.nio.CharBuffer)v).append(csq.avm_toString().getV(), start, end);
+        v = ((java.nio.CharBuffer)v).append(csq.avm_toString().getUnderlying(), start, end);
         return this;
     }
 

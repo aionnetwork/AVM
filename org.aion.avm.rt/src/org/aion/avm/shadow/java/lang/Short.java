@@ -22,7 +22,7 @@ public class Short extends Number {
     }
 
     public static short avm_parseShort(String s, int radix) throws NumberFormatException {
-        return java.lang.Short.parseShort(s.getV(), radix);
+        return java.lang.Short.parseShort(s.getUnderlying(), radix);
     }
 
     public static short avm_parseShort(String s) throws NumberFormatException {
@@ -42,7 +42,7 @@ public class Short extends Number {
     }
 
     public static Short avm_decode(String nm) throws NumberFormatException {
-        return new Short(java.lang.Short.decode(nm.getV()).shortValue());
+        return new Short(java.lang.Short.decode(nm.getUnderlying()).shortValue());
     }
 
     public Short(short v) {

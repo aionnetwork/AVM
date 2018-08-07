@@ -1,6 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 
 
@@ -19,7 +20,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public StringBuffer(String str) {
-        this.v = new java.lang.StringBuffer(str.getV());
+        this.v = new java.lang.StringBuffer(str.getUnderlying());
     }
 
     public StringBuffer(CharSequence seq) {
@@ -99,7 +100,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public StringBuffer avm_append(CharSequence s, int start, int end){
-        this.v = this.v.append(s.avm_toString().getV(), start, end);
+        this.v = this.v.append(s.avm_toString().getUnderlying(), start, end);
         return this;
     }
 
@@ -159,7 +160,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public StringBuffer avm_replace(int start, int end, String str) {
-        this.v = this.v.replace(start, end, str.getV());
+        this.v = this.v.replace(start, end, str.getUnderlying());
         return this;
     }
 
@@ -189,7 +190,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public StringBuffer avm_insert(int offset, String str) {
-        this.v.insert(offset, str.getV());
+        this.v.insert(offset, str.getUnderlying());
         return this;
     }
 
@@ -239,19 +240,19 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public int avm_indexOf(String str) {
-        return this.v.indexOf(str.getV());
+        return this.v.indexOf(str.getUnderlying());
     }
 
     public int avm_indexOf(String str, int fromIndex) {
-        return this.v.indexOf(str.getV(), fromIndex);
+        return this.v.indexOf(str.getUnderlying(), fromIndex);
     }
 
     public int avm_lastIndexOf(String str) {
-        return this.v.lastIndexOf(str.getV());
+        return this.v.lastIndexOf(str.getUnderlying());
     }
 
     public int avm_lastIndexOf(String str, int fromIndex) {
-        return this.v.lastIndexOf(str.getV(), fromIndex);
+        return this.v.lastIndexOf(str.getUnderlying(), fromIndex);
     }
 
     public StringBuffer avm_reverse() {
@@ -270,6 +271,11 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
 
     public java.lang.StringBuffer getUnderlying() {
         return v;
+    }
+
+    // Deserializer support.
+    public StringBuffer(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 
 

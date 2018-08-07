@@ -226,7 +226,7 @@ public class Character extends Object {
     }
 
     public static int avm_codePointAt(CharSequence seq, int index) {
-        return java.lang.Character.codePointAt(seq.avm_toString().getV(), index);
+        return java.lang.Character.codePointAt(seq.avm_toString().getUnderlying(), index);
     }
 
     public static int avm_codePointAt(CharArray c, int index) {
@@ -238,7 +238,7 @@ public class Character extends Object {
     }
 
     public static int avm_codePointBefore(CharSequence seq, int index) {
-        return java.lang.Character.codePointAt(seq.avm_toString().getV(), index);
+        return java.lang.Character.codePointAt(seq.avm_toString().getUnderlying(), index);
     }
 
     public static int avm_codePointBefore(CharArray c, int index) {
@@ -266,7 +266,7 @@ public class Character extends Object {
     }
 
     public static int avm_codePointCount(CharSequence seq, int beginIndex, int endIndex){
-        return java.lang.Character.codePointCount(seq.avm_toString().getV(), beginIndex, endIndex);
+        return java.lang.Character.codePointCount(seq.avm_toString().getUnderlying(), beginIndex, endIndex);
     }
 
     public static int avm_codePointCount(CharArray a, int offset, int count) {
@@ -274,7 +274,7 @@ public class Character extends Object {
     }
 
     public static int avm_offsetByCodePoints(CharSequence seq, int index, int codePointOffset) {
-        return java.lang.Character.offsetByCodePoints(seq.avm_toString().getV(), index, codePointOffset);
+        return java.lang.Character.offsetByCodePoints(seq.avm_toString().getUnderlying(), index, codePointOffset);
     }
 
     public static int avm_offsetByCodePoints(CharArray a, int start, int count,
@@ -337,14 +337,6 @@ public class Character extends Object {
 
     public static boolean avm_isLetterOrDigit(int codePoint){
         return java.lang.Character.isLetterOrDigit(codePoint);
-    }
-
-    public static boolean avm_isJavaLetter(char ch){
-        return java.lang.Character.isJavaLetter(ch);
-    }
-
-    public static boolean avm_isJavaLetterOrDigit(char ch){
-        return java.lang.Character.isJavaLetterOrDigit(ch);
     }
 
     public static boolean avm_isAlphabetic(int codePoint){
@@ -435,10 +427,6 @@ public class Character extends Object {
         return java.lang.Character.getNumericValue(codePoint);
     }
 
-    public static boolean avm_isSpace(char ch) {
-        return java.lang.Character.isSpace(ch);
-    }
-
     public static boolean avm_isSpaceChar(char ch){
         return java.lang.Character.isSpaceChar(ch);
     }
@@ -512,7 +500,7 @@ public class Character extends Object {
     }
 
     public static int avm_codePointOf(String name) {
-        return java.lang.Character.codePointOf(name.getV());
+        return java.lang.Character.codePointOf(name.getUnderlying());
     }
 
     //========================================================
@@ -541,5 +529,10 @@ public class Character extends Object {
     // Methods below are excluded from shadowing
     //========================================================
 
+    // public static boolean isJavaLetter(char ch)
+
+    // public static boolean isJavaLetterOrDigit(char ch)
+
+    // public static boolean isSpace(char ch)
 
 }

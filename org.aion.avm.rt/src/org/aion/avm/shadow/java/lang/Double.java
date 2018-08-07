@@ -58,7 +58,7 @@ public class Double extends Number implements Comparable<Double>{
 
     public static double avm_parseDouble(String a)
     {
-        return java.lang.Double.parseDouble(a.getV());
+        return java.lang.Double.parseDouble(a.getUnderlying());
     }
 
     public static boolean avm_isNaN(double v)

@@ -1,6 +1,7 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.Comparable;
@@ -31,7 +32,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
 
     public BigInteger(String val, int radix) {
-        v = new java.math.BigInteger(val.getV(), radix);
+        v = new java.math.BigInteger(val.getUnderlying(), radix);
     }
 
     public BigInteger(String val) {
@@ -232,11 +233,10 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     public short avm_shortValueExact() {
         return v.shortValueExact();
     }
+
     public byte avm_byteValueExact() {
         return v.byteValueExact();
     }
-
-
 
     //========================================================
     // Methods below are used by runtime and test code only!
@@ -244,13 +244,17 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
 
     private java.math.BigInteger v;
 
-
     public BigInteger(java.math.BigInteger u) {
         v = u;
     }
 
-    public java.math.BigInteger getV() {
+    public java.math.BigInteger getUnderlying() {
         return v;
+    }
+
+    // Deserializer support.
+    public BigInteger(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 
     //========================================================
