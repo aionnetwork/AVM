@@ -3,7 +3,6 @@ package org.aion.avm.core;
 import org.aion.avm.api.*;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
-import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.instrument.ClassMetering;
@@ -239,16 +238,13 @@ public class DAppCreator {
             Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest);
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
-            // As per usual, we need to get the special Helper class for each contract loader.
-            Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
-
-            // Construct the per-contract class loader and access the per-contract IHelper instance.
-            AvmClassLoader classLoader = NodeEnvironment.singleton.createInvocationClassLoader(allClasses);
-
+            // We can now construct the abstraction of the loaded DApp which has the machinery for the rest of the initialization.
+            LoadedDApp dapp = DAppLoader.fromTransformed(transformedDapp, dappAddress);
+            
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
-            IHelper helper = Helpers.instantiateHelper(classLoader, tx.getEnergyLimit(), nextHashCode);
-            Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(kernel, avm, ctx, helper, result));
+            IHelper helper = dapp.instantiateHelperInApp(tx.getEnergyLimit(), nextHashCode);
+            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, ctx, helper, result));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
@@ -276,20 +272,12 @@ public class DAppCreator {
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * tx.getData().length);
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).
-            for (String className : transformedClasses.keySet()) {
-                try {
-                    Class<?> initialized = Class.forName(className, true, classLoader);
-                    RuntimeAssertionError.assertTrue(initialized.getClassLoader() == classLoader);
-                } catch (ClassNotFoundException e) {
-                    // This error would mean that this is assembled completely incorrectly, which is a static error in our implementation.
-                    RuntimeAssertionError.unexpected(e);
-                }
-            }
+            dapp.forceInitializeAllClasses();
 
             // Save back the state before we return.
             // -first, save out the classes
             long initialInstanceId = 1l;
-            long nextInstanceId = new LoadedDApp(classLoader, dappAddress, Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()), transformedDapp.mainClass).saveClassStaticsToStorage(initialInstanceId, kernel);
+            long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, kernel);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(kernel, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
