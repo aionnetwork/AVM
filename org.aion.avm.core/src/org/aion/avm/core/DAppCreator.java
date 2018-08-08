@@ -275,9 +275,16 @@ public class DAppCreator {
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * tx.getData().length);
 
-            // Force the user's main class to load, with initialization, so that it runs the <clinit>.
-            String mappedUserMainClass = PackageConstants.kUserDotPrefix + transformedDapp.mainClass;
-            Class.forName(mappedUserMainClass, true, classLoader);
+            // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).
+            for (String className : transformedClasses.keySet()) {
+                try {
+                    Class<?> initialized = Class.forName(className, true, classLoader);
+                    RuntimeAssertionError.assertTrue(initialized.getClassLoader() == classLoader);
+                } catch (ClassNotFoundException e) {
+                    // This error would mean that this is assembled completely incorrectly, which is a static error in our implementation.
+                    RuntimeAssertionError.unexpected(e);
+                }
+            }
 
             // Save back the state before we return.
             // -first, save out the classes
