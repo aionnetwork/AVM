@@ -202,4 +202,20 @@ public class LoadedDApp {
             }
         }
     }
+
+    /**
+     * Called before the DApp is about to be put into a cache.  This is so it can put itself into a "resumable" state.
+     */
+    public void cleanForCache() {
+        try {
+            String helperClassName = Helper.class.getName();
+            Class<?> helperClass = this.loader.loadClass(helperClassName);
+            // We rely on this class being found in our loader.
+            RuntimeAssertionError.assertTrue(helperClass.getClassLoader() == this.loader);
+            helperClass.getMethod("clearTestingState").invoke(null);
+        } catch (Throwable t) {
+            // Errors at this point imply something wrong with the installation so fail.
+            throw RuntimeAssertionError.unexpected(t);
+        }
+    }
 }

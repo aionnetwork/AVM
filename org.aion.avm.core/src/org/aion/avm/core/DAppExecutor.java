@@ -8,28 +8,10 @@ import org.aion.kernel.KernelInterface;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 
-import java.io.*;
-
 
 public class DAppExecutor {
-    public static void call(KernelInterface kernel, Avm avm, ReentrantDAppStack dAppStack, Transaction tx, TransactionContext ctx, TransactionResult result) {
-        // retrieve the transformed bytecode
+    public static void call(KernelInterface kernel, Avm avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume, Transaction tx, TransactionContext ctx, TransactionResult result) {
         byte[] dappAddress = tx.getTo();
-        // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
-        ReentrantDAppStack.ReentrantState stateToResume = dAppStack.tryShareState(dappAddress);
-        LoadedDApp dapp;
-        if (null != stateToResume) {
-            dapp = stateToResume.dApp;
-        } else {
-            try {
-                dapp = DAppLoader.loadFromKernel(kernel, dappAddress);
-            } catch (IOException e) {
-                result.setStatusCode(TransactionResult.Code.INVALID_CALL);
-                result.setEnergyUsed(tx.getEnergyLimit());
-                return;
-            }
-        }
-        
         // Load the initial state of the environment.
         // (note that ContractEnvironmentState is immutable, so it is safe to just access the environment from a different invocation).
         ContractEnvironmentState initialState = (null != stateToResume)
