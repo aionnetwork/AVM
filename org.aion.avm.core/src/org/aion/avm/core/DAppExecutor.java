@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.arraywrapper.*;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
@@ -12,7 +11,6 @@ import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 
 import java.io.*;
-import java.lang.reflect.Method;
 import java.util.*;
 
 
@@ -47,24 +45,15 @@ public class DAppExecutor {
         Helpers.attachBlockchainRuntime(classLoader, new BlockchainRuntimeImpl(kernel, avm, ctx, helper, result));
 
         // Now that we can load classes for the contract, load and populate all their classes.
-        LoadedDApp dapp = new LoadedDApp(classLoader, dappAddress, aphabeticalContractClasses);
+        LoadedDApp dapp = new LoadedDApp(classLoader, dappAddress, aphabeticalContractClasses, app.mainClass);
         dapp.populateClassStaticsFromStorage(kernel);
 
-        // load class
+        // Call the main within the DApp.
         try {
-            String mappedUserMainClass = PackageConstants.kUserDotPrefix + app.mainClass;
-            Class<?> clazz = classLoader.loadClass(mappedUserMainClass);
-
-            Method method = clazz.getMethod("avm_main");
-            ByteArray rawResult = (ByteArray) method.invoke(null);
-            byte[] ret = (null != rawResult)
-                    ? rawResult.getUnderlying()
-                    : null;
+            byte[] ret = dapp.callMain();
 
             // Save back the state before we return.
             // -first, save out the classes
-            // TODO: Make this fully walk the graph
-            // TODO: Get the updated "nextInstanceId" after everything is written to storage.
             long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, kernel);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(kernel, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));

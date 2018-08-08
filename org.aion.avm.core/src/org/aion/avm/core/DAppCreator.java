@@ -281,9 +281,8 @@ public class DAppCreator {
 
             // Save back the state before we return.
             // -first, save out the classes
-            // TODO: Make this fully walk the graph
             long initialInstanceId = 1l;
-            long nextInstanceId = new LoadedDApp(classLoader, dappAddress, Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet())).saveClassStaticsToStorage(initialInstanceId, kernel);
+            long nextInstanceId = new LoadedDApp(classLoader, dappAddress, Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet()), transformedDapp.mainClass).saveClassStaticsToStorage(initialInstanceId, kernel);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(kernel, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 

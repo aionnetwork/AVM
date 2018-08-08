@@ -1,6 +1,7 @@
 package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,6 +9,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.function.Consumer;
 
+import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.kernel.KernelInterface;
 
 
@@ -24,11 +28,15 @@ import org.aion.kernel.KernelInterface;
  * Specifically, it now contains the ClassLoader, information about the class instances, and the cache of any reflection data.
  * NOTE:  It does NOT contain any information about the data currently stored within the Class objects associated with the DApp, nor
  * does it have any information about persisted aspects of the DApp (partly because it doesn't know anything about storage versioning).
+ * 
+ * NOTE:  Nothing here should be eagerly cached or looked up since the external caller is responsible for setting up the environment
+ * such that it is fully usable.  Attempting to eagerly interact with it before then might not be safe.
  */
 public class LoadedDApp {
     private final ClassLoader loader;
     private final byte[] address;
     private final List<Class<?>> classes;
+    private final String originalMainClassName;
     // Note that this fieldCache is populated by the calls to ReflectionStructureCodec.
     private final Map<Class<?>, Field[]> fieldCache;
 
@@ -39,10 +47,11 @@ public class LoadedDApp {
      * @param address The address of the contract.
      * @param classes The list of classes to populate (order must always be the same).
      */
-    public LoadedDApp(ClassLoader loader, byte[] address, List<Class<?>> classes) {
+    public LoadedDApp(ClassLoader loader, byte[] address, List<Class<?>> classes, String originalMainClassName) {
         this.loader = loader;
         this.address = address;
         this.classes = classes;
+        this.originalMainClassName = originalMainClassName;
         this.fieldCache = new HashMap<>();
     }
 
@@ -105,5 +114,23 @@ public class LoadedDApp {
         
         // We need to pull out the nextInstanceId so that it can be set in the codec, when we are next invoked.
         return codec.getNextInstanceId();
+    }
+
+    /**
+     * Calls the actual entry-point, running the whatever was setup in the attached blockchain runtime as a transaction and return the result.
+     * 
+     * @return The data returned from the transaction (might be null).
+     * @throws OutOfEnergyError The transaction failed since the permitted energy was consumed.
+     * @throws Exception Something unexpected went wrong with the invocation.
+     */
+    public byte[] callMain() throws OutOfEnergyError, Exception {
+        String mappedUserMainClass = PackageConstants.kUserDotPrefix + this.originalMainClassName;
+        Class<?> clazz = this.loader.loadClass(mappedUserMainClass);
+
+        Method method = clazz.getMethod("avm_main");
+        ByteArray rawResult = (ByteArray) method.invoke(null);
+        return (null != rawResult)
+                ? rawResult.getUnderlying()
+                : null;
     }
 }

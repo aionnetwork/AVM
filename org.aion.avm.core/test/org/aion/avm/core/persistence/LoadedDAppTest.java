@@ -53,7 +53,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = new LoadedDApp(null, address, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class)).saveClassStaticsToStorage(initialInstanceId, kernel);
+        long nextInstanceId = new LoadedDApp(null, address, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).saveClassStaticsToStorage(initialInstanceId, kernel);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -116,7 +116,7 @@ public class LoadedDAppTest {
         kernel.putStorage(address, StorageKeys.CLASS_STATICS, expected);
         
         // Populate the classes.
-        new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class)).populateClassStaticsFromStorage(kernel);
+        new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).populateClassStaticsFromStorage(kernel);
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -155,7 +155,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = new LoadedDApp(null, address, Arrays.asList(ReflectionStructureCodecTarget.class)).saveClassStaticsToStorage(initialInstanceId, kernel);
+        long nextInstanceId = new LoadedDApp(null, address, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName()).saveClassStaticsToStorage(initialInstanceId, kernel);
         // We serialized a single instance so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(1 + initialInstanceId, nextInstanceId);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -227,7 +227,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class));
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName());
         long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, kernel);
         // We serialized 2 instances so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(2 + initialInstanceId, nextInstanceId);
@@ -300,7 +300,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class));
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
         long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, kernel);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
@@ -338,7 +338,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class));
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
         long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, kernel);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
@@ -376,7 +376,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class));
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
         long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, kernel);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
