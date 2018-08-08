@@ -55,14 +55,15 @@ public class BasicPerfTest {
 
 
     private static class TestRunnable extends Thread {
+        private Avm avm;
         private byte[] contractAddress;
         public void deploy(byte[] jar, byte[] arguments) {
             // Deploy.
+            this.avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
             Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
             Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), this.contractAddress, 0, Helpers.encodeCodeAndData(jar, arguments), transaction1EnergyLimit);
-            AvmImpl avm1 = new AvmImpl(new KernelInterfaceImpl());
-            TransactionResult result1 = avm1.run(new TransactionContextImpl(tx1, block));
+            TransactionResult result1 = this.avm.run(new TransactionContextImpl(tx1, block));
             Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             this.contractAddress = result1.getReturnData();
         }
@@ -73,8 +74,7 @@ public class BasicPerfTest {
                 Block block = new Block(i, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
                 long transaction1EnergyLimit = 1_000_000_000l;
                 Transaction tx1 = new Transaction(Transaction.Type.CALL, Helpers.address(1), this.contractAddress, 0, null, transaction1EnergyLimit);
-                AvmImpl avm1 = new AvmImpl(new KernelInterfaceImpl());
-                TransactionResult result1 = avm1.run(new TransactionContextImpl(tx1, block));
+                TransactionResult result1 = this.avm.run(new TransactionContextImpl(tx1, block));
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             }
         }
