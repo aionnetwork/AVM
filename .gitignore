@@ -37,3 +37,6 @@ testreports/
 
 # ant
 .ant-targets-build.xml
+
+[master]
+org.aion.avm.microbenchmark/
