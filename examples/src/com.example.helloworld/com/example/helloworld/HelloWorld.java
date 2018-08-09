@@ -7,9 +7,16 @@ import org.aion.avm.api.BlockchainRuntime;
 
 public class HelloWorld {
 
-    public int foo;
+    private int foo;
 
-    public static int bar;
+    private static int bar;
+
+    static {
+        if (BlockchainRuntime.getData() != null) {
+            Object[] arguments = ABIDecoder.decodeArguments(BlockchainRuntime.getData());
+            bar = (int)arguments[0];
+        }
+    }
 
     public int add(int a, int b) {
         return a + b;

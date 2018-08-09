@@ -57,7 +57,17 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
 
     @Override
     public ByteArray avm_getData() {
-        return new ByteArray(tx.getType() == Transaction.Type.CREATE ? Helpers.decodeCodeAndData(tx.getData())[1] : tx.getData());
+        if (tx.getType() == Transaction.Type.CREATE) {
+            if (Helpers.decodeCodeAndData(tx.getData())[1] == null) {
+                return null;
+            }
+            else {
+                return new ByteArray(Helpers.decodeCodeAndData(tx.getData())[1]);
+            }
+        }
+        else {
+            return new ByteArray(tx.getData());
+        }
     }
 
     @Override

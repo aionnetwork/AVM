@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.InvalidTxDataException;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.api.Address;
@@ -24,8 +25,7 @@ public class AvmImplDeployAndRunTest {
 
     public TransactionResult deployHelloWorld() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
-        byte[] arguments = new byte[0];
-        byte[] txData = Helpers.encodeCodeAndData(jar, arguments);
+        byte[] txData = Helpers.encodeCodeAndData(jar, null);
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
@@ -34,8 +34,7 @@ public class AvmImplDeployAndRunTest {
 
     public TransactionResult deployTheDeployAndRunTest() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
-        byte[] arguments = new byte[0];
-        byte[] txData = Helpers.encodeCodeAndData(jar, arguments);
+        byte[] txData = Helpers.encodeCodeAndData(jar, null);
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
@@ -49,24 +48,25 @@ public class AvmImplDeployAndRunTest {
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
     }
 
-/* deploy invocation is not supported for now
     @Test
     public void testDeployWithMethodCall() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
-        byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01};
-        IBlockchainRuntime rt = new SimpleRuntime(from, to, energyLimit, txData);
-        AvmImpl avm = new AvmImpl(sharedClassLoader, codeStorage);
-        TransactionResult result = avm.deploy(jar, null, rt);
+        byte[] arguments = ABIEncoder.encodeMethodArguments("", 100);
+        byte[] txData = Helpers.encodeCodeAndData(jar, arguments);
 
-        assertEquals(TransactionResult.Code.SUCCESS, result.code);
-    }*/
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
+
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+    }
 
     @Test
     public void testDeployAndRun() throws InvalidTxDataException {
         TransactionResult deployResult = deployHelloWorld();
 
         // call the "run" method
-        byte[] txData = new byte[]{0x72, 0x75, 0x6E}; // "run"
+        byte[] txData = ABIEncoder.encodeMethodArguments("run");
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
@@ -80,7 +80,7 @@ public class AvmImplDeployAndRunTest {
         TransactionResult deployResult = deployHelloWorld();
 
         // test another method call, "add" with arguments
-        byte[] txData = new byte[]{0x61, 0x64, 0x64, 0x3C, 0x49, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "add<II>" + raw data 123, 1
+        byte[] txData = ABIEncoder.encodeMethodArguments("add", 123, 1);
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
@@ -95,14 +95,13 @@ public class AvmImplDeployAndRunTest {
         assertEquals(TransactionResult.Code.SUCCESS, deployResult.getStatusCode());
 
         // test encode method arguments with "encodeArgs"
-        byte[] txData = new byte[]{0x65, 0x6E, 0x63, 0x6F, 0x64, 0x65, 0x41, 0x72, 0x67, 0x73}; // encodeArgs
+        byte[] txData = ABIEncoder.encodeMethodArguments("encodeArgs");
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        byte[] expected = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x3C, 0x5B, 0x49, 0x32, 0x5D, 0x49, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x05};
-        // "addArray<[I2]I>" + raw data 123, 1, 5
+        byte[] expected = ABIEncoder.encodeMethodArguments("addArray", new int[]{123, 1}, 5);
         boolean correct = Arrays.equals((byte[])(ABIDecoder.decodeOneObject(result.getReturnData())), expected);
         assertEquals(true, correct);
 
