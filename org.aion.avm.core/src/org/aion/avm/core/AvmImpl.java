@@ -8,9 +8,11 @@ import org.aion.kernel.TransactionResult;
 
 public class AvmImpl implements Avm {
     private final KernelInterface kernel;
+    private final ReentrantDAppStack dAppStack;
 
     public AvmImpl(KernelInterface kernel) {
         this.kernel = kernel;
+        this.dAppStack = new ReentrantDAppStack();
     }
 
     @Override
@@ -28,7 +30,7 @@ public class AvmImpl implements Avm {
                 DAppCreator.create(this.kernel, this, tx, ctx, result);
                 break;
             case CALL:
-                DAppExecutor.call(this.kernel, this, tx, ctx, result);
+                DAppExecutor.call(this.kernel, this, this.dAppStack, tx, ctx, result);
                 break;
             default:
                 result.setStatusCode(TransactionResult.Code.INVALID_TX);

@@ -12,7 +12,7 @@ import java.io.*;
 
 
 public class DAppExecutor {
-    public static void call(KernelInterface kernel, Avm avm, Transaction tx, TransactionContext ctx, TransactionResult result) {
+    public static void call(KernelInterface kernel, Avm avm, ReentrantDAppStack dAppStack, Transaction tx, TransactionContext ctx, TransactionResult result) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
         LoadedDApp dapp;
@@ -27,9 +27,14 @@ public class DAppExecutor {
         // Load the initial state of the environment.
         ContractEnvironmentState initialState = ContractEnvironmentState.loadFromStorage(kernel, dappAddress);
         
+        // Note that we need to store the state of this invocation on the reentrant stack in case there is another call into the same app.
+        // We only put this here so that the call() mechanism can access it to save/reload its ContractEnvironmentState but we don't change it.
+        ReentrantDAppStack.ReentrantState thisState = new ReentrantDAppStack.ReentrantState(dappAddress, dapp, initialState);
+        dAppStack.pushState(thisState);
+        
         // TODO:  We might be able to move this setup of IHelper to later in the load once we get rid of the <clinit> (requires energy).
         IHelper helper = dapp.instantiateHelperInApp(tx.getEnergyLimit(), initialState.nextHashCode);
-        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, ctx, helper, result));
+        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, ctx, helper, result));
 
         // Now that we can load classes for the contract, load and populate all their classes.
         dapp.populateClassStaticsFromStorage(kernel);
@@ -56,6 +61,8 @@ public class DAppExecutor {
         } finally {
             // Once we are done running this, we want to clear the IHelper.currentContractHelper.
             IHelper.currentContractHelper.remove();
+            // This state was only here while we were running, in case someone else needed to change it so now we can pop it.
+            dAppStack.popState();
         }
     }
 }

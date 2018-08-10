@@ -24,15 +24,17 @@ import org.aion.kernel.TransactionResult;
 public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object implements IBlockchainRuntime {
     private final KernelInterface kernel;
     private final Avm avm;
+    private final ReentrantDAppStack.ReentrantState reentrantState;
     private IHelper helper;
     private TransactionResult result;
 
     private Transaction tx;
     private Block block;
 
-    public BlockchainRuntimeImpl(KernelInterface kernel, Avm avm, TransactionContext context, IHelper helper, TransactionResult result) {
+    public BlockchainRuntimeImpl(KernelInterface kernel, Avm avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionContext context, IHelper helper, TransactionResult result) {
         this.kernel = kernel;
         this.avm = avm;
+        this.reentrantState = reentrantState;
         this.helper = helper;
         this.result = result;
 

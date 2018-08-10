@@ -244,7 +244,8 @@ public class DAppCreator {
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
             IHelper helper = dapp.instantiateHelperInApp(tx.getEnergyLimit(), nextHashCode);
-            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, ctx, helper, result));
+            // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
+            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, ctx, helper, result));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
