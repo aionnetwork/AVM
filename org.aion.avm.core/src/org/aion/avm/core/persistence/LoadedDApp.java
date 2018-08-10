@@ -1,5 +1,6 @@
 package org.aion.avm.core.persistence;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -43,6 +44,14 @@ public class LoadedDApp {
     private final String originalMainClassName;
     // Note that this fieldCache is populated by the calls to ReflectionStructureCodec.
     private final Map<Class<?>, Field[]> fieldCache;
+
+    // Other caches of specific pieces of data which are lazily built.
+    private Class<?> helperClass;
+    private Class<?> mainClass;
+    private Constructor<?> helperConstructor;
+    private Field helperBlockchainRuntimeField;
+    private Method mainMethod;
+    private Method helperClearTestingStateMethod;
 
     /**
      * Creates the LoadedDApp to represent the classes related to DApp at address.
@@ -133,11 +142,8 @@ public class LoadedDApp {
     public IHelper instantiateHelperInApp(long energyLimit, int nextHashCode) {
         IHelper helper = null;
         try {
-            String helperClassName = Helper.class.getName();
-            Class<?> helperClass = this.loader.loadClass(helperClassName);
-            // We rely on this class being found in our loader.
-            RuntimeAssertionError.assertTrue(helperClass.getClassLoader() == this.loader);
-            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, long.class, int.class).newInstance(this.loader, energyLimit, nextHashCode);
+            Constructor<?> helperConstructor = getHelperConstructor();
+            helper = (IHelper) helperConstructor.newInstance(this.loader, energyLimit, nextHashCode);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);
@@ -155,11 +161,7 @@ public class LoadedDApp {
      */
     public void attachBlockchainRuntime(IBlockchainRuntime runtime) {
         try {
-            String helperClassName = Helper.class.getName();
-            Class<?> helperClass = this.loader.loadClass(helperClassName);
-            // We rely on this class being found in our loader.
-            RuntimeAssertionError.assertTrue(helperClass.getClassLoader() == this.loader);
-            helperClass.getField("blockchainRuntime").set(null, runtime);
+            getHelperBlochchainRuntimeField().set(null, runtime);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);
@@ -174,10 +176,7 @@ public class LoadedDApp {
      * @throws Exception Something unexpected went wrong with the invocation.
      */
     public byte[] callMain() throws OutOfEnergyError, Exception {
-        String mappedUserMainClass = PackageConstants.kUserDotPrefix + this.originalMainClassName;
-        Class<?> clazz = this.loader.loadClass(mappedUserMainClass);
-
-        Method method = clazz.getMethod("avm_main");
+        Method method = getMainMethod();
         ByteArray rawResult = (ByteArray) method.invoke(null);
         return (null != rawResult)
                 ? rawResult.getUnderlying()
@@ -208,14 +207,74 @@ public class LoadedDApp {
      */
     public void cleanForCache() {
         try {
-            String helperClassName = Helper.class.getName();
-            Class<?> helperClass = this.loader.loadClass(helperClassName);
-            // We rely on this class being found in our loader.
-            RuntimeAssertionError.assertTrue(helperClass.getClassLoader() == this.loader);
-            helperClass.getMethod("clearTestingState").invoke(null);
+            Method helperClearTestingStateMethod = getHelperClearTestingStateMethod();
+            helperClearTestingStateMethod.invoke(null);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);
         }
+    }
+
+
+    private Class<?> loadHelperClass() throws ClassNotFoundException {
+        Class<?> helperClass = this.helperClass;
+        if (null == helperClass) {
+            String helperClassName = Helper.class.getName();
+            helperClass = this.loader.loadClass(helperClassName);
+            RuntimeAssertionError.assertTrue(helperClass.getClassLoader() == this.loader);
+            this.helperClass = helperClass;
+        }
+        return helperClass;
+    }
+
+    private Class<?> loadMainClass() throws ClassNotFoundException {
+        Class<?> mainClass = this.mainClass;
+        if (null == mainClass) {
+            String mappedUserMainClass = PackageConstants.kUserDotPrefix + this.originalMainClassName;
+            mainClass = this.loader.loadClass(mappedUserMainClass);
+            RuntimeAssertionError.assertTrue(mainClass.getClassLoader() == this.loader);
+            this.mainClass = mainClass;
+        }
+        return mainClass;
+    }
+
+    private Constructor<?> getHelperConstructor() throws ClassNotFoundException, NoSuchMethodException {
+        Constructor<?> helperConstructor = this.helperConstructor;
+        if (null == helperConstructor) {
+            Class<?> helperClass = loadHelperClass();
+            helperConstructor = helperClass.getConstructor(ClassLoader.class, long.class, int.class);
+            this.helperConstructor = helperConstructor;
+        }
+        return helperConstructor;
+    }
+
+    private Field getHelperBlochchainRuntimeField() throws ClassNotFoundException, NoSuchFieldException, SecurityException  {
+        Field helperBlockchainRuntimeField = this.helperBlockchainRuntimeField;
+        if (null == helperBlockchainRuntimeField) {
+            Class<?> helperClass = loadHelperClass();
+            helperBlockchainRuntimeField = helperClass.getField("blockchainRuntime");
+            this.helperBlockchainRuntimeField = helperBlockchainRuntimeField;
+        }
+        return helperBlockchainRuntimeField;
+    }
+
+    private Method getMainMethod() throws ClassNotFoundException, NoSuchMethodException, SecurityException {
+        Method mainMethod = this.mainMethod;
+        if (null == mainMethod) {
+            Class<?> clazz = loadMainClass();
+            mainMethod = clazz.getMethod("avm_main");
+            this.mainMethod = mainMethod;
+        }
+        return mainMethod;
+    }
+
+    private Method getHelperClearTestingStateMethod() throws ClassNotFoundException, NoSuchMethodException, SecurityException {
+        Method helperClearTestingStateMethod = this.helperClearTestingStateMethod;
+        if (null == helperClearTestingStateMethod) {
+            Class<?> clazz = loadHelperClass();
+            helperClearTestingStateMethod = clazz.getMethod("clearTestingState");
+            this.helperClearTestingStateMethod = helperClearTestingStateMethod;
+        }
+        return helperClearTestingStateMethod;
     }
 }
