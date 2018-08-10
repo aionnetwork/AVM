@@ -8,6 +8,7 @@ import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,13 +22,14 @@ import org.junit.Test;
  * this design (especially considering that the entry-point interface is likely temporary).
  */
 public class BasicAppTest {
+    private SimpleAvm avm;
     private Class<?> clazz;
     private Method decodeMethod;
     private IBlockchainRuntime runtime;
 
     @Before
     public void setup() throws Exception {
-        SimpleAvm avm = new SimpleAvm(10000L, BasicAppTestTarget.class, AionMap.class);
+        this.avm = new SimpleAvm(10000L, BasicAppTestTarget.class, AionMap.class);
         AvmClassLoader loader = avm.getClassLoader();
         
         this.clazz = loader.loadUserClassByOriginalName(BasicAppTestTarget.class.getName());
@@ -38,6 +40,11 @@ public class BasicAppTest {
         // Create the wrapper for the runtime object, now that the external one has been used to create the Helper required to instantiate shadow objects.
         SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
         this.runtime = new ContractRuntimeWrapper(externalRuntime);
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     @Test

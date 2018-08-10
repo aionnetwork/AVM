@@ -46,6 +46,7 @@ public class ClassShadowingTest {
 
         Object ret = clazz.getMethod(UserClassMappingVisitor.mapMethodName("accessObject")).invoke(null);
         Assert.assertEquals(Integer.valueOf(1), ret);
+        avm.shutdown();
     }
 
     @Test
@@ -172,6 +173,7 @@ public class ClassShadowingTest {
         // Try the deserialization constructor.
         Object stub = clazz.getConstructor(IDeserializer.class, long.class).newInstance(null, 6l);
         Assert.assertNotNull(stub);
+        avm.shutdown();
     }
 
     @Test
@@ -189,6 +191,7 @@ public class ClassShadowingTest {
         // Try the deserialization constructor.
         Object stub = clazz.getConstructor(IDeserializer.class, long.class).newInstance(null, 6l);
         Assert.assertNotNull(stub);
+        avm.shutdown();
     }
 
     public static class Testing {

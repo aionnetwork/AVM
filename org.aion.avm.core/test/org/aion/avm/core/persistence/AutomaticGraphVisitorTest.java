@@ -5,22 +5,29 @@ import java.lang.reflect.Field;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.internal.IDeserializer;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 
 public class AutomaticGraphVisitorTest {
+    private SimpleAvm avm;
     private Class<?> primaryClass;
     private Class<?> secondaryClass;
 
     @Before
     public void setup() throws Exception {
-        SimpleAvm avm = new SimpleAvm(1_000_000L, AutomaticGraphVisitorTargetPrimary.class, AutomaticGraphVisitorTargetSecondary.class);
+        this.avm = new SimpleAvm(1_000_000L, AutomaticGraphVisitorTargetPrimary.class, AutomaticGraphVisitorTargetSecondary.class);
         AvmClassLoader loader = avm.getClassLoader();
         
         this.primaryClass = loader.loadUserClassByOriginalName(AutomaticGraphVisitorTargetPrimary.class.getName());
         this.secondaryClass = loader.loadUserClassByOriginalName(AutomaticGraphVisitorTargetSecondary.class.getName());
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     @Test

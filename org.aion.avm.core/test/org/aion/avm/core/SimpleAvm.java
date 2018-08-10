@@ -66,4 +66,9 @@ public class SimpleAvm {
     public Set<String> getTransformedClassNames() {
         return this.transformedClassNames;
     }
+
+    public void shutdown() {
+        Assert.assertTrue(this.helper == IHelper.currentContractHelper.get());
+        IHelper.currentContractHelper.remove();
+    }
 }

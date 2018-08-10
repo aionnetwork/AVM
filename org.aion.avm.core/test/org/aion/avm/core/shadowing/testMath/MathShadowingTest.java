@@ -11,16 +11,17 @@ import java.lang.reflect.Method;
 
 
 public class MathShadowingTest {
+    private SimpleAvm avm;
     private Class<?> clazz;
 
     @After
     public void clearTestingState() {
-        Helper.clearTestingState();
+        this.avm.shutdown();
     }
 
     @Before
     public void testReplaceJavaLang() throws ClassNotFoundException {
-        SimpleAvm avm = new SimpleAvm(10000L, TestResource.class);
+        this.avm = new SimpleAvm(10000L, TestResource.class);
         AvmClassLoader loader = avm.getClassLoader();
 
         this.clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());

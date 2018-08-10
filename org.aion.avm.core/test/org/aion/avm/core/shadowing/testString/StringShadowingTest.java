@@ -39,5 +39,6 @@ public class StringShadowingTest {
         assertEquals(new Integer(1), results.get(i++));
         assertEquals(new Integer(-1), results.get(i++));
         assertEquals(null, results.get(i++));
+        avm.shutdown();
     }
 }

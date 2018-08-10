@@ -175,6 +175,7 @@ public class ParallelExecution {
 
                 logger.info("Transaction failed", e);
             }
+            avm.shutdown();
 
             return result;
         }

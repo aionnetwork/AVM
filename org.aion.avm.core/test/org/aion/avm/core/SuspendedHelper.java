@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.IHelper;
 
 
@@ -15,6 +16,7 @@ public class SuspendedHelper {
         IHelper.currentContractHelper.remove();
     }
     public void resume() {
+        Assert.assertNull(IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.set(this.suspended);
     }
 }

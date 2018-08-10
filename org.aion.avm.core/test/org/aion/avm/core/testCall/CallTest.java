@@ -46,6 +46,7 @@ public class CallTest {
 
         assertTrue(callbackReceived);
         assertEquals(new ByteArray("world".getBytes()), ret);
+        avm.shutdown();
     }
 
     @Test
@@ -64,8 +65,9 @@ public class CallTest {
                 
                 callbackReceived = true;
 
+                SimpleAvm avm2 = null;
                 try {
-                    SimpleAvm avm2 = new SimpleAvm(e, Callee.class);
+                    avm2 = new SimpleAvm(e, Callee.class);
                     avm2.attachBlockchainRuntime(new SimpleRuntime(to, a.unwrap(), e, d.getUnderlying()));
                     Class<?> clazz = avm2.getClassLoader().loadUserClassByOriginalName(Callee.class.getName());
                     Object ret = clazz.getMethod(UserClassMappingVisitor.mapMethodName("main")).invoke(null);
@@ -83,6 +85,7 @@ public class CallTest {
                     // TODO: how to interpret failure
                     return null;
                 } finally {
+                    avm2.shutdown();
                     suspended.resume();
                 }
             }
@@ -94,5 +97,6 @@ public class CallTest {
 
         assertTrue(callbackReceived);
         assertEquals(new ByteArray("helloworld".getBytes()), ret);
+        avm.shutdown();
     }
 }

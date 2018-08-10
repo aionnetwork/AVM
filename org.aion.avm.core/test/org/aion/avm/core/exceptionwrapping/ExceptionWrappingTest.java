@@ -169,6 +169,7 @@ public class ExceptionWrappingTest {
         Assert.assertEquals(3 + 2, transformedClassNames.size());
         Assert.assertTrue(transformedClassNames.contains(PackageConstants.kUserDotPrefix + exceptionClassDotName));
         Assert.assertTrue(transformedClassNames.contains(PackageConstants.kExceptionWrapperDotPrefix + exceptionClassDotName));
+        avm.shutdown();
         suspended.resume();
     }
 
@@ -207,6 +208,7 @@ public class ExceptionWrappingTest {
         Object result = userDefinedCatch.invoke(null);
         // We should see the "two" string if this was thrown and caught.
         Assert.assertEquals("two", result.toString());
+        avm.shutdown();
         suspended.resume();
     }
 
@@ -234,6 +236,7 @@ public class ExceptionWrappingTest {
         } catch (InvocationTargetException e) {
             Assert.assertTrue(NullPointerException.class.getName().equals(e.getCause().getClass().getName()));
         }
+        avm.shutdown();
         suspended.resume();
     }
 
@@ -261,6 +264,7 @@ public class ExceptionWrappingTest {
         } catch (InvocationTargetException e) {
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + NullPointerException.class.getName()).equals(e.getCause().getClass().getName()));
         }
+        avm.shutdown();
         suspended.resume();
     }
 

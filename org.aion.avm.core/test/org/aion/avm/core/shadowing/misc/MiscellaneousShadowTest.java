@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,12 +14,18 @@ import org.junit.Test;
  * Miscellaneous tests for our shadow implementation.
  */
 public class MiscellaneousShadowTest {
+    private SimpleAvm avm;
     private Class<?> clazz;
 
     @Before
     public void setup() throws Exception {
-        SimpleAvm avm = new SimpleAvm(1_000_000L, TestResource.class);
+        this.avm = new SimpleAvm(1_000_000L, TestResource.class);
         this.clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     /**

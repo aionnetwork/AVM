@@ -15,6 +15,7 @@ import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,16 +25,21 @@ import org.junit.Test;
  * Tests the hashCode behaviour of the contract code.  Includes a tests that our helpers/instrumentation don't invalidate Java assumptions.
  */
 public class HashCodeTest {
-
+    private SimpleAvm avm;
     private Class<?> clazz;
 
     @Before
     public void setup() throws Exception {
-        SimpleAvm avm = new SimpleAvm(1000000L, HashCodeTestTarget.class);
+        this.avm = new SimpleAvm(1000000L, HashCodeTestTarget.class);
         AvmClassLoader loader = avm.getClassLoader();
         
         this.clazz = loader.loadUserClassByOriginalName(HashCodeTestTarget.class.getName());
         Assert.assertEquals(loader, this.clazz.getClassLoader());
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     /**

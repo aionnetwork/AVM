@@ -12,7 +12,9 @@ import org.aion.avm.core.dappreading.DAppClassLoader;
 import org.aion.avm.core.dappreading.DAppLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -25,6 +27,11 @@ public class StubGeneratorTest {
         Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.emptyMap());
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         Helpers.instantiateHelper(loader, 0, 1);
+    }
+
+    @After
+    public void tearDown() {
+        IHelper.currentContractHelper.remove();
     }
 
     @Test

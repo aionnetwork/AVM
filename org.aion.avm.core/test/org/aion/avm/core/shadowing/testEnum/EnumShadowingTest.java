@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class EnumShadowingTest {
+    private SimpleAvm avm;
     private Class<?> clazz;
 
     @After
@@ -23,11 +24,16 @@ public class EnumShadowingTest {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
-        SimpleAvm avm = new SimpleAvm(1000000L, TestResource.class, TestEnum.class);
+        this.avm = new SimpleAvm(1000000L, TestResource.class, TestEnum.class);
         AvmClassLoader loader = avm.getClassLoader();
 
         this.clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
 
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     @Test
