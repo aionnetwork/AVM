@@ -198,6 +198,9 @@ public class HashCodeTest {
      */
     @Test
     public void testTwoIsolatedContracts() throws Exception {
+        // For this test, we want to suspend the normal helper created in the setup().
+        SuspendedHelper suspended = new SuspendedHelper();
+        
         // Note that we eagerly load 2 constant strings, so bump this up by 2.
         int usedHashCount = 2;
         // Create the shared instance with the reusable classes.
@@ -221,6 +224,7 @@ public class HashCodeTest {
         result = getOneHashCode1.invoke(null);
         Assert.assertEquals(usedHashCount + 2, ((Integer)result).intValue());
         Assert.assertEquals(usedHashCount + 3, helper1.externalGetNextHashCode());
+        IHelper.currentContractHelper.remove();
         
         // Now, create the helper2, show that it is independent, and run a test in that.
         IHelper helper2 = Helpers.instantiateHelper(loader2, 1_000_000L, 1);
@@ -229,6 +233,9 @@ public class HashCodeTest {
         Assert.assertEquals(1, helper2.externalGetNextHashCode());
         result = getOneHashCode2.invoke(null);
         Assert.assertEquals(usedHashCount + 2, ((Integer)result).intValue());
+        IHelper.currentContractHelper.remove();
+        
+        suspended.resume();
     }
 
     /**

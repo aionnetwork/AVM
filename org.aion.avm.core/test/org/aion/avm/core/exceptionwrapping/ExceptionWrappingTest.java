@@ -7,6 +7,7 @@ import org.aion.avm.core.HierarchyTreeBuilder;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.ParentPointers;
 import org.aion.avm.core.SimpleAvm;
+import org.aion.avm.core.SuspendedHelper;
 import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
@@ -18,7 +19,6 @@ import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -155,6 +155,9 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testExceptionTransformOnAvmImplPipeline() throws Exception {
+        // This test doesn't use the common IHelper from setup() so uninstall it.
+        SuspendedHelper suspended = new SuspendedHelper();
+        
         SimpleAvm avm = new SimpleAvm(10000,
                 TestExceptionResource.class,
                 TestExceptionResource.UserDefinedRuntimeException.class,
@@ -166,6 +169,7 @@ public class ExceptionWrappingTest {
         Assert.assertEquals(3 + 2, transformedClassNames.size());
         Assert.assertTrue(transformedClassNames.contains(PackageConstants.kUserDotPrefix + exceptionClassDotName));
         Assert.assertTrue(transformedClassNames.contains(PackageConstants.kExceptionWrapperDotPrefix + exceptionClassDotName));
+        suspended.resume();
     }
 
     /**
@@ -186,6 +190,9 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testUserDefinedThrowCatch_commonPipeline() throws Exception {
+        // This test doesn't use the common IHelper from setup() so uninstall it.
+        SuspendedHelper suspended = new SuspendedHelper();
+        
         SimpleAvm avm = new SimpleAvm(1000L
                 , TestExceptionResource.class
                 , TestExceptionResource.UserDefinedException.class
@@ -200,6 +207,7 @@ public class ExceptionWrappingTest {
         Object result = userDefinedCatch.invoke(null);
         // We should see the "two" string if this was thrown and caught.
         Assert.assertEquals("two", result.toString());
+        suspended.resume();
     }
 
     /**
@@ -207,6 +215,9 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testOriginalNull_commonPipeline() throws Exception {
+        // This test doesn't use the common IHelper from setup() so uninstall it.
+        SuspendedHelper suspended = new SuspendedHelper();
+        
         SimpleAvm avm = new SimpleAvm(1000_000L
                 , TestExceptionResource.class
                 , TestExceptionResource.UserDefinedException.class
@@ -223,6 +234,7 @@ public class ExceptionWrappingTest {
         } catch (InvocationTargetException e) {
             Assert.assertTrue(NullPointerException.class.getName().equals(e.getCause().getClass().getName()));
         }
+        suspended.resume();
     }
 
     /**
@@ -230,6 +242,9 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testInnerCatch_commonPipeline() throws Exception {
+        // This test doesn't use the common IHelper from setup() so uninstall it.
+        SuspendedHelper suspended = new SuspendedHelper();
+        
         SimpleAvm avm = new SimpleAvm(1000_000L
                 , TestExceptionResource.class
                 , TestExceptionResource.UserDefinedException.class
@@ -246,6 +261,7 @@ public class ExceptionWrappingTest {
         } catch (InvocationTargetException e) {
             Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + NullPointerException.class.getName()).equals(e.getCause().getClass().getName()));
         }
+        suspended.resume();
     }
 
 

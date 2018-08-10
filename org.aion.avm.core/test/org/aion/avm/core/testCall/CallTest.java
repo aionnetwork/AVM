@@ -4,6 +4,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.SimpleRuntime;
+import org.aion.avm.core.SuspendedHelper;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.junit.Test;
@@ -58,6 +59,9 @@ public class CallTest {
         avm.attachBlockchainRuntime(new SimpleRuntime(from, to, energyLimit) {
             @Override
             public ByteArray avm_call(Address a, long v, ByteArray d, long e) {
+                // We want to suspend the outer IHelper for the sub-call (they are supposed to be distinct).
+                SuspendedHelper suspended = new SuspendedHelper();
+                
                 callbackReceived = true;
 
                 try {
@@ -78,6 +82,8 @@ public class CallTest {
 
                     // TODO: how to interpret failure
                     return null;
+                } finally {
+                    suspended.resume();
                 }
             }
         });
