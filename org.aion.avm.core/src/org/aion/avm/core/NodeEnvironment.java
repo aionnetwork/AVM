@@ -126,6 +126,17 @@ public class NodeEnvironment {
                 return 1;
             }
             @Override
+            public int captureSnapshotAndNextHashCode() {
+                // We currently only use this for saving state prior to a reentrant call, which we don't expect during bootstrap.
+                Assert.unreachable("Nobody should be calling this");
+                return 0;
+            }
+            @Override
+            public void applySpanshotAndNextHashCode(int nextHashCode) {
+                // We currently only use this for restoring state after a reentrant call, which we don't expect during bootstrap.
+                Assert.unreachable("Nobody should be calling this");
+            }
+            @Override
             public void externalBootstrapOnly() {
                 // This is ok since we are the bootstrapping helper.
             }});

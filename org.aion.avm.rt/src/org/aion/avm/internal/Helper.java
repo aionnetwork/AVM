@@ -30,6 +30,14 @@ public class Helper implements IHelper {
     // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
     private static AvmException forceExitState;
 
+    // We also describe non-static variants of a few pieces of data for reentrance purposes (we can use this to snapshot/restore).
+    // This is relevant since the Helper statics are called by the code but limits, etc, may be changed during reentrant invocation.
+    public IBlockchainRuntime snapshot_blockchainRuntime;
+    private long snapshot_energyLeft;
+    private ClassLoader snapshot_lateLoader;
+    private AvmException snapshot_forceExitState;
+
+
     private static void initializeStaticState(ClassLoader loader, long nrgLeft, int nextHashCode) {
         // If we set the lateLoader twice, there is a serious problem in our configuration.
         RuntimeAssertionError.assertTrue(null == lateLoader);
@@ -224,6 +232,25 @@ public class Helper implements IHelper {
     @Override
     public int externalGetNextHashCode() {
         return Helper.getNextHashCode();
+    }
+    @Override
+    public int captureSnapshotAndNextHashCode() {
+        this.snapshot_blockchainRuntime = Helper.blockchainRuntime;
+        Helper.blockchainRuntime = null;
+        this.snapshot_energyLeft = Helper.energyLeft;
+        this.snapshot_lateLoader = Helper.lateLoader;
+        Helper.lateLoader = null;
+        this.snapshot_forceExitState = Helper.forceExitState;
+        Helper.forceExitState = null;
+        return Helper.nextHashCode;
+    }
+    @Override
+    public void applySpanshotAndNextHashCode(int nextHashCode) {
+        Helper.blockchainRuntime = this.snapshot_blockchainRuntime;
+        Helper.energyLeft = this.snapshot_energyLeft;
+        Helper.lateLoader = this.snapshot_lateLoader;
+        Helper.forceExitState = this.snapshot_forceExitState;
+        Helper.nextHashCode = nextHashCode;
     }
     @Override
     public void externalSetEnergy(long energy){

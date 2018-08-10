@@ -219,6 +219,15 @@ public class ProofOfConceptTest {
                     return 1;
                 }
                 @Override
+                public int captureSnapshotAndNextHashCode() {
+                    Assert.fail("Not in test");
+                    return 0;
+                }
+                @Override
+                public void applySpanshotAndNextHashCode(int nextHashCode) {
+                    Assert.fail("Not in test");
+                }
+                @Override
                 public void externalBootstrapOnly() {
                     Assert.fail("Not in test");
                 }});

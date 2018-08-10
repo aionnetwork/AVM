@@ -30,6 +30,24 @@ public interface IHelper {
     public int externalGetNextHashCode();
 
     /**
+     * Instructs the receiver to capture a snapshot of the static Helper state it can access and store that in its own instance state for later
+     * application.
+     * This is done when we want to reuse the code (including the Helper class) within different calls (and each call has its own IHelper instance)
+     * but we want to come back to this one, later on (this is used for reentrant cross-DApp call support).
+     * 
+     * @return The current "nextHashCode" value (since this is only part of state which actually might need to be persisted).
+     */
+    public int captureSnapshotAndNextHashCode();
+
+    /**
+     * Instructs the receiver to apply its previously-captured snapshot of the static Helper state back to the Helper.
+     * This is done when a cross-DApp call returns from its target and wants to reenter the caller (meaning its static state must be restored).
+     * 
+     * @param nextHashCode The value to set as the "nextHashCode" (since this is related to the state of the DApp, not the call).
+     */
+    public void applySpanshotAndNextHashCode(int nextHashCode);
+
+    /**
      * Optionally called by bootstrapping operations to validate that the IHelper instance they are using is appropriate for bootstrap operations.
      * Typically, an implementation which was for contract execution, only, would throw a runtime exception when this is called.
      */

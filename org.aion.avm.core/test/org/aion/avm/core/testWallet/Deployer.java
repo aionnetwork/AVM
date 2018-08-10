@@ -421,6 +421,15 @@ public class Deployer {
             return 0;
         }
         @Override
+        public int captureSnapshotAndNextHashCode() {
+            Assert.unreachable("This shouldn't be called in this test.");
+            return 0;
+        }
+        @Override
+        public void applySpanshotAndNextHashCode(int nextHashCode) {
+            Assert.unreachable("This shouldn't be called in this test.");
+        }
+        @Override
         public void externalBootstrapOnly() {
             // Ideally this wouldn't be called but we aren't currently worrying about it for this launcher (as we are moving away from it, anyway).
         }

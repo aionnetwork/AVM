@@ -74,6 +74,17 @@ public class TestingHelper implements IHelper {
     }
 
     @Override
+    public int captureSnapshotAndNextHashCode() {
+        Assert.unreachable("Shouldn't be called in the testing code");
+        return 0;
+    }
+
+    @Override
+    public void applySpanshotAndNextHashCode(int nextHashCode) {
+        Assert.unreachable("Shouldn't be called in the testing code");
+    }
+
+    @Override
     public void externalBootstrapOnly() {
         Assert.unreachable("Shouldn't be called in the testing code");
     }
