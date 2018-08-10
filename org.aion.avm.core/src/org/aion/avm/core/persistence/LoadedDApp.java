@@ -206,6 +206,7 @@ public class LoadedDApp {
      * Called before the DApp is about to be put into a cache.  This is so it can put itself into a "resumable" state.
      */
     public void cleanForCache() {
+        // First, clear the state of the IHelper.
         try {
             Method helperClearTestingStateMethod = getHelperClearTestingStateMethod();
             helperClearTestingStateMethod.invoke(null);
@@ -213,6 +214,10 @@ public class LoadedDApp {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);
         }
+        
+        // Second, null out all the instances referenced by the DApp's class statics (since we over-write them on load, anyway, this is a waste).
+        // (note that we know the fieldCache must already contain this information since we were just asked to serialize, before this).
+        StaticClearer.nullAllStaticFields(this.classes, this.fieldCache);
     }
 
 
