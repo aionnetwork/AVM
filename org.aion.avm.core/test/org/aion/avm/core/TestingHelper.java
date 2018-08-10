@@ -22,9 +22,13 @@ public class TestingHelper implements IHelper {
         return data;
     }
     public static Object decodeResult(TransactionResult result) {
-        TestingHelper helper = new TestingHelper();
-        Object data = ABIDecoder.decodeOneObject(result.getReturnData());
-        helper.remove();
+        Object data = null;
+        byte[] returnData = result.getReturnData();
+        if (null != returnData) {
+            TestingHelper helper = new TestingHelper();
+            data = ABIDecoder.decodeOneObject(returnData);
+            helper.remove();
+        }
         return data;
     }
 

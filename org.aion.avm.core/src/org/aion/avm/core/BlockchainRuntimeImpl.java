@@ -137,7 +137,10 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
         // charge energy consumed
         helper.externalChargeEnergy(newResult.getEnergyUsed());
 
-        return new ByteArray(newResult.getReturnData());
+        byte[] returnData = newResult.getReturnData();
+        return (null != returnData)
+                ? new ByteArray(returnData)
+                : null;
     }
 
     @Override

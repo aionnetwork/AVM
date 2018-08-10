@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -26,6 +27,7 @@ import java.util.Map;
 import static java.lang.String.format;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -154,5 +156,27 @@ public class AvmImplTest {
         assertEquals(costOfBlocks + costOfRuntimeCall, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 
         assertTrue(currentContractHelper == IHelper.currentContractHelper.get()); // same instance
+    }
+
+    @Test
+    public void testNullReturnCrossCall() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentractCrossCallResource.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new CustomKernel());
+        
+        // deploy
+        long energyLimit = 1_000_000l;
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Call the callSelfForNull entry-point and it should return null to us.
+        byte[] argData = ABIEncoder.encodeMethodArguments("callSelfForNull");
+        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, energyLimit);
+        TransactionResult result = avm.run(new TransactionContextImpl(call, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        Object resultObject = TestingHelper.decodeResult(result);
+        assertNull(resultObject);
     }
 }

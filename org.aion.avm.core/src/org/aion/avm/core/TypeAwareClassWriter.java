@@ -12,6 +12,8 @@ import org.objectweb.asm.ClassWriter;
  * to compute this relationship between our generated classes, before they can be loaded.
  */
 public class TypeAwareClassWriter extends ClassWriter {
+    private static final String IOBJECT_SLASH_NAME = "org/aion/avm/internal/IObject";
+
     private final ParentPointers staticClassHierarchy;
     // WARNING:  This dynamicHierarchyBuilder is changing, externally, while we hold a reference to it.
     private final HierarchyTreeBuilder dynamicHierarchyBuilder;
@@ -25,15 +27,20 @@ public class TypeAwareClassWriter extends ClassWriter {
     @Override
     protected String getCommonSuperClass(String type1, String type2) {
         // NOTE:  The types we are receiving and returning here use slash-style names.
-        
-        // We will use a relatively simple approach, here:  build a stack for each type (root on top), then find the common prefix by popping.
-        Stack<String> stack1 = builTypeListFor(type1);
-        Stack<String> stack2 = builTypeListFor(type2);
-        
         String commonRoot = null;
-        while (!stack1.isEmpty() && !stack2.isEmpty() && stack1.peek().equals(stack2.peek())) {
-            commonRoot = stack1.pop();
-            stack2.pop();
+        
+        // TODO (issue-176): Generalize this interface handling instead of just using this IObject special-case.
+        if (IOBJECT_SLASH_NAME.equals(type1) || IOBJECT_SLASH_NAME.equals(type2)) {
+            commonRoot = IOBJECT_SLASH_NAME;
+        } else {
+            // We will use a relatively simple approach, here:  build a stack for each type (root on top), then find the common prefix by popping.
+            Stack<String> stack1 = builTypeListFor(type1);
+            Stack<String> stack2 = builTypeListFor(type2);
+            
+            while (!stack1.isEmpty() && !stack2.isEmpty() && stack1.peek().equals(stack2.peek())) {
+                commonRoot = stack1.pop();
+                stack2.pop();
+            }
         }
         return commonRoot;
     }
