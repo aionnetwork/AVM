@@ -183,7 +183,7 @@ public class NodeEnvironment {
         );
         
         // Clean-up.
-        IHelper.currentContractHelper.set(null);
+        IHelper.currentContractHelper.remove();
 
         return loadedClassNames;
     }

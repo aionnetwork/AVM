@@ -224,7 +224,7 @@ public class ProofOfConceptTest {
                     Assert.fail("Not in test");
                 }});
             Address instance = new Address(bytes);
-            IHelper.currentContractHelper.set(null);
+            IHelper.currentContractHelper.remove();
             return instance;
         }
     }

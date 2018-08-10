@@ -42,7 +42,7 @@ public class Deployer {
         System.out.println("--- DIRECT ---");
         IHelper.currentContractHelper.set(new FakeHelper());
         invokeDirect(args);
-        IHelper.currentContractHelper.set(null);
+        IHelper.currentContractHelper.remove();
         System.out.println("--- DONE (DIRECT) ---");
         
         System.out.println("----- ***** -----");
