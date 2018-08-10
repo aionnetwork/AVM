@@ -104,14 +104,12 @@ public class AvmImplTest {
         IHelper.currentContractHelper.remove();
     }
 
-    // for asserts
-    private IHelper currentContractHelper = null;
-
 
     private class CustomKernel extends KernelInterfaceImpl {
         @Override
         public TransactionResult call(Avm avm, InternalTransaction internalTx, Block parentBlock) {
-            currentContractHelper = IHelper.currentContractHelper.get();
+            // We are between calls, so this should be null.
+            assertNull(IHelper.currentContractHelper.get());
 
             TransactionResult result = super.call(avm, internalTx, parentBlock);
             result.setEnergyUsed(internalTx.getEnergyLimit() / 2);
@@ -155,7 +153,8 @@ public class AvmImplTest {
         long costOfRuntimeCall = 250000l;
         assertEquals(costOfBlocks + costOfRuntimeCall, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 
-        assertTrue(currentContractHelper == IHelper.currentContractHelper.get()); // same instance
+        // We assume that the IHelper has been cleaned up by this point.
+        assertNull(IHelper.currentContractHelper.get());
     }
 
     @Test
