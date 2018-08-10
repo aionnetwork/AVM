@@ -183,10 +183,30 @@ public class Helper implements IHelper {
         return nextHashCode++;
     }
 
-    // Note that there are a few methods implementing the IHelper interface for calls coming from outside our loader.
+    /**
+     * Creates the Helper instance which is used as a trampoline to make calls into the Helper statics inside the DApp classloader space.
+     * Without this, direct access to Helper, from the core runtime, would access the wrong class (since there is one per DApp) or reflection
+     * would need to be used to access this specific one.
+     * By creating this instance which implements a common interface, the core runtime can access any Helper statics via the corresponding
+     * methods in the IHelper interface.
+     * Note that one of these needs to be created for every call into the DApp, not just one for the DApp, itself.  This is because the
+     * energyLeft is a per-call concept.
+     * NOTE:  This has the side-effect of setting IHelper.currentContractHelper for the current thread.  The caller is responsible for clearing
+     * this when the call is done.
+     * 
+     * @param contractLoader The class loader for the DApp.
+     * @param energyLeft The energy limit for this call.
+     * @param nextHashCode The default hashCode to use for the next allocated object.
+     */
     public Helper(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
-        // We don't use these within the instance state but it is a convenient initialization point.
+        // We don't use these within the instance state but it is a convenient initialization point since we have direct visibility into the
+        // Helper class which exists within the contract (outside, this isn't accessible).
         Helper.initializeStaticState(contractLoader, energyLeft, nextHashCode);
+        
+        // We want to install ourself as the contract helper for this thread so it can call into the Helper class, within the DApp, without
+        // always needing to resort to reflection.
+        // (we also want to prove that we aren't silently over-writing something)
+        RuntimeAssertionError.assertTrue(null == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.set(this);
     }
     @Override

@@ -53,6 +53,9 @@ public class DAppExecutor {
         } catch (Exception e) {
             result.setStatusCode(TransactionResult.Code.FAILURE);
             result.setEnergyUsed(tx.getEnergyLimit());
+        } finally {
+            // Once we are done running this, we want to clear the IHelper.currentContractHelper.
+            IHelper.currentContractHelper.remove();
         }
     }
 }

@@ -302,6 +302,9 @@ public class DAppCreator {
             // this and bring us down.
             t.printStackTrace();
             System.exit(1);
+        } finally {
+            // Once we are done running this, we want to clear the IHelper.currentContractHelper.
+            IHelper.currentContractHelper.remove();
         }
     }
 }

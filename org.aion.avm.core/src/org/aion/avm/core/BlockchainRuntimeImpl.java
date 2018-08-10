@@ -8,6 +8,7 @@ import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.Block;
 import org.aion.kernel.InternalTransaction;
 import org.aion.kernel.KernelInterface;
@@ -110,6 +111,10 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
 
     @Override
     public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+        // Clear the thread-local helper (since we need to reset it after the call and this should be balanced).
+        RuntimeAssertionError.assertTrue(helper == IHelper.currentContractHelper.get());
+        IHelper.currentContractHelper.remove();
+        
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL,
                 tx.getTo(),
