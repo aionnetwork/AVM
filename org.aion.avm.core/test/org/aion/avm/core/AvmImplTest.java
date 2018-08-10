@@ -178,4 +178,43 @@ public class AvmImplTest {
         Object resultObject = TestingHelper.decodeResult(result);
         assertNull(resultObject);
     }
+
+    @Test
+    public void testRecursiveHashCode() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentractCrossCallResource.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new CustomKernel());
+        
+        // deploy
+        long energyLimit = 1_000_000l;
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Try a few invocations of different depths, bearing in mind the change of nextHashCode between each invocation.
+        // We will do 2 zero-depth calls to see the delta between the 2 calls.
+        // Then, we will do an indirect call and verify that the delta is greater.
+        // If the hashcode wasn't restored across reentrant calls, this wouldn't be greater as it wouldn't capture the small cost of the original
+        // indirect call (since we create at least 1 object in that path).
+        int zero0 = callRecursiveHash(avm, energyLimit, contractAddr, 0);
+        int zero1 = callRecursiveHash(avm, energyLimit, contractAddr, 0);
+        int zero2 = callRecursiveHash(avm, energyLimit, contractAddr, 0);
+        int one0 = callRecursiveHash(avm, energyLimit, contractAddr, 1);
+        int one1 = callRecursiveHash(avm, energyLimit, contractAddr, 1);
+        int one2 = callRecursiveHash(avm, energyLimit, contractAddr, 1);
+        
+        assertEquals(zero1 - zero0, zero2 - zero1);
+        assertEquals(one1 - one0, one2 - one1);
+        assertTrue((one1 - one0) > (zero1 - zero0));
+    }
+
+
+    private int callRecursiveHash(Avm avm, long energyLimit, Address contractAddr, int depth) {
+        byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);
+        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, energyLimit);
+        TransactionResult result = avm.run(new TransactionContextImpl(call, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        return ((Integer)TestingHelper.decodeResult(result)).intValue();
+    }
 }

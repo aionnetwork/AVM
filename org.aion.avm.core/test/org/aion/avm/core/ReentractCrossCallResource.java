@@ -28,4 +28,20 @@ public class ReentractCrossCallResource {
     public static Object returnNull() {
         return null;
     }
+
+    public static int getRecursiveHashCode(int iterationsRemaining) {
+        Object object = new Object();
+        int toReturn = 0;
+        if (0 == iterationsRemaining) {
+            toReturn = object.hashCode();
+        } else {
+            // Call this method via the runtime.
+            long value = 1;
+            byte[] data = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", iterationsRemaining - 1);
+            long energyLimit = 500000;
+            byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+            toReturn = (Integer)ABIDecoder.decodeOneObject(response);
+        }
+        return toReturn;
+    }
 }

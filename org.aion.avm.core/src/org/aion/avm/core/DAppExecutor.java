@@ -15,17 +15,26 @@ public class DAppExecutor {
     public static void call(KernelInterface kernel, Avm avm, ReentrantDAppStack dAppStack, Transaction tx, TransactionContext ctx, TransactionResult result) {
         // retrieve the transformed bytecode
         byte[] dappAddress = tx.getTo();
+        // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
+        ReentrantDAppStack.ReentrantState stateToResume = dAppStack.tryShareState(dappAddress);
         LoadedDApp dapp;
-        try {
-            dapp = DAppLoader.loadFromKernel(kernel, dappAddress);
-        } catch (IOException e) {
-            result.setStatusCode(TransactionResult.Code.INVALID_CALL);
-            result.setEnergyUsed(tx.getEnergyLimit());
-            return;
+        if (null != stateToResume) {
+            dapp = stateToResume.dApp;
+        } else {
+            try {
+                dapp = DAppLoader.loadFromKernel(kernel, dappAddress);
+            } catch (IOException e) {
+                result.setStatusCode(TransactionResult.Code.INVALID_CALL);
+                result.setEnergyUsed(tx.getEnergyLimit());
+                return;
+            }
         }
         
         // Load the initial state of the environment.
-        ContractEnvironmentState initialState = ContractEnvironmentState.loadFromStorage(kernel, dappAddress);
+        // (note that ContractEnvironmentState is immutable, so it is safe to just access the environment from a different invocation).
+        ContractEnvironmentState initialState = (null != stateToResume)
+                ? stateToResume.getEnvironment()
+                : ContractEnvironmentState.loadFromStorage(kernel, dappAddress);
         
         // Note that we need to store the state of this invocation on the reentrant stack in case there is another call into the same app.
         // We only put this here so that the call() mechanism can access it to save/reload its ContractEnvironmentState but we don't change it.
@@ -45,9 +54,17 @@ public class DAppExecutor {
 
             // Save back the state before we return.
             // -first, save out the classes
+            // TODO:  Handle this save of the object graph differently when invoked reentrant (since that is about writing back to a different graph).
             long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, kernel);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToStorage(kernel, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
+            if (null != stateToResume) {
+                // Write this back into the resumed state.
+                stateToResume.updateEnvironment(helper.externalGetNextHashCode());
+            } else {
+                // We are at the "top" so write this back to disk.
+                ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId);
+                ContractEnvironmentState.saveToStorage(kernel, dappAddress, updatedEnvironment);
+            }
 
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setReturnData(ret);

@@ -113,6 +113,10 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
 
     @Override
     public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+        if (null != this.reentrantState) {
+            // Save our current state into the reentrant container (since this call might be reentrant).
+            this.reentrantState.updateEnvironment(helper.captureSnapshotAndNextHashCode());
+        }
         // Clear the thread-local helper (since we need to reset it after the call and this should be balanced).
         RuntimeAssertionError.assertTrue(helper == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.remove();
@@ -135,6 +139,11 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
 
         // reset the thread-local helper instance
         IHelper.currentContractHelper.set(helper);
+        
+        if (null != this.reentrantState) {
+            // Update the next hashcode counter, in case this was a reentrant call and it was changed.
+            helper.applySpanshotAndNextHashCode(this.reentrantState.getEnvironment().nextHashCode);
+        }
 
         // charge energy consumed
         helper.externalChargeEnergy(newResult.getEnergyUsed());
