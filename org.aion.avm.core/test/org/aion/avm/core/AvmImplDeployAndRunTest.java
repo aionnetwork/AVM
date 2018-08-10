@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.InvalidTxDataException;
 import org.aion.avm.core.util.Helpers;
@@ -72,7 +71,7 @@ public class AvmImplDeployAndRunTest {
         TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        assertEquals("Hello, world!", new String((byte[]) ABIDecoder.decodeOneObject(result.getReturnData())));
+        assertEquals("Hello, world!", new String((byte[]) TestingHelper.decodeResult(result)));
     }
 
     @Test
@@ -86,7 +85,7 @@ public class AvmImplDeployAndRunTest {
         TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        assertEquals(124, ABIDecoder.decodeOneObject(result.getReturnData()));
+        assertEquals(124, TestingHelper.decodeResult(result));
     }
 
     @Test
@@ -102,7 +101,7 @@ public class AvmImplDeployAndRunTest {
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         byte[] expected = ABIEncoder.encodeMethodArguments("addArray", new int[]{123, 1}, 5);
-        boolean correct = Arrays.equals((byte[])(ABIDecoder.decodeOneObject(result.getReturnData())), expected);
+        boolean correct = Arrays.equals((byte[])(TestingHelper.decodeResult(result)), expected);
         assertEquals(true, correct);
 
         // test another method call, "addArray" with 1D array arguments
@@ -111,7 +110,7 @@ public class AvmImplDeployAndRunTest {
         result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        assertEquals(129, ABIDecoder.decodeOneObject(result.getReturnData()));
+        assertEquals(129, TestingHelper.decodeResult(result));
 
 /* disable these tests before we have the 2D array object creation
         // test another method call, "addArray2" with 2D array arguments

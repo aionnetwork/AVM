@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.internal.IHelper;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.userlib.AionMap;

@@ -18,7 +18,6 @@ import org.aion.avm.shadow.java.lang.Class;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterface;
@@ -139,7 +138,7 @@ public class ProofOfConceptTest {
             TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
             TransactionResult executeResult = avm.run(executeContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, executeResult.getStatusCode());
-            byte[] toConfirm = (byte[]) ABIDecoder.decodeOneObject(executeResult.getReturnData());
+            byte[] toConfirm = (byte[]) TestingHelper.decodeResult(executeResult);
             
             // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
             byte[] confirmArgs = CallEncoder.confirm(toConfirm);
@@ -264,7 +263,7 @@ public class ProofOfConceptTest {
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
                 encoder.encodeByte(ExchangeABI.kExchange_listCoin);
                 encoder.encodeString(name);
-                encoder.encodeAddress(new Address(coinAddr));
+                encoder.encodeAddress(TestingHelper.buildAddress(coinAddr));
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, addr, 0, args, energyLimit);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
@@ -279,7 +278,7 @@ public class ProofOfConceptTest {
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
                 encoder.encodeByte(ExchangeABI.kExchange_requestTransfer);
                 encoder.encodeString(name);
-                encoder.encodeAddress(new Address(to));
+                encoder.encodeAddress(TestingHelper.buildAddress(to));
                 encoder.encodeLong(amount);
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, from, addr, 0, args, energyLimit);
@@ -339,7 +338,7 @@ public class ProofOfConceptTest {
                 byte[] args = new byte[1 + Address.LENGTH];
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
                 encoder.encodeByte(ExchangeABI.kToken_balanceOf);
-                encoder.encodeAddress(new Address(toQuery));
+                encoder.encodeAddress(TestingHelper.buildAddress(toQuery));
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
@@ -352,7 +351,7 @@ public class ProofOfConceptTest {
                 byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
                 encoder.encodeByte(ExchangeABI.kToken_mint);
-                encoder.encodeAddress(new Address(receiver));
+                encoder.encodeAddress(TestingHelper.buildAddress(receiver));
                 encoder.encodeLong(amount);
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
@@ -366,7 +365,7 @@ public class ProofOfConceptTest {
                 byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
                 encoder.encodeByte(ExchangeABI.kToken_transfer);
-                encoder.encodeAddress(new Address(receiver));
+                encoder.encodeAddress(TestingHelper.buildAddress(receiver));
                 encoder.encodeLong(amount);
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit);
@@ -380,8 +379,8 @@ public class ProofOfConceptTest {
                 byte[] args = new byte[1 + Address.LENGTH + Address.LENGTH];
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
                 encoder.encodeByte(ExchangeABI.kToken_allowance);
-                encoder.encodeAddress(new Address(owner));
-                encoder.encodeAddress(new Address(spender));
+                encoder.encodeAddress(TestingHelper.buildAddress(owner));
+                encoder.encodeAddress(TestingHelper.buildAddress(spender));
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
@@ -394,7 +393,7 @@ public class ProofOfConceptTest {
                 byte[] args = new byte[1 + Address.LENGTH + Long.BYTES];
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
                 encoder.encodeByte(ExchangeABI.kToken_approve);
-                encoder.encodeAddress(new Address(spender));
+                encoder.encodeAddress(TestingHelper.buildAddress(spender));
                 encoder.encodeLong(amount);
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, addr, 0, args, energyLimit);
@@ -408,8 +407,8 @@ public class ProofOfConceptTest {
                 byte[] args = new byte[1 + Address.LENGTH + Address.LENGTH + Long.BYTES];
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
                 encoder.encodeByte(ExchangeABI.kToken_transferFrom);
-                encoder.encodeAddress(new Address(from));
-                encoder.encodeAddress(new Address(to));
+                encoder.encodeAddress(TestingHelper.buildAddress(from));
+                encoder.encodeAddress(TestingHelper.buildAddress(to));
                 encoder.encodeLong(amount);
 
                 Transaction callTransaction = new Transaction(Transaction.Type.CALL, executor, addr, 0, args, energyLimit);

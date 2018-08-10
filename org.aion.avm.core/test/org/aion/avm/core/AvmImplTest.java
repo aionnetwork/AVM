@@ -98,6 +98,8 @@ public class AvmImplTest {
             assertEquals(error, e);
         }
         assertEquals(2, catchCount);
+        // Remove this helper as cleanup.
+        IHelper.currentContractHelper.remove();
     }
 
     // for asserts
@@ -129,7 +131,7 @@ public class AvmImplTest {
         TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
 
-        Address contractAddr = new Address(result1.getReturnData());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
 
         // Account for the cost:  deployment, clinit, init call.
         // BytecodeFeeScheduler:  PROCESS + (PROCESSDATA * bytecodeSize * (1 + numberOfClasses) / 10)
