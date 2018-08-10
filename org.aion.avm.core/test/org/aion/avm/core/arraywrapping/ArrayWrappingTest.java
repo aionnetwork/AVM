@@ -42,8 +42,8 @@ public class ArrayWrappingTest {
         helper.externalSetEnergy(1000000000000L);
     }
 
-    @After
-    public void clearTestingState() {
+    @AfterClass
+    public static void clearTestingState() {
         Helper.clearTestingState();
     }
 

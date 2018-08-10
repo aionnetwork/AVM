@@ -16,7 +16,7 @@ public class MiscellaneousShadowTest {
     private Class<?> clazz;
 
     @Before
-    public void setupClass() throws Exception {
+    public void setup() throws Exception {
         SimpleAvm avm = new SimpleAvm(1_000_000L, TestResource.class);
         this.clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
     }

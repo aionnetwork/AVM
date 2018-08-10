@@ -17,8 +17,8 @@ public class PrimitiveShadowingTest {
 
     static private Class<?> clazz;
 
-    @After
-    public void clearTestingState() {
+    @AfterClass
+    public static void clearTestingState() {
         Helper.clearTestingState();
     }
 
