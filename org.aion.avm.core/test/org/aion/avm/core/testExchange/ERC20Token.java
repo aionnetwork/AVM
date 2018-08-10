@@ -6,11 +6,11 @@ import org.aion.avm.userlib.AionMap;
 
 public class ERC20Token implements ERC20 {
 
-    public final String name;
-    public final String symbol;
-    public final int decimals;
+    private final String name;
+    private final String symbol;
+    private final int decimals;
 
-    public final Address minter;
+    private final Address minter;
 
     private AionMap<Address, Long> ledger;
 

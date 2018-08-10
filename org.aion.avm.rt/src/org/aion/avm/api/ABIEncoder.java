@@ -411,11 +411,47 @@ public class ABIEncoder{
             this.identifiers = identifiers;
         }
 
+        /**
+         * Encode one piece of the corresponding raw ABI-elementary-type data into a byte array.
+         * @param data - one piece of the corresponding raw data, of the ABI elementary types, namely the native Java types or 'Address'
+         * @return the encoded byte array, containing the encoded data only, without the descriptor
+         */
         public abstract byte[] encode(Object data);
+
+        /**
+         * Encode one piece of the corresponding shadowed ABI-elementary-type data into a byte array.
+         * @param data one piece of the shadowed ABI-elementary-type data, namely the corresponding 'org.aion.avm.shadow.java.lang.*' types or 'Address'
+         * @return the encoded byte array, containing the encoded data only, without the descriptor
+         */
         public abstract byte[] encodeShadowType(Object data);
+
+        /**
+         * Encode a 1D array of the raw data; generate the descriptor and encoded data. Not applicable to 'avm_ADDRESS'.
+         * @param data a 1D array of the corresponding native java type
+         * @return a 2-element 2D byte array, of which the first one is the descriptor, the second the encoded data
+         */
         public abstract byte[][] encode1DArray(Object data);
+
+        /**
+         * Decode one piece of the ABI elementary type data, read from the 'startIndex' in the byte stream/array.
+         * @param data the encoded byte stream/array
+         * @param startIndex the starting byte index of the input encoded byte array to read from, inclusive
+         * @return the 'DecodedObjectInfo', containing the decoded native object, the decoded shadow/wrapped object and the position in the encoded data byte buffer after this object is decoded.
+         */
         public abstract ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex);
+
+        /**
+         * Construct the 1D array wrapper object from the native 1D array in "Object[]" type. Not applicable to 'avm_ADDRESS'.
+         * @param data a 1D 'Object' array, which contains elements of the corresponding native Java type
+         * @return the 1D array wrapper object
+         */
         public abstract Array constructWrappedArray(Object[] data);
+
+        /**
+         * Construct the 1D array of corresponding Java native type from the 1D array in "Object[]" type. Not applicable to 'avm_ADDRESS'.
+         * @param data a 1D 'Object' array, which contains elements of the corresponding native java type
+         * @return the 1D array of corresponding Java native type
+         */
         public abstract Object constructNativeArray(Object[] data);
     }
 
@@ -435,6 +471,14 @@ public class ABIEncoder{
 
     /*
      * Underlying implementation.
+     */
+
+    /**
+     * An utility method to encode the method name and method arguments to call with, according to Aion ABI format. Both method name and the arguments can be null if needed.
+     * @param methodName the method name of the Dapp main class to call with.
+     * @param arguments the arguments of the corresponding method of Dapp main class to call with.
+     * @return the encoded byte array that contains the method descriptor, followed by the argument descriptor and encoded arguments, according the Aion ABI format.
+     * @throws InvalidTxDataException
      */
     public static byte[] encodeMethodArguments(String methodName, Object... arguments)  throws InvalidTxDataException {
         if (arguments == null) {
@@ -477,6 +521,12 @@ public class ABIEncoder{
         return ret;
     }
 
+    /**
+     * Encode one object of any type that Aion ABI allows; generate the byte array that contains the descriptor and the encoded data.
+     * @param data one object of any type that Aion ABI allows
+     * @return the byte array that contains the argument descriptor and the encoded data.
+     * @throws InvalidTxDataException
+     */
     public static byte[] encodeOneObject(Object data) throws InvalidTxDataException {
         byte[][] encoded = encodeOneObjectAndDescriptor(data);
         byte[] ret = new byte[encoded[0].length + encoded[1].length];
@@ -485,6 +535,13 @@ public class ABIEncoder{
         return ret;
     }
 
+    /**
+     * Encode one object of any type that Aion ABI allows; generate the 2-element 2D byte array, of which the first byte array contains the descriptor,
+     * and the second the encoded data.
+     * @param data one object of any type that Aion ABI allows.
+     * @return the 2-element 2D byte array, of which the first byte array contains the descriptor and the second the encoded data.
+     * @throws InvalidTxDataException
+     */
     public static byte[][] encodeOneObjectAndDescriptor(Object data) throws InvalidTxDataException {
         if (data == null) {
             return null;
@@ -531,6 +588,14 @@ public class ABIEncoder{
         }
     }
 
+    /**
+     * Encode a 2D wrapped array ("org.aion.avm.arraywrapper.ObjectArray" class object); generate the 2-element 2D byte array,
+     * of which the first byte array contains the descriptor and the second the encoded data.
+     * @param data the "org.aion.avm.arraywrapper.ObjectArray" class object
+     * @param type the ABI type of the 2D array elements
+     * @return the 2-element 2D byte array, of which the first byte array contains the descriptor and the second the encoded data.
+     * @throws InvalidTxDataException
+     */
     public static byte[][] encode2DArray(ObjectArray data, ABITypes type) throws InvalidTxDataException {
         byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
 
@@ -566,6 +631,12 @@ public class ABIEncoder{
         return ret;
     }
 
+    /**
+     * Return the corresponding ABI type of the given identifier, if it matches with one of the identifiers of the ABI type.
+     * @param identifier a string that may be the class name, Java class file field descriptor, or the ABI symbol. See the {@link ABITypes} class.
+     * @return the corresponding ABI type.
+     * @throws InvalidTxDataException
+     */
     public static ABITypes mapABITypes(String identifier) throws InvalidTxDataException {
         // create the map, if not yet
         if (ABITypesMap == null) {
