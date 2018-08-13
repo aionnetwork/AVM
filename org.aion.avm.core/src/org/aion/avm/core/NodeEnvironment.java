@@ -154,6 +154,7 @@ public class NodeEnvironment {
                 , org.aion.avm.shadow.java.lang.Exception.class
                 , org.aion.avm.shadow.java.lang.Float.class
                 , org.aion.avm.shadow.java.lang.Integer.class
+                , org.aion.avm.shadow.java.lang.Iterable.class
                 , org.aion.avm.shadow.java.lang.Long.class
                 , org.aion.avm.shadow.java.lang.Math.class
                 , org.aion.avm.shadow.java.lang.Number.class
@@ -188,7 +189,10 @@ public class NodeEnvironment {
                 , org.aion.avm.shadow.java.nio.ShortBuffer.class
 
                 , org.aion.avm.shadow.java.util.Arrays.class
-
+                , org.aion.avm.shadow.java.util.Collection.class
+                , org.aion.avm.shadow.java.util.Iterator.class
+                , org.aion.avm.shadow.java.util.Map.class
+                , org.aion.avm.shadow.java.util.Set.class
                 , org.aion.avm.shadow.java.util.function.Function.class
 
         );
