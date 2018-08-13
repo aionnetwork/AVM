@@ -1,6 +1,10 @@
 package org.aion.avm.userlib;
 
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
+
 /**
  * The first rough cut of the Set-like abstraction we are providing to our user-space apps.
  * If we proceed with this direction, we will need to improve this implementation/interface significantly, as it only exists
@@ -14,7 +18,7 @@ package org.aion.avm.userlib;
  * TODO:  This is a VERY basic implementation which must be replace if we expect to proceed this way.
  * We might also want to make the class into a constructor argument, so we can add more aggressive type safety to the internals.
  */
-public class AionSet<E> {
+public class AionSet<E> implements Set<E> {
     private static final int kStartSize = 1;
 
     private Object[] storage;
@@ -23,7 +27,7 @@ public class AionSet<E> {
         this.storage = new Object[kStartSize];
     }
 
-    public void add(E newElement) {
+    public boolean add(E newElement) {
         // This implementation is very simple so we just walk the list, seeing if this is already here.
         int insertIndex = this.storage.length;
         for (int i = 0; i < this.storage.length; ++i) {
@@ -53,10 +57,12 @@ public class AionSet<E> {
             }
             // Now, insert.
             this.storage[insertIndex] = newElement;
+            return true;
         }
+        return false;
     }
 
-    public boolean contains(E check) {
+    public boolean contains(Object check) {
         boolean doesContain = false;
         for (int i = 0; !doesContain && (i < this.storage.length) && (null != this.storage[i]); ++i) {
             doesContain = check.equals(this.storage[i]);
@@ -64,7 +70,7 @@ public class AionSet<E> {
         return doesContain;
     }
 
-    public boolean remove(E toRemove) {
+    public boolean remove(Object toRemove) {
         int foundIndex = -1;
         for (int i = 0; (-1 == foundIndex) && (i < this.storage.length) && (null != this.storage[i]); ++i) {
             if (toRemove.equals(this.storage[i])) {
@@ -83,6 +89,11 @@ public class AionSet<E> {
         return (-1 != foundIndex);
     }
 
+    @Override
+    public boolean isEmpty() {
+        return 0 == size();
+    }
+
     public int size() {
         int size = 0;
         for (Object elt : this.storage) {
@@ -94,4 +105,133 @@ public class AionSet<E> {
         }
         return size;
     }
+
+    @Override
+    public Object[] toArray() {
+        Object[] ret = new Object[size()];
+        int i = 0;
+
+        for (Object elt : this.storage) {
+            if (null != elt) {
+                ret[i++] = elt;
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        return null;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        for (Object obj : c){
+            if (!this.contains(obj)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends E> c) {
+        for (E obj : c){
+            if (!this.add(obj)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        boolean ret = false;
+        for (E obj : this){
+            if (!c.contains(obj)){
+                this.remove(obj);
+                ret = true;
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        boolean ret = false;
+        for (E obj : this){
+            if (c.contains(obj)){
+                this.remove(obj);
+                ret = true;
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public void clear() {
+        this.storage = new Object[kStartSize];
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (!(o instanceof Set)) return false;
+
+        Set that = (Set)o;
+
+        if (this.size() != that.size()) return false;
+
+        for (Object obj : this){
+            if (!that.contains(obj)) return false;
+        }
+
+        for (Object obj : that){
+            if (!this.contains(obj)) return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int ret = 0;
+        for (E obj : this){
+            if (null != obj){
+                ret += obj.hashCode();
+            }
+        }
+        return ret;
+    }
+
+    // TODO: Enable Iterator later
+    @Override
+    public Iterator<E> iterator() {
+        //return new AionSetIterator(size());
+        return null;
+    }
+//
+//    final class AionSetIterator implements Iterator<E>{
+//
+//        int remain;
+//        int curIdx;
+//
+//        AionSetIterator(int size){
+//            this.remain = size;
+//            this.curIdx = 0;
+//        }
+//
+//        @Override
+//        public boolean hasNext() {
+//            return remain > 0;
+//        }
+//
+//        @Override
+//        public E next() {
+//            if (!hasNext()) return null;
+//            while (null == storage[curIdx]) curIdx++;
+//            return (E) storage[curIdx];
+//        }
+//    }
 }
