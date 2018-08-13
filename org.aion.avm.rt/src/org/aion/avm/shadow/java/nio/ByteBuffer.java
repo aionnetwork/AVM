@@ -89,6 +89,41 @@ public class ByteBuffer extends Buffer implements org.aion.avm.shadow.java.lang.
         return v.arrayOffset();
     }
 
+    public final ByteBuffer avm_position(int newPosition) {
+        v = v.position(newPosition);
+        return this;
+    }
+
+    public final ByteBuffer avm_limit(int newLimit) {
+        v = v.limit(newLimit);
+        return this;
+    }
+
+    public final ByteBuffer avm_mark() {
+        v = v.mark();
+        return this;
+    }
+
+    public final ByteBuffer avm_reset() {
+        v = v.reset();
+        return this;
+    }
+
+    public final ByteBuffer avm_clear() {
+        v = v.clear();
+        return this;
+    }
+
+    public final ByteBuffer avm_flip() {
+        v = v.flip();
+        return this;
+    }
+
+    public final ByteBuffer avm_rewind() {
+        v = v.rewind();
+        return this;
+    }
+
     public ByteBuffer avm_compact(){
         v = ((java.nio.ByteBuffer)v).compact();
         return this;
