@@ -121,4 +121,8 @@ public class AvmClassLoader extends ClassLoader {
         String renamedClass = PackageConstants.kUserDotPrefix + className;
         return this.classes.get(renamedClass);
     }
+
+    public byte[] getUserClassBytecode(String className){
+        return this.classes.get(className);
+    }
 }

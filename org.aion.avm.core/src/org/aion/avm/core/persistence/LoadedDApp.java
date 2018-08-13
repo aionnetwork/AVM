@@ -12,6 +12,8 @@ import java.util.function.Consumer;
 
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyError;
@@ -281,5 +283,20 @@ public class LoadedDApp {
             this.helperClearTestingStateMethod = helperClearTestingStateMethod;
         }
         return helperClearTestingStateMethod;
+    }
+
+    /**
+     * Dump the transformed class files of the loaded Dapp.
+     * The output class files will be put under {@param path}.
+     *
+     * @param path The runtime to install in the DApp.
+     */
+    public void dumpTransformedByteCode(String path){
+        AvmClassLoader appLoader = (AvmClassLoader) loader;
+        for (Class<?> clazz : this.classes){
+            byte[] bytecode = appLoader.getUserClassBytecode(clazz.getName());
+            String output = path + "/" + clazz.getName() + ".class";
+            Helpers.writeBytesToFile(bytecode, output);
+        }
     }
 }
