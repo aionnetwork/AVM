@@ -20,11 +20,7 @@ import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
-import org.aion.kernel.TransactionContext;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionResult;
-import org.aion.kernel.DappCode;
-import org.aion.kernel.KernelInterface;
+import org.aion.kernel.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -33,8 +29,6 @@ import java.util.*;
 
 public class DAppCreator {
     private static final String HELPER_CLASS = PackageConstants.kInternalSlashPrefix + "Helper";
-
-    private static final DappCode.CodeVersion VERSION = DappCode.CodeVersion.VERSION_1_0;
 
     /**
      * Validates all classes, including but not limited to:
@@ -267,7 +261,7 @@ public class DAppCreator {
 
             // store transformed dapp
             byte[] immortalDappJar = immortalDapp.createJar(dappAddress);
-            kernel.putTransformedCode(dappAddress, VERSION, immortalDappJar);
+            kernel.putCode(dappAddress, new VersionedCode(VersionedCode.V1, immortalDappJar));
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * tx.getData().length);

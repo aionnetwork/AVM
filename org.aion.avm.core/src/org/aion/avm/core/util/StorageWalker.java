@@ -46,7 +46,7 @@ public class StorageWalker {
      * @throws IllegalAccessException A problem interpreting the data.
      */
     public static void walkAllStaticsForDapp(PrintStream output, KernelInterface kernel, byte[] dappAddress) throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-        byte[] immortalDappJar = kernel.getTransformedCode(dappAddress);
+        byte[] immortalDappJar = kernel.getCode(dappAddress).getCode();
         ImmortalDappModule app = ImmortalDappModule.readFromJar(immortalDappJar);
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
         AvmClassLoader classLoader = NodeEnvironment.singleton.createInvocationClassLoader(allClasses);

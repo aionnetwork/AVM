@@ -7,9 +7,22 @@ import org.aion.avm.core.Avm;
  * Interface for accessing kernel features.
  */
 public interface KernelInterface {
-    void putTransformedCode(byte[] address, DappCode.CodeVersion version, byte[] code);
 
-    byte[] getTransformedCode(byte[] address);
+    /**
+     * Sets the code of an account.
+     *
+     * @param address the account addres
+     * @param code the immortal code
+     */
+    void putCode(byte[] address, VersionedCode code);
+
+    /**
+     * Retrieves the code of an account.
+     *
+     * @param address the account address
+     * @return the code of the account, or NULL if not exists.
+     */
+    VersionedCode getCode(byte[] address);
 
     void putStorage(byte[] address, byte[] key, byte[] value);
 

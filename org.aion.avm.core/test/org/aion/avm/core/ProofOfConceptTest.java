@@ -79,7 +79,7 @@ public class ProofOfConceptTest {
             TransactionResult createResult = new AvmImpl(kernelInterface).run(createContext);
 
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
-            Assert.assertNotNull(kernelInterface.getTransformedCode(createResult.getReturnData()));
+            Assert.assertNotNull(kernelInterface.getCode(createResult.getReturnData()));
         }
 
         /**

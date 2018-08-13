@@ -1,7 +1,6 @@
 package org.aion.kernel;
 
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 
@@ -12,30 +11,29 @@ import java.util.concurrent.ConcurrentHashMap;
 public class KernelInterfaceImpl implements KernelInterface {
 
     // shared across-context
-    private static DappCode dappCode = new DappCode();
-    private static Map<ByteArrayWrapper, byte[]> dappStorage = new ConcurrentHashMap<>();
+    private static Map<ByteArrayWrapper, VersionedCode> dappCodeDB = new ConcurrentHashMap<>();
+    private static Map<ByteArrayWrapper, byte[]> dappStorageDB = new ConcurrentHashMap<>();
 
     @Override
-    public void putTransformedCode(byte[] address, DappCode.CodeVersion version, byte[] code) {
-        dappCode.storeCode(address, version, code);
+    public void putCode(byte[] address, VersionedCode code) {
+        dappCodeDB.put(new ByteArrayWrapper(address), code);
     }
 
-    // TODO: return both version and the file
     @Override
-    public byte[] getTransformedCode(byte[] address) {
-        return dappCode.loadCode(address);
+    public VersionedCode getCode(byte[] address) {
+        return dappCodeDB.get(new ByteArrayWrapper(address));
     }
 
     @Override
     public void putStorage(byte[] address, byte[] key, byte[] value) {
         ByteArrayWrapper k = new ByteArrayWrapper(Helpers.merge(address, key));
-        dappStorage.put(k, value);
+        dappStorageDB.put(k, value);
     }
 
     @Override
     public byte[] getStorage(byte[] address, byte[] key) {
         ByteArrayWrapper k = new ByteArrayWrapper(Helpers.merge(address, key));
-        return dappStorage.get(k);
+        return dappStorageDB.get(k);
     }
 
     @Override
