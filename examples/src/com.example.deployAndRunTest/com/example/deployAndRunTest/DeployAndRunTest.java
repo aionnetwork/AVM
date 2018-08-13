@@ -31,7 +31,7 @@ public class DeployAndRunTest {
     }
 
     public char[][] swap(char[][] s) {
-        char[][] res = new char[2][];
+        char[][] res = new char[2][2];
         res[0] = s[1];
         res[1] = s[0];
         return res;

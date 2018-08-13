@@ -2,6 +2,9 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.arraywrapper.CharArray2D;
+import org.aion.avm.arraywrapper.IntArray2D;
+import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.shadow.java.lang.Class;
@@ -30,6 +33,18 @@ public class TestingHelper implements IHelper {
             helper.remove();
         }
         return data;
+    }
+    public static ObjectArray construct2DWrappedArray(Object data) {
+        TestingHelper helper = new TestingHelper();
+        ObjectArray ret = null;
+        if (data.getClass().getName() == "[[C") {
+            ret = new CharArray2D((char[][]) data);
+        }
+        else if (data.getClass().getName() == "[[I") {
+            ret = new IntArray2D((int[][]) data);
+        } // add code for other 2D wrapped array when needed.
+        helper.remove();
+        return ret;
     }
 
 

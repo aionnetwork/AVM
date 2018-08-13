@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class ABIEncoder{
     public enum ABITypes{
-        avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", "org.aion.avm.shadow.java.lang.Byte", "org.aion.avm.arraywrapper.ByteArray", "[B", "[[B"}) {
+        avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", "org.aion.avm.shadow.java.lang.Byte", "org.aion.avm.arraywrapper.ByteArray", "org.aion.avm.arraywrapper.ByteArray2D", "[B", "[[B"}) {
             @Override
             public byte[] encode(Object data) {
                 return new byte[]{(byte)data};
@@ -39,7 +39,7 @@ public class ABIEncoder{
                 return new ABIDecoder.DecodedObjectInfo(data[startIndex], new org.aion.avm.shadow.java.lang.Byte(data[startIndex]), startIndex + 1);
             }
             @Override
-            public Array constructWrappedArray(Object[] data) {
+            public Array construct1DWrappedArray(Object[] data) {
                 ByteArray array = new ByteArray(data.length);
                 for (int i = 0; i < data.length; i++) {
                     array.set(i, (byte)data[i]);
@@ -51,6 +51,22 @@ public class ABIEncoder{
                 byte[] array = new byte[data.length];
                 for (int i = 0; i < data.length; i++) {
                     array[i] = (byte)data[i];
+                }
+                return array;
+            }
+            @Override
+            public ObjectArray construct2DWrappedArray(Object[] data) {
+                byte[][] nativeArray = new byte[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    nativeArray[i] = (byte[]) data[i];
+                }
+                return new ByteArray2D(nativeArray);
+            }
+            @Override
+            public Object construct2DNativeArray(Object[] data) {
+                byte[][] array = new byte[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (byte[])data[i];
                 }
                 return array;
             }
@@ -84,7 +100,7 @@ public class ABIEncoder{
                 return new ABIDecoder.DecodedObjectInfo(data[startIndex] != 0, new org.aion.avm.shadow.java.lang.Boolean(data[startIndex] != 0), startIndex + 1);
             }
             @Override
-            public Array constructWrappedArray(Object[] data) {
+            public Array construct1DWrappedArray(Object[] data) {
                 ByteArray array = new ByteArray(data.length);
                 for (int i = 0; i < data.length; i++) {
                     array.set(i, (byte)data[i]);
@@ -99,8 +115,27 @@ public class ABIEncoder{
                 }
                 return array;
             }
+            @Override
+            public ObjectArray construct2DWrappedArray(Object[] data) {
+                byte[][] bytes = new byte[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    bytes[i] = new byte[((boolean[]) data[i]).length];
+                    for (int j = 0; j < ((boolean[]) data[i]).length; j++) {
+                        bytes[i][j] = (byte) ((((boolean[])data[i])[j]) ? 1 : 0);
+                    }
+                }
+                return new ByteArray2D(bytes);
+            }
+            @Override
+            public Object construct2DNativeArray(Object[] data) {
+                boolean[][] array = new boolean[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (boolean[])data[i];
+                }
+                return array;
+            }
         },
-        avm_CHAR    ('C', 0, new String[]{"C", "char", "java.lang.Character", "org.aion.avm.shadow.java.lang.Character", "org.aion.avm.arraywrapper.CharArray", "[C", "[[C"}) { // variable length
+        avm_CHAR    ('C', 0, new String[]{"C", "char", "java.lang.Character", "org.aion.avm.shadow.java.lang.Character", "org.aion.avm.arraywrapper.CharArray", "org.aion.avm.arraywrapper.CharArray2D", "[C", "[[C"}) { // variable length
             @Override
             public byte[] encode(Object data) {
                 return Character.toString((char)data).getBytes();
@@ -127,7 +162,7 @@ public class ABIEncoder{
                 return new ABIDecoder.DecodedObjectInfo(c, new org.aion.avm.shadow.java.lang.Character(c), startIndex + String.valueOf(c).getBytes().length);
             }
             @Override
-            public Array constructWrappedArray(Object[] data) {
+            public Array construct1DWrappedArray(Object[] data) {
                 CharArray array = new CharArray(data.length);
                 for (int i = 0; i < data.length; i++) {
                     array.set(i, (char)data[i]);
@@ -142,8 +177,24 @@ public class ABIEncoder{
                 }
                 return array;
             }
+            @Override
+            public ObjectArray construct2DWrappedArray(Object[] data) {
+                char[][] nativeArray = new char[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    nativeArray[i] = (char[]) data[i];
+                }
+                return new CharArray2D(nativeArray);
+            }
+            @Override
+            public Object construct2DNativeArray(Object[] data) {
+                char[][] array = new char[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (char[])data[i];
+                }
+                return array;
+            }
         },
-        avm_SHORT   ('S', 2, new String[]{"S", "short", "java.lang.Short", "org.aion.avm.shadow.java.lang.Short", "org.aion.avm.arraywrapper.ShortArray", "[S", "[[S"}) {
+        avm_SHORT   ('S', 2, new String[]{"S", "short", "java.lang.Short", "org.aion.avm.shadow.java.lang.Short", "org.aion.avm.arraywrapper.ShortArray", "org.aion.avm.arraywrapper.ShortArray2D", "[S", "[[S"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(2).putShort((short)data).array();
@@ -173,7 +224,7 @@ public class ABIEncoder{
                 return new ABIDecoder.DecodedObjectInfo(decoded, new org.aion.avm.shadow.java.lang.Short(decoded), startIndex + 2);
             }
             @Override
-            public Array constructWrappedArray(Object[] data) {
+            public Array construct1DWrappedArray(Object[] data) {
                 ShortArray array = new ShortArray(data.length);
                 for (int i = 0; i < data.length; i++) {
                     array.set(i, (short)data[i]);
@@ -188,8 +239,24 @@ public class ABIEncoder{
                 }
                 return array;
             }
+            @Override
+            public ObjectArray construct2DWrappedArray(Object[] data) {
+                short[][] nativeArray = new short[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    nativeArray[i] = (short[]) data[i];
+                }
+                return new ShortArray2D(nativeArray);
+            }
+            @Override
+            public Object construct2DNativeArray(Object[] data) {
+                short[][] array = new short[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (short[])data[i];
+                }
+                return array;
+            }
         },
-        avm_INT     ('I', 4, new String[]{"I", "int", "java.lang.Integer", "org.aion.avm.shadow.java.lang.Integer", "org.aion.avm.arraywrapper.IntArray", "[I", "[[I"}) {
+        avm_INT     ('I', 4, new String[]{"I", "int", "java.lang.Integer", "org.aion.avm.shadow.java.lang.Integer", "org.aion.avm.arraywrapper.IntArray", "org.aion.avm.arraywrapper.IntArray2D", "[I", "[[I"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(4).putInt((int)data).array();
@@ -219,7 +286,7 @@ public class ABIEncoder{
                 return new ABIDecoder.DecodedObjectInfo(decoded, new Integer(decoded), startIndex + 4);
             }
             @Override
-            public Array constructWrappedArray(Object[] data) {
+            public Array construct1DWrappedArray(Object[] data) {
                 IntArray array = new IntArray(data.length);
                 for (int i = 0; i < data.length; i++) {
                     array.set(i, (int)data[i]);
@@ -234,8 +301,24 @@ public class ABIEncoder{
                 }
                 return array;
             }
+            @Override
+            public ObjectArray construct2DWrappedArray(Object[] data) {
+                int[][] nativeArray = new int[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    nativeArray[i] = (int[]) data[i];
+                }
+                return new IntArray2D(nativeArray);
+            }
+            @Override
+            public Object construct2DNativeArray(Object[] data) {
+                int[][] array = new int[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (int[])data[i];
+                }
+                return array;
+            }
         },
-        avm_LONG    ('L', 8, new String[]{"L", "long", "java.lang.Long", "org.aion.avm.shadow.java.lang.Long", "org.aion.avm.arraywrapper.LongArray", "[J", "[[J"}) {
+        avm_LONG    ('L', 8, new String[]{"L", "long", "java.lang.Long", "org.aion.avm.shadow.java.lang.Long", "org.aion.avm.arraywrapper.LongArray", "org.aion.avm.arraywrapper.LongArray2D", "[J", "[[J"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(8).putLong((long)data).array();
@@ -265,7 +348,7 @@ public class ABIEncoder{
                 return new ABIDecoder.DecodedObjectInfo(decoded, new Long(decoded), startIndex + 8);
             }
             @Override
-            public Array constructWrappedArray(Object[] data) {
+            public Array construct1DWrappedArray(Object[] data) {
                 LongArray array = new LongArray(data.length);
                 for (int i = 0; i < data.length; i++) {
                     array.set(i, (long)data[i]);
@@ -280,8 +363,24 @@ public class ABIEncoder{
                 }
                 return array;
             }
+            @Override
+            public ObjectArray construct2DWrappedArray(Object[] data) {
+                long[][] nativeArray = new long[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    nativeArray[i] = (long[]) data[i];
+                }
+                return new LongArray2D(nativeArray);
+            }
+            @Override
+            public Object construct2DNativeArray(Object[] data) {
+                long[][] array = new long[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (long[])data[i];
+                }
+                return array;
+            }
         },
-        avm_FLOAT   ('F', 4, new String[]{"F", "float", "java.lang.Float", "org.aion.avm.shadow.java.lang.Float", "org.aion.avm.arraywrapper.FloatArray", "[F", "[[F"}) {
+        avm_FLOAT   ('F', 4, new String[]{"F", "float", "java.lang.Float", "org.aion.avm.shadow.java.lang.Float", "org.aion.avm.arraywrapper.FloatArray", "org.aion.avm.arraywrapper.FloatArray2D", "[F", "[[F"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(4).putFloat((float)data).array();
@@ -311,7 +410,7 @@ public class ABIEncoder{
                 return new ABIDecoder.DecodedObjectInfo(decoded, new Float(decoded), startIndex + 4);
             }
             @Override
-            public Array constructWrappedArray(Object[] data) {
+            public Array construct1DWrappedArray(Object[] data) {
                 FloatArray array = new FloatArray(data.length);
                 for (int i = 0; i < data.length; i++) {
                     array.set(i, (float) data[i]);
@@ -326,8 +425,24 @@ public class ABIEncoder{
                 }
                 return array;
             }
+            @Override
+            public ObjectArray construct2DWrappedArray(Object[] data) {
+                float[][] nativeArray = new float[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    nativeArray[i] = (float[]) data[i];
+                }
+                return new FloatArray2D(nativeArray);
+            }
+            @Override
+            public Object construct2DNativeArray(Object[] data) {
+                float[][] array = new float[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (float[])data[i];
+                }
+                return array;
+            }
         },
-        avm_DOUBLE  ('D', 8, new String[]{"D", "double", "java.lang.Double", "org.aion.avm.shadow.java.lang.Double", "org.aion.avm.arraywrapper.DoubleArray", "[D", "[[D"}) {
+        avm_DOUBLE  ('D', 8, new String[]{"D", "double", "java.lang.Double", "org.aion.avm.shadow.java.lang.Double", "org.aion.avm.arraywrapper.DoubleArray", "org.aion.avm.arraywrapper.DoubleArray2D", "[D", "[[D"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(8).putDouble((double)data).array();
@@ -357,7 +472,7 @@ public class ABIEncoder{
                 return new ABIDecoder.DecodedObjectInfo(decoded, new Double(decoded), startIndex + 8);
             }
             @Override
-            public Array constructWrappedArray(Object[] data) {
+            public Array construct1DWrappedArray(Object[] data) {
                 DoubleArray array = new DoubleArray(data.length);
                 for (int i = 0; i < data.length; i++) {
                     array.set(i, (double)data[i]);
@@ -369,6 +484,22 @@ public class ABIEncoder{
                 double[] array = new double[data.length];
                 for (int i = 0; i < data.length; i++) {
                     array[i] = (double)data[i];
+                }
+                return array;
+            }
+            @Override
+            public ObjectArray construct2DWrappedArray(Object[] data) {
+                double[][] nativeArray = new double[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    nativeArray[i] = (double[]) data[i];
+                }
+                return new DoubleArray2D(nativeArray);
+            }
+            @Override
+            public Object construct2DNativeArray(Object[] data) {
+                double[][] array = new double[data.length][];
+                for (int i = 0; i < data.length; i++) {
+                    array[i] = (double[])data[i];
                 }
                 return array;
             }
@@ -392,11 +523,19 @@ public class ABIEncoder{
                 return new ABIDecoder.DecodedObjectInfo(decoded, decoded, startIndex + Address.avm_LENGTH);
             }
             @Override
-            public Array constructWrappedArray(Object[] data) {
+            public Array construct1DWrappedArray(Object[] data) {
                 return null;
             }
             @Override
             public Object constructNativeArray(Object[] data) {
+                return null;
+            }
+            @Override
+            public ObjectArray construct2DWrappedArray(Object[] data) {
+                return null;
+            }
+            @Override
+            public Object construct2DNativeArray(Object[] data) {
                 return null;
             }
         };
@@ -445,7 +584,7 @@ public class ABIEncoder{
          * @param data a 1D 'Object' array, which contains elements of the corresponding native Java type
          * @return the 1D array wrapper object
          */
-        public abstract Array constructWrappedArray(Object[] data);
+        public abstract Array construct1DWrappedArray(Object[] data);
 
         /**
          * Construct the 1D array of corresponding Java native type from the 1D array in "Object[]" type. Not applicable to 'avm_ADDRESS'.
@@ -453,6 +592,20 @@ public class ABIEncoder{
          * @return the 1D array of corresponding Java native type
          */
         public abstract Object constructNativeArray(Object[] data);
+
+        /**
+         * Construct the 2D array wrapper object from the native Java 2D array. Not applicable to 'avm_ADDRESS'.
+         * @param data a 2D Java native array
+         * @return the 2D array wrapper object
+         */
+        public abstract ObjectArray construct2DWrappedArray(Object[] data);
+
+        /**
+         * Construct the 2D array of corresponding Java native type from the 2D array in "Object[]" type. Not applicable to 'avm_ADDRESS'.
+         * @param data a 2D 'Object' array, which contains elements of the corresponding native java type
+         * @return the 2D array of corresponding Java native type
+         */
+        public abstract Object construct2DNativeArray(Object[] data);
     }
 
     private static Map<String, ABITypes> ABITypesMap = null;
@@ -548,10 +701,10 @@ public class ABIEncoder{
         }
         String className = data.getClass().getName();
 
-        if (className.equals("org.aion.avm.arraywrapper.ObjectArray")) {
+        if (className.startsWith("org.aion.avm.arraywrapper.") && className.endsWith("2D")) {
             // data is a 2D array
             return encode2DArray((ObjectArray)data,
-                    mapABITypes(((ObjectArray)data).getUnderlying().getClass().getName()));
+                    mapABITypes(className));
         }
         else {
             ABITypes type = mapABITypes(className);
@@ -565,7 +718,7 @@ public class ABIEncoder{
                 //return encode1DArray((Array)data, type);
             }
             else if (className.startsWith("[[")) {
-                return null;//TODO - implement this when 2D array wrappers are ready
+                return encode2DArray(type.construct2DWrappedArray((Object[]) data), type);//TODO - implement this when 2D array wrappers are ready
             }
             else if (className.startsWith("[")) {
                 return type.encode1DArray(data);

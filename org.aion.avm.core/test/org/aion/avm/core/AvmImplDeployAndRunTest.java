@@ -112,31 +112,38 @@ public class AvmImplDeployAndRunTest {
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals(129, TestingHelper.decodeResult(result));
 
-/* disable these tests before we have the 2D array object creation
         // test another method call, "addArray2" with 2D array arguments
-        txData = new byte[]{0x61, 0x64, 0x64, 0x41, 0x72, 0x72, 0x61, 0x79, 0x32, 0x3C, 0x5B, 0x5B, 0x49, 0x31, 0x5D, 0x32, 0x5D, 0x3E, 0x00, 0x00, 0x00, 0x7B, 0x00, 0x00, 0x00, 0x01}; // "addArray<[I2]>" + raw data 123, 1
+        int[][] a = new int[2][];
+        a[0] = new int[]{123, 4};
+        a[1] = new int[]{1, 2};
+        txData = ABIEncoder.encodeMethodArguments("addArray2", TestingHelper.construct2DWrappedArray(a));
         tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit);
-        result = avm.run(tx, block, cb);
+        context = new TransactionContextImpl(tx, block);
+        result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
-        assertEquals(TransactionResult.Code.SUCCESS, result.code);
-        assertEquals(124, ByteBuffer.allocate(4).put(result.getReturnData()).getInt(0));
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        assertEquals(124, TestingHelper.decodeResult(result));
 
         // test another method call, "concatenate" with 2D array arguments and 1D array return data
-        txData = new byte[]{0x63, 0x6F, 0x6E, 0x63, 0x61, 0x74, 0x65, 0x6E, 0x61, 0x74, 0x65, 0x3C, 0x5B, 0x5B, 0x43, 0x33, 0x5D, 0x32, 0x5D, 0x3E,
-                0x63, 0x61, 0x74, 0x64, 0x6F, 0x67}; // "concatenate<[[C3]2]>" + raw data "cat" "dog"
+        char[][] chars = new char[2][];
+        chars[0] = "cat".toCharArray();
+        chars[1] = "dog".toCharArray();
+        txData = ABIEncoder.encodeMethodArguments("concatenate", TestingHelper.construct2DWrappedArray(chars));
         tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit);
-        result = avm.run(tx, block, cb);
+        context = new TransactionContextImpl(tx, block);
+        result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
-        assertEquals(TransactionResult.Code.SUCCESS, result.code);
-        assertEquals("<[C6]>catdog", new String(result.getReturnData()));
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        assertEquals("catdog", new String((char[]) TestingHelper.decodeResult(result)));
 
         // test another method call, "swap" with 2D array arguments and 2D array return data
-        txData = new byte[]{0x73, 0x77, 0x61, 0x70, 0x3C, 0x5B, 0x5B, 0x43, 0x33, 0x5D, 0x32, 0x5D, 0x3E,
-                0x63, 0x61, 0x74, 0x64, 0x6F, 0x67}; // "swap<[[C3]2]>" + raw data "cat" "dog"
+        txData = ABIEncoder.encodeMethodArguments("swap", TestingHelper.construct2DWrappedArray(chars));
         tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit);
-        result = avm.run(tx, block, cb);
+        context = new TransactionContextImpl(tx, block);
+        result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 
-        assertEquals(TransactionResult.Code.SUCCESS, result.code);
-        assertEquals("<[[C]2](3)(3)>dogcat", new String(result.getReturnData()));
-*/    }
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        assertEquals("dog", new String(((char[][]) TestingHelper.decodeResult(result))[0]));
+        assertEquals("cat", new String(((char[][]) TestingHelper.decodeResult(result))[1]));
+    }
 }

@@ -12,6 +12,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class ABIDecoder {
+    /* ABI encoding separators */
     public static final char ARRAY_S = '[';
     public static final char ARRAY_E = ']';
 
@@ -34,7 +35,7 @@ public class ABIDecoder {
     }
 
     public static class Descriptor {
-        public ABIEncoder.ABITypes type;// elementary types defined for AION contract ABI
+        public ABIEncoder.ABITypes type;// elementary types defined for Aion contract ABI
         public int dimension;           // 0: not an array; 1: 1D array; 2: 2D array
         public int size;                // number of components (1D or 2D array)
         public int[] rowSizes;          // 2D array: size of each component
@@ -78,6 +79,14 @@ public class ABIDecoder {
     /*
      * Runtime-facing implementation.
      */
+
+    /**
+     * Decode the transaction data and invoke the corresponding method of the object's class.
+     * @param obj the user space class object.
+     * @param txData the transaction data that is encoded with the method name and arguments to call with.
+     * @return the encoded return data from the method call.
+     * @throws InvalidTxDataException
+     */
     public static ByteArray avm_decodeAndRun(IObject obj, ByteArray txData) throws InvalidTxDataException{
         byte[] result = decodeAndRun(obj, txData.getUnderlying());
         return (null != result)
@@ -85,10 +94,22 @@ public class ABIDecoder {
                 : null;
     }
 
+    /**
+     * Decode the transaction data and return the method caller.
+     * @param txData the transaction data that has the encoded method name, arguments descriptor and arguments to call with.
+     * @return the method caller that contains the method name, arguments descriptor and the arguments.
+     * @throws InvalidTxDataException
+     */
     public static MethodCaller avm_decode(ByteArray txData) throws InvalidTxDataException{
         return decode(txData.getUnderlying());
     }
 
+    /**
+     * Decode the transaction data and return the argument list that is encoded in it.
+     * @param txData the transaction data that has the encoded arguments descriptor and arguments.
+     * @return an object array that contains all of the arguments.
+     * @throws InvalidTxDataException
+     */
     public static ObjectArray avm_decodeArguments(ByteArray txData) throws InvalidTxDataException{
         Object[] result = decodeArguments(txData.getUnderlying());
         return (null != result)
@@ -96,6 +117,12 @@ public class ABIDecoder {
                 : null;
     }
 
+    /**
+     * Decode the transaction data that has one object encoded in it.
+     * @param txData the transaction data that has one object encoded in it (with the descriptor).
+     * @return the decoded object.
+     * @throws InvalidTxDataException
+     */
     public static IObject avm_decodeOneObject(ByteArray txData) throws InvalidTxDataException{
         Descriptor descriptor = readOneDescriptor(txData.getUnderlying(), 0);
         return decodeOneObjectWithDescriptor(txData.getUnderlying(), descriptor.encodedBytes, descriptor).iObject;
@@ -106,6 +133,7 @@ public class ABIDecoder {
      * Underlying implementation.
      */
 
+    /** Underlying implementation of {@link #avm_decodeAndRun(IObject, ByteArray) avm_decodeAndRun} method */
     public static byte[] decodeAndRun(Object obj, byte[] txData) throws InvalidTxDataException{
         MethodCaller methodCaller = decode(txData);
 
@@ -135,12 +163,7 @@ public class ABIDecoder {
                 : null;
     }
 
-    /**
-     * Decoded arguments are the user space IObject ones.
-     * @param txData
-     * @return
-     * @throws InvalidTxDataException
-     */
+    /** Underlying implementation of {@link #avm_decode(ByteArray) avm_decode} method */
     public static MethodCaller decode(byte[] txData) throws InvalidTxDataException{
         if (txData == null || txData.length == 0) {
             return null;
@@ -166,6 +189,24 @@ public class ABIDecoder {
         return new MethodCaller(methodName, argsDescriptor, arguments);
     }
 
+    /** Underlying implementation of {@link #avm_decodeArguments(ByteArray) avm_decodeArguments} method */
+    public static Object[] decodeArguments(byte[] data) throws InvalidTxDataException{
+        return decode(data).arguments;
+    }
+
+    /** Underlying implementation of {@link #avm_decodeOneObject(ByteArray) avm_decodeOneObject} method */
+    public static Object decodeOneObject(byte[] data) throws InvalidTxDataException{
+        Descriptor descriptor = readOneDescriptor(data, 0);
+        return decodeOneObjectWithDescriptor(data, descriptor.encodedBytes, descriptor).object;
+    }
+
+    /**
+     * Decode and return the argument list, given the encoded byte array and the arguments descriptor
+     * @param data the encoded byte array of the arguments
+     * @param argsDescriptor the descriptor of the arguments
+     * @return an object array that contains all of the arguments.
+     * @throws InvalidTxDataException
+     */
     private static IObject[] decodeArgumentsWithDescriptor(byte[] data, String argsDescriptor) throws InvalidTxDataException{
         // read all descriptors
         int encodedBytes = 0;
@@ -192,21 +233,6 @@ public class ABIDecoder {
         }
 
         return args;
-    }
-
-    public static Object[] decodeArguments(byte[] data) throws InvalidTxDataException{
-        return decode(data).arguments;
-    }
-
-    /**
-     * Return the native object
-     * @param data
-     * @return
-     * @throws InvalidTxDataException
-     */
-    public static Object decodeOneObject(byte[] data) throws InvalidTxDataException{
-        Descriptor descriptor = readOneDescriptor(data, 0);
-        return decodeOneObjectWithDescriptor(data, descriptor.encodedBytes, descriptor).object;
     }
 
     /**
@@ -250,7 +276,7 @@ public class ABIDecoder {
     }
 
     /**
-     * A helper method to read one number from the array arguments descriptor.
+     * A helper method to read one integer from the array arguments descriptor.
      */
     private static int[] readNumberFromDescriptor(String argsDescriptor, char stopChar, int startIdx) throws InvalidTxDataException {
         int[] res = new int[2]; // res[0]: the number encoded as argsDescriptor.substring(startIdx, idxE); res[1]: the index of stopChar in the argsDescriptor
@@ -274,6 +300,9 @@ public class ABIDecoder {
         return res;
     }
 
+    /**
+     * A helper method to decode one object from the encoded data stream with the starting index and descriptor.
+     */
     private static DecodedObjectInfo decodeOneObjectWithDescriptor(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
         if (descriptor.dimension == 0) {
             return descriptor.type.decode(data, startByteOfData);
@@ -286,6 +315,9 @@ public class ABIDecoder {
         }
     }
 
+    /**
+     * A helper method to decode a 1D array from the encode data stream with the start index and descriptor.
+     */
     private static DecodedObjectInfo decode1DArray(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
         int endByte = startByteOfData;
         Object[] array = new Object[descriptor.size];
@@ -295,18 +327,22 @@ public class ABIDecoder {
             array[idx] = decodedObjectInfo.object;
             endByte = decodedObjectInfo.endByteOfData;
         }
-        return new DecodedObjectInfo(descriptor.type.constructNativeArray(array), descriptor.type.constructWrappedArray(array), endByte);
+        return new DecodedObjectInfo(descriptor.type.constructNativeArray(array), descriptor.type.construct1DWrappedArray(array), endByte);
     }
 
+    /**
+     * A helper method to decode a 2D array from the encode data stream with the start index and descriptor.
+     */
     private static DecodedObjectInfo decode2DArray(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
         int endByte = startByteOfData;
-        Object[][] array = new Object[descriptor.size][];
+        Object[] array = new Object[descriptor.size];
         for (int idx = 0; idx < descriptor.size; idx ++) {
-            DecodedObjectInfo decodedObjectInfo = decode1DArray(data, endByte, descriptor);
-            array[idx] = (Object[]) decodedObjectInfo.object;
+            Descriptor rowDescriptor = new Descriptor(descriptor.type, 1, descriptor.rowSizes[idx], 0);
+            DecodedObjectInfo decodedObjectInfo = decode1DArray(data, endByte, rowDescriptor);
+            array[idx] = decodedObjectInfo.object;
             endByte = decodedObjectInfo.endByteOfData;
         }
-        return new DecodedObjectInfo(array, new ObjectArray(array), endByte); //TODO - constructWrapped2DArray after the 2D wrappers are available
+        return new DecodedObjectInfo(descriptor.type.construct2DNativeArray(array), descriptor.type.construct2DWrappedArray(array), endByte); //TODO - constructWrapped2DArray after the 2D wrappers are available
     }
 
     /**
@@ -314,18 +350,6 @@ public class ABIDecoder {
      */
     public static Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor) throws InvalidTxDataException{
         Method[] methods = clazz.getMethods();
-
-        // We only allow Java primitive types or 1D/2D array of the primitive types in the parameter list.
-        Map<Character, String[]> elementaryTypesMap = new HashMap<>();
-        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_BYTE.symbol,      new String[]{"B", "byte", "ByteArray"});
-        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_BOOLEAN.symbol,   new String[]{"Z", "boolean", "ByteArray"});
-        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_CHAR.symbol,      new String[]{"C", "char", "CharArray"});
-        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_SHORT.symbol,     new String[]{"S", "short", "ShortArray"});
-        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_INT.symbol,       new String[]{"I", "int", "IntArray"});
-        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_FLOAT.symbol,     new String[]{"F", "float", "FloatArray"});
-        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_LONG.symbol,      new String[]{"J", "long", "LongArray"});
-        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_DOUBLE.symbol,    new String[]{"D", "double", "DoubleArray"});
-        elementaryTypesMap.put(ABIEncoder.ABITypes.avm_ADDRESS.symbol,   ABIEncoder.ABITypes.avm_ADDRESS.identifiers);
 
         String ARRAY_WRAPPER_PREFIX = "org.aion.avm.arraywrapper.";
 
@@ -336,89 +360,74 @@ public class ABIDecoder {
                 if ((parameterTypes == null || parameterTypes.length == 0) && (argsDescriptor==null || argsDescriptor.isEmpty())) {
                     return method;
                 }
-                if (argsDescriptor == null || argsDescriptor.isEmpty()) {
+                if (parameterTypes == null || parameterTypes.length == 0 || argsDescriptor == null || argsDescriptor.isEmpty()) {
                     break;
                 }
 
                 boolean matched = true;
-                int parIdx = 0;
+                int parIdx = 0;  // parameter index in 'parameterTypes'
+                int charIdx = 0; // character index in 'argsDescriptor'
 
-                for (int idx = 0; idx < argsDescriptor.length(); idx++) {
-                    if (argsDescriptor.charAt(idx) == ABIDecoder.ARRAY_S) {
-                        String pType = parameterTypes[parIdx].getName();
-                        if (pType.charAt(0) == '[') {
-                            pType = pType.substring(1);
-                        } else if (pType.startsWith(ARRAY_WRAPPER_PREFIX)) {
-                            pType = pType.substring(ARRAY_WRAPPER_PREFIX.length());
-                        } else {
-                            matched = false;
-                            break;
-                        }
+                while (parIdx < parameterTypes.length && charIdx < argsDescriptor.length()) {
+                    String pType = parameterTypes[parIdx].getName();
 
-                        if (argsDescriptor.length() - idx < 2) {
-                            matched = false;
-                            break;
-                        }
-
-                        char eType;
-                        if (argsDescriptor.charAt(++idx) == ABIDecoder.ARRAY_S) {
-                            if (pType.charAt(0) == '$' && pType.charAt(1) == '$') {
-                                pType = pType.substring(2);
+                    // read one descriptor and compare with the method parameter type
+                    if (argsDescriptor.charAt(charIdx) == ABIDecoder.ARRAY_S) {
+                        if (argsDescriptor.charAt(charIdx + 1) == ABIDecoder.ARRAY_S) {
+                            // 2D array
+                            if (pType.startsWith(ARRAY_WRAPPER_PREFIX) &&
+                                    pType.endsWith("2D") &&
+                                    Arrays.asList(ABIEncoder.mapABITypes(String.valueOf(argsDescriptor.charAt(charIdx + 2))).identifiers).contains(pType)) {
+                                charIdx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, charIdx) + 1;
+                                charIdx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, charIdx) + 1;
+                                while (charIdx < argsDescriptor.length() && argsDescriptor.charAt(charIdx) == ABIDecoder.JAGGED_D_S) {
+                                    charIdx = argsDescriptor.indexOf(ABIDecoder.JAGGED_D_E, charIdx) + 1;
+                                }
+                                parIdx ++;
+                                continue;
                             }
-                            else {
-                                matched = false;
-                                break;
-                            }
-                            eType = argsDescriptor.charAt(++idx);
-                            idx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, idx);
-                        }
-                        else {
-                            eType = argsDescriptor.charAt(idx);
-                        }
-                        idx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, idx);
-
-                        if (pType.charAt(0) == 'L') {
-                            pType = pType.substring(1);
                         }
 
-                        if (!(Arrays.asList(elementaryTypesMap.get(eType)).contains(pType))) {
-                            matched = false;
-                            break;
+                        // 1D array
+                        if (pType.startsWith(ARRAY_WRAPPER_PREFIX) &&
+                                !pType.endsWith("2D") &&
+                                Arrays.asList(ABIEncoder.mapABITypes(String.valueOf(argsDescriptor.charAt(charIdx + 1))).identifiers).contains(pType)) {
+                            charIdx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, charIdx) + 1;
+                            parIdx ++;
+                            continue;
                         }
                     }
                     else {
-                        if (!(Arrays.asList(elementaryTypesMap.get(argsDescriptor.charAt(idx))).contains(parameterTypes[parIdx].getName()))) {
-                            matched = false;
-                            break;
+                        // one elementary object
+                        if (!pType.startsWith(ARRAY_WRAPPER_PREFIX) &&
+                                Arrays.asList(ABIEncoder.mapABITypes(String.valueOf(argsDescriptor.charAt(charIdx))).identifiers).contains(pType)) {
+                            charIdx ++;
+                            parIdx ++;
+                            continue;
                         }
                     }
-                    if (!matched) {
-                        break;
-                    }
-                    else {
-                        parIdx ++;
-                        if (parIdx == parameterTypes.length) {
-                            break;
-                        }
-                    }
+
+                    matched = false;
+                    break;
                 }
-                if (matched && parIdx == parameterTypes.length) {
-                    return method;
+
+                if (!matched || parIdx < parameterTypes.length || charIdx < argsDescriptor.length()) {
+                    break;
                 }
+
+                return method;
             }
         }
         return null;
     }
 
-
     /**
      * Convert the method call arguments to match with {@param method}
-     * Input arguments are the user space IObject ones; {@param method} is also in the user space. 1D & 2D arrays should already match (both are wrapped)
+     * Input arguments are the user space IObject ones; {@param method} is also in the user space. 1D & 2D arrays should already match (both are wrapped).
      * However, the method parameter may be one of Java primitives. In this case, the argument needs to be converted from the shadow one to the primitive.
-     *
-     * @param method
-     * @param arguments
-     * @return
+     * @param method A Java class method.
+     * @param arguments the arguments to be converted to match with the method parameter types.
+     * @return the converted arguments.
      */
     public static Object[] convertArguments(Method method, IObject[] arguments){
         Class<?>[] parameterTypes = method.getParameterTypes();
