@@ -17,6 +17,10 @@ import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
+import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.types.ImmortalDappModule;
+import org.aion.avm.core.types.RawDappModule;
+import org.aion.avm.core.types.TransformedDappModule;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
@@ -105,8 +109,8 @@ public class DAppCreator {
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
     private static Map<String, Integer> computeUserObjectSizes(Forest<String, byte[]> classHierarchy,
-                                                             Map<String, Integer> shadowObjectSizes,
-                                                             Map<String, Integer> apiObjectSizes)
+                                                               Map<String, Integer> shadowObjectSizes,
+                                                               Map<String, Integer> apiObjectSizes)
     {
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
 

@@ -1,4 +1,4 @@
-package org.aion.avm.core.util;
+package org.aion.avm.core.exceptions;
 
 /**
  * Exception to be thrown during class bytecode analyzing.

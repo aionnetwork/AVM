@@ -13,6 +13,7 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.testindy.java.lang.Double;
 import org.aion.avm.core.testindy.java.lang.invoke.LambdaMetafactory;
+import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;

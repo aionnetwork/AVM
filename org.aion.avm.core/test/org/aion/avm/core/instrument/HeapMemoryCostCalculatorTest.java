@@ -1,6 +1,6 @@
 package org.aion.avm.core.instrument;
 
-import org.aion.avm.core.Forest;
+import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.ClassHierarchyForest;
 import org.junit.Assert;

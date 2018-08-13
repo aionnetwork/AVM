@@ -1,8 +1,9 @@
-package org.aion.avm.core;
+package org.aion.avm.core.types;
 
 import java.io.IOException;
 import java.util.Map;
 
+import org.aion.avm.core.ClassHierarchyForest;
 import org.aion.avm.core.dappreading.LoadedJar;
 
 

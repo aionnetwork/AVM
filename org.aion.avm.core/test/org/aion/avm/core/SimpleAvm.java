@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;

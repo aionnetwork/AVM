@@ -1,5 +1,6 @@
 package org.aion.kernel;
 
+import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
 
 import java.util.ArrayList;

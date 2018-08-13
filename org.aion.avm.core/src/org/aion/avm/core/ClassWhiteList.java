@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.aion.avm.core.types.Forest;
 import org.aion.avm.internal.PackageConstants;
 
 

@@ -2,7 +2,7 @@ package org.aion.avm.core.exceptionwrapping;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
-import org.aion.avm.core.Forest;
+import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.HierarchyTreeBuilder;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.ParentPointers;

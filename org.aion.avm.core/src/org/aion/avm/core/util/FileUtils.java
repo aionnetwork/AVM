@@ -1,4 +1,4 @@
-package org.aion.avm.core;
+package org.aion.avm.core.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

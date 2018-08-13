@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import java.util.Collections;
 
+import org.aion.avm.core.types.Forest;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;

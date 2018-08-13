@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Assert;
 
 

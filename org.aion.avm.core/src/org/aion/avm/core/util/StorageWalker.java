@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import org.aion.avm.core.ImmortalDappModule;
+import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;

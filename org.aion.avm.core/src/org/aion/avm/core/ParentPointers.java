@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
 

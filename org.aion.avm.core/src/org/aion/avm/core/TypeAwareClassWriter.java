@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import java.util.Stack;
 
+import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.objectweb.asm.ClassWriter;

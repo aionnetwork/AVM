@@ -1,4 +1,4 @@
-package org.aion.avm.core;
+package org.aion.avm.core.types;
 
 import java.util.Map;
 

@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.dappreading.LoadedJar;
+import org.aion.avm.core.types.Forest;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;

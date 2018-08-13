@@ -1,4 +1,6 @@
-package org.aion.kernel;
+package org.aion.avm.core.types;
+
+import org.aion.kernel.Transaction;
 
 /**
  * Represents an AION internal transaction

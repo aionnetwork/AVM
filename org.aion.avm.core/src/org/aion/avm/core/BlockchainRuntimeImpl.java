@@ -6,6 +6,7 @@ import java.util.List;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;

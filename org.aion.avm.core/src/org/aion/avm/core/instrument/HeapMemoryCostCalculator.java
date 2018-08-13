@@ -1,7 +1,7 @@
 package org.aion.avm.core.instrument;
 
-import org.aion.avm.core.Forest;
-import org.aion.avm.core.Forest.Node;
+import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.types.Forest.Node;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.core.util.Helpers;
 import org.objectweb.asm.ClassReader;
