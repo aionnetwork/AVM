@@ -80,11 +80,6 @@ public class SimpleRuntime extends org.aion.avm.shadow.java.lang.Object implemen
     }
 
     @Override
-    public void avm_updateCode(ByteArray newCode) {
-        Assert.fail("This implementation doesn't handle this");
-    }
-
-    @Override
     public void avm_selfDestruct(Address beneficiary) {
         Assert.fail("This implementation doesn't handle this");
     }

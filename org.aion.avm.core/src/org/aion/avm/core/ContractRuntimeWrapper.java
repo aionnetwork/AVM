@@ -42,10 +42,6 @@ public class ContractRuntimeWrapper extends org.aion.avm.shadow.java.lang.Object
         this.externalRuntime.avm_putStorage(key, value);
     }
     @Override
-    public void avm_updateCode(ByteArray newCode) {
-        this.externalRuntime.avm_updateCode(newCode);
-    }
-    @Override
     public void avm_selfDestruct(Address beneficiary) {
         this.externalRuntime.avm_selfDestruct(beneficiary);
     }

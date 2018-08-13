@@ -1,6 +1,5 @@
 package org.aion.kernel;
 
-import org.aion.avm.core.Avm;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 
@@ -37,12 +36,7 @@ public class KernelInterfaceImpl implements KernelInterface {
     }
 
     @Override
-    public void updateCode(byte[] address, byte[] code) {
-
-    }
-
-    @Override
-    public void selfdestruct(byte[] address, byte[] beneficiary) {
+    public void deleteAccount(byte[] address) {
 
     }
 }

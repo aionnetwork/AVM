@@ -78,13 +78,9 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
     }
 
     @Override
-    public void avm_updateCode(ByteArray newCode) {
-        this.kernel.updateCode(tx.getTo(), newCode.getUnderlying());
-    }
-
-    @Override
     public void avm_selfDestruct(Address beneficiary) {
-        this.kernel.selfdestruct(tx.getTo(), beneficiary.unwrap());
+        // TODO: transfer
+        this.kernel.deleteAccount(tx.getTo());
     }
 
     @Override

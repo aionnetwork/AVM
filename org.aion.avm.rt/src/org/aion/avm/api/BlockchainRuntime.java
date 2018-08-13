@@ -31,10 +31,6 @@ public class BlockchainRuntime {
         Helper.blockchainRuntime.avm_putStorage(key, value);
     }
 
-    public static void avm_updateCode(ByteArray newCode) {
-        Helper.blockchainRuntime.avm_updateCode(newCode);
-    }
-
     public static void avm_selfDestruct(Address beneficiary) {
         Helper.blockchainRuntime.avm_selfDestruct(beneficiary);
     }
@@ -95,10 +91,6 @@ public class BlockchainRuntime {
 
     public static void putStorage(byte[] key, byte[] value) {
         avm_putStorage(new ByteArray(key), new ByteArray(value));
-    }
-
-    public static void updateCode(byte[] newCode) {
-        avm_updateCode(new ByteArray(newCode));
     }
 
     public static void selfDestruct(Address beneficiary) {

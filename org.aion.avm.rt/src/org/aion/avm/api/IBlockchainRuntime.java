@@ -53,13 +53,6 @@ public interface IBlockchainRuntime extends IObject {
     void avm_putStorage(ByteArray key, ByteArray value);
 
     /**
-     * Update the Dapp code with a new version.
-     *
-     * @param newCode
-     */
-    void avm_updateCode(ByteArray newCode);
-
-    /**
      * Destruct the Dapp.
      *
      * @param beneficiary

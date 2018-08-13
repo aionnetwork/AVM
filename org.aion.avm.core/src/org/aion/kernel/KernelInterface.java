@@ -24,11 +24,28 @@ public interface KernelInterface {
      */
     VersionedCode getCode(byte[] address);
 
+    /**
+     * Put a key-value pair into the account's storage.
+     *
+     * @param address the account address
+     * @param key the storage key
+     * @param value the storage value
+     */
     void putStorage(byte[] address, byte[] key, byte[] value);
 
+    /**
+     * Get the value that is mapped to the key, for the given account.
+     *
+     * @param address the account address
+     * @param key the storage key
+     */
     byte[] getStorage(byte[] address, byte[] key);
 
-    void updateCode(byte[] address, byte[] code);
 
-    void selfdestruct(byte[] address, byte[] beneficiary);
+    /**
+     * Deletes an account.
+     *
+     * @param address
+     */
+    void deleteAccount(byte[] address);
 }

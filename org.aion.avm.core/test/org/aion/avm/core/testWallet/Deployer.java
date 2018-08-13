@@ -330,10 +330,6 @@ public class Deployer {
             Assert.unimplemented("TODO");
         }
         @Override
-        public void avm_updateCode(ByteArray newCode) {
-            Assert.unimplemented("TODO");
-        }
-        @Override
         public void avm_selfDestruct(Address beneficiary) {
             Assert.unimplemented("TODO");
         }
