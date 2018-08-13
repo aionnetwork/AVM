@@ -125,7 +125,7 @@ public class RejectionClassVisitorTest {
     public void testRejection_unknownArray() throws Exception {
         String className = RejectUnknownArray.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        // Expected to fail since we try to call clone on a java/util/Set array, which isn't allowed.
+        // Expected to fail since we try to call clone on a java/util/HashSet array, which isn't allowed.
         commonFilterBytes(className, raw);
     }
 
