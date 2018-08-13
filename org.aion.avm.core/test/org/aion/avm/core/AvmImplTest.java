@@ -209,6 +209,36 @@ public class AvmImplTest {
         assertTrue((one1 - one0) > (zero1 - zero0));
     }
 
+    /**
+     * Tests that reentrant calls do have detectable side-effects within the caller's space, when they commit.
+     */
+    @Test
+    public void testCommitReentrantCalls() {
+        boolean shouldFail = false;
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentractCrossCallResource.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new CustomKernel());
+        
+        // deploy
+        long energyLimit = 1_000_000l;
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Get direct increments from 1 to 2 and returns 2.
+        assertEquals(2, callReentrantAccess(avm, contractAddr, "getDirect", shouldFail));
+        
+        // Get near increments from 1 to 2 and returns 2.
+        assertEquals(2, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
+        
+        // Get far increments from 1 to 2 and returns 2.
+        assertEquals(2, callReentrantAccess(avm, contractAddr, "getFar", shouldFail));
+        
+        // Get near increments from 2 to 3 and returns 3.
+        assertEquals(3, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
+    }
+
 
     private int callRecursiveHash(Avm avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);
@@ -216,5 +246,14 @@ public class AvmImplTest {
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
+    }
+
+    private int callReentrantAccess(Avm avm, Address contractAddr, String methodName, boolean shouldFail) {
+        long energyLimit = 1_000_000l;
+        byte[] nearData = ABIEncoder.encodeMethodArguments(methodName, shouldFail);
+        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, nearData, energyLimit);
+        TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
+        return ((Integer)TestingHelper.decodeResult(result2)).intValue();
     }
 }
