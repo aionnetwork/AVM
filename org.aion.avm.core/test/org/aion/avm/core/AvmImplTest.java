@@ -104,26 +104,12 @@ public class AvmImplTest {
         IHelper.currentContractHelper.remove();
     }
 
-
-    private class CustomKernel extends KernelInterfaceImpl {
-        @Override
-        public TransactionResult call(Avm avm, InternalTransaction internalTx, Block parentBlock) {
-            // We are between calls, so this should be null.
-            assertNull(IHelper.currentContractHelper.get());
-
-            TransactionResult result = super.call(avm, internalTx, parentBlock);
-            result.setEnergyUsed(internalTx.getEnergyLimit() / 2);
-
-            return result;
-        }
-    }
-
     @Test
     public void testHelperStateRestore() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmImplTestResource.class);
         byte[] arguments = new byte[0];
         byte[] txData = Helpers.encodeCodeAndData(jar, arguments);
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new CustomKernel());
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
 
         // deploy
         long transaction1EnergyLimit = 1_000_000l;
@@ -149,8 +135,7 @@ public class AvmImplTest {
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
         // Account for the cost:  (blocks in call method) + runtime.call
         long costOfBlocks = 111l + 57l + 461l;
-        // Note that this runtime call is 250000l whereas the actual cost of the receiver execution is:  111l + 57l + 116l.
-        long costOfRuntimeCall = 250000l;
+        long costOfRuntimeCall = 111l + 57l + 116l;
         assertEquals(costOfBlocks + costOfRuntimeCall, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 
         // We assume that the IHelper has been cleaned up by this point.
@@ -161,7 +146,7 @@ public class AvmImplTest {
     public void testNullReturnCrossCall() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentractCrossCallResource.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new CustomKernel());
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
         long energyLimit = 1_000_000l;
@@ -183,7 +168,7 @@ public class AvmImplTest {
     public void testRecursiveHashCode() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentractCrossCallResource.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new CustomKernel());
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
         long energyLimit = 1_000_000l;
@@ -217,7 +202,7 @@ public class AvmImplTest {
         boolean shouldFail = false;
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentractCrossCallResource.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new CustomKernel());
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
         long energyLimit = 1_000_000l;

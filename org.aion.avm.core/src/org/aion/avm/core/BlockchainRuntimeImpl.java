@@ -9,13 +9,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.Block;
-import org.aion.kernel.InternalTransaction;
-import org.aion.kernel.KernelInterface;
-import org.aion.kernel.Log;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContext;
-import org.aion.kernel.TransactionResult;
+import org.aion.kernel.*;
 
 
 /**
@@ -132,7 +126,7 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
         result.addInternalTransaction(internalTx);
 
         // execute the internal transaction
-        TransactionResult newResult = this.kernel.call(this.avm, internalTx, this.block);
+        TransactionResult newResult = this.avm.run(new TransactionContextImpl(internalTx, this.block));
 
         // merge the results
         result.merge(newResult);

@@ -37,12 +37,6 @@ public class KernelInterfaceImpl implements KernelInterface {
     }
 
     @Override
-    public TransactionResult call(Avm sourceVm, InternalTransaction internalTx, Block parentBlock) {
-        // Note that "run()" is defined as being reentrant.
-        return sourceVm.run(new TransactionContextImpl(internalTx, parentBlock));
-    }
-
-    @Override
     public void updateCode(byte[] address, byte[] code) {
 
     }
