@@ -98,6 +98,10 @@ public class CommonGenerators {
             "org.aion.avm.shadow.java.math.RoundingMode",
     });
 
+    // Record the parent class of each generated class. This information is needed by the heap size calculation.
+    // Both class names are in the shadowed version.
+    public static Map<String, String> parentClassMap;
+
     public static Map<String, byte[]> generateShadowJDK() {
         Map<String, byte[]> shadowJDK = new HashMap<>();
 
@@ -112,6 +116,7 @@ public class CommonGenerators {
 
     public static Map<String, byte[]> generateShadowException() {
         Map<String, byte[]> generatedClasses = new HashMap<>();
+        parentClassMap = new HashMap<>();
         for (String className : kExceptionClassNames) {
             // We need to look this up to find the superclass.
             String superclassName = null;
@@ -138,6 +143,8 @@ public class CommonGenerators {
                 }
                 
                 generatedClasses.put(shadowName, shadowBytes);
+
+                parentClassMap.put(shadowName, shadowSuperName);
             }
             
             // Generate the wrapper.

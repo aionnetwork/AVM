@@ -196,18 +196,18 @@ public class HeapMemoryCostCalculator {
      * Calculate the instance sizes of classes and record them in the "classHeapInfoMap".
      * This method is called to calculate the heap size of classes that belong to one Dapp, at the deployment time.
      * @param classHierarchy the pre-constructed class hierarchy forest
-     * @param runtimeObjectSizes the pre-constructed map of the runtime and java.lang.* classes to their instance size
+     * @param rootClassObjectSizes the pre-constructed map of the runtime and java.lang.* classes to their instance size
      */
-    public void calcClassesInstanceSize(Forest<String, byte[]> classHierarchy, Map<String, Integer> runtimeObjectSizes) {
+    public void calcClassesInstanceSize(Forest<String, byte[]> classHierarchy, Map<String, Integer> rootClassObjectSizes) {
         // get the root nodes list of the class hierarchy
         Collection<Node<String, byte[]>> rootClasses = classHierarchy.getRoots();
 
         // calculate for each tree in the class hierarchy
         for (Node<String, byte[]> rootClass : rootClasses) {
-            // rootClass is one of the runtime or java.lang.* classes and 'runtimeObjectSizes' map already has its size.
+            // 'rootClassObjectSizes' map already has the root class object size.
             // copy rootClass size to classHeapSizeMap
             final String splashName = Helpers.fulllyQualifiedNameToInternalName(rootClass.getId());
-            classHeapSizeMap.put(splashName, runtimeObjectSizes.get(splashName));
+            classHeapSizeMap.put(splashName, rootClassObjectSizes.get(splashName));
         }
         final var visitor = new Forest.Visitor<String, byte[]>() {
             @Override

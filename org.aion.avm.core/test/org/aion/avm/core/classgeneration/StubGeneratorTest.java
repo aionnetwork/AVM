@@ -54,7 +54,7 @@ public class StubGeneratorTest {
      */
     @Test
     public void testWithDapp() throws Exception {
-        final String dAppRuntimePath = "../out/jar";
+        final String dAppRuntimePath = "../out/jar/org-aion-avm-api.jar";
         final String dAppModulesPath = "../examples/build";
         final String startModuleName = "com.example.twoclasses";
         final String mainClassName = "com.example.twoclasses.JavaAccessor";

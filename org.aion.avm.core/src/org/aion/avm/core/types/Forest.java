@@ -60,6 +60,34 @@ public class Forest<I, C> {
         childCandidate.setParent(parentCandidate);
     }
 
+    // Prune the Forest and only keep the trees of the 'newRoots' roots.
+    public void prune(Collection<Node<I, C>> newRoots) {
+        Objects.requireNonNull(newRoots);
+        final var pruneVisitor = new Visitor<I, C>() {
+            @Override
+            public void onVisitRoot(Node<I, C> root) {
+                nodesIndex.remove(root.getId());
+            }
+
+            @Override
+            public void onVisitNotRootNode(Node<I, C> node) {
+                nodesIndex.remove(node.getId());
+            }
+
+            @Override
+            public void afterAllNodesVisited() {
+            }
+        };
+        Iterator<Node<I, C>> iterator = roots.iterator();
+        while (iterator.hasNext()) {
+            Node<I, C> root = iterator.next();
+            if (!newRoots.contains(root)) {
+                walkOneTreePreOrder(pruneVisitor, root);
+                iterator.remove();
+            }
+        }
+    }
+
     public void walkPreOrder(Visitor<I, C> visitor) {
         Objects.requireNonNull(visitor);
         currentVisitor = visitor;
@@ -67,6 +95,14 @@ public class Forest<I, C> {
             currentVisitingRoot = root;
             walkPreOrderInternal(root);
         }
+        visitor.afterAllNodesVisited();
+    }
+
+    private void walkOneTreePreOrder(Visitor<I, C> visitor, Node<I, C> root) {
+        Objects.requireNonNull(visitor);
+        currentVisitor = visitor;
+        currentVisitingRoot = root;
+        walkPreOrderInternal(root);
         visitor.afterAllNodesVisited();
     }
 

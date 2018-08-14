@@ -28,6 +28,7 @@ import org.aion.kernel.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
+import java.io.IOException;
 import java.util.*;
 
 
@@ -101,17 +102,17 @@ public class DAppCreator {
     }
 
     /**
-     * Returns the sizes of all the classes, including the runtime ones and the DApp ones.
+     * Returns the sizes of all the user-space classes
      *
      * @param classHierarchy     the class hierarchy
      * @param shadowObjectSizes  the object size of shadow java.base classes
      * @param apiObjectSizes     the object size of API classes
-     * @return The size of user objects
+     * @return The look-up map of the sizes of user objects
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    private static Map<String, Integer> computeUserObjectSizes(Forest<String, byte[]> classHierarchy,
-                                                               Map<String, Integer> shadowObjectSizes,
-                                                               Map<String, Integer> apiObjectSizes)
+    public static Map<String, Integer> computeUserObjectSizes(Forest<String, byte[]> classHierarchy,
+                                                             Map<String, Integer> shadowObjectSizes,
+                                                             Map<String, Integer> apiObjectSizes)
     {
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
 
@@ -120,10 +121,10 @@ public class DAppCreator {
         runtimeObjectSizes.putAll(shadowObjectSizes);
         runtimeObjectSizes.putAll(apiObjectSizes);
 
-        // compute the object size of every one in 'classes'
+        // compute the user object sizes
         objectSizeCalculator.calcClassesInstanceSize(classHierarchy, runtimeObjectSizes);
 
-
+        // copy over the user object sizes
         Map<String, Integer> userObjectSizes = new HashMap<>();
         objectSizeCalculator.getClassHeapSizeMap().forEach((k, v) -> {
             if (!runtimeObjectSizes.containsKey(k)) {
@@ -135,10 +136,11 @@ public class DAppCreator {
 
     // NOTE:  This is only public because InvokedynamicTransformationTest calls it.
     public static Map<String, Integer> computeAllPostRenameObjectSizes(Forest<String, byte[]> forest) {
-        Map<String, Integer> preRenameShadowObjectSizes = computeShadowObjectSizes();
-        Map<String, Integer> preRenameApiObjectSizes = computeApiObjectSizes();
+        Map<String, Integer> preRenameShadowObjectSizes = NodeEnvironment.singleton.shadowObjectSizeMap;
+        Map<String, Integer> preRenameApiObjectSizes = NodeEnvironment.singleton.apiObjectSizeMap;
         Map<String, Integer> preRenameUserObjectSizes = computeUserObjectSizes(forest, preRenameShadowObjectSizes, preRenameApiObjectSizes);
 
+        //TODO - Do not need to copy over the rt object size maps, if, 1) keep a renamed version in NodeEnvironment; 2) ClassMetering visitor takes 2 maps (rt and user objects)
         Map<String, Integer> postRenameObjectSizes = new HashMap<>(preRenameApiObjectSizes);
         for (Map.Entry<String, Integer> entry : preRenameUserObjectSizes.entrySet()) {
             postRenameObjectSizes.put(PackageConstants.kUserSlashPrefix + entry.getKey(), entry.getValue());

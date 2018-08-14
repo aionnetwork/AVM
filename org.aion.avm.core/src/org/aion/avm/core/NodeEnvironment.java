@@ -1,16 +1,15 @@
 package org.aion.avm.core;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
@@ -34,8 +33,12 @@ public class NodeEnvironment {
 
     private Set<String> jclClassNames;
 
+    public final Map<String, Integer> shadowObjectSizeMap;
+    public final Map<String, Integer> apiObjectSizeMap;
+
     private NodeEnvironment() {
-        this.sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
+        Map<String, byte[]> generatedShadowJDK = CommonGenerators.generateShadowJDK();
+        this.sharedClassLoader = new AvmSharedClassLoader(generatedShadowJDK);
         try {
             this.jclClassNames = loadShadowClasses(NodeEnvironment.class.getClassLoader());
 
@@ -54,6 +57,10 @@ public class NodeEnvironment {
         }
         // Create the constant map.
         this.constantMap = Collections.unmodifiableMap(initializeConstantState());
+
+        // create the object size look-up maps
+        this.shadowObjectSizeMap = computeShadowObjectSizes(generatedShadowJDK);
+        this.apiObjectSizeMap = computeApiObjectSizes();
     }
 
     // This is an example of the more "factory-like" nature of the NodeEnvironment.
@@ -261,5 +268,77 @@ public class NodeEnvironment {
     private void setConstantInstanceId(Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap, org.aion.avm.shadow.java.lang.Object object, long instanceId) {
         object.instanceId = instanceId;
         constantMap.put(instanceId, object);
+    }
+
+    /**
+     * Computes the object size of shadow java.base classes
+     *
+     * @return a mapping between class name and object size
+     *
+     * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
+     */
+    private Map<String, Integer> computeShadowObjectSizes(Map<String, byte[]> generatedShadowJDK) {
+        try {
+            // build the runtime module from the jar TODO - this jar needs to be provided in a safe way
+            RawDappModule runtimeModule = RawDappModule.readFromJar(Helpers.readFileToBytes("../out/jar/org-aion-avm-rt.jar"));
+
+            // get the forest and prune it to include only the "java.lang.Object" and "java.lang.Throwable" derived classes, as shown in the forest
+            ClassHierarchyForest rtClassesForest = runtimeModule.classHierarchyForest;
+            List<Forest.Node<String, byte[]>> newRoots = new ArrayList<>();
+            newRoots.add(rtClassesForest.getNodeById("java.lang.Object"));
+            newRoots.add(rtClassesForest.getNodeById("java.lang.Throwable"));
+            rtClassesForest.prune(newRoots);
+
+            // add the generated classes, i.e., exceptions in the generated shadow JDK
+            for (String generatedClassName : generatedShadowJDK.keySet()) {
+                // User cannot create the exception wrappers, so not to include them
+                if(!generatedClassName.startsWith("org.aion.avm.exceptionwrapper.")) {
+                    String parentName = CommonGenerators.parentClassMap.get(generatedClassName);
+                    byte[] parentClass;
+                    if (parentName == null) {
+                        parentName = "org.aion.avm.shadow.java.lang.Throwable";
+                        parentClass = rtClassesForest.getNodeById(parentName).getContent();
+                    }
+                    else {
+                        parentClass = generatedShadowJDK.get(parentName);
+                    }
+                    rtClassesForest.add(new Forest.Node<>(parentName, parentClass),
+                            new Forest.Node<>(generatedClassName, generatedShadowJDK.get(generatedClassName)));
+                }
+            }
+
+            // compute the object sizes in the pruned forest
+            Map<String, Integer> rootObjectSizes = new HashMap<>();
+            rootObjectSizes.put("java/lang/Object", 8); // A bare java.lang.Object takes 8 bytes of "housekeeping" heap space, in Hotspot.
+            rootObjectSizes.put("java/lang/Throwable", 8);
+            Map<String, Integer> map = DAppCreator.computeUserObjectSizes(rtClassesForest, rootObjectSizes, rootObjectSizes);
+
+            // record the shadowed object sizes in the map; and change the class name to the non-shadowed version
+            Map<String, Integer> shadowObjectSizeMap = new HashMap<>();
+            for(String className : map.keySet()) {
+                if(className.startsWith(PackageConstants.kShadowSlashPrefix)) {
+                    shadowObjectSizeMap.put(className.substring(PackageConstants.kShadowSlashPrefix.length()), map.get(className));
+                }
+            }
+
+            return shadowObjectSizeMap;
+        }
+        catch (IOException e) {
+            throw new IllegalStateException("Cannot find 'org-aion-avm-rt.jar'.");
+        }
+    }
+
+    /**
+     * Computes the object size of API classes.
+     *
+     * @return
+     */
+    private static Map<String, Integer> computeApiObjectSizes() {
+        //TODO - modify this to auto-computation
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        map.put("org/aion/avm/api/Address", 4);
+        map.put("org/aion/avm/api/InvalidTxDataException", 4);
+
+        return Collections.unmodifiableMap(map);
     }
 }
