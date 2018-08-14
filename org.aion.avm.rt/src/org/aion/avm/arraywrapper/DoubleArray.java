@@ -7,7 +7,6 @@ import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.util.Arrays;
-import java.util.function.Consumer;
 
 
 public class DoubleArray extends Array {
@@ -39,8 +38,8 @@ public class DoubleArray extends Array {
         }
     }
 
-    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
-        super.serializeSelf(DoubleArray.class, serializer, nextObjectQueue);
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(DoubleArray.class, serializer);
         
         // TODO:  We probably want faster array copies.
         serializer.writeInt(this.underlying.length);

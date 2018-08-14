@@ -56,7 +56,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         this.address = address;
         try {
             this.deserializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("deserializeSelf", java.lang.Class.class, IObjectDeserializer.class);
-            this.serializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("serializeSelf", java.lang.Class.class, IObjectSerializer.class, Consumer.class);
+            this.serializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("serializeSelf", java.lang.Class.class, IObjectSerializer.class);
             this.deserializerField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("deserializer");
             this.deserializerField.setAccessible(true);
             this.instanceIdField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("instanceId");
@@ -382,9 +382,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     // Note that this is only public so tests can use it.
     public byte[] internalSerializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
-        SingleInstanceSerializer singleSerializer = new SingleInstanceSerializer(this, encoder);
+        SingleInstanceSerializer singleSerializer = new SingleInstanceSerializer(this, encoder, nextObjectSink);
         try {
-            this.serializeSelf.invoke(instance, null, singleSerializer, nextObjectSink);
+            this.serializeSelf.invoke(instance, null, singleSerializer);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
             throw RuntimeAssertionError.unexpected(e);

@@ -12,7 +12,6 @@ import org.aion.avm.internal.IObjectSerializer;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Consumer;
 
 
 public class String extends Object implements Comparable<String>, CharSequence {
@@ -390,8 +389,8 @@ public class String extends Object implements Comparable<String>, CharSequence {
         this.v = new java.lang.String(data, DEFAULT_CHARSET);
     }
 
-    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
-        super.serializeSelf(String.class, serializer, nextObjectQueue);
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(String.class, serializer);
 
         // TODO:  We probably want faster array copies.
         byte[] data = this.v.getBytes(DEFAULT_CHARSET);

@@ -7,7 +7,6 @@ import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.util.Arrays;
-import java.util.function.Consumer;
 
 
 public class ObjectArray extends Array {
@@ -38,12 +37,12 @@ public class ObjectArray extends Array {
         }
     }
 
-    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
-        super.serializeSelf(ObjectArray.class, serializer, nextObjectQueue);
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(ObjectArray.class, serializer);
         
         serializer.writeInt(this.underlying.length);
         for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeStub((org.aion.avm.shadow.java.lang.Object)this.underlying[i], nextObjectQueue);
+            serializer.writeStub((org.aion.avm.shadow.java.lang.Object)this.underlying[i]);
         }
     }
 

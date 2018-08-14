@@ -1,7 +1,5 @@
 package org.aion.avm.shadow.java.lang;
 
-import java.util.function.Consumer;
-
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
@@ -120,13 +118,13 @@ public class Object extends java.lang.Object implements IObject {
         deserializer.beginDeserializingAutomatically(this, firstRealImplementation);
     }
 
-    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
         // We only operate on our hashCode.
         serializer.writeInt(this.hashCode);
         
         // NOTE:  It would probably be a better design to special-case the handling of the hashCode, in the automatic implementation,
         // since this otherwise means that we have a "real" implementation which we pretend is not "real" so we can automatically
         // serialize our sub-class.  This should improve performance, though.
-        serializer.beginSerializingAutomatically(this, firstRealImplementation, nextObjectQueue);
+        serializer.beginSerializingAutomatically(this, firstRealImplementation);
     }
 }

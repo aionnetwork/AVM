@@ -8,19 +8,22 @@ import org.aion.avm.internal.IObjectSerializer;
 /**
  * One of these objects is created for each object instance we are serializing.
  * It is basically a thin wrapper over StreamingPrimitiveCodec.Encoder.
+ * It is intended to just serialize one instance so any other instances it sees from this one are given to the nextObjectSink.
  */
 public class SingleInstanceSerializer implements IObjectSerializer {
     private final IAutomatic automaticPart;
     private final StreamingPrimitiveCodec.Encoder encoder;
+    private final Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink;
 
-    public SingleInstanceSerializer(IAutomatic automaticPart, StreamingPrimitiveCodec.Encoder encoder) {
+    public SingleInstanceSerializer(IAutomatic automaticPart, StreamingPrimitiveCodec.Encoder encoder, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         this.automaticPart = automaticPart;
         this.encoder = encoder;
+        this.nextObjectSink = nextObjectSink;
     }
 
     @Override
-    public void beginSerializingAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
-        this.automaticPart.partialAutomaticSerializeInstance(this.encoder, instance, firstManualClass, nextObjectQueue);
+    public void beginSerializingAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
+        this.automaticPart.partialAutomaticSerializeInstance(this.encoder, instance, firstManualClass, this.nextObjectSink);
     }
 
     @Override
@@ -49,8 +52,8 @@ public class SingleInstanceSerializer implements IObjectSerializer {
     }
 
     @Override
-    public void writeStub(org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
-        this.automaticPart.encodeAsStub(this.encoder, object, nextObjectQueue);
+    public void writeStub(org.aion.avm.shadow.java.lang.Object object) {
+        this.automaticPart.encodeAsStub(this.encoder, object, this.nextObjectSink);
     }
 
 
