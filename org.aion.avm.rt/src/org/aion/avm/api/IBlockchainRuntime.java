@@ -21,7 +21,7 @@ public interface IBlockchainRuntime {
     /**
      * Returns the sender's address.
      */
-    Address avm_getSender();
+    Address avm_getCaller();
 
     /**
      * Returns the originator's address.
@@ -36,12 +36,12 @@ public interface IBlockchainRuntime {
     /**
      * Returns the energy price.
      */
-    BigInteger avm_getEnergyPrice();
+    long avm_getEnergyPrice();
 
     /**
      * Returns the value being transferred along the transaction.
      */
-    BigInteger avm_getValue();
+    long avm_getValue();
 
     /**
      * Returns the transaction data.

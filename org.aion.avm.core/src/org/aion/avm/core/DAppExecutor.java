@@ -10,8 +10,8 @@ import org.aion.kernel.TransactionResult;
 
 
 public class DAppExecutor {
-    public static void call(KernelInterface kernel, Avm avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume, Transaction tx, TransactionContext ctx, TransactionResult result) {
-        byte[] dappAddress = tx.getTo();
+    public static void call(KernelInterface kernel, Avm avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume, TransactionContext ctx, TransactionResult result) {
+        byte[] dappAddress = ctx.getAddress();
         // Load the initial state of the environment.
         // (note that ContractEnvironmentState is immutable, so it is safe to just access the environment from a different invocation).
         ContractEnvironmentState initialState = (null != stateToResume)
@@ -24,8 +24,8 @@ public class DAppExecutor {
         dAppStack.pushState(thisState);
         
         // TODO:  We might be able to move this setup of IHelper to later in the load once we get rid of the <clinit> (requires energy).
-        IHelper helper = dapp.instantiateHelperInApp(tx.getEnergyLimit(), initialState.nextHashCode);
-        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, ctx, helper, result));
+        IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit(), initialState.nextHashCode);
+        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, ctx, result));
 
         // Now that we can load classes for the contract, load and populate all their classes.
         dapp.populateClassStaticsFromStorage(kernel);
@@ -50,13 +50,13 @@ public class DAppExecutor {
 
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setReturnData(ret);
-            result.setEnergyUsed(tx.getEnergyLimit() - helper.externalGetEnergyRemaining());
+            result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
         } catch (OutOfEnergyError e) {
             result.setStatusCode(TransactionResult.Code.OUT_OF_ENERGY);
-            result.setEnergyUsed(tx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (Exception e) {
             result.setStatusCode(TransactionResult.Code.FAILURE);
-            result.setEnergyUsed(tx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getEnergyLimit());
         } finally {
             // Once we are done running this, we want to clear the IHelper.currentContractHelper.
             IHelper.currentContractHelper.remove();

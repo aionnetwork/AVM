@@ -8,7 +8,7 @@ public class BlockchainRuntime {
     // Runtime-facing implementation.
 
     public static Address avm_getSender() {
-        return Helper.blockchainRuntime.avm_getSender();
+        return Helper.blockchainRuntime.avm_getCaller();
     }
 
     public static Address avm_getAddress() {

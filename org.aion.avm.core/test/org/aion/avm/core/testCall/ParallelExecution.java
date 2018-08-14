@@ -5,6 +5,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.SimpleRuntime;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.Transaction;
@@ -40,18 +41,6 @@ class State {
     }
 
     public void rollback() {
-    }
-}
-
-/**
- * Represents an internal transaction.
- */
-class InternalTransaction extends Transaction {
-    private Transaction parent;
-
-    public InternalTransaction(Type type, byte[] from, byte[] to, long value, byte[] data, long energyLimit, Transaction parent) {
-        super(type, from, to, value, data, energyLimit);
-        this.parent = parent;
     }
 }
 
@@ -157,7 +146,7 @@ public class ParallelExecution {
                 // TODO: runtime should be based on the state
                 @Override
                 public ByteArray avm_call(Address targetAddress, long value, ByteArray payload, long energyToSend) {
-                    InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL, tx.getTo(), targetAddress.unwrap(), value, payload.getUnderlying(), energyToSend, tx);
+                    InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL, tx.getTo(), targetAddress.unwrap(), value, payload.getUnderlying(), energyToSend, tx.getEnergyPrice());
                     result.internalTransactions.add(internalTx);
                     logger.debug("Internal transaction: " + internalTx);
 
@@ -199,9 +188,9 @@ public class ParallelExecution {
     //============
 
     public static void simpleCall() {
-        Transaction tx1 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(3), 1000000);
-        Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(3), Helpers.address(4), 0, Helpers.address(1), 1000000);
-        Transaction tx3 = new Transaction(Transaction.Type.CALL, Helpers.address(3), Helpers.address(5), 0, new byte[0], 1000000);
+        Transaction tx1 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(3), 1000000, 1);
+        Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(3), Helpers.address(4), 0, Helpers.address(1), 1000000, 1);
+        Transaction tx3 = new Transaction(Transaction.Type.CALL, Helpers.address(3), Helpers.address(5), 0, new byte[0], 1000000, 1);
 
         ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(null), NUM_THREADS);
         exec.execute();
@@ -220,7 +209,7 @@ public class ParallelExecution {
             int to = r.nextInt(numAccounts);
             int callee = r.nextInt(numAccounts);
 
-            Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(from), Helpers.address(to), 0, Helpers.address(callee), 1000000);
+            Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(from), Helpers.address(to), 0, Helpers.address(callee), 1000000, 1);
             transactions.add(tx);
         }
 

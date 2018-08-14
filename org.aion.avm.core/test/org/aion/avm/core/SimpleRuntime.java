@@ -43,7 +43,7 @@ public class SimpleRuntime implements IBlockchainRuntime {
         this.txData = txData;
     }
     @Override
-    public Address avm_getSender() {
+    public Address avm_getCaller() {
         if (null == this.cachedSender) {
             this.cachedSender = new Address(this.sender);
         }
@@ -68,13 +68,13 @@ public class SimpleRuntime implements IBlockchainRuntime {
     }
 
     @Override
-    public BigInteger avm_getEnergyPrice() {
-        return null;
+    public long avm_getEnergyPrice() {
+        return 1;
     }
 
     @Override
-    public BigInteger avm_getValue() {
-        return null;
+    public long avm_getValue() {
+        return 0;
     }
 
     @Override

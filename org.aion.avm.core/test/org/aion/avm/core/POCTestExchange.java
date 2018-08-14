@@ -41,7 +41,7 @@ public class POCTestExchange {
         }
 
         private byte[] initCoin(byte[] jar, byte[] arguments){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit, 1l);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = new AvmImpl(new KernelInterfaceImpl()).run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -89,7 +89,7 @@ public class POCTestExchange {
         }
 
         private TransactionResult call(byte[] sender, byte[] args) {
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit);
+            Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit, 1l);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
             TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -108,7 +108,7 @@ public class POCTestExchange {
         }
 
         private byte[] initExchange(byte[] jar, byte[] arguments){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit, 1l);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = new AvmImpl(new KernelInterfaceImpl()).run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -131,7 +131,7 @@ public class POCTestExchange {
         }
 
         private TransactionResult call(byte[] sender, byte[] args) throws InvalidTxDataException {
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit);
+            Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit, 1l);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
             TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());

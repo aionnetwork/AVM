@@ -1,5 +1,7 @@
 package org.aion.kernel;
 
+import java.math.BigInteger;
+
 public class Block {
 
     private long number;
@@ -31,5 +33,17 @@ public class Block {
 
     public byte[] getData() {
         return data;
+    }
+
+    public long getEnergyLimit() {
+        return 10_000_000L;
+    }
+
+    public byte[] getPrevHash() {
+        return null;
+    }
+
+    public BigInteger getDifficulty() {
+        return BigInteger.valueOf(10_000_000L);
     }
 }

@@ -1,7 +1,5 @@
 package org.aion.avm.core;
 
-import java.util.List;
-
 import org.aion.avm.api.Address;
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
@@ -12,6 +10,9 @@ import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.*;
 
+import java.util.List;
+import java.util.Objects;
+
 
 /**
  * The implementation of IBlockchainRuntime which is appropriate for exposure as a shadow Object instance within a DApp.
@@ -20,124 +21,127 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private final KernelInterface kernel;
     private final Avm avm;
     private final ReentrantDAppStack.ReentrantState reentrantState;
+
     private IHelper helper;
+    private TransactionContext ctx;
     private TransactionResult result;
 
-    private Transaction tx;
-    private Block block;
-
-    public BlockchainRuntimeImpl(KernelInterface kernel, Avm avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionContext context, IHelper helper, TransactionResult result) {
+    public BlockchainRuntimeImpl(KernelInterface kernel, Avm avm, ReentrantDAppStack.ReentrantState reentrantState,
+                                 IHelper helper, TransactionContext ctx, TransactionResult result) {
         this.kernel = kernel;
         this.avm = avm;
         this.reentrantState = reentrantState;
         this.helper = helper;
+        this.ctx = ctx;
         this.result = result;
-
-        this.tx = context.getTransaction();
-        this.block = context.getBlock();
     }
 
     @Override
     public Address avm_getAddress() {
-        // TODO: handle CREATE transaction
-        return new Address(tx.getTo());
+        return new Address(ctx.getAddress());
     }
 
     @Override
-    public Address avm_getSender() {
-        return new Address(tx.getFrom());
+    public Address avm_getCaller() {
+        return new Address(ctx.getCaller());
     }
 
     @Override
     public Address avm_getOrigin() {
-        return null;
+        return new Address(ctx.getOrigin());
     }
 
     @Override
     public long avm_getEnergyLimit() {
-        return tx.getEnergyLimit();
+        return ctx.getEnergyLimit();
     }
 
     @Override
-    public BigInteger avm_getEnergyPrice() {
-        return null;
+    public long avm_getEnergyPrice() {
+        return ctx.getEneryPrice();
     }
 
     @Override
-    public BigInteger avm_getValue() {
-        return null;
+    public long avm_getValue() {
+        return ctx.getValue();
     }
 
     @Override
     public ByteArray avm_getData() {
-        if (tx.getType() == Transaction.Type.CREATE) {
-            if (Helpers.decodeCodeAndData(tx.getData())[1] == null) {
+        if (ctx.isCreate()) {
+            if (Helpers.decodeCodeAndData(ctx.getData())[1] == null) {
                 return null;
+            } else {
+                return new ByteArray(Helpers.decodeCodeAndData(ctx.getData())[1]);
             }
-            else {
-                return new ByteArray(Helpers.decodeCodeAndData(tx.getData())[1]);
-            }
+        } else {
+            return new ByteArray(ctx.getData());
         }
-        else {
-            return new ByteArray(tx.getData());
-        }
-    }
-
-    @Override
-    public ByteArray avm_getStorage(ByteArray key) {
-        return new ByteArray(this.kernel.getStorage(tx.getTo(), key.getUnderlying()));
-    }
-
-    @Override
-    public void avm_putStorage(ByteArray key, ByteArray value) {
-        this.kernel.putStorage(tx.getTo(), key.getUnderlying(), value.getUnderlying());
-    }
-
-    @Override
-    public BigInteger avm_getBalance(Address address) {
-        return null;
-    }
-
-    @Override
-    public int avm_getCodeSize(Address address) {
-        return 0;
     }
 
 
     @Override
     public long avm_getBlockTimestamp() {
-        return block.getTimestamp();
+        return ctx.getBlockTimestamp();
     }
 
     @Override
     public long avm_getBlockNumber() {
-        return block.getNumber();
+        return ctx.getBlockNumber();
     }
 
     @Override
     public long avm_getBlockEnergyLimit() {
-        return 0;
+        return ctx.getBlockEnergyLimit();
     }
 
     @Override
     public Address avm_getBlockCoinbase() {
-        return null;
+        return new Address(ctx.getBlockCoinbase());
     }
 
     @Override
     public ByteArray avm_getBlockPreviousHash() {
-        return null;
+        return new ByteArray(ctx.getBlockPreviousHash());
     }
 
     @Override
     public BigInteger avm_getBlockDifficulty() {
-        return null;
+        return new BigInteger(ctx.getBlockDifficulty());
     }
 
+    @Override
+    public ByteArray avm_getStorage(ByteArray key) {
+        Objects.requireNonNull(key);
+
+        return new ByteArray(this.kernel.getStorage(ctx.getAddress(), key.getUnderlying()));
+    }
+
+    @Override
+    public void avm_putStorage(ByteArray key, ByteArray value) {
+        Objects.requireNonNull(key);
+
+        this.kernel.putStorage(ctx.getAddress(), key.getUnderlying(), value == null ? null : value.getUnderlying());
+    }
+
+    @Override
+    public BigInteger avm_getBalance(Address address) {
+        Objects.requireNonNull(address);
+
+        return new BigInteger(this.kernel.getBalance(address.unwrap()));
+    }
+
+    @Override
+    public int avm_getCodeSize(Address address) {
+        Objects.requireNonNull(address);
+
+        VersionedCode vc = this.kernel.getCode(address.unwrap());
+        return vc == null ? 0 : vc.getCode().length;
+    }
 
     @Override
     public long avm_getRemainingEnergy() {
-        return 0;
+        return helper.externalGetEnergyRemaining();
     }
 
     @Override
@@ -149,26 +153,26 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // Clear the thread-local helper (since we need to reset it after the call and this should be balanced).
         RuntimeAssertionError.assertTrue(helper == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.remove();
-        
+
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL,
-                tx.getTo(),
+                ctx.getAddress(),
                 targetAddress.unwrap(),
                 value,
                 data.getUnderlying(),
                 energyLimit,
-                tx);
+                ctx.getEneryPrice());
         result.addInternalTransaction(internalTx);
 
         // execute the internal transaction
-        TransactionResult newResult = this.avm.run(new TransactionContextImpl(internalTx, this.block));
+        TransactionResult newResult = this.avm.run(new TransactionContextImpl(this.ctx, internalTx));
 
         // merge the results
         result.merge(newResult);
 
         // reset the thread-local helper instance
         IHelper.currentContractHelper.set(helper);
-        
+
         if (null != this.reentrantState) {
             // Update the next hashcode counter, in case this was a reentrant call and it was changed.
             helper.applySpanshotAndNextHashCode(this.reentrantState.getEnvironment().nextHashCode);
@@ -192,36 +196,36 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public void avm_selfDestruct(Address beneficiary) {
         // TODO: add value transfer here
-        this.kernel.deleteAccount(tx.getTo());
+        this.kernel.deleteAccount(ctx.getAddress());
     }
 
     @Override
     public void avm_log(ByteArray data) {
-        Log log = new Log(tx.getTo(), List.of(), data.getUnderlying());
+        Log log = new Log(ctx.getAddress(), List.of(), data.getUnderlying());
         result.addLog(log);
     }
 
     @Override
     public void avm_log(ByteArray topic1, ByteArray data) {
-        Log log = new Log(tx.getTo(), List.of(topic1.getUnderlying()), data.getUnderlying());
+        Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying()), data.getUnderlying());
         result.addLog(log);
     }
 
     @Override
     public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray data) {
-        Log log = new Log(tx.getTo(), List.of(topic1.getUnderlying(), topic2.getUnderlying()), data.getUnderlying());
+        Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying(), topic2.getUnderlying()), data.getUnderlying());
         result.addLog(log);
     }
 
     @Override
     public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data) {
-        Log log = new Log(tx.getTo(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying()), data.getUnderlying());
+        Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying()), data.getUnderlying());
         result.addLog(log);
     }
 
     @Override
     public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data) {
-        Log log = new Log(tx.getTo(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying(), topic4.getUnderlying()), data.getUnderlying());
+        Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying(), topic4.getUnderlying()), data.getUnderlying());
         result.addLog(log);
     }
 
@@ -234,7 +238,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // TODO: implement blake2b
 
         byte[] result = new byte[32];
-        System.arraycopy(data.getUnderlying(),0, result, 0, Math.min(result.length, data.length()));
+        System.arraycopy(data.getUnderlying(), 0, result, 0, Math.min(result.length, data.length()));
 
         return new ByteArray(result);
     }

@@ -7,12 +7,10 @@ import org.aion.kernel.Transaction;
  */
 public class InternalTransaction extends Transaction {
 
-    private Transaction parent;
     private boolean rejected ;
 
-    public InternalTransaction(Type type, byte[] from, byte[] to, long value, byte[] data, long energyLimit, Transaction parent) {
-        super(type, from, to, value, data, energyLimit);
-        this.parent = parent;
+    public InternalTransaction(Type type, byte[] from, byte[] to, long value, byte[] data, long energyLimit, long energyPrice) {
+        super(type, from, to, value, data, energyLimit, energyPrice);
     }
 
     public void markAsRejected() {

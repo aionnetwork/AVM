@@ -310,7 +310,7 @@ public class Deployer {
         }
         
         @Override
-        public Address avm_getSender() {
+        public Address avm_getCaller() {
             return this.sender;
         }
 
@@ -331,13 +331,13 @@ public class Deployer {
         }
 
         @Override
-        public BigInteger avm_getEnergyPrice() {
-            return null;
+        public long avm_getEnergyPrice() {
+            return 0;
         }
 
         @Override
-        public BigInteger avm_getValue() {
-            return null;
+        public long avm_getValue() {
+            return 0;
         }
 
         @Override

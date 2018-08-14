@@ -12,6 +12,7 @@ public class ApiExceptionTest {
     private byte[] from = Helpers.randomBytes(Address.LENGTH);
     private byte[] to = Helpers.randomBytes(Address.LENGTH);
     private long energyLimit = 5000000;
+    private long energyPrice = 1;
 
     private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
@@ -21,7 +22,7 @@ public class ApiExceptionTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ApiExceptionTestResource.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, null);
 
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
 

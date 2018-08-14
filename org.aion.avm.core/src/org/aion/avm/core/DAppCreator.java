@@ -213,24 +213,23 @@ public class DAppCreator {
         return processedClasses;
     }
 
-    public static void create(KernelInterface kernel, Avm avm, Transaction tx, TransactionContext ctx, TransactionResult result) {
+    public static void create(KernelInterface kernel, Avm avm, TransactionContext ctx, TransactionResult result) {
         try {
             // read dapp module
-            //TODO: If we make dapp storage into two-level Key Value storage, we can detect duplicated dappAddress
-            byte[] dappAddress = Helpers.randomBytes(Address.LENGTH);
-            byte[] dappCode = Helpers.decodeCodeAndData(tx.getData())[0];
+            byte[] dappAddress = ctx.getAddress();
+            byte[] dappCode = Helpers.decodeCodeAndData(ctx.getData())[0];
 
             RawDappModule rawDapp = RawDappModule.readFromJar(dappCode);
             if (rawDapp == null) {
                 result.setStatusCode(TransactionResult.Code.INVALID_JAR);
-                result.setEnergyUsed(tx.getEnergyLimit());
+                result.setEnergyUsed(ctx.getEnergyLimit());
                 return;
             }
 
             // validate dapp module
             if (!validateDapp(rawDapp)) {
                 result.setStatusCode(TransactionResult.Code.INVALID_CODE);
-                result.setEnergyUsed(tx.getEnergyLimit());
+                result.setEnergyUsed(ctx.getEnergyLimit());
                 return;
             }
             ClassHierarchyForest dappClassesForest = rawDapp.classHierarchyForest;
@@ -244,9 +243,9 @@ public class DAppCreator {
             
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
-            IHelper helper = dapp.instantiateHelperInApp(tx.getEnergyLimit(), nextHashCode);
+            IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit(), nextHashCode);
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
-            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, ctx, helper, result));
+            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, helper, ctx, result));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
@@ -271,7 +270,7 @@ public class DAppCreator {
             kernel.putCode(dappAddress, new VersionedCode(VersionedCode.V1, immortalDappJar));
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * tx.getData().length);
+            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * ctx.getData().length);
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).
             dapp.forceInitializeAllClasses();
@@ -285,7 +284,7 @@ public class DAppCreator {
 
             // TODO: whether we should return the dapp address is subject to change
             result.setStatusCode(TransactionResult.Code.SUCCESS);
-            result.setEnergyUsed(tx.getEnergyLimit() - helper.externalGetEnergyRemaining());
+            result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
             result.setReturnData(dappAddress);
         } catch (FatalAvmError e) {
             // These are unrecoverable errors (either a bug in our code or a lower-level error reported by the JVM).
@@ -294,11 +293,11 @@ public class DAppCreator {
             System.exit(-1);
         } catch (OutOfEnergyError e) {
             result.setStatusCode(TransactionResult.Code.OUT_OF_ENERGY);
-            result.setEnergyUsed(tx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             result.setStatusCode(TransactionResult.Code.FAILURE);
-            result.setEnergyUsed(tx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (Throwable t) {
             // There should be no other reachable kind of exception.  If we reached this point, something very strange is happening so log
             // this and bring us down.

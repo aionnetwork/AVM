@@ -46,6 +46,7 @@ public class ProofOfConceptTest {
         private byte[] to = Helpers.randomBytes(Address.LENGTH);
         private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
         private long energyLimit = 5_000_000;
+        private long energyPrice = 1;
 
         private byte[] buildTestWalletJar() {
             return JarBuilder.buildJarForMainAndClasses(Wallet.class
@@ -73,7 +74,7 @@ public class ProofOfConceptTest {
             byte[] testWalletArguments = new byte[0];
 
             Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
-                    Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit);
+                    Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit, energyPrice);
             KernelInterface kernelInterface = new KernelInterfaceImpl();
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = new AvmImpl(kernelInterface).run(createContext);
@@ -97,7 +98,7 @@ public class ProofOfConceptTest {
             byte[] testWalletJar = buildTestWalletJar();
             byte[] testWalletArguments = new byte[0];
             Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
-                    Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit);
+                    Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit, energyPrice);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -106,7 +107,7 @@ public class ProofOfConceptTest {
             byte[] contractAddress = createResult.getReturnData();
 
             byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
-            Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
+            Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit, energyPrice);
             TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
             TransactionResult initResult = avm.run(initContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
@@ -134,7 +135,7 @@ public class ProofOfConceptTest {
             byte[] to = Helpers.randomBytes(Address.LENGTH);
             byte[] data = Helpers.randomBytes(Address.LENGTH);
             byte[] execArgs = encodeExecute(to, dailyLimit + 1, data);
-            Transaction executeTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, execArgs, energyLimit);
+            Transaction executeTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, execArgs, energyLimit, energyPrice);
             TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
             TransactionResult executeResult = avm.run(executeContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, executeResult.getStatusCode());
@@ -142,7 +143,7 @@ public class ProofOfConceptTest {
             
             // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
             byte[] confirmArgs = CallEncoder.confirm(toConfirm);
-            Transaction confirmTransaction = new Transaction(Transaction.Type.CALL, extra1, contractAddress, 0, confirmArgs, energyLimit);
+            Transaction confirmTransaction = new Transaction(Transaction.Type.CALL, extra1, contractAddress, 0, confirmArgs, energyLimit, energyPrice);
             TransactionContext confirmContext = new TransactionContextImpl(confirmTransaction, block);
             // TODO:  Change this once we have something reasonable to cross-call.  For now, this hits NPE since it isn't calling anything real.
             TransactionResult confirmResult = avm.run(confirmContext);
@@ -152,7 +153,7 @@ public class ProofOfConceptTest {
 
         private void runInit(byte[] contractAddress, byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) throws Exception {
             byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
-            Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit);
+            Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, 0, initArgs, energyLimit, energyPrice);
             TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
             TransactionResult initResult = new AvmImpl(new KernelInterfaceImpl()).run(initContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
@@ -163,7 +164,7 @@ public class ProofOfConceptTest {
             byte[] testWalletArguments = new byte[0];
 
             Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
-                    Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit);
+                    Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit, energyPrice);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = new AvmImpl(new KernelInterfaceImpl()).run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -260,7 +261,7 @@ public class ProofOfConceptTest {
             }
 
             private byte[] initExchange(byte[] jar, byte[] arguments){
-                Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit);
+                Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit, 1l);
                 TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
                 TransactionResult createResult = new AvmImpl(new KernelInterfaceImpl()).run(createContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -274,7 +275,7 @@ public class ProofOfConceptTest {
                 encoder.encodeString(name);
                 encoder.encodeAddress(TestingHelper.buildAddress(coinAddr));
 
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, addr, 0, args, energyLimit);
+                Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, addr, 0, args, energyLimit, 1l);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
                 TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
 
@@ -290,7 +291,7 @@ public class ProofOfConceptTest {
                 encoder.encodeAddress(TestingHelper.buildAddress(to));
                 encoder.encodeLong(amount);
 
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, from, addr, 0, args, energyLimit);
+                Transaction callTransaction = new Transaction(Transaction.Type.CALL, from, addr, 0, args, energyLimit, 1l);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
                 TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
 
@@ -303,7 +304,7 @@ public class ProofOfConceptTest {
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
                 encoder.encodeByte(ExchangeABI.kExchange_processExchangeTransaction);
 
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit);
+                Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit, 1l);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
                 TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
 
@@ -324,7 +325,7 @@ public class ProofOfConceptTest {
             }
 
             private byte[] initCoin(byte[] jar, byte[] arguments){
-                Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit);
+                Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit, 1l);
                 TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
                 TransactionResult createResult = new AvmImpl(new KernelInterfaceImpl()).run(createContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -336,7 +337,7 @@ public class ProofOfConceptTest {
                 ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
                 encoder.encodeByte(ExchangeABI.kToken_totalSupply);
 
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
+                Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit, 1l);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
                 TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -349,7 +350,7 @@ public class ProofOfConceptTest {
                 encoder.encodeByte(ExchangeABI.kToken_balanceOf);
                 encoder.encodeAddress(TestingHelper.buildAddress(toQuery));
 
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
+                Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit, 1l);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
                 TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -363,7 +364,7 @@ public class ProofOfConceptTest {
                 encoder.encodeAddress(TestingHelper.buildAddress(receiver));
                 encoder.encodeLong(amount);
 
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
+                Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit, 1l);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
                 TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -377,7 +378,7 @@ public class ProofOfConceptTest {
                 encoder.encodeAddress(TestingHelper.buildAddress(receiver));
                 encoder.encodeLong(amount);
 
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit);
+                Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit, 1l);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
                 TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -391,7 +392,7 @@ public class ProofOfConceptTest {
                 encoder.encodeAddress(TestingHelper.buildAddress(owner));
                 encoder.encodeAddress(TestingHelper.buildAddress(spender));
 
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit);
+                Transaction callTransaction = new Transaction(Transaction.Type.CALL, minter, addr, 0, args, energyLimit, 1l);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
                 TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -405,7 +406,7 @@ public class ProofOfConceptTest {
                 encoder.encodeAddress(TestingHelper.buildAddress(spender));
                 encoder.encodeLong(amount);
 
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, addr, 0, args, energyLimit);
+                Transaction callTransaction = new Transaction(Transaction.Type.CALL, owner, addr, 0, args, energyLimit, 1l);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
                 TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -420,7 +421,7 @@ public class ProofOfConceptTest {
                 encoder.encodeAddress(TestingHelper.buildAddress(to));
                 encoder.encodeLong(amount);
 
-                Transaction callTransaction = new Transaction(Transaction.Type.CALL, executor, addr, 0, args, energyLimit);
+                Transaction callTransaction = new Transaction(Transaction.Type.CALL, executor, addr, 0, args, energyLimit, 1l);
                 TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
                 TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
