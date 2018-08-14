@@ -81,6 +81,7 @@ public class DAppCreator {
         map.put("java/lang/RuntimeException", 4);
         map.put("java/lang/NullPointerException", 4);
         map.put("java/lang/IllegalArgumentException", 4);
+        map.put("java/lang/IndexOutOfBoundsException", 4);
         map.put("java/math/MathContext", 4);
 
         return Collections.unmodifiableMap(map);
