@@ -3,10 +3,8 @@ package org.aion.avm.core.persistence;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.function.Consumer;
 
@@ -45,7 +43,7 @@ public class LoadedDApp {
     private final List<Class<?>> classes;
     private final String originalMainClassName;
     // Note that this fieldCache is populated by the calls to ReflectionStructureCodec.
-    private final Map<Class<?>, Field[]> fieldCache;
+    private final ReflectedFieldCache fieldCache;
 
     // Other caches of specific pieces of data which are lazily built.
     private Class<?> helperClass;
@@ -67,7 +65,7 @@ public class LoadedDApp {
         this.address = address;
         this.classes = classes;
         this.originalMainClassName = originalMainClassName;
-        this.fieldCache = new HashMap<>();
+        this.fieldCache = new ReflectedFieldCache();
     }
 
     /**

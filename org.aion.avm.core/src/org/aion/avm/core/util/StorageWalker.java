@@ -6,7 +6,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,6 +16,7 @@ import java.util.Set;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.persistence.ReflectedFieldCache;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.StorageKeys;
 import org.aion.avm.core.persistence.StreamingPrimitiveCodec;
@@ -127,7 +127,7 @@ public class StorageWalker {
         
         // Create the codec back-ended on the populator.
         // (note that it requires a fieldCache but we don't attempt to reuse this, in our case).
-        Map<Class<?>, Field[]> fieldCache = new HashMap<>();
+        ReflectedFieldCache fieldCache = new ReflectedFieldCache();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, kernel, address, 0);
         
         // Extract the raw data for the class statics.

@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import org.aion.avm.internal.IDeserializer;
@@ -38,7 +37,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private static final int STUB_DESCRIPTOR_CLASS = -2;
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
-    private final Map<Class<?>, Field[]> fieldCache;
+    private final ReflectedFieldCache fieldCache;
     private final IFieldPopulator populator;
     private final KernelInterface kernel;
     private final byte[] address;
@@ -50,7 +49,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private final Field instanceIdField;
     private long nextInstanceId;
 
-    public ReflectionStructureCodec(Map<Class<?>, Field[]> fieldCache, IFieldPopulator populator, KernelInterface kernel, byte[] address, long nextInstanceId) {
+    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, KernelInterface kernel, byte[] address, long nextInstanceId) {
         this.fieldCache = fieldCache;
         this.populator = populator;
         this.kernel = kernel;
@@ -124,10 +123,8 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 ? Modifier.STATIC
                 : 0x0;
         
-        for (Field field : getFieldsForClass(clazz)) {
+        for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
             if (expectedModifier == (Modifier.STATIC & field.getModifiers())) {
-                // Note that this "setAccessible" will fail if the module is not properly "open".
-                field.setAccessible(true);
                 Class<?> type = field.getType();
                 if (boolean.class == type) {
                     boolean val = field.getBoolean(object);
@@ -261,10 +258,8 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 ? Modifier.STATIC
                 : 0x0;
         
-        for (Field field : getFieldsForClass(clazz)) {
+        for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
             if (expectedModifier == (Modifier.STATIC & field.getModifiers())) {
-                // Note that this "setAccessible" will fail if the module is not properly "open".
-                field.setAccessible(true);
                 Class<?> type = field.getType();
                 if (boolean.class == type) {
                     boolean val = (0x1 == decoder.decodeByte());
@@ -440,15 +435,6 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     @Override
     public org.aion.avm.shadow.java.lang.Object decodeStub(StreamingPrimitiveCodec.Decoder decoder) {
         return inflateStubAsInstance(decoder);
-    }
-
-    private Field[] getFieldsForClass(Class<?> clazz) {
-        Field[] fields = this.fieldCache.get(clazz);
-        if (null == fields) {
-            fields = clazz.getDeclaredFields();
-            this.fieldCache.put(clazz, fields);
-        }
-        return fields;
     }
 
 
