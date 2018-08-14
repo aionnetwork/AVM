@@ -98,7 +98,7 @@ public class BlockchainRuntime {
         return null;
     }
 
-    public static Address avm_create(long value, byte[] data, long energyToSend) {
+    public static Address create(long value, byte[] data, long energyToSend) {
         return null;
     }
 
