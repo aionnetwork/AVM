@@ -17,7 +17,7 @@ public class SingleInstanceDeserializer implements IObjectDeserializer {
     }
 
     @Override
-    public void beginAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
+    public void beginDeserializingAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
         this.automaticPart.partialAutomaticDeserializeInstance(this.decoder, instance, firstManualClass);
     }
 

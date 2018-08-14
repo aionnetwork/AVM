@@ -18,7 +18,7 @@ public interface IObjectSerializer {
      * @param firstManualClass The class where the automatic serialization should stop.
      * @param nextObjectQueue The queue which will accept any other object instances found while serializing instance.
      */
-    void beginAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue);
+    void beginSerializingAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue);
 
     void writeByte(byte value);
 

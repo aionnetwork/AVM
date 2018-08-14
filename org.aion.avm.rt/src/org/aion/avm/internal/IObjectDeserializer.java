@@ -15,7 +15,7 @@ public interface IObjectDeserializer {
      * @param instance The instance to automatically deserialize.
      * @param firstManualClass The class where the automatic deserialization should stop.
      */
-    void beginAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass);
+    void beginDeserializingAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass);
 
     byte readByte();
 

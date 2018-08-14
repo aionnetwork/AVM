@@ -19,7 +19,7 @@ public class SingleInstanceSerializer implements IObjectSerializer {
     }
 
     @Override
-    public void beginAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+    public void beginSerializingAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         this.automaticPart.partialAutomaticSerializeInstance(this.encoder, instance, firstManualClass, nextObjectQueue);
     }
 
