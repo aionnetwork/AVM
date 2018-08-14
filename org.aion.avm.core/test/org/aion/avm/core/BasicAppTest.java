@@ -7,7 +7,9 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.IBlockchainRuntime;
+import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.AionSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,7 +30,7 @@ public class BasicAppTest {
 
     @Before
     public void setup() throws Exception {
-        this.avm = new SimpleAvm(10000L, BasicAppTestTarget.class, AionMap.class);
+        this.avm = new SimpleAvm(10000L, BasicAppTestTarget.class, AionMap.class, AionSet.class, AionList.class);
         AvmClassLoader loader = avm.getClassLoader();
         
         this.clazz = loader.loadUserClassByOriginalName(BasicAppTestTarget.class.getName());

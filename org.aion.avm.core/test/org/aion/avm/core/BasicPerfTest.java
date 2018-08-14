@@ -5,6 +5,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
@@ -32,6 +33,7 @@ public class BasicPerfTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BasicPerfContract.class
                 , AionList.class
                 , AionMap.class
+                , AionSet.class
         );
         
         // Deploy.

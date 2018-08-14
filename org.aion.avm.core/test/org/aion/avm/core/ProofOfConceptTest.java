@@ -436,6 +436,8 @@ public class ProofOfConceptTest {
                     ERC20Token.class,
                     ExchangeABI.class,
                     AionMap.class,
+                    AionSet.class,
+                    AionList.class,
                     ByteArrayHelpers.class
             );
         }
@@ -446,6 +448,8 @@ public class ProofOfConceptTest {
                     ERC20Token.class,
                     ExchangeABI.class,
                     AionMap.class,
+                    AionList.class,
+                    AionSet.class,
                     ByteArrayHelpers.class
             );
         }
@@ -457,6 +461,7 @@ public class ProofOfConceptTest {
                     ExchangeTransaction.class,
                     AionMap.class,
                     AionList.class,
+                    AionSet.class,
                     ByteArrayHelpers.class
             );
         }
