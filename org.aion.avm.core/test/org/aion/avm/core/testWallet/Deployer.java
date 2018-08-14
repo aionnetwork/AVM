@@ -10,6 +10,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.ClassHierarchyForest;
 import org.aion.avm.core.DAppCreator;
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.TestingHelper;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
@@ -41,7 +42,12 @@ public class Deployer {
         // This is eventually just a test harness to invoke the decode() but, for now, it will actually invoke the calls, directly.
         // In order to instantiate Address objects, we need to install the IHelper.
         System.out.println("--- DIRECT ---");
-        IHelper.currentContractHelper.set(new FakeHelper());
+        IHelper.currentContractHelper.set(new TestingHelper() {
+            @Override
+            public void externalBootstrapOnly() {
+                // Ideally this wouldn't be called but we aren't currently worrying about it for this launcher (as we are moving away from it, anyway).
+            }
+        });
         invokeDirect(args);
         IHelper.currentContractHelper.remove();
         System.out.println("--- DONE (DIRECT) ---");
@@ -448,46 +454,6 @@ public class Deployer {
         public int getEventCount(String event) {
             Integer count = this.eventCounts.get(event);
             return (null != count) ? count : 0;
-        }
-    }
-
-
-    private static class FakeHelper implements IHelper {
-        @Override
-        public void externalChargeEnergy(long cost) {
-            Assert.unreachable("This shouldn't be called in this test.");
-        }
-        @Override
-        public void externalSetEnergy(long energy) {
-            Assert.unreachable("This shouldn't be called in this test.");
-        }
-        @Override
-        public long externalGetEnergyRemaining() {
-            Assert.unreachable("This shouldn't be called in this test.");
-            return 0;
-        }
-        @Override
-        public org.aion.avm.shadow.java.lang.Class<?> externalWrapAsClass(Class<?> input) {
-            Assert.unreachable("This shouldn't be called in this test.");
-            return null;
-        }
-        @Override
-        public int externalGetNextHashCode() {
-            // Just return anything.
-            return 0;
-        }
-        @Override
-        public int captureSnapshotAndNextHashCode() {
-            Assert.unreachable("This shouldn't be called in this test.");
-            return 0;
-        }
-        @Override
-        public void applySpanshotAndNextHashCode(int nextHashCode) {
-            Assert.unreachable("This shouldn't be called in this test.");
-        }
-        @Override
-        public void externalBootstrapOnly() {
-            // Ideally this wouldn't be called but we aren't currently worrying about it for this launcher (as we are moving away from it, anyway).
         }
     }
 }

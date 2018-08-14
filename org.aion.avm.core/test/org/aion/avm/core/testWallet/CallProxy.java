@@ -7,6 +7,7 @@ import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.shadow.java.lang.Boolean;
 
 
 /**
@@ -29,7 +30,7 @@ public class CallProxy {
     public static boolean addOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address owner) throws Exception {
         byte[] onto = CallEncoder.addOwner(owner);
         inputConsumer.accept(onto);
-        return (Boolean) callDecode(loader);
+        return ((Boolean) callDecode(loader)).getValue();
     }
 
     public static byte[] execute(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address to, long value, byte[] data) throws Exception {
@@ -44,13 +45,13 @@ public class CallProxy {
     public static boolean confirm(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, byte[] data) throws Exception {
         byte[] onto = CallEncoder.confirm(data);
         inputConsumer.accept(onto);
-        return (Boolean) callDecode(loader);
+        return ((Boolean) callDecode(loader)).getValue();
     }
 
     public static boolean changeRequirement(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, int newRequired) throws Exception {
         byte[] onto = CallEncoder.changeRequirement(newRequired);
         inputConsumer.accept(onto);
-        return (Boolean) callDecode(loader);
+        return ((Boolean) callDecode(loader)).getValue();
     }
 
     public static Address getOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, int ownerIndex) throws Exception {
@@ -62,13 +63,13 @@ public class CallProxy {
     public static boolean changeOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address from, Address to) throws Exception {
         byte[] onto = CallEncoder.changeOwner(from, to);
         inputConsumer.accept(onto);
-        return (Boolean) callDecode(loader);
+        return ((Boolean) callDecode(loader)).getValue();
     }
 
     public static boolean removeOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address owner) throws Exception {
         byte[] onto = CallEncoder.removeOwner(owner);
         inputConsumer.accept(onto);
-        return (Boolean) callDecode(loader);
+        return ((Boolean) callDecode(loader)).getValue();
     }
 
     public static void revoke(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, byte[] transactionBytes) throws Exception {
@@ -84,7 +85,7 @@ public class CallProxy {
             .getMethod(UserClassMappingVisitor.mapMethodName("main"))
             .invoke(null);
         return (null != output)
-                ? ABIDecoder.decodeOneObject(output.getUnderlying())
+                ? ABIDecoder.avm_decodeOneObject(output)
                 : null;
     }
 }

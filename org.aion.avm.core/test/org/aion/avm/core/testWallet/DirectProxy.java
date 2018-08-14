@@ -35,7 +35,7 @@ public class DirectProxy {
         inputConsumer.accept(onto);
         byte[] result = WalletShim.main();
         return (null != result)
-                ? ((ByteArray) ABIDecoder.decodeOneObject(result)).getUnderlying()
+                ? (byte[])ABIDecoder.decodeOneObject(result)
                 : null;
     }
 

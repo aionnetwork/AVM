@@ -106,6 +106,10 @@ public class Boolean extends Object implements Comparable<Boolean> {
         return java.lang.Boolean.toString(this.v);
     }
 
+    public boolean getValue() {
+        return v;
+    }
+
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================

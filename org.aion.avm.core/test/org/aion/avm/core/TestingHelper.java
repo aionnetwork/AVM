@@ -47,8 +47,7 @@ public class TestingHelper implements IHelper {
         return ret;
     }
 
-
-    private TestingHelper() {
+    public TestingHelper() {
         install();
     }
     private void install() {
