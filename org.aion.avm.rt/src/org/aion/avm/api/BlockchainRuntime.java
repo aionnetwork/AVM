@@ -36,7 +36,7 @@ public class BlockchainRuntime {
     }
 
     public static long avm_getBlockEpochSeconds() {
-        return Helper.blockchainRuntime.avm_getBlockEpochSeconds();
+        return Helper.blockchainRuntime.avm_getBlockTimestamp();
     }
 
     public static long avm_getBlockNumber() {
@@ -44,7 +44,7 @@ public class BlockchainRuntime {
     }
 
     public static ByteArray avm_sha3(ByteArray data) {
-        return Helper.blockchainRuntime.avm_sha3(data);
+        return Helper.blockchainRuntime.avm_blake2b(data);
     }
 
     public static ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {

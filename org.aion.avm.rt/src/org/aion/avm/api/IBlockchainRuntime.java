@@ -2,39 +2,104 @@ package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.shadow.java.math.BigInteger;
 
 
 /**
  * Represents the hub of AVM runtime.
  */
 public interface IBlockchainRuntime extends IObject {
-    // Runtime-facing implementation.
-    /**
-     * Returns the sender address.
-     *
-     * @return
-     */
-    Address avm_getSender();
+    //================
+    // transaction
+    //================
 
     /**
-     * Returns the address of the executing account.
-     *
-     * @return
+     * Returns the owner's address, whose state is being accessed.
      */
     Address avm_getAddress();
 
     /**
+     * Returns the sender's address.
+     */
+    Address avm_getSender();
+
+    /**
+     * Returns the originator's address.
+     */
+    Address avm_getOrigin();
+
+    /**
      * Returns the energy limit.
-     *
-     * @return
      */
     long avm_getEnergyLimit();
 
     /**
+     * Returns the energy price.
+     */
+    BigInteger avm_getEnergyPrice();
+
+    /**
+     * Returns the value being transferred along the transaction.
+     */
+    BigInteger avm_getValue();
+
+    /**
      * Returns the transaction data.
-     * @return
      */
     ByteArray avm_getData();
+
+
+    //================
+    // block
+    //================
+
+    /**
+     * Block timestamp.
+     *
+     * @return The time of the current block, as seconds since the Epoch.
+     */
+    long avm_getBlockTimestamp();
+
+    /**
+     * Block number.
+     *
+     * @return The number of the current block.
+     */
+    long avm_getBlockNumber();
+
+    /**
+     * Block energy limit
+     *
+     * @return The block energy limit
+     */
+    long avm_getBlockEnergyLimit();
+
+    /**
+     * Block coinbase address
+     *
+     * @return the miner address of the block
+     */
+    Address avm_getBlockCoinbase();
+
+    /**
+     * Block prevHash
+     *
+     * @return the hash of the previous block.
+     */
+    ByteArray avm_getBlockPreviousHash();
+
+    /**
+     * Block difficulty
+     *
+     * @return the difficulty of the block.
+     */
+    BigInteger avm_getBlockDifficulty();
+
+    //================
+    // State
+    //================
+
+    // TODO: how to expose the underlying storage, to cooperate with our persistence model
 
     /**
      * Returns the corresponding value in the storage.
@@ -53,47 +118,61 @@ public interface IBlockchainRuntime extends IObject {
     void avm_putStorage(ByteArray key, ByteArray value);
 
     /**
-     * Destruct the Dapp.
+     * Returns the address of an account.
+     * <p>
+     * TODO: subject to removal for parallel execution
+     *
+     * @param address account address
+     * @return the balance if the account
+     */
+    BigInteger avm_getBalance(Address address);
+
+    /**
+     * Returns the code size of an account.
+     * <p>
+     * TODO: subject to removal for parallel execution
+     *
+     * @param address account address
+     * @return the code size of the account
+     */
+    int avm_getCodeSize(Address address);
+
+    //================
+    // System
+    //================
+
+    /**
+     * Checks the current remaining energy.
+     *
+     * @return the remaining energy.
+     */
+    long avm_getRemainingEnergy();
+
+    /**
+     * Calls the contract denoted by the targetAddress, sending payload data and energyToSend energy for the invocation.  Returns the response of the contract.
+     * NOTE:  This is likely to change as we work out the details of the ABI and cross-call semantics but exists to handle expectations of ported Solidity applications.
+     *
+     * @param targetAddress The address of the contract to call.
+     * @param value         The value to transfer
+     * @param data          The data payload to send to that contract.
+     * @param energyToSend  The energy to send that contract.
+     * @return The response of executing the contract.
+     */
+    ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyToSend);
+
+    Address avm_create(long value, ByteArray data, long energyToSend);
+
+    /**
+     * Destructs this Dapp and refund all balance to the beneficiary.
      *
      * @param beneficiary
      */
     void avm_selfDestruct(Address beneficiary);
 
     /**
-     * @return The time of the current block, as seconds since the Epoch.
-     */
-    long avm_getBlockEpochSeconds();
-
-    /**
-     * @return The number of the current block.
-     */
-    long avm_getBlockNumber();
-
-    /**
-     * Computes the sha3 digest of the given data.
-     * Note that this response is always 32 bytes.  User-space might want to wrap it.  Should we wrap it on the runtime interface level?
-     * 
-     * @param data The data to hash.
-     * @return The sha3 digest (always 32 bytes long).
-     */
-    ByteArray avm_sha3(ByteArray data);
-
-    /**
-     * Calls the contract denoted by the targetAddress, sending payload data and energyToSend energy for the invocation.  Returns the response of the contract.
-     * NOTE:  This is likely to change as we work out the details of the ABI and cross-call semantics but exists to handle expectations of ported Solidity applications.
-     * 
-     * @param targetAddress The address of the contract to call.
-     * @param value The value to transfer
-     * @param data The data payload to send to that contract.
-     * @param energyToSend The energy to send that contract.
-     * @return The response of executing the contract.
-     */
-    ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyToSend);
-
-    /**
      * Logs information for offline analysis or external listening.
      *
-     * @param data Arbitrary unstructed data assocated with the event.
+     * @param data arbitrary unstructured data.
      */
     void avm_log(ByteArray data);
 
@@ -104,4 +183,12 @@ public interface IBlockchainRuntime extends IObject {
     void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data);
 
     void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data);
+
+    /**
+     * Computes the Blake2b digest of the given data.
+     *
+     * @param data The data to hash.
+     * @return The 32-byte digest.
+     */
+    ByteArray avm_blake2b(ByteArray data);
 }

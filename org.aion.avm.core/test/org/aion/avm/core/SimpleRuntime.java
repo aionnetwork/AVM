@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.IBlockchainRuntime;
+import org.aion.avm.shadow.java.math.BigInteger;
 import org.junit.Assert;
 
 
@@ -48,6 +49,12 @@ public class SimpleRuntime extends org.aion.avm.shadow.java.lang.Object implemen
         }
         return this.cachedSender;
     }
+
+    @Override
+    public Address avm_getOrigin() {
+        return null;
+    }
+
     @Override
     public Address avm_getAddress() {
         if (null == this.cachedAddress) {
@@ -59,6 +66,17 @@ public class SimpleRuntime extends org.aion.avm.shadow.java.lang.Object implemen
     public long avm_getEnergyLimit() {
         return this.energyLimit;
     }
+
+    @Override
+    public BigInteger avm_getEnergyPrice() {
+        return null;
+    }
+
+    @Override
+    public BigInteger avm_getValue() {
+        return null;
+    }
+
     @Override
     public ByteArray avm_getData() {
         if (null == this.txData) {
@@ -80,11 +98,26 @@ public class SimpleRuntime extends org.aion.avm.shadow.java.lang.Object implemen
     }
 
     @Override
+    public BigInteger avm_getBalance(Address address) {
+        return null;
+    }
+
+    @Override
+    public int avm_getCodeSize(Address address) {
+        return 0;
+    }
+
+    @Override
+    public long avm_getRemainingEnergy() {
+        return 0;
+    }
+
+    @Override
     public void avm_selfDestruct(Address beneficiary) {
         Assert.fail("This implementation doesn't handle this");
     }
     @Override
-    public long avm_getBlockEpochSeconds() {
+    public long avm_getBlockTimestamp() {
         Assert.fail("This implementation doesn't handle this");
         return 0;
     }
@@ -96,7 +129,27 @@ public class SimpleRuntime extends org.aion.avm.shadow.java.lang.Object implemen
     }
 
     @Override
-    public ByteArray avm_sha3(ByteArray data) {
+    public long avm_getBlockEnergyLimit() {
+        return 0;
+    }
+
+    @Override
+    public Address avm_getBlockCoinbase() {
+        return null;
+    }
+
+    @Override
+    public ByteArray avm_getBlockPreviousHash() {
+        return null;
+    }
+
+    @Override
+    public BigInteger avm_getBlockDifficulty() {
+        return null;
+    }
+
+    @Override
+    public ByteArray avm_blake2b(ByteArray data) {
         Assert.fail("This implementation doesn't handle this");
         return null;
     }
@@ -104,6 +157,11 @@ public class SimpleRuntime extends org.aion.avm.shadow.java.lang.Object implemen
     @Override
     public ByteArray avm_call(Address targetAddress, long value, ByteArray payload, long energyToSend) {
         Assert.fail("This implementation doesn't handle this");
+        return null;
+    }
+
+    @Override
+    public Address avm_create(long value, ByteArray data, long energyToSend) {
         return null;
     }
 

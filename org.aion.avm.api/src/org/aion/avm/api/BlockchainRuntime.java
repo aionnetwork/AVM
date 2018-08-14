@@ -1,25 +1,25 @@
 package org.aion.avm.api;
 
+import java.math.BigInteger;
+
 /**
  * Represents the hub of AVM runtime.
  */
 public class BlockchainRuntime {
 
-    // TODO: clean up the method names, or re-organize by types
-
     //===================
     // Transaction
     //===================
-
-    public static Address getSender() {
-        return null;
-    }
 
     public static Address getAddress() {
         return null;
     }
 
-    public static byte[] getData() {
+    public static Address getSender() {
+        return null;
+    }
+
+    public static Address getOrigin() {
         return null;
     }
 
@@ -27,16 +27,44 @@ public class BlockchainRuntime {
         return 0;
     }
 
+    public static BigInteger getEnergyPrice() {
+        return null;
+    }
+
+    public static BigInteger getValue() {
+        return null;
+    }
+
+    public static byte[] getData() {
+        return null;
+    }
+
     //===================
     // Block
     //===================
 
-    public static long getBlockEpochSeconds() {
+    public static long getBlockTimestamp() {
         return 0;
     }
 
     public static long getBlockNumber() {
         return 0;
+    }
+
+    public static long getBlockEnergyLimit() {
+        return 0;
+    }
+
+    public static Address getBlockCoinbase() {
+        return null;
+    }
+
+    public static byte[] getBlockPreviousHash() {
+        return null;
+    }
+
+    public static BigInteger getBlockDifficulty() {
+        return null;
     }
 
     //===================
@@ -50,22 +78,31 @@ public class BlockchainRuntime {
     public static void putStorage(byte[] key, byte[] value) {
     }
 
-    //===================
-    // Misc
-    //===================
-
-    public static void updateCode(byte[] newCode) {
-    }
-
-    public static void selfDestruct(Address beneficiary) {
-    }
-
-    public static byte[] sha3(byte[] data) {
+    public static BigInteger getBalance(Address address) {
         return null;
+    }
+
+    public static int getCodeSize(Address address) {
+        return 0;
+    }
+
+    //===================
+    // System
+    //===================
+
+    public static long getRemainingEnergy() {
+        return 0;
     }
 
     public static byte[] call(Address targetAddress, long value, byte[] data, long energyToSend) {
         return null;
+    }
+
+    public static Address avm_create(long value, byte[] data, long energyToSend) {
+        return null;
+    }
+
+    public static void selfDestruct(Address beneficiary) {
     }
 
     public static void log(byte[] data) {
@@ -81,5 +118,9 @@ public class BlockchainRuntime {
     }
 
     public static void log(byte[] topic1, byte[] topic2, byte[] topic3, byte[] topic4, byte[] data) {
+    }
+
+    public static byte[] blake2b(byte[] data) {
+        return null;
     }
 }

@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.aion.avm.api.Address;
@@ -10,6 +9,7 @@ import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.*;
 
 
@@ -38,19 +38,34 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
     }
 
     @Override
-    public Address avm_getSender() {
-        return new Address(tx.getFrom());
-    }
-
-    @Override
     public Address avm_getAddress() {
         // TODO: handle CREATE transaction
         return new Address(tx.getTo());
     }
 
     @Override
+    public Address avm_getSender() {
+        return new Address(tx.getFrom());
+    }
+
+    @Override
+    public Address avm_getOrigin() {
+        return null;
+    }
+
+    @Override
     public long avm_getEnergyLimit() {
         return tx.getEnergyLimit();
+    }
+
+    @Override
+    public BigInteger avm_getEnergyPrice() {
+        return null;
+    }
+
+    @Override
+    public BigInteger avm_getValue() {
+        return null;
     }
 
     @Override
@@ -79,13 +94,18 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
     }
 
     @Override
-    public void avm_selfDestruct(Address beneficiary) {
-        // TODO: transfer
-        this.kernel.deleteAccount(tx.getTo());
+    public BigInteger avm_getBalance(Address address) {
+        return null;
     }
 
     @Override
-    public long avm_getBlockEpochSeconds() {
+    public int avm_getCodeSize(Address address) {
+        return 0;
+    }
+
+
+    @Override
+    public long avm_getBlockTimestamp() {
         return block.getTimestamp();
     }
 
@@ -95,11 +115,29 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
     }
 
     @Override
-    public ByteArray avm_sha3(ByteArray data) {
-        // For now, we just return the first 32 bytes of the input data since some tests want to call this and require 32 bytes but we eventually need a real implementation (issue-152).
-        // TODO: we can implement this inside vm
+    public long avm_getBlockEnergyLimit() {
+        return 0;
+    }
 
-        return new ByteArray(Arrays.copyOfRange(data.getUnderlying(), 0, 32));
+    @Override
+    public Address avm_getBlockCoinbase() {
+        return null;
+    }
+
+    @Override
+    public ByteArray avm_getBlockPreviousHash() {
+        return null;
+    }
+
+    @Override
+    public BigInteger avm_getBlockDifficulty() {
+        return null;
+    }
+
+
+    @Override
+    public long avm_getRemainingEnergy() {
+        return 0;
     }
 
     @Override
@@ -146,6 +184,18 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
     }
 
     @Override
+    public Address avm_create(long value, ByteArray data, long energyToSend) {
+        // TODO: implement CREATE
+        return null;
+    }
+
+    @Override
+    public void avm_selfDestruct(Address beneficiary) {
+        // TODO: add value transfer here
+        this.kernel.deleteAccount(tx.getTo());
+    }
+
+    @Override
     public void avm_log(ByteArray data) {
         Log log = new Log(tx.getTo(), List.of(), data.getUnderlying());
         result.addLog(log);
@@ -173,5 +223,19 @@ public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object 
     public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data) {
         Log log = new Log(tx.getTo(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying(), topic4.getUnderlying()), data.getUnderlying());
         result.addLog(log);
+    }
+
+    @Override
+    public ByteArray avm_blake2b(ByteArray data) {
+        if (data == null) {
+            throw new IllegalArgumentException("Input data can't be NULL");
+        }
+
+        // TODO: implement blake2b
+
+        byte[] result = new byte[32];
+        System.arraycopy(data.getUnderlying(),0, result, 0, Math.min(result.length, data.length()));
+
+        return new ByteArray(result);
     }
 }

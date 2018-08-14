@@ -18,6 +18,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.api.Address;
+import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -306,6 +307,12 @@ public class Deployer {
         public Address avm_getSender() {
             return this.sender;
         }
+
+        @Override
+        public Address avm_getOrigin() {
+            return null;
+        }
+
         @Override
         public Address avm_getAddress() {
             Assert.unimplemented("TODO");
@@ -316,6 +323,17 @@ public class Deployer {
             // Just return a big number so we can run.
             return 1000000;
         }
+
+        @Override
+        public BigInteger avm_getEnergyPrice() {
+            return null;
+        }
+
+        @Override
+        public BigInteger avm_getValue() {
+            return null;
+        }
+
         @Override
         public ByteArray avm_getData() {
             return this.data;
@@ -329,11 +347,27 @@ public class Deployer {
         public void avm_putStorage(ByteArray key, ByteArray value) {
             Assert.unimplemented("TODO");
         }
+
+        @Override
+        public BigInteger avm_getBalance(Address address) {
+            return null;
+        }
+
+        @Override
+        public int avm_getCodeSize(Address address) {
+            return 0;
+        }
+
+        @Override
+        public long avm_getRemainingEnergy() {
+            return 0;
+        }
+
         @Override
         public void avm_selfDestruct(Address beneficiary) {
             Assert.unimplemented("TODO");
         }
-        public long avm_getBlockEpochSeconds() {
+        public long avm_getBlockTimestamp() {
             // For now, always say it is day 1:  seconds per day.
             return 60 * 60 * 24;
         }
@@ -342,8 +376,29 @@ public class Deployer {
             // For now, say that this is block 1.
             return 1;
         }
+
         @Override
-        public ByteArray avm_sha3(ByteArray data) {
+        public long avm_getBlockEnergyLimit() {
+            return 0;
+        }
+
+        @Override
+        public Address avm_getBlockCoinbase() {
+            return null;
+        }
+
+        @Override
+        public ByteArray avm_getBlockPreviousHash() {
+            return null;
+        }
+
+        @Override
+        public BigInteger avm_getBlockDifficulty() {
+            return null;
+        }
+
+        @Override
+        public ByteArray avm_blake2b(ByteArray data) {
             // For tests, we just return the initial data with a prefix.
             byte[] result = new byte[data.length() + 1];
             result[0] = (byte)255;
@@ -354,6 +409,11 @@ public class Deployer {
         public ByteArray avm_call(Address targetAddress, long value, ByteArray payload, long energyToSend) {
             // We probably want to capture/verify this more concretely but, for now, just return the payload to synthesize "something".
             return payload;
+        }
+
+        @Override
+        public Address avm_create(long value, ByteArray data, long energyToSend) {
+            return null;
         }
 
         @Override
