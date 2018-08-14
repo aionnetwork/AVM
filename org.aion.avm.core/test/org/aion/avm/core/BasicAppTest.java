@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.internal.IHelper;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
@@ -39,8 +38,7 @@ public class BasicAppTest {
         Assert.assertEquals(loader, this.clazz.getClassLoader());
         
         // Create the wrapper for the runtime object, now that the external one has been used to create the Helper required to instantiate shadow objects.
-        SimpleRuntime externalRuntime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
-        this.runtime = new ContractRuntimeWrapper(externalRuntime);
+        this.runtime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
     }
 
     @After
@@ -83,9 +81,8 @@ public class BasicAppTest {
         // Should be just 1 byte, containing the low hash byte.
         Assert.assertEquals(1, output.length());
         byte result = output.get(0);
-        // We know that the runtime was the first object and the runtime wrapper is the second
-        // so its hash will be 2.
-        Assert.assertEquals(2, result);
+        // We know that the runtime was the first object
+        Assert.assertEquals(1, result);
     }
 
     /**
