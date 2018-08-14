@@ -290,7 +290,7 @@ public class Deployer {
     }
 
 
-    private static class TestingRuntime extends org.aion.avm.shadow.java.lang.Object implements IBlockchainRuntime {
+    private static class TestingRuntime implements IBlockchainRuntime {
         private final Address sender;
         private final ByteArray data;
         private final Map<java.lang.String, Integer> eventCounts;

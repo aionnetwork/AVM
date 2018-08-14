@@ -12,7 +12,7 @@ import org.junit.Assert;
  * A minimal implementation of IBlockchainRuntime sufficient for our current class of tests.
  * These provide only the direct inputs, none of the interactive data layer.
  */
-public class SimpleRuntime extends org.aion.avm.shadow.java.lang.Object implements IBlockchainRuntime {
+public class SimpleRuntime implements IBlockchainRuntime {
     private final byte[] sender;
     private final byte[] address;
     private final long energyLimit;

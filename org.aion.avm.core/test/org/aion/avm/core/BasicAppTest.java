@@ -25,7 +25,6 @@ public class BasicAppTest {
     private SimpleAvm avm;
     private Class<?> clazz;
     private Method decodeMethod;
-    private IBlockchainRuntime runtime;
 
     @Before
     public void setup() throws Exception {
@@ -34,11 +33,8 @@ public class BasicAppTest {
         
         this.clazz = loader.loadUserClassByOriginalName(BasicAppTestTarget.class.getName());
         // NOTE:  The user's side is pre-shadow so it uses "byte[]" whereas we look up "ByteArray", here.
-        this.decodeMethod = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("decode"), IBlockchainRuntime.class, ByteArray.class);
+        this.decodeMethod = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("decode"), ByteArray.class);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
-        
-        // Create the wrapper for the runtime object, now that the external one has been used to create the Helper required to instantiate shadow objects.
-        this.runtime = new SimpleRuntime(new byte[Address.LENGTH], new byte[Address.LENGTH], 10000);
     }
 
     @After
@@ -49,7 +45,7 @@ public class BasicAppTest {
     @Test
     public void testIdentity() throws Exception {
         ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodIdentity, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
         // These should be the same instance.
         Assert.assertEquals(input, output);
     }
@@ -57,7 +53,7 @@ public class BasicAppTest {
     @Test
     public void testSumInput() throws Exception {
         ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodSum, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
         // Should be just 1 byte, containing the sum.
         Assert.assertEquals(1, output.length());
         Assert.assertEquals(BasicAppTestTarget.kMethodSum + 42 + 13, output.get(0));
@@ -66,23 +62,12 @@ public class BasicAppTest {
     @Test
     public void testLowOrderByteArrayHash() throws Exception {
         ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodLowOrderByteArrayHash, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
         // Should be just 1 byte, containing the low hash byte.
         Assert.assertEquals(1, output.length());
         byte result = output.get(0);
         // This should match the input we gave them.
         Assert.assertEquals(input.avm_hashCode(), result);
-    }
-
-    @Test
-    public void testLowOrderRuntimeHash() throws Exception {
-        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodLowOrderRuntimeHash, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
-        // Should be just 1 byte, containing the low hash byte.
-        Assert.assertEquals(1, output.length());
-        byte result = output.get(0);
-        // We know that the runtime was the first object
-        Assert.assertEquals(1, result);
     }
 
     /**
@@ -94,18 +79,18 @@ public class BasicAppTest {
     public void testRepeatedSwaps() throws Exception {
         ByteArray input1 = new ByteArray(new byte[] {BasicAppTestTarget.kMethodSwapInputsFromLastCall, 1});
         ByteArray input2 = new ByteArray(new byte[] {BasicAppTestTarget.kMethodSwapInputsFromLastCall, 2});
-        ByteArray output1 = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input1);
+        ByteArray output1 = (ByteArray)this.decodeMethod.invoke(null, input1);
         Assert.assertNull(output1);
-        ByteArray output2 = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input2);
+        ByteArray output2 = (ByteArray)this.decodeMethod.invoke(null, input2);
         Assert.assertEquals(input1.get(1), output2.get(1));
-        ByteArray output3 = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input1);
+        ByteArray output3 = (ByteArray)this.decodeMethod.invoke(null, input1);
         Assert.assertEquals(input2.get(1), output3.get(1));
     }
 
     @Test
     public void testArrayEquality() throws Exception {
         ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodTestArrayEquality, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
         // Should be just 1 byte: 0 (since they should never be equal).
         Assert.assertEquals(1, output.length());
         Assert.assertEquals(0, output.get(0));
@@ -114,7 +99,7 @@ public class BasicAppTest {
     @Test
     public void testAllocateArray() throws Exception {
         ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodAllocateObjectArray, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
         // Should be just 1 byte: 2 (since that is the length).
         Assert.assertEquals(1, output.length());
         Assert.assertEquals(2, output.get(0));
@@ -123,7 +108,7 @@ public class BasicAppTest {
     @Test
     public void testByteAutoboxing() throws Exception {
         ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodByteAutoboxing, 42});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
         // Should be just 2 bytes: 2 wrapper hashcode low byte and unwrapped value.
         Assert.assertEquals(2, output.length());
         Assert.assertEquals(42, output.get(0));
@@ -133,17 +118,17 @@ public class BasicAppTest {
     @Test
     public void testMapInteraction() throws Exception {
         ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodMapPut, 1, 42});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
         Assert.assertEquals(1, output.length());
         Assert.assertEquals(42, output.get(0));
         
         input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodMapPut, 2, 13});
-        output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        output = (ByteArray)this.decodeMethod.invoke(null, input);
         Assert.assertEquals(1, output.length());
         Assert.assertEquals(13, output.get(0));
         
         input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodMapGet, 2});
-        output = (ByteArray)this.decodeMethod.invoke(null, this.runtime, input);
+        output = (ByteArray)this.decodeMethod.invoke(null, input);
         Assert.assertEquals(1, output.length());
         Assert.assertEquals(13, output.get(0));
     }

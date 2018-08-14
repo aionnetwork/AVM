@@ -14,7 +14,6 @@ public class BasicAppTestTarget {
     public static final byte kMethodIdentity = 1;
     public static final byte kMethodSum = 2;
     public static final byte kMethodLowOrderByteArrayHash = 3;
-    public static final byte kMethodLowOrderRuntimeHash = 4;
     public static final byte kMethodSwapInputsFromLastCall = 5;
     public static final byte kMethodTestArrayEquality = 6;
     public static final byte kMethodAllocateObjectArray = 7;
@@ -27,39 +26,36 @@ public class BasicAppTestTarget {
     private static AionMap<Byte, Byte> longLivedMap = new AionMap<>();
 
     // NOTE:  Even though this is "byte[]" on the user's side, we will call it from the outside as "ByteArray"
-    public static byte[] decode(IBlockchainRuntime runtime, byte[] input) {
+    public static byte[] decode(byte[] input) {
         byte instruction = input[0];
         byte[] output = null;
         switch (instruction) {
         case kMethodIdentity:
-            output = identity(runtime, input);
+            output = identity(input);
             break;
         case kMethodSum:
-            output = sum(runtime, input);
+            output = sum(input);
             break;
         case kMethodLowOrderByteArrayHash:
-            output = lowOrderByteArrayHash(runtime, input);
-            break;
-        case kMethodLowOrderRuntimeHash:
-            output = lowOrderRuntimeHash(runtime, input);
+            output = lowOrderByteArrayHash(input);
             break;
         case kMethodSwapInputsFromLastCall:
-            output = swapInputs(runtime, input);
+            output = swapInputs(input);
             break;
         case kMethodTestArrayEquality:
-            output = arrayEquality(runtime, input);
+            output = arrayEquality(input);
             break;
         case kMethodAllocateObjectArray:
-            output = allocateObjectArray(runtime, input);
+            output = allocateObjectArray(input);
             break;
         case kMethodByteAutoboxing:
-            output = byteAutoboxing(runtime, input);
+            output = byteAutoboxing(input);
             break;
         case kMethodMapPut:
-            output = mapPut(runtime, input);
+            output = mapPut(input);
             break;
         case kMethodMapGet:
-            output = mapGet(runtime, input);
+            output = mapGet(input);
             break;
         default:
             throw new AssertionError("Unknown instruction");
@@ -67,11 +63,11 @@ public class BasicAppTestTarget {
         return output;
     }
 
-    private static byte[] identity(IBlockchainRuntime runtime, byte[] input) {
+    private static byte[] identity(byte[] input) {
         return input;
     }
 
-    private static byte[] sum(IBlockchainRuntime runtime, byte[] input) {
+    private static byte[] sum(byte[] input) {
         byte total = 0;
         for (int i = 0; i < input.length; ++i) {
             total += input[i];
@@ -79,47 +75,43 @@ public class BasicAppTestTarget {
         return new byte[] {total};
     }
 
-    private static byte[] lowOrderByteArrayHash(IBlockchainRuntime runtime, byte[] input) {
+    private static byte[] lowOrderByteArrayHash(byte[] input) {
         return new byte[] {(byte)(0xff & input.hashCode())};
     }
 
-    private static byte[] lowOrderRuntimeHash(IBlockchainRuntime runtime, byte[] input) {
-        return new byte[] {(byte)(0xff & runtime.hashCode())};
-    }
-
-    private static byte[] swapInputs(IBlockchainRuntime runtime, byte[] input) {
+    private static byte[] swapInputs(byte[] input) {
         byte[] result = swappingPoint;
         swappingPoint = input;
         return result;
     }
 
-    private static byte[] arrayEquality(IBlockchainRuntime runtime, byte[] input) {
+    private static byte[] arrayEquality(byte[] input) {
         byte[] target = new byte[] {5, 6, 7, 8};
         boolean isEqual = target.equals(input);
         byte result = (byte)(isEqual ? 1 : 0);
         return new byte[] { result };
     }
 
-    private static byte[] allocateObjectArray(IBlockchainRuntime runtime, byte[] input) {
+    private static byte[] allocateObjectArray(byte[] input) {
         // We just want to create the array.
         Object[] array = new Object[] {"test", "two"};
         return new byte[] { (byte)array.length };
     }
 
-    private static byte[] byteAutoboxing(IBlockchainRuntime runtime, byte[] input) {
+    private static byte[] byteAutoboxing(byte[] input) {
         // Take the second byte, auto-boxed, and use that information to build the response.
         Byte value = input[1];
         return new byte[] { (byte)value.hashCode(), value.byteValue() };
     }
 
-    private static byte[] mapPut(IBlockchainRuntime runtime, byte[] input) {
+    private static byte[] mapPut(byte[] input) {
         byte key = input[1];
         byte value = input[2];
         longLivedMap.put(key, value);
         return new byte[] {value};
     }
 
-    private static byte[] mapGet(IBlockchainRuntime runtime, byte[] input) {
+    private static byte[] mapGet(byte[] input) {
         byte key = input[1];
         byte value = longLivedMap.get(key);
         return new byte[] {value};

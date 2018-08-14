@@ -16,7 +16,7 @@ import org.aion.kernel.*;
 /**
  * The implementation of IBlockchainRuntime which is appropriate for exposure as a shadow Object instance within a DApp.
  */
-public class BlockchainRuntimeImpl extends org.aion.avm.shadow.java.lang.Object implements IBlockchainRuntime {
+public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private final KernelInterface kernel;
     private final Avm avm;
     private final ReentrantDAppStack.ReentrantState reentrantState;

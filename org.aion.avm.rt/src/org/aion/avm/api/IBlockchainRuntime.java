@@ -8,7 +8,7 @@ import org.aion.avm.shadow.java.math.BigInteger;
 /**
  * Represents the hub of AVM runtime.
  */
-public interface IBlockchainRuntime extends IObject {
+public interface IBlockchainRuntime {
     //================
     // transaction
     //================
