@@ -8,17 +8,17 @@ import org.aion.avm.api.BlockchainRuntime;
 /**
  * A test created as part of issue-167 to test out re-entrance concerns when a DApp calls itself.
  */
-public class ReentractCrossCallResource {
+public class ReentrantCrossCallResource {
     // We use these to verify the commit/rollback of object graph state, during reentrant calls.
     private static int direct = 1;
-    private static ReentractCrossCallResource constant = new ReentractCrossCallResource();
+    private static ReentrantCrossCallResource constant = new ReentrantCrossCallResource();
     private int near = 1;
     private int[] far = new int[] {1};
 
 
     public static byte[] main() {
         byte[] input = BlockchainRuntime.getData();
-        return ABIDecoder.decodeAndRun(new ReentractCrossCallResource(), input);
+        return ABIDecoder.decodeAndRun(new ReentrantCrossCallResource(), input);
     }
 
     public static Object callSelfForNull() {

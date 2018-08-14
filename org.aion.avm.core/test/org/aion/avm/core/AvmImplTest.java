@@ -144,7 +144,7 @@ public class AvmImplTest {
 
     @Test
     public void testNullReturnCrossCall() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentractCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
@@ -166,7 +166,7 @@ public class AvmImplTest {
 
     @Test
     public void testRecursiveHashCode() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentractCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
@@ -200,7 +200,7 @@ public class AvmImplTest {
     @Test
     public void testCommitReentrantCalls() {
         boolean shouldFail = false;
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentractCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
