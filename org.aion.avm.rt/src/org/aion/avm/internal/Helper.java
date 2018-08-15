@@ -166,8 +166,6 @@ public class Helper implements IHelper {
 
     public static void chargeEnergy(long cost) throws OutOfEnergyError {
 
-        System.out.println(cost);
-
         // This is called at the beginning of a block so see if we are being asked to exit.
         if (null != forceExitState) {
             throw forceExitState;
