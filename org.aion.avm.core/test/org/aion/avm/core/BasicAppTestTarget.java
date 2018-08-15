@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
 
 

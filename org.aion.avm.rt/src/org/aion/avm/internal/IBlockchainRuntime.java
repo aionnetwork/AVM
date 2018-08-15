@@ -1,5 +1,6 @@
-package org.aion.avm.api;
+package org.aion.avm.internal;
 
+import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.math.BigInteger;

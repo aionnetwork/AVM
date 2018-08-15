@@ -1,7 +1,5 @@
 package org.aion.avm.internal;
 
-import org.aion.avm.api.IBlockchainRuntime;
-
 import java.util.IdentityHashMap;
 
 

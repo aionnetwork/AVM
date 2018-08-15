@@ -1,7 +1,7 @@
 package org.aion.avm.core.util;
 
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.IBlockchainRuntime;
+import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;

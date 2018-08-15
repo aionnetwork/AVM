@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
 
-import org.aion.avm.api.IBlockchainRuntime;
+import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;

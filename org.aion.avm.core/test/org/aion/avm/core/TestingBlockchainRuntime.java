@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.api.IBlockchainRuntime;
+import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.HashUtils;
@@ -18,8 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import static org.aion.avm.core.util.HashUtils.sha256;
 
 
 /**
