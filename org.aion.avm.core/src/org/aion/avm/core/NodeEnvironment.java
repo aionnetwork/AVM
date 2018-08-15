@@ -309,8 +309,10 @@ public class NodeEnvironment {
 
             // compute the object sizes in the pruned forest
             Map<String, Integer> rootObjectSizes = new HashMap<>();
-            rootObjectSizes.put("java/lang/Object", 8); // A bare java.lang.Object takes 8 bytes of "housekeeping" heap space, in Hotspot.
-            rootObjectSizes.put("java/lang/Throwable", 8);
+            // "java.lang.Object" and "java.lang.Throwable" object sizes, measured with Instrumentation.getObjectSize() method (java.lang.Instrument).
+            // A bare "java.lang.Object" has no fields and takes 16 bytes for 64-bit JDK. A "java.lang.Throwable" takes 40 bytes.
+            rootObjectSizes.put("java/lang/Object", 16);
+            rootObjectSizes.put("java/lang/Throwable", 40);
             Map<String, Integer> map = DAppCreator.computeUserObjectSizes(rtClassesForest, rootObjectSizes, rootObjectSizes);
 
             // record the shadowed object sizes in the map; and change the class name to the non-shadowed version
