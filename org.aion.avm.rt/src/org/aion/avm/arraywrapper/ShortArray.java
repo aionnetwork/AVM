@@ -18,7 +18,7 @@ public class ShortArray extends Array {
      * @return New empty short array wrapper
      */
     public static ShortArray initArray(int size){
-        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.SHORT.getEnergy());
+        chargeEnergy(size * ArrayElement.SHORT.getEnergy());
         return new ShortArray(size);
     }
 

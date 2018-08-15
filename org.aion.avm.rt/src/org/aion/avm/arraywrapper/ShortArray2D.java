@@ -6,7 +6,7 @@ import java.util.Arrays;
 public class ShortArray2D extends ObjectArray {
 
     public static ShortArray2D initArray(int d0, int d1){
-        IHelper.currentContractHelper.get().externalChargeEnergy(d0 * ArrayElement.REF.getEnergy());
+        chargeEnergy(d0 * ArrayElement.REF.getEnergy());
         ShortArray2D ret = new ShortArray2D(d0);
         for (int i = 0; i < d0; i++) {
             ret.set(i, ShortArray.initArray(d1));

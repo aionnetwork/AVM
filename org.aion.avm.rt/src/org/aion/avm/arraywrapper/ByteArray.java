@@ -18,7 +18,7 @@ public class ByteArray extends Array {
      * @return New empty byte array wrapper
      */
     public static ByteArray initArray(int size){
-        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.BYTE.getEnergy());
+        chargeEnergy(size * ArrayElement.BYTE.getEnergy());
         return new ByteArray(size);
     }
 

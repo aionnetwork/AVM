@@ -18,7 +18,7 @@ public class FloatArray extends Array {
      * @return New empty float array wrapper
      */
     public static FloatArray initArray(int size){
-        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.FLOAT.getEnergy());
+        chargeEnergy(size * ArrayElement.FLOAT.getEnergy());
         return new FloatArray(size);
     }
 

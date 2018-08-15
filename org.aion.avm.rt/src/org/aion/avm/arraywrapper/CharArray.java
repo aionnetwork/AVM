@@ -18,7 +18,7 @@ public class CharArray extends Array {
      * @return New empty char array wrapper
      */
     public static CharArray initArray(int size){
-        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.CHAR.getEnergy());
+        chargeEnergy(size * ArrayElement.CHAR.getEnergy());
         return new CharArray(size);
     }
 

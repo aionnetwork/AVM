@@ -6,7 +6,7 @@ import java.util.Arrays;
 public class LongArray2D extends ObjectArray {
 
     public static LongArray2D initArray(int d0, int d1){
-        IHelper.currentContractHelper.get().externalChargeEnergy(d0 * ArrayElement.REF.getEnergy());
+        chargeEnergy(d0 * ArrayElement.REF.getEnergy());
         LongArray2D ret = new LongArray2D(d0);
         for (int i = 0; i < d0; i++) {
             ret.set(i, LongArray.initArray(d1));

@@ -18,7 +18,7 @@ public class ObjectArray extends Array {
      * @return New empty object array wrapper
      */
     public static ObjectArray initArray(int size){
-        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.REF.getEnergy());
+        chargeEnergy(size * ArrayElement.REF.getEnergy());
         return new ObjectArray(size);
     }
 

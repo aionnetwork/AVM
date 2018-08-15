@@ -18,7 +18,7 @@ public class DoubleArray extends Array {
      * @return New empty double array wrapper
      */
     public static DoubleArray initArray(int size){
-        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.DOUBLE.getEnergy());
+        chargeEnergy(size * ArrayElement.DOUBLE.getEnergy());
         return new DoubleArray(size);
     }
 

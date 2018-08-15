@@ -18,7 +18,7 @@ public class LongArray extends Array {
      * @return New empty long array wrapper
      */
     public static LongArray initArray(int size){
-        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.LONG.getEnergy());
+        chargeEnergy(size * ArrayElement.LONG.getEnergy());
         return new LongArray(size);
     }
 

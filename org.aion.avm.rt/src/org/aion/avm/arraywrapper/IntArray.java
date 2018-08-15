@@ -18,7 +18,7 @@ public class IntArray extends Array {
      * @return New empty int array wrapper
      */
     public static IntArray initArray(int size){
-        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.INT.getEnergy());
+        chargeEnergy(size * ArrayElement.INT.getEnergy());
         return new IntArray(size);
     }
 
