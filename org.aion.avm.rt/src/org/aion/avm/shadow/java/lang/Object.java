@@ -46,7 +46,8 @@ public class Object extends java.lang.Object implements IObject {
 
     @Override
     public boolean avm_equals(IObject obj) {
-        return false;
+        // By default, we are only instance-equal.
+        return (this == obj);
     }
 
     protected IObject avm_clone() throws CloneNotSupportedException {

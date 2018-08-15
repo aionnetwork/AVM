@@ -194,6 +194,24 @@ public class ClassShadowingTest {
         avm.shutdown();
     }
 
+    /**
+     * Shadow Object is only instance-equal, no other kind of equality is defined.
+     */
+    @Test
+    public void testShadowObjectEquality() throws Exception {
+        SimpleAvm avm = new SimpleAvm(1_000_000L, TestObjectCreation.class);
+        Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestObjectCreation.class.getName());
+        Method createInstance = clazz.getMethod(UserClassMappingVisitor.mapMethodName("createInstance"));
+        Method isEqual = clazz.getMethod(UserClassMappingVisitor.mapMethodName("isEqual"), org.aion.avm.internal.IObject.class, org.aion.avm.internal.IObject.class);
+
+        Object one = createInstance.invoke(null);
+        Object two = createInstance.invoke(null);
+        Assert.assertEquals(Boolean.TRUE, isEqual.invoke(null, one, one));
+        Assert.assertEquals(Boolean.FALSE, isEqual.invoke(null, one, two));
+        avm.shutdown();
+    }
+
+
     public static class Testing {
         public static int countWrappedClasses;
         public static int countWrappedStrings;
