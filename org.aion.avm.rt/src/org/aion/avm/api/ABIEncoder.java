@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ABIEncoder{
+public class ABIEncoder extends org.aion.avm.shadow.java.lang.Object {
     public enum ABITypes{
         avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", "org.aion.avm.shadow.java.lang.Byte", "org.aion.avm.arraywrapper.ByteArray", "org.aion.avm.arraywrapper.ByteArray2D", "[B", "[[B"}) {
             @Override

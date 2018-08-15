@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-public class ABIDecoder {
+public class ABIDecoder extends org.aion.avm.shadow.java.lang.Object {
     /* ABI encoding separators */
     public static final char ARRAY_S = '[';
     public static final char ARRAY_E = ']';
