@@ -4,6 +4,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Assert;
+import org.aion.avm.core.util.HashUtils;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.KernelInterface;
@@ -218,7 +219,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public ByteArray avm_blake2b(ByteArray data) {
         Objects.requireNonNull(data);
-        return new ByteArray(sha256(data.getUnderlying()));
+        return new ByteArray(HashUtils.blake2b(data.getUnderlying()));
     }
 
     public int getEventCount(String event) {

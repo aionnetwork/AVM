@@ -15,4 +15,11 @@ public class HashUtils {
             throw new RuntimeException(e);
         }
     }
+
+    public static byte[] blake2b(byte[] msg) {
+
+        // TODO: implement blake2b
+
+        return sha256(msg);
+    }
 }

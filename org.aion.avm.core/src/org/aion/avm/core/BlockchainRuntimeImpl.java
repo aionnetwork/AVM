@@ -4,6 +4,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.api.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;
+import org.aion.avm.core.util.HashUtils;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -235,11 +236,6 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
             throw new IllegalArgumentException("Input data can't be NULL");
         }
 
-        // TODO: implement blake2b
-
-        byte[] result = new byte[32];
-        System.arraycopy(data.getUnderlying(), 0, result, 0, Math.min(result.length, data.length()));
-
-        return new ByteArray(result);
+        return new ByteArray(HashUtils.blake2b(data.getUnderlying()));
     }
 }
