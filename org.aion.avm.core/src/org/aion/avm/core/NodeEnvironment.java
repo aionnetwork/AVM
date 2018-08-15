@@ -122,7 +122,8 @@ public class NodeEnvironment {
         IHelper.currentContractHelper.set(new IHelper() {
             @Override
             public void externalChargeEnergy(long cost) {
-                Assert.unreachable("Shouldn't be called on this since we should be loading no instrumented classes");
+                // Shadow enum class will create array wrapper with <clinit>
+                // Ignore the charge energy request in this case
             }
             @Override
             public void externalSetEnergy(long energy) {
