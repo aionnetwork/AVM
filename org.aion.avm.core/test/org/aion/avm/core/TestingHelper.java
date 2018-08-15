@@ -50,6 +50,7 @@ public class TestingHelper implements IHelper {
     public TestingHelper() {
         install();
     }
+
     private void install() {
         Assert.assertNull(IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.set(this);

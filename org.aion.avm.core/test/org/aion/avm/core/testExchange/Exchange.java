@@ -1,9 +1,9 @@
 package org.aion.avm.core.testExchange;
 
+import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.core.testWallet.ByteArrayHelpers;
-import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 
 public class Exchange {
@@ -19,44 +19,44 @@ public class Exchange {
         coinListing = new AionMap<>();
     }
 
-    private boolean verifyContractAddress(String name, Address contract){
+    private boolean verifyContractAddress(char[] name, Address contract){
         return true;
     }
 
-    public boolean listCoin(String name, Address contractAddr){
-        if (coinListing.containsKey(name)){return false;}
+    public boolean listCoin(char[] name, Address contractAddr){
+        if (coinListing.containsKey(String.valueOf(name))){
+            return false;
+        }
 
         if (BlockchainRuntime.getSender().equals(owner) && verifyContractAddress(name, contractAddr)){
-            coinListing.put(name, contractAddr);
+            coinListing.put(String.valueOf(name), contractAddr);
             return true;
         }
 
         return false;
     }
 
-    public boolean postBid(String coin, long amount, String offerCoin, long bidAmount){
+    public boolean postBid(char[] coin, long amount, char[] offerCoin, long bidAmount){
         return true;
     }
 
-    public boolean postAsk(String coin, long amount, String askCoin){
+    public boolean postAsk(char[] coin, long amount, char[] askCoin){
         return true;
     }
 
-    public boolean requestTransfer(String coin, Address to, long amount){
-        if (!coinListing.containsKey(coin)){return false;}
-        Address coinContract = coinListing.get(coin);
+    public boolean requestTransfer(char[] coin, Address to, long amount){
+        if (!coinListing.containsKey(String.valueOf(coin))){
+            return false;
+        }
+        Address coinContract = coinListing.get(String.valueOf(coin));
 
         Address sender = BlockchainRuntime.getSender();
 
-        byte[] args = new byte[1 + Address.LENGTH + Address.LENGTH];
-        ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
-        encoder.encodeByte(ExchangeABI.kToken_allowance);
-        encoder.encodeAddress(sender);
-        encoder.encodeAddress(BlockchainRuntime.getAddress());
+        byte[] args = ABIEncoder.encodeMethodArguments("allowance", sender, BlockchainRuntime.getAddress());
 
         byte[] result = BlockchainRuntime.call(coinContract, 0, args, 1000000L);
 
-        if (ByteArrayHelpers.decodeLong(result) >= amount){
+        if (((long)ABIDecoder.decodeOneObject(result)) >= amount){
             toProcess = new ExchangeTransaction(coin, sender, to, amount);
             return true;
         }
@@ -65,34 +65,59 @@ public class Exchange {
     }
 
     public boolean processExchangeTransaction(){
+        if (!BlockchainRuntime.getSender().equals(owner)){
+            return false;
+        }
 
-        if (!BlockchainRuntime.getSender().equals(owner)){return false;};
+        if (null == toProcess){
+            return false;
+        }
 
+        if (!coinListing.containsKey(String.valueOf(toProcess.getCoin()))){
+            return false;
+        }
 
+        Address coinContract = coinListing.get(String.valueOf(toProcess.getCoin()));
 
-        if (null == toProcess){return false;}
-
-
-
-        if (!coinListing.containsKey(toProcess.getCoin())){return false;}
-
-        Address coinContract = coinListing.get(toProcess.getCoin());
-
-        byte[] args = new byte[1 + Address.LENGTH + Address.LENGTH + Long.BYTES];
-        ExchangeABI.Encoder encoder = ExchangeABI.buildEncoder(args);
-        encoder.encodeByte(ExchangeABI.kToken_transferFrom);
-        encoder.encodeAddress(toProcess.getFrom());
-        encoder.encodeAddress(toProcess.getTo());
-        encoder.encodeLong(toProcess.getAmount());
+        byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", toProcess.getFrom(), toProcess.getTo(), toProcess.getAmount());
 
         byte[] result = BlockchainRuntime.call(coinContract, 0, args, 1000000L);
 
-        if (ByteArrayHelpers.decodeBoolean(result)){
+        if ((boolean)ABIDecoder.decodeOneObject(result)){
             toProcess = null;
         }
 
-        return ByteArrayHelpers.decodeBoolean(result);
+        return (boolean)ABIDecoder.decodeOneObject(result);
     }
 
+    public static class ExchangeTransaction {
 
+        private Address from;
+        private Address to;
+        private char[] coin;
+        private long amount;
+
+        ExchangeTransaction(char[] coin, Address from, Address to, long amount){
+            this.from = from;
+            this.to = to;
+            this.coin = coin;
+            this.amount = amount;
+        }
+
+        public Address getFrom() {
+            return from;
+        }
+
+        public Address getTo() {
+            return to;
+        }
+
+        public char[] getCoin() {
+            return coin;
+        }
+
+        public long getAmount() {
+            return amount;
+        }
+    }
 }

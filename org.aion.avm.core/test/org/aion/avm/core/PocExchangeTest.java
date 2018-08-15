@@ -24,7 +24,7 @@ public class PocExchangeTest {
     @Before
     public void setup() {
         testERC20Jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
-        testExchangeJar = JarBuilder.buildJarForMainAndClasses(Exchange.class, ExchangeABI.class, ExchangeTransaction.class, ByteArrayHelpers.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
+        testExchangeJar = JarBuilder.buildJarForMainAndClasses(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ByteArrayHelpers.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
     }
 
     private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
@@ -153,8 +153,10 @@ public class PocExchangeTest {
         System.out.println(">> Deploy \"PEPE\" token contract...");
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
+        System.out.println(Helpers.toHexString(pepe.addr));
 
         res = pepe.callTotalSupply();
+        System.out.println(Helpers.toHexString(res.getReturnData()));
         Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
         System.out.println(">> total supply: " + ABIDecoder.decodeOneObject(res.getReturnData()));
 
