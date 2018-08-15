@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-public class ABIDecoder extends org.aion.avm.shadow.java.lang.Object {
+public final class ABIDecoder {
     /* ABI encoding separators */
     public static final char ARRAY_S = '[';
     public static final char ARRAY_E = ']';
@@ -75,6 +75,10 @@ public class ABIDecoder extends org.aion.avm.shadow.java.lang.Object {
         }
     }
 
+    /**
+     * This class cannot be instantiated.
+     */
+    private ABIDecoder(){}
 
     /*
      * Runtime-facing implementation.

@@ -1,11 +1,16 @@
 package org.aion.avm.api;
 
-public class ABIDecoder {
+public final class ABIDecoder {
     public static class MethodCaller {
         public String methodName;
         public String argsDescriptor;
         public Object[] arguments;
     }
+
+    /**
+     * This class cannot be instantiated.
+     */
+    private ABIDecoder(){}
 
     /**
      * Decode the transaction data and invoke the corresponding method of the object's class.

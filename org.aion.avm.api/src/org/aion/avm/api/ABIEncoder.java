@@ -1,6 +1,11 @@
 package org.aion.avm.api;
 
-public class ABIEncoder {
+public final class ABIEncoder {
+    /**
+     * This class cannot be instantiated.
+     */
+    private ABIEncoder(){}
+
     /**
      * Encode one object of any type that Aion ABI allows; generate the byte array that contains the descriptor and the encoded data.
      * @param data one object of any type that Aion ABI allows

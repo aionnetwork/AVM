@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ABIEncoder extends org.aion.avm.shadow.java.lang.Object {
+public final class ABIEncoder {
     public enum ABITypes{
         avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", "org.aion.avm.shadow.java.lang.Byte", "org.aion.avm.arraywrapper.ByteArray", "org.aion.avm.arraywrapper.ByteArray2D", "[B", "[[B"}) {
             @Override
@@ -610,6 +610,11 @@ public class ABIEncoder extends org.aion.avm.shadow.java.lang.Object {
 
     private static Map<String, ABITypes> ABITypesMap = null;
 
+    /**
+     * This class cannot be instantiated.
+     */
+    private ABIEncoder(){}
+
     /*
      * Runtime-facing implementation.
      */
@@ -718,7 +723,7 @@ public class ABIEncoder extends org.aion.avm.shadow.java.lang.Object {
                 //return encode1DArray((Array)data, type);
             }
             else if (className.startsWith("[[")) {
-                return encode2DArray(type.construct2DWrappedArray((Object[]) data), type);//TODO - implement this when 2D array wrappers are ready
+                return encode2DArray(type.construct2DWrappedArray((Object[]) data), type);
             }
             else if (className.startsWith("[")) {
                 return type.encode1DArray(data);
