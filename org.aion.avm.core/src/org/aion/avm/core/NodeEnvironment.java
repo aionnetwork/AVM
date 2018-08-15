@@ -301,7 +301,8 @@ public class NodeEnvironment {
         RawDappModule runtimeModule;
         try {
             // build the runtime module from the jar TODO - this jar needs to be provided in a safe way
-            runtimeModule = RawDappModule.readFromJar(Helpers.readFileToBytes("../out/jar/org-aion-avm-rt.jar"));
+            String jarPath = System.getProperty("avm-rt-jar", "../out/jar/org-aion-avm-rt.jar");
+            runtimeModule = RawDappModule.readFromJar(Helpers.readFileToBytes(jarPath));
         }
         catch (IOException e) {
             throw new IllegalStateException("Cannot find 'org-aion-avm-rt.jar'.");

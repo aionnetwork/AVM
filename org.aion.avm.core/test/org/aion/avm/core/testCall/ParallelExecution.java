@@ -3,7 +3,7 @@ package org.aion.avm.core.testCall;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.SimpleRuntime;
+import org.aion.avm.core.TestingBlockchainRuntime;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Assert;
@@ -142,7 +142,7 @@ public class ParallelExecution {
 
             // Execute the transaction
             SimpleAvm avm = new SimpleAvm(tx.getEnergyLimit(), Contract.class);
-            avm.attachBlockchainRuntime(new SimpleRuntime(tx.getFrom(), tx.getTo(), tx.getEnergyLimit(), tx.getData()) {
+            avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
                 // TODO: runtime should be based on the state
                 @Override
                 public ByteArray avm_call(Address targetAddress, long value, ByteArray payload, long energyToSend) {
@@ -152,7 +152,7 @@ public class ParallelExecution {
 
                     return new ByteArray(new byte[0]);
                 }
-            });
+            }.withCaller(tx.getFrom()).withAddress(tx.getTo()).withEnergyLimit(tx.getEnergyLimit()).withData(tx.getData()));
             try {
                 Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(Contract.class.getName());
                 ByteArray ret = (ByteArray) clazz.getMethod(UserClassMappingVisitor.mapMethodName("main")).invoke(null);

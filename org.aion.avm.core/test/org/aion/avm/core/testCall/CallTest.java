@@ -3,7 +3,7 @@ package org.aion.avm.core.testCall;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.SimpleRuntime;
+import org.aion.avm.core.TestingBlockchainRuntime;
 import org.aion.avm.core.SuspendedHelper;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
@@ -26,7 +26,7 @@ public class CallTest {
         long energyLimit = 5000000;
 
         SimpleAvm avm = new SimpleAvm(energyLimit, Caller.class);
-        avm.attachBlockchainRuntime(new SimpleRuntime(from, to, energyLimit) {
+        avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
             @Override
             public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
                 callbackReceived = true;
@@ -38,7 +38,7 @@ public class CallTest {
 
                 return new ByteArray("world".getBytes());
             }
-        });
+        }.withCaller(from).withAddress(to).withEnergyLimit(energyLimit));
 
         AvmClassLoader loader = avm.getClassLoader();
         Class<?> clazz = loader.loadUserClassByOriginalName(Caller.class.getName());
@@ -57,7 +57,7 @@ public class CallTest {
         long energyLimit = 5000000;
 
         SimpleAvm avm = new SimpleAvm(energyLimit, Caller.class);
-        avm.attachBlockchainRuntime(new SimpleRuntime(from, to, energyLimit) {
+        avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
             @Override
             public ByteArray avm_call(Address a, long v, ByteArray d, long e) {
                 // We want to suspend the outer IHelper for the sub-call (they are supposed to be distinct).
@@ -68,7 +68,7 @@ public class CallTest {
                 SimpleAvm avm2 = null;
                 try {
                     avm2 = new SimpleAvm(e, Callee.class);
-                    avm2.attachBlockchainRuntime(new SimpleRuntime(to, a.unwrap(), e, d.getUnderlying()));
+                    avm2.attachBlockchainRuntime(new TestingBlockchainRuntime().withCaller(to).withAddress(a.unwrap()).withData(d.getUnderlying()));
                     Class<?> clazz = avm2.getClassLoader().loadUserClassByOriginalName(Callee.class.getName());
                     Object ret = clazz.getMethod(UserClassMappingVisitor.mapMethodName("main")).invoke(null);
 
@@ -89,7 +89,7 @@ public class CallTest {
                     suspended.resume();
                 }
             }
-        });
+        }.withCaller(from).withAddress(to).withEnergyLimit(energyLimit));
 
         AvmClassLoader loader = avm.getClassLoader();
         Class<?> clazz = loader.loadUserClassByOriginalName(Caller.class.getName());
