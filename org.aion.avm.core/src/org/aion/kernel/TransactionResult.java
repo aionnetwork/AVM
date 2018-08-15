@@ -9,7 +9,10 @@ import java.util.List;
 public class TransactionResult {
 
     public enum  Code {
-        SUCCESS, INVALID_TX, INVALID_JAR, INVALID_CODE, INVALID_CALL, OUT_OF_ENERGY, FAILURE
+        SUCCESS, INVALID_TX, INVALID_JAR, INVALID_CODE, INVALID_CALL, OUT_OF_ENERGY,
+
+
+        REVERT, INVALID, FAILURE
     }
 
     /**

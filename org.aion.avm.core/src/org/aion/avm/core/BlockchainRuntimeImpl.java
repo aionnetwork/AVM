@@ -7,6 +7,8 @@ import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.HashUtils;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.InvalidException;
+import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.*;
@@ -237,5 +239,15 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         }
 
         return new ByteArray(HashUtils.blake2b(data.getUnderlying()));
+    }
+
+    @Override
+    public void avm_revert() {
+        throw new RevertException();
+    }
+
+    @Override
+    public void avm_invalid() {
+        throw new InvalidException();
     }
 }

@@ -5,7 +5,10 @@ import java.math.BigInteger;
 /**
  * Represents the hub of AVM runtime.
  */
-public class BlockchainRuntime {
+public final class BlockchainRuntime {
+
+    private BlockchainRuntime() {
+    }
 
     //===================
     // Transaction
@@ -122,5 +125,11 @@ public class BlockchainRuntime {
 
     public static byte[] blake2b(byte[] data) {
         return null;
+    }
+
+    public static void revert() {
+    }
+
+    public static void invalid() {
     }
 }

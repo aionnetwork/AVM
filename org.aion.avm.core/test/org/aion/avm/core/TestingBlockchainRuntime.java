@@ -6,9 +6,12 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.HashUtils;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.InvalidException;
+import org.aion.avm.internal.RevertException;
 import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TransactionContext;
 import org.aion.kernel.VersionedCode;
 
 import java.nio.charset.StandardCharsets;
@@ -45,6 +48,19 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private Map<String, Integer> eventCounter = new HashMap<>();
 
     public TestingBlockchainRuntime() {
+    }
+
+    public TestingBlockchainRuntime(TransactionContext ctx) {
+        this.address = ctx.getAddress();
+        this.caller = ctx.getCaller();
+        this.origin = ctx.getOrigin();
+        this.value = ctx.getValue();
+        this.data = ctx.getData();
+        this.energyLimit = ctx.getEnergyLimit();
+        this.energyPrice = ctx.getEneryPrice();
+        this.blockNumber = ctx.getBlockNumber();
+        this.blockTimstamp = ctx.getBlockTimestamp();
+        this.blockDifficulty = ctx.getBlockDifficulty();
     }
 
     public TestingBlockchainRuntime withAddress(byte[] address) {
@@ -220,6 +236,16 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     public ByteArray avm_blake2b(ByteArray data) {
         Objects.requireNonNull(data);
         return new ByteArray(HashUtils.blake2b(data.getUnderlying()));
+    }
+
+    @Override
+    public void avm_revert() {
+        throw new RevertException();
+    }
+
+    @Override
+    public void avm_invalid() {
+        throw new InvalidException();
     }
 
     public int getEventCount(String event) {

@@ -187,4 +187,14 @@ public interface IBlockchainRuntime {
      * @return The 32-byte digest.
      */
     ByteArray avm_blake2b(ByteArray data);
+
+    /**
+     * Stop the current execution, rollback any state changes, and refund the remaining energy to caller.
+     */
+    void avm_revert();
+
+    /**
+     * Stop the current execution, rollback any state changes, and consume all remaining energy.
+     */
+    void avm_invalid();
 }

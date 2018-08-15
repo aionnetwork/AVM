@@ -5,7 +5,10 @@ import org.aion.avm.internal.Helper;
 import org.aion.avm.shadow.java.math.BigInteger;
 
 
-public class BlockchainRuntime {
+public final class BlockchainRuntime {
+
+    private BlockchainRuntime() {
+    }
 
     // Runtime-facing implementation.
 
@@ -120,8 +123,15 @@ public class BlockchainRuntime {
         return Helper.blockchainRuntime.avm_blake2b(data);
     }
 
-    // Compiler-facing implementation.
+    public static void avm_revert() {
+        Helper.blockchainRuntime.avm_revert();
+    }
 
+    public static void avm_invalid() {
+        Helper.blockchainRuntime.avm_invalid();
+    }
+
+    // Compiler-facing implementation.
 
     public static Address getAddress() {
         return avm_getAddress();
@@ -232,5 +242,13 @@ public class BlockchainRuntime {
 
     public static byte[] blake2b(byte[] data) {
         return avm_blake2b(new ByteArray(data)).getUnderlying();
+    }
+
+    public static void revert() {
+        avm_revert();
+    }
+
+    public static void invalid() {
+        avm_invalid();
     }
 }

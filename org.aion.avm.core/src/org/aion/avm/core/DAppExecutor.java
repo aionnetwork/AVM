@@ -9,6 +9,8 @@ import org.aion.kernel.KernelInterface;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 
+import java.lang.reflect.InvocationTargetException;
+
 
 public class DAppExecutor {
     public static void call(KernelInterface kernel, Avm avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume, TransactionContext ctx, TransactionResult result) {
@@ -66,10 +68,28 @@ public class DAppExecutor {
             }
             result.setStatusCode(TransactionResult.Code.OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
+        } catch (InvocationTargetException ie) {
+            if (null != reentrantGraphData) {
+                reentrantGraphData.revertToStoredFields();
+            }
+
+            Throwable cause = ie.getCause();
+            if (cause instanceof RevertException) {
+                result.setStatusCode(TransactionResult.Code.REVERT);
+                result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
+            } else if (cause instanceof InvalidException) {
+                result.setStatusCode(TransactionResult.Code.INVALID);
+                result.setEnergyUsed(ctx.getEnergyLimit());
+            } else {
+                result.setStatusCode(TransactionResult.Code.FAILURE);
+                result.setEnergyUsed(ctx.getEnergyLimit());
+            }
+
         } catch (Exception e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
+            e.printStackTrace();
             result.setStatusCode(TransactionResult.Code.FAILURE);
             result.setEnergyUsed(ctx.getEnergyLimit());
         } finally {
