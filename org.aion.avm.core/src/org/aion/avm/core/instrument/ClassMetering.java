@@ -74,7 +74,7 @@ public class ClassMetering extends ClassToolchain.ToolChainClassVisitor {
             blockFee += this.bytecodeFeeScheduler.getFee(opcode);
         }
 
-        // Sum up the static allocation size
+        // Sum up the static allocation size, in bytes
         for (String allocationType : block.allocatedTypes) {
             if (this.objectSizes != null) {
                 if (this.objectSizes.containsKey(allocationType)) {
