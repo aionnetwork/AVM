@@ -1,5 +1,6 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.arraywrapper.ArrayElement;
 import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.internal.PackageConstants;
@@ -13,8 +14,9 @@ import java.util.HashMap;
 
 public class ArrayWrappingClassGenerator implements Opcodes {
     static private boolean DEBUG = false;
-    static private boolean CHARGE = false;
-    static private String HELPER = PackageConstants.kInternalSlashPrefix + "Helper";
+    static private boolean ENERGY_METERING = true;
+
+    static private String SHADOW_ARRAY = PackageConstants.kArrayWrapperSlashPrefix + "Array";
 
     static private String[] PRIMITIVES = {"I", "J", "Z", "B", "S", "D", "F", "C"};
     static private HashMap<String, String> CLASS_WRAPPER_MAP = new HashMap<>();
@@ -237,14 +239,13 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         mv.visitVarInsn(ILOAD, 0);
         mv.visitMethodInsn(INVOKESPECIAL, wrapper, "<init>", "(I)V", false);
 
-        if (CHARGE) {
+        if (ENERGY_METERING) {
             // Charge energy
             mv.visitVarInsn(ILOAD, 0);
-            // OBJREF size is 64 per slot
-            mv.visitIntInsn(BIPUSH, 64);
+            mv.visitIntInsn(BIPUSH, (int) ArrayElement.REF.getEnergy());
             mv.visitInsn(IMUL);
             mv.visitInsn(I2L);
-            mv.visitMethodInsn(INVOKESTATIC, HELPER, "chargeEnergy", "(J)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, SHADOW_ARRAY, "chargeEnergy", "(J)V", false);
         }
 
         mv.visitInsn(ARETURN);
@@ -274,14 +275,13 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         mv.visitVarInsn(ILOAD, 0);
         mv.visitMethodInsn(INVOKESPECIAL, wrapper, "<init>", "(I)V", false);
 
-        if (CHARGE) {
+        if (ENERGY_METERING) {
             // Charge energy
             mv.visitVarInsn(ILOAD, 0);
-            //OBJREF size is 64 per slot
-            mv.visitIntInsn(BIPUSH, 64);
+            mv.visitIntInsn(BIPUSH, (int) ArrayElement.REF.getEnergy());
             mv.visitInsn(IMUL);
             mv.visitInsn(I2L);
-            mv.visitMethodInsn(INVOKESTATIC, HELPER, "chargeEnergy", "(J)V", false);
+            mv.visitMethodInsn(INVOKESTATIC, SHADOW_ARRAY, "chargeEnergy", "(J)V", false);
         }
 
         // Wrapper OBJ to return
