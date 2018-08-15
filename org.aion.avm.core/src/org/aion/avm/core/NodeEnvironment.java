@@ -33,8 +33,10 @@ public class NodeEnvironment {
 
     private Set<String> jclClassNames;
 
-    public final Map<String, Integer> shadowObjectSizeMap;
-    public final Map<String, Integer> apiObjectSizeMap;
+    public final Map<String, Integer> shadowObjectSizeMap;  // pre-rename; shadow objects and exceptions
+    public final Map<String, Integer> apiObjectSizeMap;     // no rename needed; API objects
+    public final Map<String, Integer> preRenameRuntimeObjectSizeMap;     // pre-rename; runtime objects including shadow objects, exceptions and API objects
+    public final Map<String, Integer> postRenameRuntimeObjectSizeMap;    // post-rename; runtime objects including shadow objects, exceptions and API objects
 
     private NodeEnvironment() {
         Map<String, byte[]> generatedShadowJDK = CommonGenerators.generateShadowJDK();
@@ -62,16 +64,22 @@ public class NodeEnvironment {
         Map<String, Integer> rtObjectSizeMap = computeRuntimeObjectSizes(generatedShadowJDK);
         this.shadowObjectSizeMap = new HashMap<>();
         this.apiObjectSizeMap = new HashMap<>();
-        for(String className : rtObjectSizeMap.keySet()) {
+        this.preRenameRuntimeObjectSizeMap = new HashMap<>();
+        this.postRenameRuntimeObjectSizeMap = new HashMap<>();
+        rtObjectSizeMap.forEach((k, v) -> {
             // the shadowed object sizes; and change the class name to the non-shadowed version
-            if(className.startsWith(PackageConstants.kShadowSlashPrefix)) {
-                this.shadowObjectSizeMap.put(className.substring(PackageConstants.kShadowSlashPrefix.length()), rtObjectSizeMap.get(className));
+            if(k.startsWith(PackageConstants.kShadowSlashPrefix)) {
+                this.shadowObjectSizeMap.put(k.substring(PackageConstants.kShadowSlashPrefix.length()), v);
+                this.postRenameRuntimeObjectSizeMap.put(k, v);
             }
             // the object size of API classes
-            if(className.startsWith(PackageConstants.kApiSlashPrefix)) {
-                this.apiObjectSizeMap.put(className, rtObjectSizeMap.get(className));
+            if(k.startsWith(PackageConstants.kApiSlashPrefix)) {
+                this.apiObjectSizeMap.put(k, v);
             }
-        }
+        });
+        this.preRenameRuntimeObjectSizeMap.putAll(shadowObjectSizeMap);
+        this.preRenameRuntimeObjectSizeMap.putAll(apiObjectSizeMap);
+        this.postRenameRuntimeObjectSizeMap.putAll(apiObjectSizeMap);
     }
 
     // This is an example of the more "factory-like" nature of the NodeEnvironment.
@@ -330,6 +338,6 @@ public class NodeEnvironment {
         // A bare "java.lang.Object" has no fields and takes 16 bytes for 64-bit JDK. A "java.lang.Throwable" takes 40 bytes.
         rootObjectSizes.put("java/lang/Object", 16);
         rootObjectSizes.put("java/lang/Throwable", 40);
-        return  DAppCreator.computeUserObjectSizes(rtClassesForest, rootObjectSizes, rootObjectSizes);
+        return  DAppCreator.computeUserObjectSizes(rtClassesForest, rootObjectSizes);
     }
 }

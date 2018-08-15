@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.*;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
@@ -28,7 +27,6 @@ import org.aion.kernel.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import java.io.IOException;
 import java.util.*;
 
 
@@ -59,75 +57,23 @@ public class DAppCreator {
     }
 
     /**
-     * Computes the object size of shadow java.base classes
-     *
-     * @return a mapping between class name and object size
-     *
-     * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
-     */
-    private static Map<String, Integer> computeShadowObjectSizes() {
-        Map<String, Integer> map = new HashMap<String, Integer>();
-        map.put("java/lang/Object", 4);
-        map.put("java/lang/Class", 4);
-        map.put("java/lang/Math", 4);
-        map.put("java/lang/String", 4);
-        map.put("java/lang/Enum", 4);
-        map.put("java/lang/StringBuffer", 4);
-        map.put("java/lang/StringBuilder", 4);
-
-        // TODO (issue-79):  Implement the rest of these by walking the runtime, elsewhere (this "4" is probably not right, in most cases).
-        map.put("java/lang/AssertionError", 4);
-        map.put("java/lang/Throwable", 4);
-        map.put("java/lang/Exception", 4);
-        map.put("java/lang/RuntimeException", 4);
-        map.put("java/lang/NullPointerException", 4);
-        map.put("java/lang/IllegalArgumentException", 4);
-        map.put("java/lang/IndexOutOfBoundsException", 4);
-        map.put("java/math/MathContext", 4);
-
-        return Collections.unmodifiableMap(map);
-    }
-
-    /**
-     * Computes the object size of API classes.
-     *
-     * @return
-     */
-    private static Map<String, Integer> computeApiObjectSizes() {
-        Map<String, Integer> map = new HashMap<String, Integer>();
-        map.put("org/aion/avm/api/Address", 4);
-        map.put("org/aion/avm/api/InvalidTxDataException", 4);
-
-        return Collections.unmodifiableMap(map);
-    }
-
-    /**
      * Returns the sizes of all the user-space classes
      *
      * @param classHierarchy     the class hierarchy
-     * @param shadowObjectSizes  the object size of shadow java.base classes
-     * @param apiObjectSizes     the object size of API classes
      * @return The look-up map of the sizes of user objects
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    public static Map<String, Integer> computeUserObjectSizes(Forest<String, byte[]> classHierarchy,
-                                                             Map<String, Integer> shadowObjectSizes,
-                                                             Map<String, Integer> apiObjectSizes)
+    public static Map<String, Integer> computeUserObjectSizes(Forest<String, byte[]> classHierarchy, Map<String, Integer> rootObjectSizes)
     {
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
 
-        // copy over the runtime classes sizes
-        HashMap<String, Integer> runtimeObjectSizes = new HashMap<>();
-        runtimeObjectSizes.putAll(shadowObjectSizes);
-        runtimeObjectSizes.putAll(apiObjectSizes);
-
         // compute the user object sizes
-        objectSizeCalculator.calcClassesInstanceSize(classHierarchy, runtimeObjectSizes);
+        objectSizeCalculator.calcClassesInstanceSize(classHierarchy, rootObjectSizes);
 
         // copy over the user object sizes
         Map<String, Integer> userObjectSizes = new HashMap<>();
         objectSizeCalculator.getClassHeapSizeMap().forEach((k, v) -> {
-            if (!runtimeObjectSizes.containsKey(k)) {
+            if (!rootObjectSizes.containsKey(k)) {
                 userObjectSizes.put(k, v);
             }
         });
@@ -136,18 +82,10 @@ public class DAppCreator {
 
     // NOTE:  This is only public because InvokedynamicTransformationTest calls it.
     public static Map<String, Integer> computeAllPostRenameObjectSizes(Forest<String, byte[]> forest) {
-        Map<String, Integer> preRenameShadowObjectSizes = NodeEnvironment.singleton.shadowObjectSizeMap;
-        Map<String, Integer> preRenameApiObjectSizes = NodeEnvironment.singleton.apiObjectSizeMap;
-        Map<String, Integer> preRenameUserObjectSizes = computeUserObjectSizes(forest, preRenameShadowObjectSizes, preRenameApiObjectSizes);
+        Map<String, Integer> preRenameUserObjectSizes = computeUserObjectSizes(forest, NodeEnvironment.singleton.preRenameRuntimeObjectSizeMap);
 
-        //TODO - Do not need to copy over the rt object size maps, if, 1) keep a renamed version in NodeEnvironment; 2) ClassMetering visitor takes 2 maps (rt and user objects)
-        Map<String, Integer> postRenameObjectSizes = new HashMap<>(preRenameApiObjectSizes);
-        for (Map.Entry<String, Integer> entry : preRenameUserObjectSizes.entrySet()) {
-            postRenameObjectSizes.put(PackageConstants.kUserSlashPrefix + entry.getKey(), entry.getValue());
-        }
-        for (Map.Entry<String, Integer> entry : preRenameShadowObjectSizes.entrySet()) {
-            postRenameObjectSizes.put(PackageConstants.kShadowSlashPrefix + entry.getKey(), entry.getValue());
-        }
+        Map<String, Integer> postRenameObjectSizes = new HashMap<>(NodeEnvironment.singleton.postRenameRuntimeObjectSizeMap);
+        preRenameUserObjectSizes.forEach((k, v) -> postRenameObjectSizes.put(PackageConstants.kUserSlashPrefix + k, v));
         return postRenameObjectSizes;
     }
 
