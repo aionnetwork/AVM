@@ -55,7 +55,6 @@ public class ReentrantCrossCallResource {
     // The get(Direct/Near/Far) all act by calling the corresponding "inc*" method, as a reentrant runtime call, and checking
     // the change in the caller's local state, upon return.
     // An expectation is determined, ahead-of-time, and either the new number (on success) or zero (on failure) is returned.
-    // TODO:  Implement support for shouldFail, once rollback is correctly implemented (argument is currently ignored, in "inc*").
     public static int getDirect(boolean shouldFail) {
         // Cache the original answer to make sure the increment happens correctly.
         int expected = shouldFail
@@ -101,22 +100,42 @@ public class ReentrantCrossCallResource {
                 : 0;
     }
 
-    public static void incDirect() {
-        direct += 1;
+    public static void incDirect(boolean shouldFail) {
+        direct += 2;
+        if (shouldFail) {
+            causeFailure();
+        }
+        direct -= 1;
     }
 
-    public static void incNear() {
-        constant.near += 1;
+    public static void incNear(boolean shouldFail) {
+        constant.near += 2;
+        if (shouldFail) {
+            causeFailure();
+        }
+        constant.near -= 1;
     }
 
-    public static void incFar() {
-        constant.far[0] += 1;
+    public static void incFar(boolean shouldFail) {
+        constant.far[0] += 2;
+        if (shouldFail) {
+            causeFailure();
+        }
+        constant.far[0] -= 1;
     }
 
     private static void reentrantCall(String methodName, boolean shouldFail) {
         long value = 1;
-        byte[] data = ABIEncoder.encodeMethodArguments(methodName);
+        byte[] data = ABIEncoder.encodeMethodArguments(methodName, shouldFail);
         long energyLimit = 5000;
         BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+    }
+
+    // We should probably replace this with some kind of explicit failure mechanism, once one exists.
+    // For now, our only want to ensure failure is to drain our energy.
+    private static void causeFailure() {
+        while (true) {
+            new Object();
+        }
     }
 }

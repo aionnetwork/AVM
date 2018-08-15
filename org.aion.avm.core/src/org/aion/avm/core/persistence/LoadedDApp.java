@@ -92,6 +92,19 @@ public class LoadedDApp {
     }
 
     /**
+     * Used in the reentrant path to save out the statics held by the caller DApp instance, while replacing the statics it has with clones
+     * pointing at instance stubs (which, themselves, are backed by the instances in the caller DApp).
+     * Note that these can't be serialized since they point to the actual object graph we want to resume.
+     * 
+     * @return The graph processor which has captured the state of the statics.
+     */
+    public ReentrantGraphProcessor replaceClassStaticsWithClones() {
+        ReentrantGraphProcessor processor = new ReentrantGraphProcessor(this.fieldCache, this.classes);
+        processor.captureAndReplaceStaticState();
+        return processor;
+    }
+
+    /**
      * Serializes the static fields of the DApp classes and stores them on disk.
      * 
      * @param nextInstanceId The next instanceId to assign to an object which needs to be serialized.

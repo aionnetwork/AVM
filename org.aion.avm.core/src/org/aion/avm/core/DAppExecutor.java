@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
+import org.aion.avm.core.persistence.ReentrantGraphProcessor;
 import org.aion.avm.internal.*;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.KernelInterface;
@@ -28,7 +29,15 @@ public class DAppExecutor {
         dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, ctx, result));
 
         // Now that we can load classes for the contract, load and populate all their classes.
-        dapp.populateClassStaticsFromStorage(kernel);
+        ReentrantGraphProcessor reentrantGraphData = null;
+        if (null != stateToResume) {
+            // We are invoking a reentrant call so we don't want to pull this data from storage, but create in-memory duplicates which we can
+            // swap out, pointing to memory-backed instance stubs.
+            reentrantGraphData = dapp.replaceClassStaticsWithClones();
+        } else {
+            // This is the first invocation of this DApp so just load the static state from disk.
+            dapp.populateClassStaticsFromStorage(kernel);
+        }
 
         // Call the main within the DApp.
         try {
@@ -36,11 +45,11 @@ public class DAppExecutor {
 
             // Save back the state before we return.
             // -first, save out the classes
-            // TODO:  Handle this save of the object graph differently when invoked reentrant (since that is about writing back to a different graph).
             long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, kernel);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             if (null != stateToResume) {
                 // Write this back into the resumed state.
+                reentrantGraphData.commitGraphToStoredFieldsAndRestore();
                 stateToResume.updateEnvironment(helper.externalGetNextHashCode());
             } else {
                 // We are at the "top" so write this back to disk.
@@ -52,9 +61,15 @@ public class DAppExecutor {
             result.setReturnData(ret);
             result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
         } catch (OutOfEnergyError e) {
+            if (null != reentrantGraphData) {
+                reentrantGraphData.revertToStoredFields();
+            }
             result.setStatusCode(TransactionResult.Code.OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (Exception e) {
+            if (null != reentrantGraphData) {
+                reentrantGraphData.revertToStoredFields();
+            }
             result.setStatusCode(TransactionResult.Code.FAILURE);
             result.setEnergyUsed(ctx.getEnergyLimit());
         } finally {
