@@ -1,53 +1,28 @@
 package org.aion.avm.arraywrapper;
 
-import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
-
+import org.aion.avm.internal.*;
 import java.util.Arrays;
-
 
 public class CharArray extends Array {
 
     private char[] underlying;
 
-    public static CharArray initArray(int c){
-        //IHelper.currentContractHelper.get().externalChargeEnergy(c * 16);
-        return new CharArray(c);
+    /**
+     * Static CharArray factory
+     *
+     * After instrumentation, NEWARRAY bytecode (with char as type) will be replaced by a INVOKESTATIC to
+     * this method.
+     *
+     * @param size Size of the char array
+     *
+     * @return New empty char array wrapper
+     */
+    public static CharArray initArray(int size){
+        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.CHAR.getEnergy());
+        return new CharArray(size);
     }
 
-    public CharArray(int c) {
-        this.underlying = new char[c];
-    }
-
-    // Deserializer support.
-    public CharArray(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
-    }
-
-    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        super.deserializeSelf(CharArray.class, deserializer);
-        
-        // TODO:  We probably want faster array copies.
-        int length = deserializer.readInt();
-        this.underlying = new char[length];
-        for (int i = 0; i < length; ++i) {
-            this.underlying[i] = deserializer.readChar();
-        }
-    }
-
-    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(CharArray.class, serializer);
-        
-        // TODO:  We probably want faster array copies.
-        serializer.writeInt(this.underlying.length);
-        for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeChar(this.underlying[i]);
-        }
-    }
-
+    @Override
     public int length() {
         lazyLoad();
         return this.underlying.length;
@@ -63,19 +38,25 @@ public class CharArray extends Array {
         this.underlying[idx] = val;
     }
 
+    @Override
     public IObject avm_clone() {
         lazyLoad();
         return new CharArray(Arrays.copyOf(underlying, underlying.length));
     }
 
+    @Override
     public IObject clone() {
         lazyLoad();
         return new CharArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     //========================================================
-    // Methods below are used by runtime and test code only!
+    // Internal Helper
     //========================================================
+
+    public CharArray(int c) {
+        this.underlying = new char[c];
+    }
 
     public CharArray(char[] underlying) {
         RuntimeAssertionError.assertTrue(null != underlying);
@@ -87,19 +68,51 @@ public class CharArray extends Array {
         return underlying;
     }
 
+    @Override
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
         lazyLoad();
         this.underlying = (char[]) u;
     }
 
+    @Override
     public java.lang.Object getUnderlyingAsObject(){
         lazyLoad();
         return underlying;
     }
 
+    @Override
     public java.lang.Object getAsObject(int idx){
         lazyLoad();
         return this.underlying[idx];
+    }
+
+    //========================================================
+    // Persistent Memory Support
+    //========================================================
+
+    public CharArray(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
+
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(CharArray.class, deserializer);
+
+        // TODO:  We probably want faster array copies.
+        int length = deserializer.readInt();
+        this.underlying = new char[length];
+        for (int i = 0; i < length; ++i) {
+            this.underlying[i] = deserializer.readChar();
+        }
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(CharArray.class, serializer);
+
+        // TODO:  We probably want faster array copies.
+        serializer.writeInt(this.underlying.length);
+        for (int i = 0; i < this.underlying.length; ++i) {
+            serializer.writeChar(this.underlying[i]);
+        }
     }
 }

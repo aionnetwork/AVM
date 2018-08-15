@@ -1,53 +1,28 @@
 package org.aion.avm.arraywrapper;
 
-import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
-
+import org.aion.avm.internal.*;
 import java.util.Arrays;
-
 
 public class ByteArray extends Array {
 
     private byte[] underlying;
 
-    public static ByteArray initArray(int c){
-        //IHelper.currentContractHelper.get().externalChargeEnergy(c * 8);
-        return new ByteArray(c);
+    /**
+     * Static ByteArray factory
+     *
+     * After instrumentation, NEWARRAY bytecode (with byte/boolean as type) will be replaced by a INVOKESTATIC to
+     * this method.
+     *
+     * @param size Size of the byte array
+     *
+     * @return New empty byte array wrapper
+     */
+    public static ByteArray initArray(int size){
+        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.BYTE.getEnergy());
+        return new ByteArray(size);
     }
 
-    public ByteArray(int c) {
-        this.underlying = new byte[c];
-    }
-
-    // Deserializer support.
-    public ByteArray(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
-    }
-
-    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        super.deserializeSelf(ByteArray.class, deserializer);
-        
-        // TODO:  We probably want faster array copies.
-        int length = deserializer.readInt();
-        this.underlying = new byte[length];
-        for (int i = 0; i < length; ++i) {
-            this.underlying[i] = deserializer.readByte();
-        }
-    }
-
-    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(ByteArray.class, serializer);
-        
-        // TODO:  We probably want faster array copies.
-        serializer.writeInt(this.underlying.length);
-        for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeByte(this.underlying[i]);
-        }
-    }
-
+    @Override
     public int length() {
         lazyLoad();
         return this.underlying.length;
@@ -63,11 +38,13 @@ public class ByteArray extends Array {
         this.underlying[idx] = val;
     }
 
+    @Override
     public IObject avm_clone() {
         lazyLoad();
         return new ByteArray(Arrays.copyOf(underlying, underlying.length));
     }
 
+    @Override
     public IObject clone() {
         lazyLoad();
         return new ByteArray(Arrays.copyOf(underlying, underlying.length));
@@ -86,8 +63,12 @@ public class ByteArray extends Array {
     }
 
     //========================================================
-    // Methods below are used by runtime and test code only!
+    // Internal Helper
     //========================================================
+
+    public ByteArray(int c) {
+        this.underlying = new byte[c];
+    }
 
     public ByteArray(byte[] underlying) {
         RuntimeAssertionError.assertTrue(null != underlying);
@@ -99,19 +80,51 @@ public class ByteArray extends Array {
         return underlying;
     }
 
+    @Override
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
         lazyLoad();
         this.underlying = (byte[]) u;
     }
 
+    @Override
     public java.lang.Object getUnderlyingAsObject(){
         lazyLoad();
         return underlying;
     }
 
+    @Override
     public java.lang.Object getAsObject(int idx){
         lazyLoad();
         return this.underlying[idx];
+    }
+
+    //========================================================
+    // Persistent Memory Support
+    //========================================================
+
+    public ByteArray(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
+
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(ByteArray.class, deserializer);
+
+        // TODO:  We probably want faster array copies.
+        int length = deserializer.readInt();
+        this.underlying = new byte[length];
+        for (int i = 0; i < length; ++i) {
+            this.underlying[i] = deserializer.readByte();
+        }
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(ByteArray.class, serializer);
+
+        // TODO:  We probably want faster array copies.
+        serializer.writeInt(this.underlying.length);
+        for (int i = 0; i < this.underlying.length; ++i) {
+            serializer.writeByte(this.underlying[i]);
+        }
     }
 }

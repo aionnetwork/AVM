@@ -1,53 +1,28 @@
 package org.aion.avm.arraywrapper;
 
-import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
-
+import org.aion.avm.internal.*;
 import java.util.Arrays;
-
 
 public class FloatArray extends Array {
 
     private float[] underlying;
 
-    public static FloatArray initArray(int c){
-        //IHelper.currentContractHelper.get().externalChargeEnergy(c * 32);
-        return new FloatArray(c);
+    /**
+     * Static FloatArray factory
+     *
+     * After instrumentation, NEWARRAY bytecode (with float as type) will be replaced by a INVOKESTATIC to
+     * this method.
+     *
+     * @param size Size of the float array
+     *
+     * @return New empty float array wrapper
+     */
+    public static FloatArray initArray(int size){
+        IHelper.currentContractHelper.get().externalChargeEnergy(size * ArrayElement.FLOAT.getEnergy());
+        return new FloatArray(size);
     }
 
-    public FloatArray(int c) {
-        this.underlying = new float[c];
-    }
-
-    // Deserializer support.
-    public FloatArray(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
-    }
-
-    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        super.deserializeSelf(FloatArray.class, deserializer);
-        
-        // TODO:  We probably want faster array copies.
-        int length = deserializer.readInt();
-        this.underlying = new float[length];
-        for (int i = 0; i < length; ++i) {
-            this.underlying[i] = Float.intBitsToFloat(deserializer.readInt());
-        }
-    }
-
-    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(FloatArray.class, serializer);
-        
-        // TODO:  We probably want faster array copies.
-        serializer.writeInt(this.underlying.length);
-        for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeInt(Float.floatToIntBits(this.underlying[i]));
-        }
-    }
-
+    @Override
     public int length() {
         lazyLoad();
         return this.underlying.length;
@@ -63,19 +38,25 @@ public class FloatArray extends Array {
         this.underlying[idx] = val;
     }
 
+    @Override
     public IObject avm_clone() {
         lazyLoad();
         return new FloatArray(Arrays.copyOf(underlying, underlying.length));
     }
 
+    @Override
     public IObject clone() {
         lazyLoad();
         return new FloatArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     //========================================================
-    // Methods below are used by runtime and test code only!
+    // Internal Helper
     //========================================================
+
+    public FloatArray(int c) {
+        this.underlying = new float[c];
+    }
 
     public FloatArray(float[] underlying) {
         RuntimeAssertionError.assertTrue(null != underlying);
@@ -87,19 +68,51 @@ public class FloatArray extends Array {
         return underlying;
     }
 
+    @Override
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
         lazyLoad();
         this.underlying = (float[]) u;
     }
 
+    @Override
     public java.lang.Object getUnderlyingAsObject(){
         lazyLoad();
         return underlying;
     }
 
+    @Override
     public java.lang.Object getAsObject(int idx){
         lazyLoad();
         return this.underlying[idx];
+    }
+
+    //========================================================
+    // Persistent Memory Support
+    //========================================================
+
+    public FloatArray(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
+
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(FloatArray.class, deserializer);
+
+        // TODO:  We probably want faster array copies.
+        int length = deserializer.readInt();
+        this.underlying = new float[length];
+        for (int i = 0; i < length; ++i) {
+            this.underlying[i] = Float.intBitsToFloat(deserializer.readInt());
+        }
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(FloatArray.class, serializer);
+
+        // TODO:  We probably want faster array copies.
+        serializer.writeInt(this.underlying.length);
+        for (int i = 0; i < this.underlying.length; ++i) {
+            serializer.writeInt(Float.floatToIntBits(this.underlying[i]));
+        }
     }
 }
