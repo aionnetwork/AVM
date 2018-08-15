@@ -5,8 +5,6 @@ import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.Test;
 
-import java.math.BigInteger;
-
 import static org.junit.Assert.assertEquals;
 
 public class KernelInterfaceImplTest {
@@ -15,11 +13,11 @@ public class KernelInterfaceImplTest {
     public void testPremine() {
         KernelInterface kernel = new KernelInterfaceImpl();
         byte[] address = Helpers.randomBytes(32);
-        BigInteger value = BigInteger.TEN;
-        kernel.adjustBalance(KernelInterfaceImpl.PREMINED_ADDRESS, value.negate());
-        kernel.adjustBalance(address, value);
+        long delta = 10;
+        kernel.adjustBalance(KernelInterfaceImpl.PREMINED_ADDRESS, -delta);
+        kernel.adjustBalance(address, delta);
 
-        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT.subtract(value), kernel.getBalance(KernelInterfaceImpl.PREMINED_ADDRESS));
-        assertEquals(value, kernel.getBalance(address));
+        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT - delta, kernel.getBalance(KernelInterfaceImpl.PREMINED_ADDRESS));
+        assertEquals(delta, kernel.getBalance(address));
     }
 }

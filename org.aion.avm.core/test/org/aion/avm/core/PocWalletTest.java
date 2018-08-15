@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
  * See issue-124 for more of the background.
  */
 @RunWith(Enclosed.class)
-public class ProofOfConceptTest {
+public class PocWalletTest {
 
     public static class POCWallet {
 

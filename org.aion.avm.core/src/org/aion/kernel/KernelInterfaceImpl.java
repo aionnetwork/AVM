@@ -3,7 +3,6 @@ package org.aion.kernel;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class KernelInterfaceImpl implements KernelInterface {
 
     public static final byte[] PREMINED_ADDRESS = Helpers.randomBytes(32);
-    public static final BigInteger PREMINED_AMOUNT = BigInteger.valueOf(500).multiply(BigInteger.TEN.pow(18));
+    public static final long PREMINED_AMOUNT = (long) (500L * Math.pow(10, 18));
 
     // shared across-context
     private static Map<ByteArrayWrapper, VersionedCode> dappCodeDB = new ConcurrentHashMap<>();
@@ -63,15 +62,15 @@ public class KernelInterfaceImpl implements KernelInterface {
     }
 
     @Override
-    public BigInteger getBalance(byte[] address) {
+    public long getBalance(byte[] address) {
         return accounts.getOrDefault(new ByteArrayWrapper(address), new AccountState()).balance;
     }
 
     @Override
-    public void adjustBalance(byte[] address, BigInteger delta) {
+    public void adjustBalance(byte[] address, long delta) {
         // NOTE: account is being created
         AccountState as = accounts.computeIfAbsent(new ByteArrayWrapper(address), k -> new AccountState());
-        as.balance = as.balance.add(delta);
+        as.balance += delta;
     }
 
     @Override

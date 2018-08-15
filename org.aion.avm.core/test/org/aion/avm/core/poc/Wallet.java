@@ -1,9 +1,9 @@
-package com.example.testWallet;
+package org.aion.avm.core.poc;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
-
-
+import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.AionSet;
 
 import java.nio.ByteBuffer;
 
@@ -104,7 +104,7 @@ public class Wallet {
             buffer.put(data);
             buffer.putLong(energyLimit);
 
-            return BlockchainRuntime.sha3(buffer.array());
+            return BlockchainRuntime.blake2b(buffer.array());
         }
     }
 }

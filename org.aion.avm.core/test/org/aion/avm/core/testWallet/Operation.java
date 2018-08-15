@@ -9,12 +9,12 @@ import org.aion.avm.api.BlockchainRuntime;
 public class Operation extends ByteArrayWrapper {
     public static Operation fromMessage() {
         byte[] data = BlockchainRuntime.getData();
-        byte[] hash = BlockchainRuntime.sha3(data);
+        byte[] hash = BlockchainRuntime.blake2b(data);
         return new Operation(hash);
     }
 
     public static Operation fromRawBytes(byte[] bytes) {
-        byte[] hash = BlockchainRuntime.sha3(bytes);
+        byte[] hash = BlockchainRuntime.blake2b(bytes);
         return new Operation(hash);
     }
 
@@ -26,7 +26,7 @@ public class Operation extends ByteArrayWrapper {
         byte[] data = BlockchainRuntime.getData();
         long blockNumber = BlockchainRuntime.getBlockNumber();
         byte[] fullData = ByteArrayHelpers.appendLong(data, blockNumber);
-        byte[] hash = BlockchainRuntime.sha3(fullData);
+        byte[] hash = BlockchainRuntime.blake2b(fullData);
         return hash;
     }
 

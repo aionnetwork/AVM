@@ -45,7 +45,7 @@ public class Daylimit {
         Multiowned.onlyOwner(BlockchainRuntime.getSender());
         
         // reset the spend limit if we're on a different day to last time.
-        long nowInDays = BlockchainRuntime.getBlockEpochSeconds() / kSecondsPerDay;
+        long nowInDays = BlockchainRuntime.getBlockTimestamp() / kSecondsPerDay;
         if (nowInDays > Daylimit.lastDay) {
             Daylimit.spentToday = 0;
             Daylimit.lastDay = nowInDays;

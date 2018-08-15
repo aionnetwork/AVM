@@ -1,4 +1,4 @@
-package com.example.testWallet;
+package org.aion.avm.core.poc;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;

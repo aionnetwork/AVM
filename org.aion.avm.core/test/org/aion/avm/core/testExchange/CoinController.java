@@ -1,4 +1,4 @@
-package com.example.testExchange;
+package org.aion.avm.core.testExchange;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;

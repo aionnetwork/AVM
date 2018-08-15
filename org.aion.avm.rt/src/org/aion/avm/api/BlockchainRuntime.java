@@ -2,26 +2,66 @@ package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.shadow.java.math.BigInteger;
+
 
 public class BlockchainRuntime {
 
     // Runtime-facing implementation.
 
+    public static Address avm_getAddress() {
+        return Helper.blockchainRuntime.avm_getAddress();
+    }
+
     public static Address avm_getSender() {
         return Helper.blockchainRuntime.avm_getCaller();
     }
 
-    public static Address avm_getAddress() {
-        return Helper.blockchainRuntime.avm_getAddress();
+    public static Address avm_getOrigin() {
+        return Helper.blockchainRuntime.avm_getOrigin();
     }
 
     public static long avm_getEnergyLimit() {
         return Helper.blockchainRuntime.avm_getEnergyLimit();
     }
 
+    public static long avm_getEnergyPrice() {
+        return Helper.blockchainRuntime.avm_getEnergyPrice();
+    }
+
+    public static long avm_getValue() {
+        return Helper.blockchainRuntime.avm_getValue();
+    }
+
     public static ByteArray avm_getData() {
         return Helper.blockchainRuntime.avm_getData();
     }
+
+
+    public static long avm_getBlockTimestamp() {
+        return Helper.blockchainRuntime.avm_getBlockTimestamp();
+    }
+
+    public static long avm_getBlockNumber() {
+        return Helper.blockchainRuntime.avm_getBlockNumber();
+    }
+
+    public static long avm_getBlockEnergyLimit() {
+        return Helper.blockchainRuntime.avm_getBlockEnergyLimit();
+    }
+
+    public static Address avm_getBlockCoinbase() {
+        return Helper.blockchainRuntime.avm_getBlockCoinbase();
+    }
+
+    public static ByteArray avm_getBlockPreviousHash() {
+        return Helper.blockchainRuntime.avm_getBlockPreviousHash();
+    }
+
+    public static BigInteger avm_getBlockDifficulty() {
+        return Helper.blockchainRuntime.avm_getBlockDifficulty();
+    }
+
 
     public static ByteArray avm_getStorage(ByteArray key) {
         return Helper.blockchainRuntime.avm_getStorage(key);
@@ -31,59 +71,110 @@ public class BlockchainRuntime {
         Helper.blockchainRuntime.avm_putStorage(key, value);
     }
 
-    public static void avm_selfDestruct(Address beneficiary) {
-        Helper.blockchainRuntime.avm_selfDestruct(beneficiary);
+    public static long avm_getBalance(Address address) {
+        return Helper.blockchainRuntime.avm_getBalance(address);
     }
 
-    public static long avm_getBlockEpochSeconds() {
-        return Helper.blockchainRuntime.avm_getBlockTimestamp();
+    public static int avm_getCodeSize(Address address) {
+        return Helper.blockchainRuntime.avm_getCodeSize(address);
     }
 
-    public static long avm_getBlockNumber() {
-        return Helper.blockchainRuntime.avm_getBlockNumber();
-    }
 
-    public static ByteArray avm_sha3(ByteArray data) {
-        return Helper.blockchainRuntime.avm_blake2b(data);
+    public static long avm_getRemainingEnergy() {
+        return Helper.blockchainRuntime.avm_getRemainingEnergy();
     }
 
     public static ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
         return Helper.blockchainRuntime.avm_call(targetAddress, value, data, energyLimit);
     }
 
+    public static Address avm_create(long value, ByteArray data, long energyLimit) {
+        return Helper.blockchainRuntime.avm_create(value, data, energyLimit);
+    }
+
+    public static void avm_selfDestruct(Address beneficiary) {
+        Helper.blockchainRuntime.avm_selfDestruct(beneficiary);
+    }
+
     public static void avm_log(ByteArray data) {
         Helper.blockchainRuntime.avm_log(data);
     }
+
     public static void avm_log(ByteArray topic1, ByteArray data) {
         Helper.blockchainRuntime.avm_log(topic1, data);
     }
+
     public static void avm_log(ByteArray topic1, ByteArray topic2, ByteArray data) {
         Helper.blockchainRuntime.avm_log(topic1, topic2, data);
     }
+
     public static void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data) {
         Helper.blockchainRuntime.avm_log(topic1, topic2, topic3, data);
     }
+
     public static void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data) {
         Helper.blockchainRuntime.avm_log(topic1, topic2, topic3, topic4, data);
     }
 
+    public static ByteArray avm_blake2b(ByteArray data) {
+        return Helper.blockchainRuntime.avm_blake2b(data);
+    }
+
     // Compiler-facing implementation.
+
+
+    public static Address getAddress() {
+        return avm_getAddress();
+    }
 
     public static Address getSender() {
         return avm_getSender();
     }
 
-    public static Address getAddress() {
-        return avm_getAddress();
+    public static Address getOrigin() {
+        return avm_getSender();
     }
 
     public static long getEnergyLimit() {
         return avm_getEnergyLimit();
     }
 
+    public static long getEnergyPrice() {
+        return avm_getEnergyPrice();
+    }
+
+    public static long getValue() {
+        return avm_getValue();
+    }
+
     public static byte[] getData() {
         return avm_getData().getUnderlying();
     }
+
+    public static long getBlockTimestamp() {
+        return avm_getBlockTimestamp();
+    }
+
+    public static long getBlockNumber() {
+        return avm_getBlockNumber();
+    }
+
+    public static long getBlockEnergyLimit() {
+        return avm_getEnergyLimit();
+    }
+
+    public static Address getBlockCoinbase() {
+        return avm_getBlockCoinbase();
+    }
+
+    public static byte[] getBlockPreviousHash() {
+        return avm_getBlockPreviousHash().getUnderlying();
+    }
+
+    public static java.math.BigInteger getBlockDifficulty() {
+        return avm_getBlockDifficulty().getUnderlying();
+    }
+
 
     public static byte[] getStorage(byte[] key) {
         return avm_getStorage(new ByteArray(key)).getUnderlying();
@@ -93,24 +184,30 @@ public class BlockchainRuntime {
         avm_putStorage(new ByteArray(key), new ByteArray(value));
     }
 
-    public static void selfDestruct(Address beneficiary) {
-        avm_selfDestruct(beneficiary);
+
+    public static long getBalance(Address address) {
+        return avm_getBalance(address);
     }
 
-    public static long getBlockEpochSeconds() {
-        return avm_getBlockEpochSeconds();
+    public static int getCodeSize(Address address) {
+        return avm_getCodeSize(address);
     }
 
-    public static long getBlockNumber() {
-        return avm_getBlockNumber();
-    }
 
-    public static byte[] sha3(byte[] data) {
-        return avm_sha3(new ByteArray(data)).getUnderlying();
+    public static long getRemainingEnergy() {
+        return avm_getRemainingEnergy();
     }
 
     public static byte[] call(Address targetAddress, long value, byte[] data, long energyLimit) {
         return avm_call(targetAddress, value, new ByteArray(data), energyLimit).getUnderlying();
+    }
+
+    public static Address create(long value, byte[] data, long energyToSend) {
+        return avm_create(value, new ByteArray(data), energyToSend);
+    }
+
+    public static void selfDestruct(Address beneficiary) {
+        avm_selfDestruct(beneficiary);
     }
 
     public static void log(byte[] data) {
@@ -131,5 +228,9 @@ public class BlockchainRuntime {
 
     public static void log(byte[] topic1, byte[] topic2, byte[] topic3, byte[] topic4, byte[] data) {
         avm_log(new ByteArray(topic1), new ByteArray(topic2), new ByteArray(topic3), new ByteArray(topic4), new ByteArray(data));
+    }
+
+    public static byte[] blake2b(byte[] data) {
+        return avm_blake2b(new ByteArray(data)).getUnderlying();
     }
 }

@@ -27,12 +27,12 @@ public class BlockchainRuntime {
         return 0;
     }
 
-    public static BigInteger getEnergyPrice() {
-        return null;
+    public static long getEnergyPrice() {
+        return 0;
     }
 
-    public static BigInteger getValue() {
-        return null;
+    public static long getValue() {
+        return 0;
     }
 
     public static byte[] getData() {
@@ -78,8 +78,8 @@ public class BlockchainRuntime {
     public static void putStorage(byte[] key, byte[] value) {
     }
 
-    public static BigInteger getBalance(Address address) {
-        return null;
+    public static long getBalance(Address address) {
+        return 0;
     }
 
     public static int getCodeSize(Address address) {

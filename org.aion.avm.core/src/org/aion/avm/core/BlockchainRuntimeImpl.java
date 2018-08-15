@@ -125,10 +125,10 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public BigInteger avm_getBalance(Address address) {
+    public long avm_getBalance(Address address) {
         Objects.requireNonNull(address);
 
-        return new BigInteger(this.kernel.getBalance(address.unwrap()));
+        return this.kernel.getBalance(address.unwrap());
     }
 
     @Override

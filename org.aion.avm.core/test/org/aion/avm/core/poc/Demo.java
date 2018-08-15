@@ -1,4 +1,4 @@
-package org.aion.avm.core.testWallet2;
+package org.aion.avm.core.poc;
 
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
@@ -6,7 +6,14 @@ import org.aion.avm.api.InvalidTxDataException;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.TestingHelper;
+import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.testExchange.CoinController;
+import org.aion.avm.core.testExchange.ERC20;
+import org.aion.avm.core.testExchange.ERC20Token;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.AionList;
+import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
@@ -16,7 +23,7 @@ import org.aion.kernel.TransactionResult;
 import org.junit.Test;
 
 
-public class WalletTest {
+public class Demo {
 
     private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 5_000_000;
@@ -37,7 +44,7 @@ public class WalletTest {
         //================
 
         System.out.println(">> Deploy \"PEPE\" ERC20 token Dapp...");
-        byte[] jar = Helpers.readFileToBytes("../examples/build/testExchangeJar/com.example.testERC20.jar");
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, pepeMinter, null, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit, energyPrice);
@@ -47,8 +54,7 @@ public class WalletTest {
         System.out.println(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.toHexString(txResult.getReturnData()) + ")");
 
         System.out.println("\n>> Deploy the Multi-sig Wallet Dapp...");
-        //byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, Wallet.class, Bytes32.class, AionSet.class, AionMap.class);
-        jar = Helpers.readFileToBytes("../examples/build/com.example.testWallet.jar");
+        jar = JarBuilder.buildJarForMainAndClasses(Main.class, Wallet.class, Bytes32.class, AionList.class, AionSet.class, AionMap.class);
         int confirmationsRequired = 2;
         arguments = ABIEncoder.encodeMethodArguments("", TestingHelper.buildAddress(owner1), TestingHelper.buildAddress(owner2), confirmationsRequired);
         Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0L, Helpers.encodeCodeAndData(jar, arguments), energyLimit, energyPrice);

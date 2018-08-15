@@ -4,20 +4,27 @@ import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.InvalidTxDataException;
+import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.testExchange.*;
+import org.aion.avm.core.testWallet.ByteArrayHelpers;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.AionList;
+import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-public class POCTestExchange {
+public class PocExchangeTest {
     private byte[] testERC20Jar;
     private byte[] testExchangeJar;
 
     @Before
     public void setup() {
-        testERC20Jar = Helpers.readFileToBytes("../examples/build/testExchangeJar/com.example.testERC20.jar");
-        testExchangeJar = Helpers.readFileToBytes("../examples/build/testExchangeJar/com.example.testExchange.jar");
+        testERC20Jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
+        testExchangeJar = JarBuilder.buildJarForMainAndClasses(Exchange.class, ExchangeABI.class, ExchangeTransaction.class, ByteArrayHelpers.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
     }
 
     private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
@@ -139,6 +146,7 @@ public class POCTestExchange {
         }
     }
 
+    @Ignore
     @Test
     public void testERC20() throws InvalidTxDataException{
         TransactionResult res;
@@ -215,6 +223,7 @@ public class POCTestExchange {
         System.out.println(">> balance of User2: " + ABIDecoder.decodeOneObject(res.getReturnData()));
     }
 
+    @Ignore
     @Test
     public void testExchange() throws InvalidTxDataException{
         System.out.println(">> Deploy \"PEPE\" token contract...");

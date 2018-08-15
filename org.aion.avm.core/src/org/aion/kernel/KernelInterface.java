@@ -70,7 +70,7 @@ public interface KernelInterface {
      * @param address the account address
      * @return
      */
-    BigInteger getBalance(byte[] address);
+    long getBalance(byte[] address);
 
     /**
      * Adds/removes the balance of an account.
@@ -78,7 +78,7 @@ public interface KernelInterface {
      * @param address the account address
      * @param delta   the change
      */
-    void adjustBalance(byte[] address, BigInteger delta);
+    void adjustBalance(byte[] address, long delta);
 
     /**
      * Returns the nonce of an account.

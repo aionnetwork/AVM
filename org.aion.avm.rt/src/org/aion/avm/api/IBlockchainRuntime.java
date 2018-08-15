@@ -119,18 +119,14 @@ public interface IBlockchainRuntime {
 
     /**
      * Returns the address of an account.
-     * <p>
-     * TODO: subject to removal for parallel execution
      *
      * @param address account address
      * @return the balance if the account
      */
-    BigInteger avm_getBalance(Address address);
+    long avm_getBalance(Address address);
 
     /**
      * Returns the code size of an account.
-     * <p>
-     * TODO: subject to removal for parallel execution
      *
      * @param address account address
      * @return the code size of the account

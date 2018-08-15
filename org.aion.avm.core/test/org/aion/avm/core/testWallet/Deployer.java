@@ -355,8 +355,8 @@ public class Deployer {
         }
 
         @Override
-        public BigInteger avm_getBalance(Address address) {
-            return null;
+        public long avm_getBalance(Address address) {
+            return 0;
         }
 
         @Override

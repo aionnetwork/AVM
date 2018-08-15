@@ -25,7 +25,7 @@ public class Wallet {
     public static void init(Address[] requestedOwners, int votesRequiredPerOperation, long daylimit) {
         // This is the contract entry-point so "construct" the contract fragments from which we are derived.
         Address sender = BlockchainRuntime.getSender();
-        long nowInSeconds = BlockchainRuntime.getBlockEpochSeconds();
+        long nowInSeconds = BlockchainRuntime.getBlockTimestamp();
         long nowInDays = nowInSeconds / (24 * 60 * 60);
         Multiowned.init(sender, requestedOwners, votesRequiredPerOperation);
         Daylimit.init(daylimit, nowInDays);
