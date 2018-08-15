@@ -1,15 +1,12 @@
 package org.aion.avm.arraywrapper;
 
-import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.RuntimeAssertionError;
-
+import org.aion.avm.internal.*;
 import java.util.Arrays;
 
 public class IntArray2D extends ObjectArray {
 
     public static IntArray2D initArray(int d0, int d1){
-        //IHelper.currentContractHelper.get().externalChargeEnergy(c * 8);
+        IHelper.currentContractHelper.get().externalChargeEnergy(d0 * ArrayElement.REF.getEnergy());
         IntArray2D ret = new IntArray2D(d0);
         for (int i = 0; i < d0; i++) {
             ret.set(i, IntArray.initArray(d1));
@@ -17,29 +14,19 @@ public class IntArray2D extends ObjectArray {
         return ret;
     }
 
-    public IntArray2D(int c) {
-        super(c);
-    }
-
-    public IntArray2D() {
-        super();
-    }
-
-    // Deserializer support.
-    public IntArray2D(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
-    }
-
+    @Override
     public IObject avm_clone() {
         lazyLoad();
         return new IntArray2D(Arrays.copyOf(underlying, underlying.length));
     }
 
+    @Override
     public IObject clone() {
         lazyLoad();
         return new IntArray2D(Arrays.copyOf(underlying, underlying.length));
     }
 
+    @Override
     public boolean equals(Object obj) {
         lazyLoad();
         return obj instanceof IntArray2D && Arrays.equals(this.underlying, ((IntArray2D) obj).underlying);
@@ -52,8 +39,16 @@ public class IntArray2D extends ObjectArray {
     }
 
     //========================================================
-    // Methods below are used by runtime and test code only!
+    // Internal Helper
     //========================================================
+
+    public IntArray2D(int c) {
+        super(c);
+    }
+
+    public IntArray2D() {
+        super();
+    }
 
     public IntArray2D(Object[] underlying) {
         RuntimeAssertionError.assertTrue(null != underlying);
@@ -68,5 +63,14 @@ public class IntArray2D extends ObjectArray {
             this.underlying[i] = new IntArray(src[i]);
         }
     }
+
+    //========================================================
+    // Persistent Memory Support
+    //========================================================
+
+    public IntArray2D(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
+
 
 }
