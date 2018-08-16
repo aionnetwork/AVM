@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.function.Function;
 
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -81,8 +80,8 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
      */
     public void captureAndReplaceStaticState() {
         // The internal mapping structures must be empty.
-        Assert.assertTrue(this.calleeToCallerMap.isEmpty());
-        Assert.assertTrue(this.callerToCalleeMap.isEmpty());
+        RuntimeAssertionError.assertTrue(this.calleeToCallerMap.isEmpty());
+        RuntimeAssertionError.assertTrue(this.callerToCalleeMap.isEmpty());
         
         try {
             internalCaptureAndReplaceStaticState();
@@ -137,7 +136,7 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
                 }
             }
         }
-        Assert.assertNull(this.previousStatics);
+        RuntimeAssertionError.assertTrue(null == this.previousStatics);
         this.previousStatics = inOrderData;
     }
 
@@ -156,7 +155,7 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
 
     private void internalRevertToStoredFields() throws IllegalArgumentException, IllegalAccessException {
         // This is the simple case:  walk the previous statics and over-write them with the versions we stored, originally.
-        Assert.assertNotNull(this.previousStatics);
+        RuntimeAssertionError.assertTrue(null != this.previousStatics);
         
         for (Class<?> clazz : this.classes) {
             for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
@@ -220,7 +219,7 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
         // the graph with the callee version's contents, recursively.
         // In any cases where a reference was to be copied, choose the caller version unless there isn't one, in which case the callee version can be
         // copied (new object case).  In either case, the recursive update of the graph must be continued through this newly-attached object.
-        Assert.assertNotNull(this.previousStatics);
+        RuntimeAssertionError.assertTrue(null != this.previousStatics);
         // We discard the statics since the only information we need from them (the caller instances from which the callees are derived) is already
         // in our calleeToCallerMap.
         this.previousStatics = null;

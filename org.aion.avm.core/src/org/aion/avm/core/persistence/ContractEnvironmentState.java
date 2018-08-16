@@ -1,6 +1,6 @@
 package org.aion.avm.core.persistence;
 
-import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
 
 
@@ -10,7 +10,7 @@ import org.aion.kernel.KernelInterface;
 public class ContractEnvironmentState {
     public static ContractEnvironmentState loadFromStorage(KernelInterface kernel, byte[] address) {
         byte[] rawData = kernel.getStorage(address, StorageKeys.CONTRACT_ENVIRONMENT);
-        Assert.assertTrue(rawData.length == (Integer.BYTES + Long.BYTES));
+        RuntimeAssertionError.assertTrue(rawData.length == (Integer.BYTES + Long.BYTES));
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
         int nextHashCode = decoder.decodeInt();
         long nextInstanceId = decoder.decodeLong();

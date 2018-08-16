@@ -5,8 +5,8 @@ import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.CharArray2D;
 import org.aion.avm.arraywrapper.IntArray2D;
 import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.Class;
 import org.aion.kernel.TransactionResult;
 
@@ -52,34 +52,32 @@ public class TestingHelper implements IHelper {
     }
 
     private void install() {
-        Assert.assertNull(IHelper.currentContractHelper.get());
+        RuntimeAssertionError.assertTrue(null == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.set(this);
     }
     private void remove() {
-        Assert.assertTrue(this == IHelper.currentContractHelper.get());
+        RuntimeAssertionError.assertTrue(this == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.remove();
     }
 
     @Override
     public void externalChargeEnergy(long cost) {
-        Assert.unreachable("Shouldn't be called in the testing code");
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 
     @Override
     public void externalSetEnergy(long energy) {
-        Assert.unreachable("Shouldn't be called in the testing code");
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 
     @Override
     public long externalGetEnergyRemaining() {
-        Assert.unreachable("Shouldn't be called in the testing code");
-        return 0;
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 
     @Override
     public Class<?> externalWrapAsClass(java.lang.Class<?> input) {
-        Assert.unreachable("Shouldn't be called in the testing code");
-        return null;
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 
     @Override
@@ -90,17 +88,16 @@ public class TestingHelper implements IHelper {
 
     @Override
     public int captureSnapshotAndNextHashCode() {
-        Assert.unreachable("Shouldn't be called in the testing code");
-        return 0;
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 
     @Override
     public void applySpanshotAndNextHashCode(int nextHashCode) {
-        Assert.unreachable("Shouldn't be called in the testing code");
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 
     @Override
     public void externalBootstrapOnly() {
-        Assert.unreachable("Shouldn't be called in the testing code");
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 }

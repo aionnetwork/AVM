@@ -59,7 +59,7 @@ public class Helpers {
             fos.write(bytes);
         } catch (IOException e) {
             // This is for tests so we aren't expecting the failure.
-            Assert.unexpected(e);
+            throw RuntimeAssertionError.unexpected(e);
         }
     }
 
@@ -76,7 +76,7 @@ public class Helpers {
         try (DataInputStream in = new DataInputStream(new FileInputStream(f))) {
             in.readFully(b);
         } catch (IOException e) {
-            Assert.unexpected(e);
+            throw RuntimeAssertionError.unexpected(e);
         }
 
         return b;
@@ -96,7 +96,7 @@ public class Helpers {
             try {
                 raw = stream.readAllBytes();
             } catch (IOException e) {
-                Assert.unexpected(e);
+                throw RuntimeAssertionError.unexpected(e);
             }
         }
         return raw;

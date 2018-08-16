@@ -1,6 +1,6 @@
 package org.aion.avm.core.dappreading;
 
-import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,16 +31,16 @@ public class DAppClassLoader extends ClassLoader {
     public Class<?> injectAndLoadClass(String className, byte[] bytecode) {
         byte[] previous = this.injectedClasses.put(className, bytecode);
         // If we over-wrote something, this is a serious bug (unless we define how redundant injection is handled, here).
-        Assert.assertNull(previous);
+        RuntimeAssertionError.assertTrue(null == previous);
         
         Class<?> clazz = null;
         try {
             clazz = this.loadClass(className);
         } catch (ClassNotFoundException e) {
             // We just defined this, so we better have found it.
-            Assert.unexpected(e);
+            throw RuntimeAssertionError.unexpected(e);
         }
-        Assert.assertNotNull(clazz);
+        RuntimeAssertionError.assertTrue(null != clazz);
         return clazz;
     }
 

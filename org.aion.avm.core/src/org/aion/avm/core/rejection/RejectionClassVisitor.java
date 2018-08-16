@@ -1,7 +1,7 @@
 package org.aion.avm.core.rejection;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.FieldVisitor;
@@ -45,8 +45,7 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
 
     @Override
     public ModuleVisitor visitModule(String name, int access, String version) {
-        Assert.unimplemented("TODO:  Determine if/how to handle module definitions");
-        return super.visitModule(name, access, version);
+        throw RuntimeAssertionError.unimplemented("TODO:  Determine if/how to handle module definitions");
     }
 
     @Override

@@ -10,10 +10,10 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.RawDappModule;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
 
 
@@ -55,7 +55,7 @@ public class NodeEnvironment {
 
         } catch (ClassNotFoundException e) {
             // This would be a fatal startup error.
-            Assert.unexpected(e);
+            throw RuntimeAssertionError.unexpected(e);
         }
         // Create the constant map.
         this.constantMap = Collections.unmodifiableMap(initializeConstantState());
@@ -135,17 +135,15 @@ public class NodeEnvironment {
             }
             @Override
             public void externalSetEnergy(long energy) {
-                Assert.unreachable("Nobody should be calling this");
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
             public long externalGetEnergyRemaining() {
-                Assert.unreachable("Nobody should be calling this");
-                return 0L;
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
             public org.aion.avm.shadow.java.lang.Class<?> externalWrapAsClass(Class<?> input) {
-                Assert.unreachable("Nobody should be calling this");
-                return null;
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
             public int externalGetNextHashCode() {
@@ -155,13 +153,12 @@ public class NodeEnvironment {
             @Override
             public int captureSnapshotAndNextHashCode() {
                 // We currently only use this for saving state prior to a reentrant call, which we don't expect during bootstrap.
-                Assert.unreachable("Nobody should be calling this");
-                return 0;
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
             public void applySpanshotAndNextHashCode(int nextHashCode) {
                 // We currently only use this for restoring state after a reentrant call, which we don't expect during bootstrap.
-                Assert.unreachable("Nobody should be calling this");
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
             public void externalBootstrapOnly() {
@@ -240,7 +237,7 @@ public class NodeEnvironment {
         boolean initialize = true;
         for (Class<?> clazz : classes) {
             Class<?> instance = Class.forName(clazz.getName(), initialize, loader);
-            Assert.assertTrue(clazz == instance);
+            RuntimeAssertionError.assertTrue(clazz == instance);
 
             String className = Helpers.fulllyQualifiedNameToInternalName(clazz.getName());
             classNames.add(className.substring(PackageConstants.kShadowSlashPrefix.length()));

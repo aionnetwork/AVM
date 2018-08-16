@@ -20,7 +20,6 @@ import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.types.TransformedDappModule;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
 import org.aion.kernel.*;
@@ -119,7 +118,7 @@ public class DAppCreator {
 
         for (String name : classes.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
-            Assert.assertTrue(-1 == name.indexOf("/"));
+            RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
 
             // We need to parse with EXPAND_FRAMES, since the StackWatcherClassAdapter uses a MethodNode to parse methods.
             // We also add SKIP_DEBUG since we aren't using debug data and skipping it removes extraneous labels which would otherwise

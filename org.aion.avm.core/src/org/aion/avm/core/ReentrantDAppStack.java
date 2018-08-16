@@ -6,7 +6,7 @@ import java.util.Deque;
 
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
-import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 
 /**
@@ -23,7 +23,7 @@ public class ReentrantDAppStack {
      * @param state The new state to push.
      */
     public void pushState(ReentrantState state) {
-        Assert.assertNotNull(state);
+        RuntimeAssertionError.assertTrue(null != state);
         this.stack.push(state);
     }
 
@@ -35,7 +35,7 @@ public class ReentrantDAppStack {
      * @return The first state found with the given address.
      */
     public ReentrantState tryShareState(byte[] address) {
-        Assert.assertNotNull(address);
+        RuntimeAssertionError.assertTrue(null != address);
         ReentrantState foundState = null;
         for (ReentrantState state : this.stack) {
             if (Arrays.equals(state.address, address)) {

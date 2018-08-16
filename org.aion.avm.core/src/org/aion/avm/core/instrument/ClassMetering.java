@@ -4,7 +4,7 @@ import org.aion.avm.core.ClassToolchain;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.MethodNode;
-import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.util.List;
 import java.util.Map;
@@ -80,7 +80,7 @@ public class ClassMetering extends ClassToolchain.ToolChainClassVisitor {
                 if (this.objectSizes.containsKey(allocationType)) {
                     heapSize += this.objectSizes.get(allocationType);
                 }else{
-                    Assert.unreachable("Class metering size dict missing : " + allocationType);
+                    throw RuntimeAssertionError.unreachable("Class metering size dict missing : " + allocationType);
                 }
             }
         }

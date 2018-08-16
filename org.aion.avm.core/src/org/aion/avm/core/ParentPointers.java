@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.aion.avm.core.types.Forest;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 
 /**
@@ -22,7 +22,7 @@ public class ParentPointers {
         Map<String, String> mapping = new HashMap<>();
         for (String className : userDefinedClassNames) {
             // NOTE:  These are ".-style" names.
-            Assert.assertTrue(-1 == className.indexOf("/"));
+            RuntimeAssertionError.assertTrue(-1 == className.indexOf("/"));
             
             Forest.Node<String, byte[]> node = classHierarchy.getNodeById(className);
             String superClassName = node.getParent().getId();
@@ -38,7 +38,7 @@ public class ParentPointers {
 
     public String getSuperClassName(String className) {
         // NOTE:  These are ".-style" names.
-        Assert.assertTrue(-1 == className.indexOf("/"));
+        RuntimeAssertionError.assertTrue(-1 == className.indexOf("/"));
         return this.postRenameParentMap.get(className);
     }
 }

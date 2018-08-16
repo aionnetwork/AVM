@@ -2,12 +2,10 @@ package org.aion.avm.core.instrument;
 
 import java.util.List;
 
-import org.aion.avm.core.util.Assert;
-import org.aion.avm.core.util.DescriptorParser;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 
 /**
@@ -51,7 +49,7 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
     @Override
     public void visitEnd() {
         // We never have empty blocks, in our implementation, so we should always be done when we reach this point.
-        Assert.assertTrue(this.blocks.size() == this.nextBlockIndexToWrite);
+        RuntimeAssertionError.assertTrue(this.blocks.size() == this.nextBlockIndexToWrite);
         // Tell the writer we are done.
         super.visitEnd();
     }

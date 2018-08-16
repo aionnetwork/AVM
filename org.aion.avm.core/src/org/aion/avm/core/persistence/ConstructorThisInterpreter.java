@@ -3,7 +3,7 @@ package org.aion.avm.core.persistence;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -136,7 +136,7 @@ public class ConstructorThisInterpreter extends Interpreter<ConstructorThisInter
         public final BasicValue underlying;
         
         private ThisValue(boolean isThis, BasicValue underlying) {
-            Assert.assertNotNull(underlying);
+            RuntimeAssertionError.assertTrue(null != underlying);
             this.isThis = isThis;
             this.underlying = underlying;
         }

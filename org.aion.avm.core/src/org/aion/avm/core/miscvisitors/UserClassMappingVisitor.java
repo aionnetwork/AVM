@@ -4,10 +4,10 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.rejection.RejectedClassException;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
@@ -335,7 +335,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
      * @return The possibly re-mapped type.
      */
     private String mapType(String type) {
-        Assert.assertTrue(-1 == type.indexOf("."));
+        RuntimeAssertionError.assertTrue(-1 == type.indexOf("."));
         
         String newType = null;
 

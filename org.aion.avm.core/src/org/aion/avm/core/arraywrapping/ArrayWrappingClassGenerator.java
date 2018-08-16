@@ -1,9 +1,9 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.arraywrapper.ArrayElement;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -78,10 +78,8 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         Class<?> c = null;
         try {
             c = loader.loadClass(elementInterfaceName);
-            //c = Class.forName(elementInterfaceName);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            Assert.unreachable("No valid component : " + elementInterfaceName);
+            throw RuntimeAssertionError.unreachable("No valid component : " + elementInterfaceName);
         }
 
         String superInterfaceName;
@@ -137,10 +135,8 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             Class<?> c = null;
             try {
                 c = loader.loadClass(elementClassName);
-                //c = Class.forName(elementClassName);
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                Assert.unreachable("No valid component : " + elementClassName);
+                throw RuntimeAssertionError.unreachable("No valid component : " + elementClassName);
             }
 
             String superInterfaceName;
@@ -323,7 +319,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         String childWrapper;
         String childFacDesc;
         childWrapper = wrapper.substring((PackageConstants.kArrayWrapperSlashPrefix + "$").length());
-        Assert.assertTrue(childWrapper.startsWith("$"));
+        RuntimeAssertionError.assertTrue(childWrapper.startsWith("$"));
         char[] childArray = childWrapper.toCharArray();
         for(int i = 0; childArray[i] == '$' ; i++){
             childArray[i] = '[';
@@ -509,7 +505,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         if((desc.charAt(1) == 'L') || (desc.charAt(1) == '[')){
             sb.append(desc.replace('[', '$'));
         }else{
-            Assert.unreachable("newClassWrapper: " + desc);
+            throw RuntimeAssertionError.unreachable("newClassWrapper: " + desc);
         }
 
         return sb.toString();
@@ -524,7 +520,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         if((desc.charAt(1) == 'L') || (desc.charAt(1) == '[')){
             sb.append(desc.replace('[', '_'));
         }else{
-            Assert.unreachable("newInterfaceWrapper :" + desc);
+            throw RuntimeAssertionError.unreachable("newInterfaceWrapper :" + desc);
         }
 
         return sb.toString();
@@ -543,7 +539,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     // 1D Primitive array will not be called with this method since there will be no aaload
     static java.lang.String getElementType(java.lang.String desc){
 
-        Assert.assertTrue(desc.startsWith("["));
+        RuntimeAssertionError.assertTrue(desc.startsWith("["));
         String ret = desc.substring(1);
 
         if (ret.startsWith("L")){

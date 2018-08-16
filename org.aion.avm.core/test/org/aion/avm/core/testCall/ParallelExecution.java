@@ -6,8 +6,8 @@ import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.TestingBlockchainRuntime;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.types.InternalTransaction;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +111,7 @@ public class ParallelExecution {
                 logger.info("Interrupted!");
                 return null;
             } catch (ExecutionException e) {
-                Assert.unexpected(e);
+                throw RuntimeAssertionError.unexpected(e);
             }
         }
 

@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.function.Function;
 
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -112,7 +111,7 @@ public class AvmClassLoader extends ClassLoader {
     public Class<?> loadUserClassByOriginalName(String originalClassName) throws ClassNotFoundException {
         String renamedClass = PackageConstants.kUserDotPrefix + originalClassName;
         Class<?> clazz = this.loadClass(renamedClass);
-        Assert.assertTrue(this == clazz.getClassLoader());
+        RuntimeAssertionError.assertTrue(this == clazz.getClassLoader());
         return clazz;
     }
 

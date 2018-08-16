@@ -3,6 +3,8 @@ package org.aion.avm.core.util;
 import java.lang.ref.SoftReference;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.aion.avm.internal.RuntimeAssertionError;
+
 
 /**
  * A simple concurrent cache, based on SoftReferences.  There is currently no maximum size.
@@ -30,6 +32,6 @@ public class SoftCache<K, V> {
         SoftReference<V> previous = this.underlyingMap.put(key, new SoftReference<>(value));
         // We don't expect collisions in this cache - that would imply that consumers disagree about cache state.
         // (in the future, we probably want to change this).
-        Assert.assertNull(previous);
+        RuntimeAssertionError.assertTrue(null == previous);
     }
 }

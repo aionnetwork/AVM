@@ -6,9 +6,10 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.junit.Test;
 
-import static org.aion.avm.core.util.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 public class RevertAndInvalidTest {
 

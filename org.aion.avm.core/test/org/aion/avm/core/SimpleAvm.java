@@ -3,9 +3,9 @@ package org.aion.avm.core;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.types.Forest;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class SimpleAvm {
                     builder.addClass(e.getKey(), Object.class.getName(), e.getValue());
                 }
             } catch (ClassNotFoundException ex) {
-                Assert.unexpected(ex);
+                throw RuntimeAssertionError.unexpected(ex);
             }
         });
         Forest<String, byte[]> classHierarchy = builder.asMutableForest();
@@ -69,7 +69,7 @@ public class SimpleAvm {
     }
 
     public void shutdown() {
-        Assert.assertTrue(this.helper == IHelper.currentContractHelper.get());
+        RuntimeAssertionError.assertTrue(this.helper == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.remove();
     }
 }

@@ -1,5 +1,7 @@
 package org.aion.avm.core.util;
 
+import org.aion.avm.internal.RuntimeAssertionError;
+
 
 /**
  * A simple state machine for parsing descriptors.  This can be used to parse both simple type descriptors and complete method descriptors.
@@ -86,7 +88,7 @@ public class DescriptorParser {
                     arrayDimensions = 0;
                     break;
                 case VOID:
-                    Assert.assertTrue(0 == arrayDimensions);
+                    RuntimeAssertionError.assertTrue(0 == arrayDimensions);
                     userData = callbacks.readVoid(userData);
                     break;
                 case OBJECT_START:
@@ -96,20 +98,20 @@ public class DescriptorParser {
                     arrayDimensions += 1;
                     break;
                 case ARGS_START:
-                    Assert.assertTrue(0 == arrayDimensions);
+                    RuntimeAssertionError.assertTrue(0 == arrayDimensions);
                     userData = callbacks.argumentStart(userData);
                     break;
                 case ARGS_END:
-                    Assert.assertTrue(0 == arrayDimensions);
+                    RuntimeAssertionError.assertTrue(0 == arrayDimensions);
                     userData = callbacks.argumentEnd(userData);
                     break;
                 default:
-                    Assert.unreachable("Unexpected descriptor character: " + c);
+                    throw RuntimeAssertionError.unreachable("Unexpected descriptor character: " + c);
                 }
             }
         }
-        Assert.assertTrue(0 == arrayDimensions);
-        Assert.assertNull(parsingObject);
+        RuntimeAssertionError.assertTrue(0 == arrayDimensions);
+        RuntimeAssertionError.assertTrue(null == parsingObject);
         return userData;
     }
 
@@ -153,17 +155,14 @@ public class DescriptorParser {
      */
     public static abstract class TypeOnlyCallbacks<T> implements Callbacks<T> {
         public T argumentStart(T userData) {
-            Assert.unreachable("Type-only parser received method-style callback");
-            return null;
+            throw RuntimeAssertionError.unreachable("Type-only parser received method-style callback");
         }
         public T argumentEnd(T userData) {
-            Assert.unreachable("Type-only parser received method-style callback");
-            return null;
+            throw RuntimeAssertionError.unreachable("Type-only parser received method-style callback");
         }
 
         public T readVoid(T userData) {
-            Assert.unreachable("Type-only parser received method-style callback");
-            return null;
+            throw RuntimeAssertionError.unreachable("Type-only parser received method-style callback");
         }
     }
 }

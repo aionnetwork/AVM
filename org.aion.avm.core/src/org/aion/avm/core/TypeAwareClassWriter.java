@@ -3,8 +3,8 @@ package org.aion.avm.core;
 import java.util.Stack;
 
 import org.aion.avm.core.types.Forest;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.ClassWriter;
 
 
@@ -49,7 +49,7 @@ public class TypeAwareClassWriter extends ClassWriter {
 
     private Stack<String> builTypeListFor(String type) {
         // NOTE:  These are "/-style" names.
-        Assert.assertTrue(-1 == type.indexOf("."));
+        RuntimeAssertionError.assertTrue(-1 == type.indexOf("."));
         
         // The complexity here is that we have 3 different sources of truth to consult, and they are non-overlapping (only meeting at edges):
         // 1) Static class hierarchy within the contract.
@@ -72,11 +72,11 @@ public class TypeAwareClassWriter extends ClassWriter {
             }
             
             // If we didn't find it by now, there is something very wrong.
-            Assert.assertNotNull(superDotName);
-            Assert.assertTrue(-1 == superDotName.indexOf("/"));
+            RuntimeAssertionError.assertTrue(null != superDotName);
+            RuntimeAssertionError.assertTrue(-1 == superDotName.indexOf("/"));
             
             String superName = Helpers.fulllyQualifiedNameToInternalName(superDotName);
-            Assert.assertTrue(-1 == superName.indexOf("."));
+            RuntimeAssertionError.assertTrue(-1 == superName.indexOf("."));
             nextType = superName;
         }
         stack.push(nextType);
@@ -100,7 +100,7 @@ public class TypeAwareClassWriter extends ClassWriter {
      */
     private String getSuperAsJdkType(String name) {
         // NOTE:  These are ".-style" names.
-        Assert.assertTrue(-1 == name.indexOf("/"));
+        RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
         
         String superName = null;
         try {

@@ -1,8 +1,8 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.arraywrapper.*;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -134,9 +134,9 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
                 break;
 
             case Opcodes.AALOAD:
-                Assert.unreachable("Primitive array wrapping adapter catch AALOAD");
+                throw RuntimeAssertionError.unreachable("Primitive array wrapping adapter catch AALOAD");
             case Opcodes.AASTORE:
-                Assert.unreachable("Primitive array wrapping adapter catch AASTORE");
+                throw RuntimeAssertionError.unreachable("Primitive array wrapping adapter catch AASTORE");
 
             default:
                 this.mv.visitInsn(opcode);

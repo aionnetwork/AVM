@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aion.avm.core.types.Forest;
-import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 
 /**
@@ -17,8 +17,8 @@ public class HierarchyTreeBuilder {
 
     public HierarchyTreeBuilder addClass(String name, String superclass, byte[] code) {
         // NOTE:  These are ".-style" names.
-        Assert.assertTrue(-1 == name.indexOf("/"));
-        Assert.assertTrue(-1 == superclass.indexOf("/"));
+        RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
+        RuntimeAssertionError.assertTrue(-1 == superclass.indexOf("/"));
 
         // already added as parent
         if (this.nameCache.containsKey(name)){

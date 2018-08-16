@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 
 /**
@@ -16,7 +16,7 @@ public class SuspendedHelper {
         IHelper.currentContractHelper.remove();
     }
     public void resume() {
-        Assert.assertNull(IHelper.currentContractHelper.get());
+        RuntimeAssertionError.assertTrue(null == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.set(this.suspended);
     }
 }

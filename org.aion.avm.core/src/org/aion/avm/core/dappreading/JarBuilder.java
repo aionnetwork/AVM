@@ -9,8 +9,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 
 /**
@@ -49,7 +49,7 @@ public class JarBuilder {
             stream = new JarOutputStream(this.byteStream, manifest);
         } catch (IOException e) {
             // We are using a byte array so this can't happen.
-            Assert.unexpected(e);
+            throw RuntimeAssertionError.unexpected(e);
         }
         this.jarStream = stream;
         this.entriesInJar = new HashSet<>();
@@ -74,7 +74,7 @@ public class JarBuilder {
             }
         } catch (IOException e) {
             // We are serializing to a byte array so this is unexpected.
-            Assert.unexpected(e);
+            throw RuntimeAssertionError.unexpected(e);
         }
         return this;
     }
@@ -83,7 +83,7 @@ public class JarBuilder {
         // Start with the fully-qualified class name, since we use that for addressing it.
         String className = clazz.getName();
         byte[] bytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(className) + ".class");
-        Assert.assertNotNull(bytes);
+        RuntimeAssertionError.assertTrue(null != bytes);
         saveClassToStream(className, bytes);
         
         // Load any inner classes which might exist (these are just decimal suffixes, starting at 1.
@@ -102,7 +102,7 @@ public class JarBuilder {
     private void saveClassToStream(String qualifiedClassName, byte[] bytes) throws IOException {
         // Convert this fully-qualified name into an internal name, since that is the serialized name it needs.
         String internalName = Helpers.fulllyQualifiedNameToInternalName(qualifiedClassName);
-        Assert.assertTrue(!this.entriesInJar.contains(internalName));
+        RuntimeAssertionError.assertTrue(!this.entriesInJar.contains(internalName));
         JarEntry entry = new JarEntry(internalName + ".class");
         this.jarStream.putNextEntry(entry);
         this.jarStream.write(bytes);
@@ -117,7 +117,7 @@ public class JarBuilder {
             this.byteStream.close();
         } catch (IOException e) {
             // We are using a byte array so this can't happen.
-            Assert.unexpected(e);
+            throw RuntimeAssertionError.unexpected(e);
         }
         return this.byteStream.toByteArray();
     }

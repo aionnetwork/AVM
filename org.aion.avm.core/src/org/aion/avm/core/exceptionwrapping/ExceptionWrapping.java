@@ -3,8 +3,8 @@ package org.aion.avm.core.exceptionwrapping;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ParentPointers;
 import org.aion.avm.core.classgeneration.StubGenerator;
-import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -44,13 +44,13 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                 if (null == superClass) {
                     // We will try to load this from the default class loader and ask its parent.
                     // (we can only land outside if we fell into the java.lang package, which is a problem we should have filtered, earlier)
-                    Assert.assertTrue(thisClass.startsWith(PackageConstants.kShadowDotPrefix + "java.lang"));
+                    RuntimeAssertionError.assertTrue(thisClass.startsWith(PackageConstants.kShadowDotPrefix + "java.lang"));
                     try {
                         Class<?> clazz = Class.forName(thisClass);
                         superClass = clazz.getSuperclass().getName();
                     } catch (ClassNotFoundException e) {
                         // This is something we should have caught earlier so this is a hard failure.
-                        Assert.unexpected(e);
+                        throw RuntimeAssertionError.unexpected(e);
                     }
                 }
                 thisClass = superClass;
@@ -174,13 +174,11 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
             return className.substring(PackageConstants.kShadowSlashPrefix.length());
 
         } else if (className.startsWith(PackageConstants.kApiSlashPrefix)) {
-            Assert.unimplemented("Stripping name for API classes not implemented");
+            throw RuntimeAssertionError.unimplemented("Stripping name for API classes not implemented");
 
         } else {
-            Assert.unreachable("Unknown class prefix: " + className);
+            throw RuntimeAssertionError.unreachable("Unknown class prefix: " + className);
         }
-
-        return null;
     }
 
     private static String prependExceptionWrapperSlashPrefix(String className) {

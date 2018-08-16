@@ -156,7 +156,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                     org.aion.avm.shadow.java.lang.Object contents = (org.aion.avm.shadow.java.lang.Object)field.get(object);
                     // This should be a shadow object.
                     if (contents != null && !org.aion.avm.shadow.java.lang.Object.class.isAssignableFrom(contents.getClass())) {
-                        throw new RuntimeAssertionError("Attempted to encode non-shadow object: " + contents.getClass());
+                        throw RuntimeAssertionError.unreachable("Attempted to encode non-shadow object: " + contents.getClass());
                     }
                     // Shape:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
                     // Null:  (int)0.

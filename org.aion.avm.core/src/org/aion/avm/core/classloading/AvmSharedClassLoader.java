@@ -1,7 +1,7 @@
 package org.aion.avm.core.classloading;
 
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
-import org.aion.avm.core.util.Assert;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -56,14 +56,14 @@ public class AvmSharedClassLoader extends ClassLoader {
                 this.cache.putIfAbsent(name, result);
             } else {
                 // All user space class should be loaded with contract loader
-                Assert.assertTrue(!name.contains("org.aion.avm.user"));
+                RuntimeAssertionError.assertTrue(!name.contains("org.aion.avm.user"));
 
                 // Before falling back to the parent, try the dynamic.
                 for (Function<String, byte[]> handler : handlers) {
                     byte[] code = handler.apply(name);
                     if (code != null) {
                         result = defineClass(name, code, 0, code.length);
-                        Assert.assertTrue(!this.cache.containsKey(name));
+                        RuntimeAssertionError.assertTrue(!this.cache.containsKey(name));
                         this.cache.putIfAbsent(name, result);
                         break;
                     }
