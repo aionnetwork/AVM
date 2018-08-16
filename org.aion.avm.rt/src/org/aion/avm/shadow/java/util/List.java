@@ -11,13 +11,13 @@ public interface List<E> extends Collection<E> {
 
     boolean avm_isEmpty();
 
-    boolean avm_contains(Object o);
+    boolean avm_contains(IObject o);
 
     ObjectArray avm_toArray();
 
-    boolean avm_add(E e);
+    boolean avm_add(IObject e);
 
-    boolean avm_remove(Object o);
+    boolean avm_remove(IObject o);
 
     boolean avm_containsAll(Collection<?> c);
 
@@ -35,24 +35,24 @@ public interface List<E> extends Collection<E> {
 
     // Positional Access Operations
 
-    E avm_get(int index);
+    IObject avm_get(int index);
 
-    E avm_set(int index, E element);
+    IObject avm_set(int index, IObject element);
 
-    void avm_add(int index, E element);
+    void avm_add(int index, IObject element);
 
-    E avm_remove(int index);
+    IObject avm_remove(int index);
 
-    int avm_indexOf(Object o);
+    int avm_indexOf(IObject o);
 
-    int avm_lastIndexOf(Object o);
+    int avm_lastIndexOf(IObject o);
 
-    ListIterator<E> avm_listIterator();
+    ListIterator<IObject> avm_listIterator();
 
-    ListIterator<E> avm_listIterator(int index);
+    ListIterator<IObject> avm_listIterator(int index);
 
     // View
 
-    List<E> avm_subList(int fromIndex, int toIndex);
+    List<IObject> avm_subList(int fromIndex, int toIndex);
 
 }

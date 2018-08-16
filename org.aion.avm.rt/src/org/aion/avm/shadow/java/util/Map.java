@@ -10,15 +10,15 @@ public interface Map<K, V> {
 
     boolean avm_isEmpty();
 
-    boolean avm_containsKey(Object key);
+    boolean avm_containsKey(IObject key);
 
-    boolean avm_containsValue(Object value);
+    boolean avm_containsValue(IObject value);
 
-    V avm_get(IObject key);
+    IObject avm_get(IObject key);
 
-    V avm_put(K key, V value);
+    IObject avm_put(IObject key, IObject value);
 
-    V avm_remove(IObject key);
+    IObject avm_remove(IObject key);
 
     void avm_putAll(Map<? extends K, ? extends V> m);
 
@@ -33,11 +33,11 @@ public interface Map<K, V> {
     Set<Map.Entry<K, V>> avm_entrySet();
 
     interface Entry<K, V> {
-        K avm_getKey();
+        IObject avm_getKey();
 
-        V avm_getValue();
+        IObject avm_getValue();
 
-        V avm_setValue(V value);
+        IObject avm_setValue(IObject value);
 
         boolean avm_equals(IObject o);
 

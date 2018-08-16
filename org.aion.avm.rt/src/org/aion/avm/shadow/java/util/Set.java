@@ -11,13 +11,13 @@ public interface Set<E> extends Collection<E> {
 
     boolean avm_isEmpty();
 
-    boolean avm_contains(Object o);
+    boolean avm_contains(IObject o);
 
     ObjectArray avm_toArray();
 
-    boolean avm_add(E e);
+    boolean avm_add(IObject e);
 
-    boolean avm_remove(Object o);
+    boolean avm_remove(IObject o);
 
     boolean avm_containsAll(Collection<?> c);
 
