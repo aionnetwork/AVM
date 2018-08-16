@@ -1,5 +1,6 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.core.util.Assert;
 import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -60,6 +61,10 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
         }
 
         AbstractInsnNode[] insns = instructions.toArray();
+
+        if (null != insns && null != frames) {
+            Assert.assertTrue(insns.length == frames.length);
+        }
 
         for(int i = 0; i < insns.length; i++) {
             AbstractInsnNode insn = insns[i];
