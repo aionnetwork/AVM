@@ -3,7 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.api.InvalidTxDataException;
+import org.aion.avm.internal.InvalidTxDataException;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.*;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;

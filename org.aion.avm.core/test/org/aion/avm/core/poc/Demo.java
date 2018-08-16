@@ -2,7 +2,7 @@ package org.aion.avm.core.poc;
 
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.api.InvalidTxDataException;
+import org.aion.avm.internal.InvalidTxDataException;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.TestingHelper;

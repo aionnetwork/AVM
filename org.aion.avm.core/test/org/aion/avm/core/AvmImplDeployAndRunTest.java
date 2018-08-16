@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.api.InvalidTxDataException;
+import org.aion.avm.internal.InvalidTxDataException;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;

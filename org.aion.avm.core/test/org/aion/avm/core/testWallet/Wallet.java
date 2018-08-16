@@ -3,7 +3,6 @@ package org.aion.avm.core.testWallet;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.InvalidTxDataException;
 import org.aion.avm.userlib.AionMap;
 
 
@@ -45,7 +44,7 @@ public class Wallet {
      *
      * @return The output of running the invoke (null for void methods or require failed cases).
      */
-    public static byte[] main() throws InvalidTxDataException {
+    public static byte[] main() {
         byte[] input = BlockchainRuntime.getData();
         return ABIDecoder.decodeAndRun(new Wallet(), input);
     }

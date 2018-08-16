@@ -2,7 +2,6 @@ package com.example.deployAndRunTest;
 
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.InvalidTxDataException;
 import org.aion.avm.api.BlockchainRuntime;
 
 public class DeployAndRunTest {
@@ -48,7 +47,7 @@ public class DeployAndRunTest {
         return ABIEncoder.encodeMethodArguments(methodName, a, b);
     }
 
-    public static byte[] main() throws InvalidTxDataException {
+    public static byte[] main() {
         return ABIDecoder.decodeAndRun(new DeployAndRunTest(), BlockchainRuntime.getData());
     }
 }

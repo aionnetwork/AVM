@@ -2,6 +2,7 @@ package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.InvalidTxDataException;
 import org.aion.avm.shadow.java.lang.Double;
 import org.aion.avm.shadow.java.lang.Float;
 import org.aion.avm.shadow.java.lang.Integer;

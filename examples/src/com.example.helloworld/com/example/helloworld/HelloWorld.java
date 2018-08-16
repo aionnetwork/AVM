@@ -1,8 +1,6 @@
 package com.example.helloworld;
 
 import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.api.InvalidTxDataException;
 import org.aion.avm.api.BlockchainRuntime;
 
 public class HelloWorld {
@@ -26,7 +24,7 @@ public class HelloWorld {
         return "Hello, world!".getBytes();
     }
 
-    public static byte[] main() throws InvalidTxDataException {
+    public static byte[] main() {
         return ABIDecoder.decodeAndRun(new HelloWorld(), BlockchainRuntime.getData());
     }
 }

@@ -4,8 +4,7 @@ import java.util.function.Consumer;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.api.InvalidTxDataException;
-import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.InvalidTxDataException;
 
 
 /**

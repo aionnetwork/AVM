@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.InvalidTxDataException;
+import org.aion.avm.internal.InvalidTxDataException;
 
 public class ApiExceptionTestResource {
 
