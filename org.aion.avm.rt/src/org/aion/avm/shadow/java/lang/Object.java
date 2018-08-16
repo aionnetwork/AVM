@@ -41,6 +41,7 @@ public class Object extends java.lang.Object implements IObject {
 
     @Override
     public int avm_hashCode() {
+        lazyLoad();
         return this.hashCode;
     }
 
