@@ -9,6 +9,11 @@ public class ClassLoadingTest {
     private String clazzName = ClassLoadingResource.class.getName();
     private byte[] clazzBytes = Helpers.loadRequiredResourceAsBytes(clazzName.replaceAll("\\.", "/") + ".class");
 
+    /**
+     * This test is more like a benchmark, rather than functionality test.
+     *
+     * Disabled by default to speed up build process.
+     */
     @Test
     @Ignore
     public void test() throws InterruptedException {

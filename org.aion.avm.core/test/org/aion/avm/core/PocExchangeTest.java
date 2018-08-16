@@ -144,7 +144,6 @@ public class PocExchangeTest {
         }
     }
 
-    @Ignore
     @Test
     public void testERC20() {
         TransactionResult res;
@@ -223,7 +222,6 @@ public class PocExchangeTest {
         System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
     }
 
-    @Ignore
     @Test
     public void testExchange() {
         System.out.println(">> Deploy \"PEPE\" token contract...");
