@@ -53,7 +53,7 @@ public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor 
         // If this is the <clinit>, we don't want to inject the lazyLoad calls (nothing visible there could be a stub).
         return CLINIT_NAME.equals(name)
                 ? super.visitMethod(access, name, descriptor, signature, exceptions)
-                : new LazyLoadingMethodVisitor(super.visitMethod(access, name, descriptor, signature, exceptions));
+                : new LazyLoadingMethodVisitor(super.visitMethod(access, name, descriptor, signature, exceptions), null);
     }
 
     @Override

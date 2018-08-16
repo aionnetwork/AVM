@@ -2,6 +2,7 @@ package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -10,30 +11,28 @@ import org.objectweb.asm.Opcodes;
 
 /**
  * Walks the method code, replace prepending a call to "lazyLoad()" on any GETFIELD/PUTFIELD bytecodes.
- * Note that there is a special-case:
- * -"<clinit>" - no re-writing is done here since nothing visible at this point could be a stub
+ * Note that there are special-cases:
+ * -"&lt;clinit&gt;" - no re-writing is done here since nothing visible at this point could be a stub (this
+ *  visitor isn't created in those cases).
+ * -"&lt;init&gt;" - extra analysis is done to determine where the "this" pointer is since we can't call
+ *  lazyLoad() on it (fields can be accessed before "this" has been initialized).
  * 
- * Constructor calls are handled as any other method, even though many of the writes will be to the new object,
- * since in-depth flow analysis would be required to determine the receiver instance.
- * Such flow analysis-based optimizations could be applied later, and the constructor would only add a small
- * assumption (object in local 0 is already loaded).
- * 
- * NOTE:  An alternative to this design is to generate special get/set methods on the receiver object, which
- * would make the call to lazyLoad(), and then just change the GETFIELD/PUTFIELD to call those methods.  This
- * design would make the size of the change to the caller method much smaller but substantially increases the
- * complexity of the callee class (and requires much larger method generation logic).
+ * It may be possible to expand this control flow analysis to also avoid redundant lazyLoad() calls in all
+ * methods, but this is a later consideration.
  */
 public class LazyLoadingMethodVisitor extends MethodVisitor {
     private static final String SHADOW_OBJECT_NAME = Helpers.fulllyQualifiedNameToInternalName(org.aion.avm.shadow.java.lang.Object.class.getName());
     private static final String LAZY_LOAD_NAME = "lazyLoad";
     private static final String LAZY_LOAD_DESCRIPTOR = "()V";
 
-    // TODO:  Start using this with the completion of issue-156 (currently just added to get the big and benign part of the change into its own commit).
-    @SuppressWarnings("unused")
+    private final StackThisTracker tracker;
+    // The offset of the next instruction into the canSafelySkip array.  Usually, this is just bytecodes but labels, frames, and line number entries
+    // are also counted.
     private int frameOffset;
 
-    public LazyLoadingMethodVisitor(MethodVisitor visitor) {
+    public LazyLoadingMethodVisitor(MethodVisitor visitor, StackThisTracker tracker) {
         super(Opcodes.ASM6, visitor);
+        this.tracker = tracker;
     }
 
     @Override
@@ -133,6 +132,12 @@ public class LazyLoadingMethodVisitor extends MethodVisitor {
         this.frameOffset += 1;
     }
 
+    @Override
+    public void visitEnd() {
+        super.visitEnd();
+        RuntimeAssertionError.assertTrue((null == this.tracker) || (this.frameOffset == this.tracker.getFrameCount()));
+    }
+
 
     /**
      * NOTE:  All calls to instruction visitation routines are made against super, directly, since we do frame offset accounting within our overrides
@@ -145,7 +150,7 @@ public class LazyLoadingMethodVisitor extends MethodVisitor {
         // If this is a PUTFIELD or GETFIELD, we want to call "lazyLoad()":
         // -PUTIFELD:  DUP2, POP, INVOKEVIRTUAL
         // -GETIFELD:  DUP, INVOKEVIRTUAL
-        if (Opcodes.PUTFIELD == opcode) {
+        if ((Opcodes.PUTFIELD == opcode) && ((null == this.tracker) || !this.tracker.isThisTargetOfPut(this.frameOffset))) {
             // We need to see how big this type is since double and long need a far more complex dance.
             if ((1 == descriptor.length()) && ((DescriptorParser.LONG == descriptor.charAt(0)) || (DescriptorParser.DOUBLE == descriptor.charAt(0)))) {
                 // Here, the stack looks like: ... OBJECT, VAR1, VAR2 (top)
@@ -174,7 +179,7 @@ public class LazyLoadingMethodVisitor extends MethodVisitor {
                 // INOKE: ... OBJECT, VAR (top)
                 super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, SHADOW_OBJECT_NAME, LAZY_LOAD_NAME, LAZY_LOAD_DESCRIPTOR, false);
             }
-        } else if (Opcodes.GETFIELD == opcode) {
+        } else if ((Opcodes.GETFIELD == opcode) && ((null == this.tracker) || !this.tracker.isThisTargetOfGet(this.frameOffset))) {
             // Here, the stack looks like: ... OBJECT, (top)
             // Where we need:  ... OBJECT, OBJECT (top)
             super.visitInsn(Opcodes.DUP);
