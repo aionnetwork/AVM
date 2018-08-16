@@ -61,37 +61,37 @@ public class PocExchangeTest {
         }
 
         private TransactionResult callBalanceOf(byte[] toQuery) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", new Address(toQuery));
+            byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", TestingHelper.buildAddress(toQuery));
             return call(minter, args);
         }
 
         private TransactionResult callOpenAccount(byte[] toOpen) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("openAccount", new Address(toOpen));
+            byte[] args = ABIEncoder.encodeMethodArguments("openAccount", TestingHelper.buildAddress(toOpen));
             return call(minter, args);
         }
 
         private TransactionResult callMint(byte[] receiver, long amount) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("mint", new Address(receiver), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("mint", TestingHelper.buildAddress(receiver), amount);
             return call(minter, args);
         }
 
         private TransactionResult callTransfer(byte[] sender, byte[] receiver, long amount) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("transfer", new Address(receiver), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("transfer", TestingHelper.buildAddress(receiver), amount);
             return call(sender, args);
         }
 
         private TransactionResult callAllowance(byte[] owner, byte[] spender) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("allowance", new Address(owner), new Address(spender));
+            byte[] args = ABIEncoder.encodeMethodArguments("allowance", TestingHelper.buildAddress(owner), TestingHelper.buildAddress(spender));
             return call(minter, args);
         }
 
         private TransactionResult callApprove(byte[] owner, byte[] spender, long amount) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("approve", new Address(spender), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("approve", TestingHelper.buildAddress(spender), amount);
             return call(owner, args);
         }
 
         private TransactionResult callTransferFrom(byte[] executor, byte[] from, byte[] to, long amount) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", new Address(from), new Address(to), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", TestingHelper.buildAddress(from), TestingHelper.buildAddress(to), amount);
             return call(executor, args);
         }
 
@@ -123,12 +123,12 @@ public class PocExchangeTest {
         }
 
         public TransactionResult callListCoin(String name, byte[] coinAddr) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("listCoin", name.toCharArray(), new Address(coinAddr));
+            byte[] args = ABIEncoder.encodeMethodArguments("listCoin", name.toCharArray(), TestingHelper.buildAddress(coinAddr));
             return call(owner,args);
         }
 
         public TransactionResult callRequestTransfer(String name, byte[] from,  byte[] to, long amount) throws InvalidTxDataException {
-            byte[] args = ABIEncoder.encodeMethodArguments("requestTransfer", name.toCharArray(), new Address(to), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("requestTransfer", name.toCharArray(), TestingHelper.buildAddress(to), amount);
             return call(from,args);
         }
 
@@ -157,72 +157,72 @@ public class PocExchangeTest {
 
         res = pepe.callTotalSupply();
         System.out.println(Helpers.toHexString(res.getReturnData()));
-        Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> total supply: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(0L, TestingHelper.decodeResult(res));
+        System.out.println(">> total supply: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr1);
-        Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> balance of User1: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(0L, TestingHelper.decodeResult(res));
+        System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr2);
-        Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> balance of User2: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(0L, TestingHelper.decodeResult(res));
+        System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callMint(usr1, 5000L);
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> Mint to deliver 5000 tokens to User1: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(true, TestingHelper.decodeResult(res));
+        System.out.println(">> Mint to deliver 5000 tokens to User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr1);
-        Assert.assertEquals(5000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> balance of User1: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(5000L, TestingHelper.decodeResult(res));
+        System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callMint(usr2, 10000L);
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> Mint to deliver 10000 tokens to User2: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(true, TestingHelper.decodeResult(res));
+        System.out.println(">> Mint to deliver 10000 tokens to User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr2);
-        Assert.assertEquals(10000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> balance of User2: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(10000L, TestingHelper.decodeResult(res));
+        System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callTransfer(usr1, usr2, 2000L);
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> User1 to transfer 2000 tokens to User2: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(true, TestingHelper.decodeResult(res));
+        System.out.println(">> User1 to transfer 2000 tokens to User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr1);
-        Assert.assertEquals(3000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> balance of User1: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(3000L, TestingHelper.decodeResult(res));
+        System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr2);
-        Assert.assertEquals(12000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> balance of User2: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(12000L, TestingHelper.decodeResult(res));
+        System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callAllowance(usr1, usr2);
-        Assert.assertEquals(0L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> Allowance User1 grants to User2: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(0L, TestingHelper.decodeResult(res));
+        System.out.println(">> Allowance User1 grants to User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callApprove(usr1, usr3, 1000L);
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> User1 grants User3 the allowance of 1000 tokens: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(true, TestingHelper.decodeResult(res));
+        System.out.println(">> User1 grants User3 the allowance of 1000 tokens: " + TestingHelper.decodeResult(res));
 
         res = pepe.callAllowance(usr1, usr3);
-        Assert.assertEquals(1000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> Allowance User1 grants to User3: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(1000L, TestingHelper.decodeResult(res));
+        System.out.println(">> Allowance User1 grants to User3: " + TestingHelper.decodeResult(res));
 
         res = pepe.callTransferFrom(usr3, usr1, usr2, 500L);
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> User3 to transfer 500 tokens to User2, from the allowance granted by User1: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(true, TestingHelper.decodeResult(res));
+        System.out.println(">> User3 to transfer 500 tokens to User2, from the allowance granted by User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callAllowance(usr1, usr3);
-        Assert.assertEquals(500L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> Allowance User1 grants to User3: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(500L, TestingHelper.decodeResult(res));
+        System.out.println(">> Allowance User1 grants to User3: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr1);
-        Assert.assertEquals(2500L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> balance of User1: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(2500L, TestingHelper.decodeResult(res));
+        System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr2);
-        Assert.assertEquals(12500L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> balance of User2: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(12500L, TestingHelper.decodeResult(res));
+        System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
     }
 
     @Ignore
@@ -242,44 +242,44 @@ public class PocExchangeTest {
         TransactionResult res;
 
         res = ex.callListCoin("PEPE", pepe.addr);
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> List \"PEPE\" token on Exchange: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(true, TestingHelper.decodeResult(res));
+        System.out.println(">> List \"PEPE\" token on Exchange: " + TestingHelper.decodeResult(res));
 
         res = ex.callListCoin("MEME", meme.addr);
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> List \"MEME\" token on Exchange: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(true, TestingHelper.decodeResult(res));
+        System.out.println(">> List \"MEME\" token on Exchange: " + TestingHelper.decodeResult(res));
 
         res = pepe.callMint(usr1, 5000L);
-        System.out.println(">> Mint to deliver 5000 tokens to User1: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        System.out.println(">> Mint to deliver 5000 tokens to User1: " + TestingHelper.decodeResult(res));
         res = pepe.callMint(usr2, 5000L);
-        System.out.println(">> Mint to deliver 5000 tokens to User2: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        System.out.println(">> Mint to deliver 5000 tokens to User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callApprove(usr1, ex.addr, 2000L);
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> User1 grants to the Exchange the allowance of 2000 tokens: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(true, TestingHelper.decodeResult(res));
+        System.out.println(">> User1 grants to the Exchange the allowance of 2000 tokens: " + TestingHelper.decodeResult(res));
 
         res = ex.callRequestTransfer("PEPE", usr1, usr2, 1000L);
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> Exchange to request transfer 1000 tokens from User1 to User2, from the allowance granted by User1: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(true, TestingHelper.decodeResult(res));
+        System.out.println(">> Exchange to request transfer 1000 tokens from User1 to User2, from the allowance granted by User1: " + TestingHelper.decodeResult(res));
 
         //res = pepe.callAllowance(usr1, ex.addr);
-        //Assert.assertEquals(2000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        //System.out.println(">> User1 grants to the Exchange the allowance of 2000 tokens: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        //Assert.assertEquals(2000L, TestingHelper.decodeResult(res));
+        //System.out.println(">> User1 grants to the Exchange the allowance of 2000 tokens: " + TestingHelper.decodeResult(res));
 
         res = ex.callProcessExchangeTransaction(exchangeOwner);
-        Assert.assertEquals(true, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> Exchange to process the transactions: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(true, TestingHelper.decodeResult(res));
+        System.out.println(">> Exchange to process the transactions: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr1);
-        Assert.assertEquals(4000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> balance of User1: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(4000L, TestingHelper.decodeResult(res));
+        System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr2);
-        Assert.assertEquals(6000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> balance of User2: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(6000L, TestingHelper.decodeResult(res));
+        System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callAllowance(usr1, ex.addr);
-        Assert.assertEquals(1000L, ABIDecoder.decodeOneObject(res.getReturnData()));
-        System.out.println(">> Allowance User1 grants to Exchange: " + ABIDecoder.decodeOneObject(res.getReturnData()));
+        Assert.assertEquals(1000L, TestingHelper.decodeResult(res));
+        System.out.println(">> Allowance User1 grants to Exchange: " + TestingHelper.decodeResult(res));
     }
 }
