@@ -22,13 +22,16 @@ public class AvmImplDeployAndRunTest {
 
     private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
+    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+
     public TransactionResult deployHelloWorld() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
         byte[] txData = Helpers.encodeCodeAndData(jar, null);
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        return new AvmImpl(new KernelInterfaceImpl()).run(context);
+        return avm.run(context);
     }
 
     public TransactionResult deployTheDeployAndRunTest() {
@@ -37,7 +40,7 @@ public class AvmImplDeployAndRunTest {
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        return new AvmImpl(new KernelInterfaceImpl()).run(context);
+        return avm.run(context);
     }
 
     @Test
@@ -55,7 +58,7 @@ public class AvmImplDeployAndRunTest {
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
+        TransactionResult result = avm.run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
     }
@@ -68,7 +71,7 @@ public class AvmImplDeployAndRunTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("run");
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
+        TransactionResult result = avm.run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals("Hello, world!", new String((byte[]) TestingHelper.decodeResult(result)));
@@ -82,7 +85,7 @@ public class AvmImplDeployAndRunTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("add", 123, 1);
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
+        TransactionResult result = avm.run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals(124, TestingHelper.decodeResult(result));
@@ -97,7 +100,7 @@ public class AvmImplDeployAndRunTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("encodeArgs");
         Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = new AvmImpl(new KernelInterfaceImpl()).run(context);
+        TransactionResult result = avm.run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         byte[] expected = ABIEncoder.encodeMethodArguments("addArray", new int[]{123, 1}, 5);
@@ -107,7 +110,7 @@ public class AvmImplDeployAndRunTest {
         // test another method call, "addArray" with 1D array arguments
         tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, expected, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        result = new AvmImpl(new KernelInterfaceImpl()).run(context);
+        result = avm.run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals(129, TestingHelper.decodeResult(result));
@@ -119,7 +122,7 @@ public class AvmImplDeployAndRunTest {
         txData = ABIEncoder.encodeMethodArguments("addArray2", TestingHelper.construct2DWrappedArray(a));
         tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        result = new AvmImpl(new KernelInterfaceImpl()).run(context);
+        result = avm.run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals(124, TestingHelper.decodeResult(result));
@@ -131,7 +134,7 @@ public class AvmImplDeployAndRunTest {
         txData = ABIEncoder.encodeMethodArguments("concatenate", TestingHelper.construct2DWrappedArray(chars));
         tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        result = new AvmImpl(new KernelInterfaceImpl()).run(context);
+        result = avm.run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals("catdog", new String((char[]) TestingHelper.decodeResult(result)));
@@ -140,7 +143,7 @@ public class AvmImplDeployAndRunTest {
         txData = ABIEncoder.encodeMethodArguments("swap", TestingHelper.construct2DWrappedArray(chars));
         tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        result = new AvmImpl(new KernelInterfaceImpl()).run(context);
+        result = avm.run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals("dog", new String(((char[][]) TestingHelper.decodeResult(result))[0]));

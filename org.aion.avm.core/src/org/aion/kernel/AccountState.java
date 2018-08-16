@@ -1,15 +1,21 @@
 package org.aion.kernel;
 
-import java.math.BigInteger;
+import org.aion.avm.core.util.ByteArrayWrapper;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AccountState {
 
-    public long balance;
+    public long balance = 0;
 
-    public long nonce;
+    public long nonce = 0;
+
+    public VersionedCode code = null;
+
+    public Map<ByteArrayWrapper, byte[]> storage = new HashMap<>();
 
     public AccountState() {
-        this(0, 0);
     }
 
     public AccountState(long balance, long nonce) {

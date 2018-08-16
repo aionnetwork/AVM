@@ -43,7 +43,7 @@ public interface KernelInterface {
 
 
     /**
-     * Creates an account.
+     * Creates an account if not exist.
      *
      * @param address the account address
      */
