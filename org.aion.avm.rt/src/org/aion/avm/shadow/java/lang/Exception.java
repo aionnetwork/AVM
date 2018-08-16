@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 
 
@@ -28,5 +29,10 @@ public class Exception extends Throwable {
 
     public Exception(Throwable cause) {
         super(cause);
+    }
+
+    // Deserializer support.
+    public Exception(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
     }
 }

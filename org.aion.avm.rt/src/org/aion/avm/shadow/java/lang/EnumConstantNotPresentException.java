@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 
 
@@ -22,11 +23,17 @@ public class EnumConstantNotPresentException extends RuntimeException {
         this.constantName  = constantName;
     }
 
+    public EnumConstantNotPresentException(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
+
     public String avm_constantName() {
+        lazyLoad();
         return this.constantName;
     }
 
     public Class<? extends Enum> avm_enumType() {
+        lazyLoad();
         return this.enumType;
     }
 }

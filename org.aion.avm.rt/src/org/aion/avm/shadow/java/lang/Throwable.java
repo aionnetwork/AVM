@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 
 
@@ -18,7 +19,7 @@ public class Throwable extends Object {
         IHelper.currentContractHelper.get().externalBootstrapOnly();
     }
 
-    private final String message;
+    private String message;
     private Throwable cause;
 
     public Throwable() {
@@ -38,24 +39,34 @@ public class Throwable extends Object {
         this(null, cause);
     }
 
+    // Deserializer support.
+    public Throwable(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
+
     public String avm_getMessage() {
+        lazyLoad();
         return this.message;
     }
 
     public String avm_getLocalizedMessage() {
+        lazyLoad();
         return this.message;
     }
 
     public Throwable avm_getCause() {
+        lazyLoad();
         return this.cause;
     }
 
     public Throwable avm_initCause(Throwable cause) {
+        lazyLoad();
         this.cause = cause;
         return this;
     }
 
     public String avm_toString() {
+        lazyLoad();
         return this.message;
     }
 
@@ -108,6 +119,7 @@ public class Throwable extends Object {
 
     @Override
     public java.lang.String toString() {
+        lazyLoad();
         return getClass().getName() + ": " + this.message;
     }
 }

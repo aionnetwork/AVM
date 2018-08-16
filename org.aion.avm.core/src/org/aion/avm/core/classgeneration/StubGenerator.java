@@ -182,5 +182,19 @@ public class StubGenerator {
             methodVisitor.visitMaxs(2, 2);
             methodVisitor.visitEnd();
         }
+        
+        // Generate the deserialization constructor:  "(Lorg/aion/avm/internal/IDeserializer;J)V".
+        {
+            String deserializationDescriptor = "(Lorg/aion/avm/internal/IDeserializer;J)V";
+            methodVisitor = out.visitMethod(Opcodes.ACC_PUBLIC, INIT_NAME, deserializationDescriptor, null, null);
+            methodVisitor.visitCode();
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
+            methodVisitor.visitVarInsn(Opcodes.LLOAD, 2);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, INIT_NAME, deserializationDescriptor, false);
+            methodVisitor.visitInsn(Opcodes.RETURN);
+            methodVisitor.visitMaxs(3, 3);
+            methodVisitor.visitEnd();
+        }
     }
 }
