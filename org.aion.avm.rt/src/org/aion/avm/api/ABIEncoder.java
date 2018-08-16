@@ -619,11 +619,11 @@ public final class ABIEncoder {
     /*
      * Runtime-facing implementation.
      */
-    public static ByteArray avm_encodeMethodArguments(org.aion.avm.shadow.java.lang.String methodName, ObjectArray arguments)  throws InvalidTxDataException {
+    public static ByteArray avm_encodeMethodArguments(org.aion.avm.shadow.java.lang.String methodName, ObjectArray arguments)  {
         return new ByteArray(encodeMethodArguments(methodName.toString(), arguments.getUnderlying()));
     }
 
-    public static ByteArray avm_encodeOneObject(IObject data) throws InvalidTxDataException {
+    public static ByteArray avm_encodeOneObject(IObject data) {
         return new ByteArray(encodeOneObject(data));
     }
 
@@ -637,9 +637,8 @@ public final class ABIEncoder {
      * @param methodName the method name of the Dapp main class to call with.
      * @param arguments the arguments of the corresponding method of Dapp main class to call with.
      * @return the encoded byte array that contains the method descriptor, followed by the argument descriptor and encoded arguments, according the Aion ABI format.
-     * @throws InvalidTxDataException
      */
-    public static byte[] encodeMethodArguments(String methodName, Object... arguments)  throws InvalidTxDataException {
+    public static byte[] encodeMethodArguments(String methodName, Object... arguments)  {
         if (arguments == null) {
             return methodName.getBytes();
         }
@@ -684,9 +683,8 @@ public final class ABIEncoder {
      * Encode one object of any type that Aion ABI allows; generate the byte array that contains the descriptor and the encoded data.
      * @param data one object of any type that Aion ABI allows
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * @throws InvalidTxDataException
      */
-    public static byte[] encodeOneObject(Object data) throws InvalidTxDataException {
+    public static byte[] encodeOneObject(Object data) {
         byte[][] encoded = encodeOneObjectAndDescriptor(data);
         byte[] ret = new byte[encoded[0].length + encoded[1].length];
         System.arraycopy(encoded[0], 0, ret, 0, encoded[0].length);
@@ -699,9 +697,8 @@ public final class ABIEncoder {
      * and the second the encoded data.
      * @param data one object of any type that Aion ABI allows.
      * @return the 2-element 2D byte array, of which the first byte array contains the descriptor and the second the encoded data.
-     * @throws InvalidTxDataException
      */
-    public static byte[][] encodeOneObjectAndDescriptor(Object data) throws InvalidTxDataException {
+    public static byte[][] encodeOneObjectAndDescriptor(Object data) {
         if (data == null) {
             return null;
         }
@@ -753,9 +750,8 @@ public final class ABIEncoder {
      * @param data the "org.aion.avm.arraywrapper.ObjectArray" class object
      * @param type the ABI type of the 2D array elements
      * @return the 2-element 2D byte array, of which the first byte array contains the descriptor and the second the encoded data.
-     * @throws InvalidTxDataException
      */
-    public static byte[][] encode2DArray(ObjectArray data, ABITypes type) throws InvalidTxDataException {
+    public static byte[][] encode2DArray(ObjectArray data, ABITypes type) {
         byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
 
         Object[] underlying = data.getUnderlying();
@@ -794,9 +790,8 @@ public final class ABIEncoder {
      * Return the corresponding ABI type of the given identifier, if it matches with one of the identifiers of the ABI type.
      * @param identifier a string that may be the class name, Java class file field descriptor, or the ABI symbol. See the {@link ABITypes} class.
      * @return the corresponding ABI type.
-     * @throws InvalidTxDataException
      */
-    public static ABITypes mapABITypes(String identifier) throws InvalidTxDataException {
+    public static ABITypes mapABITypes(String identifier) {
         // create the map, if not yet
         if (ABITypesMap == null) {
             ABITypesMap = new HashMap<>();

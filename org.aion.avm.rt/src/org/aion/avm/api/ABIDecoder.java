@@ -90,9 +90,8 @@ public final class ABIDecoder {
      * @param obj the user space class object.
      * @param txData the transaction data that is encoded with the method name and arguments to call with.
      * @return the encoded return data from the method call.
-     * @throws InvalidTxDataException
      */
-    public static ByteArray avm_decodeAndRun(IObject obj, ByteArray txData) throws InvalidTxDataException{
+    public static ByteArray avm_decodeAndRun(IObject obj, ByteArray txData){
         byte[] result = decodeAndRun(obj, txData.getUnderlying());
         return (null != result)
                 ? new ByteArray(result)
@@ -103,9 +102,8 @@ public final class ABIDecoder {
      * Decode the transaction data and return the method caller.
      * @param txData the transaction data that has the encoded method name, arguments descriptor and arguments to call with.
      * @return the method caller that contains the method name, arguments descriptor and the arguments.
-     * @throws InvalidTxDataException
      */
-    public static MethodCaller avm_decode(ByteArray txData) throws InvalidTxDataException{
+    public static MethodCaller avm_decode(ByteArray txData){
         return decode(txData.getUnderlying());
     }
 
@@ -113,9 +111,8 @@ public final class ABIDecoder {
      * Decode the transaction data and return the argument list that is encoded in it.
      * @param txData the transaction data that has the encoded arguments descriptor and arguments.
      * @return an object array that contains all of the arguments.
-     * @throws InvalidTxDataException
      */
-    public static ObjectArray avm_decodeArguments(ByteArray txData) throws InvalidTxDataException{
+    public static ObjectArray avm_decodeArguments(ByteArray txData){
         Object[] result = decodeArguments(txData.getUnderlying());
         return (null != result)
                 ? new ObjectArray(result)
@@ -126,9 +123,8 @@ public final class ABIDecoder {
      * Decode the transaction data that has one object encoded in it.
      * @param txData the transaction data that has one object encoded in it (with the descriptor).
      * @return the decoded object.
-     * @throws InvalidTxDataException
      */
-    public static IObject avm_decodeOneObject(ByteArray txData) throws InvalidTxDataException{
+    public static IObject avm_decodeOneObject(ByteArray txData){
         Descriptor descriptor = readOneDescriptor(txData.getUnderlying(), 0);
         return decodeOneObjectWithDescriptor(txData.getUnderlying(), descriptor.encodedBytes, descriptor).iObject;
     }
@@ -139,7 +135,7 @@ public final class ABIDecoder {
      */
 
     /** Underlying implementation of {@link #avm_decodeAndRun(IObject, ByteArray) avm_decodeAndRun} method */
-    public static byte[] decodeAndRun(Object obj, byte[] txData) throws InvalidTxDataException{
+    public static byte[] decodeAndRun(Object obj, byte[] txData){
         MethodCaller methodCaller = decode(txData);
 
         String newMethodName = "avm_" + methodCaller.methodName;
@@ -169,7 +165,7 @@ public final class ABIDecoder {
     }
 
     /** Underlying implementation of {@link #avm_decode(ByteArray) avm_decode} method */
-    public static MethodCaller decode(byte[] txData) throws InvalidTxDataException{
+    public static MethodCaller decode(byte[] txData){
         if (txData == null || txData.length == 0) {
             return null;
         }
@@ -195,12 +191,12 @@ public final class ABIDecoder {
     }
 
     /** Underlying implementation of {@link #avm_decodeArguments(ByteArray) avm_decodeArguments} method */
-    public static Object[] decodeArguments(byte[] data) throws InvalidTxDataException{
+    public static Object[] decodeArguments(byte[] data){
         return decode(data).arguments;
     }
 
     /** Underlying implementation of {@link #avm_decodeOneObject(ByteArray) avm_decodeOneObject} method */
-    public static Object decodeOneObject(byte[] data) throws InvalidTxDataException{
+    public static Object decodeOneObject(byte[] data){
         Descriptor descriptor = readOneDescriptor(data, 0);
         return decodeOneObjectWithDescriptor(data, descriptor.encodedBytes, descriptor).object;
     }
@@ -210,9 +206,8 @@ public final class ABIDecoder {
      * @param data the encoded byte array of the arguments
      * @param argsDescriptor the descriptor of the arguments
      * @return an object array that contains all of the arguments.
-     * @throws InvalidTxDataException
      */
-    private static IObject[] decodeArgumentsWithDescriptor(byte[] data, String argsDescriptor) throws InvalidTxDataException{
+    private static IObject[] decodeArgumentsWithDescriptor(byte[] data, String argsDescriptor){
         // read all descriptors
         int encodedBytes = 0;
         List<Descriptor> descriptorList = new ArrayList<>();
@@ -245,7 +240,7 @@ public final class ABIDecoder {
      * All possible characters are encoded in UTF-8 as one byte for each. So the character index in the string
      * is equal to the byte index in the byte array.
      */
-    private static Descriptor readOneDescriptor(byte[] data, int start) throws InvalidTxDataException{
+    private static Descriptor readOneDescriptor(byte[] data, int start){
         String decoded = new String(data).substring(start);
 
         if (decoded.startsWith("[[")) {
@@ -283,7 +278,7 @@ public final class ABIDecoder {
     /**
      * A helper method to read one integer from the array arguments descriptor.
      */
-    private static int[] readNumberFromDescriptor(String argsDescriptor, char stopChar, int startIdx) throws InvalidTxDataException {
+    private static int[] readNumberFromDescriptor(String argsDescriptor, char stopChar, int startIdx) {
         int[] res = new int[2]; // res[0]: the number encoded as argsDescriptor.substring(startIdx, idxE); res[1]: the index of stopChar in the argsDescriptor
         int idxE = argsDescriptor.indexOf(stopChar, startIdx);
         if ( idxE == -1) {
@@ -308,7 +303,7 @@ public final class ABIDecoder {
     /**
      * A helper method to decode one object from the encoded data stream with the starting index and descriptor.
      */
-    private static DecodedObjectInfo decodeOneObjectWithDescriptor(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
+    private static DecodedObjectInfo decodeOneObjectWithDescriptor(byte[] data, int startByteOfData, Descriptor descriptor){
         if (descriptor.dimension == 0) {
             return descriptor.type.decode(data, startByteOfData);
         }
@@ -323,7 +318,7 @@ public final class ABIDecoder {
     /**
      * A helper method to decode a 1D array from the encode data stream with the start index and descriptor.
      */
-    private static DecodedObjectInfo decode1DArray(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
+    private static DecodedObjectInfo decode1DArray(byte[] data, int startByteOfData, Descriptor descriptor){
         int endByte = startByteOfData;
         Object[] array = new Object[descriptor.size];
         Descriptor componentDescriptor = new Descriptor(descriptor.type, 0, 1);
@@ -338,7 +333,7 @@ public final class ABIDecoder {
     /**
      * A helper method to decode a 2D array from the encode data stream with the start index and descriptor.
      */
-    private static DecodedObjectInfo decode2DArray(byte[] data, int startByteOfData, Descriptor descriptor) throws InvalidTxDataException{
+    private static DecodedObjectInfo decode2DArray(byte[] data, int startByteOfData, Descriptor descriptor){
         int endByte = startByteOfData;
         Object[] array = new Object[descriptor.size];
         for (int idx = 0; idx < descriptor.size; idx ++) {
@@ -353,7 +348,7 @@ public final class ABIDecoder {
     /**
      * A helper method to match the method selector with the main-class methods.
      */
-    public static Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor) throws InvalidTxDataException{
+    public static Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor){
         Method[] methods = clazz.getMethods();
 
         String ARRAY_WRAPPER_PREFIX = "org.aion.avm.arraywrapper.";
