@@ -3,11 +3,13 @@ package org.aion.avm.api;
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.InvalidTxDataException;
+import org.aion.avm.internal.DappInvocationTargetException;
 import org.aion.avm.shadow.java.lang.Boolean;
 import org.aion.avm.shadow.java.lang.Byte;
 import org.aion.avm.shadow.java.lang.Float;
 import org.aion.avm.shadow.java.lang.Short;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -91,7 +93,7 @@ public final class ABIDecoder {
      * @param txData the transaction data that is encoded with the method name and arguments to call with.
      * @return the encoded return data from the method call.
      */
-    public static ByteArray avm_decodeAndRun(IObject obj, ByteArray txData){
+    public static ByteArray avm_decodeAndRun(IObject obj, ByteArray txData) {
         byte[] result = decodeAndRun(obj, txData.getUnderlying());
         return (null != result)
                 ? new ByteArray(result)
@@ -112,7 +114,7 @@ public final class ABIDecoder {
      * @param txData the transaction data that has the encoded arguments descriptor and arguments.
      * @return an object array that contains all of the arguments.
      */
-    public static ObjectArray avm_decodeArguments(ByteArray txData){
+    public static ObjectArray avm_decodeArguments(ByteArray txData) {
         Object[] result = decodeArguments(txData.getUnderlying());
         return (null != result)
                 ? new ObjectArray(result)
@@ -135,7 +137,7 @@ public final class ABIDecoder {
      */
 
     /** Underlying implementation of {@link #avm_decodeAndRun(IObject, ByteArray) avm_decodeAndRun} method */
-    public static byte[] decodeAndRun(Object obj, byte[] txData){
+    public static byte[] decodeAndRun(Object obj, byte[] txData) {
         MethodCaller methodCaller = decode(txData);
 
         String newMethodName = "avm_" + methodCaller.methodName;
@@ -148,6 +150,8 @@ public final class ABIDecoder {
         if (Modifier.isStatic(method.getModifiers())) {
             obj = null;
         }
+        // all checked exceptions need to be caught here, so the Dapp user doesn't need to declare them when calling into ABI decoder.
+        // And the unchecked exceptions are thrown for the DappExecutor to handle them.
         try {
             if (methodCaller.arguments == null) {
                 ret = method.invoke(obj);
@@ -155,8 +159,12 @@ public final class ABIDecoder {
             else {
                 ret = method.invoke(obj, convertArguments(method, methodCaller.arguments));
             }
-        } catch (Exception e) {
-            throw new InvalidTxDataException();
+        } catch (IllegalAccessException e) {
+            throw new InvalidTxDataException("the method encoded in the transaction data is not accessible", e);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidTxDataException("cannot use or convert the method arguments encoded in the transaction data for the method invocation", e);
+        } catch (InvocationTargetException e) {
+            throw new DappInvocationTargetException("Dapp throws an exception", e);
         }
 
         return (null != ret)
@@ -165,7 +173,7 @@ public final class ABIDecoder {
     }
 
     /** Underlying implementation of {@link #avm_decode(ByteArray) avm_decode} method */
-    public static MethodCaller decode(byte[] txData){
+    public static MethodCaller decode(byte[] txData) {
         if (txData == null || txData.length == 0) {
             return null;
         }
@@ -178,7 +186,7 @@ public final class ABIDecoder {
             return new MethodCaller(decoded, null, null);
         }
         if (m1 == -1 || m2 == -1) {
-            throw new InvalidTxDataException();
+            throw new InvalidTxDataException("the descriptor in the transaction data is not properly wrapped with \"<>\"");
         }
 
         String methodName = decoded.substring(0, m1);
@@ -281,8 +289,8 @@ public final class ABIDecoder {
     private static int[] readNumberFromDescriptor(String argsDescriptor, char stopChar, int startIdx) {
         int[] res = new int[2]; // res[0]: the number encoded as argsDescriptor.substring(startIdx, idxE); res[1]: the index of stopChar in the argsDescriptor
         int idxE = argsDescriptor.indexOf(stopChar, startIdx);
-        if ( idxE == -1) {
-            throw new InvalidTxDataException();
+        if (idxE == -1) {
+            throw new InvalidTxDataException("array dimension is not properly encoded in the transaction data");
         }
 
         res[1] = idxE;
@@ -294,7 +302,7 @@ public final class ABIDecoder {
                 res[0] = Integer.parseInt(argsDescriptor.substring(startIdx, idxE));
             }
             catch (NumberFormatException e) {
-                throw new InvalidTxDataException();
+                throw new InvalidTxDataException("array dimension is not properly encoded in the transaction data");
             }
         }
         return res;
@@ -342,7 +350,7 @@ public final class ABIDecoder {
             array[idx] = decodedObjectInfo.object;
             endByte = decodedObjectInfo.endByteOfData;
         }
-        return new DecodedObjectInfo(descriptor.type.construct2DNativeArray(array), descriptor.type.construct2DWrappedArray(array), endByte); //TODO - constructWrapped2DArray after the 2D wrappers are available
+        return new DecodedObjectInfo(descriptor.type.construct2DNativeArray(array), descriptor.type.construct2DWrappedArray(array), endByte);
     }
 
     /**

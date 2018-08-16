@@ -706,19 +706,14 @@ public final class ABIEncoder {
 
         if (className.startsWith("org.aion.avm.arraywrapper.") && className.endsWith("2D")) {
             // data is a 2D array
-            return encode2DArray((ObjectArray)data,
-                    mapABITypes(className));
+            return encode2DArray((ObjectArray)data, mapABITypes(className));
         }
         else {
             ABITypes type = mapABITypes(className);
-            if (type == null) {
-                throw new InvalidTxDataException();
-            }
 
             if (className.startsWith("org.aion.avm.arraywrapper.")) {
                 // data is an 1D array
                 return type.encode1DArray(((Array)data).getUnderlyingAsObject());
-                //return encode1DArray((Array)data, type);
             }
             else if (className.startsWith("[[")) {
                 return encode2DArray(type.construct2DWrappedArray((Object[]) data), type);
@@ -804,7 +799,7 @@ public final class ABIEncoder {
 
         // return the type
         if (!ABITypesMap.containsKey(identifier)) {
-            throw new InvalidTxDataException();
+            throw new InvalidTxDataException("data type is not compatible to Aion ABI types");
         }
         return ABITypesMap.get(identifier);
     }
