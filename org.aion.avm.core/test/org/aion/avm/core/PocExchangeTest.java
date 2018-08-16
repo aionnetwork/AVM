@@ -1,9 +1,7 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.internal.InvalidTxDataException;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.*;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
@@ -55,42 +53,42 @@ public class PocExchangeTest {
             return createResult.getReturnData();
         }
 
-        public TransactionResult callTotalSupply() throws InvalidTxDataException {
+        public TransactionResult callTotalSupply() {
             byte[] args = ABIEncoder.encodeMethodArguments("totalSupply");
             return call(minter, args);
         }
 
-        private TransactionResult callBalanceOf(byte[] toQuery) throws InvalidTxDataException {
+        private TransactionResult callBalanceOf(byte[] toQuery) {
             byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", TestingHelper.buildAddress(toQuery));
             return call(minter, args);
         }
 
-        private TransactionResult callOpenAccount(byte[] toOpen) throws InvalidTxDataException {
+        private TransactionResult callOpenAccount(byte[] toOpen) {
             byte[] args = ABIEncoder.encodeMethodArguments("openAccount", TestingHelper.buildAddress(toOpen));
             return call(minter, args);
         }
 
-        private TransactionResult callMint(byte[] receiver, long amount) throws InvalidTxDataException {
+        private TransactionResult callMint(byte[] receiver, long amount) {
             byte[] args = ABIEncoder.encodeMethodArguments("mint", TestingHelper.buildAddress(receiver), amount);
             return call(minter, args);
         }
 
-        private TransactionResult callTransfer(byte[] sender, byte[] receiver, long amount) throws InvalidTxDataException {
+        private TransactionResult callTransfer(byte[] sender, byte[] receiver, long amount) {
             byte[] args = ABIEncoder.encodeMethodArguments("transfer", TestingHelper.buildAddress(receiver), amount);
             return call(sender, args);
         }
 
-        private TransactionResult callAllowance(byte[] owner, byte[] spender) throws InvalidTxDataException {
+        private TransactionResult callAllowance(byte[] owner, byte[] spender) {
             byte[] args = ABIEncoder.encodeMethodArguments("allowance", TestingHelper.buildAddress(owner), TestingHelper.buildAddress(spender));
             return call(minter, args);
         }
 
-        private TransactionResult callApprove(byte[] owner, byte[] spender, long amount) throws InvalidTxDataException {
+        private TransactionResult callApprove(byte[] owner, byte[] spender, long amount) {
             byte[] args = ABIEncoder.encodeMethodArguments("approve", TestingHelper.buildAddress(spender), amount);
             return call(owner, args);
         }
 
-        private TransactionResult callTransferFrom(byte[] executor, byte[] from, byte[] to, long amount) throws InvalidTxDataException {
+        private TransactionResult callTransferFrom(byte[] executor, byte[] from, byte[] to, long amount) {
             byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", TestingHelper.buildAddress(from), TestingHelper.buildAddress(to), amount);
             return call(executor, args);
         }
@@ -122,22 +120,22 @@ public class PocExchangeTest {
             return createResult.getReturnData();
         }
 
-        public TransactionResult callListCoin(String name, byte[] coinAddr) throws InvalidTxDataException {
+        public TransactionResult callListCoin(String name, byte[] coinAddr) {
             byte[] args = ABIEncoder.encodeMethodArguments("listCoin", name.toCharArray(), TestingHelper.buildAddress(coinAddr));
             return call(owner,args);
         }
 
-        public TransactionResult callRequestTransfer(String name, byte[] from,  byte[] to, long amount) throws InvalidTxDataException {
+        public TransactionResult callRequestTransfer(String name, byte[] from,  byte[] to, long amount) {
             byte[] args = ABIEncoder.encodeMethodArguments("requestTransfer", name.toCharArray(), TestingHelper.buildAddress(to), amount);
             return call(from,args);
         }
 
-        public TransactionResult callProcessExchangeTransaction(byte[] sender) throws InvalidTxDataException {
+        public TransactionResult callProcessExchangeTransaction(byte[] sender) {
             byte[] args = ABIEncoder.encodeMethodArguments("processExchangeTransaction");
             return call(sender,args);
         }
 
-        private TransactionResult call(byte[] sender, byte[] args) throws InvalidTxDataException {
+        private TransactionResult call(byte[] sender, byte[] args) {
             Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, 0, args, energyLimit, 1l);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
             TransactionResult callResult = new AvmImpl(new KernelInterfaceImpl()).run(callContext);
@@ -148,7 +146,7 @@ public class PocExchangeTest {
 
     @Ignore
     @Test
-    public void testERC20() throws InvalidTxDataException{
+    public void testERC20() {
         TransactionResult res;
         System.out.println(">> Deploy \"PEPE\" token contract...");
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
@@ -227,7 +225,7 @@ public class PocExchangeTest {
 
     @Ignore
     @Test
-    public void testExchange() throws InvalidTxDataException{
+    public void testExchange() {
         System.out.println(">> Deploy \"PEPE\" token contract...");
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);

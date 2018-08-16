@@ -3,7 +3,6 @@ package org.aion.avm.core.testWallet;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.internal.InvalidTxDataException;
 import org.aion.avm.arraywrapper.ByteArray;
 
 
@@ -13,7 +12,7 @@ import org.aion.avm.arraywrapper.ByteArray;
  * This shim does the wrapping/unwrapping for the calls into the core Wallet code.
  */
 public class WalletShim {
-    public static byte[] main() throws InvalidTxDataException {
+    public static byte[] main() {
         byte[] input = BlockchainRuntime.getData();
         return ABIDecoder.decodeAndRun(new WalletShim(), input);
     }

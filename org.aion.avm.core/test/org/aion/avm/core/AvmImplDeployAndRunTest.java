@@ -1,7 +1,6 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.internal.InvalidTxDataException;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
@@ -62,7 +61,7 @@ public class AvmImplDeployAndRunTest {
     }
 
     @Test
-    public void testDeployAndRun() throws InvalidTxDataException {
+    public void testDeployAndRun() {
         TransactionResult deployResult = deployHelloWorld();
 
         // call the "run" method
@@ -76,7 +75,7 @@ public class AvmImplDeployAndRunTest {
     }
 
     @Test
-    public void testDeployAndRunWithArgs() throws InvalidTxDataException {
+    public void testDeployAndRunWithArgs() {
         TransactionResult deployResult = deployHelloWorld();
 
         // test another method call, "add" with arguments
@@ -90,7 +89,7 @@ public class AvmImplDeployAndRunTest {
     }
 
     @Test
-    public void testDeployAndRunTest() throws InvalidTxDataException {
+    public void testDeployAndRunTest() {
         TransactionResult deployResult = deployTheDeployAndRunTest();
         assertEquals(TransactionResult.Code.SUCCESS, deployResult.getStatusCode());
 
