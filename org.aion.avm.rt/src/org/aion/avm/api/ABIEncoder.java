@@ -785,6 +785,7 @@ public final class ABIEncoder {
      * Return the corresponding ABI type of the given identifier, if it matches with one of the identifiers of the ABI type.
      * @param identifier a string that may be the class name, Java class file field descriptor, or the ABI symbol. See the {@link ABITypes} class.
      * @return the corresponding ABI type.
+     * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     public static ABITypes mapABITypes(String identifier) {
         // create the map, if not yet

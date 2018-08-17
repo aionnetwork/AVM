@@ -84,7 +84,20 @@ public class DAppExecutor {
                 result.setStatusCode(TransactionResult.Code.FAILURE);
                 result.setEnergyUsed(ctx.getEnergyLimit());
             }
-
+        } catch (DappInvocationTargetException die) {
+            if (null != reentrantGraphData) {
+                reentrantGraphData.revertToStoredFields();
+            }
+            die.printStackTrace();
+            result.setStatusCode(TransactionResult.Code.FAILURE);
+            result.setEnergyUsed(ctx.getEnergyLimit());
+        } catch (InvalidTxDataException e) {
+            if (null != reentrantGraphData) {
+                reentrantGraphData.revertToStoredFields();
+            }
+            e.printStackTrace();
+            result.setStatusCode(TransactionResult.Code.INVALID_TX);
+            result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (Exception e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();

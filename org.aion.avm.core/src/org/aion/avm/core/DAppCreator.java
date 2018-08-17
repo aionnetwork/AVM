@@ -231,6 +231,14 @@ public class DAppCreator {
         } catch (OutOfEnergyError e) {
             result.setStatusCode(TransactionResult.Code.OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
+        } catch (DappInvocationTargetException die) {
+            die.printStackTrace();
+            result.setStatusCode(TransactionResult.Code.FAILURE);
+            result.setEnergyUsed(ctx.getEnergyLimit());
+        } catch (InvalidTxDataException e) {
+            e.printStackTrace();
+            result.setStatusCode(TransactionResult.Code.INVALID_TX);
+            result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             result.setStatusCode(TransactionResult.Code.FAILURE);

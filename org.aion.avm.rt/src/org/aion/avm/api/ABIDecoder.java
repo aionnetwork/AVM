@@ -136,7 +136,10 @@ public final class ABIDecoder {
      * Underlying implementation.
      */
 
-    /** Underlying implementation of {@link #avm_decodeAndRun(IObject, ByteArray) avm_decodeAndRun} method */
+    /** Underlying implementation of {@link #avm_decodeAndRun(IObject, ByteArray) avm_decodeAndRun} method
+     * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
+     * @throws DappInvocationTargetException Dapp throws an exception, which can be retrieved as the cause
+     */
     public static byte[] decodeAndRun(Object obj, byte[] txData) {
         MethodCaller methodCaller = decode(txData);
 
@@ -172,7 +175,9 @@ public final class ABIDecoder {
                 : null;
     }
 
-    /** Underlying implementation of {@link #avm_decode(ByteArray) avm_decode} method */
+    /** Underlying implementation of {@link #avm_decode(ByteArray) avm_decode} method
+     * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
+     */
     public static MethodCaller decode(byte[] txData) {
         if (txData == null || txData.length == 0) {
             return null;
@@ -285,6 +290,7 @@ public final class ABIDecoder {
 
     /**
      * A helper method to read one integer from the array arguments descriptor.
+     * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     private static int[] readNumberFromDescriptor(String argsDescriptor, char stopChar, int startIdx) {
         int[] res = new int[2]; // res[0]: the number encoded as argsDescriptor.substring(startIdx, idxE); res[1]: the index of stopChar in the argsDescriptor
