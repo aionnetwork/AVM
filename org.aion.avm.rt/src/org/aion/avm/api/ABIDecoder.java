@@ -101,12 +101,12 @@ public final class ABIDecoder {
     }
 
     /**
-     * Decode the transaction data and return the method caller.
-     * @param txData the transaction data that has the encoded method name, arguments descriptor and arguments to call with.
-     * @return the method caller that contains the method name, arguments descriptor and the arguments.
+     * Decode the transaction data and return the method name.
+     * @param txData the transaction data that has the encoded method name to call with.
+     * @return the decoded method name.
      */
-    public static MethodCaller avm_decode(ByteArray txData){
-        return decode(txData.getUnderlying());
+    public static org.aion.avm.shadow.java.lang.String avm_decodeMethodName(ByteArray txData) {
+        return new org.aion.avm.shadow.java.lang.String(decodeMethodName(txData.getUnderlying()));
     }
 
     /**
@@ -175,7 +175,36 @@ public final class ABIDecoder {
                 : null;
     }
 
-    /** Underlying implementation of {@link #avm_decode(ByteArray) avm_decode} method
+    /** Underlying implementation of {@link #avm_decodeMethodName(ByteArray) avm_decode} method
+     * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
+     */
+    public static String decodeMethodName(byte[] txData) {
+        if (txData == null || txData.length == 0) {
+            return null;
+        }
+        String decoded = new String(txData);
+
+        int m1 = decoded.indexOf(DESCRIPTOR_S);
+
+        if (m1 == -1) {
+            return decoded;
+        } else {
+            return decoded.substring(0, m1);
+        }
+    }
+
+    /** Underlying implementation of {@link #avm_decodeArguments(ByteArray) avm_decodeArguments} method */
+    public static Object[] decodeArguments(byte[] data){
+        return decode(data).arguments;
+    }
+
+    /** Underlying implementation of {@link #avm_decodeOneObject(ByteArray) avm_decodeOneObject} method */
+    public static Object decodeOneObject(byte[] data){
+        Descriptor descriptor = readOneDescriptor(data, 0);
+        return decodeOneObjectWithDescriptor(data, descriptor.encodedBytes, descriptor).object;
+    }
+
+    /** A helper method to decode the transaction data into the method caller, which contains the method name, arguments descriptor and arguments.
      * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     public static MethodCaller decode(byte[] txData) {
@@ -201,17 +230,6 @@ public final class ABIDecoder {
         IObject[] arguments = decodeArgumentsWithDescriptor(Arrays.copyOfRange(txData, startByteOfData, txData.length), argsDescriptor);
 
         return new MethodCaller(methodName, argsDescriptor, arguments);
-    }
-
-    /** Underlying implementation of {@link #avm_decodeArguments(ByteArray) avm_decodeArguments} method */
-    public static Object[] decodeArguments(byte[] data){
-        return decode(data).arguments;
-    }
-
-    /** Underlying implementation of {@link #avm_decodeOneObject(ByteArray) avm_decodeOneObject} method */
-    public static Object decodeOneObject(byte[] data){
-        Descriptor descriptor = readOneDescriptor(data, 0);
-        return decodeOneObjectWithDescriptor(data, descriptor.encodedBytes, descriptor).object;
     }
 
     /**

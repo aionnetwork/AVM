@@ -1,12 +1,6 @@
 package org.aion.avm.api;
 
 public final class ABIDecoder {
-    public static class MethodCaller {
-        public String methodName;
-        public String argsDescriptor;
-        public Object[] arguments;
-    }
-
     /**
      * This class cannot be instantiated.
      */
@@ -23,11 +17,11 @@ public final class ABIDecoder {
     }
 
     /**
-     * Decode the transaction data and return the method caller.
-     * @param txData the transaction data that has the encoded method name, arguments descriptor and arguments to call with.
-     * @return the method caller that contains the method name, arguments descriptor and the arguments.
+     * Decode the transaction data and return the method name.
+     * @param txData the transaction data that has the encoded method name to call with.
+     * @return the decoded method name.
      */
-    public static MethodCaller decode(byte[] txData) {
+    public static String decodeMethodName(byte[] txData) {
         return null;
     }
 
