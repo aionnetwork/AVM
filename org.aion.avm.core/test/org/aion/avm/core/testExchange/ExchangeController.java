@@ -8,6 +8,6 @@ public class ExchangeController {
     private static Exchange base = new Exchange();
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRun(base, BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithObject(base, BlockchainRuntime.getData());
     }
 }

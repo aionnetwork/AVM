@@ -25,6 +25,6 @@ public class HelloWorld {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRun(new HelloWorld(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithObject(new HelloWorld(), BlockchainRuntime.getData());
     }
 }

@@ -30,6 +30,6 @@ public class CoinController {
      * @return the encoded return data of the method being called.
      */
     public static byte[] main() {
-        return ABIDecoder.decodeAndRun(token, BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithObject(token, BlockchainRuntime.getData());
     }
 }

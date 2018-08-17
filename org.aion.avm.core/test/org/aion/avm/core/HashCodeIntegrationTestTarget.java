@@ -11,7 +11,7 @@ public class HashCodeIntegrationTestTarget {
     private static Object persistentObject;
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRun(new HashCodeIntegrationTestTarget(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithObject(new HashCodeIntegrationTestTarget(), BlockchainRuntime.getData());
     }
     
     public static int persistNewObject() {

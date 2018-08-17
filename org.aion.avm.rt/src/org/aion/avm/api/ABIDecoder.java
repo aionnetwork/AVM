@@ -88,13 +88,26 @@ public final class ABIDecoder {
      */
 
     /**
+     * Decode the transaction data and invoke the corresponding method of the Dapp class.
+     * @param clazz the user space class.
+     * @param txData the transaction data that is encoded with the method name and arguments to call with.
+     * @return the encoded return data from the method call.
+     */
+    public static ByteArray avm_decodeAndRunWithClass(org.aion.avm.shadow.java.lang.Class<?> clazz, ByteArray txData) {
+        byte[] result = decodeAndRun(clazz.getRealClass(), txData.getUnderlying(), true);
+        return (null != result)
+                ? new ByteArray(result)
+                : null;
+    }
+
+    /**
      * Decode the transaction data and invoke the corresponding method of the object's class.
      * @param obj the user space class object.
      * @param txData the transaction data that is encoded with the method name and arguments to call with.
      * @return the encoded return data from the method call.
      */
-    public static ByteArray avm_decodeAndRun(IObject obj, ByteArray txData) {
-        byte[] result = decodeAndRun(obj, txData.getUnderlying());
+    public static ByteArray avm_decodeAndRunWithObject(IObject obj, ByteArray txData) {
+        byte[] result = decodeAndRun(obj, txData.getUnderlying(), false);
         return (null != result)
                 ? new ByteArray(result)
                 : null;
@@ -133,21 +146,42 @@ public final class ABIDecoder {
 
 
     /*
+     * These 2 methods are only for getting rid of the compilation errors for the Dapp unit tests.
+     * Since the unit tests are in "org.aion.avm.core" module, with "import org.aion.avm.api.ABIDecoder", at compilation time,
+     * this class is actually referred; instead, in the user space where the real Dapp lives in, the ABIDecoder in "org.aion.avm.api"
+     * module (from which the api jar is built) is referred. Thus, at the compilation time, the unit tests need the 2 methods below;
+     * while the Dapps do not.
+     * No implementation is needed. At runtime, the unit tests still call into "avm_decodeAndRunWithClass" / "avm_decodeAndRunWithObject".
+     */
+    public static byte[] decodeAndRunWithClass(Class<?> clazz, byte[] txData) {
+        return null;
+    }
+    public static byte[] decodeAndRunWithObject(Object obj, byte[] txData) {
+        return null;
+    }
+
+    /*
      * Underlying implementation.
      */
 
-    /** Underlying implementation of {@link #avm_decodeAndRun(IObject, ByteArray) avm_decodeAndRun} method
+    /** Underlying implementation of {@link #avm_decodeAndRunWithObject(IObject, ByteArray) avm_decodeAndRunWithObject}
+     * and {@link #avm_decodeAndRunWithClass(org.aion.avm.shadow.java.lang.Class, ByteArray)}  avm_decodeAndRunWithClass} methods
      * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      * @throws DappInvocationTargetException Dapp throws an exception, which can be retrieved as the cause
      */
-    public static byte[] decodeAndRun(Object obj, byte[] txData) {
+    public static byte[] decodeAndRun(Object obj, byte[] txData, boolean isWithClass) {
         MethodCaller methodCaller = decode(txData);
 
         String newMethodName = "avm_" + methodCaller.methodName;
         String newArgDescriptor = methodCaller.argsDescriptor;
 
         // generate the method descriptor of each main class method, compare to the method selector to select or invalidate the txData
-        Method method = matchMethodSelector(obj.getClass(), newMethodName, newArgDescriptor);
+        Method method;
+        if (isWithClass) {
+            method = matchMethodSelector((Class<?>) obj, newMethodName, newArgDescriptor);
+        } else {
+            method = matchMethodSelector(obj.getClass(), newMethodName, newArgDescriptor);
+        }
 
         Object ret;
         if (Modifier.isStatic(method.getModifiers())) {
@@ -175,7 +209,7 @@ public final class ABIDecoder {
                 : null;
     }
 
-    /** Underlying implementation of {@link #avm_decodeMethodName(ByteArray) avm_decode} method
+    /** Underlying implementation of {@link #avm_decodeMethodName(ByteArray) avm_decodeMethodName} method
      * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     public static String decodeMethodName(byte[] txData) {

@@ -54,8 +54,8 @@ public class DeployAndRunTest {
     public static byte[] main() {
         String methodName = ABIDecoder.decodeMethodName(BlockchainRuntime.getData());
         if (methodName.equals("addArray")) {
-            //return ABIDecoder.decodeAndRun(DeployAndRunTest.class, BlockchainRuntime.getData());
+            return ABIDecoder.decodeAndRunWithClass(DeployAndRunTest.class, BlockchainRuntime.getData());
         }
-        return ABIDecoder.decodeAndRun(new DeployAndRunTest(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithObject(new DeployAndRunTest(), BlockchainRuntime.getData());
     }
 }

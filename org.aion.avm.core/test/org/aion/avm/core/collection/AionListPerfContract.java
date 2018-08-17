@@ -17,7 +17,7 @@ public class AionListPerfContract {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRun(new AionListPerfContract(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithObject(new AionListPerfContract(), BlockchainRuntime.getData());
     }
 
     public static void callInit(){

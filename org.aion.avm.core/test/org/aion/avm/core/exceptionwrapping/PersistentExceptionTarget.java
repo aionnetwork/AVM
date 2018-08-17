@@ -12,7 +12,7 @@ public class PersistentExceptionTarget {
     private static UserDefinedException user;
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRun(new PersistentExceptionTarget(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithObject(new PersistentExceptionTarget(), BlockchainRuntime.getData());
     }
 
     public static int storeSystem() {

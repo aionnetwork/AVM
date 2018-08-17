@@ -25,7 +25,7 @@ public class AionCollectionInterfaceContract {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRun(new AionCollectionInterfaceContract(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithObject(new AionCollectionInterfaceContract(), BlockchainRuntime.getData());
     }
 
     public static void testList(){

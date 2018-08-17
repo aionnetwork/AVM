@@ -34,6 +34,6 @@ public class Main {
      * @return the encoded return data of the method being called.
      */
     public static byte[] main() {
-        return ABIDecoder.decodeAndRun(wallet, BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithObject(wallet, BlockchainRuntime.getData());
     }
 }

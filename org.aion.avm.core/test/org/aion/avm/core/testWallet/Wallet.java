@@ -46,7 +46,7 @@ public class Wallet {
      */
     public static byte[] main() {
         byte[] input = BlockchainRuntime.getData();
-        return ABIDecoder.decodeAndRun(new Wallet(), input);
+        return ABIDecoder.decodeAndRunWithObject(new Wallet(), input);
     }
 
     // EXTERNAL - composed
