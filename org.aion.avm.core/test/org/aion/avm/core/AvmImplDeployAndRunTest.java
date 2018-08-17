@@ -148,5 +148,13 @@ public class AvmImplDeployAndRunTest {
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals("dog", new String(((char[][]) TestingHelper.decodeResult(result))[0]));
         assertEquals("cat", new String(((char[][]) TestingHelper.decodeResult(result))[1]));
+
+        // test a method call to "setBar", which does not have a return type (void)
+        txData = ABIEncoder.encodeMethodArguments("setBar", 20);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
     }
 }

@@ -36,6 +36,10 @@ public class DeployAndRunTest {
         return res;
     }
 
+    public void setBar(int bar) {
+        this.bar = bar;
+    }
+
     public static byte[] run() {
         return "Hello, world!".getBytes();
     }
