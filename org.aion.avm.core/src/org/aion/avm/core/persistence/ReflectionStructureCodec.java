@@ -4,8 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObjectDeserializer;
@@ -31,10 +31,6 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         @Override
         public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
         }};
-    // There are no constants for stub descriptors greater than 0 since that is a string length field.
-    private static final int STUB_DESCRIPTOR_NULL = 0;
-    private static final int STUB_DESCRIPTOR_CONSTANT = -1;
-    private static final int STUB_DESCRIPTOR_CLASS = -2;
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
     private final ReflectedFieldCache fieldCache;
@@ -168,60 +164,18 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     private void deflateInstanceAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object contents, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
-            // See issue-147 for more information regarding this interpretation:
-            // - null: (int)0.
-            // - -1: (int)-1, (long) instanceId (of constant - negative).
-            // - -2: (int)-2, (int) buffer length, (n) UTF-8 class name buffer
-            // - >0:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
-            // Reason for order of evaluation:
-            // - null goes first, since it is easy to detect on either side (and probably a common case).
-            // - constants go second since they are arbitrary objects, including some Class objects, and already have the correct instanceId.
-            // - Classes go third since we will we don't to look at their instanceIds (we will see the 0 and take the wrong action).
-            // - normal references go last (includes those with 0 or >0 instanceIds).
-            if (null == contents) {
-                // Null has the least data.
-                encoder.encodeInt(STUB_DESCRIPTOR_NULL);
-            } else {
-                // Check the instanceId to see if this is a special-case.
-                long instanceId = this.instanceIdField.getLong(contents);
-                if (instanceId < 0) {
-                    // Constants.
-                    encoder.encodeInt(STUB_DESCRIPTOR_CONSTANT);
-                    // Write the constant instanceId.
-                    encoder.encodeLong(instanceId);
-                } else if (contents instanceof org.aion.avm.shadow.java.lang.Class) {
-                    // Non-constant Class reference.
-                    encoder.encodeInt(STUB_DESCRIPTOR_CLASS);
-                    
-                    // Get the class name.
-                    String className = ((org.aion.avm.shadow.java.lang.Class<?>)contents).getRealClass().getName();
-                    byte[] utf8Name = className.getBytes(StandardCharsets.UTF_8);
-                    
-                    // Write the length and the bytes.
-                    encoder.encodeInt(utf8Name.length);
-                    encoder.encodeBytes(utf8Name);
-                } else {
-                    // Common case of a normal reference (may or may not already have an instanceId assigned.
-                    // This a normal reference (although might need an instanceId assigned).
-                    String typeName = contents.getClass().getName();
-                    byte[] utf8Name = typeName.getBytes(StandardCharsets.UTF_8);
-                    if (0 == instanceId) {
-                        // We have to assign this.
-                        instanceId = this.nextInstanceId;
-                        this.nextInstanceId += 1;
-                        this.instanceIdField.setLong(contents, instanceId);
-                    }
-                    
-                    // Now, serialize the standard form.
-                    encoder.encodeInt(utf8Name.length);
-                    encoder.encodeBytes(utf8Name);
-                    encoder.encodeLong(instanceId);
-                    
-                    // If this instance has been loaded, set it to not loaded and add it to the queue.
-                    if (null == this.deserializerField.get(contents)) {
-                        this.deserializerField.set(contents, DONE_MARKER);
-                        nextObjectQueue.accept(contents);
-                    }
+            Supplier<Long> instanceIdProducer = () -> {
+                long instanceId = this.nextInstanceId;
+                this.nextInstanceId += 1;
+                return instanceId;
+            };
+            boolean shouldEnqueueInstance = SerializedInstanceStub.serializeInstanceStub(encoder, contents, this.instanceIdField, instanceIdProducer);
+            if (shouldEnqueueInstance) {
+                // The helper thinks we should enqueue this instance, since it is a normal instance type.
+                // If this instance has been loaded, set it to not loaded and add it to the queue.
+                if (null == this.deserializerField.get(contents)) {
+                    this.deserializerField.set(contents, DONE_MARKER);
+                    nextObjectQueue.accept(contents);
                 }
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -299,58 +253,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     private org.aion.avm.shadow.java.lang.Object inflateStubAsInstance(StreamingPrimitiveCodec.Decoder decoder) {
         try {
-            // See issue-147 for more information regarding this interpretation:
-            // - null: (int)0.
-            // - -1: (int)-1, (long) instanceId (of constant - negative).
-            // - -2: (int)-2, (int) buffer length, (n) UTF-8 class name buffer
-            // - >0:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
-            // Reason for order of evaluation:
-            // - null goes first, since it is easy to detect on either side (and probably a common case).
-            // - constants go second since they are arbitrary objects, including some Class objects, and already have the correct instanceId.
-            // - Classes go third since we will we don't to look at their instanceIds (we will see the 0 and take the wrong action).
-            // - normal references go last (includes those with 0 or >0 instanceIds).
-            org.aion.avm.shadow.java.lang.Object instanceToStore = null;
-            int stubDescriptor = decoder.decodeInt();
-            if (STUB_DESCRIPTOR_NULL == stubDescriptor) {
-                // This is a null object:
-                // -nothing else to read.
-                instanceToStore = this.populator.createNull();
-            } else if (STUB_DESCRIPTOR_CONSTANT == stubDescriptor) {
-                // This is a constant reference:
-                // -load the constant instance ID.
-                long instanceId = decoder.decodeLong();
-                // Constants have negative instance IDs.
-                RuntimeAssertionError.assertTrue(instanceId < 0);
-                
-                instanceToStore = this.populator.createConstant(instanceId);
-                // We can't fail to find these.
-                RuntimeAssertionError.assertTrue(null != instanceToStore);
-            } else if (STUB_DESCRIPTOR_CLASS == stubDescriptor) {
-                // This is a reference to a Class.
-                // -load the size of the class name.
-                int classNameLength = decoder.decodeInt();
-                // -load the bytes as a string.
-                byte[] utf8Name = new byte[classNameLength];
-                decoder.decodeBytesInto(utf8Name);
-                String className = new String(utf8Name, StandardCharsets.UTF_8);
-                
-                // Create an instance of the Class (we rely on the helper since this needs to be interned, per-contract).
-                instanceToStore = this.populator.createClass(className);
-            } else {
-                // This is a normal object:
-                // -descriptor is type name length.
-                int typeNameLength = stubDescriptor;
-                // -load that many bytes as the name
-                byte[] utf8Name = new byte[typeNameLength];
-                decoder.decodeBytesInto(utf8Name);
-                String className = new String(utf8Name, StandardCharsets.UTF_8);
-                // -load the instanceId.
-                long instanceId = decoder.decodeLong();
-                
-                // This instance might already exist so ask our helper which will instantiate, if need be.
-                instanceToStore = this.populator.createRegularInstance(className, instanceId);
-            }
-            return instanceToStore;
+            return SerializedInstanceStub.deserializeInstanceStub(decoder, this.populator);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
             throw RuntimeAssertionError.unexpected(e);
