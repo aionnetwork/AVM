@@ -253,6 +253,38 @@ public class AvmImplTest {
         assertEquals(1, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
     }
 
+    /**
+     * Tests that reentrant calls do not accidentally write-back the statics, even when the caller fails.
+     */
+    @Test
+    public void testRollbackAfterReentrantSuccess() {
+        boolean shouldFail = true;
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // deploy
+        long energyLimit = 1_000_000l;
+        long energyPrice = 1l;
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Cause the failure.
+        byte[] nearData = ABIEncoder.encodeMethodArguments("localFailAfterReentrant");
+        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, nearData, energyLimit, 1l);
+        TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
+        assertEquals(TransactionResult.Code.FAILURE, result2.getStatusCode());
+        
+        // We shouldn't see any changes, since this failed.
+        // We expect these to all fail, so they should be left with the initial values:  1.
+        assertEquals(1, callReentrantAccess(avm, contractAddr, "getDirect", shouldFail));
+        assertEquals(1, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
+        assertEquals(1, callReentrantAccess(avm, contractAddr, "getFar", shouldFail));
+        assertEquals(1, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
+    }
+
 
     private int callRecursiveHash(Avm avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);

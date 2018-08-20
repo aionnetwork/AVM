@@ -48,15 +48,15 @@ public class DAppExecutor {
             byte[] ret = dapp.callMain();
 
             // Save back the state before we return.
-            // -first, save out the classes
-            long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, feeProcessor, kernel);
-            // -finally, save back the final state of the environment so we restore it on the next invocation.
             if (null != stateToResume) {
                 // Write this back into the resumed state.
                 reentrantGraphData.commitGraphToStoredFieldsAndRestore();
                 stateToResume.updateEnvironment(helper.externalGetNextHashCode());
             } else {
                 // We are at the "top" so write this back to disk.
+                // -first, save out the classes
+                long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, feeProcessor, kernel);
+                // -finally, save back the final state of the environment so we restore it on the next invocation.
                 ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId);
                 ContractEnvironmentState.saveToStorage(kernel, dappAddress, updatedEnvironment);
             }

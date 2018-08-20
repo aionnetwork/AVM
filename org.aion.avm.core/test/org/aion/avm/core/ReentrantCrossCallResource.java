@@ -100,6 +100,26 @@ public class ReentrantCrossCallResource {
                 : 0;
     }
 
+    /**
+     * This case calls incFar, as a successful reentrant call, then fails in itself.
+     * @return False if the reentrant call didn't observably change state (otherwise, fails - never returns true).
+     */
+    public static boolean localFailAfterReentrant() {
+        // Cache the original answer to make sure the increment happens correctly.
+        int expected = constant.far[0] + 1;
+        
+        // Call ourselves.
+        reentrantCall("incFar", false);
+        
+        boolean doesMatch = (expected == constant.far[0]);
+        if (doesMatch) {
+            // This is the expected case so fail.
+            causeFailure();
+        }
+        // We only get this far is something incorrect happened in the reentrant call (doesMatch being false).
+        return doesMatch;
+    }
+
     public static void incDirect(boolean shouldFail) {
         direct += 2;
         if (shouldFail) {
