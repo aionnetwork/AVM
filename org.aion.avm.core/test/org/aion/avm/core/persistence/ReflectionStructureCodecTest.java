@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
 
 import org.junit.After;
@@ -18,6 +19,9 @@ public class ReflectionStructureCodecTest {
      * Note that most of these tests aren't interested in recursive serialize so this will skip that.
      */
     private static final Consumer<org.aion.avm.shadow.java.lang.Object> NULL_CONSUMER = (instance) -> {};
+    // We don't verify fees at this time so just use the "null" utility processor.
+    private static NullFeeProcessor FEE_PROCESSOR = new NullFeeProcessor();
+
 
     @Before
     public void setup() {
@@ -47,7 +51,7 @@ public class ReflectionStructureCodecTest {
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, null, null, 1);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, null, null, 1);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
         codec.serializeClass(encoder, ReflectionStructureCodecTarget.class, NULL_CONSUMER);
         byte[] result = encoder.toBytes();
@@ -86,7 +90,7 @@ public class ReflectionStructureCodecTest {
         target.i_eight = 5.0d;
         target.i_nine = new ReflectionStructureCodecTarget();
         
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, null, null, 1);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, null, null, 1);
         byte[] result = serializeSinceInstanceHelper(codec, target);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         // This is the same as what we got for the class except that this also has a hashcode.
@@ -127,7 +131,7 @@ public class ReflectionStructureCodecTest {
                 0x0, 0x0, 0x0, 0x3c, 0x6f, 0x72, 0x67, 0x2e, 0x61, 0x69, 0x6f, 0x6e, 0x2e, 0x61, 0x76, 0x6d, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x63, 0x65, 0x2e, 0x52, 0x65, 0x66, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x75, 0x72, 0x65, 0x43, 0x6f, 0x64, 0x65, 0x63, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1 //i_nine
         };
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
-        ReflectionStructureCodec deserializer = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, null, null, 1);
+        ReflectionStructureCodec deserializer = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
         // Note that the deserializer always assumes it is operating on stubs so create the instance and pass it in.
         ReflectionStructureCodecTarget target = new ReflectionStructureCodecTarget();
         deserializer.deserializeInstance(target, expected);
@@ -157,7 +161,7 @@ public class ReflectionStructureCodecTest {
         
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, null, null, 1);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
         byte[] rootBytes = serializeSinceInstanceHelper(codec, root);
         byte[] oneBytes = serializeSinceInstanceHelper(codec, one);
         byte[] twoBytes = serializeSinceInstanceHelper(codec, two);
@@ -193,7 +197,7 @@ public class ReflectionStructureCodecTest {
         
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, null, null, 1);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
         byte[] root1Bytes = serializeSinceInstanceHelper(codec, root1);
         byte[] root2Bytes = serializeSinceInstanceHelper(codec, root2);
         // These are empty and point to the same instance so they should be identical, after the hashcode.
@@ -232,7 +236,7 @@ public class ReflectionStructureCodecTest {
                 0x0, 0x0, 0x0, 0x3c, 0x6f, 0x72, 0x67, 0x2e, 0x61, 0x69, 0x6f, 0x6e, 0x2e, 0x61, 0x76, 0x6d, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x63, 0x65, 0x2e, 0x52, 0x65, 0x66, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x75, 0x72, 0x65, 0x43, 0x6f, 0x64, 0x65, 0x63, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1 //i_nine
         };
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
-        ReflectionStructureCodec deserializer = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, null, null, 1);
+        ReflectionStructureCodec deserializer = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
         ReflectionStructureCodecTarget target1 = new ReflectionStructureCodecTarget();
         deserializer.deserializeInstance(target1, expected1);
         ReflectionStructureCodecTarget target2 = new ReflectionStructureCodecTarget();

@@ -3,10 +3,10 @@ package org.aion.avm.core;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReentrantGraphProcessor;
+import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.*;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.KernelInterface;
-import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 
 import java.lang.reflect.InvocationTargetException;
@@ -29,16 +29,18 @@ public class DAppExecutor {
         // TODO:  We might be able to move this setup of IHelper to later in the load once we get rid of the <clinit> (requires energy).
         IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit(), initialState.nextHashCode);
         dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, ctx, result));
+        // TODO:  Replace the NullFeeProcessor with a real one, once it exists and is tested.
+        NullFeeProcessor feeProcessor = new NullFeeProcessor();
 
         // Now that we can load classes for the contract, load and populate all their classes.
         ReentrantGraphProcessor reentrantGraphData = null;
         if (null != stateToResume) {
             // We are invoking a reentrant call so we don't want to pull this data from storage, but create in-memory duplicates which we can
             // swap out, pointing to memory-backed instance stubs.
-            reentrantGraphData = dapp.replaceClassStaticsWithClones();
+            reentrantGraphData = dapp.replaceClassStaticsWithClones(feeProcessor);
         } else {
             // This is the first invocation of this DApp so just load the static state from disk.
-            dapp.populateClassStaticsFromStorage(kernel);
+            dapp.populateClassStaticsFromStorage(feeProcessor, kernel);
         }
 
         // Call the main within the DApp.
@@ -47,7 +49,7 @@ public class DAppExecutor {
 
             // Save back the state before we return.
             // -first, save out the classes
-            long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, kernel);
+            long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, feeProcessor, kernel);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             if (null != stateToResume) {
                 // Write this back into the resumed state.

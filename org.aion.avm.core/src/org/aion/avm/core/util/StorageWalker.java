@@ -128,7 +128,8 @@ public class StorageWalker {
         // Create the codec back-ended on the populator.
         // (note that it requires a fieldCache but we don't attempt to reuse this, in our case).
         ReflectedFieldCache fieldCache = new ReflectedFieldCache();
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, kernel, address, 0);
+        NullFeeProcessor feeProcessor = new NullFeeProcessor();
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, feeProcessor, kernel, address, 0);
         
         // Extract the raw data for the class statics.
         byte[] staticData = kernel.getStorage(address, StorageKeys.CLASS_STATICS);

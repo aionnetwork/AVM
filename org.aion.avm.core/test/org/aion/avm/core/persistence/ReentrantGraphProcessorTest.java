@@ -3,6 +3,7 @@ package org.aion.avm.core.persistence;
 import java.util.Collections;
 
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
 
 import org.junit.After;
@@ -16,6 +17,9 @@ import org.junit.Test;
  * rather than back-ending onto a serialized binary encoding.
  */
 public class ReentrantGraphProcessorTest {
+    // We don't verify fees at this time so just use the "null" utility processor.
+    private static NullFeeProcessor FEE_PROCESSOR = new NullFeeProcessor();
+
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
@@ -44,7 +48,7 @@ public class ReentrantGraphProcessorTest {
         ReflectionStructureCodecTarget.s_seven = 5;
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = originalInstance;
-        ReentrantGraphProcessor codec = new ReentrantGraphProcessor(new ReflectedFieldCache(), Collections.singletonList(ReflectionStructureCodecTarget.class));
+        ReentrantGraphProcessor codec = new ReentrantGraphProcessor(new ReflectedFieldCache(), FEE_PROCESSOR, Collections.singletonList(ReflectionStructureCodecTarget.class));
         
         // Capture the state of the static.
         codec.captureAndReplaceStaticState();
@@ -79,7 +83,7 @@ public class ReentrantGraphProcessorTest {
         ReflectionStructureCodecTarget.s_seven = 5;
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = originalInstance;
-        ReentrantGraphProcessor codec = new ReentrantGraphProcessor(new ReflectedFieldCache(), Collections.singletonList(ReflectionStructureCodecTarget.class));
+        ReentrantGraphProcessor codec = new ReentrantGraphProcessor(new ReflectedFieldCache(), FEE_PROCESSOR, Collections.singletonList(ReflectionStructureCodecTarget.class));
         
         // Capture the state of the static.
         codec.captureAndReplaceStaticState();
@@ -124,7 +128,7 @@ public class ReentrantGraphProcessorTest {
         target.i_nine = originalLeaf;
         ReflectionStructureCodecTarget.s_nine = originalRoot;
         
-        ReentrantGraphProcessor codec = new ReentrantGraphProcessor(new ReflectedFieldCache(), Collections.singletonList(ReflectionStructureCodecTarget.class));
+        ReentrantGraphProcessor codec = new ReentrantGraphProcessor(new ReflectedFieldCache(), FEE_PROCESSOR, Collections.singletonList(ReflectionStructureCodecTarget.class));
         
         // Capture the state of the static.
         codec.captureAndReplaceStaticState();
@@ -177,7 +181,7 @@ public class ReentrantGraphProcessorTest {
         target.i_nine = originalLeaf;
         ReflectionStructureCodecTarget.s_nine = originalRoot;
         
-        ReentrantGraphProcessor codec = new ReentrantGraphProcessor(new ReflectedFieldCache(), Collections.singletonList(ReflectionStructureCodecTarget.class));
+        ReentrantGraphProcessor codec = new ReentrantGraphProcessor(new ReflectedFieldCache(), FEE_PROCESSOR, Collections.singletonList(ReflectionStructureCodecTarget.class));
         
         // Capture the state of the static.
         codec.captureAndReplaceStaticState();

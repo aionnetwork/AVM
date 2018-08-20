@@ -21,6 +21,7 @@ import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.types.TransformedDappModule;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.*;
 import org.aion.kernel.*;
 import org.objectweb.asm.ClassReader;
@@ -208,6 +209,8 @@ public class DAppCreator {
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * ctx.getData().length);
+            // TODO:  Replace the NullFeeProcessor with a real one, once it exists and is tested.
+            NullFeeProcessor feeProcessor = new NullFeeProcessor();
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).
             dapp.forceInitializeAllClasses();
@@ -215,7 +218,7 @@ public class DAppCreator {
             // Save back the state before we return.
             // -first, save out the classes
             long initialInstanceId = 1l;
-            long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, kernel);
+            long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, feeProcessor, kernel);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToStorage(kernel, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 

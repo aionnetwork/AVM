@@ -35,6 +35,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
     private final ReflectedFieldCache fieldCache;
     private final IFieldPopulator populator;
+    private final IStorageFeeProcessor feeProcessor;
     private final KernelInterface kernel;
     private final byte[] address;
     // We cache the method entry-point we will use to invoke the load operation on any instance.
@@ -45,9 +46,10 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private final Field instanceIdField;
     private long nextInstanceId;
 
-    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, KernelInterface kernel, byte[] address, long nextInstanceId) {
+    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, KernelInterface kernel, byte[] address, long nextInstanceId) {
         this.fieldCache = fieldCache;
         this.populator = populator;
+        this.feeProcessor = feeProcessor;
         this.kernel = kernel;
         this.address = address;
         try {

@@ -40,6 +40,7 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
     private final ReflectedFieldCache fieldCache;
+    private final IStorageFeeProcessor feeProcessor;
     private final List<Class<?>> classes;
     
     // We need bidirectional identity maps:
@@ -55,8 +56,9 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
     // (mostly non-final just to prove that the state machine is being used correctly).
     private Queue<Object> previousStatics;
 
-    public ReentrantGraphProcessor(ReflectedFieldCache fieldCache, List<Class<?>> classes) {
+    public ReentrantGraphProcessor(ReflectedFieldCache fieldCache, IStorageFeeProcessor feeProcessor, List<Class<?>> classes) {
         this.fieldCache = fieldCache;
+        this.feeProcessor = feeProcessor;
         this.classes = classes;
         
         this.calleeToCallerMap = new IdentityHashMap<>();
@@ -252,7 +254,6 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
                 }
             }
         }
-        this.previousStatics = null;
         
         // Now that the statics are processed, we can process the queue until it is empty (this will complete the graph).
         // (we also need to remember which "new object" instances need to have their DONE_MARKER cleared - must be done in a second phase).
@@ -277,7 +278,7 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
                 // This means that the callee object is being stitched into the caller graph as a new object.
                 // We want need to update any object references which may point back at older caller objects.
                 calleeSpaceToProcess.deserializeSelf(null, loopback);
-                // We will need to remove the placeholder since that could confuse later serialization.
+                // We will need to remove the placeholder since that could confuse later serialization (placeholder is only set of the callee instances).
                 placeholdersToUnset.add(calleeSpaceToProcess);
             }
             // Prove that we didn't miss anything.

@@ -71,13 +71,14 @@ public class LoadedDApp {
     /**
      * Populates the statics of the DApp classes with the primitives and instance stubs described by the on-disk data.
      * 
+     * @param feeProcessor The billing mechanism for storage operations.
      * @param kernelInterface The kernel storage API.
      */
-    public void populateClassStaticsFromStorage(KernelInterface kernelInterface) {
+    public void populateClassStaticsFromStorage(IStorageFeeProcessor feeProcessor, KernelInterface kernelInterface) {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(this.loader);
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, kernelInterface, this.address, 0);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, kernelInterface, this.address, 0);
         // The populator needs to know to attach the codec, itself, as the IDeserializer of new instances.
         populator.setDeserializer(codec);
         
@@ -96,10 +97,11 @@ public class LoadedDApp {
      * pointing at instance stubs (which, themselves, are backed by the instances in the caller DApp).
      * Note that these can't be serialized since they point to the actual object graph we want to resume.
      * 
+     * @param feeProcessor The billing mechanism for storage operations.
      * @return The graph processor which has captured the state of the statics.
      */
-    public ReentrantGraphProcessor replaceClassStaticsWithClones() {
-        ReentrantGraphProcessor processor = new ReentrantGraphProcessor(this.fieldCache, this.classes);
+    public ReentrantGraphProcessor replaceClassStaticsWithClones(IStorageFeeProcessor feeProcessor) {
+        ReentrantGraphProcessor processor = new ReentrantGraphProcessor(this.fieldCache, feeProcessor, this.classes);
         processor.captureAndReplaceStaticState();
         return processor;
     }
@@ -108,11 +110,12 @@ public class LoadedDApp {
      * Serializes the static fields of the DApp classes and stores them on disk.
      * 
      * @param nextInstanceId The next instanceId to assign to an object which needs to be serialized.
+     * @param feeProcessor The billing mechanism for storage operations.
      * @param kernelInterface The kernel storage API.
      */
-    public long saveClassStaticsToStorage(long nextInstanceId, KernelInterface kernelInterface) {
+    public long saveClassStaticsToStorage(long nextInstanceId, IStorageFeeProcessor feeProcessor, KernelInterface kernelInterface) {
         // Build the encoder.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, null, kernelInterface, this.address, nextInstanceId);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, null, feeProcessor, kernelInterface, this.address, nextInstanceId);
         StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
         
         // Create the queue of instances reachable from here and consumer abstraction.
