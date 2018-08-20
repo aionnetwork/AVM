@@ -12,7 +12,6 @@ import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class PocExchangeTest {
@@ -25,7 +24,7 @@ public class PocExchangeTest {
         testExchangeJar = JarBuilder.buildJarForMainAndClasses(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ByteArrayHelpers.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
     }
 
-    private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 5_000_000;
 
     private byte[] pepeMinter = Helpers.randomBytes(Address.LENGTH);

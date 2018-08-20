@@ -21,7 +21,7 @@ public class RevertAndInvalidTest {
     private long energyPrice = 1L;
 
     // block
-    private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
     // kernel & vm
     private KernelInterfaceImpl kernel = new KernelInterfaceImpl();

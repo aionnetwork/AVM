@@ -62,7 +62,7 @@ public class BasicPerfTest {
         public void deploy(byte[] jar, byte[] arguments) {
             // Deploy.
             this.avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
-            Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+            Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
             Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), this.contractAddress, 0, Helpers.encodeCodeAndData(jar, arguments), transaction1EnergyLimit, 1l);
             TransactionResult result1 = this.avm.run(new TransactionContextImpl(tx1, block));
@@ -73,7 +73,7 @@ public class BasicPerfTest {
         public void run() {
             int blockStart = 2;
             for (int i = blockStart; i < (COUNT + blockStart); ++i) {
-                Block block = new Block(i, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+                Block block = new Block(new byte[32], i, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
                 long transaction1EnergyLimit = 1_000_000_000l;
                 Transaction tx1 = new Transaction(Transaction.Type.CALL, Helpers.address(1), this.contractAddress, 0, null, transaction1EnergyLimit, 1l);
                 TransactionResult result1 = this.avm.run(new TransactionContextImpl(tx1, block));

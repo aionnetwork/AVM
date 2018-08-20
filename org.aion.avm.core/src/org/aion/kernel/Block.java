@@ -4,6 +4,8 @@ import java.math.BigInteger;
 
 public class Block {
 
+    private byte[] prevHash;
+
     private long number;
 
     private byte[] coinbase;
@@ -12,11 +14,16 @@ public class Block {
 
     private byte[] data;
 
-    public Block(long number, byte[] coinbase, long timestamp, byte[] data) {
+    public Block(byte[] prevHash, long number, byte[] coinbase, long timestamp, byte[] data) {
+        this.prevHash = prevHash;
         this.number = number;
         this.coinbase = coinbase;
         this.timestamp = timestamp;
         this.data = data;
+    }
+
+    public byte[] getPrevHash() {
+        return prevHash;
     }
 
     public long getNumber() {
@@ -35,12 +42,10 @@ public class Block {
         return data;
     }
 
+    // TODO: consider adding the following fields into constructor
+
     public long getEnergyLimit() {
         return 10_000_000L;
-    }
-
-    public byte[] getPrevHash() {
-        return null;
     }
 
     public BigInteger getDifficulty() {

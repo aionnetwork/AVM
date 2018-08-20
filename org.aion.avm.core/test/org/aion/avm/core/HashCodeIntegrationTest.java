@@ -19,7 +19,7 @@ import org.junit.Test;
 public class HashCodeIntegrationTest {
     @Test
     public void testPersistentHashCode() throws Exception {
-        Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(HashCodeIntegrationTestTarget.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());

@@ -3,7 +3,6 @@ package org.aion.avm.core.collection;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -12,14 +11,13 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class AionCollectionPerfTest {
 
     private byte[] from = Helpers.randomBytes(Address.LENGTH);
     private byte[] to = Helpers.randomBytes(Address.LENGTH);
-    private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = Long.MAX_VALUE - 100l;
     private long energyPrice = 1;
 

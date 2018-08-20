@@ -23,7 +23,7 @@ public class ExceptionWrappingIntegrationTest {
         // This test doesn't use the common IHelper from setup() so uninstall it.
         SuspendedHelper suspended = new SuspendedHelper();
         
-        Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());

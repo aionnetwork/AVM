@@ -23,4 +23,12 @@ public class Arrays {
 
         return java.util.Arrays.equals(a.getUnderlying(), a2.getUnderlying());
     }
+
+    public static ByteArray avm_copyOfRange(ByteArray a, int start, int end) {
+        if (a == null) {
+            throw new NullPointerException();
+        }
+
+        return new ByteArray(java.util.Arrays.copyOfRange(a.getUnderlying(), start, end));
+    }
 }

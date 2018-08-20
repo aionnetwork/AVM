@@ -20,7 +20,7 @@ public class AvmImplDeployAndRunTest {
     private long energyLimit = 5000000;
     private long energyPrice = 1;
 
-    private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
     private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
     private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);

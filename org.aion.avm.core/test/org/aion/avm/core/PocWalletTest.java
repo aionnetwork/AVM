@@ -23,7 +23,7 @@ public class PocWalletTest {
     // For now, we will just reuse the from, to, and block for each call (in the future, this will change).
     private byte[] from = Helpers.randomBytes(Address.LENGTH);
     private byte[] to = Helpers.randomBytes(Address.LENGTH);
-    private Block block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 5_000_000;
     private long energyPrice = 1;
 

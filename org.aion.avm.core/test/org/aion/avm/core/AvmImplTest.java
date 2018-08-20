@@ -39,7 +39,7 @@ public class AvmImplTest {
 
     @BeforeClass
     public static void setupClass() {
-        block = new Block(1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     }
 
     @Test

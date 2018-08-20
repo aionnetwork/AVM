@@ -21,6 +21,7 @@ public class TransactionContextImpl implements TransactionContext {
     public TransactionContextImpl(Transaction tx, Block block) {
         this.tx = tx;
         this.origin = tx.getFrom();
+
         this.blockNumber = block.getNumber();
         this.blockTimestamp = block.getTimestamp();
         this.blockEnergyLimit = block.getEnergyLimit();
@@ -32,7 +33,9 @@ public class TransactionContextImpl implements TransactionContext {
     public TransactionContextImpl(TransactionContext parent, Transaction tx) {
         this.tx = tx;
         this.origin = parent.getOrigin();
+
         this.blockNumber = parent.getBlockNumber();
+        this.blockTimestamp = parent.getBlockTimestamp();
         this.blockEnergyLimit = parent.getBlockEnergyLimit();
         this.blockCoinbase = parent.getBlockCoinbase();
         this.blockPrevHash = parent.getBlockPreviousHash();
