@@ -1,10 +1,17 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
+import org.aion.avm.internal.CodecIdioms;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 
 
+/**
+ * TODO:  Ensure that none of the interface we have provided exposes underlying implementation details (slack buffer space, etc), since we would
+ * otherwise need to take that into account with our serialization strategy.
+ */
 public class StringBuffer extends Object implements CharSequence, Appendable{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
@@ -276,6 +283,21 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     // Deserializer support.
     public StringBuffer(IDeserializer deserializer, long instanceId) {
         super(deserializer, instanceId);
+    }
+
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(String.class, deserializer);
+        
+        // We serialize this as a string.
+        java.lang.String simpler = CodecIdioms.deserializeString(deserializer);
+        this.v = new java.lang.StringBuffer(simpler);
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(String.class, serializer);
+        
+        // We serialize this as a string.
+        CodecIdioms.serializeString(serializer, this.v.toString());
     }
 
 
