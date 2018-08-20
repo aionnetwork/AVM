@@ -270,6 +270,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         
         // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
         byte[] rawData = this.kernel.getStorage(address, StorageKeys.forInstance(instanceId));
+        this.feeProcessor.readOneInstanceFromStorage(rawData.length);
         deserializeInstance(instance, rawData);
     }
 
@@ -277,6 +278,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         try {
             long instanceId = this.instanceIdField.getLong(instance);
             byte[] serialized = internalSerializeInstance(instance, nextObjectSink);
+            // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
+            // we run out of energy, part-way.
+            this.feeProcessor.writeOneInstanceToStorage(serialized.length);
             this.kernel.putStorage(this.address, StorageKeys.forInstance(instanceId), serialized);
         } catch (IllegalAccessException | IllegalArgumentException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.

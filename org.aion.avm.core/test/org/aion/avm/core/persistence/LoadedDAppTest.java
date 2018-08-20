@@ -407,6 +407,44 @@ public class LoadedDAppTest {
         Assert.assertTrue(org.aion.avm.shadow.java.lang.Byte.avm_TYPE == LoadedDAppTarget.s_nine);
     }
 
+    /**
+     * A very simple test that shows we get the same number of fee schedule calls whether we use on-disk or in-memory abstraction.
+     */
+    @Test
+    public void memoryAndDiskSerializersSameCost() {
+        // Create the DApp.
+        byte[] address = new byte[] {1,2,3};
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
+        
+        // Set the empty state and write it to disk.
+        ReflectionStructureCodecTarget.s_nine = null;
+        dapp.saveClassStaticsToStorage(1L, FEE_PROCESSOR, kernel);
+        
+        // First, the disk variant.
+        CallCountingProcessor diskCount = new CallCountingProcessor();
+        // Start from disk (we need this so that both versions start from "read initial state").
+        dapp.populateClassStaticsFromStorage(diskCount, kernel);
+        // Populate a basic state.
+        ReflectionStructureCodecTarget.s_nine = buildSmallGraph();
+        // Save to disk.
+        dapp.saveClassStaticsToStorage(1L, diskCount, kernel);
+        
+        // Now, the in-memory variant.
+        CallCountingProcessor memoryCount = new CallCountingProcessor();
+        ReentrantGraphProcessor snapshot = dapp.replaceClassStaticsWithClones(memoryCount);
+        // Populate a basic state.
+        ReflectionStructureCodecTarget.s_nine = buildSmallGraph();
+        // Save to state.
+        snapshot.commitGraphToStoredFieldsAndRestore();
+        
+        // Verify that both saw the same number of calls.
+        Assert.assertEquals(diskCount.count_readStaticDataFromStorage, memoryCount.count_readStaticDataFromHeap);
+        Assert.assertEquals(diskCount.count_writeStaticDataToStorage, memoryCount.count_writeStaticDataToHeap);
+        Assert.assertEquals(diskCount.count_readOneInstanceFromStorage, memoryCount.count_readOneInstanceFromHeap);
+        Assert.assertEquals(diskCount.count_writeOneInstanceToStorage, memoryCount.count_writeOneInstanceToHeap);
+    }
+
 
     private static void clearStaticState() {
         ReflectionStructureCodecTarget.s_one = false;
@@ -437,5 +475,61 @@ public class LoadedDAppTest {
         LoadedDAppTarget.s_six = 0.0f;
         LoadedDAppTarget.s_seven = 0;
         LoadedDAppTarget.s_eight = 0.0d;
+    }
+
+    private ReflectionStructureCodecTarget buildSmallGraph() {
+        ReflectionStructureCodecTarget one = new ReflectionStructureCodecTarget();
+        ReflectionStructureCodecTarget two = new ReflectionStructureCodecTarget();
+        ReflectionStructureCodecTarget three = new ReflectionStructureCodecTarget();
+        ReflectionStructureCodecTarget four = new ReflectionStructureCodecTarget();
+        one.i_nine = two;
+        two.i_nine = three;
+        three.i_nine = four;
+        return one;
+    }
+
+
+    private static class CallCountingProcessor implements IStorageFeeProcessor {
+        public int count_readStaticDataFromStorage;
+        public int count_writeStaticDataToStorage;
+        public int count_readOneInstanceFromStorage;
+        public int count_writeOneInstanceToStorage;
+        public int count_readStaticDataFromHeap;
+        public int count_writeStaticDataToHeap;
+        public int count_readOneInstanceFromHeap;
+        public int count_writeOneInstanceToHeap;
+        
+        @Override
+        public void readStaticDataFromStorage(int byteSize) {
+            this.count_readStaticDataFromStorage += 1;
+        }
+        @Override
+        public void writeStaticDataToStorage(int byteSize) {
+            this.count_writeStaticDataToStorage += 1;
+        }
+        @Override
+        public void readOneInstanceFromStorage(int byteSize) {
+            this.count_readOneInstanceFromStorage += 1;
+        }
+        @Override
+        public void writeOneInstanceToStorage(int byteSize) {
+            this.count_writeOneInstanceToStorage += 1;
+        }
+        @Override
+        public void readStaticDataFromHeap(int byteSize) {
+            this.count_readStaticDataFromHeap += 1;
+        }
+        @Override
+        public void writeStaticDataToHeap(int byteSize) {
+            this.count_writeStaticDataToHeap += 1;
+        }
+        @Override
+        public void readOneInstanceFromHeap(int byteSize) {
+            this.count_readOneInstanceFromHeap += 1;
+        }
+        @Override
+        public void writeOneInstanceToHeap(int byteSize) {
+            this.count_writeOneInstanceToHeap += 1;
+        }
     }
 }

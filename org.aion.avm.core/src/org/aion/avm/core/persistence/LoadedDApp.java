@@ -84,6 +84,7 @@ public class LoadedDApp {
         
         // Extract the raw data for the class statics.
         byte[] rawData = kernelInterface.getStorage(this.address, StorageKeys.CLASS_STATICS);
+        feeProcessor.readStaticDataFromStorage(rawData.length);
         StreamingPrimitiveCodec.Decoder decoder = StreamingPrimitiveCodec.buildDecoder(rawData);
         
         // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
@@ -133,6 +134,7 @@ public class LoadedDApp {
         
         // Save the raw bytes.
         byte[] rawData = encoder.toBytes();
+        feeProcessor.writeStaticDataToStorage(rawData.length);
         kernelInterface.putStorage(this.address, StorageKeys.CLASS_STATICS, rawData);
         
         // Now, drain the queue.
