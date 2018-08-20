@@ -25,10 +25,10 @@ public class Arrays {
     }
 
     public static ByteArray avm_copyOfRange(ByteArray a, int start, int end) {
-        if (a == null) {
-            throw new NullPointerException();
-        }
-
         return new ByteArray(java.util.Arrays.copyOfRange(a.getUnderlying(), start, end));
+    }
+
+    public static void avm_fill(ByteArray a, int fromIndex, int toIndex, byte val) {
+        java.util.Arrays.fill(a.getUnderlying(), fromIndex, toIndex, val);
     }
 }
