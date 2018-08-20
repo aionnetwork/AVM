@@ -2,6 +2,7 @@ package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.persistence.ReflectionStructureCodec.IFieldPopulator;
@@ -33,9 +34,16 @@ public class SerializedInstanceStubTest {
 
     @Test
     public void testNull() throws Exception {
+        org.aion.avm.shadow.java.lang.Object inputInstance = null;
+        
+        // Size this.
+        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.instanceIdField);
+        // Null is a direct special-case, serialized as 4 bytes (stub type).
+        Assert.assertEquals(4, byteSize);
+        
         // Encode this.
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, null, this.instanceIdField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.instanceIdField, () -> 1L);
         
         // Nulls should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
@@ -48,9 +56,16 @@ public class SerializedInstanceStubTest {
 
     @Test
     public void testConstant() throws Exception {
+        org.aion.avm.shadow.java.lang.Object inputInstance = org.aion.avm.shadow.java.lang.Boolean.avm_TYPE;
+        
+        // Size this.
+        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.instanceIdField);
+        // Constants are a special-case, encoded as 4 bytes (stub type) + 8 bytes (constant id).
+        Assert.assertEquals(4 + 8, byteSize);
+        
         // Encode this.
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, org.aion.avm.shadow.java.lang.Boolean.avm_TYPE, this.instanceIdField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.instanceIdField, () -> 1L);
         
         // Constants should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
@@ -63,9 +78,16 @@ public class SerializedInstanceStubTest {
 
     @Test
     public void testClass() throws Exception {
+        org.aion.avm.shadow.java.lang.Class<?> inputInstance = new org.aion.avm.shadow.java.lang.Class<>(String.class);
+        
+        // Size this.
+        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.instanceIdField);
+        // Classes are stored as 4 bytes (stub type) + 4 bytes (type name length) + n bytes (type name UTF-8).
+        Assert.assertEquals(4 + 4 + String.class.getName().getBytes(StandardCharsets.UTF_8).length, byteSize);
+        
         // Encode this.
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, new org.aion.avm.shadow.java.lang.Class<>(String.class), this.instanceIdField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.instanceIdField, () -> 1L);
         
         // Classes should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
@@ -78,9 +100,16 @@ public class SerializedInstanceStubTest {
 
     @Test
     public void testInstance() throws Exception {
+        org.aion.avm.shadow.java.lang.Object inputInstance = new org.aion.avm.shadow.java.lang.Object();
+        
+        // Size this.
+        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.instanceIdField);
+        // Normal references are stored as 4 bytes (type name length) + n bytes (type name UTF-8) + 8 bytes (instance id).
+        Assert.assertEquals(4 + org.aion.avm.shadow.java.lang.Object.class.getName().getBytes(StandardCharsets.UTF_8).length + 8, byteSize);
+        
         // Encode this.
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, new org.aion.avm.shadow.java.lang.Object(), this.instanceIdField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.instanceIdField, () -> 1L);
         
         // Instances should be enqueued.
         Assert.assertTrue(shouldEnqueue);

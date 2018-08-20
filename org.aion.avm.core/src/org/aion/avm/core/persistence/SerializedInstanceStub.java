@@ -146,4 +146,58 @@ public class SerializedInstanceStub {
         }
         return instanceToStore;
     }
+
+    /**
+     * Determines the size of a serialized reference to the given instance.
+     * 
+     * @param instance The object instance to measure.
+     * @param instanceIdField The reflection Field reference to use when reading the instanceId from the instance.
+     * @return The serialized size fo the reference to this instance.
+     */
+    public static int sizeOfInstanceStub(org.aion.avm.shadow.java.lang.Object instance, Field instanceIdField) throws IllegalArgumentException, IllegalAccessException {
+        int sizeInBytes = 0;
+        // See issue-147 for more information regarding this interpretation:
+        // - null: (int)0.
+        // - -1: (int)-1, (long) instanceId (of constant - negative).
+        // - -2: (int)-2, (int) buffer length, (n) UTF-8 class name buffer
+        // - >0:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
+        // Reason for order of evaluation:
+        // - null goes first, since it is easy to detect on either side (and probably a common case).
+        // - constants go second since they are arbitrary objects, including some Class objects, and already have the correct instanceId.
+        // - Classes go third since we will we don't to look at their instanceIds (we will see the 0 and take the wrong action).
+        // - normal references go last (includes those with 0 or >0 instanceIds).
+        if (null == instance) {
+            // Just encoding the null stub constant as an int.
+            sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT;
+        } else {
+            // Check the instanceId to see if this is a special-case.
+            long instanceId = instanceIdField.getLong(instance);
+            if (instanceId < 0) {
+                // Constants.
+                // Encode the constant stub constant as an int.
+                sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT;
+                // Then encode the instanceId as a long.
+                sizeInBytes += StreamingPrimitiveCodec.ByteSizes.LONG;
+            } else if (instance instanceof org.aion.avm.shadow.java.lang.Class) {
+                // Non-constant Class reference.
+                // Encode the class stub constant as an int.
+                sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT;
+                
+                // Get the class name.
+                String className = ((org.aion.avm.shadow.java.lang.Class<?>)instance).getRealClass().getName();
+                byte[] utf8Name = className.getBytes(StandardCharsets.UTF_8);
+                
+                // Write the length and the bytes.
+                sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT + utf8Name.length;
+            } else {
+                // This a normal reference so get the type.
+                String typeName = instance.getClass().getName();
+                byte[] utf8Name = typeName.getBytes(StandardCharsets.UTF_8);
+                
+                // Serialize as the type name length, byte, and the the instanceId.
+                sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT + utf8Name.length + StreamingPrimitiveCodec.ByteSizes.LONG;
+            }
+        }
+        return sizeInBytes;
+    }
 }
