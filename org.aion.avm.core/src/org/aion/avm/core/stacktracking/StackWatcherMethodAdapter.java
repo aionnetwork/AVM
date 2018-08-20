@@ -7,6 +7,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.util.ArrayList;
 
@@ -32,9 +33,11 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
     }
 
     //TODO: Test the assumption of using 2 and 1
-    public void setMax(int l, int s){
+    public void setMax(MethodNode node, int l, int s){
         this.maxL = l + 2;
         this.maxS = s + 1;
+        node.maxLocals = maxL;
+        node.maxStack = maxS;
     }
 
     public void setTryCatchBlockNum(int l){

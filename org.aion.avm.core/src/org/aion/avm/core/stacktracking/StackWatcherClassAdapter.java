@@ -25,7 +25,7 @@ public class StackWatcherClassAdapter extends ClassToolchain.ToolChainClassVisit
             @Override
             public void visitEnd() {
                 ma.setTryCatchBlockNum(this.tryCatchBlocks.size());
-                ma.setMax(this.maxLocals, this.maxStack);
+                ma.setMax(this, this.maxLocals, this.maxStack);
                 this.accept(ma);
             }
         };
