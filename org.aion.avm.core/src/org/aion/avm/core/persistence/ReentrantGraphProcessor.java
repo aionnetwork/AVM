@@ -10,6 +10,7 @@ import java.util.Queue;
 import java.util.function.Function;
 
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
@@ -96,6 +97,8 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
     private void internalCaptureAndReplaceStaticState() throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
         // We will save out and build new stubs for references in the same pass.
         Queue<Object> inOrderData = new LinkedList<>();
+        // Note that we need to measure the "serialized" size of the statics in order to provide consistent IStorageFeeProcessor billing (treating this as a "read from storage").
+        int byteSize = 0;
         for (Class<?> clazz : this.classes) {
             for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
                 // We are only capturing class statics.
@@ -104,27 +107,35 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
                     if (boolean.class == type) {
                         boolean val = field.getBoolean(null);
                         inOrderData.add(val);
+                        byteSize += StreamingPrimitiveCodec.ByteSizes.BOOLEAN;
                     } else if (byte.class == type) {
                         byte val = field.getByte(null);
                         inOrderData.add(val);
+                        byteSize += StreamingPrimitiveCodec.ByteSizes.BYTE;
                     } else if (short.class == type) {
                         short val = field.getShort(null);
                         inOrderData.add(val);
+                        byteSize += StreamingPrimitiveCodec.ByteSizes.SHORT;
                     } else if (char.class == type) {
                         char val = field.getChar(null);
                         inOrderData.add(val);
+                        byteSize += StreamingPrimitiveCodec.ByteSizes.CHAR;
                     } else if (int.class == type) {
                         int val = field.getInt(null);
                         inOrderData.add(val);
+                        byteSize += StreamingPrimitiveCodec.ByteSizes.INT;
                     } else if (float.class == type) {
                         float val = field.getFloat(null);
                         inOrderData.add(val);
+                        byteSize += StreamingPrimitiveCodec.ByteSizes.FLOAT;
                     } else if (long.class == type) {
                         long val = field.getLong(null);
                         inOrderData.add(val);
+                        byteSize += StreamingPrimitiveCodec.ByteSizes.LONG;
                     } else if (double.class == type) {
                         double val = field.getDouble(null);
                         inOrderData.add(val);
+                        byteSize += StreamingPrimitiveCodec.ByteSizes.DOUBLE;
                     } else {
                         // This should be a shadow object.
                         org.aion.avm.shadow.java.lang.Object contents = (org.aion.avm.shadow.java.lang.Object)field.get(null);
@@ -134,10 +145,12 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
                             org.aion.avm.shadow.java.lang.Object stub = internalGetCalleeStubForCaller(contents);
                             field.set(null, stub);
                         }
+                        byteSize += SerializedInstanceStub.sizeOfInstanceStub(contents, this.instanceIdField);
                     }
                 }
             }
         }
+        this.feeProcessor.readStaticDataFromHeap(byteSize);
         RuntimeAssertionError.assertTrue(null == this.previousStatics);
         this.previousStatics = inOrderData;
     }
@@ -206,8 +219,11 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
      * graph as canonical.
      * This disagreement is rationalized by copying the contents of each of the callee's objects into the corresponding caller's
      * instances.
+     * @throws OutOfEnergyError The commit _can_ fail due to energy exhaustion, so the caller must be aware of that.  The commit will be
+     * aborted, in that case, but the caller will still need to call revert (since the statics aborted statics are still installed in
+     * the classes).
      */
-    public void commitGraphToStoredFieldsAndRestore() {
+    public void commitGraphToStoredFieldsAndRestore() throws OutOfEnergyError {
         try {
             internalCommitGraphToStoredFieldsAndRestore();
         } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -331,20 +347,29 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
         RuntimeAssertionError.assertTrue(null != this.previousStatics);
         Queue<org.aion.avm.shadow.java.lang.Object> calleeObjectsToScan = new LinkedList<>();
         
-        // TODO:  Do size accounting once that is fully implemented.  For now, this stage just demonstrates how it fits into the pipeline.
+        // Note that we need to measure the "serialized" size of the statics, as a write on commit, in order to provide consistent IStorageFeeProcessor billing (treating this as a "write to storage").
+        int staticByteSize = 0;
         for (Class<?> clazz : this.classes) {
             for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
                 // We are only capturing class statics.
                 if (Modifier.STATIC == (Modifier.STATIC & field.getModifiers())) {
                     Class<?> type = field.getType();
                     if (boolean.class == type) {
+                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.BOOLEAN;
                     } else if (byte.class == type) {
+                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.BYTE;
                     } else if (short.class == type) {
+                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.SHORT;
                     } else if (char.class == type) {
+                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.CHAR;
                     } else if (int.class == type) {
+                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.INT;
                     } else if (float.class == type) {
+                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.FLOAT;
                     } else if (long.class == type) {
+                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.LONG;
                     } else if (double.class == type) {
+                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.DOUBLE;
                     } else {
                         // Load the field (it will be either a new object or the callee-space object which we need to replace with its caller-space).
                         org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)field.get(null);
@@ -352,15 +377,19 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
                         // NOTE:  We use mapCalleeToCallerAndEnqueueForCommitProcessing since the dry run is where we build the object graph.
                         org.aion.avm.shadow.java.lang.Object caller = mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, callee);
                         // We normally prefer the caller (technically, these should be the same size since we are writing the same data, either way, but this is the pattern to be sure).
-                        // TODO: Add size accounting.
                         if (null != caller) {
+                            staticByteSize += SerializedInstanceStub.sizeOfInstanceStub(caller, this.instanceIdField);
                         } else {
+                            staticByteSize += SerializedInstanceStub.sizeOfInstanceStub(callee, this.instanceIdField);
                         }
                     }
                 }
             }
         }
-        // We need to discover the object graph so use the mapping function which interacts with DONE_MARKER.
+        // Statics are "written" as a single unit.
+        this.feeProcessor.writeStaticDataToHeap(staticByteSize);
+        
+        // Note only is this pass measuring size, but it is also finding the graph of objects to write-back, on commit, so provide that mapping function.
         Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> calleeToCallerRefMappingFunction = (calleeRef) -> mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, calleeRef);
         
         // We have accounted for the statics and found the initial roots so follow those roots to account for all reachable instances.
@@ -368,10 +397,9 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
         while (!calleeObjectsToScan.isEmpty()) {
             org.aion.avm.shadow.java.lang.Object calleeSpaceToScan = calleeObjectsToScan.remove();
             
-            // (we don't need the return value until a later change - we just want to discover the graph).
-            measureByteSizeOfInstance(calleeSpaceToScan, calleeToCallerRefMappingFunction);
-            
-            // TODO: Add size accounting once that is fully implemented.
+            int instanceByteSize = measureByteSizeOfInstance(calleeSpaceToScan, calleeToCallerRefMappingFunction);
+            // Write each instance, one at a time.
+            this.feeProcessor.writeOneInstanceToHeap(instanceByteSize);
             calleeSpaceObjectsToCopyBack.add(calleeSpaceToScan);
         }
         return calleeSpaceObjectsToCopyBack;
@@ -386,6 +414,11 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
         org.aion.avm.shadow.java.lang.Object caller = this.calleeToCallerMap.get(instance);
         // Make sure that it is loaded.
         caller.lazyLoad();
+        
+        // Account for the size of this instance.
+        // TODO:  Find a way to capture the size of this instance without serializing twice.
+        int instanceBytes = measureByteSizeOfInstance(caller, (ignored) -> null);
+        this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
         
         // We want to use the same codec logic which exists in all shadow objects (since the shadow and API classes do special things here which we don't want to duplicate).
         // In this case, we want to provide an object deserialization helper which can create a callee-space instance stub.
@@ -591,7 +624,6 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
     }
 
     private int measureByteSizeOfInstance(org.aion.avm.shadow.java.lang.Object instance, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> calleeToCallerRefMappingFunction) {
-        // TODO:  Actually do the accounting of the size, once that is ready.  For now, we just want to discover the object graph.
         // We will use the loopback codec to serialize the object into a list we can operate on, directly, to infer size and interpret stubs.
         LoopbackCodec loopback = new LoopbackCodec(this, null, null);
         // Serialize the callee-space object.
@@ -601,17 +633,26 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
         
         // We can process the data in this queue as the size (although this does assume we know how the LoopbackCodec is implemented but it
         // already shares its queue with use, for automatic serialization, so there is no avoiding that).
+        int instanceByteSize = 0;
         while (!dataQueue.isEmpty()) {
             Object elt = dataQueue.remove();
             // Handle all the boxed primitives from LoopbackCodec and our own auto methods.
             if (elt instanceof Boolean) {
+                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.BOOLEAN;
             } else if (elt instanceof Byte) {
+                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.BYTE;
             } else if (elt instanceof Short) {
+                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.SHORT;
             } else if (elt instanceof Character) {
+                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.CHAR;
             } else if (elt instanceof Integer) {
+                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.INT;
             } else if (elt instanceof Float) {
+                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.FLOAT;
             } else if (elt instanceof Long) {
+                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.LONG;
             } else if (elt instanceof Double) {
+                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.DOUBLE;
             } else {
                 // This better be a shadow object.
                 RuntimeAssertionError.assertTrue((null == elt) || (elt instanceof org.aion.avm.shadow.java.lang.Object));
@@ -619,14 +660,20 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
                 org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)elt;
                 org.aion.avm.shadow.java.lang.Object caller = calleeToCallerRefMappingFunction.apply(callee);
                 // We normally prefer the caller (technically, these should be the same size since we are writing the same data, either way, but this is the pattern to be sure).
-                // TODO:  Add size accounting for this stub.
-                if (null != caller) {
-                } else {
+                try {
+                    if (null != caller) {
+                        instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(caller, this.instanceIdField);
+                    } else {
+                        instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(callee, this.instanceIdField);
+                    }
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // This exception wouldn't show up so late/deep in a run.
+                    RuntimeAssertionError.unexpected(e);
                 }
             }
         }
         // Prove that we didn't miss anything.
         loopback.verifyDone();
-        return 0;
+        return instanceByteSize;
     }
 }
