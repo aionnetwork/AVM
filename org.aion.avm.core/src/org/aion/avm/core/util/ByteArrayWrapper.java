@@ -33,4 +33,9 @@ public final class ByteArrayWrapper
     {
         return Arrays.hashCode(data);
     }
+
+    @Override
+    public String toString() {
+        return Helpers.toHexString(data);
+    }
 }

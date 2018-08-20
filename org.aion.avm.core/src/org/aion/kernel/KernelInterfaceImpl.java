@@ -3,6 +3,7 @@ package org.aion.kernel;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -91,5 +92,15 @@ public class KernelInterfaceImpl implements KernelInterface {
     public void incrementNonce(byte[] address) {
         createAccount(address);
         getAccount(address).nonce++;
+    }
+
+    @Override
+    public Map<ByteArrayWrapper, byte[]> getStorageEntries(byte[] address) {
+        AccountState acc = getAccount(address);
+        if (acc == null) {
+            return Collections.emptyMap();
+        }
+
+        return new HashMap<>(acc.storage);
     }
 }

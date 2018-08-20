@@ -2,13 +2,15 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.persistence.StorageKeys;
+import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 
 public class RevertAndInvalidTest {
@@ -50,6 +52,9 @@ public class RevertAndInvalidTest {
         assertEquals(TransactionResult.Code.REVERT, txResult.getStatusCode());
         assertNull(txResult.getReturnData());
         assertTrue(energyLimit > txResult.getEnergyUsed());
+
+        dumpStorage(dappAddress);
+        assertArrayEquals(kernel.getStorage(dappAddress, StorageKeys.CLASS_STATICS), new byte[]{0,0,0,0});
     }
 
     @Test
@@ -61,5 +66,15 @@ public class RevertAndInvalidTest {
         assertEquals(TransactionResult.Code.INVALID, txResult.getStatusCode());
         assertNull(txResult.getReturnData());
         assertEquals(energyLimit, txResult.getEnergyUsed());
+
+        dumpStorage(dappAddress);
+        assertArrayEquals(kernel.getStorage(dappAddress, StorageKeys.CLASS_STATICS), new byte[]{0,0,0,0});
+    }
+
+    private void dumpStorage(byte[] dappAddress) {
+        Map<ByteArrayWrapper, byte[]> s = kernel.getStorageEntries(dappAddress);
+        for (ByteArrayWrapper k : s.keySet()) {
+            System.out.println(k + "=" + Helpers.toHexString(s.get(k)));
+        }
     }
 }
