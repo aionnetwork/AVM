@@ -222,12 +222,21 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
         // In any cases where a reference was to be copied, choose the caller version unless there isn't one, in which case the callee version can be
         // copied (new object case).  In either case, the recursive update of the graph must be continued through this newly-attached object.
         RuntimeAssertionError.assertTrue(null != this.previousStatics);
+        
+        // We need to start with a dry run to see if the user can afford to write-back this data (since the commit reaches a point of no return as
+        // soon as we start writing to the visible object graph).
+        // We can build the list of objects to process while we interpret the size that would be written back (we must NOT write to caller objects).
+        // The only writes that we need to make into the heap are those to write the DONE_MARKER but that is only done against callee-space objects,
+        // meaning that a revert won't see them.
+        // Once we bill for all of these objects, we can update the statics and then walk the list, without needing to rediscover the graph.
+        // (this way, we avoid needing a second DONE_MARKER on these objects).
+        Queue<org.aion.avm.shadow.java.lang.Object> calleeObjectsToProcess = doDryRunForCommit();
+        // (if we got this far without hitting OutOfEnergy, we can proceed with the commit)
+        
         // We discard the statics since the only information we need from them (the caller instances from which the callees are derived) is already
         // in our calleeToCallerMap.
         this.previousStatics = null;
         
-        // First, walk all the statics and start seeding our work.
-        Queue<org.aion.avm.shadow.java.lang.Object> calleeObjectsToProcess = new LinkedList<>();
         for (Class<?> clazz : this.classes) {
             for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
                 // We are only capturing class statics.
@@ -244,11 +253,14 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
                     } else {
                         // Load the field (it will be either a new object or the callee-space object which we need to replace with its caller-space).
                         org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)field.get(null);
-                        // See if there is a caller version.
-                        org.aion.avm.shadow.java.lang.Object caller = mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToProcess, callee);
-                        // If there was a caller version, copy this back (otherwise, we will continue looking at the callee).
-                        if (null != caller) {
-                            field.set(null, caller);
+                        if (null != callee) {
+                            // See if there is a caller version.
+                            // NOTE:  We access calleeToCallerMap directly, since the DONE_MARKER was already applied in doDryRunForCommit.
+                            org.aion.avm.shadow.java.lang.Object caller = this.calleeToCallerMap.get(callee);
+                            // If there was a caller version, copy this back (otherwise, we will continue looking at the callee).
+                            if (null != caller) {
+                                field.set(null, caller);
+                            }
                         }
                     }
                 }
@@ -266,7 +278,14 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
             
             // We want to copy "back" to the caller space so serialize the callee and deserialize them into either the caller or callee (if there was no caller).
             // (the reason to serialize/deserialize the same object is to process the object references in a general way:  try to map back into the caller space).
-            Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper = (calleeField) -> mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToProcess, calleeField);
+            Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper = (calleeField) -> {
+                org.aion.avm.shadow.java.lang.Object caller = null;
+                if (null != calleeField) {
+                    // NOTE:  We access calleeToCallerMap directly, since the DONE_MARKER was already applied in doDryRunForCommit.
+                    caller = this.calleeToCallerMap.get(calleeField);
+                }
+                return caller;
+            };
             LoopbackCodec loopback = new LoopbackCodec(this, this, deserializeHelper);
             // Serialize the callee-space object.
             calleeSpaceToProcess.serializeSelf(null, loopback);
@@ -290,6 +309,72 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
             org.aion.avm.shadow.java.lang.Object calleeSpaceToClear = placeholdersToUnset.remove();
             this.deserializerField.set(calleeSpaceToClear, null);
         }
+    }
+
+    /**
+     * Runs a simulation of the commit, but doesn't actually touch anything.  This involves walking the static fields but also every instance in the
+     * callee address space.  Since this implies graph discovery was done, setting DONE_MARKER is done within this function, on all reachable objects.
+     * The reason why we do this is so that we can treat the commit as effectively atomic since we have pushed all failures up to this dry run phase.
+     * This is important since we want to apply transactional semantics (commit/rollback the entire transaction) to in-memory data structures.  Since
+     * we can't rely on an underlying storage engine to give us these semantics, we emulate them by using this method to prove that we won't fail the
+     * commit, if we decide to start it.
+     * This means that this method is allowed to fail for any reason which should logically cause the commit to fail (typically, this is for
+     * write-back billing).
+     * 
+     * @return The queue of all objects found which need to be committed and then cleaned of their DONE_MARKERs.
+     */
+    private Queue<org.aion.avm.shadow.java.lang.Object> doDryRunForCommit() throws IllegalArgumentException, IllegalAccessException {
+        // This is the complicated case:  walk the previous statics, writing only the instances back but updating each of those instances written to
+        // the graph with the callee version's contents, recursively.
+        // In any cases where a reference was to be copied, choose the caller version unless there isn't one, in which case the callee version can be
+        // copied (new object case).  In either case, the recursive update of the graph must be continued through this newly-attached object.
+        RuntimeAssertionError.assertTrue(null != this.previousStatics);
+        Queue<org.aion.avm.shadow.java.lang.Object> calleeObjectsToScan = new LinkedList<>();
+        
+        // TODO:  Do size accounting once that is fully implemented.  For now, this stage just demonstrates how it fits into the pipeline.
+        for (Class<?> clazz : this.classes) {
+            for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
+                // We are only capturing class statics.
+                if (Modifier.STATIC == (Modifier.STATIC & field.getModifiers())) {
+                    Class<?> type = field.getType();
+                    if (boolean.class == type) {
+                    } else if (byte.class == type) {
+                    } else if (short.class == type) {
+                    } else if (char.class == type) {
+                    } else if (int.class == type) {
+                    } else if (float.class == type) {
+                    } else if (long.class == type) {
+                    } else if (double.class == type) {
+                    } else {
+                        // Load the field (it will be either a new object or the callee-space object which we need to replace with its caller-space).
+                        org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)field.get(null);
+                        // See if there is a caller version.
+                        // NOTE:  We use mapCalleeToCallerAndEnqueueForCommitProcessing since the dry run is where we build the object graph.
+                        org.aion.avm.shadow.java.lang.Object caller = mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, callee);
+                        // We normally prefer the caller (technically, these should be the same size since we are writing the same data, either way, but this is the pattern to be sure).
+                        // TODO: Add size accounting.
+                        if (null != caller) {
+                        } else {
+                        }
+                    }
+                }
+            }
+        }
+        // We need to discover the object graph so use the mapping function which interacts with DONE_MARKER.
+        Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> calleeToCallerRefMappingFunction = (calleeRef) -> mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, calleeRef);
+        
+        // We have accounted for the statics and found the initial roots so follow those roots to account for all reachable instances.
+        Queue<org.aion.avm.shadow.java.lang.Object> calleeSpaceObjectsToCopyBack = new LinkedList<>();
+        while (!calleeObjectsToScan.isEmpty()) {
+            org.aion.avm.shadow.java.lang.Object calleeSpaceToScan = calleeObjectsToScan.remove();
+            
+            // (we don't need the return value until a later change - we just want to discover the graph).
+            measureByteSizeOfInstance(calleeSpaceToScan, calleeToCallerRefMappingFunction);
+            
+            // TODO: Add size accounting once that is fully implemented.
+            calleeSpaceObjectsToCopyBack.add(calleeSpaceToScan);
+        }
+        return calleeSpaceObjectsToCopyBack;
     }
 
     @Override
@@ -503,5 +588,45 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
             }
         }
         return callerSpace;
+    }
+
+    private int measureByteSizeOfInstance(org.aion.avm.shadow.java.lang.Object instance, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> calleeToCallerRefMappingFunction) {
+        // TODO:  Actually do the accounting of the size, once that is ready.  For now, we just want to discover the object graph.
+        // We will use the loopback codec to serialize the object into a list we can operate on, directly, to infer size and interpret stubs.
+        LoopbackCodec loopback = new LoopbackCodec(this, null, null);
+        // Serialize the callee-space object.
+        instance.serializeSelf(null, loopback);
+        // Now, take ownership of the captured data and process it.
+        Queue<Object> dataQueue = loopback.takeOwnershipOfData();
+        
+        // We can process the data in this queue as the size (although this does assume we know how the LoopbackCodec is implemented but it
+        // already shares its queue with use, for automatic serialization, so there is no avoiding that).
+        while (!dataQueue.isEmpty()) {
+            Object elt = dataQueue.remove();
+            // Handle all the boxed primitives from LoopbackCodec and our own auto methods.
+            if (elt instanceof Boolean) {
+            } else if (elt instanceof Byte) {
+            } else if (elt instanceof Short) {
+            } else if (elt instanceof Character) {
+            } else if (elt instanceof Integer) {
+            } else if (elt instanceof Float) {
+            } else if (elt instanceof Long) {
+            } else if (elt instanceof Double) {
+            } else {
+                // This better be a shadow object.
+                RuntimeAssertionError.assertTrue((null == elt) || (elt instanceof org.aion.avm.shadow.java.lang.Object));
+                // We need to size this as an instance stub.
+                org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)elt;
+                org.aion.avm.shadow.java.lang.Object caller = calleeToCallerRefMappingFunction.apply(callee);
+                // We normally prefer the caller (technically, these should be the same size since we are writing the same data, either way, but this is the pattern to be sure).
+                // TODO:  Add size accounting for this stub.
+                if (null != caller) {
+                } else {
+                }
+            }
+        }
+        // Prove that we didn't miss anything.
+        loopback.verifyDone();
+        return 0;
     }
 }
