@@ -3,7 +3,6 @@ package org.aion.avm.core;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReentrantGraphProcessor;
-import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.*;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.KernelInterface;
@@ -29,8 +28,7 @@ public class DAppExecutor {
         // TODO:  We might be able to move this setup of IHelper to later in the load once we get rid of the <clinit> (requires energy).
         IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit(), initialState.nextHashCode);
         dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, ctx, result));
-        // TODO:  Replace the NullFeeProcessor with a real one, once it exists and is tested.
-        NullFeeProcessor feeProcessor = new NullFeeProcessor();
+        HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(helper);
 
         // Now that we can load classes for the contract, load and populate all their classes.
         ReentrantGraphProcessor reentrantGraphData = null;

@@ -120,6 +120,20 @@ public class ReentrantCrossCallResource {
         return doesMatch;
     }
 
+    public static boolean getFarWithEnergy(long energyLimit) {
+        // Note that we ALWAYS expect this call to fail so we expect no change in the value.
+        int expected = constant.far[0];
+        
+        // Call ourselves.
+        long value = 1;
+        boolean calleeShouldFail = false;
+        byte[] data = ABIEncoder.encodeMethodArguments("incFar", calleeShouldFail);
+        BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+        
+        // Return true if this value changed.
+        return (expected != constant.far[0]);
+    }
+
     public static void incDirect(boolean shouldFail) {
         direct += 2;
         if (shouldFail) {
@@ -147,7 +161,8 @@ public class ReentrantCrossCallResource {
     private static void reentrantCall(String methodName, boolean shouldFail) {
         long value = 1;
         byte[] data = ABIEncoder.encodeMethodArguments(methodName, shouldFail);
-        long energyLimit = 5000;
+        // WARNING:  This number is finicky since some tests want to barely pass and others barely fail.
+        long energyLimit = 100_000L;
         BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
     }
 

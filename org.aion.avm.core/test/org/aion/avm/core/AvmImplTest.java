@@ -18,6 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -126,7 +127,13 @@ public class AvmImplTest {
         // BytecodeFeeScheduler:  CODEDEPOSIT * data.length;
         long deploymentStorageCost = 200 * txData.length;
         long clinitCost = 188l;
-        assertEquals(deploymentProcessCost + deploymentStorageCost + clinitCost, result1.getEnergyUsed());
+        // Storage:  static 96 bytes (2 regular instance stubs) +  the 2 strings (hash code and string length: "CALL" + "NORMAL").
+        long initialStorageCost = (3 * HelperBasedStorageFees.FIXED_WRITE_COST)
+                + (96 * HelperBasedStorageFees.BYTE_WRITE_COST)
+                + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST)
+                + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST)
+                ;
+        assertEquals(deploymentProcessCost + deploymentStorageCost + clinitCost + initialStorageCost, result1.getEnergyUsed());
 
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
@@ -137,7 +144,30 @@ public class AvmImplTest {
         // Account for the cost:  (blocks in call method) + runtime.call
         long costOfBlocks = 111l + 57l + 629l;
         long costOfRuntimeCall = 111l + 57l + 116l;
-        assertEquals(costOfBlocks + costOfRuntimeCall, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
+        // All persistence load/store cost (note that this is a reentrant call):
+        long runStorageCost = 0L
+        // -read statics (outer)
+                + (HelperBasedStorageFees.FIXED_READ_COST + (96 * HelperBasedStorageFees.BYTE_READ_COST))
+        // -read statics (inner)
+                + (HelperBasedStorageFees.FIXED_READ_COST + (96 * HelperBasedStorageFees.BYTE_READ_COST))
+        // -read instance (outer) "NORMAL" (loaded because the inner call needs it - this is the strange case of our reentrant design)
+                + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_READ_COST))
+        // -read instance (inner) "NORMAL"
+                + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_READ_COST))
+        // -write statics (inner)
+                + (HelperBasedStorageFees.FIXED_WRITE_COST + (96 * HelperBasedStorageFees.BYTE_WRITE_COST))
+        // -write instance (inner) "NORMAL"
+                + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+        // -read instance (outer) "CALL"
+                + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_READ_COST))
+        // -write statics (outer)
+                + (HelperBasedStorageFees.FIXED_WRITE_COST + (96 * HelperBasedStorageFees.BYTE_WRITE_COST))
+        // -write instance (outer) "CALL"
+                + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+        // -write instance (outer) "NORMAL"
+                + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+                ;
+        assertEquals(costOfBlocks + costOfRuntimeCall + runStorageCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 
         // We assume that the IHelper has been cleaned up by this point.
         assertNull(IHelper.currentContractHelper.get());
@@ -285,6 +315,36 @@ public class AvmImplTest {
         assertEquals(1, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
     }
 
+    /**
+     * Tests that reentrant calls do not leave any side-effects within the caller's space when the rollback only during the last part of write-back.
+     */
+    @Test
+    public void testReentrantRollbackDuringCommit() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // deploy
+        long energyLimit = 1_000_000l;
+        long energyPrice = 1l;
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // We just want to call our special getFar helper with a constrained energy.
+        // WARNING:  This test is very sensitive to storage billing configuration so the energy limit likely needs to be updated when that changes.
+        // The write-back of the callee attempts to write statics and 2 instances.  We want it to fail at 1 instance (20_000L seems to do this).
+        long failingLimit = 20_000L;
+        byte[] callData = ABIEncoder.encodeMethodArguments("getFarWithEnergy", failingLimit);
+        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, callData, energyLimit, 1l);
+        TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
+        
+        // This returns false since the value didn't change,
+        assertEquals(false, ((Boolean)TestingHelper.decodeResult(result2)).booleanValue());
+    }
+
 
     private int callRecursiveHash(Avm avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);
@@ -301,5 +361,10 @@ public class AvmImplTest {
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
         return ((Integer)TestingHelper.decodeResult(result2)).intValue();
+    }
+
+    private int byteSizeOfSerializedString(String string) {
+        // Hashcode(4) + length(4) + UTF-8 bytes.
+        return (4 + 4 + string.getBytes(StandardCharsets.UTF_8).length);
     }
 }
