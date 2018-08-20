@@ -14,12 +14,14 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * the "serialization" of the callee objects back into their caller counterparts.
  * The idea is that primitives are completely unchanged (just boxed/unboxed as part of a generic data queue) while objects are
  * passed through a deserialization helper (which may wrap, unwrap, etc the object).
+ * While most uses of this treat is as a self-contained serializer-deserializer, it is possible to access the queue of "serialized"
+ * data via the takeOwnershipOfData() call.
  */
 public class LoopbackCodec implements IObjectSerializer, IObjectDeserializer {
     private final AutomaticSerializer serializer;
     private final AutomaticDeserializer deserializer;
     private final Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper;
-    private final Queue<Object> sequence;
+    private Queue<Object> sequence;
 
     /**
      * Creates a loopback codec for memory-memory pseudo-serialization.  While it is possible to reuse these instances, it is generally recommended
@@ -36,6 +38,21 @@ public class LoopbackCodec implements IObjectSerializer, IObjectDeserializer {
         this.deserializer = deserializer;
         this.deserializeHelper = deserializeHelper;
         this.sequence = new LinkedList<>();
+    }
+
+    /**
+     * Extracts the queue of internal "serialized" data.  Has the consequence of reseting the internal state of the receiver.
+     * Most use-cases don't want to call this, washing to leave the data fully-internal.  Some use-cases, however, may want
+     * to interpret the data, directly, and can make use of this (sizing introspection, for example).
+     * WARNING:  Relying on the implementation of the returned data is dangerous since it ties the caller to implementation
+     * details.  Use this method with caution.
+     * 
+     * @return The queue of previously "serialized" data.
+     */
+    public Queue<Object> takeOwnershipOfData() {
+        Queue<Object> extracted = this.sequence;
+        this.sequence = new LinkedList<>();
+        return extracted;
     }
 
     /**

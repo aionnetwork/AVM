@@ -111,6 +111,29 @@ public class LoopbackCodecTest {
         codec.verifyDone();
     }
 
+    @Test
+    public void takeOwnership_mixedSerialization() {
+        LoopbackCodec.AutomaticDeserializer deserializer = new IdentityDeserializer();
+        LoopbackCodec codec = new LoopbackCodec(null, deserializer, null);
+        org.aion.avm.shadow.java.lang.Object shadow = new org.aion.avm.shadow.java.lang.Object();
+        codec.writeInt(1);
+        codec.writeStub(shadow);
+        codec.writeLong(2L);
+        
+        Queue<Object> internals = codec.takeOwnershipOfData();
+        codec.verifyDone();
+        
+        // We expect 3 elements:  Integer, shadow.Object, Long.
+        Integer one = (Integer)internals.remove();
+        org.aion.avm.shadow.java.lang.Object two = (org.aion.avm.shadow.java.lang.Object)internals.remove();
+        Long three = (Long)internals.remove();
+        Assert.assertTrue(internals.isEmpty());
+        
+        Assert.assertEquals(1, one.intValue());
+        Assert.assertTrue(shadow == two);
+        Assert.assertEquals(2L, three.longValue());
+    }
+
 
     private static class IdentityDeserializer implements LoopbackCodec.AutomaticDeserializer {
         @Override
