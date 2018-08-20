@@ -124,9 +124,8 @@ public class PocWalletTest {
         byte[] confirmArgs = CallEncoder.confirm(toConfirm);
         Transaction confirmTransaction = new Transaction(Transaction.Type.CALL, extra1, contractAddress, 0, confirmArgs, energyLimit, energyPrice);
         TransactionContext confirmContext = new TransactionContextImpl(confirmTransaction, block);
-        // TODO:  Change this once we have something reasonable to cross-call.  For now, this hits NPE since it isn't calling anything real.
         TransactionResult confirmResult = avm.run(confirmContext);
-        Assert.assertEquals(TransactionResult.Code.FAILURE, confirmResult.getStatusCode());
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, confirmResult.getStatusCode()); // transfer to non-existing accounts
     }
 
 

@@ -23,10 +23,14 @@ public class DAppLoader {
      * 
      * @param kernel The storage abstraction.
      * @param address The DApp address.
-     * @return The DApp instance.
+     * @return The DApp instance, or NULL if not exist
      * @throws IOException If there was a failure decoding the code from the kernel.
      */
     public static LoadedDApp loadFromKernel(KernelInterface kernel, byte[] address) throws IOException {
+        if (!kernel.isExists(address)) {
+            return null;
+        }
+
         // First, we need to load the DApp bytecode.
         byte[] immortalDappJar = kernel.getCode(address).getCode();
         ImmortalDappModule app = ImmortalDappModule.readFromJar(immortalDappJar);
