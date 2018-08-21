@@ -8,7 +8,8 @@ import org.aion.avm.internal.IHelper;
 /**
  * @author Roman Katerinenko
  */
-public class LambdaMetafactory {
+// TODO:  Determine if this class should be moved into an internal package (should the user be allowed to invoke it, directly?).
+public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Object {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();
@@ -28,4 +29,8 @@ public class LambdaMetafactory {
                 implMethod,
                 instantiatedMethodType);
     }
+
+    // Cannot be instantiated.
+    private LambdaMetafactory() {}
+    // Note:  No instances can be created so no deserialization constructor required.
 }

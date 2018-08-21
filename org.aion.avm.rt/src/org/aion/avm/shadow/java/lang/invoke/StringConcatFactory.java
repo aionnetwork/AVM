@@ -13,7 +13,8 @@ import java.util.Arrays;
 /**
  * @author Roman Katerinenko
  */
-public final class StringConcatFactory {
+//TODO:  Determine if this class should be moved into an internal package (should the user be allowed to invoke it, directly?).
+public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Object {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();
@@ -83,4 +84,8 @@ public final class StringConcatFactory {
 //                .asType(invokedType);
 //        return new ConstantCallSite(concatMethodHandle);
 //    }
+
+    // Cannot be instantiated.
+    private StringConcatFactory() {}
+    // Note:  No instances can be created so no deserialization constructor required.
 }
