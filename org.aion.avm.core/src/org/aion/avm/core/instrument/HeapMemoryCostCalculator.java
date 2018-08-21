@@ -132,60 +132,62 @@ public class HeapMemoryCostCalculator {
         for (FieldNode fieldNode : fieldNodes) {
             // ArrayType Note:  class object creation only allocates a ref in the heap;
             // and later the bytecode "NEWARRAY / ANEWARRAY" allocates the memory for each element.
-            heapSize += DescriptorParser.parse(fieldNode.desc, new DescriptorParser.TypeOnlyCallbacks<Long>() {
-                @Override
-                public Long readObject(int arrayDimensions, String type, Long userData) {
-                    return FieldTypeSizeInBits.OBJECTREF.getVal();
-                }
-                @Override
-                public Long readBoolean(int arrayDimensions, Long userData) {
-                    return (0 == arrayDimensions)
-                            ? FieldTypeSizeInBits.BOOLEAN.getVal()
-                            : FieldTypeSizeInBits.OBJECTREF.getVal();
-                }
-                @Override
-                public Long readShort(int arrayDimensions, Long userData) {
-                    return (0 == arrayDimensions)
-                            ? FieldTypeSizeInBits.SHORT.getVal()
-                            : FieldTypeSizeInBits.OBJECTREF.getVal();
-                }
-                @Override
-                public Long readLong(int arrayDimensions, Long userData) {
-                    return (0 == arrayDimensions)
-                            ? FieldTypeSizeInBits.LONG.getVal()
-                            : FieldTypeSizeInBits.OBJECTREF.getVal();
-                }
-                @Override
-                public Long readInteger(int arrayDimensions, Long userData) {
-                    return (0 == arrayDimensions)
-                            ? FieldTypeSizeInBits.INT.getVal()
-                            : FieldTypeSizeInBits.OBJECTREF.getVal();
-                }
-                @Override
-                public Long readFloat(int arrayDimensions, Long userData) {
-                    return (0 == arrayDimensions)
-                            ? FieldTypeSizeInBits.FLOAT.getVal()
-                            : FieldTypeSizeInBits.OBJECTREF.getVal();
-                }
-                @Override
-                public Long readDouble(int arrayDimensions, Long userData) {
-                    return (0 == arrayDimensions)
-                            ? FieldTypeSizeInBits.DOUBLE.getVal()
-                            : FieldTypeSizeInBits.OBJECTREF.getVal();
-                }
-                @Override
-                public Long readChar(int arrayDimensions, Long userData) {
-                    return (0 == arrayDimensions)
-                            ? FieldTypeSizeInBits.CHAR.getVal()
-                            : FieldTypeSizeInBits.OBJECTREF.getVal();
-                }
-                @Override
-                public Long readByte(int arrayDimensions, Long userData) {
-                    return (0 == arrayDimensions)
-                            ? FieldTypeSizeInBits.BYTE.getVal()
-                            : FieldTypeSizeInBits.OBJECTREF.getVal();
-                }
-            }, null);
+            if (fieldNode.name.startsWith("avm_")) {
+                heapSize += DescriptorParser.parse(fieldNode.desc, new DescriptorParser.TypeOnlyCallbacks<Long>() {
+                    @Override
+                    public Long readObject(int arrayDimensions, String type, Long userData) {
+                        return FieldTypeSizeInBits.OBJECTREF.getVal();
+                    }
+                    @Override
+                    public Long readBoolean(int arrayDimensions, Long userData) {
+                        return (0 == arrayDimensions)
+                                ? FieldTypeSizeInBits.BOOLEAN.getVal()
+                                : FieldTypeSizeInBits.OBJECTREF.getVal();
+                    }
+                    @Override
+                    public Long readShort(int arrayDimensions, Long userData) {
+                        return (0 == arrayDimensions)
+                                ? FieldTypeSizeInBits.SHORT.getVal()
+                                : FieldTypeSizeInBits.OBJECTREF.getVal();
+                    }
+                    @Override
+                    public Long readLong(int arrayDimensions, Long userData) {
+                        return (0 == arrayDimensions)
+                                ? FieldTypeSizeInBits.LONG.getVal()
+                                : FieldTypeSizeInBits.OBJECTREF.getVal();
+                    }
+                    @Override
+                    public Long readInteger(int arrayDimensions, Long userData) {
+                        return (0 == arrayDimensions)
+                                ? FieldTypeSizeInBits.INT.getVal()
+                                : FieldTypeSizeInBits.OBJECTREF.getVal();
+                    }
+                    @Override
+                    public Long readFloat(int arrayDimensions, Long userData) {
+                        return (0 == arrayDimensions)
+                                ? FieldTypeSizeInBits.FLOAT.getVal()
+                                : FieldTypeSizeInBits.OBJECTREF.getVal();
+                    }
+                    @Override
+                    public Long readDouble(int arrayDimensions, Long userData) {
+                        return (0 == arrayDimensions)
+                                ? FieldTypeSizeInBits.DOUBLE.getVal()
+                                : FieldTypeSizeInBits.OBJECTREF.getVal();
+                    }
+                    @Override
+                    public Long readChar(int arrayDimensions, Long userData) {
+                        return (0 == arrayDimensions)
+                                ? FieldTypeSizeInBits.CHAR.getVal()
+                                : FieldTypeSizeInBits.OBJECTREF.getVal();
+                    }
+                    @Override
+                    public Long readByte(int arrayDimensions, Long userData) {
+                        return (0 == arrayDimensions)
+                                ? FieldTypeSizeInBits.BYTE.getVal()
+                                : FieldTypeSizeInBits.OBJECTREF.getVal();
+                    }
+                }, null);
+            }
         }
 
         // convert the size to number of bytes and add to classHeapSizeMap
