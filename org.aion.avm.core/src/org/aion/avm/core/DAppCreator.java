@@ -232,7 +232,7 @@ public class DAppCreator {
         } catch (OutOfEnergyError e) {
             result.setStatusCode(TransactionResult.Code.OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
-        } catch (DappInvocationTargetException die) {
+        } catch (ExceptionInInitializerError die) {
             die.printStackTrace();
             result.setStatusCode(TransactionResult.Code.FAILURE);
             result.setEnergyUsed(ctx.getEnergyLimit());

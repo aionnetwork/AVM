@@ -80,17 +80,13 @@ public class DAppExecutor {
             } else if (cause instanceof InvalidException) {
                 result.setStatusCode(TransactionResult.Code.INVALID);
                 result.setEnergyUsed(ctx.getEnergyLimit());
+            } else if (cause instanceof DappInvocationTargetException) {
+                result.setStatusCode(TransactionResult.Code.FAILURE);
+                result.setEnergyUsed(ctx.getEnergyLimit());
             } else {
                 result.setStatusCode(TransactionResult.Code.FAILURE);
                 result.setEnergyUsed(ctx.getEnergyLimit());
             }
-        } catch (DappInvocationTargetException die) {
-            if (null != reentrantGraphData) {
-                reentrantGraphData.revertToStoredFields();
-            }
-            die.printStackTrace();
-            result.setStatusCode(TransactionResult.Code.FAILURE);
-            result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (InvalidTxDataException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
