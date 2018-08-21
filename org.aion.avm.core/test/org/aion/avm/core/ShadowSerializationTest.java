@@ -43,7 +43,30 @@ public class ShadowSerializationTest {
         // Get the state of this data.
         int hash = getHash(avm, contractAddr, "JavaLang");
         // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(1839649992, hash);
+        Assert.assertEquals(1839650022, hash);
+    }
+
+    @Test
+    public void testPersistJavaMath() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // deploy
+        long energyLimit = 1_000_000L;
+        long energyPrice = 1L;
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Populate initial data.
+        populate(avm, contractAddr, "JavaMath");
+        
+        // Get the state of this data.
+        int hash = getHash(avm, contractAddr, "JavaMath");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(-602588053, hash);
     }
 
 

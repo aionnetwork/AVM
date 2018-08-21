@@ -81,6 +81,24 @@ public final class MathContext extends Object {
         lazyLoad();
     }
 
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(MathContext.class, deserializer);
+        
+        // We store this as the precision (int) and the RoundingMode (stub).
+        int precision = deserializer.readInt();
+        RoundingMode mode = (RoundingMode)deserializer.readStub();
+        this.v = new java.math.MathContext(precision, java.math.RoundingMode.valueOf(mode.avm_name().getUnderlying()));
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(String.class, serializer);
+        
+        // We store this as the precision (int) and the RoundingMode (stub).
+        serializer.writeInt(this.v.getPrecision());
+        RoundingMode roundingMode = RoundingMode.avm_valueOf(new String(this.v.getRoundingMode().name()));
+        serializer.writeStub(roundingMode);
+    }
+
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================

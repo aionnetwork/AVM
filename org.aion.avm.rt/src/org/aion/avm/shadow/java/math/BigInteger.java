@@ -1,9 +1,12 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.CodecIdioms;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.shadow.java.lang.Comparable;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Number;
@@ -256,6 +259,20 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     public BigInteger(IDeserializer deserializer, long instanceId) {
         super(deserializer, instanceId);
         lazyLoad();
+    }
+
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(BigInteger.class, deserializer);
+        
+        // We can deserialize this as its actual 2s compliment byte array.
+        this.v = new java.math.BigInteger(CodecIdioms.deserializeByteArray(deserializer));
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(String.class, serializer);
+        
+        // We can serialize this as its actual 2s compliment byte array.
+        CodecIdioms.serializeByteArray(serializer, this.v.toByteArray());
     }
 
     //========================================================

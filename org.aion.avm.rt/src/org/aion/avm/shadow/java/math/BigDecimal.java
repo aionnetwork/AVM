@@ -1,9 +1,12 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.CharArray;
+import org.aion.avm.internal.CodecIdioms;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.shadow.java.lang.Comparable;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Number;
@@ -335,6 +338,21 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     public BigDecimal(IDeserializer deserializer, long instanceId) {
         super(deserializer, instanceId);
         lazyLoad();
+    }
+
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(BigDecimal.class, deserializer);
+        
+        // We deserialize this as a string.
+        java.lang.String simpler = CodecIdioms.deserializeString(deserializer);
+        this.v = new java.math.BigDecimal(simpler);
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(String.class, serializer);
+        
+        // We serialize this as a string.
+        CodecIdioms.serializeString(serializer, this.v.toString());
     }
 
     static{
