@@ -71,7 +71,18 @@ public class Helper implements IHelper {
         if (null != input) {
             wrapper = (org.aion.avm.shadow.java.lang.Class<T>) internedClassWrappers.get(input);
             if (null == wrapper) {
+                /**
+                 * NOTE:  We need to treat Class objects as though they are allocated "outside" of the contract space.  We could use a special IHelper
+                 * instance for that case but that seems a little heavy-weight for what is currently only observable as a change in the hashcode.
+                 * In the future, we may want to formalize this using a mechanism like that (potentially even the bootstrap IHelper) but, to keep this
+                 * simple, we will just swap out the "nextHashCode" and restore it, after allocation.  Similarly, to avoid the Class being observed
+                 * as being in any specific allocation order, we will formally apply a hashcode based on its name as its "identity hash".
+                 */
+                int normalHashCode = nextHashCode;
+                nextHashCode = input.getName().hashCode();
                 wrapper = new org.aion.avm.shadow.java.lang.Class<T>(input);
+                // Restore the normal hashcode counter.
+                nextHashCode = normalHashCode;
                 internedClassWrappers.put(input, wrapper);
             }
         }
@@ -187,6 +198,7 @@ public class Helper implements IHelper {
     public static void setEnergy(long e) {energyLeft = e;}
 
     public static int getNextHashCode() {
+        // NOTE:  In the case of a Class object, this value is swapped out, temporarily.
         return nextHashCode++;
     }
 

@@ -22,16 +22,18 @@ public class ShadowCoverageTarget {
         return ABIDecoder.decodeAndRunWithObject(new ShadowCoverageTarget(), input);
     }
 
-    public static void populate_JavaLang() {
+    public static int populate_JavaLang() {
         javaLang.populate();
+        return javaLang.buildHash();
     }
 
     public static int getHash_JavaLang() {
         return javaLang.buildHash();
     }
 
-    public static void populate_JavaMath() {
+    public static int populate_JavaMath() {
         javaMath.populate();
+        return javaMath.buildHash();
     }
 
     public static int getHash_JavaMath() {

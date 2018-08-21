@@ -38,12 +38,13 @@ public class ShadowSerializationTest {
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
         
         // Populate initial data.
-        populate(avm, contractAddr, "JavaLang");
+        int firstHash = populate(avm, contractAddr, "JavaLang");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(94290289, firstHash);
         
         // Get the state of this data.
         int hash = getHash(avm, contractAddr, "JavaLang");
-        // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(1839650022, hash);
+        Assert.assertEquals(firstHash, hash);
     }
 
     @Test
@@ -61,22 +62,24 @@ public class ShadowSerializationTest {
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
         
         // Populate initial data.
-        populate(avm, contractAddr, "JavaMath");
+        int firstHash = populate(avm, contractAddr, "JavaMath");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(-602588053, firstHash);
         
         // Get the state of this data.
         int hash = getHash(avm, contractAddr, "JavaMath");
-        // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(-602588053, hash);
+        Assert.assertEquals(firstHash, hash);
     }
 
 
-    private void populate(Avm avm, Address contractAddr, String segmentName) {
+    private int populate(Avm avm, Address contractAddr, String segmentName) {
         long energyLimit = 1_000_000L;
         long energyPrice = 1L;
         byte[] argData = ABIEncoder.encodeMethodArguments("populate_" + segmentName);
         Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, energyLimit, energyPrice);
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        return ((Integer)TestingHelper.decodeResult(result)).intValue();
     }
 
     private int getHash(Avm avm, Address contractAddr, String segmentName) {
