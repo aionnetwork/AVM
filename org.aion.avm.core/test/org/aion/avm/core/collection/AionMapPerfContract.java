@@ -9,7 +9,7 @@ import java.util.List;
 
 public class AionMapPerfContract {
 
-    public static int SIZE = 10000;
+    public static int SIZE = 5000;
 
     public static AionMap<Integer, Integer> target;
 
@@ -31,11 +31,15 @@ public class AionMapPerfContract {
     }
 
     public static void callPut(){
-        target.put(Integer.valueOf(SIZE / 2 + 1), Integer.valueOf(SIZE + 1));
+        for (int i = 0; i < SIZE; i++) {
+            target.put(Integer.valueOf(i * 2 + 1), Integer.valueOf(i));
+        }
     }
 
     public static void callGet(){
-        target.get(Integer.valueOf(SIZE / 2));
+        for (int i = 0; i < SIZE; i++) {
+            target.get(Integer.valueOf(i));
+        }
     }
 
     public static void callInitB(){
@@ -45,10 +49,14 @@ public class AionMapPerfContract {
     }
 
     public static void callPutB(){
-        targetB.put(Integer.valueOf(SIZE / 2 + 1), Integer.valueOf(SIZE + 1));
+        for (int i = 0; i < SIZE; i++) {
+            targetB.put(Integer.valueOf(i * 2 + 1), Integer.valueOf(i));
+        }
     }
 
     public static void callGetB(){
-        targetB.get(Integer.valueOf(SIZE / 2));
+        for (int i = 0; i < SIZE; i++) {
+            targetB.get(Integer.valueOf(i));
+        }
     }
 }

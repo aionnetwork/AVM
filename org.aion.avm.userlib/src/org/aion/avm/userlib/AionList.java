@@ -152,6 +152,7 @@ public class AionList<E> implements List<E> {
     @Override
     public void clear() {
         this.storage = new Object[DEFAULT_CAPACITY];
+        this.size = 0;
     }
 
     @Override

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class AionListPerfContract {
 
-    public static int SIZE = 10000;
+    public static int SIZE = 5000;
 
     public static AionList<Integer> target;
 
@@ -21,21 +21,28 @@ public class AionListPerfContract {
     }
 
     public static void callInit(){
+        target.clear();
         for (int i = 0; i < SIZE; i++){
             target.add(Integer.valueOf(i));
         }
     }
 
     public static void callAppend(){
-        target.add(Integer.valueOf(10));
+        for (int i = 0; i < SIZE; i++) {
+            target.add(Integer.valueOf(10));
+        }
     }
 
     public static void callInsertHead(){
-        target.add(0, Integer.valueOf(10));
+        for (int i = 0; i < SIZE; i++) {
+            target.add(0, Integer.valueOf(10));
+        }
     }
 
     public static void callInsertMiddle(){
-        target.add(SIZE/2, Integer.valueOf(10));
+        for (int i = 0; i < SIZE; i++) {
+            target.add(SIZE / 2, Integer.valueOf(10));
+        }
     }
 
 }

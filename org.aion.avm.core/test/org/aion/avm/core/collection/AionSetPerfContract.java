@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class AionSetPerfContract {
 
-    public static int SIZE = 10000;
+    public static int SIZE = 5000;
 
     public static AionSet<Integer> target;
 
@@ -27,15 +27,21 @@ public class AionSetPerfContract {
     }
 
     public static void callAdd(){
-        target.add(Integer.valueOf(SIZE + 1));
+        for (int i = 0; i < SIZE; i++){
+            target.add(Integer.valueOf(SIZE + 1));
+        }
     }
 
     public static void callContains(){
-        target.contains(Integer.valueOf(SIZE / 2));
+        for (int i = 0; i < SIZE; i++){
+            target.contains(Integer.valueOf(i));
+        }
     }
 
     public static void callRemove(){
-        target.remove(Integer.valueOf(SIZE / 2));
+        for (int i = 0; i < SIZE; i++){
+            target.remove(Integer.valueOf(i));
+        }
     }
 
 
