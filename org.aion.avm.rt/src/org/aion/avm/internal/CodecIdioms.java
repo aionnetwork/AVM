@@ -28,4 +28,22 @@ public final class CodecIdioms {
             serializer.writeByte(data[i]);
         }
     }
+
+    public static byte[] deserializeByteArray(IObjectDeserializer deserializer) {
+        // TODO:  We probably want faster array copies.
+        int length = deserializer.readInt();
+        byte[] array = new byte[length];
+        for (int i = 0; i < length; ++i) {
+            array[i] = deserializer.readByte();
+        }
+        return array;
+    }
+
+    public static void serializeByteArray(IObjectSerializer serializer, byte[] array) {
+        // TODO:  We probably want faster array copies.
+        serializer.writeInt(array.length);
+        for (int i = 0; i < array.length; ++i) {
+            serializer.writeByte(array[i]);
+        }
+    }
 }

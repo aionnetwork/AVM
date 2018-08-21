@@ -110,21 +110,12 @@ public class ByteArray extends Array {
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
         super.deserializeSelf(ByteArray.class, deserializer);
 
-        // TODO:  We probably want faster array copies.
-        int length = deserializer.readInt();
-        this.underlying = new byte[length];
-        for (int i = 0; i < length; ++i) {
-            this.underlying[i] = deserializer.readByte();
-        }
+        this.underlying = CodecIdioms.deserializeByteArray(deserializer);
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
         super.serializeSelf(ByteArray.class, serializer);
 
-        // TODO:  We probably want faster array copies.
-        serializer.writeInt(this.underlying.length);
-        for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeByte(this.underlying[i]);
-        }
+        CodecIdioms.serializeByteArray(serializer, this.underlying);
     }
 }
