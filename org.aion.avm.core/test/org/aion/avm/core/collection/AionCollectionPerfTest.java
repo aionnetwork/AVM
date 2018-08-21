@@ -9,6 +9,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
+import org.aion.avm.userlib.BMap;
 import org.aion.kernel.*;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,7 +42,8 @@ public class AionCollectionPerfTest {
         return JarBuilder.buildJarForMainAndClasses(AionMapPerfContract.class,
                 AionList.class,
                 AionSet.class,
-                AionMap.class
+                AionMap.class,
+                BMap.class
         );
     }
 
@@ -149,6 +151,23 @@ public class AionCollectionPerfTest {
 
         args = ABIEncoder.encodeMethodArguments("callGet");
         TransactionResult getResult = call(avm, contract, from, args);
+        System.out.println(">> Get: " + getResult.getEnergyUsed());
+
+        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        System.out.println(">> Energy measurement for BMap");
+
+        args = ABIEncoder.encodeMethodArguments("callInitB");
+        initResult = call(avm, contract, from, args);
+        System.out.println(">> Build initial state by putting " + AionMapPerfContract.SIZE + " elements: " + initResult.getEnergyUsed());
+
+        args = ABIEncoder.encodeMethodArguments("callPutB");
+        putResult = call(avm, contract, from, args);
+        System.out.println(">> Put: " + putResult.getEnergyUsed());
+
+        args = ABIEncoder.encodeMethodArguments("callGetB");
+        getResult = call(avm, contract, from, args);
         System.out.println(">> Get: " + getResult.getEnergyUsed());
 
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
