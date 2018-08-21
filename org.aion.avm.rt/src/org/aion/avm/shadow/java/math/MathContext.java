@@ -3,6 +3,8 @@ package org.aion.avm.shadow.java.math;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.shadow.java.lang.Object;
 import org.aion.avm.shadow.java.lang.String;
 
@@ -27,29 +29,23 @@ public final class MathContext extends Object {
 
     public MathContext(int setPrecision) {
         v = new java.math.MathContext(setPrecision);
-        precision = v.getPrecision();
-        roundingMode = RoundingMode.avm_valueOf(new String(v.getRoundingMode().name()));
     }
 
     public MathContext(int setPrecision,
                        RoundingMode setRoundingMode) {
         v = new java.math.MathContext(setPrecision, setRoundingMode.getUnderlying());
-        precision = v.getPrecision();
-        roundingMode = RoundingMode.avm_valueOf(new String(v.getRoundingMode().name()));
     }
 
     public MathContext(String val) {
         v = new java.math.MathContext(val.getUnderlying());
-        precision = v.getPrecision();
-        roundingMode = RoundingMode.avm_valueOf(new String(v.getRoundingMode().name()));
     }
 
     public int avm_getPrecision() {
-        return precision;
+        return this.v.getPrecision();
     }
 
     public RoundingMode avm_getRoundingMode() {
-        return roundingMode;
+        return RoundingMode.avm_valueOf(new String(this.v.getRoundingMode().name()));
     }
 
     public boolean avm_equals(IObject x){
@@ -61,7 +57,8 @@ public final class MathContext extends Object {
     }
 
     public int avm_hashCode() {
-        return precision + roundingMode.hashCode() * 59;
+        RoundingMode roundingMode = RoundingMode.avm_valueOf(new String(this.v.getRoundingMode().name()));
+        return this.v.getPrecision() + roundingMode.hashCode() * 59;
     }
 
     public String avm_toString() {
@@ -73,10 +70,6 @@ public final class MathContext extends Object {
     //========================================================
 
     private java.math.MathContext v;
-
-    private int precision;
-
-    private RoundingMode roundingMode;
 
     public java.math.MathContext getUnderlying() {
         return v;
