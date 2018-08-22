@@ -42,7 +42,8 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
     };
 
     public LongBuffer avm_put(long b){
-        return new LongBuffer(this.v.put(b));
+        this.v = this.v.put(b);
+        return this;
     }
 
     public long avm_get(int index){
@@ -50,7 +51,8 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
     }
 
     public LongBuffer avm_put(int index, long b){
-        return new LongBuffer(this.v.put(index, b));
+        this.v = this.v.put(index, b);
+        return this;
     }
 
     public LongBuffer avm_get(LongArray dst, int offset, int length){

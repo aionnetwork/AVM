@@ -42,7 +42,8 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
     };
 
     public FloatBuffer avm_put(float b){
-        return new FloatBuffer(this.v.put(b));
+        this.v = this.v.put(b);
+        return this;
     }
 
     public double avm_get(int index){
@@ -50,7 +51,8 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
     }
 
     public FloatBuffer avm_put(int index, float b){
-        return new FloatBuffer(this.v.put(index, b));
+        this.v = this.v.put(index, b);
+        return this;
     }
 
     public FloatBuffer avm_get(FloatArray dst, int offset, int length){

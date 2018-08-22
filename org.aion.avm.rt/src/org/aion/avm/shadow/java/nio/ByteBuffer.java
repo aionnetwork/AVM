@@ -41,7 +41,8 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
     };
 
     public ByteBuffer avm_put(byte b){
-        return new ByteBuffer(this.v.put(b));
+        this.v = this.v.put(b);
+        return this;
     }
 
     public byte avm_get(int index){
@@ -49,7 +50,8 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
     }
 
     public ByteBuffer avm_put(int index, byte b){
-        return new ByteBuffer(this.v.put(index, b));
+        this.v = this.v.put(index, b);
+        return this;
     }
 
     public ByteBuffer avm_get(ByteArray dst, int offset, int length){

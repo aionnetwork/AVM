@@ -42,7 +42,8 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
     };
 
     public DoubleBuffer avm_put(double b){
-        return new DoubleBuffer(this.v.put(b));
+        this.v = this.v.put(b);
+        return this;
     }
 
     public double avm_get(int index){
@@ -50,7 +51,8 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
     }
 
     public DoubleBuffer avm_put(int index, double b){
-        return new DoubleBuffer(this.v.put(index, b));
+        this.v = this.v.put(index, b);
+        return this;
     }
 
     public DoubleBuffer avm_get(DoubleArray dst, int offset, int length){

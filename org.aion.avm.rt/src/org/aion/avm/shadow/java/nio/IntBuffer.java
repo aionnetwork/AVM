@@ -42,7 +42,8 @@ public class IntBuffer extends Buffer<java.nio.IntBuffer> implements Comparable<
     };
 
     public IntBuffer avm_put(int b){
-        return new IntBuffer(this.v.put(b));
+        this.v = this.v.put(b);
+        return this;
     }
 
     public int avm_get(int index){
@@ -50,7 +51,8 @@ public class IntBuffer extends Buffer<java.nio.IntBuffer> implements Comparable<
     }
 
     public IntBuffer avm_put(int index, int b){
-        return new IntBuffer(this.v.put(index, b));
+        this.v = this.v.put(index, b);
+        return this;
     }
 
     public IntBuffer avm_get(IntArray dst, int offset, int length){

@@ -42,7 +42,8 @@ public class ShortBuffer extends Buffer<java.nio.ShortBuffer> implements Compara
     };
 
     public ShortBuffer avm_put(short b){
-        return new ShortBuffer(this.v.put(b));
+        this.v = this.v.put(b);
+        return this;
     }
 
     public short avm_get(int index){
@@ -50,7 +51,8 @@ public class ShortBuffer extends Buffer<java.nio.ShortBuffer> implements Compara
     }
 
     public ShortBuffer avm_put(int index, short b){
-        return new ShortBuffer(this.v.put(index, b));
+        this.v = this.v.put(index, b);
+        return this;
     }
 
     public ShortBuffer avm_get(ShortArray dst, int offset, int length){
