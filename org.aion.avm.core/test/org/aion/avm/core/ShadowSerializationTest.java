@@ -69,6 +69,28 @@ public class ShadowSerializationTest {
         Assert.assertEquals(firstHash, hash);
     }
 
+    /**
+     * This test is just temporary to demonstrate that we can at least instantiate the NIO buffer classes and perform basic actions.
+     */
+    @Test
+    public void testBasicJavaNio() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // deploy
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        byte[] argData = ABIEncoder.encodeMethodArguments("runBasicNio");
+        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, 1_000_000L, ENERGY_PRICE);
+        TransactionResult result = avm.run(new TransactionContextImpl(call, block));
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        Assert.assertEquals(-1318544925, ((Integer)TestingHelper.decodeResult(result)).intValue());
+    }
+
 
     private int populate(Avm avm, Address contractAddr, String segmentName) {
         long energyLimit = 1_000_000L;

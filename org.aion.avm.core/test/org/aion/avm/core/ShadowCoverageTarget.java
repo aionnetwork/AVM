@@ -4,6 +4,14 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.CharBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
@@ -38,6 +46,32 @@ public class ShadowCoverageTarget {
 
     public static int getHash_JavaMath() {
         return javaMath.buildHash();
+    }
+
+    public static int runBasicNio() {
+        int capacity = 50;
+        ByteBuffer aByteBuffer = ByteBuffer.allocate(capacity);
+        for (int i = 0; i < capacity; ++i) {
+            aByteBuffer.put((byte)i);
+        }
+        aByteBuffer.flip();
+        ByteOrder aByteOrder = aByteBuffer.order();
+        CharBuffer aCharBuffer = aByteBuffer.asCharBuffer().position(1);
+        DoubleBuffer aDoubleBuffer = aByteBuffer.asDoubleBuffer().position(1);
+        FloatBuffer aFloatBuffer = aByteBuffer.asFloatBuffer().position(1);
+        IntBuffer aIntBuffer = aByteBuffer.asIntBuffer().position(1);
+        LongBuffer aLongBuffer = aByteBuffer.asLongBuffer().position(1);
+        ShortBuffer aShortBuffer = aByteBuffer.asShortBuffer().position(1);
+        
+        return aByteBuffer.toString().hashCode()
+                + aByteOrder.toString().hashCode()
+                + aCharBuffer.toString().hashCode()
+                + aDoubleBuffer.toString().hashCode()
+                + aFloatBuffer.toString().hashCode()
+                + aIntBuffer.toString().hashCode()
+                + aLongBuffer.toString().hashCode()
+                + aShortBuffer.toString().hashCode()
+                ;
     }
 
 
