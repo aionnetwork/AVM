@@ -14,6 +14,7 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
 import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 
 
@@ -21,10 +22,12 @@ public class ShadowCoverageTarget {
     private static final JavaLang javaLang;
     private static final JavaMath javaMath;
     private static final JavaNio javaNio;
+    private static final Api api;
     static {
         javaLang = new JavaLang();
         javaMath = new JavaMath();
         javaNio = new JavaNio();
+        api = new Api();
     }
 
     public static byte[] main() {
@@ -57,6 +60,15 @@ public class ShadowCoverageTarget {
 
     public static int getHash_JavaNio() {
         return javaNio.buildHash();
+    }
+
+    public static int populate_Api() {
+        api.populate();
+        return api.buildHash();
+    }
+
+    public static int getHash_Api() {
+        return api.buildHash();
     }
 
 
@@ -184,6 +196,24 @@ public class ShadowCoverageTarget {
             aIntBuffer = aByteBuffer.asIntBuffer().position(1);
             aLongBuffer = aByteBuffer.asLongBuffer().position(1);
             aShortBuffer = aByteBuffer.asShortBuffer().position(1);
+        }
+    }
+
+
+    private static class Api {
+        public Address aAddress;
+        
+        public int buildHash() {
+            return aAddress.hashCode()
+                    ;
+        }
+        
+        public void populate() {
+            byte[] raw = new byte[Address.LENGTH];
+            for (int i = 0; i < raw.length; ++i) {
+                raw[i] = (byte)i;
+            }
+            aAddress = new Address(raw);
         }
     }
 }
