@@ -16,6 +16,8 @@ import org.junit.Test;
 
 public class ShadowSerializationTest {
     private static Block block;
+    private static final long DEPLOY_ENERGY_LIMIT = 10_000_000L;
+    private static final long ENERGY_PRICE = 1L;
 
     @BeforeClass
     public static void setupClass() {
@@ -30,9 +32,7 @@ public class ShadowSerializationTest {
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
-        long energyLimit = 1_000_000L;
-        long energyPrice = 1L;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
@@ -54,9 +54,7 @@ public class ShadowSerializationTest {
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
-        long energyLimit = 1_000_000L;
-        long energyPrice = 1L;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
@@ -74,9 +72,8 @@ public class ShadowSerializationTest {
 
     private int populate(Avm avm, Address contractAddr, String segmentName) {
         long energyLimit = 1_000_000L;
-        long energyPrice = 1L;
         byte[] argData = ABIEncoder.encodeMethodArguments("populate_" + segmentName);
-        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, energyLimit, energyPrice);
+        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, energyLimit, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
@@ -84,9 +81,8 @@ public class ShadowSerializationTest {
 
     private int getHash(Avm avm, Address contractAddr, String segmentName) {
         long energyLimit = 1_000_000L;
-        long energyPrice = 1L;
         byte[] argData = ABIEncoder.encodeMethodArguments("getHash_" + segmentName);
-        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, energyLimit, energyPrice);
+        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, energyLimit, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
