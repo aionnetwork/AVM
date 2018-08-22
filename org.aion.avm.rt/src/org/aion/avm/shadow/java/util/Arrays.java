@@ -1,8 +1,18 @@
 package org.aion.avm.shadow.java.util;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.internal.IHelper;
+import org.aion.avm.shadow.java.lang.Object;
 
-public class Arrays {
+
+// The JCL doesn't force this to be final but we might want to do that to our implementation.
+public class Arrays extends Object {
+    static {
+        // Shadow classes MUST be loaded during bootstrap phase.
+        IHelper.currentContractHelper.get().externalBootstrapOnly();
+    }
+
+    private Arrays() {}
 
     public static int avn_hashCode(ByteArray a) {
         if (a == null) {

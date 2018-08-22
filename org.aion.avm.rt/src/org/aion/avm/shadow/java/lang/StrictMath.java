@@ -3,7 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IHelper;
 
 
-public final class StrictMath {
+public final class StrictMath extends Object {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();
