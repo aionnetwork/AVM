@@ -157,7 +157,7 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(this.v.order());
+        return ByteOrder.lookupForConstant(this.v.order());
     }
 
     public final ByteBuffer avm_order(ByteOrder bo){

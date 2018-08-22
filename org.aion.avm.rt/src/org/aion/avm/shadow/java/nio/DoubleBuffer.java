@@ -158,7 +158,7 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(this.v.order());
+        return ByteOrder.lookupForConstant(this.v.order());
     }
 
     public boolean avm_isReadOnly(){

@@ -158,7 +158,7 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(this.v.order());
+        return ByteOrder.lookupForConstant(this.v.order());
     }
 
     public boolean avm_isReadOnly(){

@@ -158,7 +158,7 @@ public class IntBuffer extends Buffer<java.nio.IntBuffer> implements Comparable<
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(this.v.order());
+        return ByteOrder.lookupForConstant(this.v.order());
     }
 
     public boolean avm_isReadOnly(){

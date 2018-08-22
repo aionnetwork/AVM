@@ -158,7 +158,7 @@ public class ShortBuffer extends Buffer<java.nio.ShortBuffer> implements Compara
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(this.v.order());
+        return ByteOrder.lookupForConstant(this.v.order());
     }
 
     public boolean avm_isReadOnly(){

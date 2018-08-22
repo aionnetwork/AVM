@@ -210,7 +210,7 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(this.v.order());
+        return ByteOrder.lookupForConstant(this.v.order());
     }
 
     public boolean avm_isReadOnly(){

@@ -158,7 +158,7 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(this.v.order());
+        return ByteOrder.lookupForConstant(this.v.order());
     }
 
     public boolean avm_isReadOnly(){

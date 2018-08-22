@@ -279,6 +279,9 @@ public class NodeEnvironment {
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Long.avm_TYPE, -24l);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Short.avm_TYPE, -25l);
         
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.nio.ByteOrder.avm_BIG_ENDIAN, -26l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.nio.ByteOrder.avm_LITTLE_ENDIAN, -27l);
+        
         return constantMap;
     }
 
