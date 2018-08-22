@@ -1,6 +1,9 @@
 package org.aion.avm.shadow.java.nio;
 
+import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 
 
 public abstract class Buffer<B extends java.nio.Buffer> extends org.aion.avm.shadow.java.lang.Object {
@@ -10,57 +13,69 @@ public abstract class Buffer<B extends java.nio.Buffer> extends org.aion.avm.sha
     }
 
     public final int avm_capacity() {
+        lazyLoad();
         return v.capacity();
     }
 
     public final int avm_position() {
+        lazyLoad();
         return v.position();
     }
 
     public Buffer<B> avm_position(int newPosition) {
+        lazyLoad();
         this.v = this.forCasting.cast(this.v.position(newPosition));
         return this;
     }
 
     public final int avm_limit() {
+        lazyLoad();
         return v.limit();
     }
 
     public Buffer<B> avm_limit(int newLimit) {
+        lazyLoad();
         this.v = this.forCasting.cast(this.v.limit(newLimit));
         return this;
     }
 
     public Buffer<B> avm_mark() {
+        lazyLoad();
         this.v = this.forCasting.cast(this.v.mark());
         return this;
     }
 
     public Buffer<B> avm_reset() {
+        lazyLoad();
         this.v = this.forCasting.cast(this.v.reset());
         return this;
     }
 
     public Buffer<B> avm_clear() {
+        lazyLoad();
         this.v = this.forCasting.cast(this.v.clear());
         return this;
     }
 
     public Buffer<B> avm_flip() {
+        lazyLoad();
         this.v = this.forCasting.cast(this.v.flip());
         return this;
     }
 
     public Buffer<B> avm_rewind() {
+        lazyLoad();
         this.v = this.forCasting.cast(this.v.rewind());
         return this;
     }
 
     public final int avm_remaining(){
+        lazyLoad();
         return v.remaining();
     }
 
     public final boolean avm_hasRemaining() {
+        lazyLoad();
         return v.hasRemaining();
     }
 
@@ -90,6 +105,20 @@ public abstract class Buffer<B extends java.nio.Buffer> extends org.aion.avm.sha
     protected Buffer(Class<B> forCasting, B underlying){
         v = underlying;
         this.forCasting = forCasting;
+    }
+
+    // Deserializer support.
+    public Buffer(IDeserializer deserializer, long instanceId) {
+        super(deserializer, instanceId);
+    }
+
+    // We need to act like a real implementation since our field is actually serialized by our subclasses.
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(Buffer.class, deserializer);
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(Buffer.class, serializer);
     }
 
     //========================================================
