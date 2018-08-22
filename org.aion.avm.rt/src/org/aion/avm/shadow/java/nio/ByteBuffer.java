@@ -5,8 +5,8 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
 
-public class ByteBuffer extends Buffer implements org.aion.avm.shadow.java.lang.Comparable<ByteBuffer>{
 
+public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.avm.shadow.java.lang.Comparable<ByteBuffer>{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();
@@ -33,47 +33,47 @@ public class ByteBuffer extends Buffer implements org.aion.avm.shadow.java.lang.
     }
 
     public ByteBuffer avm_asReadOnlyBuffer(){
-        return new ByteBuffer(((java.nio.ByteBuffer)v).asReadOnlyBuffer());
+        return new ByteBuffer(this.v.asReadOnlyBuffer());
     }
 
     public byte avm_get(){
-        return ((java.nio.ByteBuffer)v).get();
+        return this.v.get();
     };
 
     public ByteBuffer avm_put(byte b){
-        return new ByteBuffer(((java.nio.ByteBuffer)v).put(b));
+        return new ByteBuffer(this.v.put(b));
     }
 
     public byte avm_get(int index){
-        return ((java.nio.ByteBuffer)v).get(index);
+        return this.v.get(index);
     }
 
     public ByteBuffer avm_put(int index, byte b){
-        return new ByteBuffer(((java.nio.ByteBuffer)v).put(index, b));
+        return new ByteBuffer(this.v.put(index, b));
     }
 
     public ByteBuffer avm_get(ByteArray dst, int offset, int length){
-        v = ((java.nio.ByteBuffer)v).get(dst.getUnderlying(), offset, length);
+        this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public ByteBuffer avm_get(ByteArray dst){
-        v = ((java.nio.ByteBuffer)v).get(dst.getUnderlying());
+        this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public ByteBuffer avm_put(ByteBuffer src) {
-        v = ((java.nio.ByteBuffer)v).put((java.nio.ByteBuffer)src.v);
+        this.v = this.v.put(src.v);
         return this;
     }
 
     public ByteBuffer avm_put(ByteArray dst, int offset, int length){
-        v = ((java.nio.ByteBuffer)v).put(dst.getUnderlying(), offset, length);
+        this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public ByteBuffer avm_put(ByteArray dst){
-        v = ((java.nio.ByteBuffer)v).put(dst.getUnderlying());
+        this.v = this.v.put(dst.getUnderlying());
         return this;
     }
 
@@ -125,7 +125,7 @@ public class ByteBuffer extends Buffer implements org.aion.avm.shadow.java.lang.
     }
 
     public ByteBuffer avm_compact(){
-        v = ((java.nio.ByteBuffer)v).compact();
+        this.v = this.v.compact();
         return this;
     }
 
@@ -142,177 +142,180 @@ public class ByteBuffer extends Buffer implements org.aion.avm.shadow.java.lang.
     }
 
     public boolean avm_equals(IObject ob) {
-        if (this == ob)
+        if (this == ob) {
             return true;
-        if (!(ob instanceof ByteBuffer))
+        }
+        if (!(ob instanceof ByteBuffer)) {
             return false;
+        }
         ByteBuffer that = (ByteBuffer)ob;
         return this.v.equals(that.v);
     }
 
     public int avm_compareTo(ByteBuffer that) {
-        return ((java.nio.ByteBuffer)v).compareTo((java.nio.ByteBuffer)that.v);
+        return this.v.compareTo(that.v);
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(((java.nio.ByteBuffer)v).order());
+        return new ByteOrder(this.v.order());
     }
 
     public final ByteBuffer avm_order(ByteOrder bo){
-        v = ((java.nio.ByteBuffer)v).order(bo.getV());
+        this.v = this.v.order(bo.getV());
         return this;
     }
 
     public final int avm_alignmentOffset(int index, int unitSize) {
-        return ((java.nio.ByteBuffer)v).alignmentOffset(index, unitSize);
+        return this.v.alignmentOffset(index, unitSize);
     }
 
     public final ByteBuffer avm_alignedSlice(int unitSize) {
-        return new ByteBuffer(((java.nio.ByteBuffer)v).alignedSlice(unitSize));
+        return new ByteBuffer(this.v.alignedSlice(unitSize));
     }
 
     public char avm_getChar(){
-        return ((java.nio.ByteBuffer)v).getChar();
+        return this.v.getChar();
     }
 
     public char avm_getChar(int index){
-        return ((java.nio.ByteBuffer)v).getChar(index);
+        return this.v.getChar(index);
     }
 
     public ByteBuffer avm_putChar(char value){
-        v = ((java.nio.ByteBuffer)v).putChar(value);
+        this.v = this.v.putChar(value);
         return this;
     }
 
     public ByteBuffer avm_putChar(int index, char value){
-        v = ((java.nio.ByteBuffer)v).putChar(index, value);
+        this.v = this.v.putChar(index, value);
         return this;
     }
 
     public short avm_getShort(){
-        return ((java.nio.ByteBuffer)v).getShort();
+        return this.v.getShort();
     }
 
     public short avm_getShort(int index){
-        return ((java.nio.ByteBuffer)v).getShort(index);
+        return this.v.getShort(index);
     }
 
     public ByteBuffer avm_putShort(short value){
-        v = ((java.nio.ByteBuffer)v).putShort(value);
+        this.v = this.v.putShort(value);
         return this;
     }
 
     public ByteBuffer avm_putShort(int index, short value){
-        v = ((java.nio.ByteBuffer)v).putShort(index, value);
+        this.v = this.v.putShort(index, value);
         return this;
     }
 
     public int avm_getInt(){
-        return ((java.nio.ByteBuffer)v).getInt();
+        return this.v.getInt();
     }
 
     public int avm_getInt(int index){
-        return ((java.nio.ByteBuffer)v).getInt(index);
+        return this.v.getInt(index);
     }
 
     public ByteBuffer avm_putInt(int value){
-        v = ((java.nio.ByteBuffer)v).putInt(value);
+        this.v = this.v.putInt(value);
         return this;
     }
 
     public ByteBuffer avm_putInt(int index, int value){
-        v = ((java.nio.ByteBuffer)v).putInt(index, value);
+        this.v = this.v.putInt(index, value);
         return this;
     }
 
     public long avm_getLong(){
-        return ((java.nio.ByteBuffer)v).getLong();
+        return this.v.getLong();
     }
 
     public long avm_getLong(int index){
-        return ((java.nio.ByteBuffer)v).getLong(index);
+        return this.v.getLong(index);
     }
 
     public ByteBuffer avm_putLong(long value){
-        v = ((java.nio.ByteBuffer)v).putLong(value);
+        this.v = this.v.putLong(value);
         return this;
     }
 
     public ByteBuffer avm_putLong(int index, long value){
-        v = ((java.nio.ByteBuffer)v).putLong(index, value);
+        this.v = this.v.putLong(index, value);
         return this;
     }
 
     public float avm_getFloat(){
-        return ((java.nio.ByteBuffer)v).getFloat();
+        return this.v.getFloat();
     }
 
     public float avm_getFloat(int index){
-        return ((java.nio.ByteBuffer)v).getFloat(index);
+        return this.v.getFloat(index);
     }
 
     public ByteBuffer avm_putFloat(float value){
-        v = ((java.nio.ByteBuffer)v).putFloat(value);
+        this.v = this.v.putFloat(value);
         return this;
     }
 
     public ByteBuffer avm_putFloat(int index, float value){
-        v = ((java.nio.ByteBuffer)v).putFloat(index, value);
+        this.v = this.v.putFloat(index, value);
         return this;
     }
 
     public double avm_getDouble(){
-        return ((java.nio.ByteBuffer)v).getDouble();
+        return this.v.getDouble();
     }
 
     public double avm_getDouble(int index){
-        return ((java.nio.ByteBuffer)v).getDouble(index);
+        return this.v.getDouble(index);
     }
 
     public ByteBuffer avm_putDouble(double value){
-        v = ((java.nio.ByteBuffer)v).putDouble(value);
+        this.v = this.v.putDouble(value);
         return this;
     }
 
     public ByteBuffer avm_putDouble(int index, double value){
-        v = ((java.nio.ByteBuffer)v).putDouble(index, value);
+        this.v = this.v.putDouble(index, value);
         return this;
     }
 
     public CharBuffer avm_asCharBuffer(){
-        return new CharBuffer(((java.nio.ByteBuffer)v).asCharBuffer());
+        return new CharBuffer(this.v.asCharBuffer());
     }
 
     public ShortBuffer avm_asShortBuffer(){
-        return new ShortBuffer(((java.nio.ByteBuffer)v).asShortBuffer());
+        return new ShortBuffer(this.v.asShortBuffer());
     }
 
     public IntBuffer avm_asIntBuffer(){
-        return new IntBuffer(((java.nio.ByteBuffer)v).asIntBuffer());
+        return new IntBuffer(this.v.asIntBuffer());
     }
 
     public LongBuffer avm_asLongBuffer(){
-        return new LongBuffer(((java.nio.ByteBuffer)v).asLongBuffer());
+        return new LongBuffer(this.v.asLongBuffer());
     }
 
     public FloatBuffer avm_asFloatBuffer(){
-        return new FloatBuffer(((java.nio.ByteBuffer)v).asFloatBuffer());
+        return new FloatBuffer(this.v.asFloatBuffer());
     }
 
     public DoubleBuffer avm_asDoubleBuffer(){
-        return new DoubleBuffer(((java.nio.ByteBuffer)v).asDoubleBuffer());
+        return new DoubleBuffer(this.v.asDoubleBuffer());
     }
+
+    public boolean avm_isReadOnly(){
+        return v.isReadOnly();
+    }
+
 
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    ByteBuffer(java.nio.Buffer underlying){
-        super(underlying);
-    }
-
-    public boolean avm_isReadOnly(){
-        return v.isReadOnly();
+    ByteBuffer(java.nio.ByteBuffer underlying){
+        super(java.nio.ByteBuffer.class, underlying);
     }
 
     //========================================================

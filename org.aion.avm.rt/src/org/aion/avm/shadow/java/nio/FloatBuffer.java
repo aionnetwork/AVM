@@ -6,8 +6,8 @@ import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Comparable;
 
-public class FloatBuffer extends Buffer implements Comparable<FloatBuffer> {
 
+public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Comparable<FloatBuffer> {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();
@@ -34,47 +34,47 @@ public class FloatBuffer extends Buffer implements Comparable<FloatBuffer> {
     }
 
     public FloatBuffer avm_asReadOnlyBuffer(){
-        return new FloatBuffer(((java.nio.FloatBuffer)v).asReadOnlyBuffer());
+        return new FloatBuffer(this.v.asReadOnlyBuffer());
     }
 
     public double avm_get(){
-        return ((java.nio.FloatBuffer)v).get();
+        return this.v.get();
     };
 
     public FloatBuffer avm_put(float b){
-        return new FloatBuffer(((java.nio.FloatBuffer)v).put(b));
+        return new FloatBuffer(this.v.put(b));
     }
 
     public double avm_get(int index){
-        return ((java.nio.FloatBuffer)v).get(index);
+        return this.v.get(index);
     }
 
     public FloatBuffer avm_put(int index, float b){
-        return new FloatBuffer(((java.nio.FloatBuffer)v).put(index, b));
+        return new FloatBuffer(this.v.put(index, b));
     }
 
     public FloatBuffer avm_get(FloatArray dst, int offset, int length){
-        v = ((java.nio.FloatBuffer)v).get(dst.getUnderlying(), offset, length);
+        this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public FloatBuffer avm_get(FloatArray dst){
-        v = ((java.nio.FloatBuffer)v).get(dst.getUnderlying());
+        this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public FloatBuffer avm_put(FloatBuffer src) {
-        v = ((java.nio.FloatBuffer)v).put((java.nio.FloatBuffer)src.v);
+        this.v = this.v.put(src.v);
         return this;
     }
 
     public FloatBuffer avm_put(FloatArray dst, int offset, int length){
-        v = ((java.nio.FloatBuffer)v).put(dst.getUnderlying(), offset, length);
+        this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public FloatBuffer avm_put(FloatArray dst){
-        v = ((java.nio.FloatBuffer)v).put(dst.getUnderlying());
+        this.v = this.v.put(dst.getUnderlying());
         return this;
     }
 
@@ -126,7 +126,7 @@ public class FloatBuffer extends Buffer implements Comparable<FloatBuffer> {
     }
 
     public FloatBuffer avm_compact(){
-        v = ((java.nio.FloatBuffer)v).compact();
+        this.v = this.v.compact();
         return this;
     }
 
@@ -139,16 +139,18 @@ public class FloatBuffer extends Buffer implements Comparable<FloatBuffer> {
     }
 
     public boolean avm_equals(IObject ob) {
-        if (this == ob)
+        if (this == ob) {
             return true;
-        if (!(ob instanceof FloatBuffer))
+        }
+        if (!(ob instanceof FloatBuffer)) {
             return false;
+        }
         FloatBuffer that = (FloatBuffer)ob;
         return this.v.equals(that.v);
     }
 
     public int avm_compareTo(FloatBuffer that) {
-        return ((java.nio.FloatBuffer)v).compareTo((java.nio.FloatBuffer)that.v);
+        return this.v.compareTo(that.v);
     }
 
     public String avm_toString(){
@@ -156,19 +158,20 @@ public class FloatBuffer extends Buffer implements Comparable<FloatBuffer> {
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(((java.nio.FloatBuffer)v).order());
+        return new ByteOrder(this.v.order());
     }
+
+    public boolean avm_isReadOnly(){
+        return v.isReadOnly();
+    }
+
 
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    FloatBuffer(java.nio.Buffer underlying){
-        super(underlying);
-    }
-
-    public boolean avm_isReadOnly(){
-        return v.isReadOnly();
+    FloatBuffer(java.nio.FloatBuffer underlying){
+        super(java.nio.FloatBuffer.class, underlying);
     }
 
     //========================================================

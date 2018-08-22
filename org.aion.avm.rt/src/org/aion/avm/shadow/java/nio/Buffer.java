@@ -2,8 +2,8 @@ package org.aion.avm.shadow.java.nio;
 
 import org.aion.avm.internal.IHelper;
 
-public abstract class Buffer extends org.aion.avm.shadow.java.lang.Object {
 
+public abstract class Buffer<B extends java.nio.Buffer> extends org.aion.avm.shadow.java.lang.Object {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();
@@ -17,8 +17,8 @@ public abstract class Buffer extends org.aion.avm.shadow.java.lang.Object {
         return v.position();
     }
 
-    public Buffer avm_position(int newPosition) {
-        v = v.position(newPosition);
+    public Buffer<B> avm_position(int newPosition) {
+        this.v = this.forCasting.cast(this.v.position(newPosition));
         return this;
     }
 
@@ -26,33 +26,33 @@ public abstract class Buffer extends org.aion.avm.shadow.java.lang.Object {
         return v.limit();
     }
 
-    public Buffer avm_limit(int newLimit) {
-        v = v.limit(newLimit);
+    public Buffer<B> avm_limit(int newLimit) {
+        this.v = this.forCasting.cast(this.v.limit(newLimit));
         return this;
     }
 
-    public Buffer avm_mark() {
-        v = v.mark();
+    public Buffer<B> avm_mark() {
+        this.v = this.forCasting.cast(this.v.mark());
         return this;
     }
 
-    public Buffer avm_reset() {
-        v = v.reset();
+    public Buffer<B> avm_reset() {
+        this.v = this.forCasting.cast(this.v.reset());
         return this;
     }
 
-    public Buffer avm_clear() {
-        v = v.clear();
+    public Buffer<B> avm_clear() {
+        this.v = this.forCasting.cast(this.v.clear());
         return this;
     }
 
-    public Buffer avm_flip() {
-        v = v.flip();
+    public Buffer<B> avm_flip() {
+        this.v = this.forCasting.cast(this.v.flip());
         return this;
     }
 
-    public Buffer avm_rewind() {
-        v = v.rewind();
+    public Buffer<B> avm_rewind() {
+        this.v = this.forCasting.cast(this.v.rewind());
         return this;
     }
 
@@ -74,18 +74,22 @@ public abstract class Buffer extends org.aion.avm.shadow.java.lang.Object {
 
     public abstract boolean avm_isDirect();
 
-    public abstract Buffer avm_slice();
+    public abstract Buffer<B> avm_slice();
 
-    public abstract Buffer avm_duplicate();
+    public abstract Buffer<B> avm_duplicate();
 
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    java.nio.Buffer v;
+    B v;
+    // Note that this "forCasting" variable is just passed up so we can verify the types we operate in the base class are consistent with those
+    // seen in the sub-class.
+    Class<B> forCasting;
 
-    Buffer(java.nio.Buffer underlying){
+    protected Buffer(Class<B> forCasting, B underlying){
         v = underlying;
+        this.forCasting = forCasting;
     }
 
     //========================================================

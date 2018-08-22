@@ -6,8 +6,8 @@ import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Comparable;
 
-public class DoubleBuffer extends Buffer implements Comparable<DoubleBuffer> {
 
+public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Comparable<DoubleBuffer> {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();
@@ -34,47 +34,47 @@ public class DoubleBuffer extends Buffer implements Comparable<DoubleBuffer> {
     }
 
     public DoubleBuffer avm_asReadOnlyBuffer(){
-        return new DoubleBuffer(((java.nio.DoubleBuffer)v).asReadOnlyBuffer());
+        return new DoubleBuffer(this.v.asReadOnlyBuffer());
     }
 
     public double avm_get(){
-        return ((java.nio.DoubleBuffer)v).get();
+        return this.v.get();
     };
 
     public DoubleBuffer avm_put(double b){
-        return new DoubleBuffer(((java.nio.DoubleBuffer)v).put(b));
+        return new DoubleBuffer(this.v.put(b));
     }
 
     public double avm_get(int index){
-        return ((java.nio.DoubleBuffer)v).get(index);
+        return this.v.get(index);
     }
 
     public DoubleBuffer avm_put(int index, double b){
-        return new DoubleBuffer(((java.nio.DoubleBuffer)v).put(index, b));
+        return new DoubleBuffer(this.v.put(index, b));
     }
 
     public DoubleBuffer avm_get(DoubleArray dst, int offset, int length){
-        v = ((java.nio.DoubleBuffer)v).get(dst.getUnderlying(), offset, length);
+        this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public DoubleBuffer avm_get(DoubleArray dst){
-        v = ((java.nio.DoubleBuffer)v).get(dst.getUnderlying());
+        this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public DoubleBuffer avm_put(DoubleBuffer src) {
-        v = ((java.nio.DoubleBuffer)v).put((java.nio.DoubleBuffer)src.v);
+        this.v = this.v.put(src.v);
         return this;
     }
 
     public DoubleBuffer avm_put(DoubleArray dst, int offset, int length){
-        v = ((java.nio.DoubleBuffer)v).put(dst.getUnderlying(), offset, length);
+        this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public DoubleBuffer avm_put(DoubleArray dst){
-        v = ((java.nio.DoubleBuffer)v).put(dst.getUnderlying());
+        this.v = this.v.put(dst.getUnderlying());
         return this;
     }
 
@@ -126,7 +126,7 @@ public class DoubleBuffer extends Buffer implements Comparable<DoubleBuffer> {
     }
 
     public DoubleBuffer avm_compact(){
-        v = ((java.nio.DoubleBuffer)v).compact();
+        this.v = this.v.compact();
         return this;
     }
 
@@ -139,16 +139,18 @@ public class DoubleBuffer extends Buffer implements Comparable<DoubleBuffer> {
     }
 
     public boolean avm_equals(IObject ob) {
-        if (this == ob)
+        if (this == ob) {
             return true;
-        if (!(ob instanceof DoubleBuffer))
+        }
+        if (!(ob instanceof DoubleBuffer)) {
             return false;
+        }
         DoubleBuffer that = (DoubleBuffer)ob;
         return this.v.equals(that.v);
     }
 
     public int avm_compareTo(DoubleBuffer that) {
-        return ((java.nio.DoubleBuffer)v).compareTo((java.nio.DoubleBuffer)that.v);
+        return this.v.compareTo(that.v);
     }
 
     public String avm_toString(){
@@ -156,7 +158,11 @@ public class DoubleBuffer extends Buffer implements Comparable<DoubleBuffer> {
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(((java.nio.DoubleBuffer)v).order());
+        return new ByteOrder(this.v.order());
+    }
+
+    public boolean avm_isReadOnly(){
+        return v.isReadOnly();
     }
 
 
@@ -164,12 +170,8 @@ public class DoubleBuffer extends Buffer implements Comparable<DoubleBuffer> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    DoubleBuffer(java.nio.Buffer underlying){
-        super(underlying);
-    }
-
-    public boolean avm_isReadOnly(){
-        return v.isReadOnly();
+    DoubleBuffer(java.nio.DoubleBuffer underlying){
+        super(java.nio.DoubleBuffer.class, underlying);
     }
 
     //========================================================

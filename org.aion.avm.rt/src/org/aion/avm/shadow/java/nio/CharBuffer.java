@@ -11,8 +11,8 @@ import org.aion.avm.shadow.java.lang.Readable;
 
 import java.io.IOException;
 
-public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Appendable, CharSequence, Readable{
 
+public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparable<CharBuffer>, Appendable, CharSequence, Readable{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();
@@ -31,7 +31,7 @@ public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Append
     }
 
     public int avm_read(CharBuffer target) throws IOException {
-        return ((java.nio.CharBuffer)v).read((java.nio.CharBuffer)target.v);
+        return this.v.read(target.v);
     }
 
     public static CharBuffer avm_wrap(CharSequence csq, int start, int end) {
@@ -51,55 +51,55 @@ public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Append
     }
 
     public CharBuffer avm_asReadOnlyBuffer(){
-        return new CharBuffer(((java.nio.CharBuffer)v).asReadOnlyBuffer());
+        return new CharBuffer(this.v.asReadOnlyBuffer());
     }
 
     public char avm_get(){
-        return ((java.nio.CharBuffer)v).get();
+        return this.v.get();
     }
 
     public CharBuffer avm_put(char c){
-        v = ((java.nio.CharBuffer)v).put(c);
+        this.v = this.v.put(c);
         return this;
     }
 
     public CharBuffer avm_put(int index, char c){
-        v = ((java.nio.CharBuffer)v).put(index, c);
+        this.v = this.v.put(index, c);
         return this;
     }
 
     public CharBuffer avm_get(CharArray dst, int offset, int length) {
-        v = ((java.nio.CharBuffer)v).get(dst.getUnderlying(), offset, length);
+        this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public CharBuffer avm_get(CharArray dst) {
-        v = ((java.nio.CharBuffer)v).get(dst.getUnderlying());
+        this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public CharBuffer avm_put(CharBuffer src) {
-        v = ((java.nio.CharBuffer)v).put((java.nio.CharBuffer)src.v);
+        this.v = this.v.put(src.v);
         return this;
     }
 
     public CharBuffer avm_put(CharArray dst, int offset, int length) {
-        v = ((java.nio.CharBuffer)v).put(dst.getUnderlying(), offset, length);
+        this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public CharBuffer avm_put(CharArray dst) {
-        v = ((java.nio.CharBuffer)v).put(dst.getUnderlying());
+        this.v = this.v.put(dst.getUnderlying());
         return this;
     }
 
     public CharBuffer avm_put(String src, int start, int end) {
-        v = ((java.nio.CharBuffer)v).put(src.getUnderlying(), start, end);
+        this.v = this.v.put(src.getUnderlying(), start, end);
         return this;
     }
 
     public CharBuffer avm_put(String src) {
-        v = ((java.nio.CharBuffer)v).put(src.getUnderlying());
+        this.v = this.v.put(src.getUnderlying());
         return this;
     }
 
@@ -151,7 +151,7 @@ public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Append
     }
 
     public CharBuffer avm_compact() {
-        v = ((java.nio.CharBuffer)v).compact();
+        this.v = this.v.compact();
         return this;
     }
 
@@ -164,16 +164,18 @@ public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Append
     }
 
     public boolean avm_equals(IObject ob) {
-        if (this == ob)
+        if (this == ob) {
             return true;
-        if (!(ob instanceof CharBuffer))
+        }
+        if (!(ob instanceof CharBuffer)) {
             return false;
+        }
         CharBuffer that = (CharBuffer)ob;
         return this.v.equals(that.v);
     }
 
     public int avm_compareTo(CharBuffer that) {
-        return ((java.nio.CharBuffer)v).compareTo((java.nio.CharBuffer)that.v);
+        return this.v.compareTo(that.v);
     }
 
     public String avm_toString(){
@@ -181,34 +183,38 @@ public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Append
     }
 
     public final int avm_length(){
-        return ((java.nio.CharBuffer)v).length();
+        return this.v.length();
     }
 
     public final char avm_charAt(int index){
-        return ((java.nio.CharBuffer)v).charAt(index);
+        return this.v.charAt(index);
     }
 
     public CharBuffer avm_subSequence(int start, int end){
-        return new CharBuffer(((java.nio.CharBuffer)v).subSequence(start, end));
+        return new CharBuffer(this.v.subSequence(start, end));
     }
 
     public CharBuffer avm_append(CharSequence csq){
-        v = ((java.nio.CharBuffer)v).append(csq.avm_toString().getUnderlying());
+        this.v = this.v.append(csq.avm_toString().getUnderlying());
         return this;
     }
 
     public CharBuffer avm_append(CharSequence csq, int start, int end){
-        v = ((java.nio.CharBuffer)v).append(csq.avm_toString().getUnderlying(), start, end);
+        this.v = this.v.append(csq.avm_toString().getUnderlying(), start, end);
         return this;
     }
 
     public CharBuffer avm_append(char c){
-        v = ((java.nio.CharBuffer)v).append(c);
+        this.v = this.v.append(c);
         return this;
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(((java.nio.CharBuffer)v).order());
+        return new ByteOrder(this.v.order());
+    }
+
+    public boolean avm_isReadOnly(){
+        return v.isReadOnly();
     }
 
 
@@ -216,12 +222,8 @@ public class CharBuffer extends Buffer implements Comparable<CharBuffer>, Append
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    CharBuffer(java.nio.Buffer underlying){
-        super(underlying);
-    }
-
-    public boolean avm_isReadOnly(){
-        return v.isReadOnly();
+    CharBuffer(java.nio.CharBuffer underlying){
+        super(java.nio.CharBuffer.class, underlying);
     }
 
     //========================================================

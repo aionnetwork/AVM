@@ -6,8 +6,8 @@ import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Comparable;
 
-public class IntBuffer extends Buffer implements Comparable<IntBuffer> {
 
+public class IntBuffer extends Buffer<java.nio.IntBuffer> implements Comparable<IntBuffer> {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();
@@ -34,47 +34,47 @@ public class IntBuffer extends Buffer implements Comparable<IntBuffer> {
     }
 
     public IntBuffer avm_asReadOnlyBuffer(){
-        return new IntBuffer(((java.nio.IntBuffer)v).asReadOnlyBuffer());
+        return new IntBuffer(this.v.asReadOnlyBuffer());
     }
 
     public int avm_get(){
-        return ((java.nio.IntBuffer)v).get();
+        return this.v.get();
     };
 
     public IntBuffer avm_put(int b){
-        return new IntBuffer(((java.nio.IntBuffer)v).put(b));
+        return new IntBuffer(this.v.put(b));
     }
 
     public int avm_get(int index){
-        return ((java.nio.IntBuffer)v).get(index);
+        return this.v.get(index);
     }
 
     public IntBuffer avm_put(int index, int b){
-        return new IntBuffer(((java.nio.IntBuffer)v).put(index, b));
+        return new IntBuffer(this.v.put(index, b));
     }
 
     public IntBuffer avm_get(IntArray dst, int offset, int length){
-        v = ((java.nio.IntBuffer)v).get(dst.getUnderlying(), offset, length);
+        this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public IntBuffer avm_get(IntArray dst){
-        v = ((java.nio.IntBuffer)v).get(dst.getUnderlying());
+        this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public IntBuffer avm_put(IntBuffer src) {
-        v = ((java.nio.IntBuffer)v).put((java.nio.IntBuffer)src.v);
+        this.v = this.v.put(src.v);
         return this;
     }
 
     public IntBuffer avm_put(IntArray dst, int offset, int length){
-        v = ((java.nio.IntBuffer)v).put(dst.getUnderlying(), offset, length);
+        this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public IntBuffer avm_put(IntArray dst){
-        v = ((java.nio.IntBuffer)v).put(dst.getUnderlying());
+        this.v = this.v.put(dst.getUnderlying());
         return this;
     }
 
@@ -126,7 +126,7 @@ public class IntBuffer extends Buffer implements Comparable<IntBuffer> {
     }
 
     public IntBuffer avm_compact(){
-        v = ((java.nio.IntBuffer)v).compact();
+        this.v = this.v.compact();
         return this;
     }
 
@@ -139,16 +139,18 @@ public class IntBuffer extends Buffer implements Comparable<IntBuffer> {
     }
 
     public boolean avm_equals(IObject ob) {
-        if (this == ob)
+        if (this == ob) {
             return true;
-        if (!(ob instanceof IntBuffer))
+        }
+        if (!(ob instanceof IntBuffer)) {
             return false;
+        }
         IntBuffer that = (IntBuffer)ob;
         return this.v.equals(that.v);
     }
 
     public int avm_compareTo(IntBuffer that) {
-        return ((java.nio.IntBuffer)v).compareTo((java.nio.IntBuffer)that.v);
+        return this.v.compareTo(that.v);
     }
 
     public String avm_toString(){
@@ -156,19 +158,20 @@ public class IntBuffer extends Buffer implements Comparable<IntBuffer> {
     }
 
     public final ByteOrder avm_order(){
-        return new ByteOrder(((java.nio.IntBuffer)v).order());
+        return new ByteOrder(this.v.order());
     }
+
+    public boolean avm_isReadOnly(){
+        return v.isReadOnly();
+    }
+
 
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    IntBuffer(java.nio.Buffer underlying){
-        super(underlying);
-    }
-
-    public boolean avm_isReadOnly(){
-        return v.isReadOnly();
+    IntBuffer(java.nio.IntBuffer underlying){
+        super(java.nio.IntBuffer.class, underlying);
     }
 
     //========================================================
