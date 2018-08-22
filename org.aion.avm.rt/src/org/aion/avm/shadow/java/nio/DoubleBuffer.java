@@ -1,12 +1,12 @@
 package org.aion.avm.shadow.java.nio;
 
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.DoubleArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Comparable;
 
@@ -18,30 +18,34 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
     }
 
     public static DoubleBuffer avm_allocate(int capacity) {
-        return new DoubleBuffer(java.nio.DoubleBuffer.allocate(capacity));
+        DoubleArray array = DoubleArray.initArray(capacity);
+        java.nio.DoubleBuffer buffer = java.nio.DoubleBuffer.wrap(array.getUnderlying());
+        return new DoubleBuffer(buffer, array, null, null);
     }
 
     public static DoubleBuffer avm_wrap(DoubleArray array, int offset, int length){
-        return new DoubleBuffer(java.nio.DoubleBuffer.wrap(array.getUnderlying(), offset, length));
+        java.nio.DoubleBuffer buffer = java.nio.DoubleBuffer.wrap(array.getUnderlying(), offset, length);
+        return new DoubleBuffer(buffer, array, null, null);
     }
 
     public static DoubleBuffer avm_wrap(DoubleArray array){
-        return new DoubleBuffer(java.nio.DoubleBuffer.wrap(array.getUnderlying()));
+        java.nio.DoubleBuffer buffer = java.nio.DoubleBuffer.wrap(array.getUnderlying());
+        return new DoubleBuffer(buffer, array, null, null);
     }
 
     public DoubleBuffer avm_slice(){
         lazyLoad();
-        return new DoubleBuffer(v.slice());
+        return new DoubleBuffer(v.slice(), this.doubleArray, this.byteArray, this.byteArrayOrder);
     }
 
     public DoubleBuffer avm_duplicate(){
         lazyLoad();
-        return new DoubleBuffer(v.duplicate());
+        return new DoubleBuffer(v.duplicate(), this.doubleArray, this.byteArray, this.byteArrayOrder);
     }
 
     public DoubleBuffer avm_asReadOnlyBuffer(){
         lazyLoad();
-        return new DoubleBuffer(this.v.asReadOnlyBuffer());
+        return new DoubleBuffer(this.v.asReadOnlyBuffer(), this.doubleArray, this.byteArray, this.byteArrayOrder);
     }
 
     public double avm_get(){
@@ -103,7 +107,9 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
 
     public DoubleArray avm_array(){
         lazyLoad();
-        return new DoubleArray((double[])v.array());
+        // If we can make the underlying call, return the array wrapper we already have (otherwise, it will throw).
+        this.v.array();
+        return this.doubleArray;
     }
 
     public int avm_arrayOffset(){
@@ -125,6 +131,7 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
 
     public final DoubleBuffer avm_mark() {
         lazyLoad();
+        this.lastMark = this.v.position();
         v = v.mark();
         return this;
     }
@@ -208,8 +215,16 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    DoubleBuffer(java.nio.DoubleBuffer underlying){
+    private DoubleArray doubleArray;
+    private ByteArray byteArray;
+    private ByteOrder byteArrayOrder;
+    private int lastMark;
+    DoubleBuffer(java.nio.DoubleBuffer underlying, DoubleArray doubleArray, ByteArray byteArray, ByteOrder byteArrayOrder) {
         super(java.nio.DoubleBuffer.class, underlying);
+        this.doubleArray = doubleArray;
+        this.byteArray = byteArray;
+        this.byteArrayOrder = byteArrayOrder;
+        this.lastMark = -1;
     }
 
     // Deserializer support.
@@ -221,15 +236,56 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
         super.deserializeSelf(DoubleBuffer.class, deserializer);
         this.forCasting = java.nio.DoubleBuffer.class;
         
-        // TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope).
-        RuntimeAssertionError.unimplemented("TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope)");
+        // Deserialize both arrays to figure out how to construct this buffer.
+        DoubleArray doubleArray = (DoubleArray)deserializer.readStub();
+        ByteArray byteArray = (ByteArray)deserializer.readStub();
+        ByteOrder byteArrayOrder = (ByteOrder)deserializer.readStub();
+        ByteBuffer byteBuffer = null;
+        if (null != byteArray) {
+            byteBuffer = ByteBuffer.avm_wrap(byteArray);
+            byteBuffer.avm_order(byteArrayOrder);
+        }
+        // TODO:  We need to verify exactly which parts of state are copied when doing asDoubleBuffer on a ByteBuffer to make sure we don't need more state here.
+        java.nio.DoubleBuffer buffer = null;
+        if (null != doubleArray) {
+            buffer = java.nio.DoubleBuffer.wrap(doubleArray.getUnderlying());
+        } else {
+            buffer = byteBuffer.getUnderlying().asDoubleBuffer();
+        }
+        
+        // Then, we deserialize the data we need to configure the underlying instance state.
+        int position = deserializer.readInt();
+        int limit = deserializer.readInt();
+        int mark = deserializer.readInt();
+        boolean isReadOnly = 0x0 != deserializer.readByte();
+        
+        // Configure and store the buffer.
+        if (-1 != mark) {
+            buffer.position(mark);
+            buffer.mark();
+        }
+        this.lastMark = mark;
+        buffer.limit(limit);
+        buffer.position(position);
+        if (isReadOnly) {
+            buffer.asReadOnlyBuffer();
+        }
+        this.v = buffer;
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
         super.serializeSelf(DoubleBuffer.class, serializer);
         
-        // TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope).
-        RuntimeAssertionError.unimplemented("TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope)");
+        // First we serialize the data we were storing as instance variables.
+        serializer.writeStub(this.doubleArray);
+        serializer.writeStub(this.byteArray);
+        serializer.writeStub(this.byteArrayOrder);
+        
+        // Then, we serialize the data we need to configure the underlying instance state.
+        serializer.writeInt(this.v.position());
+        serializer.writeInt(this.v.limit());
+        serializer.writeInt(this.lastMark);
+        serializer.writeByte(this.v.isReadOnly() ? (byte)0x1 : (byte)0x0);
     }
 
     //========================================================

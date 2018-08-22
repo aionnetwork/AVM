@@ -20,9 +20,11 @@ import org.aion.avm.api.BlockchainRuntime;
 public class ShadowCoverageTarget {
     private static final JavaLang javaLang;
     private static final JavaMath javaMath;
+    private static final JavaNio javaNio;
     static {
         javaLang = new JavaLang();
         javaMath = new JavaMath();
+        javaNio = new JavaNio();
     }
 
     public static byte[] main() {
@@ -48,30 +50,13 @@ public class ShadowCoverageTarget {
         return javaMath.buildHash();
     }
 
-    public static int runBasicNio() {
-        int capacity = 50;
-        ByteBuffer aByteBuffer = ByteBuffer.allocate(capacity);
-        for (int i = 0; i < capacity; ++i) {
-            aByteBuffer.put((byte)i);
-        }
-        aByteBuffer.flip();
-        ByteOrder aByteOrder = aByteBuffer.order();
-        CharBuffer aCharBuffer = aByteBuffer.asCharBuffer().position(1);
-        DoubleBuffer aDoubleBuffer = aByteBuffer.asDoubleBuffer().position(1);
-        FloatBuffer aFloatBuffer = aByteBuffer.asFloatBuffer().position(1);
-        IntBuffer aIntBuffer = aByteBuffer.asIntBuffer().position(1);
-        LongBuffer aLongBuffer = aByteBuffer.asLongBuffer().position(1);
-        ShortBuffer aShortBuffer = aByteBuffer.asShortBuffer().position(1);
-        
-        return aByteBuffer.toString().hashCode()
-                + aByteOrder.toString().hashCode()
-                + aCharBuffer.toString().hashCode()
-                + aDoubleBuffer.toString().hashCode()
-                + aFloatBuffer.toString().hashCode()
-                + aIntBuffer.toString().hashCode()
-                + aLongBuffer.toString().hashCode()
-                + aShortBuffer.toString().hashCode()
-                ;
+    public static int populate_JavaNio() {
+        javaNio.populate();
+        return javaNio.buildHash();
+    }
+
+    public static int getHash_JavaNio() {
+        return javaNio.buildHash();
     }
 
 
@@ -159,6 +144,46 @@ public class ShadowCoverageTarget {
             aBigInteger = new BigInteger("123456789000987654321");
             aMathContext = new MathContext(1);
             aRoundingMode = RoundingMode.UP;
+        }
+    }
+
+
+    private static class JavaNio {
+        public ByteBuffer aByteBuffer;
+        public ByteOrder aByteOrder;
+        public CharBuffer aCharBuffer;
+        public DoubleBuffer aDoubleBuffer;
+        public FloatBuffer aFloatBuffer;
+        public IntBuffer aIntBuffer;
+        public LongBuffer aLongBuffer;
+        public ShortBuffer aShortBuffer;
+        
+        public int buildHash() {
+            return aByteBuffer.hashCode()
+                    + aByteOrder.hashCode()
+                    + aCharBuffer.hashCode()
+                    + aDoubleBuffer.hashCode()
+                    + aFloatBuffer.hashCode()
+                    + aIntBuffer.hashCode()
+                    + aLongBuffer.hashCode()
+                    + aShortBuffer.hashCode()
+                    ;
+        }
+        
+        public void populate() {
+            int capacity = 50;
+            aByteBuffer = ByteBuffer.allocate(capacity);
+            for (int i = 0; i < capacity; ++i) {
+                aByteBuffer.put((byte)i);
+            }
+            aByteBuffer.flip();
+            aByteOrder = aByteBuffer.order();
+            aCharBuffer = aByteBuffer.asCharBuffer().position(1);
+            aDoubleBuffer = aByteBuffer.asDoubleBuffer().position(1);
+            aFloatBuffer = aByteBuffer.asFloatBuffer().position(1);
+            aIntBuffer = aByteBuffer.asIntBuffer().position(1);
+            aLongBuffer = aByteBuffer.asLongBuffer().position(1);
+            aShortBuffer = aByteBuffer.asShortBuffer().position(1);
         }
     }
 }

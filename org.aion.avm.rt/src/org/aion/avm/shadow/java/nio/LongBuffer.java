@@ -1,12 +1,12 @@
 package org.aion.avm.shadow.java.nio;
 
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.LongArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Comparable;
 
@@ -18,30 +18,34 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
     }
 
     public static LongBuffer avm_allocate(int capacity) {
-        return new LongBuffer(java.nio.LongBuffer.allocate(capacity));
+        LongArray array = LongArray.initArray(capacity);
+        java.nio.LongBuffer buffer = java.nio.LongBuffer.wrap(array.getUnderlying());
+        return new LongBuffer(buffer, array, null, null);
     }
 
     public static LongBuffer avm_wrap(LongArray array, int offset, int length){
-        return new LongBuffer(java.nio.LongBuffer.wrap(array.getUnderlying(), offset, length));
+        java.nio.LongBuffer buffer = java.nio.LongBuffer.wrap(array.getUnderlying(), offset, length);
+        return new LongBuffer(buffer, array, null, null);
     }
 
     public static LongBuffer avm_wrap(LongArray array){
-        return new LongBuffer(java.nio.LongBuffer.wrap(array.getUnderlying()));
+        java.nio.LongBuffer buffer = java.nio.LongBuffer.wrap(array.getUnderlying());
+        return new LongBuffer(buffer, array, null, null);
     }
 
     public LongBuffer avm_slice(){
         lazyLoad();
-        return new LongBuffer(v.slice());
+        return new LongBuffer(v.slice(), this.longArray, this.byteArray, this.byteArrayOrder);
     }
 
     public LongBuffer avm_duplicate(){
         lazyLoad();
-        return new LongBuffer(v.duplicate());
+        return new LongBuffer(v.duplicate(), this.longArray, this.byteArray, this.byteArrayOrder);
     }
 
     public LongBuffer avm_asReadOnlyBuffer(){
         lazyLoad();
-        return new LongBuffer(this.v.asReadOnlyBuffer());
+        return new LongBuffer(this.v.asReadOnlyBuffer(), this.longArray, this.byteArray, this.byteArrayOrder);
     }
 
     public long avm_get(){
@@ -103,7 +107,9 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
 
     public LongArray avm_array(){
         lazyLoad();
-        return new LongArray((long[])v.array());
+        // If we can make the underlying call, return the array wrapper we already have (otherwise, it will throw).
+        this.v.array();
+        return this.longArray;
     }
 
     public int avm_arrayOffset(){
@@ -125,6 +131,7 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
 
     public final LongBuffer avm_mark() {
         lazyLoad();
+        this.lastMark = this.v.position();
         v = v.mark();
         return this;
     }
@@ -208,8 +215,16 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    LongBuffer(java.nio.LongBuffer underlying){
+    private LongArray longArray;
+    private ByteArray byteArray;
+    private ByteOrder byteArrayOrder;
+    private int lastMark;
+    LongBuffer(java.nio.LongBuffer underlying, LongArray longArray, ByteArray byteArray, ByteOrder byteArrayOrder) {
         super(java.nio.LongBuffer.class, underlying);
+        this.longArray = longArray;
+        this.byteArray = byteArray;
+        this.byteArrayOrder = byteArrayOrder;
+        this.lastMark = -1;
     }
 
     // Deserializer support.
@@ -221,15 +236,56 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
         super.deserializeSelf(LongBuffer.class, deserializer);
         this.forCasting = java.nio.LongBuffer.class;
         
-        // TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope).
-        RuntimeAssertionError.unimplemented("TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope)");
+        // Deserialize both arrays to figure out how to construct this buffer.
+        LongArray longArray = (LongArray)deserializer.readStub();
+        ByteArray byteArray = (ByteArray)deserializer.readStub();
+        ByteOrder byteArrayOrder = (ByteOrder)deserializer.readStub();
+        ByteBuffer byteBuffer = null;
+        if (null != byteArray) {
+            byteBuffer = ByteBuffer.avm_wrap(byteArray);
+            byteBuffer.avm_order(byteArrayOrder);
+        }
+        // TODO:  We need to verify exactly which parts of state are copied when doing asLongBuffer on a ByteBuffer to make sure we don't need more state here.
+        java.nio.LongBuffer buffer = null;
+        if (null != longArray) {
+            buffer = java.nio.LongBuffer.wrap(longArray.getUnderlying());
+        } else {
+            buffer = byteBuffer.getUnderlying().asLongBuffer();
+        }
+        
+        // Then, we deserialize the data we need to configure the underlying instance state.
+        int position = deserializer.readInt();
+        int limit = deserializer.readInt();
+        int mark = deserializer.readInt();
+        boolean isReadOnly = 0x0 != deserializer.readByte();
+        
+        // Configure and store the buffer.
+        if (-1 != mark) {
+            buffer.position(mark);
+            buffer.mark();
+        }
+        this.lastMark = mark;
+        buffer.limit(limit);
+        buffer.position(position);
+        if (isReadOnly) {
+            buffer.asReadOnlyBuffer();
+        }
+        this.v = buffer;
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
         super.serializeSelf(LongBuffer.class, serializer);
         
-        // TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope).
-        RuntimeAssertionError.unimplemented("TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope)");
+        // First we serialize the data we were storing as instance variables.
+        serializer.writeStub(this.longArray);
+        serializer.writeStub(this.byteArray);
+        serializer.writeStub(this.byteArrayOrder);
+        
+        // Then, we serialize the data we need to configure the underlying instance state.
+        serializer.writeInt(this.v.position());
+        serializer.writeInt(this.v.limit());
+        serializer.writeInt(this.lastMark);
+        serializer.writeByte(this.v.isReadOnly() ? (byte)0x1 : (byte)0x0);
     }
 
     //========================================================

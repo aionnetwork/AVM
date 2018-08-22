@@ -1,12 +1,12 @@
 package org.aion.avm.shadow.java.nio;
 
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.FloatArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Comparable;
 
@@ -18,30 +18,34 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
     }
 
     public static FloatBuffer avm_allocate(int capacity) {
-        return new FloatBuffer(java.nio.FloatBuffer.allocate(capacity));
+        FloatArray array = FloatArray.initArray(capacity);
+        java.nio.FloatBuffer buffer = java.nio.FloatBuffer.wrap(array.getUnderlying());
+        return new FloatBuffer(buffer, array, null, null);
     }
 
     public static FloatBuffer avm_wrap(FloatArray array, int offset, int length){
-        return new FloatBuffer(java.nio.FloatBuffer.wrap(array.getUnderlying(), offset, length));
+        java.nio.FloatBuffer buffer = java.nio.FloatBuffer.wrap(array.getUnderlying(), offset, length);
+        return new FloatBuffer(buffer, array, null, null);
     }
 
     public static FloatBuffer avm_wrap(FloatArray array){
-        return new FloatBuffer(java.nio.FloatBuffer.wrap(array.getUnderlying()));
+        java.nio.FloatBuffer buffer = java.nio.FloatBuffer.wrap(array.getUnderlying());
+        return new FloatBuffer(buffer, array, null, null);
     }
 
     public FloatBuffer avm_slice(){
         lazyLoad();
-        return new FloatBuffer(v.slice());
+        return new FloatBuffer(v.slice(), this.floatArray, this.byteArray, this.byteArrayOrder);
     }
 
     public FloatBuffer avm_duplicate(){
         lazyLoad();
-        return new FloatBuffer(v.duplicate());
+        return new FloatBuffer(v.duplicate(), this.floatArray, this.byteArray, this.byteArrayOrder);
     }
 
     public FloatBuffer avm_asReadOnlyBuffer(){
         lazyLoad();
-        return new FloatBuffer(this.v.asReadOnlyBuffer());
+        return new FloatBuffer(this.v.asReadOnlyBuffer(), this.floatArray, this.byteArray, this.byteArrayOrder);
     }
 
     public double avm_get(){
@@ -103,7 +107,9 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
 
     public FloatArray avm_array(){
         lazyLoad();
-        return new FloatArray((float[])v.array());
+        // If we can make the underlying call, return the array wrapper we already have (otherwise, it will throw).
+        this.v.array();
+        return this.floatArray;
     }
 
     public int avm_arrayOffset(){
@@ -125,6 +131,7 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
 
     public final FloatBuffer avm_mark() {
         lazyLoad();
+        this.lastMark = this.v.position();
         v = v.mark();
         return this;
     }
@@ -207,8 +214,16 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    FloatBuffer(java.nio.FloatBuffer underlying){
+    private FloatArray floatArray;
+    private ByteArray byteArray;
+    private ByteOrder byteArrayOrder;
+    private int lastMark;
+    FloatBuffer(java.nio.FloatBuffer underlying, FloatArray floatArray, ByteArray byteArray, ByteOrder byteArrayOrder) {
         super(java.nio.FloatBuffer.class, underlying);
+        this.floatArray = floatArray;
+        this.byteArray = byteArray;
+        this.byteArrayOrder = byteArrayOrder;
+        this.lastMark = -1;
     }
 
     // Deserializer support.
@@ -220,15 +235,56 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
         super.deserializeSelf(FloatBuffer.class, deserializer);
         this.forCasting = java.nio.FloatBuffer.class;
         
-        // TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope).
-        RuntimeAssertionError.unimplemented("TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope)");
+        // Deserialize both arrays to figure out how to construct this buffer.
+        FloatArray floatArray = (FloatArray)deserializer.readStub();
+        ByteArray byteArray = (ByteArray)deserializer.readStub();
+        ByteOrder byteArrayOrder = (ByteOrder)deserializer.readStub();
+        ByteBuffer byteBuffer = null;
+        if (null != byteArray) {
+            byteBuffer = ByteBuffer.avm_wrap(byteArray);
+            byteBuffer.avm_order(byteArrayOrder);
+        }
+        // TODO:  We need to verify exactly which parts of state are copied when doing asFloatBuffer on a ByteBuffer to make sure we don't need more state here.
+        java.nio.FloatBuffer buffer = null;
+        if (null != floatArray) {
+            buffer = java.nio.FloatBuffer.wrap(floatArray.getUnderlying());
+        } else {
+            buffer = byteBuffer.getUnderlying().asFloatBuffer();
+        }
+        
+        // Then, we deserialize the data we need to configure the underlying instance state.
+        int position = deserializer.readInt();
+        int limit = deserializer.readInt();
+        int mark = deserializer.readInt();
+        boolean isReadOnly = 0x0 != deserializer.readByte();
+        
+        // Configure and store the buffer.
+        if (-1 != mark) {
+            buffer.position(mark);
+            buffer.mark();
+        }
+        this.lastMark = mark;
+        buffer.limit(limit);
+        buffer.position(position);
+        if (isReadOnly) {
+            buffer.asReadOnlyBuffer();
+        }
+        this.v = buffer;
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
         super.serializeSelf(FloatBuffer.class, serializer);
         
-        // TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope).
-        RuntimeAssertionError.unimplemented("TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope)");
+        // First we serialize the data we were storing as instance variables.
+        serializer.writeStub(this.floatArray);
+        serializer.writeStub(this.byteArray);
+        serializer.writeStub(this.byteArrayOrder);
+        
+        // Then, we serialize the data we need to configure the underlying instance state.
+        serializer.writeInt(this.v.position());
+        serializer.writeInt(this.v.limit());
+        serializer.writeInt(this.lastMark);
+        serializer.writeByte(this.v.isReadOnly() ? (byte)0x1 : (byte)0x0);
     }
 
     //========================================================

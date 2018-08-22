@@ -1,12 +1,12 @@
 package org.aion.avm.shadow.java.nio;
 
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.CharSequence;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Comparable;
@@ -23,15 +23,19 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
     }
 
     public static CharBuffer avm_allocate(int capacity) {
-        return new CharBuffer(java.nio.CharBuffer.allocate(capacity));
+        CharArray array = CharArray.initArray(capacity);
+        java.nio.CharBuffer buffer = java.nio.CharBuffer.wrap(array.getUnderlying());
+        return new CharBuffer(buffer, array, null, null, null);
     }
 
     public static CharBuffer avm_wrap(CharArray array, int offset, int length){
-        return new CharBuffer(java.nio.CharBuffer.wrap(array.getUnderlying(), offset, length));
+        java.nio.CharBuffer buffer = java.nio.CharBuffer.wrap(array.getUnderlying(), offset, length);
+        return new CharBuffer(buffer, array, null, null, null);
     }
 
     public static CharBuffer avm_wrap(CharArray array){
-        return new CharBuffer(java.nio.CharBuffer.wrap(array.getUnderlying()));
+        java.nio.CharBuffer buffer = java.nio.CharBuffer.wrap(array.getUnderlying());
+        return new CharBuffer(buffer, array, null, null, null);
     }
 
     public int avm_read(CharBuffer target) throws IOException {
@@ -40,26 +44,28 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
 
     // TODO:  Can we even use this CharSequence implementation, given that we force it through a String conversion?
     public static CharBuffer avm_wrap(CharSequence csq, int start, int end) {
-        return new CharBuffer(java.nio.CharBuffer.wrap(csq.avm_toString().getUnderlying(), start, end));
+        java.nio.CharBuffer buffer = java.nio.CharBuffer.wrap(csq.avm_toString().getUnderlying(), start, end);
+        return new CharBuffer(buffer, null, null, null, csq);
     }
 
     public static CharBuffer avm_wrap(CharSequence csq) {
-        return new CharBuffer(java.nio.CharBuffer.wrap(csq.avm_toString().getUnderlying()));
+        java.nio.CharBuffer buffer = java.nio.CharBuffer.wrap(csq.avm_toString().getUnderlying());
+        return new CharBuffer(buffer, null, null, null, csq);
     }
 
     public CharBuffer avm_slice(){
         lazyLoad();
-        return new CharBuffer(v.slice());
+        return new CharBuffer(this.v.slice(), this.charArray, this.byteArray, this.byteArrayOrder, this.sequence);
     }
 
     public CharBuffer avm_duplicate(){
         lazyLoad();
-        return new CharBuffer(v.duplicate());
+        return new CharBuffer(this.v.duplicate(), this.charArray, this.byteArray, this.byteArrayOrder, this.sequence);
     }
 
     public CharBuffer avm_asReadOnlyBuffer(){
         lazyLoad();
-        return new CharBuffer(this.v.asReadOnlyBuffer());
+        return new CharBuffer(this.v.asReadOnlyBuffer(), this.charArray, this.byteArray, this.byteArrayOrder, this.sequence);
     }
 
     public char avm_get(){
@@ -128,7 +134,9 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
 
     public final CharArray avm_array() {
         lazyLoad();
-        return new CharArray((char[])v.array());
+        // If we can make the underlying call, return the array wrapper we already have (otherwise, it will throw).
+        this.v.array();
+        return this.charArray;
     }
 
     public final int avm_arrayOffset() {
@@ -150,6 +158,7 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
 
     public final CharBuffer avm_mark() {
         lazyLoad();
+        this.lastMark = this.v.position();
         v = v.mark();
         return this;
     }
@@ -230,7 +239,7 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
 
     public CharBuffer avm_subSequence(int start, int end){
         lazyLoad();
-        return new CharBuffer(this.v.subSequence(start, end));
+        return new CharBuffer(this.v.subSequence(start, end), this.charArray, this.byteArray, this.byteArrayOrder, this.sequence);
     }
 
     public CharBuffer avm_append(CharSequence csq){
@@ -266,8 +275,24 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    CharBuffer(java.nio.CharBuffer underlying){
+    // We could handle this, much like the underlying JCL does, by creating multiple implementations which handle these cases differently but, for
+    // now, we will treat all these cases together (mostly because they are just used to rebuild the object graph, consistently, after
+    // deserialization):
+    // -char[]
+    // -byte[]
+    // -CharSequence
+    private CharArray charArray;
+    private ByteArray byteArray;
+    private ByteOrder byteArrayOrder;
+    private CharSequence sequence;
+    private int lastMark;
+    CharBuffer(java.nio.CharBuffer underlying, CharArray charArray, ByteArray byteArray, ByteOrder byteArrayOrder, CharSequence sequence) {
         super(java.nio.CharBuffer.class, underlying);
+        this.charArray = charArray;
+        this.byteArray = byteArray;
+        this.byteArrayOrder = byteArrayOrder;
+        this.sequence = sequence;
+        this.lastMark = -1;
     }
 
     // Deserializer support.
@@ -279,15 +304,61 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
         super.deserializeSelf(CharBuffer.class, deserializer);
         this.forCasting = java.nio.CharBuffer.class;
         
-        // TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope).
-        RuntimeAssertionError.unimplemented("TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope)");
+        // Deserialize both arrays to figure out how to construct this buffer.
+        CharArray charArray = (CharArray)deserializer.readStub();
+        ByteArray byteArray = (ByteArray)deserializer.readStub();
+        ByteOrder byteArrayOrder = (ByteOrder)deserializer.readStub();
+        CharSequence charSequence = (CharSequence)deserializer.readStub();
+        ByteBuffer byteBuffer = null;
+        if (null != byteArray) {
+            byteBuffer = ByteBuffer.avm_wrap(byteArray);
+            byteBuffer.avm_order(byteArrayOrder);
+        }
+        // TODO:  We need to verify exactly which parts of state are copied when doing asCharBuffer on a ByteBuffer to make sure we don't need more state here.
+        java.nio.CharBuffer buffer = null;
+        if (null != charArray) {
+            buffer = java.nio.CharBuffer.wrap(charArray.getUnderlying());
+        } else if (null != byteArray) {
+            buffer = byteBuffer.getUnderlying().asCharBuffer();
+        } else {
+            buffer = java.nio.CharBuffer.wrap(charSequence.avm_toString().getUnderlying());
+        }
+        
+        // Then, we deserialize the data we need to configure the underlying instance state.
+        int position = deserializer.readInt();
+        int limit = deserializer.readInt();
+        int mark = deserializer.readInt();
+        boolean isReadOnly = 0x0 != deserializer.readByte();
+        
+        // Configure and store the buffer.
+        if (-1 != mark) {
+            buffer.position(mark);
+            buffer.mark();
+        }
+        this.lastMark = mark;
+        buffer.limit(limit);
+        buffer.position(position);
+        // (if this was build from a CharSequence, it is defined as read-only so this would only cause us to duplicate and discard the instance).
+        if (isReadOnly && (null == charSequence)) {
+            buffer.asReadOnlyBuffer();
+        }
+        this.v = buffer;
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
         super.serializeSelf(CharBuffer.class, serializer);
         
-        // TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope).
-        RuntimeAssertionError.unimplemented("TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope)");
+        // First we serialize the data we were storing as instance variables.
+        serializer.writeStub(this.charArray);
+        serializer.writeStub(this.byteArray);
+        serializer.writeStub(this.byteArrayOrder);
+        serializer.writeStub((org.aion.avm.shadow.java.lang.Object)this.sequence);
+        
+        // Then, we serialize the data we need to configure the underlying instance state.
+        serializer.writeInt(this.v.position());
+        serializer.writeInt(this.v.limit());
+        serializer.writeInt(this.lastMark);
+        serializer.writeByte(this.v.isReadOnly() ? (byte)0x1 : (byte)0x0);
     }
 
     //========================================================

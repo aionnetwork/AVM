@@ -40,7 +40,7 @@ public class ShadowSerializationTest {
         // Populate initial data.
         int firstHash = populate(avm, contractAddr, "JavaLang");
         // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(94290289, firstHash);
+        Assert.assertEquals(94290298, firstHash);
         
         // Get the state of this data.
         int hash = getHash(avm, contractAddr, "JavaLang");
@@ -69,11 +69,8 @@ public class ShadowSerializationTest {
         Assert.assertEquals(firstHash, hash);
     }
 
-    /**
-     * This test is just temporary to demonstrate that we can at least instantiate the NIO buffer classes and perform basic actions.
-     */
     @Test
-    public void testBasicJavaNio() {
+    public void testPersistJavaNio() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
@@ -84,11 +81,14 @@ public class ShadowSerializationTest {
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
         
-        byte[] argData = ABIEncoder.encodeMethodArguments("runBasicNio");
-        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, 1_000_000L, ENERGY_PRICE);
-        TransactionResult result = avm.run(new TransactionContextImpl(call, block));
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        Assert.assertEquals(-1318544925, ((Integer)TestingHelper.decodeResult(result)).intValue());
+        // Populate initial data.
+        int firstHash = populate(avm, contractAddr, "JavaNio");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(757806641, firstHash);
+        
+        // Get the state of this data.
+        int hash = getHash(avm, contractAddr, "JavaNio");
+        Assert.assertEquals(firstHash, hash);
     }
 
 

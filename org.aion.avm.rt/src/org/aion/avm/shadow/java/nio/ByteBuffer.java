@@ -6,7 +6,6 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.String;
 
 
@@ -17,30 +16,34 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
     }
 
     public static ByteBuffer avm_allocate(int capacity) {
-        return new ByteBuffer(java.nio.ByteBuffer.allocate(capacity));
+        ByteArray array = ByteArray.initArray(capacity);
+        java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(array.getUnderlying());
+        return new ByteBuffer(buffer, array);
     }
 
     public static ByteBuffer avm_wrap(ByteArray array, int offset, int length){
-        return new ByteBuffer(java.nio.ByteBuffer.wrap(array.getUnderlying(), offset, length));
+        java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(array.getUnderlying(), offset, length);
+        return new ByteBuffer(buffer, array);
     }
 
     public static ByteBuffer avm_wrap(ByteArray array){
-        return new ByteBuffer(java.nio.ByteBuffer.wrap(array.getUnderlying()));
+        java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(array.getUnderlying());
+        return new ByteBuffer(buffer, array);
     }
 
     public ByteBuffer avm_slice(){
         lazyLoad();
-        return new ByteBuffer(v.slice());
+        return new ByteBuffer(this.v.slice(), this.array);
     }
 
     public ByteBuffer avm_duplicate(){
         lazyLoad();
-        return new ByteBuffer(v.duplicate());
+        return new ByteBuffer(this.v.duplicate(), this.array);
     }
 
     public ByteBuffer avm_asReadOnlyBuffer(){
         lazyLoad();
-        return new ByteBuffer(this.v.asReadOnlyBuffer());
+        return new ByteBuffer(this.v.asReadOnlyBuffer(), this.array);
     }
 
     public byte avm_get(){
@@ -102,7 +105,9 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
 
     public org.aion.avm.arraywrapper.ByteArray avm_array(){
         lazyLoad();
-        return new ByteArray((byte[])v.array());
+        // If we can make the underlying call, return the array wrapper we already have (otherwise, it will throw).
+        this.v.array();
+        return this.array;
     }
 
     public int avm_arrayOffset(){
@@ -124,6 +129,7 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
 
     public final ByteBuffer avm_mark() {
         lazyLoad();
+        this.lastMark = this.v.position();
         v = v.mark();
         return this;
     }
@@ -210,7 +216,7 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
 
     public final ByteBuffer avm_alignedSlice(int unitSize) {
         lazyLoad();
-        return new ByteBuffer(this.v.alignedSlice(unitSize));
+        return new ByteBuffer(this.v.alignedSlice(unitSize), this.array);
     }
 
     public char avm_getChar(){
@@ -347,32 +353,32 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
 
     public CharBuffer avm_asCharBuffer(){
         lazyLoad();
-        return new CharBuffer(this.v.asCharBuffer());
+        return new CharBuffer(this.v.asCharBuffer(), null, this.array, avm_order(), null);
     }
 
     public ShortBuffer avm_asShortBuffer(){
         lazyLoad();
-        return new ShortBuffer(this.v.asShortBuffer());
+        return new ShortBuffer(this.v.asShortBuffer(), null, this.array, avm_order());
     }
 
     public IntBuffer avm_asIntBuffer(){
         lazyLoad();
-        return new IntBuffer(this.v.asIntBuffer());
+        return new IntBuffer(this.v.asIntBuffer(), null, this.array, avm_order());
     }
 
     public LongBuffer avm_asLongBuffer(){
         lazyLoad();
-        return new LongBuffer(this.v.asLongBuffer());
+        return new LongBuffer(this.v.asLongBuffer(), null, this.array, avm_order());
     }
 
     public FloatBuffer avm_asFloatBuffer(){
         lazyLoad();
-        return new FloatBuffer(this.v.asFloatBuffer());
+        return new FloatBuffer(this.v.asFloatBuffer(), null, this.array, avm_order());
     }
 
     public DoubleBuffer avm_asDoubleBuffer(){
         lazyLoad();
-        return new DoubleBuffer(this.v.asDoubleBuffer());
+        return new DoubleBuffer(this.v.asDoubleBuffer(), null, this.array, avm_order());
     }
 
     public boolean avm_isReadOnly(){
@@ -385,8 +391,17 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    ByteBuffer(java.nio.ByteBuffer underlying){
-        super(java.nio.ByteBuffer.class, underlying);
+    private ByteArray array;
+    private int lastMark;
+    private ByteBuffer(java.nio.ByteBuffer buffer, ByteArray array) {
+        super(java.nio.ByteBuffer.class, buffer);
+        this.array = array;
+        this.lastMark = -1;
+    }
+
+    public java.nio.ByteBuffer getUnderlying() {
+        lazyLoad();
+        return this.v;
     }
 
     // Deserializer support.
@@ -398,15 +413,47 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
         super.deserializeSelf(ByteBuffer.class, deserializer);
         this.forCasting = java.nio.ByteBuffer.class;
         
-        // TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope).
-        RuntimeAssertionError.unimplemented("TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope)");
+        // First we deserialize the data we were storing as instance variables.
+        ByteArray array = (ByteArray)deserializer.readStub();
+        
+        // Deserializing this will, unfortunately, force the deserialization of the underlying ByteArray, as we need to pass the underlying
+        // byte[] into the JCL.
+        java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(array.getUnderlying());
+        
+        // Then, we deserialize the data we need to configure the underlying instance state.
+        int position = deserializer.readInt();
+        int limit = deserializer.readInt();
+        int mark = deserializer.readInt();
+        ByteOrder byteOrder = (ByteOrder)deserializer.readStub();
+        boolean isReadOnly = 0x0 != deserializer.readByte();
+        
+        // Configure and store the buffer.
+        if (-1 != mark) {
+            buffer.position(mark);
+            buffer.mark();
+        }
+        this.lastMark = mark;
+        buffer.limit(limit);
+        buffer.position(position);
+        buffer.order(byteOrder.getV());
+        if (isReadOnly) {
+            buffer.asReadOnlyBuffer();
+        }
+        this.v = buffer;
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
         super.serializeSelf(ByteBuffer.class, serializer);
         
-        // TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope).
-        RuntimeAssertionError.unimplemented("TODO:  Implement (this isn't yet called - just carved from a later change to reduce scope)");
+        // First we serialize the data we were storing as instance variables.
+        serializer.writeStub(this.array);
+        
+        // Then, we serialize the data we need to configure the underlying instance state.
+        serializer.writeInt(this.v.position());
+        serializer.writeInt(this.v.limit());
+        serializer.writeInt(this.lastMark);
+        serializer.writeStub(ByteOrder.lookupForConstant(this.v.order()));
+        serializer.writeByte(this.v.isReadOnly() ? (byte)0x1 : (byte)0x0);
     }
 
     //========================================================
