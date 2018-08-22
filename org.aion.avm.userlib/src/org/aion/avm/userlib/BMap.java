@@ -235,9 +235,11 @@ public class BMap<K, V> implements Map<K, V> {
         void insertNonFull(K key, V value) {
             int i = this.nodeSize;
             while (i > 0 && key.hashCode() < this.entries[i - 1].hashCode()){
-                this.entries[i] = this.entries[i - 1];
+                //this.entries[i] = this.entries[i - 1];
                 i--;
             }
+
+            System.arraycopy(this.entries, i, this.entries, i + 1, this.nodeSize - i);
             this.entries[i] = new BEntry(key, value);
             this.nodeSize++;
         }
@@ -357,16 +359,14 @@ public class BMap<K, V> implements Map<K, V> {
 
         // Right node has t children
         z.nodeSize = order;
-        // Move t children to right node
-        for (int j = 0; j < order; j++){
-            z.routers [j] = y.routers [j + order];
-            z.children[j] = y.children[j + order];
-        }
-        z.children[order] = y.children[2 * order];
+
+        System.arraycopy(y.routers , order, z.routers , 0, order);
+        System.arraycopy(y.children, order, z.children, 0, order + 1);
 
         // Left node has t - 1 children
         y.nodeSize = order;
-        // Remove reference from left node TODO: This may not be necessary
+        // Remove reference from left node
+        // TODO: This may not be necessary
         for (int j = order; j < (2 * order); j++){
             y.routers [j] = 0;
             y.children[j] = null;
@@ -374,10 +374,8 @@ public class BMap<K, V> implements Map<K, V> {
         y.children[2 * order] = null;
 
         // Shift parent node
-        for (int j = x.nodeSize; j > i; j--){
-            x.children[j]     = x.children[j - 1];
-            x.routers [j + 1] = x.routers [j];
-        }
+        System.arraycopy(x.routers,  i, x.routers, i + 1, x.nodeSize - i);
+        System.arraycopy(x.children, i + 1, x.children, i + 2, x.nodeSize - i);
 
         x.children[i + 1] = z;
         x.routers [i]     = z.routers[0];
@@ -391,9 +389,8 @@ public class BMap<K, V> implements Map<K, V> {
         // Right node has t children
         z.nodeSize = order;
         // Move t children to right node
-        for (int j = 0; j < order; j++){
-            z.entries[j] = y.entries[j + order];
-        }
+
+        System.arraycopy(y.entries, order, z.entries, 0, order);
 
         y.nodeSize = order;
         // Remove reference from left node to prevent future memory leak
@@ -408,10 +405,8 @@ public class BMap<K, V> implements Map<K, V> {
         y.nextLeaf = z;
 
         // Shift parent node
-        for (int j = x.nodeSize; j > i; j--){
-            x.children[j]     = x.children[j - 1];
-            x.routers [j + 1] = x.routers [j];
-        }
+        System.arraycopy(x.routers,  i, x.routers, i + 1, x.nodeSize - i);
+        System.arraycopy(x.children, i + 1, x.children, i + 2, x.nodeSize - i);
 
         x.children[i + 1] = z;
         x.routers [i]     = z.entries[0].hashCode();
