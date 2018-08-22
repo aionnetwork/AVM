@@ -6,10 +6,7 @@ import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
-import org.aion.avm.userlib.BMap;
+import org.aion.avm.userlib.*;
 import org.aion.kernel.*;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,7 +31,9 @@ public class AionCollectionPerfTest {
         return JarBuilder.buildJarForMainAndClasses(AionSetPerfContract.class,
                 AionList.class,
                 AionSet.class,
-                AionMap.class
+                AionMap.class,
+                BSet.class,
+                BMap.class
         );
     }
 
@@ -131,6 +130,24 @@ public class AionCollectionPerfTest {
         args = ABIEncoder.encodeMethodArguments("callRemove");
         TransactionResult removeReult = call(avm, contract, from, args);
         System.out.println(">> Remove        : " + removeReult.getEnergyUsed() / AionSetPerfContract.SIZE);
+
+        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        System.out.println(">> Energy measurement for BSet");
+
+        args = ABIEncoder.encodeMethodArguments("callInitB");
+        initResult = call(avm, contract, from, args);
+
+        args = ABIEncoder.encodeMethodArguments("callAddB");
+        addResult = call(avm, contract, from, args);
+        System.out.println(">> Add           : " + addResult.getEnergyUsed() / AionSetPerfContract.SIZE);
+
+        args = ABIEncoder.encodeMethodArguments("callInitB");
+        initResult = call(avm, contract, from, args);
+        args = ABIEncoder.encodeMethodArguments("callContainsB");
+        containsResult = call(avm, contract, from, args);
+        System.out.println(">> Contains      : " + containsResult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
