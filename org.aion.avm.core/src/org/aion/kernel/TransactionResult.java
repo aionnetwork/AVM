@@ -12,7 +12,7 @@ public class TransactionResult {
         /**
          * The transaction was executed successfully.
          */
-        SUCCESS(),
+        SUCCESS,
 
         /**
          * This transaction was rejected.
@@ -75,7 +75,7 @@ public class TransactionResult {
             return this == REJECTED || this == REJECTED_INSUFFICIENT_BALANCE || this == REJECTED_INVALID_DATA || this == REJECTED_INVALID_NONCE;
         }
 
-        public boolean isFailure() {
+        public boolean isFailed() {
             return this == FAILED || this == FAILED_OUT_OF_ENERGY || this == FAILED_REVERT || this == FAILED_INVALID || this == FAILED_EXCEPTION;
         }
     }
