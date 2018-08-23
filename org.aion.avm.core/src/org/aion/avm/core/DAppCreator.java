@@ -229,21 +229,32 @@ public class DAppCreator {
             // (for now, we System.exit(-1), since this is what ethereumj does, but we may want a more graceful shutdown in the future)
             e.printStackTrace();
             System.exit(-1);
+
         } catch (OutOfEnergyError e) {
             result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
-        } catch (ExceptionInInitializerError die) {
-            die.printStackTrace();
-            result.setStatusCode(TransactionResult.Code.FAILED);
+
+        } catch (OutOfStackError e) {
+            result.setStatusCode(TransactionResult.Code.FAILED_STACK_OVERFLOW);
             result.setEnergyUsed(ctx.getEnergyLimit());
-        } catch (InvalidTxDataException e) {
-            e.printStackTrace();
-            result.setStatusCode(TransactionResult.Code.REJECTED_INVALID_DATA);
+
+        } catch (RevertException e) {
+            result.setStatusCode(TransactionResult.Code.FAILED_REVERT);
             result.setEnergyUsed(ctx.getEnergyLimit());
+
+        } catch (InvalidException e) {
+            result.setStatusCode(TransactionResult.Code.FAILED_INVALID);
+            result.setEnergyUsed(ctx.getEnergyLimit());
+
+        }  catch (UncaughtException e) {
+            result.setStatusCode(TransactionResult.Code.FAILED_EXCEPTION);
+            result.setEnergyUsed(ctx.getEnergyLimit());
+
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             result.setStatusCode(TransactionResult.Code.FAILED);
             result.setEnergyUsed(ctx.getEnergyLimit());
+
         } catch (Throwable t) {
             // There should be no other reachable kind of exception.  If we reached this point, something very strange is happening so log
             // this and bring us down.

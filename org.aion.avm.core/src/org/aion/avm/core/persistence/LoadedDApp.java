@@ -2,21 +2,25 @@ package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
 
+import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.NoMainMethodException;
 import org.aion.avm.internal.OutOfEnergyError;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.internal.UncaughtException;
 import org.aion.kernel.KernelInterface;
 
 
@@ -193,12 +197,26 @@ public class LoadedDApp {
      * @throws OutOfEnergyError The transaction failed since the permitted energy was consumed.
      * @throws Exception Something unexpected went wrong with the invocation.
      */
-    public byte[] callMain() throws OutOfEnergyError, Exception {
-        Method method = getMainMethod();
-        ByteArray rawResult = (ByteArray) method.invoke(null);
-        return (null != rawResult)
-                ? rawResult.getUnderlying()
-                : null;
+    public byte[] callMain() throws Throwable {
+        try {
+            Method method = getMainMethod();
+            ByteArray rawResult = (ByteArray) method.invoke(null);
+            return (null != rawResult)
+                    ? rawResult.getUnderlying()
+                    : null;
+        } catch (ClassNotFoundException | SecurityException | ExceptionInInitializerError e) {
+            // should have been handled during CREATE.
+            RuntimeAssertionError.unexpected(e);
+
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            throw new NoMainMethodException();
+
+        } catch (InvocationTargetException e) {
+            // handle the real exception
+            handleUncaughtException(e.getCause());
+        }
+
+        return null;
     }
 
     /**
@@ -206,7 +224,7 @@ public class LoadedDApp {
      * This is called during the create action to force the DApp initialization code to be run before it is stripped off for
      * long-term storage.
      */
-    public void forceInitializeAllClasses() {
+    public void forceInitializeAllClasses() throws Throwable {
         for (Class<?> clazz : this.classes) {
             try {
                 Class<?> initialized = Class.forName(clazz.getName(), true, this.loader);
@@ -216,7 +234,37 @@ public class LoadedDApp {
             } catch (ClassNotFoundException e) {
                 // This error would mean that this is assembled completely incorrectly, which is a static error in our implementation.
                 RuntimeAssertionError.unexpected(e);
+
+            } catch (SecurityException e) {
+                // This would mean that the shadowing is not working properly.
+                RuntimeAssertionError.unexpected(e);
+
+            } catch (ExceptionInInitializerError e) {
+                // handle the real exception
+                handleUncaughtException(e.getCause());
             }
+        }
+    }
+
+    /**
+     * The exception could be any {@link org.aion.avm.internal.AvmException}, any {@link java.lang.RuntimeException},
+     * or a {@link org.aion.avm.exceptionwrapper.java.lang.Throwable}.
+     */
+    private void handleUncaughtException(Throwable cause) throws Throwable {
+        // thrown by us
+        if (cause instanceof AvmException) {
+            throw cause;
+
+            // thrown by runtime, but is never handled
+        } else if (cause instanceof RuntimeException) {
+            throw new UncaughtException(cause);
+
+            // thrown by users
+        } else if (cause instanceof org.aion.avm.exceptionwrapper.java.lang.Throwable) {
+            throw new UncaughtException(cause.getCause());
+
+        } else {
+            RuntimeAssertionError.unexpected(cause);
         }
     }
 

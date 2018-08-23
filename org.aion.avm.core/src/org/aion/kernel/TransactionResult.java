@@ -46,6 +46,10 @@ public class TransactionResult {
          */
         FAILED_OUT_OF_ENERGY,
 
+        /**
+         * Transaction failed due to stack overflow.
+         */
+        FAILED_STACK_OVERFLOW,
 
         /**
          * Transaction failed due to a REVERT operation.

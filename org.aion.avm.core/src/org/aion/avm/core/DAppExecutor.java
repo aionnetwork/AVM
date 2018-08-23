@@ -62,46 +62,58 @@ public class DAppExecutor {
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setReturnData(ret);
             result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
-        } catch (OutOfEnergyError e) {
+        } catch (FatalAvmError e) {
+            e.printStackTrace();
+            System.exit(-1);
+
+        }  catch (OutOfEnergyError e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
             result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
-        } catch (InvocationTargetException ie) {
-            if (null != reentrantGraphData) {
-                reentrantGraphData.revertToStoredFields();
-            }
 
-            Throwable cause = ie.getCause();
-            if (cause instanceof RevertException) {
-                result.setStatusCode(TransactionResult.Code.FAILED_REVERT);
-                result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
-            } else if (cause instanceof InvalidException) {
-                result.setStatusCode(TransactionResult.Code.FAILED_INVALID);
-                result.setEnergyUsed(ctx.getEnergyLimit());
-            } else if (cause instanceof DappInvocationTargetException) {
-                result.setStatusCode(TransactionResult.Code.FAILED);
-                result.setEnergyUsed(ctx.getEnergyLimit());
-            } else {
-                result.setStatusCode(TransactionResult.Code.FAILED);
-                result.setEnergyUsed(ctx.getEnergyLimit());
-            }
-        } catch (InvalidTxDataException e) {
+        } catch (OutOfStackError e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
-            e.printStackTrace();
+            result.setStatusCode(TransactionResult.Code.FAILED_STACK_OVERFLOW);
+            result.setEnergyUsed(ctx.getEnergyLimit());
+
+        } catch (RevertException e) {
+            if (null != reentrantGraphData) {
+                reentrantGraphData.revertToStoredFields();
+            }
+            result.setStatusCode(TransactionResult.Code.FAILED_REVERT);
+            result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
+
+        } catch (InvalidException e) {
+            if (null != reentrantGraphData) {
+                reentrantGraphData.revertToStoredFields();
+            }
+            result.setStatusCode(TransactionResult.Code.FAILED_INVALID);
+            result.setEnergyUsed(ctx.getEnergyLimit());
+
+        }  catch (UncaughtException e) {
+            if (null != reentrantGraphData) {
+                reentrantGraphData.revertToStoredFields();
+            }
             result.setStatusCode(TransactionResult.Code.FAILED_EXCEPTION);
             result.setEnergyUsed(ctx.getEnergyLimit());
-        } catch (Exception e) {
+
+        } catch (AvmException e) {
+            // We handle the generic AvmException as some failure within the contract.
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
-            e.printStackTrace();
             result.setStatusCode(TransactionResult.Code.FAILED);
             result.setEnergyUsed(ctx.getEnergyLimit());
-        } finally {
+
+        } catch (Throwable e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+        finally {
             // Once we are done running this, we want to clear the IHelper.currentContractHelper.
             IHelper.currentContractHelper.remove();
             // This state was only here while we were running, in case someone else needed to change it so now we can pop it.
