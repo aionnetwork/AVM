@@ -1,5 +1,6 @@
 package org.aion.avm.core.persistence;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -587,31 +588,40 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     }
 
     private org.aion.avm.shadow.java.lang.Object internalGetCalleeStubForCaller(org.aion.avm.shadow.java.lang.Object caller) {
-        // First, see if we already have a stub for this caller.
-        org.aion.avm.shadow.java.lang.Object callee = this.callerToCalleeMap.get(caller);
-        if (null == callee) {
-            // Note that this instanceId will never be used, so we pass in SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID.  This is because we never replace caller instances with
-            // callee instance.
-            // This means that, since this object is the callee representation of a caller object, it will never end up in the caller's graph, hence
-            // never serialized to the storage.  The only objects which can be added to the caller's graph are new objects (which don't have an
-            // instanceId, either).
-            try {
-                callee = caller.getClass().getConstructor(IDeserializer.class, long.class).newInstance(new CopyingDeserializer(caller), SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID);
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                // TODO:  These should probably come through a cache.
-                RuntimeAssertionError.unexpected(e);
+        // Before anything, check to see if this is something we even _want_ to copy from the caller space or if it is immutable.
+        org.aion.avm.shadow.java.lang.Object callee = null;
+        if (SerializedInstanceStub.objectUsesReentrantCopy(caller, this.instanceIdField)) {
+            // First, see if we already have a stub for this caller.
+            callee = this.callerToCalleeMap.get(caller);
+            if (null == callee) {
+                // Note that this instanceId will never be used, so we pass in SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID.  This is because we never replace caller instances with
+                // callee instance.
+                // This means that, since this object is the callee representation of a caller object, it will never end up in the caller's graph, hence
+                // never serialized to the storage.  The only objects which can be added to the caller's graph are new objects (which don't have an
+                // instanceId, either).
+                try {
+                    Constructor<?> constructor = caller.getClass().getConstructor(IDeserializer.class, long.class);
+                    constructor.setAccessible(true);
+                    callee = (org.aion.avm.shadow.java.lang.Object) constructor.newInstance(new CopyingDeserializer(caller), SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID);
+                } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                    // TODO:  These should probably come through a cache.
+                    RuntimeAssertionError.unexpected(e);
+                }
+                
+                // We also need to add this to the callee-caller mapping (in the future, this might be made into a field in the object).
+                this.callerToCalleeMap.put(caller, callee);
+                this.calleeToCallerMap.put(callee, caller);
             }
-            
-            // We also need to add this to the callee-caller mapping (in the future, this might be made into a field in the object).
-            this.callerToCalleeMap.put(caller, callee);
-            this.calleeToCallerMap.put(callee, caller);
+        } else {
+            // We just want to continue pointing at the caller object.
+            callee = caller;
         }
         return callee;
     }
 
     private org.aion.avm.shadow.java.lang.Object mapCalleeToCallerAndEnqueueForCommitProcessing(Queue<org.aion.avm.shadow.java.lang.Object> calleeObjectsToProcess, org.aion.avm.shadow.java.lang.Object calleeSpace) {
         org.aion.avm.shadow.java.lang.Object callerSpace = null;
-        if (null != calleeSpace) {
+        if (SerializedInstanceStub.objectUsesReentrantCopy(calleeSpace, this.instanceIdField)) {
             // We want to replace this with a reference to caller-space (unless this object is new - has no mapping).
             callerSpace = this.calleeToCallerMap.get(calleeSpace);
             

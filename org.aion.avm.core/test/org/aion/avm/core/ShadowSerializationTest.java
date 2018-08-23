@@ -40,11 +40,32 @@ public class ShadowSerializationTest {
         // Populate initial data.
         int firstHash = populate(avm, contractAddr, "JavaLang");
         // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(94290307, firstHash);
+        Assert.assertEquals(94290325, firstHash);
         
         // Get the state of this data.
         int hash = getHash(avm, contractAddr, "JavaLang");
         Assert.assertEquals(firstHash, hash);
+    }
+
+    @Test
+    public void testReentrantJavaLang() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // deploy
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Populate initial data.
+        int firstHash = populate(avm, contractAddr, "JavaLang");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(94290325, firstHash);
+        
+        // Verify that things are consistent across reentrant modifications.
+        verifyReentrantChange(avm, contractAddr, "JavaLang");
     }
 
     @Test
@@ -130,5 +151,14 @@ public class ShadowSerializationTest {
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
+    }
+
+    private void verifyReentrantChange(Avm avm, Address contractAddr, String segmentName) {
+        long energyLimit = 2_000_000L;
+        byte[] argData = ABIEncoder.encodeMethodArguments("verifyReentrantChange_" + segmentName);
+        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, energyLimit, ENERGY_PRICE);
+        TransactionResult result = avm.run(new TransactionContextImpl(call, block));
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        Assert.assertTrue((Boolean)TestingHelper.decodeResult(result));
     }
 }

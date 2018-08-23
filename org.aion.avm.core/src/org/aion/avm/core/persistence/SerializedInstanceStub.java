@@ -204,4 +204,39 @@ public class SerializedInstanceStub {
         }
         return sizeInBytes;
     }
+
+    /**
+     * Used to determine if reentrant (memory-memory) calls are supposed to create an instance stub of the given object or if both spaces can
+     * refer to it, directly.
+     * This is important for cases like "Class" or constants where there is no real notion of how to make a "duplicate copy".
+     * 
+     * @param instance The object instance to check.
+     * @param instanceIdField The reflected access to instanceId.
+     * @return True if a copy should be made, false if the instance should be shared.
+     */
+    public static boolean objectUsesReentrantCopy(org.aion.avm.shadow.java.lang.Object instance, Field instanceIdField) {
+        boolean shouldCopy = false;
+        if (null == instance) {
+            // Copy null doesn't make sense.
+            shouldCopy = false;
+        } else if (instance instanceof org.aion.avm.shadow.java.lang.Class) {
+            // Classes don't get copied.
+            shouldCopy = false;
+        } else {
+            // Check if this has a constant instance ID.
+            try {
+                long instanceId = instanceIdField.getLong(instance);
+                // Copy normal serialized instances (>0) or normal net instances (0), but NOT constants (<0).
+                shouldCopy = (instanceId >= 0);
+                // We want the stubs is in the reentrant space to be copied, obviously.
+                if (REENTRANT_CALLEE_INSTANCE_ID == instanceId) {
+                    shouldCopy = true;
+                }
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                // Any failure related to this would have happened much earlier.
+                RuntimeAssertionError.unexpected(e);
+            }
+        }
+        return shouldCopy;
+    }
 }

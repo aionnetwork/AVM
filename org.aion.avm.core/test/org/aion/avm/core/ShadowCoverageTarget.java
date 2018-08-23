@@ -14,6 +14,7 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
 import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 
@@ -44,6 +45,20 @@ public class ShadowCoverageTarget {
         return javaLang.buildHash();
     }
 
+    public static boolean verifyReentrantChange_JavaLang() {
+        // Verify reentrant hash before call.
+        int localStartHash = javaLang.buildHash();
+        int remoteStartHash = reentrantMethodWithoutArgs("getHash_JavaLang");
+        if (localStartHash != remoteStartHash) {
+            throw new AssertionError();
+        }
+        
+        // Check reentrant commit is observed.
+        int remoteNextHash = reentrantMethodWithoutArgs("populate_JavaLang");
+        int localNextHash = javaLang.buildHash();
+        return (remoteNextHash == localNextHash);
+    }
+
     public static int populate_JavaMath() {
         javaMath.populate();
         return javaMath.buildHash();
@@ -69,6 +84,15 @@ public class ShadowCoverageTarget {
 
     public static int getHash_Api() {
         return api.buildHash();
+    }
+
+    private static int reentrantMethodWithoutArgs(String methodName) {
+        // Call this method via the runtime.
+        long value = 1;
+        byte[] data = ABIEncoder.encodeMethodArguments(methodName);
+        long energyLimit = 500000;
+        byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+        return ((Integer)ABIDecoder.decodeOneObject(response)).intValue();
     }
 
 
