@@ -5,7 +5,7 @@ import java.util.Collections;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.internal.OutOfEnergyException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -251,7 +251,7 @@ public class ReentrantGraphProcessorTest {
         boolean didCatch = false;
         try {
             codec.commitGraphToStoredFieldsAndRestore();
-        } catch (OutOfEnergyError e) {
+        } catch (OutOfEnergyException e) {
             // This is expected.
             didCatch = true;
             // We are expected to commute this into a revert.
@@ -292,7 +292,7 @@ public class ReentrantGraphProcessorTest {
         @Override
         public void writeOneInstanceToHeap(int byteSize) {
             // This is the place where we want to trigger a failure (may generalize this in the future).
-            throw new OutOfEnergyError();
+            throw new OutOfEnergyException();
         }
     }
 }

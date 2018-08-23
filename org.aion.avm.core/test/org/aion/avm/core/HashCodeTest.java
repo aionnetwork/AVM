@@ -12,7 +12,7 @@ import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
-import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
@@ -246,7 +246,7 @@ public class HashCodeTest {
     }
 
     /**
-     * Tests that the user code can't catch the OutOfEnergyError and bury it.
+     * Tests that the user code can't catch the OutOfEnergyException and bury it.
      */
     @Test
     public void testExhaustion() throws Exception {
@@ -258,7 +258,7 @@ public class HashCodeTest {
         } catch (InvocationTargetException e) {
             // Expected.
             Throwable cause = e.getCause();
-            Assert.assertEquals(OutOfEnergyError.class, cause.getClass());
+            Assert.assertEquals(OutOfEnergyException.class, cause.getClass());
             caught = true;
         }
         Assert.assertTrue(caught);
@@ -332,7 +332,7 @@ public class HashCodeTest {
             // This above call was supposed to fail.
             Assert.fail();
         } catch (InvocationTargetException e) {
-            Assert.assertTrue(e.getCause() instanceof OutOfEnergyError);
+            Assert.assertTrue(e.getCause() instanceof OutOfEnergyException);
         }
         IHelper.currentContractHelper.remove();
         

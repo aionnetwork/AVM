@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
 
-import org.aion.avm.internal.AvmException;
+import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -17,7 +17,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.NoMainMethodException;
-import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.internal.UncaughtException;
@@ -194,7 +194,7 @@ public class LoadedDApp {
      * Calls the actual entry-point, running the whatever was setup in the attached blockchain runtime as a transaction and return the result.
      * 
      * @return The data returned from the transaction (might be null).
-     * @throws OutOfEnergyError The transaction failed since the permitted energy was consumed.
+     * @throws OutOfEnergyException The transaction failed since the permitted energy was consumed.
      * @throws Exception Something unexpected went wrong with the invocation.
      */
     public byte[] callMain() throws Throwable {
@@ -247,12 +247,12 @@ public class LoadedDApp {
     }
 
     /**
-     * The exception could be any {@link org.aion.avm.internal.AvmException}, any {@link java.lang.RuntimeException},
+     * The exception could be any {@link org.aion.avm.internal.AvmThrowable}, any {@link java.lang.RuntimeException},
      * or a {@link org.aion.avm.exceptionwrapper.java.lang.Throwable}.
      */
     private void handleUncaughtException(Throwable cause) throws Throwable {
         // thrown by us
-        if (cause instanceof AvmException) {
+        if (cause instanceof AvmThrowable) {
             throw cause;
 
             // thrown by runtime, but is never handled

@@ -5,10 +5,10 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.AvmException;
+import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.JvmError;
-import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.TransactionContextImpl;
@@ -64,7 +64,7 @@ public class AvmImplTest {
         String result = null;
         try {
             throw new JvmError(new UnknownError("testing"));
-        } catch (AvmException e) {
+        } catch (AvmThrowable e) {
             result = e.getMessage();
         }
         assertEquals("java.lang.UnknownError: testing", result);
@@ -85,17 +85,17 @@ public class AvmImplTest {
 
         // Run the test.
         int catchCount = 0;
-        OutOfEnergyError error = null;
+        OutOfEnergyException error = null;
         try {
             helper.externalChargeEnergy(10);
-        } catch (OutOfEnergyError e) {
+        } catch (OutOfEnergyException e) {
             catchCount += 1;
             error = e;
         }
         // We didn't reset the state so this should still fail.
         try {
             helper.externalChargeEnergy(0);
-        } catch (OutOfEnergyError e) {
+        } catch (OutOfEnergyException e) {
             catchCount += 1;
             // And have the same exception.
             assertEquals(error, e);

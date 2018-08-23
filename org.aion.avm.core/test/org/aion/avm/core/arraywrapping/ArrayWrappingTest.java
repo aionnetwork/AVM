@@ -288,14 +288,14 @@ public class ArrayWrappingTest {
 //        try{
 //            method.invoke(obj);
 //        }catch(InvocationTargetException e){
-//            Assert.assertFalse(e.getCause() instanceof OutOfEnergyError);
+//            Assert.assertFalse(e.getCause() instanceof OutOfEnergyException);
 //        }
 //
 //        helper.externalSetEnergy(1000);
 //        try{
 //            method.invoke(obj);
 //        }catch(InvocationTargetException e){
-//            Assert.assertTrue(e.getCause() instanceof OutOfEnergyError);
+//            Assert.assertTrue(e.getCause() instanceof OutOfEnergyException);
 //        }
 //        helper.externalSetEnergy(10000000000L);
 //    }

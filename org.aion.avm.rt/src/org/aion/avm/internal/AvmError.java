@@ -8,22 +8,22 @@ package org.aion.avm.internal;
  * These cases are so severe that calling "System.exit()" open wanting to instantiate one would be a
  * reasonable implementation.
  */
-public abstract class FatalAvmError extends AvmException {
+public abstract class AvmError extends AvmThrowable {
     private static final long serialVersionUID = 1L;
 
-    protected FatalAvmError() {
+    protected AvmError() {
         super();
     }
 
-    protected FatalAvmError(String message) {
+    protected AvmError(String message) {
         super(message);
     }
 
-    protected FatalAvmError(String message, Throwable cause) {
+    protected AvmError(String message, Throwable cause) {
         super(message, cause);
     }
 
-    protected FatalAvmError(Throwable cause) {
+    protected AvmError(Throwable cause) {
         super(cause);
     }
 }

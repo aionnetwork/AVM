@@ -8,8 +8,6 @@ import org.aion.kernel.TransactionContext;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionResult;
 
-import java.lang.reflect.InvocationTargetException;
-
 
 public class DAppExecutor {
     public static void call(KernelInterface kernel, Avm avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume, TransactionContext ctx, TransactionResult result) {
@@ -62,18 +60,14 @@ public class DAppExecutor {
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setReturnData(ret);
             result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
-        } catch (FatalAvmError e) {
-            e.printStackTrace();
-            System.exit(-1);
-
-        }  catch (OutOfEnergyError e) {
+        } catch (OutOfEnergyException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
             result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
-        } catch (OutOfStackError e) {
+        } catch (OutOfStackException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
@@ -112,8 +106,7 @@ public class DAppExecutor {
         } catch (Throwable e) {
             e.printStackTrace();
             System.exit(-1);
-        }
-        finally {
+        } finally {
             // Once we are done running this, we want to clear the IHelper.currentContractHelper.
             IHelper.currentContractHelper.remove();
             // This state was only here while we were running, in case someone else needed to change it so now we can pop it.

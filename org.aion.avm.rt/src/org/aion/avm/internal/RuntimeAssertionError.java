@@ -9,7 +9,7 @@ package org.aion.avm.internal;
  * the compiler by throwing the response (important for reachability detection).
  * This idea is useful in cases where all paths throw.
  */
-public class RuntimeAssertionError extends FatalAvmError {
+public class RuntimeAssertionError extends AvmError {
     private static final long serialVersionUID = 1L;
 
     /**

@@ -2,7 +2,7 @@ package org.aion.avm.internal;
 
 
 /**
- * Error that indicates an internal runtime error, especially for AVM execution rule violation.
+ * Indicates an internal runtime unexpected condition, especially for AVM execution rule violation.
  *
  * Note:  This class extends {@link RuntimeException} since they are not expected to be caught, but to unwind the
  * stack.  This means that we are expecting to force our way out of the user code, as quickly as possible, and
@@ -10,7 +10,7 @@ package org.aion.avm.internal;
  * Depending on the severity of the problem, this either implies a failure of the contract or a failure of the
  * node where we are trying to run.
  */
-public abstract class AvmException extends RuntimeException {
+public abstract class AvmException extends AvmThrowable {
     private static final long serialVersionUID = 1L;
 
     protected AvmException() {

@@ -6,7 +6,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.OutOfStackError;
+import org.aion.avm.internal.OutOfStackException;
 import org.aion.avm.internal.Helper.StackWatcher;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
@@ -68,7 +68,7 @@ public class StackWatcherTest {
             method.invoke(obj);
             Assert.fail();
         }catch(InvocationTargetException e){
-            Assert.assertTrue(e.getCause() instanceof OutOfStackError);
+            Assert.assertTrue(e.getCause() instanceof OutOfStackException);
         }
     }
 
@@ -86,7 +86,7 @@ public class StackWatcherTest {
             method.invoke(obj);
             Assert.fail();
         }catch(InvocationTargetException e){
-            Assert.assertTrue(e.getCause() instanceof OutOfStackError);
+            Assert.assertTrue(e.getCause() instanceof OutOfStackException);
         }
     }
 
@@ -114,7 +114,7 @@ public class StackWatcherTest {
             try{
                 ret = method.invoke(obj);
             }catch(InvocationTargetException e){
-                Assert.assertTrue(e.getCause() instanceof OutOfStackError);
+                Assert.assertTrue(e.getCause() instanceof OutOfStackException);
                 cur = counter.get(obj);
                 if ((int)prev != -1){
                     Assert.assertEquals(cur, prev);
@@ -136,7 +136,7 @@ public class StackWatcherTest {
             try{
                 ret = method.invoke(obj);
             }catch(InvocationTargetException e){
-                Assert.assertTrue(e.getCause() instanceof OutOfStackError);
+                Assert.assertTrue(e.getCause() instanceof OutOfStackException);
                 cur = counter.get(obj);
                 if ((int)prev != -1){
                     Assert.assertEquals(cur, prev);

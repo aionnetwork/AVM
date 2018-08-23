@@ -11,7 +11,7 @@ import java.util.Queue;
 import java.util.function.Function;
 
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.OutOfEnergyError;
+import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
@@ -220,11 +220,11 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
      * graph as canonical.
      * This disagreement is rationalized by copying the contents of each of the callee's objects into the corresponding caller's
      * instances.
-     * @throws OutOfEnergyError The commit _can_ fail due to energy exhaustion, so the caller must be aware of that.  The commit will be
+     * @throws OutOfEnergyException The commit _can_ fail due to energy exhaustion, so the caller must be aware of that.  The commit will be
      * aborted, in that case, but the caller will still need to call revert (since the statics aborted statics are still installed in
      * the classes).
      */
-    public void commitGraphToStoredFieldsAndRestore() throws OutOfEnergyError {
+    public void commitGraphToStoredFieldsAndRestore() throws OutOfEnergyException {
         try {
             internalCommitGraphToStoredFieldsAndRestore();
         } catch (IllegalArgumentException | IllegalAccessException e) {

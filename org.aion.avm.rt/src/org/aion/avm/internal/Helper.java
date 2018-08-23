@@ -26,14 +26,14 @@ public class Helper implements IHelper {
     private static IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers;
 
     // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
-    private static AvmException forceExitState;
+    private static AvmThrowable forceExitState;
 
     // We also describe non-static variants of a few pieces of data for reentrance purposes (we can use this to snapshot/restore).
     // This is relevant since the Helper statics are called by the code but limits, etc, may be changed during reentrant invocation.
     public IBlockchainRuntime snapshot_blockchainRuntime;
     private long snapshot_energyLeft;
     private ClassLoader snapshot_lateLoader;
-    private AvmException snapshot_forceExitState;
+    private AvmThrowable snapshot_forceExitState;
 
 
     private static void initializeStaticState(ClassLoader loader, long nrgLeft, int nextHashCode) {
@@ -110,7 +110,7 @@ public class Helper implements IHelper {
 
     public static org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t) {
         org.aion.avm.shadow.java.lang.Object shadow = null;
-        AvmException exceptionToRethrow = null;
+        AvmThrowable exceptionToRethrow = null;
         try {
             // NOTE:  This is called for both the cases where the throwable is a VM-generated "java.lang" exception or one of our wrappers.
             // We need to wrap the java.lang instance in a shadow and unwrap the other case to return the shadow.
@@ -128,10 +128,10 @@ public class Helper implements IHelper {
                 }
                 // This is VM-generated - we will have to instantiate a shadow, directly.
                 shadow = convertVmGeneratedException(t);
-            } else if (t instanceof AvmException) {
+            } else if (t instanceof AvmThrowable) {
                 // There are cases where an AvmException might appear here during, for example, a finally clause.  We just want to re-throw it
                 // since these aren't catchable within the user code.
-                exceptionToRethrow = (AvmException)t;
+                exceptionToRethrow = (AvmThrowable)t;
             } else {
                 // This is one of our wrappers.
                 org.aion.avm.exceptionwrapper.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.java.lang.Throwable)t;
@@ -173,7 +173,7 @@ public class Helper implements IHelper {
         return result;
     }
 
-    public static void chargeEnergy(long cost) throws OutOfEnergyError {
+    public static void chargeEnergy(long cost) throws OutOfEnergyException {
 
         // This is called at the beginning of a block so see if we are being asked to exit.
         if (null != forceExitState) {
@@ -184,7 +184,7 @@ public class Helper implements IHelper {
         energyLeft -= cost;
         if (energyLeft < 0) {
             // Note that this is a reason to force the exit so set this.
-            OutOfEnergyError error = new OutOfEnergyError();
+            OutOfEnergyException error = new OutOfEnergyException();
             forceExitState = error;
             throw error;
         }
@@ -381,8 +381,8 @@ public class Helper implements IHelper {
         }
 
         // TODO:Discussion design of AVMStackError
-        private static void abortCurrentContract() throws OutOfStackError {
-            OutOfStackError error = new OutOfStackError();
+        private static void abortCurrentContract() throws OutOfStackException {
+            OutOfStackException error = new OutOfStackException();
             forceExitState = error;
             throw error;
         }
@@ -393,7 +393,7 @@ public class Helper implements IHelper {
          * Abort the smart contract in case of overflow.
          * @param frameSize size of the current frame (in number of slots).
          */
-        public static void enterMethod(int frameSize) throws OutOfStackError {
+        public static void enterMethod(int frameSize) throws OutOfStackException {
             if (null != forceExitState) {
                 throw forceExitState;
             }
@@ -414,7 +414,7 @@ public class Helper implements IHelper {
          * Abort the smart contract in case of underflow.
          * @param frameSize size of the current frame (in number of slots).
          */
-        public static void exitMethod(int frameSize) throws OutOfStackError {
+        public static void exitMethod(int frameSize) throws OutOfStackException {
             if (null != forceExitState) {
                 throw forceExitState;
             }

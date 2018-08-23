@@ -224,17 +224,11 @@ public class DAppCreator {
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
             result.setReturnData(dappAddress);
-        } catch (FatalAvmError e) {
-            // These are unrecoverable errors (either a bug in our code or a lower-level error reported by the JVM).
-            // (for now, we System.exit(-1), since this is what ethereumj does, but we may want a more graceful shutdown in the future)
-            e.printStackTrace();
-            System.exit(-1);
-
-        } catch (OutOfEnergyError e) {
+        } catch (OutOfEnergyException e) {
             result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
-        } catch (OutOfStackError e) {
+        } catch (OutOfStackException e) {
             result.setStatusCode(TransactionResult.Code.FAILED_STACK_OVERFLOW);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
@@ -246,7 +240,7 @@ public class DAppCreator {
             result.setStatusCode(TransactionResult.Code.FAILED_INVALID);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
-        }  catch (UncaughtException e) {
+        } catch (UncaughtException e) {
             result.setStatusCode(TransactionResult.Code.FAILED_EXCEPTION);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
