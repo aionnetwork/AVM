@@ -1,8 +1,8 @@
 package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.*;
+import org.aion.avm.internal.ABICodecException;
 import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.InvalidTxDataException;
 import org.aion.avm.shadow.java.lang.Double;
 import org.aion.avm.shadow.java.lang.Float;
 import org.aion.avm.shadow.java.lang.Integer;
@@ -785,7 +785,7 @@ public final class ABIEncoder {
      * Return the corresponding ABI type of the given identifier, if it matches with one of the identifiers of the ABI type.
      * @param identifier a string that may be the class name, Java class file field descriptor, or the ABI symbol. See the {@link ABITypes} class.
      * @return the corresponding ABI type.
-     * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
+     * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     public static ABITypes mapABITypes(String identifier) {
         // create the map, if not yet
@@ -800,7 +800,7 @@ public final class ABIEncoder {
 
         // return the type
         if (!ABITypesMap.containsKey(identifier)) {
-            throw new InvalidTxDataException("data type is not compatible to Aion ABI types");
+            throw new ABICodecException("data type is not compatible to Aion ABI types");
         }
         return ABITypesMap.get(identifier);
     }

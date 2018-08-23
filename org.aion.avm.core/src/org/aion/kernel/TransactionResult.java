@@ -49,7 +49,7 @@ public class TransactionResult {
         /**
          * Transaction failed due to stack overflow.
          */
-        FAILED_STACK_OVERFLOW,
+        FAILED_OUT_OF_STACK,
 
         /**
          * Transaction failed due to a REVERT operation.

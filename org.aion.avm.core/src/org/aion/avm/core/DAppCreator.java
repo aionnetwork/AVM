@@ -229,7 +229,7 @@ public class DAppCreator {
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (OutOfStackException e) {
-            result.setStatusCode(TransactionResult.Code.FAILED_STACK_OVERFLOW);
+            result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_STACK);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (RevertException e) {

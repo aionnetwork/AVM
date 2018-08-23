@@ -16,7 +16,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
-import org.aion.avm.internal.NoMainMethodException;
+import org.aion.avm.internal.MethodAccessException;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -209,11 +209,11 @@ public class LoadedDApp {
             RuntimeAssertionError.unexpected(e);
 
         } catch (NoSuchMethodException | IllegalAccessException e) {
-            throw new NoMainMethodException();
+            throw new MethodAccessException();
 
         } catch (InvocationTargetException e) {
             // handle the real exception
-            handleUncaughtException(e.getCause());
+            handleUncaughtException(e.getTargetException());
         }
 
         return null;
@@ -241,7 +241,7 @@ public class LoadedDApp {
 
             } catch (ExceptionInInitializerError e) {
                 // handle the real exception
-                handleUncaughtException(e.getCause());
+                handleUncaughtException(e.getException());
             }
         }
     }

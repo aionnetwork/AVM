@@ -1,9 +1,12 @@
 package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.*;
+import org.aion.avm.internal.ABICodecException;
+import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.InvalidTxDataException;
-import org.aion.avm.internal.DappInvocationTargetException;
+import org.aion.avm.internal.MethodAccessException;
+import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.internal.UncaughtException;
 import org.aion.avm.shadow.java.lang.Boolean;
 import org.aion.avm.shadow.java.lang.Byte;
 import org.aion.avm.shadow.java.lang.Float;
@@ -166,8 +169,7 @@ public final class ABIDecoder {
 
     /** Underlying implementation of {@link #avm_decodeAndRunWithObject(IObject, ByteArray) avm_decodeAndRunWithObject}
      * and {@link #avm_decodeAndRunWithClass(org.aion.avm.shadow.java.lang.Class, ByteArray)}  avm_decodeAndRunWithClass} methods
-     * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
-     * @throws DappInvocationTargetException Dapp throws an exception, which can be retrieved as the cause
+     * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     public static byte[] decodeAndRun(Object obj, byte[] txData, boolean isWithClass) {
         MethodCaller methodCaller = decode(txData);
@@ -183,7 +185,7 @@ public final class ABIDecoder {
             method = matchMethodSelector(obj.getClass(), newMethodName, newArgDescriptor);
         }
 
-        Object ret;
+        Object ret = null;
         if (Modifier.isStatic(method.getModifiers())) {
             obj = null;
         }
@@ -196,12 +198,21 @@ public final class ABIDecoder {
             else {
                 ret = method.invoke(obj, convertArguments(method, methodCaller.arguments));
             }
-        } catch (IllegalAccessException e) {
-            throw new InvalidTxDataException("the method encoded in the transaction data is not accessible", e);
-        } catch (IllegalArgumentException e) {
-            throw new InvalidTxDataException("cannot use or convert the method arguments encoded in the transaction data for the method invocation", e);
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            throw new MethodAccessException();
+
         } catch (InvocationTargetException e) {
-            throw new DappInvocationTargetException("Dapp throws an exception", e);
+            Throwable cause = e.getTargetException();
+
+            if (cause instanceof AvmThrowable) {
+                throw (AvmThrowable) cause;
+            } else if (cause instanceof RuntimeException) {
+                throw new UncaughtException(cause);
+            } else if (cause instanceof org.aion.avm.exceptionwrapper.java.lang.Throwable) {
+                throw new UncaughtException(cause.getCause());
+            } else {
+                RuntimeAssertionError.unexpected(cause);
+            }
         }
 
         return (null != ret)
@@ -210,7 +221,7 @@ public final class ABIDecoder {
     }
 
     /** Underlying implementation of {@link #avm_decodeMethodName(ByteArray) avm_decodeMethodName} method
-     * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
+     * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     public static String decodeMethodName(byte[] txData) {
         if (txData == null || txData.length == 0) {
@@ -239,7 +250,7 @@ public final class ABIDecoder {
     }
 
     /** A helper method to decode the transaction data into the method caller, which contains the method name, arguments descriptor and arguments.
-     * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
+     * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     public static MethodCaller decode(byte[] txData) {
         if (txData == null || txData.length == 0) {
@@ -254,7 +265,7 @@ public final class ABIDecoder {
             return new MethodCaller(decoded, null, null);
         }
         if (m1 == -1 || m2 == -1) {
-            throw new InvalidTxDataException("the descriptor in the transaction data is not properly wrapped with \"<>\"");
+            throw new ABICodecException("the descriptor in the transaction data is not properly wrapped with \"<>\"");
         }
 
         String methodName = decoded.substring(0, m1);
@@ -342,13 +353,13 @@ public final class ABIDecoder {
 
     /**
      * A helper method to read one integer from the array arguments descriptor.
-     * @throws InvalidTxDataException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
+     * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     private static int[] readNumberFromDescriptor(String argsDescriptor, char stopChar, int startIdx) {
         int[] res = new int[2]; // res[0]: the number encoded as argsDescriptor.substring(startIdx, idxE); res[1]: the index of stopChar in the argsDescriptor
         int idxE = argsDescriptor.indexOf(stopChar, startIdx);
         if (idxE == -1) {
-            throw new InvalidTxDataException("array dimension is not properly encoded in the transaction data");
+            throw new ABICodecException("array dimension is not properly encoded in the transaction data");
         }
 
         res[1] = idxE;
@@ -360,7 +371,7 @@ public final class ABIDecoder {
                 res[0] = Integer.parseInt(argsDescriptor.substring(startIdx, idxE));
             }
             catch (NumberFormatException e) {
-                throw new InvalidTxDataException("array dimension is not properly encoded in the transaction data");
+                throw new ABICodecException("array dimension is not properly encoded in the transaction data");
             }
         }
         return res;
