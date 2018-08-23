@@ -47,7 +47,7 @@ public class BasicPerfContract {
 
     public static byte[] main() {
         // Look up the user (potentially creating one if they are new).
-        Address sender = BlockchainRuntime.getSender();
+        Address sender = BlockchainRuntime.getCaller();
         User thisUser = userLocations.get(sender);
         if (null == thisUser) {
             thisUser = new User();

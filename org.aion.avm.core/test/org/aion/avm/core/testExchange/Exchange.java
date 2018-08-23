@@ -15,7 +15,7 @@ public class Exchange {
     private Address owner;
 
     public Exchange(){
-        owner = BlockchainRuntime.getSender();
+        owner = BlockchainRuntime.getCaller();
         coinListing = new AionMap<>();
     }
 
@@ -28,7 +28,7 @@ public class Exchange {
             return false;
         }
 
-        if (BlockchainRuntime.getSender().equals(owner) && verifyContractAddress(name, contractAddr)){
+        if (BlockchainRuntime.getCaller().equals(owner) && verifyContractAddress(name, contractAddr)){
             coinListing.put(String.valueOf(name), contractAddr);
             return true;
         }
@@ -50,7 +50,7 @@ public class Exchange {
         }
         Address coinContract = coinListing.get(String.valueOf(coin));
 
-        Address sender = BlockchainRuntime.getSender();
+        Address sender = BlockchainRuntime.getCaller();
 
         byte[] args = ABIEncoder.encodeMethodArguments("allowance", sender, BlockchainRuntime.getAddress());
 
@@ -65,7 +65,7 @@ public class Exchange {
     }
 
     public boolean processExchangeTransaction(){
-        if (!BlockchainRuntime.getSender().equals(owner)){
+        if (!BlockchainRuntime.getCaller().equals(owner)){
             return false;
         }
 

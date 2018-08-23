@@ -18,7 +18,7 @@ public final class BlockchainRuntime {
         return null;
     }
 
-    public static Address getSender() {
+    public static Address getCaller() {
         return null;
     }
 

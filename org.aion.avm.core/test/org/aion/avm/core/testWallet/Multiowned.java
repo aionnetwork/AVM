@@ -37,7 +37,7 @@ public class Multiowned {
 
     // PUBLIC INTERFACE
     public static void revoke(byte[] transactionBytes) {
-        Address sender = BlockchainRuntime.getSender();
+        Address sender = BlockchainRuntime.getCaller();
         // Make sure that they are an owner.
         if (Multiowned.owners.contains(sender)) {
             // See if we know about this operation.
@@ -54,7 +54,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public static void changeOwner(Address from, Address to) {
         // (modifier)
-        onlyManyOwners(BlockchainRuntime.getSender(), Operation.fromMessage());
+        onlyManyOwners(BlockchainRuntime.getCaller(), Operation.fromMessage());
         
         // Make sure that the to isn't already an owner and the from is.
         if (!isOwner(to) && isOwner(from)) {
@@ -73,7 +73,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public static void addOwner(Address owner) {
         // (modifier)
-        onlyManyOwners(BlockchainRuntime.getSender(), Operation.fromMessage());
+        onlyManyOwners(BlockchainRuntime.getCaller(), Operation.fromMessage());
         
         // Make sure that this owner isn't already in the set.
         if (!isOwner(owner)) {
@@ -90,7 +90,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public static void removeOwner(Address owner) {
         // (modifier)
-        onlyManyOwners(BlockchainRuntime.getSender(), Operation.fromMessage());
+        onlyManyOwners(BlockchainRuntime.getCaller(), Operation.fromMessage());
         
         // Make sure that this owner is  in the set.
         if (isOwner(owner)) {
@@ -109,7 +109,7 @@ public class Multiowned {
     // PUBLIC INTERFACE
     public static void changeRequirement(int newRequired) {
         // (modifier)
-        onlyManyOwners(BlockchainRuntime.getSender(), Operation.fromMessage());
+        onlyManyOwners(BlockchainRuntime.getCaller(), Operation.fromMessage());
         
         // Change the requirement.
         Multiowned.numberRequired = newRequired;

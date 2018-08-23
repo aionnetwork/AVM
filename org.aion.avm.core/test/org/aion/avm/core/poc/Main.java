@@ -19,7 +19,7 @@ public class Main {
         Address owner2 = (Address) arguments[1];
         int confirmationsRequired = (int) arguments[2];
         Address[] owners = {
-                BlockchainRuntime.getSender(),
+                BlockchainRuntime.getCaller(),
                 owner1,
                 owner2
         };

@@ -20,7 +20,7 @@ public interface IBlockchainRuntime {
     Address avm_getAddress();
 
     /**
-     * Returns the sender's address.
+     * Returns the caller's address.
      */
     Address avm_getCaller();
 

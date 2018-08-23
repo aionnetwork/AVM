@@ -12,7 +12,7 @@ public class BlockchainRuntimeTestResource {
     public static byte[] main() {
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(getAddress().unwrap());
-        buffer.put(getSender().unwrap());
+        buffer.put(getCaller().unwrap());
         buffer.put(getOrigin().unwrap());
         buffer.putLong(getEnergyLimit());
         buffer.putLong(getEnergyPrice());

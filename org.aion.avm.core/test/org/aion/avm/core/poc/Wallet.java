@@ -55,7 +55,7 @@ public class Wallet {
      */
     public boolean confirm(byte[] id) {
         // check access
-        Address sender = BlockchainRuntime.getSender();
+        Address sender = BlockchainRuntime.getCaller();
         if (!owners.contains(sender)) {
             return false;
         }

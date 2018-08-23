@@ -18,7 +18,7 @@ public class CoinController {
         String name = new String((char[]) arguments[0]);
         String symbol = new String((char[]) arguments[1]);
         int decimals = (int) arguments[2];
-        Address minter = BlockchainRuntime.getSender();
+        Address minter = BlockchainRuntime.getCaller();
 
         token = new ERC20Token(name, symbol, decimals, minter);
     }

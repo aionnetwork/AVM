@@ -17,7 +17,7 @@ public final class BlockchainRuntime {
         return Helper.blockchainRuntime.avm_getAddress();
     }
 
-    public static Address avm_getSender() {
+    public static Address avm_getCaller() {
         return Helper.blockchainRuntime.avm_getCaller();
     }
 
@@ -146,12 +146,12 @@ public final class BlockchainRuntime {
         return avm_getAddress();
     }
 
-    public static Address getSender() {
-        return avm_getSender();
+    public static Address getCaller() {
+        return avm_getCaller();
     }
 
     public static Address getOrigin() {
-        return avm_getSender();
+        return avm_getOrigin();
     }
 
     public static long getEnergyLimit() {
@@ -179,7 +179,7 @@ public final class BlockchainRuntime {
     }
 
     public static long getBlockEnergyLimit() {
-        return avm_getEnergyLimit();
+        return avm_getBlockEnergyLimit();
     }
 
     public static Address getBlockCoinbase() {
@@ -202,7 +202,6 @@ public final class BlockchainRuntime {
     public static void putStorage(byte[] key, byte[] value) {
         avm_putStorage(new ByteArray(key), new ByteArray(value));
     }
-
 
     public static long getBalance(Address address) {
         return avm_getBalance(address);
@@ -262,10 +261,10 @@ public final class BlockchainRuntime {
     }
 
     public static void print(java.lang.String message) {
-        Helper.blockchainRuntime.avm_print(new String(message));
+        avm_print(new String(message));
     }
 
     public static void println(java.lang.String message) {
-        Helper.blockchainRuntime.avm_println(new String(message));
+        avm_println(new String(message));
     }
 }

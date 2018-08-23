@@ -24,7 +24,7 @@ public class SimpleToken {
     public byte[] run(byte[] input) {
         // dummy encoding: method id + abi(input parameters)
         if (input.length == 33 && input[0] == 1) {
-            transfer(BlockchainRuntime.getSender().unwrap(), copyOf(input, 1, 33));
+            transfer(BlockchainRuntime.getCaller().unwrap(), copyOf(input, 1, 33));
         }
 
         return null;

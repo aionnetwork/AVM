@@ -56,7 +56,7 @@ public class ERC20Token implements ERC20 {
     }
 
     public boolean transfer(Address receiver, long tokens) {
-        Address sender = BlockchainRuntime.getSender();
+        Address sender = BlockchainRuntime.getCaller();
 
         long senderBalance = this.ledger.getOrDefault(sender, 0L);
         long receiverBalance = this.ledger.getOrDefault(receiver, 0L);
@@ -72,7 +72,7 @@ public class ERC20Token implements ERC20 {
     }
 
     public boolean approve(Address spender, long tokens) {
-        Address sender = BlockchainRuntime.getSender();
+        Address sender = BlockchainRuntime.getCaller();
 
         if (!this.allowance.containsKey(sender)) {
             AionMap<Address, Long> newEntry = new AionMap<>();
@@ -86,7 +86,7 @@ public class ERC20Token implements ERC20 {
     }
 
     public boolean transferFrom(Address from, Address to, long tokens) {
-        Address sender = BlockchainRuntime.getSender();
+        Address sender = BlockchainRuntime.getCaller();
 
         long fromBalance = this.ledger.getOrDefault(from, 0L);
         long toBalance = this.ledger.getOrDefault(to, 0L);
@@ -105,7 +105,7 @@ public class ERC20Token implements ERC20 {
     }
 
     public boolean mint(Address receiver, long tokens) {
-        if (BlockchainRuntime.getSender().equals(this.minter)) {
+        if (BlockchainRuntime.getCaller().equals(this.minter)) {
             long receiverBalance = this.ledger.getOrDefault(receiver, 0L);
             if ((tokens > 0) && (receiverBalance + tokens > 0)) {
                 BlockchainRuntime.log("Mint".getBytes(), receiver.unwrap(), Long.toString(tokens).getBytes());

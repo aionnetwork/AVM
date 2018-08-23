@@ -23,7 +23,7 @@ public class Daylimit {
     // PUBLIC INTERFACE
     public static void setDailyLimit(long value) {
         // (modifier)
-        Multiowned.onlyManyOwners(BlockchainRuntime.getSender(), Operation.fromMessage());
+        Multiowned.onlyManyOwners(BlockchainRuntime.getCaller(), Operation.fromMessage());
         
         Daylimit.dailyLimit = value;
     }
@@ -31,7 +31,7 @@ public class Daylimit {
     // PUBLIC INTERFACE
     public static void resetSpentToday() {
         // (modifier)
-        Multiowned.onlyManyOwners(BlockchainRuntime.getSender(), Operation.fromMessage());
+        Multiowned.onlyManyOwners(BlockchainRuntime.getCaller(), Operation.fromMessage());
         
         Daylimit.spentToday = 0;
     }
@@ -42,7 +42,7 @@ public class Daylimit {
     // public for composition.
     public static boolean underLimit(long value) {
         // (modifier)
-        Multiowned.onlyOwner(BlockchainRuntime.getSender());
+        Multiowned.onlyOwner(BlockchainRuntime.getCaller());
         
         // reset the spend limit if we're on a different day to last time.
         long nowInDays = BlockchainRuntime.getBlockTimestamp() / kSecondsPerDay;

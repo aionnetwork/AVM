@@ -23,7 +23,7 @@ public class Wallet {
     // just pass as part of the deployment payload, after the code).
     public static void init(Address[] requestedOwners, int votesRequiredPerOperation, long daylimit) {
         // This is the contract entry-point so "construct" the contract fragments from which we are derived.
-        Address sender = BlockchainRuntime.getSender();
+        Address sender = BlockchainRuntime.getCaller();
         long nowInSeconds = BlockchainRuntime.getBlockTimestamp();
         long nowInDays = nowInSeconds / (24 * 60 * 60);
         Multiowned.init(sender, requestedOwners, votesRequiredPerOperation);
@@ -108,7 +108,7 @@ public class Wallet {
     // EXTERNAL
     public static void kill(Address to) {
         // (modifier)
-        Multiowned.onlyManyOwners(BlockchainRuntime.getSender(), Operation.fromMessage());
+        Multiowned.onlyManyOwners(BlockchainRuntime.getCaller(), Operation.fromMessage());
         
         BlockchainRuntime.selfDestruct(to);
     }
@@ -127,12 +127,12 @@ public class Wallet {
     // and _data arguments). They still get the option of using them if they want, anyways.
     public static byte[] execute(Address to, long value, byte[] data) {
         // (modifier)
-        Multiowned.onlyOwner(BlockchainRuntime.getSender());
+        Multiowned.onlyOwner(BlockchainRuntime.getCaller());
         
         byte[] result = null;
         // first, take the opportunity to check that we're under the daily limit.
         if (Daylimit.underLimit(value)) {
-            EventLogger.singleTransact(BlockchainRuntime.getSender(), value, to, data);
+            EventLogger.singleTransact(BlockchainRuntime.getCaller(), value, to, data);
             // yes - just execute the call.
             byte[] response = BlockchainRuntime.call(to, 0, data, value);
             if (null == response) {
@@ -150,7 +150,7 @@ public class Wallet {
                 transaction.value = value;
                 transaction.data = data;
                 Wallet.transactions.put(transactionKey, transaction);
-                EventLogger.confirmationNeeded(Operation.fromHashedBytes(result), BlockchainRuntime.getSender(), value, to, data);
+                EventLogger.confirmationNeeded(Operation.fromHashedBytes(result), BlockchainRuntime.getCaller(), value, to, data);
             }
         }
         return result;
@@ -178,7 +178,7 @@ public class Wallet {
         try {
             // (modifier)
             Operation operationToConfirm = Operation.fromRawBytes(h);
-            Multiowned.onlyManyOwners(BlockchainRuntime.getSender(), operationToConfirm);
+            Multiowned.onlyManyOwners(BlockchainRuntime.getCaller(), operationToConfirm);
             
             BytesKey key = BytesKey.from(h);
             if (null != Wallet.transactions.get(key).to) {
@@ -187,7 +187,7 @@ public class Wallet {
                 if (null == response) {
                     throw new RequireFailedException();
                 }
-                EventLogger.multiTransact(BlockchainRuntime.getSender(), operationToConfirm, transaction.value, transaction.to, transaction.data);
+                EventLogger.multiTransact(BlockchainRuntime.getCaller(), operationToConfirm, transaction.value, transaction.to, transaction.data);
                 Wallet.transactions.remove(BytesKey.from(h));
                 result = true;
             }

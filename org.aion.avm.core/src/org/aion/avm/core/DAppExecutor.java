@@ -74,6 +74,7 @@ public class DAppExecutor {
             }
 
             Throwable cause = ie.getCause();
+            cause.printStackTrace();
             if (cause instanceof RevertException) {
                 result.setStatusCode(TransactionResult.Code.REVERT);
                 result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
