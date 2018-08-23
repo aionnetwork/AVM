@@ -19,6 +19,10 @@ public class SerializedInstanceStub {
     private static final int STUB_DESCRIPTOR_CONSTANT = -1;
     private static final int STUB_DESCRIPTOR_CLASS = -2;
 
+    // Note that this is probably just a temporary measure but, in order to better track bugs in the reentrant case, all instance stubs created
+    // in the callee space are given this special instance ID.
+    public static final long REENTRANT_CALLEE_INSTANCE_ID = Long.MIN_VALUE;
+
     /**
      * Serializes a given object reference as an instance stub.  Note that this helper will apply an instanceId to the instance if it doesn't already have one and is a type which should.
      * 

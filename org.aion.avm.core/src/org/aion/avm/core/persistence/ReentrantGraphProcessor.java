@@ -590,13 +590,13 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         // First, see if we already have a stub for this caller.
         org.aion.avm.shadow.java.lang.Object callee = this.callerToCalleeMap.get(caller);
         if (null == callee) {
-            // Note that this instanceId will never be used, so we pass in Long.MIN_VALUE.  This is because we never replace caller instances with
+            // Note that this instanceId will never be used, so we pass in SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID.  This is because we never replace caller instances with
             // callee instance.
             // This means that, since this object is the callee representation of a caller object, it will never end up in the caller's graph, hence
             // never serialized to the storage.  The only objects which can be added to the caller's graph are new objects (which don't have an
             // instanceId, either).
             try {
-                callee = caller.getClass().getConstructor(IDeserializer.class, long.class).newInstance(new CopyingDeserializer(caller), Long.MIN_VALUE);
+                callee = caller.getClass().getConstructor(IDeserializer.class, long.class).newInstance(new CopyingDeserializer(caller), SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 // TODO:  These should probably come through a cache.
                 RuntimeAssertionError.unexpected(e);
@@ -699,8 +699,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         }
         @Override
         public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
-            // All the objects we are creating to deserialize in the callee space have Long.MIN_VALUE as the instanceId.
-            RuntimeAssertionError.assertTrue(Long.MIN_VALUE == instanceId);
+            // All the objects we are creating to deserialize in the callee space have SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID as the instanceId.
+            RuntimeAssertionError.assertTrue(SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID == instanceId);
             
             // Make sure that it is loaded.
             this.callerSpaceOriginal.lazyLoad();
