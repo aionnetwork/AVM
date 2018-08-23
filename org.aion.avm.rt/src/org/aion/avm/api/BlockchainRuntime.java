@@ -2,6 +2,7 @@ package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.math.BigInteger;
 
 
@@ -131,6 +132,14 @@ public final class BlockchainRuntime {
         Helper.blockchainRuntime.avm_invalid();
     }
 
+    public static void avm_print(String message) {
+        Helper.blockchainRuntime.avm_print(message);
+    }
+
+    public static void avm_println(String message) {
+        Helper.blockchainRuntime.avm_println(message);
+    }
+
     // Compiler-facing implementation.
 
     public static Address getAddress() {
@@ -250,5 +259,13 @@ public final class BlockchainRuntime {
 
     public static void invalid() {
         avm_invalid();
+    }
+
+    public static void print(java.lang.String message) {
+        Helper.blockchainRuntime.avm_print(new String(message));
+    }
+
+    public static void println(java.lang.String message) {
+        Helper.blockchainRuntime.avm_println(new String(message));
     }
 }

@@ -132,4 +132,12 @@ public final class BlockchainRuntime {
 
     public static void invalid() {
     }
+
+    public static void print(String message) {
+
+    }
+
+    public static void println(String message) {
+
+    }
 }

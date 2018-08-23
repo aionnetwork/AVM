@@ -2,8 +2,8 @@ package org.aion.avm.internal;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.math.BigInteger;
+import org.aion.avm.shadow.java.lang.String;
 
 
 /**
@@ -198,4 +198,18 @@ public interface IBlockchainRuntime {
      * Stop the current execution, rollback any state changes, and consume all remaining energy.
      */
     void avm_invalid();
+
+    /**
+     * Prints a message to console for debugging purpose
+     *
+     * @param message
+     */
+    void avm_print(String message);
+
+    /**
+     * Prints a message to console for debugging purpose
+     *
+     * @param message
+     */
+    void avm_println(String message);
 }

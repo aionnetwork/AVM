@@ -1,7 +1,6 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.core.util.Helpers;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -44,6 +43,10 @@ public class BlockchainRuntimeTestResource {
         log("topic1".getBytes(), "topic2".getBytes(), "topic3".getBytes(), "topic4".getBytes(), "data".getBytes());
 
         buffer.put(blake2b("message".getBytes()));
+
+        println("message");
+
+        print("message");
 
         return Arrays.copyOfRange(buffer.array(), 0, buffer.position());
     }

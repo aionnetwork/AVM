@@ -8,6 +8,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.InvalidException;
 import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -43,7 +44,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
 
     private KernelInterface kernel = new KernelInterfaceImpl();
-    private Map<String, Integer> eventCounter = new HashMap<>();
+    private Map<java.lang.String, Integer> eventCounter = new HashMap<>();
 
     public TestingBlockchainRuntime() {
     }
@@ -81,7 +82,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
         return this;
     }
 
-    public TestingBlockchainRuntime withEventCounter(Map<String, Integer> eventCounter) {
+    public TestingBlockchainRuntime withEventCounter(Map<java.lang.String, Integer> eventCounter) {
         this.eventCounter = eventCounter;
         return this;
     }
@@ -209,7 +210,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     @Override
     public void avm_log(ByteArray index0, ByteArray data) {
-        String reconstituted = new String(index0.getUnderlying(), StandardCharsets.UTF_8);
+        java.lang.String reconstituted = new java.lang.String(index0.getUnderlying(), StandardCharsets.UTF_8);
         System.out.println(reconstituted);
         Integer oldCount = this.eventCounter.get(reconstituted);
         int newCount = ((null != oldCount) ? oldCount : 0) + 1;
@@ -244,7 +245,17 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
         throw new InvalidException();
     }
 
-    public int getEventCount(String event) {
+    @Override
+    public void avm_print(String message) {
+        System.out.print(message);
+    }
+
+    @Override
+    public void avm_println(String message) {
+        System.out.println(message);
+    }
+
+    public int getEventCount(java.lang.String event) {
         Integer count = this.eventCounter.get(event);
         return (null != count) ? count : 0;
     }

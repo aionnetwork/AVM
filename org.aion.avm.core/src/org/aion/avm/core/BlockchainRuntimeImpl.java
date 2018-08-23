@@ -10,6 +10,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.InvalidException;
 import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.*;
 
@@ -249,5 +250,15 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public void avm_invalid() {
         throw new InvalidException();
+    }
+
+    @Override
+    public void avm_print(String message) {
+        System.out.print(message);
+    }
+
+    @Override
+    public void avm_println(String message) {
+        System.out.println(message);
     }
 }
