@@ -233,8 +233,8 @@ public class ReentrantCrossCallResource {
 
 
     public static class Nested {
-        public int data;
-        public Nested(int data) {
+        public Integer data;
+        public Nested(Integer data) {
             this.data = data;
         }
     }

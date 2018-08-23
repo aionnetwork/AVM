@@ -26,7 +26,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * See issue-167 for more information.
  * TODO:  Investigate possible ways to generalize all field walkers found here and in ReflectionStructureCodec.
  */
-public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.AutomaticSerializer, LoopbackCodec.AutomaticDeserializer {
+public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerializer, LoopbackCodec.AutomaticDeserializer {
     /**
      * We apply the DONE_MARKER to a callee object when we determine it (or its corresponding caller) has been added to a queue to process.
      * This is used to mark the object so we don't add it to the queue more than once.
@@ -296,9 +296,13 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
             // (the reason to serialize/deserialize the same object is to process the object references in a general way:  try to map back into the caller space).
             Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper = (calleeField) -> {
                 org.aion.avm.shadow.java.lang.Object caller = null;
-                if (null != calleeField) {
+                // We only want to map this back if we are non-null and there actually is a corresponding caller-space object.
+                if ((null != calleeField) && this.calleeToCallerMap.containsKey(calleeField)) {
                     // NOTE:  We access calleeToCallerMap directly, since the DONE_MARKER was already applied in doDryRunForCommit.
                     caller = this.calleeToCallerMap.get(calleeField);
+                } else {
+                    // Otherwise, just return whatever we were given (leave the field unchanged).
+                    caller = calleeField;
                 }
                 return caller;
             };
@@ -405,19 +409,24 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
         return calleeSpaceObjectsToCopyBack;
     }
 
-    @Override
-    public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
-        // All the objects we are creating to deserialize in the callee space have Long.MIN_VALUE as the instanceId.
-        RuntimeAssertionError.assertTrue(Long.MIN_VALUE == instanceId);
-        
-        // Look up the corresponding caller instance.
-        org.aion.avm.shadow.java.lang.Object caller = this.calleeToCallerMap.get(instance);
-        // Make sure that it is loaded.
-        caller.lazyLoad();
+    /**
+     * Called by the special IDeserializer instance we use for deserializing callee-space objects from caller-space objects.
+     * 
+     * @param calleeSpace The object in the callee space which must be written.
+     * @param callerSpaceOriginal The original object from the caller space.
+     */
+    private void populateCalleeSpaceObject(org.aion.avm.shadow.java.lang.Object calleeSpace, org.aion.avm.shadow.java.lang.Object callerSpaceOriginal) {
+        // We assume that the caller object has been fully deserialized.
+        try {
+            RuntimeAssertionError.assertTrue(null == this.deserializerField.get(callerSpaceOriginal));
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Reflection errors would happen much earlier.
+            RuntimeAssertionError.unexpected(e);
+        }
         
         // Account for the size of this instance.
         // TODO:  Find a way to capture the size of this instance without serializing twice.
-        int instanceBytes = measureByteSizeOfInstance(caller, (ignored) -> null);
+        int instanceBytes = measureByteSizeOfInstance(callerSpaceOriginal, (ignored) -> null);
         this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
         
         // We want to use the same codec logic which exists in all shadow objects (since the shadow and API classes do special things here which we don't want to duplicate).
@@ -425,9 +434,9 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
         Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper = (callerField) -> internalGetCalleeStubForCaller(callerField);
         LoopbackCodec loopback = new LoopbackCodec(this, this, deserializeHelper);
         // Serialize the original.
-        caller.serializeSelf(null, loopback);
+        callerSpaceOriginal.serializeSelf(null, loopback);
         // Deserialize this data into the new instance.
-        instance.deserializeSelf(null, loopback);
+        calleeSpace.deserializeSelf(null, loopback);
         // Prove that we didn't miss anything.
         loopback.verifyDone();
     }
@@ -587,7 +596,7 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
             // never serialized to the storage.  The only objects which can be added to the caller's graph are new objects (which don't have an
             // instanceId, either).
             try {
-                callee = caller.getClass().getConstructor(IDeserializer.class, long.class).newInstance(this, Long.MIN_VALUE);
+                callee = caller.getClass().getConstructor(IDeserializer.class, long.class).newInstance(new CopyingDeserializer(caller), Long.MIN_VALUE);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 // TODO:  These should probably come through a cache.
                 RuntimeAssertionError.unexpected(e);
@@ -675,5 +684,28 @@ public class ReentrantGraphProcessor implements IDeserializer, LoopbackCodec.Aut
         // Prove that we didn't miss anything.
         loopback.verifyDone();
         return instanceByteSize;
+    }
+
+
+    /**
+     * An implementation of IDeserializer which is not dependent on the content of the calleeToCallerMap, meaning it can be called from within the constructor
+     * This is required to make things like our Number classes work (since they eagerly deserialize).
+     */
+    private class CopyingDeserializer implements IDeserializer {
+        private final org.aion.avm.shadow.java.lang.Object callerSpaceOriginal;
+        
+        public CopyingDeserializer(org.aion.avm.shadow.java.lang.Object callerSpaceOriginal) {
+            this.callerSpaceOriginal = callerSpaceOriginal;
+        }
+        @Override
+        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
+            // All the objects we are creating to deserialize in the callee space have Long.MIN_VALUE as the instanceId.
+            RuntimeAssertionError.assertTrue(Long.MIN_VALUE == instanceId);
+            
+            // Make sure that it is loaded.
+            this.callerSpaceOriginal.lazyLoad();
+            
+            populateCalleeSpaceObject(instance, this.callerSpaceOriginal);
+        }
     }
 }
