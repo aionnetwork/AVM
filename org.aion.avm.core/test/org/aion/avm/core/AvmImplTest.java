@@ -345,6 +345,36 @@ public class AvmImplTest {
         assertEquals(false, ((Boolean)TestingHelper.decodeResult(result2)).booleanValue());
     }
 
+    /**
+     * Tests that inner classes are correctly handled by reentrant calls.
+     * Also ensures that instances reachable from statics are correctly handled to arbitrary recursive depth.
+     */
+    @Test
+    public void testReentrantRecursiveNested() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // deploy
+        long energyLimit = 10_000_000l;
+        long energyPrice = 1l;
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // We just want to call our special getFar helper with a constrained energy.
+        // WARNING:  This test is very sensitive to storage billing configuration so the energy limit likely needs to be updated when that changes.
+        // The write-back of the callee attempts to write statics and 2 instances.  We want it to fail at 1 instance (20_000L seems to do this).
+        byte[] callData = ABIEncoder.encodeMethodArguments("recursiveChangeNested", 0, 5);
+        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, callData, energyLimit, 1l);
+        TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
+        
+        // We don't want to depend on a specific hashcode (appears to be 19) but just the idea that it needs to be non-zero.
+        assertTrue(0 != ((Integer)TestingHelper.decodeResult(result2)).intValue());
+    }
+
 
     private int callRecursiveHash(Avm avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);

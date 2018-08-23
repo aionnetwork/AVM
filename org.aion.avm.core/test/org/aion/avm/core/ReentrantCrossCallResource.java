@@ -12,6 +12,8 @@ public class ReentrantCrossCallResource {
     // We use these to verify the commit/rollback of object graph state, during reentrant calls.
     private static int direct = 1;
     private static ReentrantCrossCallResource constant = new ReentrantCrossCallResource();
+    private static Nested nestedInstance;
+
     private int near = 1;
     private int[] far = new int[] {1};
 
@@ -158,6 +160,61 @@ public class ReentrantCrossCallResource {
         constant.far[0] -= 1;
     }
 
+    /**
+     * This case calls incFar, as a successful reentrant call, then fails in itself.
+     * @return False if the reentrant call didn't observably change state (otherwise, fails - never returns true).
+     */
+    public static int recursiveChangeNested(int hashToCheck, int iterationsToCall) {
+        // Check the state.
+        if (0 == hashToCheck) {
+            if (null != nestedInstance) {
+                BlockchainRuntime.println("expected null");
+                throw new AssertionError();
+            }
+        } else {
+            if (hashToCheck != nestedInstance.hashCode()) {
+                BlockchainRuntime.println("expected match");
+                throw new AssertionError();
+            }
+            // We can also verify the state.
+            if ((iterationsToCall + 1) != nestedInstance.data) {
+                BlockchainRuntime.println("incorrect data");
+                throw new AssertionError();
+            }
+        }
+        
+        // Install new state.
+        Nested ourState = new Nested(iterationsToCall);
+        nestedInstance = ourState;
+        
+        // Call recursive with our expectations based on the new state.
+        if (iterationsToCall > 0) {
+            // Make the reentrant call.
+            long value = 1;
+            byte[] data = ABIEncoder.encodeMethodArguments("recursiveChangeNested", ourState.hashCode(), iterationsToCall - 1);
+            long energyLimit = 1_000_000L;
+            byte[] result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+            int responseHash = ((Integer)ABIDecoder.decodeOneObject(result)).intValue();
+            
+            // Verify that we see this hash for the nestedInstance.
+            if (responseHash != nestedInstance.hashCode()) {
+                BlockchainRuntime.println("response hash mismatch");
+                throw new AssertionError();
+            }
+            // Verify the data in the nestedInstance.
+            if ((iterationsToCall - 1) != nestedInstance.data) {
+                BlockchainRuntime.println("response data mismatch");
+                throw new AssertionError();
+            }
+            
+            // Re-install our instance.
+            nestedInstance = ourState;
+        }
+        
+        // Return the hash of our state.
+        return ourState.hashCode();
+    }
+
     private static void reentrantCall(String methodName, boolean shouldFail) {
         long value = 1;
         byte[] data = ABIEncoder.encodeMethodArguments(methodName, shouldFail);
@@ -171,6 +228,14 @@ public class ReentrantCrossCallResource {
     private static void causeFailure() {
         while (true) {
             new Object();
+        }
+    }
+
+
+    public static class Nested {
+        public int data;
+        public Nested(int data) {
+            this.data = data;
         }
     }
 }
