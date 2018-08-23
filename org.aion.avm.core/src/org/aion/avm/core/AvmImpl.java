@@ -8,7 +8,6 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
 import org.aion.kernel.KernelInterface;
-import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 
 
@@ -53,7 +52,7 @@ public class AvmImpl implements Avm {
                     try {
                         dapp = DAppLoader.loadFromKernel(kernel, dappAddress);
                     } catch (IOException e) {
-                        result.setStatusCode(TransactionResult.Code.INVALID_CALL);
+                        result.setStatusCode(TransactionResult.Code.FAILED);
                         result.setEnergyUsed(ctx.getEnergyLimit());
                     }
                 }

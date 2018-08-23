@@ -9,10 +9,71 @@ import java.util.List;
 public class TransactionResult {
 
     public enum  Code {
-        SUCCESS, INVALID_TX, INVALID_JAR, INVALID_CODE, INVALID_CALL, OUT_OF_ENERGY,
+        /**
+         * The transaction was executed successfully.
+         */
+        SUCCESS(),
+
+        /**
+         * This transaction was rejected.
+         */
+        REJECTED,
+
+        /**
+         * Insufficient balance to conduct the transaction.
+         */
+        REJECTED_INSUFFICIENT_BALANCE,
 
 
-        REVERT, INVALID, FAILURE
+        /**
+         * The transaction nonce does not match the account nonce.
+         */
+        REJECTED_INVALID_NONCE,
+
+        /**
+         * The transaction data is malformed
+         */
+        REJECTED_INVALID_DATA,
+
+
+        /**
+         * A failure occurred during the execution of the transaction.
+         */
+        FAILED,
+
+        /**
+         * Transaction failed due to out of energy.
+         */
+        FAILED_OUT_OF_ENERGY,
+
+
+        /**
+         * Transaction failed due to a REVERT operation.
+         */
+        FAILED_REVERT,
+
+        /**
+         * Transaction failed due to an INVALID operation.
+         */
+        FAILED_INVALID,
+
+        /**
+         * Transaction failed due to an uncaught exception.
+         */
+        FAILED_EXCEPTION;
+
+
+        public boolean isSuccess() {
+            return this == SUCCESS;
+        }
+
+        public boolean isRejected() {
+            return this == REJECTED || this == REJECTED_INSUFFICIENT_BALANCE || this == REJECTED_INVALID_DATA || this == REJECTED_INVALID_NONCE;
+        }
+
+        public boolean isFailure() {
+            return this == FAILED || this == FAILED_OUT_OF_ENERGY || this == FAILED_REVERT || this == FAILED_INVALID || this == FAILED_EXCEPTION;
+        }
     }
 
     /**

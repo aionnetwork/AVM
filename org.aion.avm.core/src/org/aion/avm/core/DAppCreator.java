@@ -158,14 +158,14 @@ public class DAppCreator {
 
             RawDappModule rawDapp = RawDappModule.readFromJar(dappCode);
             if (rawDapp == null) {
-                result.setStatusCode(TransactionResult.Code.INVALID_JAR);
+                result.setStatusCode(TransactionResult.Code.REJECTED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getEnergyLimit());
                 return;
             }
 
             // validate dapp module
             if (!validateDapp(rawDapp)) {
-                result.setStatusCode(TransactionResult.Code.INVALID_CODE);
+                result.setStatusCode(TransactionResult.Code.REJECTED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getEnergyLimit());
                 return;
             }
@@ -230,19 +230,19 @@ public class DAppCreator {
             e.printStackTrace();
             System.exit(-1);
         } catch (OutOfEnergyError e) {
-            result.setStatusCode(TransactionResult.Code.OUT_OF_ENERGY);
+            result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (ExceptionInInitializerError die) {
             die.printStackTrace();
-            result.setStatusCode(TransactionResult.Code.FAILURE);
+            result.setStatusCode(TransactionResult.Code.FAILED);
             result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (InvalidTxDataException e) {
             e.printStackTrace();
-            result.setStatusCode(TransactionResult.Code.INVALID_TX);
+            result.setStatusCode(TransactionResult.Code.REJECTED_INVALID_DATA);
             result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
-            result.setStatusCode(TransactionResult.Code.FAILURE);
+            result.setStatusCode(TransactionResult.Code.FAILED);
             result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (Throwable t) {
             // There should be no other reachable kind of exception.  If we reached this point, something very strange is happening so log

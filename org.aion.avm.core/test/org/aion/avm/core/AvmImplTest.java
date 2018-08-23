@@ -305,7 +305,7 @@ public class AvmImplTest {
         byte[] nearData = ABIEncoder.encodeMethodArguments("localFailAfterReentrant");
         Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, nearData, energyLimit, 1l);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
-        assertEquals(TransactionResult.Code.FAILURE, result2.getStatusCode());
+        assertEquals(TransactionResult.Code.FAILED, result2.getStatusCode());
         
         // We shouldn't see any changes, since this failed.
         // We expect these to all fail, so they should be left with the initial values:  1.

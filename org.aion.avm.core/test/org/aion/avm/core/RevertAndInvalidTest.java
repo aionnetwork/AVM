@@ -49,7 +49,7 @@ public class RevertAndInvalidTest {
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
-        assertEquals(TransactionResult.Code.REVERT, txResult.getStatusCode());
+        assertEquals(TransactionResult.Code.FAILED_REVERT, txResult.getStatusCode());
         assertNull(txResult.getReturnData());
         assertTrue(energyLimit > txResult.getEnergyUsed());
 
@@ -63,7 +63,7 @@ public class RevertAndInvalidTest {
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
-        assertEquals(TransactionResult.Code.INVALID, txResult.getStatusCode());
+        assertEquals(TransactionResult.Code.FAILED_INVALID, txResult.getStatusCode());
         assertNull(txResult.getReturnData());
         assertEquals(energyLimit, txResult.getEnergyUsed());
 
