@@ -7,7 +7,6 @@ import java.io.IOException;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionResult;
 
@@ -26,13 +25,26 @@ public class AvmImpl implements AvmInternal {
 
     @Override
     public TransactionResult run(TransactionContext ctx) {
+        // We are the root call so use our root kernel.
+        return commonRun(this.kernel, ctx);
+    }
+
+    @Override
+    public TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionContext context) {
+        // TODO: Create KernelInterface for this transaction, built on the parentKernel.
+        KernelInterface childKernel = parentKernel;
+        return commonRun(childKernel, context);
+    }
+
+
+    private TransactionResult commonRun(KernelInterface thisTransactionKernel, TransactionContext ctx) {
         // only one result (mutable) shall be created per transaction execution
         TransactionResult result = new TransactionResult();
 
-        // TODO: charge basic transaction cost
+        // TODO: charge basic transaction cost - note that there isn't yet an IHelper instance so there is nobody to bill.
 
         if (ctx.isCreate()) {
-            DAppCreator.create(this.kernel, this, ctx, result);
+            DAppCreator.create(thisTransactionKernel, this, ctx, result);
         } else {
             byte[] dappAddress = ctx.getAddress();
             // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
@@ -43,7 +55,7 @@ public class AvmImpl implements AvmInternal {
             if (null != stateToResume) {
                 dapp = stateToResume.dApp;
                 // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
-                DAppExecutor.call(this.kernel, this, this.dAppStack, dapp, stateToResume, ctx, result);
+                DAppExecutor.call(thisTransactionKernel, this, this.dAppStack, dapp, stateToResume, ctx, result);
             } else {
                 // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
                 ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress);
@@ -51,7 +63,7 @@ public class AvmImpl implements AvmInternal {
                 if (null == dapp) {
                     // If we didn't find it there, just load it.
                     try {
-                        dapp = DAppLoader.loadFromKernel(kernel, dappAddress);
+                        dapp = DAppLoader.loadFromKernel(thisTransactionKernel, dappAddress);
                     } catch (IOException e) {
                         result.setStatusCode(TransactionResult.Code.FAILED);
                         result.setEnergyUsed(ctx.getEnergyLimit());
@@ -59,7 +71,7 @@ public class AvmImpl implements AvmInternal {
                 }
                 // Run the call and, if successful, check this into the hot DApp cache.
                 if (null != dapp) {
-                    DAppExecutor.call(this.kernel, this, this.dAppStack, dapp, stateToResume, ctx, result);
+                    DAppExecutor.call(thisTransactionKernel, this, this.dAppStack, dapp, stateToResume, ctx, result);
                     if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
                         dapp.cleanForCache();
                         this.hotCache.checkin(addressWrapper, dapp);
@@ -69,10 +81,5 @@ public class AvmImpl implements AvmInternal {
         }
 
         return result;
-    }
-
-    @Override
-    public TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionContext context) {
-        throw RuntimeAssertionError.unimplemented("Currently just here to support a plumbing change");
     }
 }
