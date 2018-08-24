@@ -9,6 +9,7 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
@@ -354,8 +355,8 @@ public class HashCodeTest {
 
     private byte[] getTransformedTestClass(String className) {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", raw)
+        Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(className, "java.lang.Object", false, raw)
                 .asMutableForest();
 
         Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(Collections.singletonMap(className, raw), classHierarchy);

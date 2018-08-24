@@ -52,12 +52,12 @@ public class TypeAwareClassWriterTest {
     public void testGeneratedOnly() throws Exception {
         HierarchyTreeBuilder builder = new HierarchyTreeBuilder();
         TestClass clazz = new TestClass(builder);
-        builder.addClass("A", "java.lang.Object", null);
-        builder.addClass("B", "A", null);
-        builder.addClass("C", "B", null);
+        builder.addClass("A", "java.lang.Object", false, null);
+        builder.addClass("B", "A", false, null);
+        builder.addClass("C", "B", false, null);
         String common = clazz.testing_getCommonSuperClass("B", "C");
         Assert.assertEquals("B", common);
-        builder.addClass("B2", "A", null);
+        builder.addClass("B2", "A", false, null);
         common = clazz.testing_getCommonSuperClass("B", "B2");
         Assert.assertEquals("A", common);
     }
@@ -65,7 +65,7 @@ public class TypeAwareClassWriterTest {
 
     private static class TestClass extends TypeAwareClassWriter {
         public TestClass(HierarchyTreeBuilder dynamicHierarchyBuilder) {
-            super(0, new ParentPointers(Collections.emptySet(), new Forest<String, byte[]>()), dynamicHierarchyBuilder);
+            super(0, new ParentPointers(Collections.emptySet(), new Forest<>()), dynamicHierarchyBuilder);
         }
         public String testing_getCommonSuperClass(String type1, String type2) {
             return this.getCommonSuperClass(type1, type2);

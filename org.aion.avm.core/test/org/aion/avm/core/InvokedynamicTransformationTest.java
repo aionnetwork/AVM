@@ -13,6 +13,7 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.testindy.java.lang.Double;
 import org.aion.avm.core.testindy.java.lang.invoke.LambdaMetafactory;
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
@@ -56,8 +57,8 @@ public class InvokedynamicTransformationTest {
     }
 
     private byte[] transformForStringConcatTest(byte[] origBytecode, String className) {
-        final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", origBytecode)
+        final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(className, "java.lang.Object", false, origBytecode)
                 .asMutableForest();
         final var shadowPackage = PackageConstants.kShadowSlashPrefix;
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
@@ -85,8 +86,8 @@ public class InvokedynamicTransformationTest {
     }
 
     private byte[] transformForParametrizedLambdaTest(byte[] origBytecode, String className) {
-        final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", origBytecode)
+        final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(className, "java.lang.Object", false, origBytecode)
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
@@ -113,8 +114,8 @@ public class InvokedynamicTransformationTest {
     }
 
     private byte[] transformForMultiLineLambda(byte[] origBytecode, String className) {
-        final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", origBytecode)
+        final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(className, "java.lang.Object", false, origBytecode)
                 .asMutableForest();
         final var shadowPackage = PackageConstants.kShadowSlashPrefix;
         Helper.setEnergy(1_000_000L);
@@ -125,7 +126,7 @@ public class InvokedynamicTransformationTest {
             // Note that the processed classes are expected to use .-style names.
             String classDotName = Helpers.internalNameToFulllyQualifiedName(classSlashName);
             processedClasses.put(classDotName, bytecode);
-            dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, bytecode);
+            dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, false, bytecode);
         };
         ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)

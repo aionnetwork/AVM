@@ -16,6 +16,7 @@ import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.types.RawDappModule;
@@ -62,7 +63,7 @@ public class DAppCreator {
      * @return The look-up map of the sizes of user objects
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    public static Map<String, Integer> computeUserObjectSizes(Forest<String, byte[]> classHierarchy, Map<String, Integer> rootObjectSizes)
+    public static Map<String, Integer> computeUserObjectSizes(Forest<String, ClassInfo> classHierarchy, Map<String, Integer> rootObjectSizes)
     {
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
 
@@ -80,7 +81,7 @@ public class DAppCreator {
     }
 
     // NOTE:  This is only public because InvokedynamicTransformationTest calls it.
-    public static Map<String, Integer> computeAllPostRenameObjectSizes(Forest<String, byte[]> forest) {
+    public static Map<String, Integer> computeAllPostRenameObjectSizes(Forest<String, ClassInfo> forest) {
         Map<String, Integer> preRenameUserObjectSizes = computeUserObjectSizes(forest, NodeEnvironment.singleton.preRenameRuntimeObjectSizeMap);
 
         Map<String, Integer> postRenameObjectSizes = new HashMap<>(NodeEnvironment.singleton.postRenameRuntimeObjectSizeMap);
@@ -96,7 +97,7 @@ public class DAppCreator {
      * @param preRenameClassHierarchy The pre-rename hierarchy of user-defined classes in the DApp (/-style).
      * @return the transformed classes and any generated classes (names specified in .-style)
      */
-    public static Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, byte[]> preRenameClassHierarchy) {
+    public static Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, ClassInfo> preRenameClassHierarchy) {
 
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
@@ -109,7 +110,7 @@ public class DAppCreator {
             String classDotName = Helpers.internalNameToFulllyQualifiedName(classSlashName);
             processedClasses.put(classDotName, bytecode);
             String superClassDotName = Helpers.internalNameToFulllyQualifiedName(superClassSlashName);
-            dynamicHierarchyBuilder.addClass(classDotName, superClassDotName, bytecode);
+            dynamicHierarchyBuilder.addClass(classDotName, superClassDotName, false, bytecode);
         };
         Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
         Set<String> preRenameUserClassSet = classes.keySet();

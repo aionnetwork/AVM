@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -12,20 +13,20 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * Returns itself from addClass for easy chaining in boiler-plate test code.
  */
 public class HierarchyTreeBuilder {
-    private final Forest<String, byte[]> classHierarchy = new Forest<>();
-    private final Map<String, Forest.Node<String, byte[]>> nameCache = new HashMap<>();
+    private final Forest<String, ClassInfo> classHierarchy = new Forest<>();
+    private final Map<String, Forest.Node<String, ClassInfo>> nameCache = new HashMap<>();
 
-    public HierarchyTreeBuilder addClass(String name, String superclass, byte[] code) {
+    public HierarchyTreeBuilder addClass(String name, String superclass, boolean isInterface, byte[] code) {
         // NOTE:  These are ".-style" names.
         RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
         RuntimeAssertionError.assertTrue(-1 == superclass.indexOf("/"));
 
         // already added as parent
         if (this.nameCache.containsKey(name)){
-            Forest.Node<String, byte[]> cur = this.nameCache.get(name);
-            cur.setContent(code);
+            Forest.Node<String, ClassInfo> cur = this.nameCache.get(name);
+            cur.setContent(new ClassInfo(isInterface, code));
 
-            Forest.Node<String, byte[]> parent = this.nameCache.get(superclass);
+            Forest.Node<String, ClassInfo> parent = this.nameCache.get(superclass);
             if (null == parent) {
                 parent = new Forest.Node<>(superclass, null);
                 this.nameCache.put(superclass,  parent);
@@ -34,7 +35,7 @@ public class HierarchyTreeBuilder {
 
         }else {
 
-            Forest.Node<String, byte[]> parent = this.nameCache.get(superclass);
+            Forest.Node<String, ClassInfo> parent = this.nameCache.get(superclass);
             if (null == parent) {
                 // Must be a root.
                 parent = new Forest.Node<>(superclass, null);
@@ -42,7 +43,7 @@ public class HierarchyTreeBuilder {
             }
 
             // Inject into tree.
-            Forest.Node<String, byte[]> child = new Forest.Node<>(name, code);
+            Forest.Node<String, ClassInfo> child = new Forest.Node<>(name, new ClassInfo(isInterface, code));
 
             // Cache result.
             this.nameCache.put(name, child);
@@ -54,7 +55,7 @@ public class HierarchyTreeBuilder {
         return this;
     }
 
-    public Forest<String, byte[]> asMutableForest() {
+    public Forest<String, ClassInfo> asMutableForest() {
         return this.classHierarchy;
     }
 }

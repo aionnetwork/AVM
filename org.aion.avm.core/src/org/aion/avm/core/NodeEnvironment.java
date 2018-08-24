@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.util.Helpers;
@@ -310,7 +311,7 @@ public class NodeEnvironment {
 
         // get the forest and prune it to include only the "java.lang.Object" and "java.lang.Throwable" derived classes, as shown in the forest
         ClassHierarchyForest rtClassesForest = runtimeModule.classHierarchyForest;
-        List<Forest.Node<String, byte[]>> newRoots = new ArrayList<>();
+        List<Forest.Node<String, ClassInfo>> newRoots = new ArrayList<>();
         newRoots.add(rtClassesForest.getNodeById("java.lang.Object"));
         newRoots.add(rtClassesForest.getNodeById("java.lang.Throwable"));
         rtClassesForest.prune(newRoots);
@@ -323,13 +324,14 @@ public class NodeEnvironment {
                 byte[] parentClass;
                 if (parentName == null) {
                     parentName = "org.aion.avm.shadow.java.lang.Throwable";
-                    parentClass = rtClassesForest.getNodeById(parentName).getContent();
+                    parentClass = rtClassesForest.getNodeById(parentName).getContent().getBytes();
                 }
                 else {
                     parentClass = generatedShadowJDK.get(parentName);
                 }
-                rtClassesForest.add(new Forest.Node<>(parentName, parentClass),
-                        new Forest.Node<>(generatedClassName, generatedShadowJDK.get(generatedClassName)));
+                // TODO: figure out the name of the grandparent class
+                rtClassesForest.add(new Forest.Node<>(parentName, new ClassInfo(false, parentClass)),
+                        new Forest.Node<>(generatedClassName, new ClassInfo(false, generatedShadowJDK.get(generatedClassName))));
             }
         }
 

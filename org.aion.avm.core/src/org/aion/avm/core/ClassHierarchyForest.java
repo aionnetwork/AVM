@@ -1,7 +1,9 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.dappreading.LoadedJar;
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.types.Pair;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -23,14 +25,11 @@ import java.util.Map;
  * node representing a class of the runtime or java.lang.*; and besides the root node, all other node in the tree should
  * represent a DApp class.
  */
-public final class ClassHierarchyForest extends Forest<String, byte[]> {
+public final class ClassHierarchyForest extends Forest<String, ClassInfo> {
 
     private final LoadedJar loadedJar;
 
-    private String curParentName;
-    private boolean isInterface;
-
-    public Map<String, byte[]> toFlatMapWithoutRoots() {
+    public Map<String, ClassInfo> toFlatMapWithoutRoots() {
         final var collector = new FlatMapCollector(getNodesCount());
         walkPreOrder(collector);
         return collector.getMap();
@@ -49,27 +48,39 @@ public final class ClassHierarchyForest extends Forest<String, byte[]> {
     private void createForestInternal() throws IOException {
         Map<String, byte[]> classNameToBytes = this.loadedJar.classBytesByQualifiedNames;
         for (Map.Entry<String, byte[]> entry : classNameToBytes.entrySet()) {
-            final byte[] klass = entry.getValue();
-            analyzeClass(klass);
-            if (!isInterface) {
-                final var parentNode = new Node<>(curParentName, classNameToBytes.get(curParentName));
-                final var childNode = new Node<>(entry.getKey(), klass);
+            Pair<String, ClassInfo> pair = analyzeClass(entry.getValue());
+
+            // TODO: verify if the NULL bytes in class info break any assumptions
+            if (!pair.value.isInterface()) {
+                String parentName = pair.key;
+                byte[] parentBytes = classNameToBytes.get(parentName);
+                ClassInfo parentInfo = (parentBytes != null) ? analyzeClass(parentBytes).value : new ClassInfo(false, null);
+
+                final var parentNode = new Node<>(parentName, parentInfo);
+                final var childNode = new Node<>(entry.getKey(), pair.value);
                 add(parentNode, childNode);
             }else{
                 // Interface will be added into forest as child of Object
-                final var parentNode = new Node<>(Object.class.getName(), classNameToBytes.get(Object.class.getName()));
-                final var childNode = new Node<>(entry.getKey(), klass);
+                final var parentNode = new Node<>(Object.class.getName(), new ClassInfo(false, null));
+                final var childNode = new Node<>(entry.getKey(), pair.value);
                 add(parentNode, childNode);
             }
         }
     }
 
-    private void analyzeClass(byte[] klass) {
+    /**
+     * Analyze the basic info of the class.
+     *
+     * @param klass the class bytecode
+     * @return the declared parent name and the class meta info
+     */
+    private Pair<String, ClassInfo> analyzeClass(byte[] klass) {
         ClassReader reader = new ClassReader(klass);
         final var codeVisitor = new CodeVisitor();
         reader.accept(codeVisitor, ClassReader.SKIP_FRAMES);
-        curParentName = codeVisitor.getParentQualifiedName();
-        isInterface = codeVisitor.isInterface();
+        String parent = codeVisitor.getParentQualifiedName();
+        boolean isInterface = codeVisitor.isInterface();
+        return Pair.of(parent, new ClassInfo(isInterface, klass));
     }
 
     private static final class CodeVisitor extends ClassVisitor {
@@ -111,19 +122,19 @@ public final class ClassHierarchyForest extends Forest<String, byte[]> {
         }
     }
 
-    private static final class FlatMapCollector extends VisitorAdapter<String, byte[]> {
-        private final Map<String, byte[]> map;
+    private static final class FlatMapCollector extends VisitorAdapter<String, ClassInfo> {
+        private final Map<String, ClassInfo> map;
 
         private FlatMapCollector(int size) {
             map = new HashMap<>(size);
         }
 
         @Override
-        public void onVisitNotRootNode(Node<String, byte[]> node) {
+        public void onVisitNotRootNode(Node<String, ClassInfo> node) {
             map.put(node.getId(), node.getContent());
         }
 
-        private Map<String, byte[]> getMap() {
+        private Map<String, ClassInfo> getMap() {
             return Collections.unmodifiableMap(map);
         }
     }

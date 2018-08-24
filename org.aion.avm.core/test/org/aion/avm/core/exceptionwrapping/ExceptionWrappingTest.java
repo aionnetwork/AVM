@@ -2,6 +2,7 @@ package org.aion.avm.core.exceptionwrapping;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.HierarchyTreeBuilder;
 import org.aion.avm.core.NodeEnvironment;
@@ -44,10 +45,10 @@ public class ExceptionWrappingTest {
         String exceptionClassDotName = TestExceptionResource.UserDefinedException.class.getName();
         String runtimeExceptionClassDotName = TestExceptionResource.UserDefinedRuntimeException.class.getName();
         String classDotName = TestExceptionResource.class.getName();
-        Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(exceptionClassDotName, "java.lang.Throwable", null)
-                .addClass(runtimeExceptionClassDotName, "java.lang.RuntimeException", null)
-                .addClass(classDotName, "java.lang.Object", null)
+        Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(exceptionClassDotName, "java.lang.Throwable", false, null)
+                .addClass(runtimeExceptionClassDotName, "java.lang.RuntimeException", false, null)
+                .addClass(classDotName, "java.lang.Object", false, null)
                 .asMutableForest();
         LazyWrappingTransformer transformer = new LazyWrappingTransformer(classHierarchy);
         
@@ -301,10 +302,10 @@ public class ExceptionWrappingTest {
      * if it wishes to, such that we can request the final map of classes once everything has been loaded/generated.
      */
     private static class LazyWrappingTransformer {
-        private final Forest<String, byte[]> classHierarchy;
+        private final Forest<String, ClassInfo> classHierarchy;
         private final Map<String, byte[]> transformedClasses;
         
-        public LazyWrappingTransformer(Forest<String, byte[]> classHierarchy) {
+        public LazyWrappingTransformer(Forest<String, ClassInfo> classHierarchy) {
             this.classHierarchy = classHierarchy;
             this.transformedClasses = new HashMap<>();
         }
@@ -315,7 +316,7 @@ public class ExceptionWrappingTest {
                 String superDotName = Helpers.internalNameToFulllyQualifiedName(slashSuperName);
                 String dotName = Helpers.internalNameToFulllyQualifiedName(slashName);
                 LazyWrappingTransformer.this.transformedClasses.put(dotName, bytes);
-                dynamicHierarchyBuilder.addClass(dotName, superDotName, bytes);
+                dynamicHierarchyBuilder.addClass(dotName, superDotName, false, bytes);
             };
             ParentPointers parentPointers = new ParentPointers(ClassWhiteList.extractDeclaredClasses(this.classHierarchy), this.classHierarchy);
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)

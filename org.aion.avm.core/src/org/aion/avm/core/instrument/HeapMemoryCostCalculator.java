@@ -1,5 +1,6 @@
 package org.aion.avm.core.instrument;
 
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.Forest.Node;
 import org.aion.avm.core.util.DescriptorParser;
@@ -200,25 +201,25 @@ public class HeapMemoryCostCalculator {
      * @param classHierarchy the pre-constructed class hierarchy forest
      * @param rootClassObjectSizes the pre-constructed map of the runtime and java.lang.* classes to their instance size
      */
-    public void calcClassesInstanceSize(Forest<String, byte[]> classHierarchy, Map<String, Integer> rootClassObjectSizes) {
+    public void calcClassesInstanceSize(Forest<String, ClassInfo> classHierarchy, Map<String, Integer> rootClassObjectSizes) {
         // get the root nodes list of the class hierarchy
-        Collection<Node<String, byte[]>> rootClasses = classHierarchy.getRoots();
+        Collection<Node<String, ClassInfo>> rootClasses = classHierarchy.getRoots();
 
         // calculate for each tree in the class hierarchy
-        for (Node<String, byte[]> rootClass : rootClasses) {
+        for (Node<String, ClassInfo> rootClass : rootClasses) {
             // 'rootClassObjectSizes' map already has the root class object size.
             // copy rootClass size to classHeapSizeMap
             final String splashName = Helpers.fulllyQualifiedNameToInternalName(rootClass.getId());
             classHeapSizeMap.put(splashName, rootClassObjectSizes.get(splashName));
         }
-        final var visitor = new Forest.Visitor<String, byte[]>() {
+        final var visitor = new Forest.Visitor<String, ClassInfo>() {
             @Override
-            public void onVisitRoot(Node<String, byte[]> root) {
+            public void onVisitRoot(Node<String, ClassInfo> root) {
             }
 
             @Override
-            public void onVisitNotRootNode(Node<String, byte[]> node) {
-                calcInstanceSizeOfOneClass(node.getContent());
+            public void onVisitNotRootNode(Node<String, ClassInfo> node) {
+                calcInstanceSizeOfOneClass(node.getContent().getBytes());
             }
 
             @Override

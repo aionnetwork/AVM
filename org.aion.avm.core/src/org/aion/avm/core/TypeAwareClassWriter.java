@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import java.util.Stack;
 
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -83,11 +84,11 @@ public class TypeAwareClassWriter extends ClassWriter {
         return stack;
     }
 
-    private String getSuper(Forest<String, byte[]> forest, String name) {
+    private String getSuper(Forest<String, ClassInfo> forest, String name) {
         String superName = null;
-        Forest.Node<String, byte[]> node = forest.getNodeById(name);
+        Forest.Node<String, ClassInfo> node = forest.getNodeById(name);
         if (null != node) {
-            Forest.Node<String, byte[]> superNode = node.getParent();
+            Forest.Node<String, ClassInfo> superNode = node.getParent();
             if (null != superNode) {
                 superName = superNode.getId();
             }

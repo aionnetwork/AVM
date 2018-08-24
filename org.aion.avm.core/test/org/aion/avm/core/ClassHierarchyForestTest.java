@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.dappreading.LoadedJar;
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,7 +25,7 @@ public class ClassHierarchyForestTest {
         final Path path = Paths.get(format("%s/%s.jar", "../examples/build", module));
         LoadedJar jar = LoadedJar.fromBytes(Files.readAllBytes(path));
         final var forest = ClassHierarchyForest.createForestFrom(jar);
-        Collection<Forest.Node<String, byte[]>> roots = forest.getRoots();
+        Collection<Forest.Node<String, ClassInfo>> roots = forest.getRoots();
         Assert.assertEquals(2, roots.size());
         final var objectNode = forest.getNodeById("java.lang.Object");
         final var bigDecimalNode = forest.getNodeById("java.math.BigDecimal");

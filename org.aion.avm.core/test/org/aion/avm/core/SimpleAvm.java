@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.types.Forest;
@@ -32,15 +33,15 @@ public class SimpleAvm {
                 // NOTE: we load the class to figure out the super class instead of by static analysis.
                 Class<?> clazz = SimpleAvm.class.getClassLoader().loadClass(e.getKey());
                 if (!clazz.isInterface()) {
-                    builder.addClass(e.getKey(), clazz.getSuperclass().getName(), e.getValue());
+                    builder.addClass(e.getKey(), clazz.getSuperclass().getName(), false, e.getValue());
                 }else{
-                    builder.addClass(e.getKey(), Object.class.getName(), e.getValue());
+                    builder.addClass(e.getKey(), Object.class.getName(), false, e.getValue());
                 }
             } catch (ClassNotFoundException ex) {
                 throw RuntimeAssertionError.unexpected(ex);
             }
         });
-        Forest<String, byte[]> classHierarchy = builder.asMutableForest();
+       Forest<String, ClassInfo> classHierarchy = builder.asMutableForest();
 
         // transform classes
         Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(preTransformedClassBytecode, classHierarchy);
