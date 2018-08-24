@@ -19,6 +19,12 @@ public class ShadowSerializationTest {
     private static final long DEPLOY_ENERGY_LIMIT = 10_000_000L;
     private static final long ENERGY_PRICE = 1L;
 
+    // Note that these numbers change pretty frequently, based on constants in the test, etc.
+    private static final int HASH_JAVA_LANG = 94290325;
+    private static final int HASH_JAVA_MATH = -602588053;
+    private static final int HASH_JAVA_NIO = 757806641;
+    private static final int HASH_API = 496;
+
     @BeforeClass
     public static void setupClass() {
         block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
@@ -40,7 +46,7 @@ public class ShadowSerializationTest {
         // Populate initial data.
         int firstHash = populate(avm, contractAddr, "JavaLang");
         // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(94290325, firstHash);
+        Assert.assertEquals(HASH_JAVA_LANG, firstHash);
         
         // Get the state of this data.
         int hash = getHash(avm, contractAddr, "JavaLang");
@@ -62,7 +68,7 @@ public class ShadowSerializationTest {
         // Populate initial data.
         int firstHash = populate(avm, contractAddr, "JavaLang");
         // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(94290325, firstHash);
+        Assert.assertEquals(HASH_JAVA_LANG, firstHash);
         
         // Verify that things are consistent across reentrant modifications.
         verifyReentrantChange(avm, contractAddr, "JavaLang");
@@ -83,7 +89,7 @@ public class ShadowSerializationTest {
         // Populate initial data.
         int firstHash = populate(avm, contractAddr, "JavaMath");
         // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(-602588053, firstHash);
+        Assert.assertEquals(HASH_JAVA_MATH, firstHash);
         
         // Get the state of this data.
         int hash = getHash(avm, contractAddr, "JavaMath");
@@ -105,7 +111,7 @@ public class ShadowSerializationTest {
         // Populate initial data.
         int firstHash = populate(avm, contractAddr, "JavaNio");
         // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(757806641, firstHash);
+        Assert.assertEquals(HASH_JAVA_NIO, firstHash);
         
         // Get the state of this data.
         int hash = getHash(avm, contractAddr, "JavaNio");
@@ -127,7 +133,7 @@ public class ShadowSerializationTest {
         // Populate initial data.
         int firstHash = populate(avm, contractAddr, "Api");
         // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(496, firstHash);
+        Assert.assertEquals(HASH_API, firstHash);
         
         // Get the state of this data.
         int hash = getHash(avm, contractAddr, "Api");
