@@ -25,8 +25,10 @@ public class TestingHelper implements IHelper {
         return data;
     }
     public static Object decodeResult(TransactionResult result) {
+        return decodeResultRaw(result.getReturnData());
+    }
+    public static Object decodeResultRaw(byte[] returnData) {
         Object data = null;
-        byte[] returnData = result.getReturnData();
         if (null != returnData) {
             TestingHelper helper = new TestingHelper();
             data = ABIDecoder.decodeOneObject(returnData);

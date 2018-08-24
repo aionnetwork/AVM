@@ -145,14 +145,6 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
-        if (null != this.reentrantState) {
-            // Save our current state into the reentrant container (since this call might be reentrant).
-            this.reentrantState.updateEnvironment(helper.captureSnapshotAndNextHashCode());
-        }
-        // Clear the thread-local helper (since we need to reset it after the call and this should be balanced).
-        RuntimeAssertionError.assertTrue(helper == IHelper.currentContractHelper.get());
-        IHelper.currentContractHelper.remove();
-
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL,
                 ctx.getAddress(),
@@ -161,26 +153,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 data.getUnderlying(),
                 energyLimit,
                 ctx.getEneryPrice());
-        result.addInternalTransaction(internalTx);
-
-        // execute the internal transaction
-        TransactionResult newResult = this.avm.run(new TransactionContextImpl(this.ctx, internalTx));
-
-        // merge the results
-        result.merge(newResult);
-
-        // reset the thread-local helper instance
-        IHelper.currentContractHelper.set(helper);
-
-        if (null != this.reentrantState) {
-            // Update the next hashcode counter, in case this was a reentrant call and it was changed.
-            helper.applySpanshotAndNextHashCode(this.reentrantState.getEnvironment().nextHashCode);
-        }
-
-        // charge energy consumed
-        helper.externalChargeEnergy(newResult.getEnergyUsed());
-
-        byte[] returnData = newResult.getReturnData();
+        
+        // Call the common run helper.
+        byte[] returnData = runInternalCall(internalTx);
         return (null != returnData)
                 ? new ByteArray(returnData)
                 : null;
@@ -188,8 +163,20 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Address avm_create(long value, ByteArray data, long energyToSend) {
-        // TODO: implement CREATE
-        return null;
+        // construct the internal transaction
+        InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CREATE,
+                ctx.getAddress(),
+                new byte[32],
+                value,
+                data.getUnderlying(),
+                energyToSend,
+                ctx.getEneryPrice());
+        
+        // Call the common run helper.
+        byte[] returnData = runInternalCall(internalTx);
+        return (null != returnData)
+                ? new Address(returnData)
+                : null;
     }
 
     @Override
@@ -255,5 +242,35 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public void avm_println(String message) {
         System.out.println(message);
+    }
+
+
+    private byte[] runInternalCall(InternalTransaction internalTx) {
+        if (null != this.reentrantState) {
+            // Save our current state into the reentrant container (since this call might be reentrant).
+            this.reentrantState.updateEnvironment(helper.captureSnapshotAndNextHashCode());
+        }
+        // Clear the thread-local helper (since we need to reset it after the call and this should be balanced).
+        RuntimeAssertionError.assertTrue(helper == IHelper.currentContractHelper.get());
+        IHelper.currentContractHelper.remove();
+
+        // execute the internal transaction
+        TransactionResult newResult = this.avm.runInternalTransaction(this.kernel, new TransactionContextImpl(this.ctx, internalTx));
+
+        // merge the results
+        result.merge(newResult);
+
+        // reset the thread-local helper instance
+        IHelper.currentContractHelper.set(helper);
+
+        if (null != this.reentrantState) {
+            // Update the next hashcode counter, in case this was a reentrant call and it was changed.
+            helper.applySpanshotAndNextHashCode(this.reentrantState.getEnvironment().nextHashCode);
+        }
+
+        // charge energy consumed
+        helper.externalChargeEnergy(newResult.getEnergyUsed());
+
+        return newResult.getReturnData();
     }
 }

@@ -337,6 +337,34 @@ public class AvmImplTest {
         assertTrue(0 != ((Integer)resultObject).intValue());
     }
 
+    /**
+     * Tests that a DApp can CREATE and then CALL another instance.
+     */
+    @Test
+    public void testCreateAndCallSubApp() {
+        byte incrementBy = 2;
+        byte[] incrementorJar = JarBuilder.buildJarForMainAndClasses(IncrementorDApp.class);
+        byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
+        byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
+        byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // CREATE the spawner.
+        Address spawnerAddress = createDApp(avm, spanerCreateData);
+        
+        // CALL to create and invoke the incrementor.
+        byte[] input = new byte[] {1,2,3,4,5};
+        byte[] incrementorCallData = ABIEncoder.encodeMethodArguments("incrementArray", input);
+        byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnAndCall", incrementorCallData);
+        byte[] incrementorResult = (byte[]) callDApp(avm, spawnerAddress, spawnerCallData);
+        // We double-encoded the arguments, so double-decode the response.
+        byte[] spawnerResult = (byte[]) TestingHelper.decodeResultRaw(incrementorResult);
+        assertEquals(input.length, spawnerResult.length);
+        for (int i = 0; i < input.length; ++i) {
+            assertEquals(incrementBy + input[i], spawnerResult[i]);
+        }
+    }
+
 
     private int callRecursiveHash(Avm avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);
