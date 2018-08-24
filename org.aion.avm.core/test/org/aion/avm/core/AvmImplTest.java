@@ -181,19 +181,11 @@ public class AvmImplTest {
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
-        long energyLimit = 1_000_000l;
-        long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        Address contractAddr = createDApp(avm, txData);
         
         // Call the callSelfForNull entry-point and it should return null to us.
         byte[] argData = ABIEncoder.encodeMethodArguments("callSelfForNull");
-        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, energyLimit, energyPrice);
-        TransactionResult result = avm.run(new TransactionContextImpl(call, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        Object resultObject = TestingHelper.decodeResult(result);
+        Object resultObject = callDApp(avm, contractAddr, argData);
         assertNull(resultObject);
     }
 
@@ -205,11 +197,7 @@ public class AvmImplTest {
         
         // deploy
         long energyLimit = 1_000_000l;
-        long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        Address contractAddr = createDApp(avm, txData);
         
         // Try a few invocations of different depths, bearing in mind the change of nextHashCode between each invocation.
         // We will do 2 zero-depth calls to see the delta between the 2 calls.
@@ -239,12 +227,7 @@ public class AvmImplTest {
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
-        long energyLimit = 1_000_000l;
-        long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        Address contractAddr = createDApp(avm, txData);
         
         // Get direct increments from 1 to 2 and returns 2.
         assertEquals(2, callReentrantAccess(avm, contractAddr, "getDirect", shouldFail));
@@ -270,12 +253,7 @@ public class AvmImplTest {
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
-        long energyLimit = 1_000_000l;
-        long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        Address contractAddr = createDApp(avm, txData);
         
         // We expect these to all fail, so they should be left with the initial values:  1.
         assertEquals(1, callReentrantAccess(avm, contractAddr, "getDirect", shouldFail));
@@ -296,11 +274,7 @@ public class AvmImplTest {
         
         // deploy
         long energyLimit = 1_000_000l;
-        long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        Address contractAddr = createDApp(avm, txData);
         
         // Cause the failure.
         byte[] nearData = ABIEncoder.encodeMethodArguments("localFailAfterReentrant");
@@ -326,24 +300,18 @@ public class AvmImplTest {
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
-        long energyLimit = 1_000_000l;
-        long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        Address contractAddr = createDApp(avm, txData);
         
         // We just want to call our special getFar helper with a constrained energy.
         // WARNING:  This test is very sensitive to storage billing configuration so the energy limit likely needs to be updated when that changes.
         // The write-back of the callee attempts to write statics and 2 instances.  We want it to fail at 1 instance (20_000L seems to do this).
         long failingLimit = 20_000L;
         byte[] callData = ABIEncoder.encodeMethodArguments("getFarWithEnergy", failingLimit);
-        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, callData, energyLimit, 1l);
-        TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
+        Object resultObject = callDApp(avm, contractAddr, callData);
+
         
         // This returns false since the value didn't change,
-        assertEquals(false, ((Boolean)TestingHelper.decodeResult(result2)).booleanValue());
+        assertEquals(false, ((Boolean)resultObject).booleanValue());
     }
 
     /**
@@ -357,23 +325,16 @@ public class AvmImplTest {
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
-        long energyLimit = 10_000_000l;
-        long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        Address contractAddr = createDApp(avm, txData);
         
         // We just want to call our special getFar helper with a constrained energy.
         // WARNING:  This test is very sensitive to storage billing configuration so the energy limit likely needs to be updated when that changes.
         // The write-back of the callee attempts to write statics and 2 instances.  We want it to fail at 1 instance (20_000L seems to do this).
         byte[] callData = ABIEncoder.encodeMethodArguments("recursiveChangeNested", 0, 5);
-        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, callData, energyLimit, 1l);
-        TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
+        Object resultObject = callDApp(avm, contractAddr, callData);
         
         // We don't want to depend on a specific hashcode (appears to be 19) but just the idea that it needs to be non-zero.
-        assertTrue(0 != ((Integer)TestingHelper.decodeResult(result2)).intValue());
+        assertTrue(0 != ((Integer)resultObject).intValue());
     }
 
 
@@ -386,16 +347,30 @@ public class AvmImplTest {
     }
 
     private int callReentrantAccess(Avm avm, Address contractAddr, String methodName, boolean shouldFail) {
-        long energyLimit = 1_000_000l;
         byte[] nearData = ABIEncoder.encodeMethodArguments(methodName, shouldFail);
-        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, nearData, energyLimit, 1l);
-        TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
-        assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
-        return ((Integer)TestingHelper.decodeResult(result2)).intValue();
+        Object resultObject = callDApp(avm, contractAddr, nearData);
+        return ((Integer)resultObject).intValue();
     }
 
     private int byteSizeOfSerializedString(String string) {
         // Hashcode(4) + length(4) + UTF-8 bytes.
         return (4 + 4 + string.getBytes(StandardCharsets.UTF_8).length);
+    }
+
+    private Address createDApp(Avm avm, byte[] createData) {
+        long energyLimit = 10_000_000l;
+        long energyPrice = 1l;
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, createData, energyLimit, energyPrice);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        return TestingHelper.buildAddress(result1.getReturnData());
+    }
+
+    private Object callDApp(Avm avm, Address dAppAddress, byte[] argData) {
+        long energyLimit = 1_000_000l;
+        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), dAppAddress.unwrap(), 0, argData, energyLimit, 1l);
+        TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
+        assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
+        return TestingHelper.decodeResult(result2);
     }
 }
