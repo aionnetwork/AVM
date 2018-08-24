@@ -414,11 +414,11 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
         this.forCasting = java.nio.ByteBuffer.class;
         
         // First we deserialize the data we were storing as instance variables.
-        ByteArray array = (ByteArray)deserializer.readStub();
+        this.array = (ByteArray)deserializer.readStub();
         
         // Deserializing this will, unfortunately, force the deserialization of the underlying ByteArray, as we need to pass the underlying
         // byte[] into the JCL.
-        java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(array.getUnderlying());
+        java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(this.array.getUnderlying());
         
         // Then, we deserialize the data we need to configure the underlying instance state.
         int position = deserializer.readInt();

@@ -236,18 +236,18 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
         this.forCasting = java.nio.FloatBuffer.class;
         
         // Deserialize both arrays to figure out how to construct this buffer.
-        FloatArray floatArray = (FloatArray)deserializer.readStub();
-        ByteArray byteArray = (ByteArray)deserializer.readStub();
-        ByteOrder byteArrayOrder = (ByteOrder)deserializer.readStub();
+        this.floatArray = (FloatArray)deserializer.readStub();
+        this.byteArray = (ByteArray)deserializer.readStub();
+        this.byteArrayOrder = (ByteOrder)deserializer.readStub();
         ByteBuffer byteBuffer = null;
-        if (null != byteArray) {
-            byteBuffer = ByteBuffer.avm_wrap(byteArray);
-            byteBuffer.avm_order(byteArrayOrder);
+        if (null != this.byteArray) {
+            byteBuffer = ByteBuffer.avm_wrap(this.byteArray);
+            byteBuffer.avm_order(this.byteArrayOrder);
         }
         // TODO:  We need to verify exactly which parts of state are copied when doing asFloatBuffer on a ByteBuffer to make sure we don't need more state here.
         java.nio.FloatBuffer buffer = null;
-        if (null != floatArray) {
-            buffer = java.nio.FloatBuffer.wrap(floatArray.getUnderlying());
+        if (null != this.floatArray) {
+            buffer = java.nio.FloatBuffer.wrap(this.floatArray.getUnderlying());
         } else {
             buffer = byteBuffer.getUnderlying().asFloatBuffer();
         }

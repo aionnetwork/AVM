@@ -237,18 +237,18 @@ public class IntBuffer extends Buffer<java.nio.IntBuffer> implements Comparable<
         this.forCasting = java.nio.IntBuffer.class;
         
         // Deserialize both arrays to figure out how to construct this buffer.
-        IntArray intArray = (IntArray)deserializer.readStub();
-        ByteArray byteArray = (ByteArray)deserializer.readStub();
-        ByteOrder byteArrayOrder = (ByteOrder)deserializer.readStub();
+        this.intArray = (IntArray)deserializer.readStub();
+        this.byteArray = (ByteArray)deserializer.readStub();
+        this.byteArrayOrder = (ByteOrder)deserializer.readStub();
         ByteBuffer byteBuffer = null;
-        if (null != byteArray) {
-            byteBuffer = ByteBuffer.avm_wrap(byteArray);
-            byteBuffer.avm_order(byteArrayOrder);
+        if (null != this.byteArray) {
+            byteBuffer = ByteBuffer.avm_wrap(this.byteArray);
+            byteBuffer.avm_order(this.byteArrayOrder);
         }
         // TODO:  We need to verify exactly which parts of state are copied when doing asIntBuffer on a ByteBuffer to make sure we don't need more state here.
         java.nio.IntBuffer buffer = null;
-        if (null != intArray) {
-            buffer = java.nio.IntBuffer.wrap(intArray.getUnderlying());
+        if (null != this.intArray) {
+            buffer = java.nio.IntBuffer.wrap(this.intArray.getUnderlying());
         } else {
             buffer = byteBuffer.getUnderlying().asIntBuffer();
         }

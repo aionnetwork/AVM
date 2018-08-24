@@ -237,18 +237,18 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
         this.forCasting = java.nio.DoubleBuffer.class;
         
         // Deserialize both arrays to figure out how to construct this buffer.
-        DoubleArray doubleArray = (DoubleArray)deserializer.readStub();
-        ByteArray byteArray = (ByteArray)deserializer.readStub();
-        ByteOrder byteArrayOrder = (ByteOrder)deserializer.readStub();
+        this.doubleArray = (DoubleArray)deserializer.readStub();
+        this.byteArray = (ByteArray)deserializer.readStub();
+        this.byteArrayOrder = (ByteOrder)deserializer.readStub();
         ByteBuffer byteBuffer = null;
-        if (null != byteArray) {
-            byteBuffer = ByteBuffer.avm_wrap(byteArray);
-            byteBuffer.avm_order(byteArrayOrder);
+        if (null != this.byteArray) {
+            byteBuffer = ByteBuffer.avm_wrap(this.byteArray);
+            byteBuffer.avm_order(this.byteArrayOrder);
         }
         // TODO:  We need to verify exactly which parts of state are copied when doing asDoubleBuffer on a ByteBuffer to make sure we don't need more state here.
         java.nio.DoubleBuffer buffer = null;
-        if (null != doubleArray) {
-            buffer = java.nio.DoubleBuffer.wrap(doubleArray.getUnderlying());
+        if (null != this.doubleArray) {
+            buffer = java.nio.DoubleBuffer.wrap(this.doubleArray.getUnderlying());
         } else {
             buffer = byteBuffer.getUnderlying().asDoubleBuffer();
         }

@@ -237,18 +237,18 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
         this.forCasting = java.nio.LongBuffer.class;
         
         // Deserialize both arrays to figure out how to construct this buffer.
-        LongArray longArray = (LongArray)deserializer.readStub();
-        ByteArray byteArray = (ByteArray)deserializer.readStub();
-        ByteOrder byteArrayOrder = (ByteOrder)deserializer.readStub();
+        this.longArray = (LongArray)deserializer.readStub();
+        this.byteArray = (ByteArray)deserializer.readStub();
+        this.byteArrayOrder = (ByteOrder)deserializer.readStub();
         ByteBuffer byteBuffer = null;
-        if (null != byteArray) {
-            byteBuffer = ByteBuffer.avm_wrap(byteArray);
-            byteBuffer.avm_order(byteArrayOrder);
+        if (null != this.byteArray) {
+            byteBuffer = ByteBuffer.avm_wrap(this.byteArray);
+            byteBuffer.avm_order(this.byteArrayOrder);
         }
         // TODO:  We need to verify exactly which parts of state are copied when doing asLongBuffer on a ByteBuffer to make sure we don't need more state here.
         java.nio.LongBuffer buffer = null;
-        if (null != longArray) {
-            buffer = java.nio.LongBuffer.wrap(longArray.getUnderlying());
+        if (null != this.longArray) {
+            buffer = java.nio.LongBuffer.wrap(this.longArray.getUnderlying());
         } else {
             buffer = byteBuffer.getUnderlying().asLongBuffer();
         }

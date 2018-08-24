@@ -305,23 +305,23 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
         this.forCasting = java.nio.CharBuffer.class;
         
         // Deserialize both arrays to figure out how to construct this buffer.
-        CharArray charArray = (CharArray)deserializer.readStub();
-        ByteArray byteArray = (ByteArray)deserializer.readStub();
-        ByteOrder byteArrayOrder = (ByteOrder)deserializer.readStub();
-        CharSequence charSequence = (CharSequence)deserializer.readStub();
+        this.charArray = (CharArray)deserializer.readStub();
+        this.byteArray = (ByteArray)deserializer.readStub();
+        this.byteArrayOrder = (ByteOrder)deserializer.readStub();
+        this.sequence = (CharSequence)deserializer.readStub();
         ByteBuffer byteBuffer = null;
-        if (null != byteArray) {
-            byteBuffer = ByteBuffer.avm_wrap(byteArray);
-            byteBuffer.avm_order(byteArrayOrder);
+        if (null != this.byteArray) {
+            byteBuffer = ByteBuffer.avm_wrap(this.byteArray);
+            byteBuffer.avm_order(this.byteArrayOrder);
         }
         // TODO:  We need to verify exactly which parts of state are copied when doing asCharBuffer on a ByteBuffer to make sure we don't need more state here.
         java.nio.CharBuffer buffer = null;
-        if (null != charArray) {
-            buffer = java.nio.CharBuffer.wrap(charArray.getUnderlying());
-        } else if (null != byteArray) {
+        if (null != this.charArray) {
+            buffer = java.nio.CharBuffer.wrap(this.charArray.getUnderlying());
+        } else if (null != this.byteArray) {
             buffer = byteBuffer.getUnderlying().asCharBuffer();
         } else {
-            buffer = java.nio.CharBuffer.wrap(charSequence.avm_toString().getUnderlying());
+            buffer = java.nio.CharBuffer.wrap(this.sequence.avm_toString().getUnderlying());
         }
         
         // Then, we deserialize the data we need to configure the underlying instance state.
@@ -339,7 +339,7 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
         buffer.limit(limit);
         buffer.position(position);
         // (if this was build from a CharSequence, it is defined as read-only so this would only cause us to duplicate and discard the instance).
-        if (isReadOnly && (null == charSequence)) {
+        if (isReadOnly && (null == this.sequence)) {
             buffer.asReadOnlyBuffer();
         }
         this.v = buffer;

@@ -20,7 +20,7 @@ public class ShadowSerializationTest {
     private static final long ENERGY_PRICE = 1L;
 
     // Note that these numbers change pretty frequently, based on constants in the test, etc.
-    private static final int HASH_JAVA_LANG = 94290325;
+    private static final int HASH_JAVA_LANG = 94290379;
     private static final int HASH_JAVA_MATH = -602588053;
     private static final int HASH_JAVA_NIO = 757806641;
     private static final int HASH_API = 496;
@@ -97,6 +97,27 @@ public class ShadowSerializationTest {
     }
 
     @Test
+    public void testReentrantJavaMath() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // deploy
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Populate initial data.
+        int firstHash = populate(avm, contractAddr, "JavaMath");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(HASH_JAVA_MATH, firstHash);
+        
+        // Verify that things are consistent across reentrant modifications.
+        verifyReentrantChange(avm, contractAddr, "JavaMath");
+    }
+
+    @Test
     public void testPersistJavaNio() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
@@ -119,6 +140,27 @@ public class ShadowSerializationTest {
     }
 
     @Test
+    public void testReentrantJavaNio() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // deploy
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Populate initial data.
+        int firstHash = populate(avm, contractAddr, "JavaNio");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(HASH_JAVA_NIO, firstHash);
+        
+        // Verify that things are consistent across reentrant modifications.
+        verifyReentrantChange(avm, contractAddr, "JavaNio");
+    }
+
+    @Test
     public void testPersistApi() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
         byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
@@ -138,6 +180,27 @@ public class ShadowSerializationTest {
         // Get the state of this data.
         int hash = getHash(avm, contractAddr, "Api");
         Assert.assertEquals(firstHash, hash);
+    }
+
+    @Test
+    public void testReentrantApi() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
+        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // deploy
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Populate initial data.
+        int firstHash = populate(avm, contractAddr, "Api");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(HASH_API, firstHash);
+        
+        // Verify that things are consistent across reentrant modifications.
+        verifyReentrantChange(avm, contractAddr, "Api");
     }
 
 

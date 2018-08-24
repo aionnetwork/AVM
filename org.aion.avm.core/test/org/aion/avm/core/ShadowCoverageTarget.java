@@ -68,6 +68,20 @@ public class ShadowCoverageTarget {
         return javaMath.buildHash();
     }
 
+    public static boolean verifyReentrantChange_JavaMath() {
+        // Verify reentrant hash before call.
+        int localStartHash = javaMath.buildHash();
+        int remoteStartHash = reentrantMethodWithoutArgs("getHash_JavaMath");
+        if (localStartHash != remoteStartHash) {
+            throw new AssertionError();
+        }
+        
+        // Check reentrant commit is observed.
+        int remoteNextHash = reentrantMethodWithoutArgs("populate_JavaMath");
+        int localNextHash = javaMath.buildHash();
+        return (remoteNextHash == localNextHash);
+    }
+
     public static int populate_JavaNio() {
         javaNio.populate();
         return javaNio.buildHash();
@@ -75,6 +89,20 @@ public class ShadowCoverageTarget {
 
     public static int getHash_JavaNio() {
         return javaNio.buildHash();
+    }
+
+    public static boolean verifyReentrantChange_JavaNio() {
+        // Verify reentrant hash before call.
+        int localStartHash = javaNio.buildHash();
+        int remoteStartHash = reentrantMethodWithoutArgs("getHash_JavaNio");
+        if (localStartHash != remoteStartHash) {
+            throw new AssertionError();
+        }
+        
+        // Check reentrant commit is observed.
+        int remoteNextHash = reentrantMethodWithoutArgs("populate_JavaNio");
+        int localNextHash = javaNio.buildHash();
+        return (remoteNextHash == localNextHash);
     }
 
     public static int populate_Api() {
@@ -85,6 +113,21 @@ public class ShadowCoverageTarget {
     public static int getHash_Api() {
         return api.buildHash();
     }
+
+    public static boolean verifyReentrantChange_Api() {
+        // Verify reentrant hash before call.
+        int localStartHash = api.buildHash();
+        int remoteStartHash = reentrantMethodWithoutArgs("getHash_Api");
+        if (localStartHash != remoteStartHash) {
+            throw new AssertionError();
+        }
+        
+        // Check reentrant commit is observed.
+        int remoteNextHash = reentrantMethodWithoutArgs("populate_Api");
+        int localNextHash = api.buildHash();
+        return (remoteNextHash == localNextHash);
+    }
+
 
     private static int reentrantMethodWithoutArgs(String methodName) {
         // Call this method via the runtime.
