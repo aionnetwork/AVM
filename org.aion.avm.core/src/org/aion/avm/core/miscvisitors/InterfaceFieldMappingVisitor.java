@@ -67,7 +67,7 @@ public class InterfaceFieldMappingVisitor extends ClassToolchain.ToolChainClassV
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
         MethodVisitor mv;
-        if (isInterface) {
+        if (isInterface && "<clinit>".equals(name)) {
             clinit = new MethodNode(access, name, descriptor, signature, exceptions);
             mv = clinit;
         } else {

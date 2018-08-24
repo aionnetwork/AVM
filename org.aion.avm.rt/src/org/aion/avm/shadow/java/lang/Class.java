@@ -41,6 +41,10 @@ public class Class<T> extends Object {
         return toReturn;
     }
 
+    public boolean avm_desiredAssertionStatus() {
+        return true;
+    }
+
     //=======================================================
     // Methods below are used by Enum
     //========================================================

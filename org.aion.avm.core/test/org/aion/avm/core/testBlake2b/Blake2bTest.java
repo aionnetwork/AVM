@@ -11,10 +11,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class Blake2bTest {
 
-    private long energyLimit = 1_000_000L;
+    private long energyLimit = 10_000_000L;
     private long energyPrice = 1L;
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
@@ -32,25 +33,21 @@ public class Blake2bTest {
         Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
+        System.out.println(txResult);
 
         dappAddress = txResult.getReturnData();
+        assertNotNull(dappAddress);
     }
 
-    /**
-     * This unit test reproduces the issue-159.
-     *
-     * Test is disabled due to various problems found in our pipeline. Will address these issues in other commits.
-     */
-    @Ignore
     @Test
     public void testBlake2b() {
         Blake2b mac = Blake2b.Mac.newInstance("key".getBytes());
         byte[] hash = mac.digest("input".getBytes());
-        System.out.println(Helpers.toHexString(hash));
 
         Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, 0, new byte[0], energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
+        System.out.println(txResult);
 
         assertArrayEquals(hash, txResult.getReturnData());
     }

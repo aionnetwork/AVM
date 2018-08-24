@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -200,6 +201,10 @@ public class LoadedDApp {
     public byte[] callMain() throws Throwable {
         try {
             Method method = getMainMethod();
+            if (!Modifier.isStatic(method.getModifiers())) {
+                throw new MethodAccessException();
+            }
+
             ByteArray rawResult = (ByteArray) method.invoke(null);
             return (null != rawResult)
                     ? rawResult.getUnderlying()
