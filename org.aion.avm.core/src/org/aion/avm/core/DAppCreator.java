@@ -8,6 +8,7 @@ import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.miscvisitors.ClinitStrippingVisitor;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
+import org.aion.avm.core.miscvisitors.InterfaceFieldMappingVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
@@ -18,6 +19,7 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.types.TransformedDappModule;
@@ -106,7 +108,7 @@ public class DAppCreator {
         HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         // We also want to expose this type to the class writer so it can compute common superclasses.
-        ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (superClassSlashName, classSlashName, bytecode) -> {
+        GeneratedClassConsumer generatedClassesSink = (superClassSlashName, classSlashName, bytecode) -> {
             // Note that the processed classes are expected to use .-style names.
             String classDotName = Helpers.internalNameToFulllyQualifiedName(classSlashName);
             processedClasses.put(classDotName, bytecode);
@@ -118,6 +120,7 @@ public class DAppCreator {
         ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy);
         Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy);
 
+        Map<String, byte[]> mappedClasses = new HashMap<>();
         for (String name : classes.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
             RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
@@ -147,8 +150,35 @@ public class DAppCreator {
                     .build()
                     .runAndGetBytecode();
             String mappedName = PackageConstants.kUserDotPrefix + name;
-            processedClasses.put(mappedName, bytecode);
+            mappedClasses.put(mappedName, bytecode);
         }
+
+        /*
+         * Another pass to deal with static fields in interfaces.
+         */
+        GeneratedClassConsumer consumer = generatedClassesSink;
+        Set<String> userInterfaceSlashNames = new HashSet<>();
+        preRenameClassHierarchy.walkPreOrder(new Forest.VisitorAdapter<>() {
+            public void onVisitRoot(Forest.Node<String, ClassInfo> root) {
+                // TODO: we have any interface with fields?
+            }
+            public void onVisitNotRootNode(Forest.Node<String, ClassInfo> node) {
+                if (node.getContent().isInterface()) {
+                    userInterfaceSlashNames.add(Helpers.fulllyQualifiedNameToInternalName(PackageConstants.kUserDotPrefix + node.getId()));
+                }
+            }
+        });
+        String javaLangObjectSlashName = PackageConstants.kShadowSlashPrefix + "java/lang/Object";
+        for (String name : mappedClasses.keySet()) {
+            int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
+            byte[] bytecode = new ClassToolchain.Builder(mappedClasses.get(name), parsingOptions)
+                    .addNextVisitor(new InterfaceFieldMappingVisitor(consumer, userInterfaceSlashNames, javaLangObjectSlashName))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
+                    .build()
+                    .runAndGetBytecode();
+            processedClasses.put(name, bytecode);
+        }
+
         return processedClasses;
     }
 

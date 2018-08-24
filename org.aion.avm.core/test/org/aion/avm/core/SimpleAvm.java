@@ -35,7 +35,7 @@ public class SimpleAvm {
                 if (!clazz.isInterface()) {
                     builder.addClass(e.getKey(), clazz.getSuperclass().getName(), false, e.getValue());
                 }else{
-                    builder.addClass(e.getKey(), Object.class.getName(), false, e.getValue());
+                    builder.addClass(e.getKey(), Object.class.getName(), true, e.getValue());
                 }
             } catch (ClassNotFoundException ex) {
                 throw RuntimeAssertionError.unexpected(ex);

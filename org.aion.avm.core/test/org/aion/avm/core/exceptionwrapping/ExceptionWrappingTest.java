@@ -14,6 +14,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
+import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
@@ -312,7 +313,7 @@ public class ExceptionWrappingTest {
         
         public void transformClass(String name, byte[] inputBytes) {
             HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
-            ExceptionWrapping.GeneratedClassConsumer generatedClassesSink = (slashSuperName, slashName, bytes) -> {
+            GeneratedClassConsumer generatedClassesSink = (slashSuperName, slashName, bytes) -> {
                 String superDotName = Helpers.internalNameToFulllyQualifiedName(slashSuperName);
                 String dotName = Helpers.internalNameToFulllyQualifiedName(slashName);
                 LazyWrappingTransformer.this.transformedClasses.put(dotName, bytes);

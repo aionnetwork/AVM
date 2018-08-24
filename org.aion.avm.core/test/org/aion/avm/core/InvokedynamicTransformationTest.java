@@ -15,6 +15,7 @@ import org.aion.avm.core.testindy.java.lang.Double;
 import org.aion.avm.core.testindy.java.lang.invoke.LambdaMetafactory;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
@@ -122,7 +123,7 @@ public class InvokedynamicTransformationTest {
         final Map<String, byte[]> processedClasses = new HashMap<>();
         // WARNING:  This dynamicHierarchyBuilder is both mutable and shared by TypeAwareClassWriter instances.
         final HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
-        final ExceptionWrapping.GeneratedClassConsumer generatedClassConsumer = (superClassSlashName, classSlashName, bytecode) -> {
+        final GeneratedClassConsumer generatedClassConsumer = (superClassSlashName, classSlashName, bytecode) -> {
             // Note that the processed classes are expected to use .-style names.
             String classDotName = Helpers.internalNameToFulllyQualifiedName(classSlashName);
             processedClasses.put(classDotName, bytecode);

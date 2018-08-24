@@ -3,6 +3,7 @@ package org.aion.avm.core.exceptionwrapping;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ParentPointers;
 import org.aion.avm.core.classgeneration.StubGenerator;
+import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Label;
@@ -188,17 +189,4 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
     }
 
 
-    /**
-     * An interface which exists to allow external concerns to be notified when a class is dynamically generated for the purposes of exception wrapping.
-     */
-    public static interface GeneratedClassConsumer {
-        /**
-         * Called when a new class is generated.
-         * 
-         * @param superClassName The name of the super class (in slash form).
-         * @param className The name of the generated class (in slash form).
-         * @param bytecode The bytecode of the generated class.
-         */
-        public void accept(String superClassName, String className, byte[] bytecode);
-    }
 }
