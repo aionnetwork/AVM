@@ -5,7 +5,6 @@ import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.HashUtils;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.InvalidException;
 import org.aion.avm.internal.RevertException;
@@ -28,15 +27,17 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     private IHelper helper;
     private TransactionContext ctx;
+    private final byte[] dAppData;
     private TransactionResult result;
 
     public BlockchainRuntimeImpl(KernelInterface kernel, Avm avm, ReentrantDAppStack.ReentrantState reentrantState,
-                                 IHelper helper, TransactionContext ctx, TransactionResult result) {
+                                 IHelper helper, TransactionContext ctx, byte[] dAppData, TransactionResult result) {
         this.kernel = kernel;
         this.avm = avm;
         this.reentrantState = reentrantState;
         this.helper = helper;
         this.ctx = ctx;
+        this.dAppData = dAppData;
         this.result = result;
     }
 
@@ -72,15 +73,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public ByteArray avm_getData() {
-        if (ctx.isCreate()) {
-            if (Helpers.decodeCodeAndData(ctx.getData())[1] == null) {
-                return null;
-            } else {
-                return new ByteArray(Helpers.decodeCodeAndData(ctx.getData())[1]);
-            }
-        } else {
-            return new ByteArray(ctx.getData());
-        }
+        return (null != this.dAppData)
+                ? new ByteArray(this.dAppData)
+                : null;
     }
 
 
