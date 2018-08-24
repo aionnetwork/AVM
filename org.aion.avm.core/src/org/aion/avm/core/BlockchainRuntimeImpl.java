@@ -22,7 +22,7 @@ import java.util.Objects;
  */
 public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private final KernelInterface kernel;
-    private final Avm avm;
+    private final AvmInternal avm;
     private final ReentrantDAppStack.ReentrantState reentrantState;
 
     private IHelper helper;
@@ -30,7 +30,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private final byte[] dAppData;
     private TransactionResult result;
 
-    public BlockchainRuntimeImpl(KernelInterface kernel, Avm avm, ReentrantDAppStack.ReentrantState reentrantState,
+    public BlockchainRuntimeImpl(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState,
                                  IHelper helper, TransactionContext ctx, byte[] dAppData, TransactionResult result) {
         this.kernel = kernel;
         this.avm = avm;

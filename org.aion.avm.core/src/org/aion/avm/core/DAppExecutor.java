@@ -10,7 +10,7 @@ import org.aion.kernel.TransactionResult;
 
 
 public class DAppExecutor {
-    public static void call(KernelInterface kernel, Avm avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume, TransactionContext ctx, TransactionResult result) {
+    public static void call(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume, TransactionContext ctx, TransactionResult result) {
         byte[] dappAddress = ctx.getAddress();
         // Load the initial state of the environment.
         // (note that ContractEnvironmentState is immutable, so it is safe to just access the environment from a different invocation).

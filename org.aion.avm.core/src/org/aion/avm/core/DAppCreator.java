@@ -182,7 +182,7 @@ public class DAppCreator {
         return processedClasses;
     }
 
-    public static void create(KernelInterface kernel, Avm avm, TransactionContext ctx, TransactionResult result) {
+    public static void create(KernelInterface kernel, AvmInternal avm, TransactionContext ctx, TransactionResult result) {
         try {
             // read dapp module
             byte[] dappAddress = ctx.getAddress();

@@ -7,11 +7,12 @@ import java.io.IOException;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionResult;
 
 
-public class AvmImpl implements Avm {
+public class AvmImpl implements AvmInternal {
     private final KernelInterface kernel;
     private final ReentrantDAppStack dAppStack;
     private final SoftCache<ByteArrayWrapper, LoadedDApp> hotCache;
@@ -68,5 +69,10 @@ public class AvmImpl implements Avm {
         }
 
         return result;
+    }
+
+    @Override
+    public TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionContext context) {
+        throw RuntimeAssertionError.unimplemented("Currently just here to support a plumbing change");
     }
 }
