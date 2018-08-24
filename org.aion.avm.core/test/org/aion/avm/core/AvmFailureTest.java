@@ -52,10 +52,6 @@ public class AvmFailureTest {
         assertEquals(TransactionResult.Code.FAILED_OUT_OF_ENERGY, txResult.getStatusCode());
     }
 
-    /**
-     * The stack watcher is not working. TODO: junhan, please correct this!!!!
-     */
-    @Ignore
     @Test
     public void testOutOfStack() {
         byte[] data = ABIEncoder.encodeMethodArguments("testOutOfStack");

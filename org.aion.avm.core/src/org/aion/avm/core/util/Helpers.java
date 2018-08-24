@@ -7,6 +7,7 @@ import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.internal.StackWatcher;
 
 import java.io.*;
 import java.security.SecureRandom;
@@ -191,6 +192,18 @@ public class Helpers {
             String helperClassName = Helper.class.getName();
             Class<?> helperClass = contractLoader.loadClass(helperClassName);
             helperClass.getField("blockchainRuntime").set(null, rt);
+        } catch (Throwable t) {
+            // Errors at this point imply something wrong with the installation so fail.
+            throw RuntimeAssertionError.unexpected(t);
+        }
+    }
+
+    // for testing purpose
+    public static void attachStackWatcher(AvmClassLoader contractLoader, StackWatcher stackWatcher) {
+        try {
+            String helperClassName = Helper.class.getName();
+            Class<?> helperClass = contractLoader.loadClass(helperClassName);
+            helperClass.getField("stackWatcher").set(null, stackWatcher);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);

@@ -24,7 +24,7 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
 
     //JAVA asm Type for later use.
     private Type typeInt = Type.getType(int.class);
-    private Type typeAVMSW = Type.getType(Helper.StackWatcher.class);
+    private Type typeHelper = Type.getType(Helper.class);
 
     public StackWatcherMethodAdapter(final GeneratorAdapter mv,
             final int access, final String name, final String desc)
@@ -51,19 +51,19 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
         // Push the current stack size to operand stack and invoke AVMStackWatcher.enterMethod(int)
         Method m1 = Method.getMethod("void enterMethod(int)");
         visitLdcInsn(this.maxL + this.maxS);
-        invokeStatic(typeAVMSW, m1);
+        invokeStatic(typeHelper, m1);
 
         // If current method has at least one try catch block, we need to generate a StackWacher stamp.
         if (this.tc > 0){
             //invoke AVMStackWatcher.getCurStackDepth() and put the result into LVT
             Method m2 = Method.getMethod("int getCurStackDepth()");
-            invokeStatic(typeAVMSW, m2);
+            invokeStatic(typeHelper, m2);
             idxDep = newLocal(typeInt);
             storeLocal(idxDep, typeInt);
 
             //invoke AVMStackWatcher.getCurStackSize() and put the result into LVT
             Method m3 = Method.getMethod("int getCurStackSize()");
-            invokeStatic(typeAVMSW, m3);
+            invokeStatic(typeHelper, m3);
             idxSize = newLocal(typeInt);
             storeLocal(idxSize, typeInt);
         }
@@ -74,7 +74,7 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
         // Push the current stack size to operand stack and invoke AVMStackWatcher.exitMethod(int)
         Method m1 = Method.getMethod("void exitMethod(int)");
         visitLdcInsn(this.maxL + this.maxS);
-        invokeStatic(typeAVMSW, m1);
+        invokeStatic(typeHelper, m1);
     }
 
 
@@ -95,7 +95,7 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
             loadLocal(this.idxDep, typeInt);
             loadLocal(this.idxSize, typeInt);
             Method m1 = Method.getMethod("void enterCatchBlock(int, int)");
-            invokeStatic(typeAVMSW, m1);
+            invokeStatic(typeHelper, m1);
         }
     }
 }

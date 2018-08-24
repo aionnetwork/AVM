@@ -7,7 +7,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.OutOfStackException;
-import org.aion.avm.internal.Helper.StackWatcher;
+import org.aion.avm.internal.StackWatcher;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -22,13 +22,13 @@ import java.util.function.Function;
 
 public class StackWatcherTest {
     private static AvmSharedClassLoader sharedClassLoader;
+    private static AvmClassLoader classLoader;
+    private Class<?> clazz;
 
     @BeforeClass
     public static void setupClass() {
         sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
     }
-
-    private Class<?> clazz;
 
     @Before
     // We only need to load the instrumented class once.
@@ -45,8 +45,8 @@ public class StackWatcherTest {
         };
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, transformer.apply(raw));
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
-        clazz = loader.loadClass(className);
+        classLoader = new AvmClassLoader(sharedClassLoader, classes);
+        clazz = classLoader.loadClass(className);
     }
 
     @After
@@ -56,10 +56,11 @@ public class StackWatcherTest {
 
     @Test
     public void testDepthOverflow() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        StackWatcher.reset();
-        StackWatcher.setPolicy(StackWatcher.POLICY_DEPTH);
-        StackWatcher.setMaxStackDepth(500);
-        StackWatcher.setMaxStackSize(20000);
+        StackWatcher sw = new StackWatcher();
+        sw.setPolicy(StackWatcher.POLICY_DEPTH);
+        sw.setMaxStackDepth(500);
+        sw.setMaxStackSize(20000);
+        Helpers.attachStackWatcher(classLoader, sw);
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testStackOverflow");
@@ -74,10 +75,11 @@ public class StackWatcherTest {
 
     @Test
     public void testSizeOverflow() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        StackWatcher.reset();
-        StackWatcher.setPolicy(StackWatcher.POLICY_SIZE);
-        StackWatcher.setMaxStackDepth(500);
-        StackWatcher.setMaxStackSize(20000);
+        StackWatcher sw = new StackWatcher();
+        sw.setPolicy(StackWatcher.POLICY_SIZE);
+        sw.setMaxStackDepth(500);
+        sw.setMaxStackSize(20000);
+        Helpers.attachStackWatcher(classLoader, sw);
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testStackOverflow");
@@ -92,10 +94,11 @@ public class StackWatcherTest {
 
     @Test
     public void testStackOverflowConsistency() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
-        StackWatcher.reset();
-        StackWatcher.setPolicy(StackWatcher.POLICY_SIZE);
-        StackWatcher.setMaxStackDepth(600);
-        StackWatcher.setMaxStackSize(20000);
+        StackWatcher sw = new StackWatcher();
+        sw.setPolicy(StackWatcher.POLICY_SIZE);
+        sw.setMaxStackDepth(600);
+        sw.setMaxStackSize(20000);
+        Helpers.attachStackWatcher(classLoader, sw);
 
         Object obj;
         Method method;
@@ -106,7 +109,7 @@ public class StackWatcherTest {
         Object cur = -1;
 
         for (int i = 0; i < 50; i++){
-            StackWatcher.reset();
+            sw.reset();
             Helper.clearTestingState();
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
@@ -126,9 +129,9 @@ public class StackWatcherTest {
 
         prev = -1;
         cur = -1;
-        StackWatcher.setPolicy(StackWatcher.POLICY_DEPTH);
+        sw.setPolicy(StackWatcher.POLICY_DEPTH);
         for (int i = 0; i < 50; i++){
-            StackWatcher.reset();
+            sw.reset();
             Helper.clearTestingState();
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
@@ -149,10 +152,11 @@ public class StackWatcherTest {
 
     @Test
     public void testStackTrackingConsistency() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        StackWatcher.reset();
-        StackWatcher.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
-        StackWatcher.setMaxStackDepth(200);
-        StackWatcher.setMaxStackSize(20000);
+        StackWatcher sw = new StackWatcher();
+        sw.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
+        sw.setMaxStackDepth(200);
+        sw.setMaxStackSize(20000);
+        Helpers.attachStackWatcher(classLoader, sw);
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testStackTrackingConsistency");
@@ -163,10 +167,11 @@ public class StackWatcherTest {
 
     @Test
     public void testLocalTryCatch() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        StackWatcher.reset();
-        StackWatcher.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
-        StackWatcher.setMaxStackDepth(200);
-        StackWatcher.setMaxStackSize(20000);
+        StackWatcher sw = new StackWatcher();
+        sw.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
+        sw.setMaxStackDepth(200);
+        sw.setMaxStackSize(20000);
+        Helpers.attachStackWatcher(classLoader, sw);
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testLocalTryCatch");
@@ -177,10 +182,11 @@ public class StackWatcherTest {
 
     @Test
     public void testRemoteTryCatch() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        StackWatcher.reset();
-        StackWatcher.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
-        StackWatcher.setMaxStackDepth(200);
-        StackWatcher.setMaxStackSize(20000);
+        StackWatcher sw = new StackWatcher();
+        sw.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
+        sw.setMaxStackDepth(200);
+        sw.setMaxStackSize(20000);
+        Helpers.attachStackWatcher(classLoader, sw);
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testRemoteTryCatch");
