@@ -9,6 +9,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.CoinController;
 import org.aion.avm.core.testExchange.ERC20;
 import org.aion.avm.core.testExchange.ERC20Token;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -46,7 +47,7 @@ public class Demo {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, pepeMinter, null, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit, energyPrice);
+        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, pepeMinter, null, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult txResult = avm.run(txContext);
         Address tokenDapp = TestingHelper.buildAddress(txResult.getReturnData());
@@ -56,7 +57,7 @@ public class Demo {
         jar = JarBuilder.buildJarForMainAndClasses(Main.class, Wallet.class, Bytes32.class, AionList.class, AionSet.class, AionMap.class);
         int confirmationsRequired = 2;
         arguments = ABIEncoder.encodeMethodArguments("", TestingHelper.buildAddress(owner1), TestingHelper.buildAddress(owner2), confirmationsRequired);
-        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0L, Helpers.encodeCodeAndData(jar, arguments), energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         Address walletDapp = TestingHelper.buildAddress(txResult.getReturnData());

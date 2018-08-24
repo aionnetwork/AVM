@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -34,7 +35,7 @@ public class ShadowSerializationTest {
     @Test
     public void testPersistJavaLang() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -56,7 +57,7 @@ public class ShadowSerializationTest {
     @Test
     public void testReentrantJavaLang() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -77,7 +78,7 @@ public class ShadowSerializationTest {
     @Test
     public void testPersistJavaMath() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -99,7 +100,7 @@ public class ShadowSerializationTest {
     @Test
     public void testReentrantJavaMath() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -120,7 +121,7 @@ public class ShadowSerializationTest {
     @Test
     public void testPersistJavaNio() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -142,7 +143,7 @@ public class ShadowSerializationTest {
     @Test
     public void testReentrantJavaNio() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -163,7 +164,7 @@ public class ShadowSerializationTest {
     @Test
     public void testPersistApi() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -185,7 +186,7 @@ public class ShadowSerializationTest {
     @Test
     public void testReentrantApi() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy

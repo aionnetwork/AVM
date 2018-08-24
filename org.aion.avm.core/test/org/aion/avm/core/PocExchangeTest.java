@@ -5,6 +5,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.*;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -49,7 +50,7 @@ public class PocExchangeTest {
         }
 
         private byte[] initCoin(byte[] jar, byte[] arguments){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit, 1l);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -116,7 +117,7 @@ public class PocExchangeTest {
         }
 
         private byte[] initExchange(byte[] jar, byte[] arguments){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit, 1l);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());

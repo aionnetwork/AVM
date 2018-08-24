@@ -21,6 +21,7 @@ import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.types.TransformedDappModule;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
 import org.aion.kernel.*;
@@ -155,9 +156,14 @@ public class DAppCreator {
         try {
             // read dapp module
             byte[] dappAddress = ctx.getAddress();
-            byte[] dappCode = Helpers.decodeCodeAndData(ctx.getData())[0];
+            CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(ctx.getData());
+            if (codeAndArguments == null) {
+                result.setStatusCode(TransactionResult.Code.REJECTED_INVALID_DATA);
+                result.setEnergyUsed(ctx.getEnergyLimit());
+                return;
+            }
 
-            RawDappModule rawDapp = RawDappModule.readFromJar(dappCode);
+            RawDappModule rawDapp = RawDappModule.readFromJar(codeAndArguments.code);
             if (rawDapp == null) {
                 result.setStatusCode(TransactionResult.Code.REJECTED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getEnergyLimit());
@@ -183,7 +189,7 @@ public class DAppCreator {
             int nextHashCode = 1;
             IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit(), nextHashCode);
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
-            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, helper, ctx, Helpers.decodeCodeAndData(ctx.getData())[1], result));
+            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, helper, ctx, codeAndArguments.arguments, result));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()

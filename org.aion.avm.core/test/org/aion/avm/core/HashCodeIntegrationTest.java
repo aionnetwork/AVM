@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -21,7 +22,7 @@ public class HashCodeIntegrationTest {
     public void testPersistentHashCode() throws Exception {
         Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(HashCodeIntegrationTestTarget.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // Deploy.

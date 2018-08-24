@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -64,7 +65,7 @@ public class BasicPerfTest {
             this.avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
             Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
-            Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), this.contractAddress, 0, Helpers.encodeCodeAndData(jar, arguments), transaction1EnergyLimit, 1l);
+            Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), this.contractAddress, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1l);
             TransactionResult result1 = this.avm.run(new TransactionContextImpl(tx1, block));
             Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             this.contractAddress = result1.getReturnData();

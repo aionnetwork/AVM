@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.api.Address;
 import org.aion.kernel.Block;
@@ -27,7 +28,7 @@ public class AvmImplDeployAndRunTest {
 
     public TransactionResult deployHelloWorld() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
-        byte[] txData = Helpers.encodeCodeAndData(jar, null);
+        byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
@@ -36,7 +37,7 @@ public class AvmImplDeployAndRunTest {
 
     public TransactionResult deployTheDeployAndRunTest() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
-        byte[] txData = Helpers.encodeCodeAndData(jar, null);
+        byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
@@ -54,7 +55,7 @@ public class AvmImplDeployAndRunTest {
     public void testDeployWithMethodCall() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
         byte[] arguments = ABIEncoder.encodeMethodArguments("", 100);
-        byte[] txData = Helpers.encodeCodeAndData(jar, arguments);
+        byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);

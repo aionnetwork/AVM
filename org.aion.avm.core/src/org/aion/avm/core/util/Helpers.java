@@ -9,7 +9,6 @@ import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -221,58 +220,6 @@ public class Helpers {
         }
 
         return ret;
-    }
-
-    public static byte[] encodeCodeAndData(byte[] code, byte[] arguments) {
-        ByteBuffer buffer;
-        if (arguments == null) {
-            buffer = ByteBuffer.allocate(4 + code.length);
-        }
-        else {
-            buffer = ByteBuffer.allocate(4 + code.length + 4 + arguments.length);
-        }
-
-        buffer.putInt(code.length);
-        buffer.put(code);
-
-        if (arguments != null) {
-            buffer.putInt(arguments.length);
-            buffer.put(arguments);
-        }
-
-        return buffer.array();
-    }
-
-    public static byte[][] decodeCodeAndData(byte[] bytes) {
-        if (bytes.length < 4) {
-            return null;
-        }
-        ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        int codeLength = buffer.getInt();
-
-        if (codeLength + 4 <= bytes.length) {
-            byte[] code = new byte[codeLength];
-            buffer.get(code);
-
-            int argLength;
-            if (codeLength + 8 <= bytes.length) {
-                argLength = buffer.getInt();
-                if (codeLength + 8 + argLength == bytes.length) {
-                    byte[] arguments = new byte[argLength];
-                    buffer.get(arguments);
-                    return new byte[][]{code, arguments};
-                }
-                else {
-                    return new byte[][]{code, null};
-                }
-            }
-            else {
-                return new byte[][]{code, null};
-            }
-        }
-        else {
-            return null;
-        }
     }
 
     /**

@@ -2,18 +2,15 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.HashUtils;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.*;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import static org.aion.avm.api.BlockchainRuntime.*;
-import static org.aion.avm.api.BlockchainRuntime.blake2b;
-import static org.aion.avm.api.BlockchainRuntime.log;
 import static org.aion.avm.core.util.Helpers.address;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -29,7 +26,7 @@ public class BlockchainRuntimeTest {
     public BlockchainRuntimeTest() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class);
         byte[] arguments = null;
-        Transaction tx = new Transaction(Transaction.Type.CREATE, premined, null, 0, Helpers.encodeCodeAndData(jar, arguments), 1_000_000L, 1L);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, premined, null, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), 1_000_000L, 1L);
         TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]));
         TransactionResult txResult = avm.run(txContext);
 

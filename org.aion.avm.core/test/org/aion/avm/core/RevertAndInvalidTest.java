@@ -4,6 +4,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.persistence.StorageKeys;
 import org.aion.avm.core.util.ByteArrayWrapper;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.junit.Test;
@@ -36,7 +37,7 @@ public class RevertAndInvalidTest {
     private byte[] deploy() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RevertAndInvalidTestResource.class);
         byte[] arguments = null;
-        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0, Helpers.encodeCodeAndData(jar, arguments), energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 

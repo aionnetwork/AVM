@@ -4,6 +4,7 @@ import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.types.RawDappModule;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IHelper;
@@ -109,7 +110,7 @@ public class AvmImplTest {
     public void testHelperStateRestore() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmImplTestResource.class);
         byte[] arguments = new byte[0];
-        byte[] txData = Helpers.encodeCodeAndData(jar, arguments);
+        byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
 
         // deploy
@@ -176,7 +177,7 @@ public class AvmImplTest {
     @Test
     public void testNullReturnCrossCall() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -199,7 +200,7 @@ public class AvmImplTest {
     @Test
     public void testRecursiveHashCode() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -234,7 +235,7 @@ public class AvmImplTest {
     public void testCommitReentrantCalls() {
         boolean shouldFail = false;
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -265,7 +266,7 @@ public class AvmImplTest {
     public void testRollbackReentrantCalls() {
         boolean shouldFail = true;
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -290,7 +291,7 @@ public class AvmImplTest {
     public void testRollbackAfterReentrantSuccess() {
         boolean shouldFail = true;
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -321,7 +322,7 @@ public class AvmImplTest {
     @Test
     public void testReentrantRollbackDuringCommit() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy
@@ -352,7 +353,7 @@ public class AvmImplTest {
     @Test
     public void testReentrantRecursiveNested() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
-        byte[] txData = Helpers.encodeCodeAndData(jar, new byte[0]);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
         
         // deploy

@@ -5,6 +5,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.*;
 import org.aion.kernel.*;
@@ -51,7 +52,7 @@ public class AionCollectionPerfTest {
 
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
-                Helpers.encodeCodeAndData(testJar, testWalletArguments), energyLimit, energyPrice);
+                new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
 

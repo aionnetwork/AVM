@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testWallet.*;
+import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.shadow.java.lang.Class;
@@ -56,7 +57,7 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
 
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
-                Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit, energyPrice);
+                new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
 
@@ -78,7 +79,7 @@ public class PocWalletTest {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
-                Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit, energyPrice);
+                new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -142,7 +143,7 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
 
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
-                Helpers.encodeCodeAndData(testWalletJar, testWalletArguments), energyLimit, energyPrice);
+                new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
