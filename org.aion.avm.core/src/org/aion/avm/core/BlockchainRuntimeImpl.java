@@ -145,6 +145,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+        energyLimit = restrictEnergyLimit(energyLimit);
+
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL,
                 ctx.getAddress(),
@@ -162,14 +164,16 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public Address avm_create(long value, ByteArray data, long energyToSend) {
+    public Address avm_create(long value, ByteArray data, long energyLimit) {
+        energyLimit = restrictEnergyLimit(energyLimit);
+
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CREATE,
                 ctx.getAddress(),
                 new byte[32],
                 value,
                 data.getUnderlying(),
-                energyToSend,
+                energyLimit,
                 ctx.getEneryPrice());
         
         // Call the common run helper.
@@ -244,6 +248,11 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         System.out.println(message);
     }
 
+    private long restrictEnergyLimit(long energyLimit) {
+        long remainingEnergy = helper.externalGetEnergyRemaining();
+        long maxAllowed = remainingEnergy - (remainingEnergy >> 6);
+        return Math.min(maxAllowed, energyLimit);
+    }
 
     private byte[] runInternalCall(InternalTransaction internalTx) {
         if (null != this.reentrantState) {
