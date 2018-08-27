@@ -42,13 +42,13 @@ public class KernelInterfaceImpl implements KernelInterface {
     }
 
     @Override
-    public void putCode(byte[] address, VersionedCode code) {
+    public void putCode(byte[] address, byte[] code) {
         createAccount(address);
         getAccount(address).code = code;
     }
 
     @Override
-    public VersionedCode getCode(byte[] address) {
+    public byte[] getCode(byte[] address) {
         AccountState acc = getAccount(address);
         return acc == null ? null : acc.code;
     }

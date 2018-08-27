@@ -13,7 +13,6 @@ import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.TransactionContext;
-import org.aion.kernel.VersionedCode;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -180,8 +179,8 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public int avm_getCodeSize(Address address) {
         Objects.requireNonNull(address);
-        VersionedCode vc = kernel.getCode(address.unwrap());
-        return vc == null ? 0 : vc.getCode().length;
+        byte[] vc = kernel.getCode(address.unwrap());
+        return vc == null ? 0 : vc.length;
     }
 
     @Override

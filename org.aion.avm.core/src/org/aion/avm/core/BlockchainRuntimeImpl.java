@@ -134,8 +134,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     public int avm_getCodeSize(Address address) {
         Objects.requireNonNull(address);
 
-        VersionedCode vc = this.kernel.getCode(address.unwrap());
-        return vc == null ? 0 : vc.getCode().length;
+        byte[] vc = this.kernel.getCode(address.unwrap());
+        return vc == null ? 0 : vc.length;
     }
 
     @Override

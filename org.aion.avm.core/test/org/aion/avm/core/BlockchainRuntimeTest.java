@@ -71,7 +71,7 @@ public class BlockchainRuntimeTest {
         buffer.put(block.getDifficulty().toByteArray());
         buffer.put("value".getBytes());
         buffer.putLong(0);
-        buffer.putLong(kernel.getCode(dappAddress).getCode().length);
+        buffer.putLong(kernel.getCode(dappAddress).length);
         buffer.put(HashUtils.blake2b("message".getBytes()));
 
         byte[] expected = Arrays.copyOfRange(buffer.array(), 0, buffer.position());

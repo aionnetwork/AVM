@@ -32,7 +32,7 @@ public class DAppLoader {
         }
 
         // First, we need to load the DApp bytecode.
-        byte[] immortalDappJar = kernel.getCode(address).getCode();
+        byte[] immortalDappJar = kernel.getCode(address);
         ImmortalDappModule app = ImmortalDappModule.readFromJar(immortalDappJar);
         
         // We now need all the classes which will loaded within the class loader for this DApp (includes Helper and userlib classes we add).

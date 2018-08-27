@@ -2,7 +2,6 @@ package org.aion.kernel;
 
 import org.aion.avm.core.util.ByteArrayWrapper;
 
-import java.math.BigInteger;
 import java.util.Map;
 
 
@@ -14,10 +13,10 @@ public interface KernelInterface {
     /**
      * Sets the code of an account.
      *
-     * @param address the account addres
+     * @param address the account address
      * @param code    the immortal code
      */
-    void putCode(byte[] address, VersionedCode code);
+    void putCode(byte[] address, byte[] code);
 
     /**
      * Retrieves the code of an account.
@@ -25,7 +24,7 @@ public interface KernelInterface {
      * @param address the account address
      * @return the code of the account, or NULL if not exists.
      */
-    VersionedCode getCode(byte[] address);
+    byte[] getCode(byte[] address);
 
     /**
      * Put a key-value pair into the account's storage.

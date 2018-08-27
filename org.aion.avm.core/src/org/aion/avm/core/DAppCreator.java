@@ -241,7 +241,7 @@ public class DAppCreator {
 
             // store transformed dapp
             byte[] immortalDappJar = immortalDapp.createJar(dappAddress);
-            kernel.putCode(dappAddress, new VersionedCode(VersionedCode.V1, immortalDappJar));
+            kernel.putCode(dappAddress, immortalDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * ctx.getData().length);

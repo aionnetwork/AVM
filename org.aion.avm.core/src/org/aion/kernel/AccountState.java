@@ -11,7 +11,7 @@ public class AccountState {
 
     public long nonce = 0;
 
-    public VersionedCode code = null;
+    public byte[] code = null;
 
     public Map<ByteArrayWrapper, byte[]> storage = new HashMap<>();
 

@@ -44,7 +44,7 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public void putCode(byte[] address, VersionedCode code) {
+    public void putCode(byte[] address, byte[] code) {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.putCode(address, code);
         };
@@ -53,8 +53,8 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public VersionedCode getCode(byte[] address) {
-        VersionedCode result = null;
+    public byte[] getCode(byte[] address) {
+        byte[] result = null;
         if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
             result = this.writeCache.getCode(address);
             if (null == result) {

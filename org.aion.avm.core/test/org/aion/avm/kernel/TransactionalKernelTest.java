@@ -6,7 +6,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.TransactionalKernel;
-import org.aion.kernel.VersionedCode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -17,8 +16,8 @@ public class TransactionalKernelTest {
         KernelInterface base = new KernelInterfaceImpl();
         TransactionalKernel transaction = new TransactionalKernel(base);
         byte[] address = Helpers.randomBytes(32);
-        transaction.putCode(address, new VersionedCode(VersionedCode.V1, new byte[0]));
-        Assert.assertEquals(0, transaction.getCode(address).getCode().length);
+        transaction.putCode(address, new byte[0]);
+        Assert.assertEquals(0, transaction.getCode(address).length);
         byte[] key = Helpers.randomBytes(32);
         byte[] value = Helpers.randomBytes(32);
         transaction.putStorage(address, key, value);
@@ -36,7 +35,7 @@ public class TransactionalKernelTest {
         
         // Now, commit and prove it is all written back.
         transaction.commit();
-        Assert.assertEquals(0, base.getCode(address).getCode().length);
+        Assert.assertEquals(0, base.getCode(address).length);
         Assert.assertTrue(Arrays.equals(value, base.getStorage(address, key)));
         Assert.assertEquals(50L, base.getBalance(account1));
     }
