@@ -15,6 +15,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class AvmFailureTest {
 
@@ -82,6 +83,7 @@ public class AvmFailureTest {
         TransactionResult txResult = avm.run(txContext);
 
         assertEquals(TransactionResult.Code.FAILED_REVERT, txResult.getStatusCode());
+        assertNotEquals(energyLimit, txResult.getEnergyUsed());
     }
 
     @Test
@@ -92,6 +94,7 @@ public class AvmFailureTest {
         TransactionResult txResult = avm.run(txContext);
 
         assertEquals(TransactionResult.Code.FAILED_INVALID, txResult.getStatusCode());
+        assertEquals(energyLimit, txResult.getEnergyUsed());
     }
 
     @Test
