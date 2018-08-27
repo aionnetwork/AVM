@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.TransactionContext;
 
 import java.io.IOException;
@@ -10,9 +11,14 @@ import org.aion.avm.core.util.SoftCache;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionResult;
 import org.aion.kernel.TransactionalKernel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class AvmImpl implements AvmInternal {
+
+    private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
+
     private final KernelInterface kernel;
     private final ReentrantDAppStack dAppStack;
     private final SoftCache<ByteArrayWrapper, LoadedDApp> hotCache;
@@ -55,6 +61,15 @@ public class AvmImpl implements AvmInternal {
 
 
     private TransactionResult commonRun(KernelInterface thisTransactionKernel, TransactionContext ctx) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Transaction: address = {}, caller = {}, value = {}, data = {}, energyLimit = {}",
+                    Helpers.toHexString(ctx.getAddress()),
+                    Helpers.toHexString(ctx.getCaller()),
+                    ctx.getValue(),
+                    Helpers.toHexString(ctx.getData()),
+                    ctx.getEnergyLimit());
+        }
+
         // only one result (mutable) shall be created per transaction execution
         TransactionResult result = new TransactionResult();
 
@@ -97,6 +112,7 @@ public class AvmImpl implements AvmInternal {
             }
         }
 
+        logger.debug("Result: {}", result);
         return result;
     }
 }

@@ -29,11 +29,16 @@ import org.aion.avm.internal.*;
 import org.aion.kernel.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 
 public class DAppCreator {
+
+    private static final Logger logger = LoggerFactory.getLogger(DAppExecutor.class);
+
     private static final String HELPER_CLASS = PackageConstants.kInternalSlashPrefix + "Helper";
 
     /**
@@ -281,6 +286,7 @@ public class DAppCreator {
             result.setStatusCode(TransactionResult.Code.FAILED_EXCEPTION);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
+            logger.debug("Uncaught exception", e.getCause());
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             result.setStatusCode(TransactionResult.Code.FAILED);

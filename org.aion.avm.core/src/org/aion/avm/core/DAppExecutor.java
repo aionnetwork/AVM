@@ -7,9 +7,14 @@ import org.aion.avm.internal.*;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class DAppExecutor {
+
+    private static final Logger logger = LoggerFactory.getLogger(DAppExecutor.class);
+
     public static void call(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume, TransactionContext ctx, TransactionResult result) {
         byte[] dappAddress = ctx.getAddress();
         // Load the initial state of the environment.
@@ -103,6 +108,7 @@ public class DAppExecutor {
             result.setStatusCode(TransactionResult.Code.FAILED);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
+            logger.debug("Uncaught exception", e.getCause());
         } catch (Throwable e) {
             e.printStackTrace();
             System.exit(-1);
