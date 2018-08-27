@@ -10,8 +10,6 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.InvalidException;
 import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.shadow.java.lang.String;
-import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.*;
 
 import java.util.List;
@@ -106,8 +104,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public BigInteger avm_getBlockDifficulty() {
-        return new BigInteger(ctx.getBlockDifficulty());
+    public org.aion.avm.shadow.java.math.BigInteger avm_getBlockDifficulty() {
+        return new org.aion.avm.shadow.java.math.BigInteger(ctx.getBlockDifficulty());
     }
 
     @Override
@@ -146,6 +144,11 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+        require(targetAddress != null, "Destination can't be NULL");
+        require(value >= 0 , "Value can't be negative");
+        require(data != null, "Data can't be NULL");
+        require(energyLimit >= 0, "Energy limit can't be negative");
+
         energyLimit = restrictEnergyLimit(energyLimit);
 
         // construct the internal transaction
@@ -164,6 +167,10 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Result avm_create(long value, ByteArray data, long energyLimit) {
+        require(value >= 0 , "Value can't be negative");
+        require(data != null, "Data can't be NULL");
+        require(energyLimit >= 0, "Energy limit can't be negative");
+
         energyLimit = restrictEnergyLimit(energyLimit);
 
         // construct the internal transaction
@@ -178,6 +185,12 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         
         // Call the common run helper.
         return runInternalCall(internalTx);
+    }
+
+    private void require(boolean condition, String message) {
+        if (!condition) {
+            throw new IllegalArgumentException(message);
+        }
     }
 
     @Override
@@ -236,13 +249,13 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public void avm_print(String message) {
-        System.out.print(message);
+    public void avm_print(org.aion.avm.shadow.java.lang.String message) {
+        System.out.print(message.toString());
     }
 
     @Override
-    public void avm_println(String message) {
-        System.out.println(message);
+    public void avm_println(org.aion.avm.shadow.java.lang.String message) {
+        System.out.println(message.toString());
     }
 
     private long restrictEnergyLimit(long energyLimit) {
