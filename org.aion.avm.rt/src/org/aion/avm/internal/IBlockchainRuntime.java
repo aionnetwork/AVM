@@ -1,6 +1,7 @@
 package org.aion.avm.internal;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.api.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.avm.shadow.java.lang.String;
@@ -146,18 +147,18 @@ public interface IBlockchainRuntime {
     long avm_getRemainingEnergy();
 
     /**
-     * Calls the contract denoted by the targetAddress, sending payload data and energyToSend energy for the invocation.  Returns the response of the contract.
+     * Calls the contract denoted by the targetAddress, sending payload data and energyLimit for the invocation.  Returns the response of the contract.
      * NOTE:  This is likely to change as we work out the details of the ABI and cross-call semantics but exists to handle expectations of ported Solidity applications.
      *
      * @param targetAddress The address of the contract to call.
      * @param value         The value to transfer
      * @param data          The data payload to send to that contract.
-     * @param energyToSend  The energy to send that contract.
+     * @param energyLimit   The energy to send that contract.
      * @return The response of executing the contract.
      */
-    ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyToSend);
+    Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit);
 
-    Address avm_create(long value, ByteArray data, long energyToSend);
+    Result avm_create(long value, ByteArray data, long energyLimit);
 
     /**
      * Destructs this Dapp and refund all balance to the beneficiary.

@@ -1,6 +1,7 @@
 package org.aion.avm.core.testCall;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.api.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.TestingBlockchainRuntime;
@@ -28,7 +29,7 @@ public class CallTest {
         SimpleAvm avm = new SimpleAvm(energyLimit, Caller.class);
         avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
             @Override
-            public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+            public Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
                 callbackReceived = true;
 
                 assertEquals(new Address(new byte[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}), targetAddress);
@@ -36,7 +37,7 @@ public class CallTest {
                 assertEquals(new ByteArray("hello".getBytes()), data);
                 assertEquals(10000, energyLimit);
 
-                return new ByteArray("world".getBytes());
+                return new Result(true, new ByteArray("world".getBytes()));
             }
         }.withCaller(from).withAddress(to).withEnergyLimit(energyLimit));
 
@@ -59,7 +60,7 @@ public class CallTest {
         SimpleAvm avm = new SimpleAvm(energyLimit, Caller.class);
         avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
             @Override
-            public ByteArray avm_call(Address a, long v, ByteArray d, long e) {
+            public Result avm_call(Address a, long v, ByteArray d, long e) {
                 // We want to suspend the outer IHelper for the sub-call (they are supposed to be distinct).
                 SuspendedHelper suspended = new SuspendedHelper();
                 
@@ -77,7 +78,7 @@ public class CallTest {
                     // TODO: how to restore the Helper state after call
 
                     // we have to re-wrap the byte array rather than returning the previous one.
-                    return new ByteArray(((ByteArray)ret).getUnderlying());
+                    return new Result(true, new ByteArray(((ByteArray)ret).getUnderlying()));
 
                 } catch (Exception ex) {
                     ex.printStackTrace();

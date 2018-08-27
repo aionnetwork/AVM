@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.api.Result;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.HashUtils;
@@ -194,13 +195,13 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     @Override
-    public ByteArray avm_call(Address targetAddress, long value, ByteArray payload, long energyToSend) {
-        return payload;
+    public Result avm_call(Address targetAddress, long value, ByteArray payload, long energyLimit) {
+        return new Result(true, null);
     }
 
     @Override
-    public Address avm_create(long value, ByteArray data, long energyToSend) {
-        throw RuntimeAssertionError.unimplemented("avm_create");
+    public Result avm_create(long value, ByteArray data, long energyLimit) {
+        return new Result(true, null);
     }
 
     @Override

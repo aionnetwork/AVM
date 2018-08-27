@@ -25,7 +25,7 @@ public class Caller {
         byte[] data = "hello".getBytes();
         long energyLimit = 10000;
 
-        return BlockchainRuntime.call(address, value, data, energyLimit);
+        return BlockchainRuntime.call(address, value, data, energyLimit).getReturnData();
     }
 
 }

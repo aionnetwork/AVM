@@ -88,11 +88,11 @@ public final class BlockchainRuntime {
         return Helper.blockchainRuntime.avm_getRemainingEnergy();
     }
 
-    public static ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+    public static Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
         return Helper.blockchainRuntime.avm_call(targetAddress, value, data, energyLimit);
     }
 
-    public static Address avm_create(long value, ByteArray data, long energyLimit) {
+    public static Result avm_create(long value, ByteArray data, long energyLimit) {
         return Helper.blockchainRuntime.avm_create(value, data, energyLimit);
     }
 
@@ -216,12 +216,12 @@ public final class BlockchainRuntime {
         return avm_getRemainingEnergy();
     }
 
-    public static byte[] call(Address targetAddress, long value, byte[] data, long energyLimit) {
-        return avm_call(targetAddress, value, new ByteArray(data), energyLimit).getUnderlying();
+    public static Result call(Address targetAddress, long value, byte[] data, long energyLimit) {
+        return avm_call(targetAddress, value, new ByteArray(data), energyLimit);
     }
 
-    public static Address create(long value, byte[] data, long energyToSend) {
-        return avm_create(value, new ByteArray(data), energyToSend);
+    public static Result create(long value, byte[] data, long energyLimit) {
+        return avm_create(value, new ByteArray(data), energyLimit);
     }
 
     public static void selfDestruct(Address beneficiary) {

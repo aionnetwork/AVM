@@ -54,7 +54,7 @@ public class Exchange {
 
         byte[] args = ABIEncoder.encodeMethodArguments("allowance", sender, BlockchainRuntime.getAddress());
 
-        byte[] result = BlockchainRuntime.call(coinContract, 0, args, 1000000L);
+        byte[] result = BlockchainRuntime.call(coinContract, 0, args, 1000000L).getReturnData();
 
         if (((long)ABIDecoder.decodeOneObject(result)) >= amount){
             toProcess = new ExchangeTransaction(coin, sender, to, amount);
@@ -81,7 +81,7 @@ public class Exchange {
 
         byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", toProcess.getFrom(), toProcess.getTo(), toProcess.getAmount());
 
-        byte[] result = BlockchainRuntime.call(coinContract, 0, args, 1000000L);
+        byte[] result = BlockchainRuntime.call(coinContract, 0, args, 1000000L).getReturnData();
 
         if ((boolean)ABIDecoder.decodeOneObject(result)){
             toProcess = null;

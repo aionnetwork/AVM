@@ -28,7 +28,7 @@ public class ReentrantCrossCallResource {
         long value = 1;
         byte[] data = ABIEncoder.encodeMethodArguments("returnNull");
         long energyLimit = 500000;
-        byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+        byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
         return (null != response)
                 ? ABIDecoder.decodeOneObject(response)
                 : response;
@@ -48,7 +48,7 @@ public class ReentrantCrossCallResource {
             long value = 1;
             byte[] data = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", iterationsRemaining - 1);
             long energyLimit = 500000;
-            byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+            byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
             toReturn = (Integer)ABIDecoder.decodeOneObject(response);
         }
         return toReturn;
@@ -193,7 +193,7 @@ public class ReentrantCrossCallResource {
             long value = 1;
             byte[] data = ABIEncoder.encodeMethodArguments("recursiveChangeNested", ourState.hashCode(), iterationsToCall - 1);
             long energyLimit = 1_000_000L;
-            byte[] result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+            byte[] result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
             int responseHash = ((Integer)ABIDecoder.decodeOneObject(result)).intValue();
             
             // Verify that we see this hash for the nestedInstance.

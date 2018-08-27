@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.api.Result;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;
@@ -144,7 +145,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public ByteArray avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+    public Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
         energyLimit = restrictEnergyLimit(energyLimit);
 
         // construct the internal transaction
@@ -157,14 +158,11 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 ctx.getEneryPrice());
         
         // Call the common run helper.
-        byte[] returnData = runInternalCall(internalTx);
-        return (null != returnData)
-                ? new ByteArray(returnData)
-                : null;
+        return runInternalCall(internalTx);
     }
 
     @Override
-    public Address avm_create(long value, ByteArray data, long energyLimit) {
+    public Result avm_create(long value, ByteArray data, long energyLimit) {
         energyLimit = restrictEnergyLimit(energyLimit);
 
         // construct the internal transaction
@@ -177,10 +175,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 ctx.getEneryPrice());
         
         // Call the common run helper.
-        byte[] returnData = runInternalCall(internalTx);
-        return (null != returnData)
-                ? new Address(returnData)
-                : null;
+        return runInternalCall(internalTx);
     }
 
     @Override
@@ -254,7 +249,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         return Math.min(maxAllowed, energyLimit);
     }
 
-    private byte[] runInternalCall(InternalTransaction internalTx) {
+    private Result runInternalCall(InternalTransaction internalTx) {
         if (null != this.reentrantState) {
             // Save our current state into the reentrant container (since this call might be reentrant).
             this.reentrantState.updateEnvironment(helper.captureSnapshotAndNextHashCode());
@@ -280,6 +275,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // charge energy consumed
         helper.externalChargeEnergy(newResult.getEnergyUsed());
 
-        return newResult.getReturnData();
+        return new Result(newResult.getStatusCode().isSuccess(),
+                newResult.getReturnData() == null ? null : new ByteArray(newResult.getReturnData()));
     }
 }

@@ -1,6 +1,7 @@
 package org.aion.avm.core.testCall;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.api.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.TestingBlockchainRuntime;
@@ -145,12 +146,12 @@ public class ParallelExecution {
             avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
                 // TODO: runtime should be based on the state
                 @Override
-                public ByteArray avm_call(Address targetAddress, long value, ByteArray payload, long energyToSend) {
-                    InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL, tx.getTo(), targetAddress.unwrap(), value, payload.getUnderlying(), energyToSend, tx.getEnergyPrice());
+                public Result avm_call(Address targetAddress, long value, ByteArray payload, long energyLimit) {
+                    InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL, tx.getTo(), targetAddress.unwrap(), value, payload.getUnderlying(), energyLimit, tx.getEnergyPrice());
                     result.internalTransactions.add(internalTx);
                     logger.debug("Internal transaction: " + internalTx);
 
-                    return new ByteArray(new byte[0]);
+                    return new Result(true, new ByteArray(new byte[0]));
                 }
             }.withCaller(tx.getFrom()).withAddress(tx.getTo()).withEnergyLimit(tx.getEnergyLimit()).withData(tx.getData()));
             try {
