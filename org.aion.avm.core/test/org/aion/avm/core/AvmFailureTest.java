@@ -43,6 +43,18 @@ public class AvmFailureTest {
     }
 
     @Test
+    public void testFailedTransaction() {
+        byte[] data = ABIEncoder.encodeMethodArguments("reentrantCall", 5);
+        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, 0, data, energyLimit, energyPrice);
+        TransactionContext txContext = new TransactionContextImpl(tx, block);
+        TransactionResult txResult = avm.run(txContext);
+
+        assertEquals(TransactionResult.Code.FAILED_REVERT, txResult.getStatusCode());
+        assertEquals(0, txResult.getInternalTransactions().size());
+        assertEquals(0, txResult.getLogs().size());
+    }
+
+    @Test
     public void testOutOfEnergy() {
         byte[] data = ABIEncoder.encodeMethodArguments("testOutOfEnergy");
         Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, 0, data, energyLimit, energyPrice);

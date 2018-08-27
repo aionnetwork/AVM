@@ -32,6 +32,13 @@ public class AvmImpl implements AvmInternal {
         if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
             childKernel.commit();
         }
+
+        // finalize the transaction result at the root of the invocation.
+        if (!result.getStatusCode().isSuccess()) {
+            result.clearLogs();
+            result.rejectInternalTransactions();
+        }
+
         return result;
     }
 

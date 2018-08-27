@@ -5,6 +5,7 @@ import org.aion.avm.core.util.Helpers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TransactionResult {
 
@@ -157,12 +158,21 @@ public class TransactionResult {
         return internalTransactions;
     }
 
+    public void clearLogs() {
+        this.logs.clear();
+    }
+
+    public void rejectInternalTransactions() {
+        this.internalTransactions.forEach(InternalTransaction::markAsRejected);
+    }
+
     @Override
     public String toString() {
         return "TransactionResult{" +
                 "statusCode=" + statusCode +
                 ", returnData=" + (returnData == null ? "NULL" : Helpers.toHexString(returnData)) +
                 ", energyUsed=" + energyUsed +
+                ", logs=[" + logs.stream().map(Log::toString).collect(Collectors.joining(",")) + "]" +
                 '}';
     }
 }

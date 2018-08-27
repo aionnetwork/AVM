@@ -1,6 +1,9 @@
 package org.aion.kernel;
 
+import org.aion.avm.core.util.Helpers;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a log emitted by dapp.
@@ -43,9 +46,9 @@ public class Log {
     @Override
     public String toString() {
         return "Log{" +
-                "address=" + address +
-                ", topics=" + topics +
-                ", data=" + data +
+                "address=" + Helpers.toHexString(address) +
+                ", topics=[" + topics.stream().map(Helpers::toHexString).collect(Collectors.joining(",")) + "]" +
+                ", data=" + Helpers.toHexString(data) +
                 '}';
     }
 }
