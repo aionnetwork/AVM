@@ -175,6 +175,10 @@ public class AionCollectionPerfTest {
         TransactionResult getResult = call(avm, contract, from, args);
         System.out.println(">> Get           : " + getResult.getEnergyUsed() / AionMapPerfContract.SIZE);
 
+        args = ABIEncoder.encodeMethodArguments("callRemove");
+        TransactionResult removeResult = call(avm, contract, from, args);
+        System.out.println(">> Remove        : " + removeResult.getEnergyUsed() / AionMapPerfContract.SIZE);
+
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -190,6 +194,10 @@ public class AionCollectionPerfTest {
         args = ABIEncoder.encodeMethodArguments("callGetB");
         getResult = call(avm, contract, from, args);
         System.out.println(">> Get           : " + getResult.getEnergyUsed() / AionMapPerfContract.SIZE);
+
+        args = ABIEncoder.encodeMethodArguments("callRemoveB");
+        removeResult = call(avm, contract, from, args);
+        System.out.println(">> Remove        : " + removeResult.getEnergyUsed() / AionMapPerfContract.SIZE);
 
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }

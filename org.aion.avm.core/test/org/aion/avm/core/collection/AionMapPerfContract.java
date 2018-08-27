@@ -42,6 +42,12 @@ public class AionMapPerfContract {
         }
     }
 
+    public static void callRemove(){
+        for (int i = 0; i < SIZE; i++) {
+            target.remove(Integer.valueOf(i * 2));
+        }
+    }
+
     public static void callInitB(){
         for (int i = 0; i < SIZE; i++){
             targetB.put(Integer.valueOf(i * 2), Integer.valueOf(i));
@@ -57,6 +63,12 @@ public class AionMapPerfContract {
     public static void callGetB(){
         for (int i = 0; i < SIZE; i++) {
             targetB.get(Integer.valueOf(i));
+        }
+    }
+
+    public static void callRemoveB(){
+        for (int i = 0; i < SIZE; i++) {
+            targetB.remove(Integer.valueOf(i * 2));
         }
     }
 }
