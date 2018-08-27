@@ -16,8 +16,11 @@ import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -38,6 +41,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class AvmImplTest {
     private static Block block;
+
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
 
     @BeforeClass
     public static void setupClass() {
@@ -418,6 +424,62 @@ public class AvmImplTest {
         Transaction tx = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, spawnerAddress.unwrap(), 0, 0, spawnerCallData, energyLimit, 1l);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
         assertEquals(TransactionResult.Code.FAILED_INVALID, result2.getStatusCode());
+    }
+
+    /**
+     * Tests that a DApp can CREATE for us, backed by a directory.
+     * (same as "testCreateSubAppCall" but uses a directory backing-store).
+     */
+    @Test
+    public void testCreateSubAppCallOnDirectory() throws Exception {
+        File directory = folder.newFolder();
+        byte incrementBy = 3;
+        byte[] incrementorJar = JarBuilder.buildJarForMainAndClasses(IncrementorDApp.class);
+        byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
+        byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
+        byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl(directory));
+        
+        // We always start out with the PREMINE account, but that should be the only one.
+        assertEquals(1, directory.listFiles().length);
+        
+        // CREATE the spawner (meaning another account).
+        Address spawnerAddress = createDApp(avm, spanerCreateData);
+        assertEquals(2, directory.listFiles().length);
+        
+        // CALL to create and invoke the incrementor.
+        boolean shouldFail = false;
+        byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
+        Address incrementorAddress = (Address) callDApp(avm, spawnerAddress, spawnerCallData);
+        assertEquals(3, directory.listFiles().length);
+        
+        // Restart the AVM.
+        avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl(directory));
+        
+        // Call the incrementor, directly.
+        byte[] input = new byte[] {1,2,3,4,5};
+        byte[] incrementorCallData = ABIEncoder.encodeMethodArguments("incrementArray", input);
+        
+        byte[] incrementorResult = (byte[]) callDApp(avm, incrementorAddress, incrementorCallData);
+        assertEquals(input.length, incrementorResult.length);
+        for (int i = 0; i < input.length; ++i) {
+            assertEquals(incrementBy + input[i], incrementorResult[i]);
+        }
+        
+        // Check the state of the directory we are using to back this (3 accounts, 2 with code and one with only a balance).
+        int codeCount = 0;
+        int balanceCount = 0;
+        for (File top : directory.listFiles()) {
+            for (File account : top.listFiles()) {
+                if ("code".equals(account.getName())) {
+                    codeCount += 1;
+                } else if ("balance".equals(account.getName())) {
+                    balanceCount += 1;
+                }
+            }
+        }
+        assertEquals(2, codeCount);
+        assertEquals(1, balanceCount);
     }
 
 

@@ -2,10 +2,12 @@ package org.aion.kernel;
 
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
+import org.aion.data.DirectoryBackedDataStore;
 import org.aion.data.IAccountStore;
 import org.aion.data.IDataStore;
 import org.aion.data.MemoryBackedDataStore;
 
+import java.io.File;
 import java.util.Map;
 
 
@@ -20,9 +22,27 @@ public class KernelInterfaceImpl implements KernelInterface {
 
     private final IDataStore dataStore;
 
+    /**
+     * Creates an instance of the interface which is backed by in-memory structures, only.
+     */
     public KernelInterfaceImpl() {
         this.dataStore = new MemoryBackedDataStore();
         IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS);
+        premined.setBalance(PREMINED_AMOUNT);
+    }
+
+    /**
+     * Creates an instance of the interface which is backed by a directory on disk.
+     * 
+     * @param onDiskRoot The root directory which this implementation will use for persistence.
+     */
+    public KernelInterfaceImpl(File onDiskRoot) {
+        this.dataStore = new DirectoryBackedDataStore(onDiskRoot);
+        // Try to open the account, creating it if doesn't exist.
+        IAccountStore premined = this.dataStore.openAccount(PREMINED_ADDRESS);
+        if (null == premined) {
+            premined = this.dataStore.createAccount(PREMINED_ADDRESS);
+        }
         premined.setBalance(PREMINED_AMOUNT);
     }
 
