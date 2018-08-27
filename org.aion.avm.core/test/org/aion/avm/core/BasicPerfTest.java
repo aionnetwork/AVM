@@ -65,7 +65,7 @@ public class BasicPerfTest {
             this.avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
             Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
-            Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), this.contractAddress, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1l);
+            Transaction tx1 = new Transaction(Transaction.Type.CREATE, KernelInterfaceImpl.PREMINED_ADDRESS, this.contractAddress, 0, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1l);
             TransactionResult result1 = this.avm.run(new TransactionContextImpl(tx1, block));
             Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             this.contractAddress = result1.getReturnData();
@@ -76,7 +76,7 @@ public class BasicPerfTest {
             for (int i = blockStart; i < (COUNT + blockStart); ++i) {
                 Block block = new Block(new byte[32], i, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
                 long transaction1EnergyLimit = 1_000_000_000l;
-                Transaction tx1 = new Transaction(Transaction.Type.CALL, Helpers.address(1), this.contractAddress, 0, null, transaction1EnergyLimit, 1l);
+                Transaction tx1 = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, this.contractAddress, 0, 0, null, transaction1EnergyLimit, 1l);
                 TransactionResult result1 = this.avm.run(new TransactionContextImpl(tx1, block));
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             }

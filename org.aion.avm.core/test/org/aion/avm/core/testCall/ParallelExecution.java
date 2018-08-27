@@ -147,9 +147,16 @@ public class ParallelExecution {
                 // TODO: runtime should be based on the state
                 @Override
                 public Result avm_call(Address targetAddress, long value, ByteArray payload, long energyLimit) {
-                    InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL, tx.getTo(), targetAddress.unwrap(), value, payload.getUnderlying(), energyLimit, tx.getEnergyPrice());
+                    InternalTransaction internalTx = new InternalTransaction(
+                            Transaction.Type.CALL,
+                            tx.getTo(),
+                            targetAddress.unwrap(),
+                            0,
+                            value,
+                            payload.getUnderlying(),
+                            energyLimit,
+                            tx.getEnergyPrice());
                     result.internalTransactions.add(internalTx);
-                    logger.debug("Internal transaction: " + internalTx);
 
                     return new Result(true, new ByteArray(new byte[0]));
                 }
@@ -189,9 +196,9 @@ public class ParallelExecution {
     //============
 
     public static void simpleCall() {
-        Transaction tx1 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, Helpers.address(3), 1000000, 1);
-        Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(3), Helpers.address(4), 0, Helpers.address(1), 1000000, 1);
-        Transaction tx3 = new Transaction(Transaction.Type.CALL, Helpers.address(3), Helpers.address(5), 0, new byte[0], 1000000, 1);
+        Transaction tx1 = new Transaction(Transaction.Type.CALL, Helpers.address(1), Helpers.address(2), 0, 0, Helpers.address(3), 1000000, 1);
+        Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(3), Helpers.address(4), 0, 0, Helpers.address(1), 1000000, 1);
+        Transaction tx3 = new Transaction(Transaction.Type.CALL, Helpers.address(3), Helpers.address(5), 0, 0, new byte[0], 1000000, 1);
 
         ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(null), NUM_THREADS);
         exec.execute();
@@ -210,7 +217,7 @@ public class ParallelExecution {
             int to = r.nextInt(numAccounts);
             int callee = r.nextInt(numAccounts);
 
-            Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(from), Helpers.address(to), 0, Helpers.address(callee), 1000000, 1);
+            Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(from), Helpers.address(to), 0, 0, Helpers.address(callee), 1000000, 1);
             transactions.add(tx);
         }
 

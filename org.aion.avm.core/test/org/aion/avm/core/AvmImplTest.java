@@ -116,7 +116,7 @@ public class AvmImplTest {
         // deploy
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, txData, energyLimit, energyPrice);
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, KernelInterfaceImpl.PREMINED_ADDRESS, Helpers.address(2), 0, 0, txData, energyLimit, energyPrice);
         TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
 
@@ -138,7 +138,7 @@ public class AvmImplTest {
 
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
-        Transaction tx2 = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, contractAddr.unwrap(), transaction2EnergyLimit, energyPrice);
+        Transaction tx2 = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, contractAddr.unwrap(), 0, 0, contractAddr.unwrap(), transaction2EnergyLimit, energyPrice);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx2, block));
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
@@ -278,7 +278,7 @@ public class AvmImplTest {
         
         // Cause the failure.
         byte[] nearData = ABIEncoder.encodeMethodArguments("localFailAfterReentrant");
-        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, nearData, energyLimit, 1l);
+        Transaction tx = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, contractAddr.unwrap(), 0, 0, nearData, energyLimit, 1l);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
         assertEquals(TransactionResult.Code.FAILED_OUT_OF_ENERGY, result2.getStatusCode());
         
@@ -415,7 +415,7 @@ public class AvmImplTest {
         boolean shouldFail = true;
         byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
         long energyLimit = 1_000_000l;
-        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), spawnerAddress.unwrap(), 0, spawnerCallData, energyLimit, 1l);
+        Transaction tx = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, spawnerAddress.unwrap(), 0, 0, spawnerCallData, energyLimit, 1l);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
         assertEquals(TransactionResult.Code.FAILED_INVALID, result2.getStatusCode());
     }
@@ -423,7 +423,7 @@ public class AvmImplTest {
 
     private int callRecursiveHash(Avm avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);
-        Transaction call = new Transaction(Transaction.Type.CALL, Helpers.address(1), contractAddr.unwrap(), 0, argData, energyLimit, 1l);
+        Transaction call = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, contractAddr.unwrap(), 0, 0, argData, energyLimit, 1l);
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
@@ -443,7 +443,7 @@ public class AvmImplTest {
     private Address createDApp(Avm avm, byte[] createData) {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, Helpers.address(1), Helpers.address(2), 0, createData, energyLimit, energyPrice);
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, KernelInterfaceImpl.PREMINED_ADDRESS, Helpers.address(2), 0, 0, createData, energyLimit, energyPrice);
         TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
         return TestingHelper.buildAddress(result1.getReturnData());
@@ -451,7 +451,7 @@ public class AvmImplTest {
 
     private Object callDApp(Avm avm, Address dAppAddress, byte[] argData) {
         long energyLimit = 1_000_000l;
-        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), dAppAddress.unwrap(), 0, argData, energyLimit, 1l);
+        Transaction tx = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, dAppAddress.unwrap(), 0, 0, argData, energyLimit, 1l);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
         return TestingHelper.decodeResult(result2);

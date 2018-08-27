@@ -100,6 +100,7 @@ public class DAppExecutor {
             result.setStatusCode(TransactionResult.Code.FAILED_EXCEPTION);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
+            logger.debug("Uncaught exception", e.getCause());
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             if (null != reentrantGraphData) {
@@ -107,8 +108,6 @@ public class DAppExecutor {
             }
             result.setStatusCode(TransactionResult.Code.FAILED);
             result.setEnergyUsed(ctx.getEnergyLimit());
-
-            logger.debug("Uncaught exception", e.getCause());
         } catch (Throwable e) {
             e.printStackTrace();
             System.exit(-1);

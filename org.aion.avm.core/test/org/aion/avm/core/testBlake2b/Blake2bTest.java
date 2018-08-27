@@ -7,7 +7,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -30,7 +29,7 @@ public class Blake2bTest {
                 Blake2b.Param.Default.class, Blake2b.Param.Xoff.class, Blake2b.Engine.Assert.class,
                 Blake2b.Engine.LittleEndian.class, Blake2b.Engine.flag.class);
         byte[] arguments = null;
-        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
         System.out.println(txResult);
@@ -44,7 +43,7 @@ public class Blake2bTest {
         Blake2b mac = Blake2b.Mac.newInstance("key".getBytes());
         byte[] hash = mac.digest("input".getBytes());
 
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, 0, new byte[0], energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, 0, 0, new byte[0], energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
         System.out.println(txResult);

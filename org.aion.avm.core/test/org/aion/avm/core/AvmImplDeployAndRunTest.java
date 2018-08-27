@@ -16,7 +16,7 @@ import java.util.Arrays;
 import static org.junit.Assert.assertEquals;
 
 public class AvmImplDeployAndRunTest {
-    private byte[] from = Helpers.randomBytes(Address.LENGTH);
+    private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private byte[] to = Helpers.randomBytes(Address.LENGTH);
     private long energyLimit = 5000000;
     private long energyPrice = 1;
@@ -30,7 +30,7 @@ public class AvmImplDeployAndRunTest {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
         byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return avm.run(context);
     }
@@ -39,7 +39,7 @@ public class AvmImplDeployAndRunTest {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
         byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return avm.run(context);
     }
@@ -57,7 +57,7 @@ public class AvmImplDeployAndRunTest {
         byte[] arguments = ABIEncoder.encodeMethodArguments("", 100);
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, txData, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, 0, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -70,7 +70,7 @@ public class AvmImplDeployAndRunTest {
 
         // call the "run" method
         byte[] txData = ABIEncoder.encodeMethodArguments("run");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -84,7 +84,7 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "add" with arguments
         byte[] txData = ABIEncoder.encodeMethodArguments("add", 123, 1);
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -99,7 +99,7 @@ public class AvmImplDeployAndRunTest {
 
         // test encode method arguments with "encodeArgs"
         byte[] txData = ABIEncoder.encodeMethodArguments("encodeArgs");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -109,7 +109,7 @@ public class AvmImplDeployAndRunTest {
         assertEquals(true, correct);
 
         // test another method call, "addArray" with 1D array arguments
-        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, expected, energyLimit, energyPrice);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, 0, expected, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(context);
 
@@ -121,7 +121,7 @@ public class AvmImplDeployAndRunTest {
         a[0] = new int[]{123, 4};
         a[1] = new int[]{1, 2};
         txData = ABIEncoder.encodeMethodArguments("addArray2", TestingHelper.construct2DWrappedArray(a));
-        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(context);
 
@@ -133,7 +133,7 @@ public class AvmImplDeployAndRunTest {
         chars[0] = "cat".toCharArray();
         chars[1] = "dog".toCharArray();
         txData = ABIEncoder.encodeMethodArguments("concatenate", TestingHelper.construct2DWrappedArray(chars));
-        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(context);
 
@@ -142,7 +142,7 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "swap" with 2D array arguments and 2D array return data
         txData = ABIEncoder.encodeMethodArguments("swap", TestingHelper.construct2DWrappedArray(chars));
-        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(context);
 
@@ -152,7 +152,7 @@ public class AvmImplDeployAndRunTest {
 
         // test a method call to "setBar", which does not have a return type (void)
         txData = ABIEncoder.encodeMethodArguments("setBar", 20);
-        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, txData, energyLimit, energyPrice);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), 0, 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(context);
 

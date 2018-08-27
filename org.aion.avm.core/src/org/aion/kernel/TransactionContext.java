@@ -16,6 +16,8 @@ public interface TransactionContext {
 
     byte[] getOrigin();
 
+    long getNonce();
+
     long getValue();
 
     byte[] getData();

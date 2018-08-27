@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 public class RevertAndInvalidTest {
 
     // transaction
-    private byte[] deployer = Helpers.address(1);
+    private byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private long energyLimit = 1_000_000L;
     private long energyPrice = 1L;
 
@@ -37,7 +37,7 @@ public class RevertAndInvalidTest {
     private byte[] deploy() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RevertAndInvalidTestResource.class);
         byte[] arguments = null;
-        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, 0, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -46,7 +46,7 @@ public class RevertAndInvalidTest {
 
     @Test
     public void testRevert() {
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, 0, new byte[]{1}, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, 0, 0, new byte[]{1}, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -60,7 +60,7 @@ public class RevertAndInvalidTest {
 
     @Test
     public void testInvalid() {
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, 0, new byte[]{2}, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, 0, 0, new byte[]{2}, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 

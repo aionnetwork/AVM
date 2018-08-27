@@ -1,7 +1,6 @@
 package org.aion.kernel;
 
 import org.aion.avm.core.util.Helpers;
-import java.math.BigInteger;
 
 import java.util.Arrays;
 
@@ -17,6 +16,8 @@ public class Transaction {
 
     byte[] to;
 
+    long nonce;
+
     long value;
 
     byte[] data;
@@ -25,10 +26,11 @@ public class Transaction {
 
     long energyPrice;
 
-    public Transaction(Type type, byte[] from, byte[] to, long value, byte[] data, long energyLimit, long energyPrice) {
+    public Transaction(Type type, byte[] from, byte[] to, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
         this.type = type;
         this.from = from;
         this.to = to;
+        this.nonce = nonce;
         this.value = value;
         this.data = data;
         this.energyLimit = energyLimit;
@@ -48,7 +50,7 @@ public class Transaction {
     }
 
     public long getNonce() {
-        return 0;
+        return nonce;
     }
 
     public long getValue() {

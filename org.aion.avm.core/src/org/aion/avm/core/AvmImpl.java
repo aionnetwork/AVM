@@ -4,6 +4,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.TransactionContext;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.util.ByteArrayWrapper;
@@ -34,6 +35,36 @@ public class AvmImpl implements AvmInternal {
     public TransactionResult run(TransactionContext ctx) {
         // We are the root call so use our root kernel.
         TransactionalKernel childKernel = new TransactionalKernel(this.kernel);
+
+        // to capture any error during validation
+        TransactionResult.Code error = null;
+
+        // value/energyPrice/energyLimit sanity check
+        if (ctx.getValue() < 0 || ctx.getEneryPrice() < 0 || ctx.getEnergyLimit() < 0) {
+            error = TransactionResult.Code.REJECTED;
+        }
+
+        // balance check
+        byte[] sender = ctx.getCaller();
+        long senderBalance = childKernel.getBalance(sender);
+        if (BigInteger.valueOf(ctx.getValue()).add(BigInteger.valueOf(ctx.getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getEneryPrice())))
+                .compareTo(BigInteger.valueOf(senderBalance)) > 0) {
+            error = TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
+        }
+
+        // nonce check
+        if (childKernel.getNonce(sender) != ctx.getNonce()) {
+            error = TransactionResult.Code.REJECTED_INVALID_NONCE;
+        }
+
+        if (error != null) {
+            TransactionResult result = new TransactionResult();
+            result.setStatusCode(error);
+            result.setEnergyUsed(ctx.getEnergyLimit());
+            return result;
+        }
+
+        // execute the transaction and commit state changes if successful.
         TransactionResult result = commonRun(childKernel, ctx);
         if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
             childKernel.commit();
@@ -72,8 +103,6 @@ public class AvmImpl implements AvmInternal {
 
         // only one result (mutable) shall be created per transaction execution
         TransactionResult result = new TransactionResult();
-
-        // TODO: charge basic transaction cost - note that there isn't yet an IHelper instance so there is nobody to bill.
 
         if (ctx.isCreate()) {
             DAppCreator.create(thisTransactionKernel, this, ctx, result);

@@ -9,8 +9,8 @@ public class InternalTransaction extends Transaction {
 
     private boolean rejected ;
 
-    public InternalTransaction(Type type, byte[] from, byte[] to, long value, byte[] data, long energyLimit, long energyPrice) {
-        super(type, from, to, value, data, energyLimit, energyPrice);
+    public InternalTransaction(Type type, byte[] from, byte[] to, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
+        super(type, from, to, nonce, value, data, energyLimit, energyPrice);
     }
 
     public void markAsRejected() {

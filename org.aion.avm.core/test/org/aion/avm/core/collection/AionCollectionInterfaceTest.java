@@ -16,7 +16,7 @@ import org.junit.Test;
 
 public class AionCollectionInterfaceTest {
 
-    private byte[] from = Helpers.randomBytes(Address.LENGTH);
+    private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private byte[] to = Helpers.randomBytes(Address.LENGTH);
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = Long.MAX_VALUE - 100l;
@@ -33,7 +33,7 @@ public class AionCollectionInterfaceTest {
     private TransactionResult deploy(Avm avm, byte[] testJar){
 
         byte[] testWalletArguments = new byte[0];
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0,
+        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, 0,
                 new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
@@ -44,7 +44,7 @@ public class AionCollectionInterfaceTest {
     }
 
     private TransactionResult call(Avm avm, byte[] contract, byte[] sender, byte[] args) {
-        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, 0, args, energyLimit, 1l);
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, 0, 0, args, energyLimit, 1l);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(callContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());

@@ -68,6 +68,11 @@ public class TransactionContextImpl implements TransactionContext {
     }
 
     @Override
+    public long getNonce() {
+        return tx.getNonce();
+    }
+
+    @Override
     public long getValue() {
         return tx.getValue();
     }
