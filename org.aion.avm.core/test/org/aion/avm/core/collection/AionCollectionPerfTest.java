@@ -120,14 +120,10 @@ public class AionCollectionPerfTest {
         TransactionResult addResult = call(avm, contract, from, args);
         System.out.println(">> Add           : " + addResult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
-        args = ABIEncoder.encodeMethodArguments("callInit");
-        initResult = call(avm, contract, from, args);
         args = ABIEncoder.encodeMethodArguments("callContains");
         TransactionResult containsResult = call(avm, contract, from, args);
         System.out.println(">> Contains      : " + containsResult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
-        args = ABIEncoder.encodeMethodArguments("callInit");
-        initResult = call(avm, contract, from, args);
         args = ABIEncoder.encodeMethodArguments("callRemove");
         TransactionResult removeReult = call(avm, contract, from, args);
         System.out.println(">> Remove        : " + removeReult.getEnergyUsed() / AionSetPerfContract.SIZE);
@@ -144,11 +140,13 @@ public class AionCollectionPerfTest {
         addResult = call(avm, contract, from, args);
         System.out.println(">> Add           : " + addResult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
-        args = ABIEncoder.encodeMethodArguments("callInitB");
-        initResult = call(avm, contract, from, args);
         args = ABIEncoder.encodeMethodArguments("callContainsB");
         containsResult = call(avm, contract, from, args);
         System.out.println(">> Contains      : " + containsResult.getEnergyUsed() / AionSetPerfContract.SIZE);
+
+        args = ABIEncoder.encodeMethodArguments("callRemoveB");
+        removeReult = call(avm, contract, from, args);
+        System.out.println(">> Remove        : " + removeReult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }

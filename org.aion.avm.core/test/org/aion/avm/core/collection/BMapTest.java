@@ -1,6 +1,7 @@
 package org.aion.avm.core.collection;
 
 import org.aion.avm.userlib.BMap;
+import org.aion.avm.userlib.BSet;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -107,6 +108,27 @@ public class BMapTest {
             res = m.remove(Integer.valueOf(i));
             Assert.assertTrue(res.equals(Integer.valueOf(i)));
         }
+    }
+
+    @Test
+    public void testBSet(){
+        BSet<Integer> s = new BSet<>();
+        Integer res;
+
+        for (int i = 0; i < 10000; i++){
+            s.add(Integer.valueOf(i));
+        }
+
+        for (int i = 0; i < 10000; i++){
+            boolean b = s.contains(Integer.valueOf(i));
+            Assert.assertTrue(b);
+        }
+
+        for (int i = 0; i < 10000; i++){
+            boolean b = s.remove(Integer.valueOf(i));
+            Assert.assertTrue(b);
+        }
+
     }
 
 }
