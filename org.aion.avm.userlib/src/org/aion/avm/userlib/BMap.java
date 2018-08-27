@@ -16,7 +16,7 @@ public class BMap<K, V> implements Map<K, V> {
     private BNode root;
 
     // The maximum size (number of routers) of the internal node
-    private int order = 2;
+    private int order = 4;
 
     public BMap(){
         this.size = 0;
@@ -35,7 +35,7 @@ public class BMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsKey(Object key) {
-        return false;
+        return (null != this.get(key));
     }
 
     @Override

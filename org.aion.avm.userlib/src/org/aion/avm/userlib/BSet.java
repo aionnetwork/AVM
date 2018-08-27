@@ -2,11 +2,12 @@ package org.aion.avm.userlib;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 public class BSet<E> implements Set<E> {
 
-    private BMap<E,Object> map;
+    private Map<E,Object> map;
 
     private static final Object PRESENT = new Object();
 
@@ -55,7 +56,7 @@ public class BSet<E> implements Set<E> {
 
     @Override
     public boolean remove(Object o) {
-        return map.remove(o)==PRESENT;
+        return (null != map.remove(o));
     }
 
     @Override
