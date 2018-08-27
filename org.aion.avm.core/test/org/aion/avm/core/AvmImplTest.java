@@ -365,6 +365,61 @@ public class AvmImplTest {
         }
     }
 
+    /**
+     * Tests that a DApp can CREATE for us.
+     */
+    @Test
+    public void testCreateSubAppCall() {
+        byte incrementBy = 3;
+        byte[] incrementorJar = JarBuilder.buildJarForMainAndClasses(IncrementorDApp.class);
+        byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
+        byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
+        byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // CREATE the spawner.
+        Address spawnerAddress = createDApp(avm, spanerCreateData);
+        
+        // CALL to create and invoke the incrementor.
+        boolean shouldFail = false;
+        byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
+        Address incrementorAddress = (Address) callDApp(avm, spawnerAddress, spawnerCallData);
+        
+        // Call the incrementor, directly.
+        byte[] input = new byte[] {1,2,3,4,5};
+        byte[] incrementorCallData = ABIEncoder.encodeMethodArguments("incrementArray", input);
+        
+        byte[] incrementorResult = (byte[]) callDApp(avm, incrementorAddress, incrementorCallData);
+        assertEquals(input.length, incrementorResult.length);
+        for (int i = 0; i < input.length; ++i) {
+            assertEquals(incrementBy + input[i], incrementorResult[i]);
+        }
+    }
+
+    /**
+     * Tests that a DApp can CREATE for us (but is reverted on failure).
+     */
+    @Test
+    public void testCreateSubAppCallFailure() {
+        byte incrementBy = 3;
+        byte[] incrementorJar = JarBuilder.buildJarForMainAndClasses(IncrementorDApp.class);
+        byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
+        byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
+        byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        
+        // CREATE the spawner.
+        Address spawnerAddress = createDApp(avm, spanerCreateData);
+        
+        // CALL to create and invoke the incrementor.
+        boolean shouldFail = true;
+        byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
+        long energyLimit = 1_000_000l;
+        Transaction tx = new Transaction(Transaction.Type.CALL, Helpers.address(1), spawnerAddress.unwrap(), 0, spawnerCallData, energyLimit, 1l);
+        TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
+        assertEquals(TransactionResult.Code.FAILED_INVALID, result2.getStatusCode());
+    }
+
 
     private int callRecursiveHash(Avm avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);

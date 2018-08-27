@@ -24,4 +24,12 @@ public class SpawnerDApp {
         Address result = BlockchainRuntime.create(1L, CODE_AND_ARGS, 1_000_000L);
         return BlockchainRuntime.call(result, 1L, array, 1_000_000L);
     }
+
+    public static Address spawnOnly(boolean shouldFail) {
+        Address result = BlockchainRuntime.create(1L, CODE_AND_ARGS, 1_000_000L);
+        if (shouldFail) {
+            BlockchainRuntime.invalid();
+        }
+        return result;
+    }
 }

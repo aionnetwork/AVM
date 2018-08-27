@@ -9,6 +9,7 @@ import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionResult;
+import org.aion.kernel.TransactionalKernel;
 
 
 public class AvmImpl implements AvmInternal {
@@ -26,14 +27,23 @@ public class AvmImpl implements AvmInternal {
     @Override
     public TransactionResult run(TransactionContext ctx) {
         // We are the root call so use our root kernel.
-        return commonRun(this.kernel, ctx);
+        TransactionalKernel childKernel = new TransactionalKernel(this.kernel);
+        TransactionResult result = commonRun(childKernel, ctx);
+        if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
+            childKernel.commit();
+        }
+        return result;
     }
 
     @Override
     public TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionContext context) {
-        // TODO: Create KernelInterface for this transaction, built on the parentKernel.
-        KernelInterface childKernel = parentKernel;
-        return commonRun(childKernel, context);
+        // Internal calls must build their transaction on top of an existing "parent" kernel.
+        TransactionalKernel childKernel = new TransactionalKernel(parentKernel);
+        TransactionResult result = commonRun(childKernel, context);
+        if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
+            childKernel.commit();
+        }
+        return result;
     }
 
 
