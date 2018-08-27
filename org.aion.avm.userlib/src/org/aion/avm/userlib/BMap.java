@@ -16,7 +16,7 @@ public class BMap<K, V> implements Map<K, V> {
     private BNode root;
 
     // The maximum size (number of routers) of the internal node
-    private int order = 5;
+    private int order = 2;
 
     public BMap(){
         this.size = 0;
@@ -77,7 +77,11 @@ public class BMap<K, V> implements Map<K, V> {
     @Override
     //TODO
     public V remove(Object key) {
-        return null;
+        V ret = (V) root.delete(key);
+
+        if (null != ret){size--;}
+
+        return ret;
     }
 
     @Override
@@ -101,7 +105,7 @@ public class BMap<K, V> implements Map<K, V> {
             for (int i = 0; i < cur.nodeSize; i ++){
                 ret.add((K) cur.entries[i].key);
             }
-            cur = cur.nextLeaf;
+            cur = (BLeafNode) cur.next;
         }
 
         return ret;
@@ -116,7 +120,7 @@ public class BMap<K, V> implements Map<K, V> {
             for (int i = 0; i < cur.nodeSize; i ++){
                 ret.add((V) cur.entries[i].value);
             }
-            cur = cur.nextLeaf;
+            cur = (BLeafNode) cur.next;
         }
 
         return ret;
@@ -131,7 +135,7 @@ public class BMap<K, V> implements Map<K, V> {
             for (int i = 0; i < cur.nodeSize; i ++){
                 ret.add(cur.entries[i]);
             }
-            cur = cur.nextLeaf;
+            cur = (BLeafNode) cur.next;
         }
 
         return ret;
@@ -147,16 +151,82 @@ public class BMap<K, V> implements Map<K, V> {
         return super.hashCode();
     }
 
+
     abstract class BNode<K, V>{
         int nodeSize;
 
-        private BNode parent;
+        BNode parent;
+
+        BNode next;
+
+        BNode pre;
 
         abstract void insertNonFull(K key, V value);
 
+        abstract V delete(K key);
+
         abstract void splitChild(int i);
 
-        abstract BNode combine();
+        void rebalance(){
+            if (this.isUnderflow() && root != this){
+                // Check if we can borrow from left sibling
+                if (null != this.pre){
+                    // Check if we can borrow from left sibling
+                    if (!this.pre.isMinimal()){
+                        //Borrow
+                        borrowFromLeft();
+                    }else{
+                        mergeToLeft();
+                    }
+                }else{
+                    // Check if we can borrow from right sibling
+                    if (!this.next.isMinimal()){
+                        //Borrow
+                        borrowFromRight();
+                    }else{
+                        mergeToRight();
+                    }
+                }
+            }else if (root == this && needCollapse()){
+                collapseRoot();
+            }
+        }
+
+        boolean isUnderflow(){
+            return nodeSize < order;
+        }
+
+        boolean isMinimal(){
+            return nodeSize == order;
+        }
+
+        boolean needCollapse(){
+            return nodeSize == 1;
+        }
+
+        BNode getAnchor(BNode target){
+            // Find the common ancestor of this and target
+            BNode thisAnchor = this.parent;
+            BNode targetAnchor = target.parent;
+
+            while (thisAnchor != targetAnchor){
+                thisAnchor = thisAnchor.parent;
+                targetAnchor = targetAnchor.parent;
+            }
+
+            return thisAnchor;
+        }
+
+        abstract void borrowFromLeft();
+
+        abstract void mergeToLeft();
+
+        abstract void borrowFromRight();
+
+        abstract void mergeToRight();
+
+        abstract void collapseRoot();
+
     }
 
     /**
@@ -171,20 +241,20 @@ public class BMap<K, V> implements Map<K, V> {
         BNode<K, V>[] children;
 
         BTreeNode(){
-            this.routers = new int[2 * order];
-            this.children = new BNode[2 * order + 1];
+            this.routers = new int[2 * order - 1];
+            this.children = new BNode[2 * order];
         }
 
         @Override
         void insertNonFull(K key, V value) {
-
-            int i = this.nodeSize;
+            int i = this.nodeSize - 1;
             while (i > 0 && key.hashCode() < this.routers[i - 1]){
                 i--;
             }
+
             if (this.children[i].nodeSize == (2 * order)){
                 bSplitChild(this, i);
-                if (key.hashCode() > this.routers[i]){
+                if (key.hashCode() >= this.routers[i]){
                     i++;
                 }
             }
@@ -192,25 +262,167 @@ public class BMap<K, V> implements Map<K, V> {
         }
 
         @Override
+        V delete(K key) {
+            V ret = null;
+            int i = this.nodeSize - 1;
+            while (i > 0 && key.hashCode() < this.routers[i - 1]){
+                i--;
+            }
+
+            ret = this.children[i].delete(key);
+
+            // Delete succeed, check router and rebalance
+            if (ret != null){
+                if (this.recalibrate()){
+                    this.rebalance();
+                }
+            }
+            return ret;
+        }
+
+        //TODO
+        private boolean recalibrate(){
+            boolean ret = false;
+
+            // If the first child is removed, shift both children and routers left by 1
+            if (0 == this.children[0].nodeSize){
+                System.arraycopy(this.children, 1, this.children, 0, this.nodeSize);
+                if (this.nodeSize > 2) {
+                    System.arraycopy(this.routers, 1, this.routers, 0, this.nodeSize - 1);
+                }
+
+                ret = true;
+            }else {
+                // Search for the removed children
+                for (int i = 1; i < this.nodeSize; i++) {
+                    if (0 == this.children[i].nodeSize) {
+                        // Empty node
+                        System.arraycopy(this.children, i + 1, this.children, i    , this.nodeSize - i);
+                        if (this.nodeSize > 2) {
+                            System.arraycopy(this.routers, i, this.routers, i - 1, this.nodeSize - i);
+                        }
+                        ret = true;
+                        break;
+                    }
+                }
+            }
+
+            //update the first router
+
+            if (ret) this.nodeSize--;
+            return ret;
+        }
+
+        @Override
+        void borrowFromLeft(){
+            BTreeNode leftNode = (BTreeNode)this.pre;
+            BNode fChild = this.children[0];
+
+            BTreeNode anchor = (BTreeNode) getAnchor(leftNode);
+            int slot = findSlot(anchor, leftNode, this);
+
+            // Shift current tree node to right by 1, insert the right most node from left sibling
+            // Shift is always safe
+            System.arraycopy(this.routers,  0, this.routers,  1, this.nodeSize - 1);
+            System.arraycopy(this.children, 0, this.children, 1, this.nodeSize);
+
+            // Set new head router
+            this.routers[0] = anchor.routers[slot];
+            anchor.routers[slot] = leftNode.routers[leftNode.nodeSize - 2];
+            // Move last children from leftNode
+            this.children[0] = leftNode.children[leftNode.nodeSize - 1];
+            this.children[0].parent = this;
+            leftNode.children[leftNode.nodeSize - 1] = null;
+            this.nodeSize++;
+            leftNode.nodeSize--;
+        }
+
+        @Override
+        void mergeToLeft(){
+            BTreeNode leftNode = (BTreeNode)this.pre;
+
+            BTreeNode anchor = (BTreeNode) getAnchor(leftNode);
+            int slot = findSlot(anchor, leftNode, this);
+
+            for (int i = 0; i < this.nodeSize; i++){
+                this.children[i].parent = leftNode;
+            }
+
+            // Move this node to the tail of the leftNode
+            System.arraycopy(this.routers,  0, leftNode.routers,  leftNode.nodeSize, this.nodeSize - 1);
+            System.arraycopy(this.children, 0, leftNode.children, leftNode.nodeSize, this.nodeSize);
+
+            leftNode.routers[leftNode.nodeSize - 1] = anchor.routers[slot];
+            leftNode.nodeSize += this.nodeSize;
+            this.nodeSize = 0;
+
+            if (null != this.next){this.next.pre = leftNode;}
+            leftNode.next = this.next;
+        }
+
+        @Override
+        void borrowFromRight(){
+            BTreeNode rightNode = (BTreeNode)this.next;
+            BNode childToMove = rightNode.children[0];
+
+            BTreeNode anchor = (BTreeNode) getAnchor(rightNode);
+            int slot = findSlot(anchor, this, rightNode);
+
+            // Move the head of the right node to the tail of the current node
+            this.children[this.nodeSize] = childToMove;
+            childToMove.parent = this;
+            this.routers[this.nodeSize - 1] = anchor.routers[slot];
+            anchor.routers[slot] = rightNode.routers[0];
+
+            System.arraycopy(rightNode.routers,  1, rightNode.routers,  0, rightNode.nodeSize - 2);
+            System.arraycopy(rightNode.children, 1, rightNode.children, 0, rightNode.nodeSize - 1);
+            this.nodeSize++;
+            rightNode.nodeSize--;
+        }
+
+        @Override
+        void mergeToRight(){
+            BTreeNode rightNode = (BTreeNode)this.next;
+
+            BTreeNode anchor = (BTreeNode) getAnchor(rightNode);
+            int slot = findSlot(anchor, this, rightNode);
+
+            for (int i = 0; i < this.nodeSize; i++){
+                this.children[i].parent = rightNode;
+            }
+
+            // Move this node to the head of the rightNode
+            System.arraycopy(rightNode.routers, 0, rightNode.routers, this.nodeSize, rightNode.nodeSize - 1);
+            System.arraycopy(this.routers,      0, rightNode.routers, 0,             this.nodeSize - 1);
+
+            System.arraycopy(rightNode.children, 0, rightNode.children, this.nodeSize, rightNode.nodeSize);
+            System.arraycopy(this.children,      0, rightNode.children, 0,             this.nodeSize);
+
+            rightNode.routers[this.nodeSize - 1] = anchor.routers[slot];
+            rightNode.nodeSize += this.nodeSize;
+            this.nodeSize = 0;
+
+            if (null != this.pre){this.pre.next = rightNode;}
+            rightNode.pre = this.pre;
+        }
+
+        @Override
+        void collapseRoot() {
+            // Collapse
+            root = this.children[0];
+            root.parent = null;
+        }
+
+        @Override
         void splitChild(int i) {
 
         }
 
-        @Override
-        BNode combine() {
-            return null;
-        }
     }
 
     class BLeafNode<K, V> extends BNode <K, V>{
         // Entry array for data storage
         private BEntry<K, V>[] entries;
-
-        // Pointer to next leaf node for fast navigation and fast remove.
-        private BLeafNode nextLeaf;
-
-        // Pointer to previousLeaf leaf node for fast navigation and fast remove.
-        private BLeafNode previousLeaf;
 
         BLeafNode(){
             this.entries = new BEntry[2 * order];
@@ -245,14 +457,99 @@ public class BMap<K, V> implements Map<K, V> {
         }
 
         @Override
+        V delete(K key) {
+            V ret = null;
+
+            int i = 0;
+            while (i < nodeSize && !key.equals(entries[i].getKey())){
+                i = i + 1;
+            }
+
+            if (i < nodeSize && key.equals(entries[i].getKey())){
+                ret = entries[i].getValue();
+
+                // Shift and remove entry
+                System.arraycopy(this.entries, i + 1, this.entries, i, this.nodeSize - i - 1);
+                entries[nodeSize - 1] = null;
+                this.nodeSize--;
+
+                this.rebalance();
+            }
+
+            return ret;
+        }
+
+        @Override
+        void borrowFromLeft(){
+            BLeafNode leftNode = (BLeafNode)this.pre;
+
+            // Need to update router within anchor node
+            BTreeNode anchor = (BTreeNode) getAnchor(leftNode);
+            int slot = findSlot(anchor, leftNode, this);
+
+            // Shift current leaf to right by 1, insert the right most node from left sibling
+            // Shift is always safe
+            System.arraycopy(this.entries, 0, this.entries, 1, this.nodeSize);
+            this.entries[0] = leftNode.entries[leftNode.nodeSize - 1];
+            leftNode.entries[leftNode.nodeSize - 1] = null;
+            this.nodeSize++;
+            leftNode.nodeSize--;
+
+            anchor.routers[slot] = this.entries[0].hashCode();
+        }
+
+        @Override
+        void mergeToLeft(){
+            BLeafNode leftNode = (BLeafNode)this.pre;
+            // Move this node to the tail of the leftNode
+            System.arraycopy(this.entries, 0, leftNode.entries, leftNode.nodeSize, this.nodeSize);
+            leftNode.nodeSize += this.nodeSize;
+            this.nodeSize = 0;
+
+            if (null != this.next){this.next.pre = leftNode;}
+            leftNode.next = this.next;
+        }
+
+        @Override
+        void borrowFromRight(){
+            BLeafNode rightNode = (BLeafNode)this.next;
+
+            // Need to update router within anchor node
+            BTreeNode anchor = (BTreeNode) getAnchor(rightNode);
+            int slot = findSlot(anchor, this, rightNode);
+
+            // Move the head of the right node to the tail of the current node
+            this.entries[this.nodeSize] = rightNode.entries[0];
+            System.arraycopy(rightNode.entries, 1, rightNode.entries, 0, rightNode.nodeSize - 1);
+            this.nodeSize++;
+            rightNode.nodeSize--;
+
+            anchor.routers[slot] = rightNode.entries[0].hashCode();
+        }
+
+        @Override
+        void mergeToRight(){
+            BLeafNode rightNode = (BLeafNode)this.next;
+            // Move this node to the head of the rightNode
+            System.arraycopy(rightNode.entries, 0, rightNode.entries, this.nodeSize, rightNode.nodeSize);
+            System.arraycopy(this.entries, 0, rightNode.entries, 0, this.nodeSize);
+            rightNode.nodeSize += this.nodeSize;
+            this.nodeSize = 0;
+
+            if (null != this.pre){this.pre.next = rightNode;}
+            rightNode.pre = this.pre;
+        }
+
+        @Override
+        void collapseRoot() {
+            // Do nothing is root is leaf node
+        }
+
+        @Override
         void splitChild(int i) {
 
         }
 
-        @Override
-        BNode combine() {
-            return null;
-        }
     }
 
     // Entry (key value pair) of the BMap which implements Map.Entry
@@ -296,7 +593,8 @@ public class BMap<K, V> implements Map<K, V> {
         }
     }
 
-    private void keyNullCheck(K key){
+
+    private void keyNullCheck(Object key){
         if (null == key){
             throw new NullPointerException("BMap does not allow empty key.");
         }
@@ -308,9 +606,10 @@ public class BMap<K, V> implements Map<K, V> {
 
         while (!(cur instanceof BLeafNode)){
             BTreeNode tmp = (BTreeNode) cur;
-            int i = 0;
-            while (i < cur.nodeSize && key.hashCode() < tmp.routers[i]){
-                i = i + 1;
+
+            int i = tmp.nodeSize - 1;
+            while (i > 0 && key.hashCode() < tmp.routers[i - 1]){
+                i--;
             }
             cur = tmp.children[i];
         }
@@ -333,15 +632,15 @@ public class BMap<K, V> implements Map<K, V> {
         if (r.nodeSize == ((2 * order))){
             BTreeNode s = new BTreeNode();
             this.root = s;
-            s.nodeSize = 0;
+            s.nodeSize = 1;
             s.children[0] = r;
+            r.parent = s;
             bSplitChild(s, 0);
             s.insertNonFull(key, value);
         }else{
             r.insertNonFull(key, value);
         }
     }
-
 
     private void bSplitChild(BTreeNode x, int i){
         if (x.children[i] instanceof BTreeNode){
@@ -360,25 +659,42 @@ public class BMap<K, V> implements Map<K, V> {
         // Right node has t children
         z.nodeSize = order;
 
-        System.arraycopy(y.routers , order, z.routers , 0, order);
-        System.arraycopy(y.children, order, z.children, 0, order + 1);
+        System.arraycopy(y.routers , order, z.routers , 0, order - 1);
+        System.arraycopy(y.children, order, z.children, 0, order);
+        for (int j = 0; j < order; j++){
+            z.children[j].parent = z;
+        }
 
-        // Left node has t - 1 children
+        // Left node has t children
         y.nodeSize = order;
         // Remove reference from left node
         // TODO: This may not be necessary
-        for (int j = order; j < (2 * order); j++){
+        int newXRouter = y.routers[order - 1];
+        for (int j = order; j < (2 * order) - 1; j++){
             y.routers [j] = 0;
             y.children[j] = null;
         }
-        y.children[2 * order] = null;
+        y.routers [order - 1] = 0;
+        y.children[2 * order - 1] = null;
+
+        // Link tree node
+        z.next = y.next;
+        if (null != y.next) {
+            y.next.pre = z;
+        }
+        z.pre = y;
+        y.next = z;
+        y.parent = x;
+        z.parent = x;
 
         // Shift parent node
-        System.arraycopy(x.routers,  i, x.routers, i + 1, x.nodeSize - i);
-        System.arraycopy(x.children, i + 1, x.children, i + 2, x.nodeSize - i);
+        if (x.nodeSize > 1) {
+            System.arraycopy(x.routers, i, x.routers, i + 1, x.nodeSize - i - 1);
+            System.arraycopy(x.children, i, x.children, i + 1, x.nodeSize - i);
+        }
 
         x.children[i + 1] = z;
-        x.routers [i]     = z.routers[0];
+        x.routers [i] = newXRouter;
         x.nodeSize++;
     }
 
@@ -389,7 +705,6 @@ public class BMap<K, V> implements Map<K, V> {
         // Right node has t children
         z.nodeSize = order;
         // Move t children to right node
-
         System.arraycopy(y.entries, order, z.entries, 0, order);
 
         y.nodeSize = order;
@@ -400,16 +715,49 @@ public class BMap<K, V> implements Map<K, V> {
         }
 
         // Link leaf nodes
-        z.nextLeaf = y.nextLeaf;
-        z.previousLeaf = y;
-        y.nextLeaf = z;
+        z.next = y.next;
+        if (null != y.next) {
+            y.next.pre = z;
+        }
+        z.pre = y;
+        y.next = z;
+        y.parent = x;
+        z.parent = x;
 
         // Shift parent node
-        System.arraycopy(x.routers,  i, x.routers, i + 1, x.nodeSize - i);
-        System.arraycopy(x.children, i + 1, x.children, i + 2, x.nodeSize - i);
+        if (x.nodeSize > 0) {
+            System.arraycopy(x.routers, i, x.routers, i + 1, x.nodeSize - i - 1);
+            System.arraycopy(x.children, i, x.children, i + 1, x.nodeSize - i);
+        }
 
         x.children[i + 1] = z;
-        x.routers [i]     = z.entries[0].hashCode();
+        x.routers [i] = z.entries[0].hashCode();
         x.nodeSize++;
+    }
+
+    int findSlot(BTreeNode anchor, BLeafNode left, BLeafNode right){
+        int lvalue = left.entries[left.nodeSize - 1].hashCode();
+        int rvalue = right.entries[0].hashCode();
+
+        int i = 0;
+        while (!(lvalue < anchor.routers[i] && rvalue >= anchor.routers[i])){
+            i++;
+        }
+        return i;
+    }
+
+    int findSlot(BTreeNode anchor, BTreeNode left, BTreeNode right) {
+
+        int lvalue = left.routers[0];
+        int rvalue = right.routers[0];
+
+        assert (lvalue < rvalue);
+
+        int i = 0;
+        while (!(lvalue < anchor.routers[i] && rvalue >= anchor.routers[i])) {
+            i++;
+        }
+
+        return i;
     }
 }
