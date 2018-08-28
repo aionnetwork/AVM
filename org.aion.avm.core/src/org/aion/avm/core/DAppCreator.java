@@ -120,8 +120,9 @@ public class DAppCreator {
             String superClassDotName = Helpers.internalNameToFulllyQualifiedName(superClassSlashName);
             dynamicHierarchyBuilder.addClass(classDotName, superClassDotName, false, bytecode);
         };
+        // Note:  preRenameUserDefinedClasses includes ONLY classes while preRenameUserClassAndInterfaceSet includes classes AND interfaces.
         Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
-        Set<String> preRenameUserClassSet = classes.keySet();
+        Set<String> preRenameUserClassAndInterfaceSet = classes.keySet();
         ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy);
         Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy);
 
@@ -136,8 +137,8 @@ public class DAppCreator {
             // static call, which is somewhat expensive - this is how we bill for energy).
             int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), parsingOptions)
-                    .addNextVisitor(new RejectionClassVisitor())
-                    .addNextVisitor(new UserClassMappingVisitor(preRenameUserClassSet))
+                    .addNextVisitor(new RejectionClassVisitor(preRenameUserDefinedClasses))
+                    .addNextVisitor(new UserClassMappingVisitor(preRenameUserClassAndInterfaceSet))
                     .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))

@@ -30,12 +30,13 @@ public class RejectionClassVisitorTest {
         String className = FilteringResource.class.getName();
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
 
+        Set<String> userClassDotNameSet = Set.of(className, className+"$A", className+"$B");
         // user class mapper, which also rejects illegal class access
-        mapper = new UserClassMappingVisitor(Set.of(className, className+"$A", className+"$B"));
+        mapper = new UserClassMappingVisitor(userClassDotNameSet);
 
         // We want to prove we can strip out everything so don't use any special parsing options for this visitor.
         byte[] filteredBytes = new ClassToolchain.Builder(raw, 0)
-                .addNextVisitor(new RejectionClassVisitor())
+                .addNextVisitor(new RejectionClassVisitor(userClassDotNameSet))
                 .addNextVisitor(mapper)
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
@@ -317,9 +318,10 @@ public class RejectionClassVisitorTest {
     }
 
     private byte[] commonFilterBytes(String classDotName, byte[] testBytes) throws IOException {
+        Set<String> userClassDotNameSet = Set.of(classDotName);
         byte[] filteredBytes = new ClassToolchain.Builder(testBytes, 0)
-                .addNextVisitor(new RejectionClassVisitor())
-                .addNextVisitor(new UserClassMappingVisitor(Set.of(classDotName)))
+                .addNextVisitor(new RejectionClassVisitor(userClassDotNameSet))
+                .addNextVisitor(new UserClassMappingVisitor(userClassDotNameSet))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();

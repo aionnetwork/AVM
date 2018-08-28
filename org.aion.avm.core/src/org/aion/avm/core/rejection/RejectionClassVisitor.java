@@ -1,5 +1,7 @@
 package org.aion.avm.core.rejection;
 
+import java.util.Set;
+
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.AnnotationVisitor;
@@ -23,7 +25,7 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
     // This will probably change, in the future, but we currently will only parse Java10 (version 54) classes.
     private static final int SUPPORTED_CLASS_VERSION = 54;
 
-    public RejectionClassVisitor() {
+    public RejectionClassVisitor(Set<String> preRenameUserDefinedDotClasses) {
         super(Opcodes.ASM6);
     }
 

@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.aion.avm.core.util.Helpers.loadRequiredResourceAsBytes;
 import static org.junit.Assert.*;
@@ -137,9 +138,11 @@ public class InvokedynamicTransformationTest {
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, false, bytecode);
         };
         ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy);
+        Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(classHierarchy);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new RejectionClassVisitor())
-                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
+                .addNextVisitor(new RejectionClassVisitor(preRenameUserDefinedClasses))
+                // WARNING:  Strictly speaking, UserClassMappingVisitor should see the classes AND interfaces, but this test doesn't have interfaces.
+                .addNextVisitor(new UserClassMappingVisitor(preRenameUserDefinedClasses))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, DAppCreator.computeAllPostRenameObjectSizes(classHierarchy)))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
