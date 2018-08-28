@@ -16,7 +16,7 @@ public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Objec
     }
 
     public static java.lang.invoke.CallSite avm_metafactory(java.lang.invoke.MethodHandles.Lookup owner,
-                                                            String invokedName,
+                                                            java.lang.String invokedName,
                                                             java.lang.invoke.MethodType invokedType,
                                                             java.lang.invoke.MethodType samMethodType,
                                                             java.lang.invoke.MethodHandle implMethod,
