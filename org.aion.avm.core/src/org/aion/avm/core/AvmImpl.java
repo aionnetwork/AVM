@@ -33,30 +33,30 @@ public class AvmImpl implements AvmInternal {
 
     @Override
     public TransactionResult run(TransactionContext ctx) {
-        // We are the root call so use our root kernel.
-        TransactionalKernel childKernel = new TransactionalKernel(this.kernel);
-
         // to capture any error during validation
         TransactionResult.Code error = null;
 
         // value/energyPrice/energyLimit sanity check
-        if (ctx.getValue() < 0 || ctx.getEneryPrice() < 0 || ctx.getEnergyLimit() < 0) {
+        if (ctx.getValue() < 0 || ctx.getEneryPrice() <= 0 || ctx.getEnergyLimit() < ctx.getBasicCost()) {
+            // Instead of charging the tx basic cost at the outer level, we moved the billing logic into "run".
+            // The min energyLimit check here is to avoid spams
             error = TransactionResult.Code.REJECTED;
         }
 
         // balance check
         byte[] sender = ctx.getCaller();
-        long senderBalance = childKernel.getBalance(sender);
+        long senderBalance = kernel.getBalance(sender);
         if (BigInteger.valueOf(ctx.getValue()).add(BigInteger.valueOf(ctx.getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getEneryPrice())))
                 .compareTo(BigInteger.valueOf(senderBalance)) > 0) {
             error = TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
         }
 
         // nonce check
-        if (childKernel.getNonce(sender) != ctx.getNonce()) {
+        if (kernel.getNonce(sender) != ctx.getNonce()) {
             error = TransactionResult.Code.REJECTED_INVALID_NONCE;
         }
 
+        // exit if validation check fails
         if (error != null) {
             TransactionResult result = new TransactionResult();
             result.setStatusCode(error);
@@ -64,16 +64,20 @@ public class AvmImpl implements AvmInternal {
             return result;
         }
 
-        // execute the transaction and commit state changes if successful.
-        TransactionResult result = commonRun(childKernel, ctx);
-        if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
-            childKernel.commit();
-        }
+        /*
+         * After this point, no rejection should occur.
+         */
 
-        // finalize the transaction result at the root of the invocation.
-        if (!result.getStatusCode().isSuccess()) {
-            result.clearLogs();
-            result.rejectInternalTransactions();
+        // withhold the total energy cost
+        this.kernel.adjustBalance(ctx.getCaller(), -(ctx.getEnergyLimit() * ctx.getEneryPrice()));
+
+        // effectively, we're running an internal transaction with no parent
+        TransactionResult result = runInternalTransaction(kernel, ctx);
+
+        // refund the remaining energy
+        long remainingEnergy = ctx.getEnergyLimit() - result.getEnergyUsed();
+        if (remainingEnergy > 0) {
+            this.kernel.adjustBalance(ctx.getCaller(), remainingEnergy * ctx.getEneryPrice());
         }
 
         return result;
@@ -84,8 +88,11 @@ public class AvmImpl implements AvmInternal {
         // Internal calls must build their transaction on top of an existing "parent" kernel.
         TransactionalKernel childKernel = new TransactionalKernel(parentKernel);
         TransactionResult result = commonRun(childKernel, context);
-        if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
+        if (result.getStatusCode().isSuccess()) {
             childKernel.commit();
+        } else {
+            result.clearLogs();
+            result.rejectInternalTransactions();
         }
         return result;
     }
@@ -103,6 +110,13 @@ public class AvmImpl implements AvmInternal {
 
         // only one result (mutable) shall be created per transaction execution
         TransactionResult result = new TransactionResult();
+
+        // conduct value transfer
+        thisTransactionKernel.adjustBalance(ctx.getCaller(), -ctx.getValue());
+        thisTransactionKernel.adjustBalance(ctx.getAddress(), ctx.getValue());
+
+        // increase nonce
+        thisTransactionKernel.incrementNonce(ctx.getCaller());
 
         if (ctx.isCreate()) {
             DAppCreator.create(thisTransactionKernel, this, ctx, result);

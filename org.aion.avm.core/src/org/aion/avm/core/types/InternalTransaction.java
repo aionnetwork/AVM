@@ -13,6 +13,11 @@ public class InternalTransaction extends Transaction {
         super(type, from, to, nonce, value, data, energyLimit, energyPrice);
     }
 
+    @Override
+    public int getBasicCost() {
+        return 0;
+    }
+
     public void markAsRejected() {
         this.rejected = true;
     }

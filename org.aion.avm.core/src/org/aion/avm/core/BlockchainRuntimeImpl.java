@@ -146,10 +146,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     public Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
         require(targetAddress != null, "Destination can't be NULL");
         require(value >= 0 , "Value can't be negative");
+        require(value <= kernel.getBalance(ctx.getAddress()), "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
-
-        energyLimit = restrictEnergyLimit(energyLimit);
 
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL,
@@ -158,7 +157,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 this.kernel.getNonce(ctx.getAddress()),
                 value,
                 data.getUnderlying(),
-                energyLimit,
+                restrictEnergyLimit(energyLimit),
                 ctx.getEneryPrice());
         
         // Call the common run helper.
@@ -168,10 +167,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public Result avm_create(long value, ByteArray data, long energyLimit) {
         require(value >= 0 , "Value can't be negative");
+        require(value <= kernel.getBalance(ctx.getAddress()), "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
-
-        energyLimit = restrictEnergyLimit(energyLimit);
 
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CREATE,
@@ -180,7 +178,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 this.kernel.getNonce(ctx.getAddress()),
                 value,
                 data.getUnderlying(),
-                energyLimit,
+                restrictEnergyLimit(energyLimit),
                 ctx.getEneryPrice());
         
         // Call the common run helper.
@@ -265,6 +263,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     private Result runInternalCall(InternalTransaction internalTx) {
+        // add the internal transaction to result
+        result.addInternalTransaction(internalTx);
+
         if (null != this.reentrantState) {
             // Save our current state into the reentrant container (since this call might be reentrant).
             this.reentrantState.updateEnvironment(helper.captureSnapshotAndNextHashCode());

@@ -25,7 +25,7 @@ public class ReentrantCrossCallResource {
 
     public static Object callSelfForNull() {
         // Call this method via the runtime.
-        long value = 1;
+        long value = 0;
         byte[] data = ABIEncoder.encodeMethodArguments("returnNull");
         long energyLimit = 500000;
         byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
@@ -45,7 +45,7 @@ public class ReentrantCrossCallResource {
             toReturn = object.hashCode();
         } else {
             // Call this method via the runtime.
-            long value = 1;
+            long value = 0;
             byte[] data = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", iterationsRemaining - 1);
             long energyLimit = 500000;
             byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
@@ -127,7 +127,7 @@ public class ReentrantCrossCallResource {
         int expected = constant.far[0];
         
         // Call ourselves.
-        long value = 1;
+        long value = 0;
         boolean calleeShouldFail = false;
         byte[] data = ABIEncoder.encodeMethodArguments("incFar", calleeShouldFail);
         BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
@@ -190,7 +190,7 @@ public class ReentrantCrossCallResource {
         // Call recursive with our expectations based on the new state.
         if (iterationsToCall > 0) {
             // Make the reentrant call.
-            long value = 1;
+            long value = 0;
             byte[] data = ABIEncoder.encodeMethodArguments("recursiveChangeNested", ourState.hashCode(), iterationsToCall - 1);
             long energyLimit = 1_000_000L;
             byte[] result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
@@ -216,7 +216,7 @@ public class ReentrantCrossCallResource {
     }
 
     private static void reentrantCall(String methodName, boolean shouldFail) {
-        long value = 1;
+        long value = 0;
         byte[] data = ABIEncoder.encodeMethodArguments(methodName, shouldFail);
         // WARNING:  This number is finicky since some tests want to barely pass and others barely fail.
         long energyLimit = 100_000L;

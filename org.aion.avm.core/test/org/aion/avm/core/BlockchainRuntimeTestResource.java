@@ -28,7 +28,7 @@ public class BlockchainRuntimeTestResource {
 
         putStorage("key".getBytes(), "value".getBytes());
         buffer.put(getStorage("key".getBytes()));
-        buffer.putLong(getBalance(getAddress()));
+        buffer.putLong(getBalance(new Address(new byte[32])));
         buffer.putLong(getCodeSize(getAddress()));
 
         getRemainingEnergy();

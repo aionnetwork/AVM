@@ -21,12 +21,12 @@ public class SpawnerDApp {
     }
 
     public static byte[] spawnAndCall(byte[] array) {
-        byte[] contractAddress = BlockchainRuntime.create(1L, CODE_AND_ARGS, 1_000_000L).getReturnData();
-        return BlockchainRuntime.call(new Address(contractAddress), 1L, array, 1_000_000L).getReturnData();
+        byte[] contractAddress = BlockchainRuntime.create(0L, CODE_AND_ARGS, 1_000_000L).getReturnData();
+        return BlockchainRuntime.call(new Address(contractAddress), 0L, array, 1_000_000L).getReturnData();
     }
 
     public static Address spawnOnly(boolean shouldFail) {
-        byte[] contractAddress = BlockchainRuntime.create(1L, CODE_AND_ARGS, 1_000_000L).getReturnData();
+        byte[] contractAddress = BlockchainRuntime.create(0L, CODE_AND_ARGS, 1_000_000L).getReturnData();
         if (shouldFail) {
             BlockchainRuntime.invalid();
         }

@@ -15,6 +15,8 @@ public class TransactionResult {
          */
         SUCCESS,
 
+        // rejected transactions should not be included on chain.
+
         /**
          * This transaction was rejected.
          */
@@ -31,16 +33,17 @@ public class TransactionResult {
          */
         REJECTED_INVALID_NONCE,
 
-        /**
-         * The transaction data is malformed
-         */
-        REJECTED_INVALID_DATA,
-
+        // failed transaction can be included on chain, but energy charge will be applied.
 
         /**
          * A failure occurred during the execution of the transaction.
          */
         FAILED,
+
+        /**
+         * The transaction data is malformed, for internal tx only.
+         */
+        FAILED_INVALID_DATA,
 
         /**
          * Transaction failed due to out of energy.
@@ -73,7 +76,7 @@ public class TransactionResult {
         }
 
         public boolean isRejected() {
-            return this == REJECTED || this == REJECTED_INSUFFICIENT_BALANCE || this == REJECTED_INVALID_DATA || this == REJECTED_INVALID_NONCE;
+            return this == REJECTED || this == REJECTED_INSUFFICIENT_BALANCE || this == FAILED_INVALID_DATA || this == REJECTED_INVALID_NONCE;
         }
 
         public boolean isFailed() {

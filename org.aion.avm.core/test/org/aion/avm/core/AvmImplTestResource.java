@@ -12,7 +12,7 @@ public class AvmImplTestResource {
 
         if (calldata != null && calldata.length == Address.LENGTH) {
             Address address = new Address(BlockchainRuntime.getData());
-            long value = 1;
+            long value = 0;
             byte[] data = new byte[0];
             long energyLimit = 500000;
 

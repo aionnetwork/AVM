@@ -193,21 +193,21 @@ public class DAppCreator {
             byte[] dappAddress = ctx.getAddress();
             CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(ctx.getData());
             if (codeAndArguments == null) {
-                result.setStatusCode(TransactionResult.Code.REJECTED_INVALID_DATA);
+                result.setStatusCode(TransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getEnergyLimit());
                 return;
             }
 
             RawDappModule rawDapp = RawDappModule.readFromJar(codeAndArguments.code);
             if (rawDapp == null) {
-                result.setStatusCode(TransactionResult.Code.REJECTED_INVALID_DATA);
+                result.setStatusCode(TransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getEnergyLimit());
                 return;
             }
 
             // validate dapp module
             if (!validateDapp(rawDapp)) {
-                result.setStatusCode(TransactionResult.Code.REJECTED_INVALID_DATA);
+                result.setStatusCode(TransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getEnergyLimit());
                 return;
             }
@@ -225,6 +225,9 @@ public class DAppCreator {
             IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit(), nextHashCode);
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
             dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, helper, ctx, codeAndArguments.arguments, result));
+
+            // charge the basic cost
+            helper.externalChargeEnergy(ctx.getBasicCost());
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()

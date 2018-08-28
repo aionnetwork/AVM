@@ -13,6 +13,7 @@ import java.util.Arrays;
 
 import static org.aion.avm.core.util.Helpers.address;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertTrue;
 
 public class BlockchainRuntimeTest {
 
@@ -26,11 +27,12 @@ public class BlockchainRuntimeTest {
     public BlockchainRuntimeTest() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class);
         byte[] arguments = null;
-        Transaction tx = new Transaction(Transaction.Type.CREATE, premined, null, 0, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), 1_000_000L, 1L);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, premined, null, kernel.getNonce(premined), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), 1_000_000L, 1L);
         TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]));
         TransactionResult txResult = avm.run(txContext);
 
         dappAddress = txResult.getReturnData();
+        assertTrue(txResult.getStatusCode().isSuccess());
     }
 
     @Test
@@ -49,7 +51,7 @@ public class BlockchainRuntimeTest {
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
-        Transaction tx = new Transaction(type, from, to, 0, value, txData, energyLimit, energyPrice);
+        Transaction tx = new Transaction(type, from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
@@ -70,7 +72,7 @@ public class BlockchainRuntimeTest {
         buffer.put(blockPrevHash);
         buffer.put(block.getDifficulty().toByteArray());
         buffer.put("value".getBytes());
-        buffer.putLong(0);
+        buffer.putLong(kernel.getBalance(new byte[32]));
         buffer.putLong(kernel.getCode(dappAddress).length);
         buffer.put(HashUtils.blake2b("message".getBytes()));
 

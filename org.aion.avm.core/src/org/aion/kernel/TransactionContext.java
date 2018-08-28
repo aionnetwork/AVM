@@ -26,6 +26,8 @@ public interface TransactionContext {
 
     long getEneryPrice();
 
+    int getBasicCost();
+
     long getBlockTimestamp();
 
     long getBlockNumber();

@@ -17,7 +17,7 @@ public class AionCollectionPerfTest {
     private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private byte[] to = Helpers.randomBytes(Address.LENGTH);
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
-    private long energyLimit = Long.MAX_VALUE - 100l;
+    private long energyLimit = 100_000_000_000L;
     private long energyPrice = 1;
 
     private byte[] buildListPerfJar() {
@@ -47,11 +47,11 @@ public class AionCollectionPerfTest {
         );
     }
 
-    private TransactionResult deploy(Avm avm, byte[] testJar){
+    private TransactionResult deploy(KernelInterface kernel, Avm avm, byte[] testJar){
 
 
         byte[] testWalletArguments = new byte[0];
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, 0,
+        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, kernel.getNonce(from), 0,
                 new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
@@ -62,8 +62,8 @@ public class AionCollectionPerfTest {
     }
 
 
-    private TransactionResult call(Avm avm, byte[] contract, byte[] sender, byte[] args) {
-        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, 0, 0, args, energyLimit, 1l);
+    private TransactionResult call(KernelInterface kernel, Avm avm, byte[] contract, byte[] sender, byte[] args) {
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, kernel.getNonce(sender), 0, args, energyLimit, 1l);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(callContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -75,28 +75,29 @@ public class AionCollectionPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurement for AionList");
         byte[] args;
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterface kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        TransactionResult deployRes = deploy(avm, buildListPerfJar());
+        TransactionResult deployRes = deploy(kernel, avm, buildListPerfJar());
         byte[] contract = deployRes.getReturnData();
 
         args = ABIEncoder.encodeMethodArguments("callInit");
-        TransactionResult initResult = call(avm, contract, from, args);
+        TransactionResult initResult = call(kernel, avm, contract, from, args);
         args = ABIEncoder.encodeMethodArguments("callAppend");
-        TransactionResult appendResult = call(avm, contract, from, args);
+        TransactionResult appendResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Append        : " + appendResult.getEnergyUsed() / AionListPerfContract.SIZE);
 
         args = ABIEncoder.encodeMethodArguments("callInit");
-        call(avm, contract, from, args);
+        call(kernel, avm, contract, from, args);
         args = ABIEncoder.encodeMethodArguments("callInsertHead");
-        TransactionResult insertHeadResult = call(avm, contract, from, args);
+        TransactionResult insertHeadResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Insert Head   : " + insertHeadResult.getEnergyUsed() / AionListPerfContract.SIZE);
 
         args = ABIEncoder.encodeMethodArguments("callInit");
-        call(avm, contract, from, args);
+        call(kernel, avm, contract, from, args);
 
         args = ABIEncoder.encodeMethodArguments("callInsertMiddle");
-        TransactionResult insertMiddleResult = call(avm, contract, from, args);
+        TransactionResult insertMiddleResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Insert Middle : " + insertMiddleResult.getEnergyUsed() / AionListPerfContract.SIZE);
 
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -108,24 +109,25 @@ public class AionCollectionPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurement for AionSet");
         byte[] args;
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterface kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        TransactionResult deployRes = deploy(avm, buildSetPerfJar());
+        TransactionResult deployRes = deploy(kernel, avm, buildSetPerfJar());
         byte[] contract = deployRes.getReturnData();
 
         args = ABIEncoder.encodeMethodArguments("callInit");
-        TransactionResult initResult = call(avm, contract, from, args);
+        TransactionResult initResult = call(kernel, avm, contract, from, args);
 
         args = ABIEncoder.encodeMethodArguments("callAdd");
-        TransactionResult addResult = call(avm, contract, from, args);
+        TransactionResult addResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Add           : " + addResult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
         args = ABIEncoder.encodeMethodArguments("callContains");
-        TransactionResult containsResult = call(avm, contract, from, args);
+        TransactionResult containsResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Contains      : " + containsResult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
         args = ABIEncoder.encodeMethodArguments("callRemove");
-        TransactionResult removeReult = call(avm, contract, from, args);
+        TransactionResult removeReult = call(kernel, avm, contract, from, args);
         System.out.println(">> Remove        : " + removeReult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -134,18 +136,18 @@ public class AionCollectionPerfTest {
         System.out.println(">> Energy measurement for BSet");
 
         args = ABIEncoder.encodeMethodArguments("callInitB");
-        initResult = call(avm, contract, from, args);
+        initResult = call(kernel, avm, contract, from, args);
 
         args = ABIEncoder.encodeMethodArguments("callAddB");
-        addResult = call(avm, contract, from, args);
+        addResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Add           : " + addResult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
         args = ABIEncoder.encodeMethodArguments("callContainsB");
-        containsResult = call(avm, contract, from, args);
+        containsResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Contains      : " + containsResult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
         args = ABIEncoder.encodeMethodArguments("callRemoveB");
-        removeReult = call(avm, contract, from, args);
+        removeReult = call(kernel, avm, contract, from, args);
         System.out.println(">> Remove        : " + removeReult.getEnergyUsed() / AionSetPerfContract.SIZE);
 
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -157,24 +159,25 @@ public class AionCollectionPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurement for AionMap");
         byte[] args;
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterface kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        TransactionResult deployRes = deploy(avm, buildMapPerfJar());
+        TransactionResult deployRes = deploy(kernel, avm, buildMapPerfJar());
         byte[] contract = deployRes.getReturnData();
 
         args = ABIEncoder.encodeMethodArguments("callInit");
-        TransactionResult initResult = call(avm, contract, from, args);
+        TransactionResult initResult = call(kernel, avm, contract, from, args);
 
         args = ABIEncoder.encodeMethodArguments("callPut");
-        TransactionResult putResult = call(avm, contract, from, args);
+        TransactionResult putResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Put           : " + putResult.getEnergyUsed() / AionMapPerfContract.SIZE);
 
         args = ABIEncoder.encodeMethodArguments("callGet");
-        TransactionResult getResult = call(avm, contract, from, args);
+        TransactionResult getResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Get           : " + getResult.getEnergyUsed() / AionMapPerfContract.SIZE);
 
         args = ABIEncoder.encodeMethodArguments("callRemove");
-        TransactionResult removeResult = call(avm, contract, from, args);
+        TransactionResult removeResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Remove        : " + removeResult.getEnergyUsed() / AionMapPerfContract.SIZE);
 
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -183,18 +186,18 @@ public class AionCollectionPerfTest {
         System.out.println(">> Energy measurement for BMap");
 
         args = ABIEncoder.encodeMethodArguments("callInitB");
-        initResult = call(avm, contract, from, args);
+        initResult = call(kernel, avm, contract, from, args);
 
         args = ABIEncoder.encodeMethodArguments("callPutB");
-        putResult = call(avm, contract, from, args);
+        putResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Put           : " + putResult.getEnergyUsed() / AionMapPerfContract.SIZE);
 
         args = ABIEncoder.encodeMethodArguments("callGetB");
-        getResult = call(avm, contract, from, args);
+        getResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Get           : " + getResult.getEnergyUsed() / AionMapPerfContract.SIZE);
 
         args = ABIEncoder.encodeMethodArguments("callRemoveB");
-        removeResult = call(avm, contract, from, args);
+        removeResult = call(kernel, avm, contract, from, args);
         System.out.println(">> Remove        : " + removeResult.getEnergyUsed() / AionMapPerfContract.SIZE);
 
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");

@@ -131,7 +131,7 @@ public class ShadowCoverageTarget {
 
     private static int reentrantMethodWithoutArgs(String methodName) {
         // Call this method via the runtime.
-        long value = 1;
+        long value = 0;
         byte[] data = ABIEncoder.encodeMethodArguments(methodName);
         long energyLimit = 500000;
         byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();

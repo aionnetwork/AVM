@@ -11,6 +11,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.kernel.Block;
+import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
@@ -40,6 +41,7 @@ import static org.junit.Assert.assertTrue;
  * @author Roman Katerinenko
  */
 public class AvmImplTest {
+    private static byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private static Block block;
 
     @Rule
@@ -117,12 +119,13 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmImplTestResource.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
         // deploy
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, KernelInterfaceImpl.PREMINED_ADDRESS, Helpers.address(2), 0, 0, txData, energyLimit, energyPrice);
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, deployer, Helpers.address(2), kernel.getNonce(deployer), 0, txData, energyLimit, energyPrice);
         TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
 
@@ -140,11 +143,11 @@ public class AvmImplTest {
                 + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST)
                 + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST)
                 ;
-        assertEquals(deploymentProcessCost + deploymentStorageCost + clinitCost + initialStorageCost, result1.getEnergyUsed());
+        assertEquals(tx1.getBasicCost() + deploymentProcessCost + deploymentStorageCost + clinitCost + initialStorageCost, result1.getEnergyUsed());
 
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
-        Transaction tx2 = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, contractAddr.unwrap(), 0, 0, contractAddr.unwrap(), transaction2EnergyLimit, energyPrice);
+        Transaction tx2 = new Transaction(Transaction.Type.CALL, deployer, contractAddr.unwrap(), kernel.getNonce(deployer), 0, contractAddr.unwrap(), transaction2EnergyLimit, energyPrice);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx2, block));
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
@@ -174,7 +177,7 @@ public class AvmImplTest {
         // -write instance (outer) "NORMAL"
                 + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
                 ;
-        assertEquals(costOfBlocks + costOfRuntimeCall + runStorageCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
+        assertEquals(tx2.getBasicCost() + costOfBlocks + costOfRuntimeCall + runStorageCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 
         // We assume that the IHelper has been cleaned up by this point.
         assertNull(IHelper.currentContractHelper.get());
@@ -184,14 +187,15 @@ public class AvmImplTest {
     public void testNullReturnCrossCall() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // deploy
-        Address contractAddr = createDApp(avm, txData);
+        Address contractAddr = createDApp(kernel, avm, txData);
         
         // Call the callSelfForNull entry-point and it should return null to us.
         byte[] argData = ABIEncoder.encodeMethodArguments("callSelfForNull");
-        Object resultObject = callDApp(avm, contractAddr, argData);
+        Object resultObject = callDApp(kernel, avm, contractAddr, argData);
         assertNull(resultObject);
     }
 
@@ -199,23 +203,24 @@ public class AvmImplTest {
     public void testRecursiveHashCode() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // deploy
         long energyLimit = 1_000_000l;
-        Address contractAddr = createDApp(avm, txData);
+        Address contractAddr = createDApp(kernel, avm, txData);
         
         // Try a few invocations of different depths, bearing in mind the change of nextHashCode between each invocation.
         // We will do 2 zero-depth calls to see the delta between the 2 calls.
         // Then, we will do an indirect call and verify that the delta is greater.
         // If the hashcode wasn't restored across reentrant calls, this wouldn't be greater as it wouldn't capture the small cost of the original
         // indirect call (since we create at least 1 object in that path).
-        int zero0 = callRecursiveHash(avm, energyLimit, contractAddr, 0);
-        int zero1 = callRecursiveHash(avm, energyLimit, contractAddr, 0);
-        int zero2 = callRecursiveHash(avm, energyLimit, contractAddr, 0);
-        int one0 = callRecursiveHash(avm, energyLimit, contractAddr, 1);
-        int one1 = callRecursiveHash(avm, energyLimit, contractAddr, 1);
-        int one2 = callRecursiveHash(avm, energyLimit, contractAddr, 1);
+        int zero0 = callRecursiveHash(kernel, avm, energyLimit, contractAddr, 0);
+        int zero1 = callRecursiveHash(kernel, avm, energyLimit, contractAddr, 0);
+        int zero2 = callRecursiveHash(kernel, avm, energyLimit, contractAddr, 0);
+        int one0 = callRecursiveHash(kernel, avm, energyLimit, contractAddr, 1);
+        int one1 = callRecursiveHash(kernel, avm, energyLimit, contractAddr, 1);
+        int one2 = callRecursiveHash(kernel, avm, energyLimit, contractAddr, 1);
         
         assertEquals(zero1 - zero0, zero2 - zero1);
         assertEquals(one1 - one0, one2 - one1);
@@ -230,22 +235,23 @@ public class AvmImplTest {
         boolean shouldFail = false;
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // deploy
-        Address contractAddr = createDApp(avm, txData);
+        Address contractAddr = createDApp(kernel, avm, txData);
         
         // Get direct increments from 1 to 2 and returns 2.
-        assertEquals(2, callReentrantAccess(avm, contractAddr, "getDirect", shouldFail));
+        assertEquals(2, callReentrantAccess(kernel, avm, contractAddr, "getDirect", shouldFail));
         
         // Get near increments from 1 to 2 and returns 2.
-        assertEquals(2, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
+        assertEquals(2, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
         
         // Get far increments from 1 to 2 and returns 2.
-        assertEquals(2, callReentrantAccess(avm, contractAddr, "getFar", shouldFail));
+        assertEquals(2, callReentrantAccess(kernel, avm, contractAddr, "getFar", shouldFail));
         
         // Get near increments from 2 to 3 and returns 3.
-        assertEquals(3, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
+        assertEquals(3, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
     }
 
     /**
@@ -256,16 +262,17 @@ public class AvmImplTest {
         boolean shouldFail = true;
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // deploy
-        Address contractAddr = createDApp(avm, txData);
+        Address contractAddr = createDApp(kernel, avm, txData);
         
         // We expect these to all fail, so they should be left with the initial values:  1.
-        assertEquals(1, callReentrantAccess(avm, contractAddr, "getDirect", shouldFail));
-        assertEquals(1, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
-        assertEquals(1, callReentrantAccess(avm, contractAddr, "getFar", shouldFail));
-        assertEquals(1, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
+        assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getDirect", shouldFail));
+        assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
+        assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getFar", shouldFail));
+        assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
     }
 
     /**
@@ -276,24 +283,25 @@ public class AvmImplTest {
         boolean shouldFail = true;
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // deploy
         long energyLimit = 1_000_000l;
-        Address contractAddr = createDApp(avm, txData);
+        Address contractAddr = createDApp(kernel, avm, txData);
         
         // Cause the failure.
         byte[] nearData = ABIEncoder.encodeMethodArguments("localFailAfterReentrant");
-        Transaction tx = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, contractAddr.unwrap(), 0, 0, nearData, energyLimit, 1l);
+        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, contractAddr.unwrap(), kernel.getNonce(deployer), 0, nearData, energyLimit, 1l);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
         assertEquals(TransactionResult.Code.FAILED_OUT_OF_ENERGY, result2.getStatusCode());
         
         // We shouldn't see any changes, since this failed.
         // We expect these to all fail, so they should be left with the initial values:  1.
-        assertEquals(1, callReentrantAccess(avm, contractAddr, "getDirect", shouldFail));
-        assertEquals(1, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
-        assertEquals(1, callReentrantAccess(avm, contractAddr, "getFar", shouldFail));
-        assertEquals(1, callReentrantAccess(avm, contractAddr, "getNear", shouldFail));
+        assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getDirect", shouldFail));
+        assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
+        assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getFar", shouldFail));
+        assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
     }
 
     /**
@@ -303,17 +311,18 @@ public class AvmImplTest {
     public void testReentrantRollbackDuringCommit() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // deploy
-        Address contractAddr = createDApp(avm, txData);
+        Address contractAddr = createDApp(kernel, avm, txData);
         
         // We just want to call our special getFar helper with a constrained energy.
         // WARNING:  This test is very sensitive to storage billing configuration so the energy limit likely needs to be updated when that changes.
         // The write-back of the callee attempts to write statics and 2 instances.  We want it to fail at 1 instance (20_000L seems to do this).
         long failingLimit = 20_000L;
         byte[] callData = ABIEncoder.encodeMethodArguments("getFarWithEnergy", failingLimit);
-        Object resultObject = callDApp(avm, contractAddr, callData);
+        Object resultObject = callDApp(kernel, avm, contractAddr, callData);
 
         
         // This returns false since the value didn't change,
@@ -328,16 +337,17 @@ public class AvmImplTest {
     public void testReentrantRecursiveNested() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // deploy
-        Address contractAddr = createDApp(avm, txData);
+        Address contractAddr = createDApp(kernel, avm, txData);
         
         // We just want to call our special getFar helper with a constrained energy.
         // WARNING:  This test is very sensitive to storage billing configuration so the energy limit likely needs to be updated when that changes.
         // The write-back of the callee attempts to write statics and 2 instances.  We want it to fail at 1 instance (20_000L seems to do this).
         byte[] callData = ABIEncoder.encodeMethodArguments("recursiveChangeNested", 0, 5);
-        Object resultObject = callDApp(avm, contractAddr, callData);
+        Object resultObject = callDApp(kernel, avm, contractAddr, callData);
         
         // We don't want to depend on a specific hashcode (appears to be 19) but just the idea that it needs to be non-zero.
         assertTrue(0 != ((Integer)resultObject).intValue());
@@ -353,16 +363,17 @@ public class AvmImplTest {
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // CREATE the spawner.
-        Address spawnerAddress = createDApp(avm, spanerCreateData);
+        Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
         
         // CALL to create and invoke the incrementor.
         byte[] input = new byte[] {1,2,3,4,5};
         byte[] incrementorCallData = ABIEncoder.encodeMethodArguments("incrementArray", input);
         byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnAndCall", incrementorCallData);
-        byte[] incrementorResult = (byte[]) callDApp(avm, spawnerAddress, spawnerCallData);
+        byte[] incrementorResult = (byte[]) callDApp(kernel, avm, spawnerAddress, spawnerCallData);
         // We double-encoded the arguments, so double-decode the response.
         byte[] spawnerResult = (byte[]) TestingHelper.decodeResultRaw(incrementorResult);
         assertEquals(input.length, spawnerResult.length);
@@ -381,21 +392,22 @@ public class AvmImplTest {
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // CREATE the spawner.
-        Address spawnerAddress = createDApp(avm, spanerCreateData);
+        Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
         
         // CALL to create and invoke the incrementor.
         boolean shouldFail = false;
         byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
-        Address incrementorAddress = (Address) callDApp(avm, spawnerAddress, spawnerCallData);
+        Address incrementorAddress = (Address) callDApp(kernel, avm, spawnerAddress, spawnerCallData);
         
         // Call the incrementor, directly.
         byte[] input = new byte[] {1,2,3,4,5};
         byte[] incrementorCallData = ABIEncoder.encodeMethodArguments("incrementArray", input);
         
-        byte[] incrementorResult = (byte[]) callDApp(avm, incrementorAddress, incrementorCallData);
+        byte[] incrementorResult = (byte[]) callDApp(kernel, avm, incrementorAddress, incrementorCallData);
         assertEquals(input.length, incrementorResult.length);
         for (int i = 0; i < input.length; ++i) {
             assertEquals(incrementBy + input[i], incrementorResult[i]);
@@ -412,16 +424,17 @@ public class AvmImplTest {
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // CREATE the spawner.
-        Address spawnerAddress = createDApp(avm, spanerCreateData);
+        Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
         
         // CALL to create and invoke the incrementor.
         boolean shouldFail = true;
         byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
         long energyLimit = 1_000_000l;
-        Transaction tx = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, spawnerAddress.unwrap(), 0, 0, spawnerCallData, energyLimit, 1l);
+        Transaction tx = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, spawnerAddress.unwrap(), kernel.getNonce(deployer), 0, spawnerCallData, energyLimit, 1l);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
         assertEquals(TransactionResult.Code.FAILED_INVALID, result2.getStatusCode());
     }
@@ -438,29 +451,31 @@ public class AvmImplTest {
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl(directory));
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl(directory);
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // We always start out with the PREMINE account, but that should be the only one.
         assertEquals(1, directory.listFiles().length);
         
         // CREATE the spawner (meaning another account).
-        Address spawnerAddress = createDApp(avm, spanerCreateData);
+        Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
         assertEquals(2, directory.listFiles().length);
         
         // CALL to create and invoke the incrementor.
         boolean shouldFail = false;
         byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
-        Address incrementorAddress = (Address) callDApp(avm, spawnerAddress, spawnerCallData);
+        Address incrementorAddress = (Address) callDApp(kernel, avm, spawnerAddress, spawnerCallData);
         assertEquals(3, directory.listFiles().length);
         
         // Restart the AVM.
-        avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl(directory));
+        kernel = new KernelInterfaceImpl(directory);
+        avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
         // Call the incrementor, directly.
         byte[] input = new byte[] {1,2,3,4,5};
         byte[] incrementorCallData = ABIEncoder.encodeMethodArguments("incrementArray", input);
         
-        byte[] incrementorResult = (byte[]) callDApp(avm, incrementorAddress, incrementorCallData);
+        byte[] incrementorResult = (byte[]) callDApp(kernel, avm, incrementorAddress, incrementorCallData);
         assertEquals(input.length, incrementorResult.length);
         for (int i = 0; i < input.length; ++i) {
             assertEquals(incrementBy + input[i], incrementorResult[i]);
@@ -479,21 +494,21 @@ public class AvmImplTest {
             }
         }
         assertEquals(2, codeCount);
-        assertEquals(1, balanceCount);
+        assertEquals(3, balanceCount);
     }
 
 
-    private int callRecursiveHash(Avm avm, long energyLimit, Address contractAddr, int depth) {
+    private int callRecursiveHash(KernelInterface kernel, Avm avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);
-        Transaction call = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, contractAddr.unwrap(), 0, 0, argData, energyLimit, 1l);
+        Transaction call = new Transaction(Transaction.Type.CALL, deployer, contractAddr.unwrap(), kernel.getNonce(deployer), 0, argData, energyLimit, 1l);
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
     }
 
-    private int callReentrantAccess(Avm avm, Address contractAddr, String methodName, boolean shouldFail) {
+    private int callReentrantAccess(KernelInterface kernel, Avm avm, Address contractAddr, String methodName, boolean shouldFail) {
         byte[] nearData = ABIEncoder.encodeMethodArguments(methodName, shouldFail);
-        Object resultObject = callDApp(avm, contractAddr, nearData);
+        Object resultObject = callDApp(kernel, avm, contractAddr, nearData);
         return ((Integer)resultObject).intValue();
     }
 
@@ -502,18 +517,18 @@ public class AvmImplTest {
         return (4 + 4 + string.getBytes(StandardCharsets.UTF_8).length);
     }
 
-    private Address createDApp(Avm avm, byte[] createData) {
+    private Address createDApp(KernelInterface kernel, Avm avm, byte[] createData) {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, KernelInterfaceImpl.PREMINED_ADDRESS, Helpers.address(2), 0, 0, createData, energyLimit, energyPrice);
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, deployer, Helpers.address(2), kernel.getNonce(deployer), 0, createData, energyLimit, energyPrice);
         TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
         return TestingHelper.buildAddress(result1.getReturnData());
     }
 
-    private Object callDApp(Avm avm, Address dAppAddress, byte[] argData) {
+    private Object callDApp(KernelInterface kernel, Avm avm, Address dAppAddress, byte[] argData) {
         long energyLimit = 1_000_000l;
-        Transaction tx = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, dAppAddress.unwrap(), 0, 0, argData, energyLimit, 1l);
+        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dAppAddress.unwrap(), kernel.getNonce(deployer), 0, argData, energyLimit, 1l);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
         return TestingHelper.decodeResult(result2);

@@ -69,6 +69,14 @@ public class Transaction {
         return energyPrice;
     }
 
+    public int getBasicCost() {
+        int cost = 21_000;
+        for (byte b : getData()) {
+            cost += (b == 0) ? 4 : 64;
+        }
+        return cost;
+    }
+
     @Override
     public String toString() {
         return "Transaction{" +

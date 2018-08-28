@@ -19,7 +19,7 @@ public class AionCollectionInterfaceTest {
     private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private byte[] to = Helpers.randomBytes(Address.LENGTH);
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
-    private long energyLimit = Long.MAX_VALUE - 100l;
+    private long energyLimit = 10_000_000L;
     private long energyPrice = 1;
 
     private byte[] buildJar() {
@@ -30,10 +30,10 @@ public class AionCollectionInterfaceTest {
         );
     }
 
-    private TransactionResult deploy(Avm avm, byte[] testJar){
+    private TransactionResult deploy(KernelInterface kernel, Avm avm, byte[] testJar){
 
         byte[] testWalletArguments = new byte[0];
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, 0, 0,
+        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, kernel.getNonce(from), 0,
                 new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
@@ -43,8 +43,8 @@ public class AionCollectionInterfaceTest {
         return createResult;
     }
 
-    private TransactionResult call(Avm avm, byte[] contract, byte[] sender, byte[] args) {
-        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, 0, 0, args, energyLimit, 1l);
+    private TransactionResult call(KernelInterface kernel, Avm avm, byte[] contract, byte[] sender, byte[] args) {
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, kernel.getNonce(from), 0, args, energyLimit, 1l);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(callContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -54,39 +54,42 @@ public class AionCollectionInterfaceTest {
     @Test
     public void testList() {
         byte[] args;
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterface kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        TransactionResult deployRes = deploy(avm, buildJar());
+        TransactionResult deployRes = deploy(kernel, avm, buildJar());
         byte[] contract = deployRes.getReturnData();
 
         args = ABIEncoder.encodeMethodArguments("testList");
-        TransactionResult testResult = call(avm, contract, from, args);
+        TransactionResult testResult = call(kernel, avm, contract, from, args);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, testResult.getStatusCode());
     }
 
     @Test
     public void testSet() {
         byte[] args;
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterface kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        TransactionResult deployRes = deploy(avm, buildJar());
+        TransactionResult deployRes = deploy(kernel, avm, buildJar());
         byte[] contract = deployRes.getReturnData();
 
         args = ABIEncoder.encodeMethodArguments("testSet");
-        TransactionResult testResult = call(avm, contract, from, args);
+        TransactionResult testResult = call(kernel, avm, contract, from, args);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, testResult.getStatusCode());
     }
 
     @Test
     public void testMap() {
         byte[] args;
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+        KernelInterface kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        TransactionResult deployRes = deploy(avm, buildJar());
+        TransactionResult deployRes = deploy(kernel, avm, buildJar());
         byte[] contract = deployRes.getReturnData();
 
         args = ABIEncoder.encodeMethodArguments("testMap");
-        TransactionResult testResult = call(avm, contract, from, args);
+        TransactionResult testResult = call(kernel, avm, contract, from, args);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, testResult.getStatusCode());
     }
 

@@ -33,6 +33,9 @@ public class DAppExecutor {
         dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, ctx, ctx.getData(), result));
         HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(helper);
 
+        // charge the basic cost
+        helper.externalChargeEnergy(ctx.getBasicCost());
+
         // Now that we can load classes for the contract, load and populate all their classes.
         ReentrantGraphProcessor reentrantGraphData = null;
         if (null != stateToResume) {

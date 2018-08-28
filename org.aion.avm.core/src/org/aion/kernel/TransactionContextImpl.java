@@ -9,8 +9,8 @@ import java.nio.ByteBuffer;
 public class TransactionContextImpl implements TransactionContext {
 
     private Transaction tx;
-
     private byte[] origin;
+
     private long blockNumber;
     private long blockTimestamp;
     private long blockEnergyLimit;
@@ -90,6 +90,11 @@ public class TransactionContextImpl implements TransactionContext {
     @Override
     public long getEneryPrice() {
         return tx.getEnergyPrice();
+    }
+
+    @Override
+    public int getBasicCost() {
+        return tx.getBasicCost();
     }
 
     @Override

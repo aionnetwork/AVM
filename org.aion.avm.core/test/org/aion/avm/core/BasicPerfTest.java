@@ -8,6 +8,7 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.Block;
+import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
@@ -58,14 +59,17 @@ public class BasicPerfTest {
 
 
     private static class TestRunnable extends Thread {
+        private byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+        private KernelInterface kernel;
         private Avm avm;
         private byte[] contractAddress;
         public void deploy(byte[] jar, byte[] arguments) {
             // Deploy.
-            this.avm = NodeEnvironment.singleton.buildAvmInstance(new KernelInterfaceImpl());
+            this.kernel = new KernelInterfaceImpl();
+            this.avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
             Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
-            Transaction tx1 = new Transaction(Transaction.Type.CREATE, KernelInterfaceImpl.PREMINED_ADDRESS, this.contractAddress, 0, 0, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1l);
+            Transaction tx1 = new Transaction(Transaction.Type.CREATE, deployer, this.contractAddress, kernel.getNonce(deployer), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1l);
             TransactionResult result1 = this.avm.run(new TransactionContextImpl(tx1, block));
             Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             this.contractAddress = result1.getReturnData();
@@ -76,7 +80,7 @@ public class BasicPerfTest {
             for (int i = blockStart; i < (COUNT + blockStart); ++i) {
                 Block block = new Block(new byte[32], i, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
                 long transaction1EnergyLimit = 1_000_000_000l;
-                Transaction tx1 = new Transaction(Transaction.Type.CALL, KernelInterfaceImpl.PREMINED_ADDRESS, this.contractAddress, 0, 0, null, transaction1EnergyLimit, 1l);
+                Transaction tx1 = new Transaction(Transaction.Type.CALL, deployer, this.contractAddress, kernel.getNonce(deployer), 0, new byte[0], transaction1EnergyLimit, 1l);
                 TransactionResult result1 = this.avm.run(new TransactionContextImpl(tx1, block));
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             }
