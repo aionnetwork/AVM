@@ -124,8 +124,8 @@ public class InvokedynamicTransformationTest {
     }
 
     private byte[] transformForMethodReference(byte[] originalBytecode, String classDotName) {
-        final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(classDotName, "java.lang.Object", originalBytecode)
+        final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(classDotName, "java.lang.Object", false, originalBytecode)
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
