@@ -68,7 +68,14 @@ public class TransactionResult {
         /**
          * Transaction failed due to an uncaught exception.
          */
-        FAILED_EXCEPTION;
+        FAILED_EXCEPTION,
+
+        /**
+         * CREATE transaction failed due to a rejected of the user-provided classes.
+         */
+        FAILED_REJECTED,
+
+        ;
 
 
         public boolean isSuccess() {
@@ -80,7 +87,7 @@ public class TransactionResult {
         }
 
         public boolean isFailed() {
-            return this == FAILED || this == FAILED_INVALID_DATA || this == FAILED_OUT_OF_ENERGY || this == FAILED_REVERT || this == FAILED_INVALID || this == FAILED_EXCEPTION;
+            return this == FAILED || this == FAILED_INVALID_DATA || this == FAILED_OUT_OF_ENERGY || this == FAILED_REVERT || this == FAILED_INVALID || this == FAILED_EXCEPTION || this == FAILED_REJECTED;
         }
     }
 

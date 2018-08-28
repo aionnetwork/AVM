@@ -106,6 +106,16 @@ public class SubclassPersistenceIntegrationTest {
         Assert.assertEquals(startValue, endValue);
     }
 
+    @Test
+    public void testFailedDeploy_Exception() throws Exception {
+        failedInstall(SubclassPersistenceIntegrationTestFailException.class);
+    }
+
+    @Test
+    public void testFailedDeploy_Api() throws Exception {
+        failedInstall(SubclassPersistenceIntegrationTestFailApi.class);
+    }
+
 
     private Address installTestDApp(Class<?> testClass) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(testClass);
@@ -124,5 +134,15 @@ public class SubclassPersistenceIntegrationTest {
         TransactionResult result = this.avm.run(new TransactionContextImpl(call, BLOCK));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
+    }
+
+    private void failedInstall(Class<?> testClass) {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(testClass);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        
+        // Deploy.
+        Transaction create = new Transaction(Transaction.Type.CREATE, KernelInterfaceImpl.PREMINED_ADDRESS, Helpers.address(2), this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS), 0, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult createResult = this.avm.run(new TransactionContextImpl(create, BLOCK));
+        Assert.assertEquals(TransactionResult.Code.FAILED_REJECTED, createResult.getStatusCode());
     }
 }

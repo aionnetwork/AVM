@@ -1,11 +1,13 @@
 package org.aion.avm.core.rejection;
 
+import org.aion.avm.internal.AvmException;
+
 
 /**
  * Throw by RejectionVisitor when it detects a violation of one of its rules.
  * This is a RuntimeException since it is thrown from deep within the visitor machinery and we want to catch it at the top-level.
  */
-public class RejectedClassException extends RuntimeException {
+public class RejectedClassException extends AvmException {
     private static final long serialVersionUID = 1L;
 
     public static void unsupportedClassVersion(int version) {
@@ -26,6 +28,10 @@ public class RejectedClassException extends RuntimeException {
 
     public static void invalidMethodFlag(String methodName, String flagName) {
         throw new RejectedClassException("Method \"" + methodName + "\" has invalid/forbidden access flag: " + flagName);
+    }
+
+    public static void restrictedSuperclass(String className, String superName) {
+        throw new RejectedClassException(className + " attempted to subclass restricted class: " + superName);
     }
 
 

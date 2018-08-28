@@ -13,6 +13,7 @@ import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
+import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
@@ -288,6 +289,10 @@ public class DAppCreator {
             result.setEnergyUsed(ctx.getEnergyLimit());
 
             logger.debug("Uncaught exception", e.getCause());
+        } catch (RejectedClassException e) {
+            result.setStatusCode(TransactionResult.Code.FAILED_REJECTED);
+            result.setEnergyUsed(ctx.getEnergyLimit());
+
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             result.setStatusCode(TransactionResult.Code.FAILED);
