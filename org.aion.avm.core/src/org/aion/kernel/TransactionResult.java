@@ -33,7 +33,7 @@ public class TransactionResult {
          */
         REJECTED_INVALID_NONCE,
 
-        // failed transaction can be included on chain, but energy charge will be applied.
+        // failed transaction can be included on chain, but energy charge will apply.
 
         /**
          * A failure occurred during the execution of the transaction.
@@ -76,11 +76,11 @@ public class TransactionResult {
         }
 
         public boolean isRejected() {
-            return this == REJECTED || this == REJECTED_INSUFFICIENT_BALANCE || this == FAILED_INVALID_DATA || this == REJECTED_INVALID_NONCE;
+            return this == REJECTED || this == REJECTED_INSUFFICIENT_BALANCE || this == REJECTED_INVALID_NONCE;
         }
 
         public boolean isFailed() {
-            return this == FAILED || this == FAILED_OUT_OF_ENERGY || this == FAILED_REVERT || this == FAILED_INVALID || this == FAILED_EXCEPTION;
+            return this == FAILED || this == FAILED_INVALID_DATA || this == FAILED_OUT_OF_ENERGY || this == FAILED_REVERT || this == FAILED_INVALID || this == FAILED_EXCEPTION;
         }
     }
 
