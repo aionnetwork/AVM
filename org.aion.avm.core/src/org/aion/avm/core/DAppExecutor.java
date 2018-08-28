@@ -15,7 +15,8 @@ public class DAppExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(DAppExecutor.class);
 
-    public static void call(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume, TransactionContext ctx, TransactionResult result) {
+    public static void call(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume,
+                            TransactionContext ctx, TransactionResult result) {
         byte[] dappAddress = ctx.getAddress();
         // Load the initial state of the environment.
         // (note that ContractEnvironmentState is immutable, so it is safe to just access the environment from a different invocation).
@@ -29,12 +30,9 @@ public class DAppExecutor {
         dAppStack.pushState(thisState);
         
         // TODO:  We might be able to move this setup of IHelper to later in the load once we get rid of the <clinit> (requires energy).
-        IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit(), initialState.nextHashCode);
+        IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode);
         dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, ctx, ctx.getData(), result));
         HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(helper);
-
-        // charge the basic cost
-        helper.externalChargeEnergy(ctx.getBasicCost());
 
         // Now that we can load classes for the contract, load and populate all their classes.
         ReentrantGraphProcessor reentrantGraphData = null;

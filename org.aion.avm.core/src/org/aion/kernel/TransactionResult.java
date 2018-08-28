@@ -125,8 +125,12 @@ public class TransactionResult {
         this.internalTransactions.add(tx);
     }
 
+    /**
+     * Creates an empty result, where statusCode = SUCCESS and energyUsed = 0.
+     */
     public TransactionResult() {
         this.statusCode = Code.SUCCESS;
+        this.energyUsed = 0;
     }
 
     public Code getStatusCode() {

@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.IHelper;
 import org.aion.kernel.TransactionContext;
 
 import java.io.IOException;
@@ -14,6 +15,8 @@ import org.aion.kernel.TransactionResult;
 import org.aion.kernel.TransactionalKernel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.aion.avm.internal.RuntimeAssertionError.unexpected;
 
 
 public class AvmImpl implements AvmInternal {
@@ -110,6 +113,8 @@ public class AvmImpl implements AvmInternal {
 
         // only one result (mutable) shall be created per transaction execution
         TransactionResult result = new TransactionResult();
+        result.setStatusCode(TransactionResult.Code.SUCCESS);
+        result.setEnergyUsed(ctx.getBasicCost()); // basic tx cost
 
         // conduct value transfer
         thisTransactionKernel.adjustBalance(ctx.getCaller(), -ctx.getValue());
@@ -140,8 +145,7 @@ public class AvmImpl implements AvmInternal {
                     try {
                         dapp = DAppLoader.loadFromKernel(thisTransactionKernel, dappAddress);
                     } catch (IOException e) {
-                        result.setStatusCode(TransactionResult.Code.FAILED);
-                        result.setEnergyUsed(ctx.getEnergyLimit());
+                        unexpected(e); // the jar was created by AVM; IOException is unexpected
                     }
                 }
                 // Run the call and, if successful, check this into the hot DApp cache.

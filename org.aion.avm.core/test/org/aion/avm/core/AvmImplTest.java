@@ -53,6 +53,34 @@ public class AvmImplTest {
     }
 
     @Test
+    public void testStateUpdates() {
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+
+        byte[] from = deployer;
+        byte[] to = new byte[32];
+        long value = 1000L;
+        byte[] data = "data".getBytes();
+        long energyLimit = 50_000L;
+        long energyPrice = 1L;
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, to, kernel.getNonce(from), value, data, energyLimit, energyPrice);
+        TransactionResult result = avm.run(new TransactionContextImpl(tx, block));
+
+        // verify results
+        assertTrue(result.getStatusCode().isSuccess());
+        assertNull(result.getReturnData());
+        assertEquals(tx.getBasicCost(), result.getEnergyUsed());
+        assertEquals(0, result.getLogs().size());
+        assertEquals(0, result.getInternalTransactions().size());
+
+        // verify state change
+        assertEquals(1, kernel.getNonce(from));
+        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT - value - tx.getBasicCost() * energyPrice, kernel.getBalance(deployer));
+        assertEquals(0, kernel.getNonce(to));
+        assertEquals(value, kernel.getBalance(to));
+    }
+
+    @Test
     public void checkMainClassHasProperName() throws IOException {
         final var module = "com.example.avmstartuptest";
         final Path path = Paths.get(format("%s/%s.jar", "../examples/build", module));

@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class KernelInterfaceImpl implements KernelInterface {
     public static final byte[] PREMINED_ADDRESS = Helpers.randomBytes(32);
-    public static final long PREMINED_AMOUNT = (long) (500L * Math.pow(10, 18));
+    public static final long PREMINED_AMOUNT = (long) (1L * Math.pow(10, 18));
 
     private final IDataStore dataStore;
 
