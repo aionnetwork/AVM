@@ -168,6 +168,7 @@ public class NodeEnvironment {
         
         // Load all the classes - even just mentioning these might cause them to be loaded, even before the Class.forName().
         Set<String> loadedClassNames = loadAndInitializeClasses(loader
+                , org.aion.avm.shadow.java.lang.AssertionError.class
                 , org.aion.avm.shadow.java.lang.Boolean.class
                 , org.aion.avm.shadow.java.lang.Byte.class
                 , org.aion.avm.shadow.java.lang.Character.class
@@ -176,6 +177,7 @@ public class NodeEnvironment {
                 , org.aion.avm.shadow.java.lang.Double.class
                 , org.aion.avm.shadow.java.lang.Enum.class
                 , org.aion.avm.shadow.java.lang.EnumConstantNotPresentException.class
+                , org.aion.avm.shadow.java.lang.Error.class
                 , org.aion.avm.shadow.java.lang.Exception.class
                 , org.aion.avm.shadow.java.lang.Float.class
                 , org.aion.avm.shadow.java.lang.Integer.class

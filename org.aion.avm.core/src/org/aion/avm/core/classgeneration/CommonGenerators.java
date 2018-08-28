@@ -82,6 +82,8 @@ public class CommonGenerators {
 
     // We don't generate the shadows for these ones since we have hand-written them (but wrappers are still required).
     public static final Set<String> kHandWrittenExceptionClassNames = Set.of(new String[] {
+            "java.lang.Error",
+            "java.lang.AssertionError",
             "java.lang.Exception",
             "java.lang.RuntimeException",
             "java.lang.EnumConstantNotPresentException",
