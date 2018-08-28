@@ -42,6 +42,9 @@ public class Class<T> extends Object {
     }
 
     public boolean avm_desiredAssertionStatus() {
+        // Note that we currently handle assertions as always-enabled.
+        // Internally, these will result in throwing AssertionError which, unless caught by the user's code, results in a FAILED_EXCEPTION status.
+        // See issue-72 for more details on our thought process and future interpretations of this we may want to entertain.
         return true;
     }
 
