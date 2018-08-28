@@ -34,7 +34,6 @@ public class ClassShadowingTest {
 
     @After
     public void clearTestingState() {
-        Helper.clearTestingState();
         Testing.countWrappedStrings = 0;
         Testing.countWrappedClasses = 0;
     }
@@ -88,6 +87,8 @@ public class ClassShadowingTest {
         // Verify that we see wrapped instances.
         Assert.assertEquals(1, Testing.countWrappedStrings);
         Assert.assertEquals(1, Testing.countWrappedClasses);
+
+        Helper.clearTestingState();
     }
 
     @Test
@@ -123,6 +124,8 @@ public class ClassShadowingTest {
         Method method2 = clazz.getMethod(UserClassMappingVisitor.mapMethodName("localVariable"));
         Object ret2 = method2.invoke(obj);
         Assert.assertEquals(Integer.valueOf(3), ret2);
+
+        Helper.clearTestingState();
     }
 
     @Test
@@ -156,6 +159,8 @@ public class ClassShadowingTest {
         Object ret = method.invoke(null);
         // Note that we can't yet override methods in our contracts so the toString returns false, from Object.
         Assert.assertEquals(null, ret);
+
+        Helper.clearTestingState();
     }
 
     @Test

@@ -10,20 +10,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class PrimitiveShadowingTest {
-    @BeforeClass
-    public static void setupClass() throws ClassNotFoundException {
-        testReplaceJavaLang();
-    }
+    private SimpleAvm avm;
+    private Class<?> clazz;
 
-    static private Class<?> clazz;
-
-    @AfterClass
-    public static void clearTestingState() {
-        Helper.clearTestingState();
-    }
-
-    public static void testReplaceJavaLang() throws ClassNotFoundException {
-        SimpleAvm avm = new SimpleAvm(1000000000000000000L, TestResource.class,
+    @Before
+    public void setup() throws ClassNotFoundException {
+        avm = new SimpleAvm(1000000000000000000L, TestResource.class,
                 TestResource.BooleanTest.class,
                 TestResource.BooleanTest.Factory.class,
                 TestResource.BooleanTest.ParseBoolean.class,
@@ -50,9 +42,12 @@ public class PrimitiveShadowingTest {
                 TestResource.ShortTest.Decode.class,
                 TestResource.ShortTest.ByteSwap.class
         );
-        AvmClassLoader loader = avm.getClassLoader();
+        clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
+    }
 
-        clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
+    @After
+    public void teardown() {
+        avm.shutdown();
     }
 
     @Test

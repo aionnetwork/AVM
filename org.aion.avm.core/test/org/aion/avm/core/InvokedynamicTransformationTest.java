@@ -19,7 +19,9 @@ import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -41,10 +43,15 @@ import static org.junit.Assert.*;
 public class InvokedynamicTransformationTest {
     private static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
 
-    @BeforeClass
-    public static void init() {
+    @Before
+    public void init() {
         final var avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
         new Helper(avmClassLoader, 1_000_000L, 1);
+    }
+
+    @After
+    public void teardown() {
+        Helper.clearTestingState();
     }
 
     @Test

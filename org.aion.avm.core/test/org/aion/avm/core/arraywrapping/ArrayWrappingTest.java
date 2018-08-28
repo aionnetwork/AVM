@@ -13,17 +13,13 @@ import java.lang.reflect.Method;
 
 public class ArrayWrappingTest {
 
-    @BeforeClass
-    public static void setupClass() throws ClassNotFoundException {
-        testReplaceJavaLang();
-    }
+    private SimpleAvm avm;
+    private Class<?> clazz;
+    private IHelper helper;
 
-    static private Class<?> clazz;
-    static private IHelper helper;
-
-
-    public static void testReplaceJavaLang() throws ClassNotFoundException {
-        SimpleAvm avm = new SimpleAvm(1000000000000000000L,
+    @Before
+    public void setup() throws ClassNotFoundException {
+        avm = new SimpleAvm(1000000000000000000L,
                 TestResource.class,
                 TestResource.A.class,
                 TestResource.B.class,
@@ -32,19 +28,15 @@ public class ArrayWrappingTest {
                 TestResource.Y.class,
                 TestResource.Z.class
         );
-        AvmClassLoader loader = avm.getClassLoader();
         helper = avm.getHelper();
-        clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
-    }
+        clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
 
-    @Before
-    public void setupTestingState(){
         helper.externalSetEnergy(1000000000000L);
     }
 
-    @AfterClass
-    public static void clearTestingState() {
-        Helper.clearTestingState();
+    @After
+    public void teardown() {
+        avm.shutdown();
     }
 
     @Test

@@ -15,17 +15,15 @@ public class NioShadowingTest {
     private SimpleAvm avm;
     private Class<?> clazz;
 
-    @After
-    public void clearTestingState() {
-        this.avm.shutdown();
+    @Before
+    public void setup() throws ClassNotFoundException {
+        this.avm = new SimpleAvm(10000L, TestResource.class);
+        this.clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
     }
 
-    @Before
-    public void testReplaceJavaLang() throws ClassNotFoundException {
-        this.avm = new SimpleAvm(10000L, TestResource.class);
-        AvmClassLoader loader = avm.getClassLoader();
-
-        this.clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
+    @After
+    public void teardown() {
+        this.avm.shutdown();
     }
 
     @Test

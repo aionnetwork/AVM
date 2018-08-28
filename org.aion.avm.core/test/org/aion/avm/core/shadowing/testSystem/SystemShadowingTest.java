@@ -6,6 +6,7 @@ import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -13,23 +14,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class SystemShadowingTest {
-    @BeforeClass
-    public static void setupClass() throws ClassNotFoundException {
-        testReplaceJavaLang();
-    }
 
-    static private Class<?> clazz;
+    private SimpleAvm avm;
+    private Class<?> clazz;
+
+    @Before
+    public void setup() throws ClassNotFoundException {
+        avm = new SimpleAvm(1000000000000000000L, TestResource.class);
+        clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
+    }
 
     @After
-    public void clearTestingState() {
-        Helper.clearTestingState();
-    }
-
-    public static void testReplaceJavaLang() throws ClassNotFoundException {
-        SimpleAvm avm = new SimpleAvm(1000000000000000000L, TestResource.class);
-        AvmClassLoader loader = avm.getClassLoader();
-
-        clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
+    public void teardown() {
+        avm.shutdown();
     }
 
     @Test

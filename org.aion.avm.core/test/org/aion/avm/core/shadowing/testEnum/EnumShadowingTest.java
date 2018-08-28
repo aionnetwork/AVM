@@ -14,21 +14,13 @@ public class EnumShadowingTest {
     private SimpleAvm avm;
     private Class<?> clazz;
 
-    @After
-    public void clearTestingState() {
-        Helper.clearTestingState();
-    }
-
     @Before
-    public void testReplaceJavaLang() throws ClassNotFoundException {
+    public void setup() throws ClassNotFoundException {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
         this.avm = new SimpleAvm(1000000L, TestResource.class, TestEnum.class);
-        AvmClassLoader loader = avm.getClassLoader();
-
-        this.clazz = loader.loadUserClassByOriginalName(TestResource.class.getName());
-
+        this.clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
     }
 
     @After
