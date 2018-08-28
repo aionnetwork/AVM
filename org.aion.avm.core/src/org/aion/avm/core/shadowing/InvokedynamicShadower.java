@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * Class visitor dedicated for invokedyanmic. Currently supported types:
  * 1) String concatenation
  * 2) Lambda expression
- *
+ * <p>
  * NOTE: this visitor requires the {@link IObjectReplacer} to deal with Object-IObject
  * replacement in method handle.
  *
@@ -26,9 +26,9 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
 
     public InvokedynamicShadower(String shadowPackage) {
         super(Opcodes.ASM6);
-        this.replacer = new IObjectReplacer(shadowPackage);
-        this.postRenameStringConcatFactory = shadowPackage + "java/lang/invoke/StringConcatFactory";
-        this.postRenameLambdaFactory = shadowPackage + "java/lang/invoke/LambdaMetafactory";
+        replacer = new IObjectReplacer(shadowPackage);
+        postRenameStringConcatFactory = shadowPackage + "java/lang/invoke/StringConcatFactory";
+        postRenameLambdaFactory = shadowPackage + "java/lang/invoke/LambdaMetafactory";
     }
 
     public MethodVisitor visitMethod(

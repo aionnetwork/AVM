@@ -18,6 +18,7 @@ import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
@@ -61,7 +62,7 @@ public class InvokedynamicTransformationTest {
         final byte[] origBytecode = loadRequiredResourceAsBytes(getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
-        final var actual = (org.aion.avm.shadow.java.lang.String) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+        final var actual = (org.aion.avm.shadow.java.lang.String) callInstanceTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
         Assert.assertEquals("abc", actual.toString());
     }
 
@@ -89,7 +90,7 @@ public class InvokedynamicTransformationTest {
         final byte[] transformedBytecode = transformForParametrizedLambdaTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         final Double actual =
-                (Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+                (Double) callInstanceTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
         assertEquals(30, actual.avm_doubleValue(), 0);
         assertTrue(actual.avm_valueOfWasCalled);
     }
@@ -112,13 +113,41 @@ public class InvokedynamicTransformationTest {
     }
 
     @Test
+    public void given_MethodReference_then_itsTransformedAsUsual() throws Exception {
+        final var testClassDotName = MethodReferenceTestResource.class.getName();
+        final var originalBytecode = loadRequiredResourceAsBytes(getSlashClassNameFrom(testClassDotName));
+        final var transformedBytecode = transformForMethodReference(originalBytecode, testClassDotName);
+        Assert.assertFalse(Arrays.equals(originalBytecode, transformedBytecode));
+        final org.aion.avm.core.testindy.java.lang.Integer actual =
+                (org.aion.avm.core.testindy.java.lang.Integer) callStaticTestMethod(transformedBytecode, testClassDotName, UserClassMappingVisitor.mapMethodName("function"));
+        assertEquals(MethodReferenceTestResource.VALUE.intValue(), actual.avm_intValue());
+    }
+
+    private byte[] transformForMethodReference(byte[] originalBytecode, String classDotName) {
+        final Forest<String, byte[]> classHierarchy = new HierarchyTreeBuilder()
+                .addClass(classDotName, "java.lang.Object", originalBytecode)
+                .asMutableForest();
+        final var shadowPackage = "org/aion/avm/core/testindy/";
+        return new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
+                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy), shadowPackage))
+                .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
+                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
+                .addNextVisitor(new InvokedynamicShadower(shadowPackage))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
+                        new ParentPointers(Collections.singleton(classDotName), classHierarchy),
+                        new HierarchyTreeBuilder()))
+                .build()
+                .runAndGetBytecode();
+    }
+
+    @Test
     public void given_MultiLineLambda_then_itsTransformedAsUsualCode() throws Exception {
         final var className = LongLambda.class.getName();
         final byte[] origBytecode = Helpers.loadRequiredResourceAsBytes(getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForMultiLineLambda(origBytecode, className);
         Assert.assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         final org.aion.avm.shadow.java.lang.Double actual =
-                (org.aion.avm.shadow.java.lang.Double) callTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+                (org.aion.avm.shadow.java.lang.Double) callInstanceTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
         assertEquals(100., actual.avm_doubleValue(), 0);
     }
 
@@ -165,7 +194,7 @@ public class InvokedynamicTransformationTest {
         return dotName.replaceAll("\\.", "/") + ".class";
     }
 
-    private Object callTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
+    private Object callInstanceTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
         String mappedClassName = PackageConstants.kUserDotPrefix + className;
         final AvmSharedClassLoader loader = new AvmSharedClassLoader(Map.of(mappedClassName, bytecode));
         final Class<?> klass = loader.loadClass(mappedClassName);
@@ -174,6 +203,15 @@ public class InvokedynamicTransformationTest {
         final Method method = klass.getDeclaredMethod(methodName);
         LambdaMetafactory.avm_metafactoryWasCalled = false;
         return method.invoke(instance);
+    }
+
+    private Object callStaticTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
+        String mappedClassName = PackageConstants.kUserDotPrefix + className;
+        final AvmSharedClassLoader loader = new AvmSharedClassLoader(Map.of(mappedClassName, bytecode));
+        final Class<?> klass = loader.loadClass(mappedClassName);
+        final Method method = klass.getMethod(methodName, IObject.class);
+        LambdaMetafactory.avm_metafactoryWasCalled = false;
+        return method.invoke(null, new org.aion.avm.shadow.java.lang.Object());
     }
 
     public static class TestingHelper {
