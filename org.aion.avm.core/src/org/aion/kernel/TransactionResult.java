@@ -9,85 +9,91 @@ import java.util.stream.Collectors;
 
 public class TransactionResult {
 
+    private enum CodeType {
+        SUCCESS, REJECTED, FAILED
+    }
+
     public enum  Code {
         /**
          * The transaction was executed successfully.
          */
-        SUCCESS,
+        SUCCESS(CodeType.SUCCESS),
 
         // rejected transactions should not be included on chain.
 
         /**
          * This transaction was rejected.
          */
-        REJECTED,
+        REJECTED(CodeType.REJECTED),
 
         /**
          * Insufficient balance to conduct the transaction.
          */
-        REJECTED_INSUFFICIENT_BALANCE,
-
+        REJECTED_INSUFFICIENT_BALANCE(CodeType.REJECTED),
 
         /**
          * The transaction nonce does not match the account nonce.
          */
-        REJECTED_INVALID_NONCE,
+        REJECTED_INVALID_NONCE(CodeType.REJECTED),
 
         // failed transaction can be included on chain, but energy charge will apply.
 
         /**
          * A failure occurred during the execution of the transaction.
          */
-        FAILED,
+        FAILED(CodeType.FAILED),
 
         /**
          * The transaction data is malformed, for internal tx only.
          */
-        FAILED_INVALID_DATA,
+        FAILED_INVALID_DATA(CodeType.FAILED),
 
         /**
          * Transaction failed due to out of energy.
          */
-        FAILED_OUT_OF_ENERGY,
+        FAILED_OUT_OF_ENERGY(CodeType.FAILED),
 
         /**
          * Transaction failed due to stack overflow.
          */
-        FAILED_OUT_OF_STACK,
+        FAILED_OUT_OF_STACK(CodeType.FAILED),
 
         /**
          * Transaction failed due to a REVERT operation.
          */
-        FAILED_REVERT,
+        FAILED_REVERT(CodeType.FAILED),
 
         /**
          * Transaction failed due to an INVALID operation.
          */
-        FAILED_INVALID,
+        FAILED_INVALID(CodeType.FAILED),
 
         /**
          * Transaction failed due to an uncaught exception.
          */
-        FAILED_EXCEPTION,
+        FAILED_EXCEPTION(CodeType.FAILED),
 
         /**
          * CREATE transaction failed due to a rejected of the user-provided classes.
          */
-        FAILED_REJECTED,
+        FAILED_REJECTED(CodeType.FAILED);
 
-        ;
+        private CodeType type;
 
+        Code(CodeType type) {
+            this.type = type;
+        }
 
         public boolean isSuccess() {
-            return this == SUCCESS;
+            return type == CodeType.SUCCESS;
         }
 
         public boolean isRejected() {
-            return this == REJECTED || this == REJECTED_INSUFFICIENT_BALANCE || this == REJECTED_INVALID_NONCE;
+            return type == CodeType.REJECTED;
         }
 
         public boolean isFailed() {
-            return this == FAILED || this == FAILED_INVALID_DATA || this == FAILED_OUT_OF_ENERGY || this == FAILED_REVERT || this == FAILED_INVALID || this == FAILED_EXCEPTION || this == FAILED_REJECTED;
+            return type == CodeType.FAILED;
         }
     }
 
