@@ -156,6 +156,14 @@ public class RejectionClassVisitorTest {
         commonFilterBytes(className, raw);
     }
 
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_nonWhitelistReceiverType() throws Exception {
+        String className = SendToNonWhitelistType.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        // Expected to fail since a method we are trying to call is defined in "java.util.Scanner", which is not on the JCL whitelist.
+        commonFilterBytes(className, raw);
+    }
+
 
     private void compareClasses(ClassNode inputNode, ClassNode outputNode) {
         // Access is unchanged.

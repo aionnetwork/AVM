@@ -1,5 +1,6 @@
 package org.aion.avm.core.rejection;
 
+import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Handle;
@@ -14,13 +15,16 @@ import org.objectweb.asm.TypePath;
  * -uses bytecode in blacklist
  * -references class not in whitelist
  * -overrides methods which we will not support as the user may expect
+ * -issue an invoke initially defined on a class not in whitelist
  * 
  * When a violation is detected, throws the RejectedClassException.
  */
 public class RejectionMethodVisitor extends MethodVisitor {
+    private final PreRenameClassAccessRules classAccessRules;
 
-    public RejectionMethodVisitor(MethodVisitor visitor) {
+    public RejectionMethodVisitor(MethodVisitor visitor, PreRenameClassAccessRules classAccessRules) {
         super(Opcodes.ASM6, visitor);
+        this.classAccessRules = classAccessRules;
     }
 
     @Override
@@ -89,6 +93,9 @@ public class RejectionMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        if (!this.classAccessRules.canUserAccessClass(owner)) {
+            RejectedClassException.nonWhiteListedClass(owner);
+        }
         checkOpcode(opcode);
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
     }
