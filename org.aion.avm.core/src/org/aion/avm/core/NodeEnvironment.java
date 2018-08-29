@@ -1,10 +1,5 @@
 package org.aion.avm.core;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -16,6 +11,11 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -49,9 +49,9 @@ public class NodeEnvironment {
             this.jclClassNames.addAll(Stream.of(CommonGenerators.kExceptionClassNames)
                     .map(Helpers::fulllyQualifiedNameToInternalName)
                     .collect(Collectors.toList()));
-
-            // TODO: confirm with Rom if this is correct
             this.jclClassNames.add("java/lang/invoke/MethodHandles");
+            this.jclClassNames.add("java/lang/invoke/MethodType");
+            this.jclClassNames.add("java/lang/invoke/CallSite");
             this.jclClassNames.add("java/lang/invoke/MethodHandles$Lookup");
 
         } catch (ClassNotFoundException e) {
@@ -69,12 +69,12 @@ public class NodeEnvironment {
         this.postRenameRuntimeObjectSizeMap = new HashMap<>();
         rtObjectSizeMap.forEach((k, v) -> {
             // the shadowed object sizes; and change the class name to the non-shadowed version
-            if(k.startsWith(PackageConstants.kShadowSlashPrefix)) {
+            if (k.startsWith(PackageConstants.kShadowSlashPrefix)) {
                 this.shadowObjectSizeMap.put(k.substring(PackageConstants.kShadowSlashPrefix.length()), v);
                 this.postRenameRuntimeObjectSizeMap.put(k, v);
             }
             // the object size of API classes
-            if(k.startsWith(PackageConstants.kApiSlashPrefix)) {
+            if (k.startsWith(PackageConstants.kApiSlashPrefix)) {
                 this.apiObjectSizeMap.put(k, v);
             }
         });
@@ -117,7 +117,7 @@ public class NodeEnvironment {
      * Creates a new long-lived AVM instance.  The intention is that only one AVM instance will be created and reused for each transaction.
      * NOTE:  This is only in the NodeEnvironment since it is a long-lived singleton but this method has no strong connection to it so it
      * could be moved in the future.
-     * 
+     *
      * @param kernel The kernel interface exposed by the consumer.
      * @return The long-lived AVM instance.
      */
@@ -134,38 +134,46 @@ public class NodeEnvironment {
                 // Shadow enum class will create array wrapper with <clinit>
                 // Ignore the charge energy request in this case
             }
+
             @Override
             public void externalSetEnergy(long energy) {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
+
             @Override
             public long externalGetEnergyRemaining() {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
+
             @Override
             public org.aion.avm.shadow.java.lang.Class<?> externalWrapAsClass(Class<?> input) {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
+
             @Override
             public int externalGetNextHashCode() {
                 // We will just return 1 for all identity hash codes, for now.
                 return 1;
             }
+
             @Override
             public int captureSnapshotAndNextHashCode() {
                 // We currently only use this for saving state prior to a reentrant call, which we don't expect during bootstrap.
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
+
             @Override
             public void applySpanshotAndNextHashCode(int nextHashCode) {
                 // We currently only use this for restoring state after a reentrant call, which we don't expect during bootstrap.
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
+
             @Override
             public void externalBootstrapOnly() {
                 // This is ok since we are the bootstrapping helper.
-            }});
-        
+            }
+        });
+
         // Load all the classes - even just mentioning these might cause them to be loaded, even before the Class.forName().
         Set<String> loadedClassNames = loadAndInitializeClasses(loader
                 , org.aion.avm.shadow.java.lang.Boolean.class
@@ -194,10 +202,10 @@ public class NodeEnvironment {
                 , org.aion.avm.shadow.java.lang.System.class
                 , org.aion.avm.shadow.java.lang.Throwable.class
                 , org.aion.avm.shadow.java.lang.TypeNotPresentException.class
-                
+
                 , org.aion.avm.shadow.java.lang.invoke.LambdaMetafactory.class
                 , org.aion.avm.shadow.java.lang.invoke.StringConcatFactory.class
-                
+
                 , org.aion.avm.shadow.java.math.BigDecimal.class
                 , org.aion.avm.shadow.java.math.BigInteger.class
                 , org.aion.avm.shadow.java.math.MathContext.class
@@ -224,14 +232,14 @@ public class NodeEnvironment {
                 , org.aion.avm.shadow.java.util.function.Function.class
 
         );
-        
+
         // Clean-up.
         IHelper.currentContractHelper.remove();
 
         return loadedClassNames;
     }
 
-    private static Set<String> loadAndInitializeClasses(ClassLoader loader, Class<?> ...classes) throws ClassNotFoundException {
+    private static Set<String> loadAndInitializeClasses(ClassLoader loader, Class<?>... classes) throws ClassNotFoundException {
         Set<String> classNames = new HashSet<>();
 
         // (note that the loader.loadClass() doesn't invoke <clinit> so we use Class.forName() - this "initialize" flag should do that).
@@ -249,7 +257,7 @@ public class NodeEnvironment {
 
     private Map<Long, org.aion.avm.shadow.java.lang.Object> initializeConstantState() {
         Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap = new HashMap<>();
-        
+
         // Assign the special "negative instanceId" values which we use for shadow JDK constants (public static objects and enum instances).
         // NOTE:  This list needs to be manually updated and we specify it as a list since these values CANNOT change, once assigned (these represent the serialized symbolic references from contracts).
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TRUE, -1l);
@@ -269,7 +277,7 @@ public class NodeEnvironment {
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_DOWN, -15l);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN, -16l);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UNNECESSARY, -17l);
-        
+
         // Note that (as explained in issue-146), we need to treat our primitive "TYPE" pseudo-classes as constants, not like normal Class references.
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TYPE, -18l);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Byte.avm_TYPE, -19l);
@@ -279,10 +287,10 @@ public class NodeEnvironment {
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Integer.avm_TYPE, -23l);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Long.avm_TYPE, -24l);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Short.avm_TYPE, -25l);
-        
+
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.nio.ByteOrder.avm_BIG_ENDIAN, -26l);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.nio.ByteOrder.avm_LITTLE_ENDIAN, -27l);
-        
+
         return constantMap;
     }
 
@@ -295,7 +303,7 @@ public class NodeEnvironment {
      * Computes the object size of shadow java.base classes
      *
      * @return a mapping between class name and object size
-     *
+     * <p>
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
     private Map<String, Integer> computeRuntimeObjectSizes(Map<String, byte[]> generatedShadowJDK) {
@@ -304,8 +312,7 @@ public class NodeEnvironment {
             // build the runtime module from the jar TODO - this jar needs to be provided in a safe way
             String jarPath = System.getProperty("avm-rt-jar", "../out/jar/org-aion-avm-rt.jar");
             runtimeModule = RawDappModule.readFromJar(Helpers.readFileToBytes(jarPath));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new IllegalStateException("Cannot find 'org-aion-avm-rt.jar'.");
         }
 
@@ -319,14 +326,13 @@ public class NodeEnvironment {
         // add the generated classes, i.e., exceptions in the generated shadow JDK
         for (String generatedClassName : generatedShadowJDK.keySet()) {
             // User cannot create the exception wrappers, so not to include them
-            if(!generatedClassName.startsWith("org.aion.avm.exceptionwrapper.")) {
+            if (!generatedClassName.startsWith("org.aion.avm.exceptionwrapper.")) {
                 String parentName = CommonGenerators.parentClassMap.get(generatedClassName);
                 byte[] parentClass;
                 if (parentName == null) {
                     parentName = "org.aion.avm.shadow.java.lang.Throwable";
                     parentClass = rtClassesForest.getNodeById(parentName).getContent().getBytes();
-                }
-                else {
+                } else {
                     parentClass = generatedShadowJDK.get(parentName);
                 }
                 // TODO: figure out the name of the grandparent class
@@ -341,6 +347,6 @@ public class NodeEnvironment {
         // A bare "java.lang.Object" has no fields and takes 16 bytes for 64-bit JDK. A "java.lang.Throwable" takes 40 bytes.
         rootObjectSizes.put("java/lang/Object", 16);
         rootObjectSizes.put("java/lang/Throwable", 40);
-        return  DAppCreator.computeUserObjectSizes(rtClassesForest, rootObjectSizes);
+        return DAppCreator.computeUserObjectSizes(rtClassesForest, rootObjectSizes);
     }
 }

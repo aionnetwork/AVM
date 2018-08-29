@@ -23,18 +23,13 @@ import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.aion.avm.core.util.Helpers.loadRequiredResourceAsBytes;
 import static org.junit.Assert.*;
@@ -43,7 +38,7 @@ import static org.junit.Assert.*;
  * @author Roman Katerinenko
  */
 public class InvokedynamicTransformationTest {
-    private static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
+    static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
 
     @Before
     public void init() {
@@ -190,7 +185,7 @@ public class InvokedynamicTransformationTest {
         return bytecode;
     }
 
-    private static String getSlashClassNameFrom(String dotName) {
+    static String getSlashClassNameFrom(String dotName) {
         return dotName.replaceAll("\\.", "/") + ".class";
     }
 
