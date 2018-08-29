@@ -10,6 +10,7 @@ import org.aion.avm.core.miscvisitors.ClinitStrippingVisitor;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.InterfaceFieldMappingVisitor;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
+import org.aion.avm.core.miscvisitors.StrictFPVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
@@ -149,6 +150,7 @@ public class DAppCreator {
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, parentClassResolver, generatedClassesSink))
                     .addNextVisitor(new AutomaticGraphVisitor())
+                    .addNextVisitor(new StrictFPVisitor())
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
