@@ -48,7 +48,7 @@ public class DirectoryBackedDataStore implements IDataStore {
         if ((null == address) || (address.length < 4) || (address.length > 32)) {
             throw new IllegalArgumentException("Address length incorrect (must be between 4 and 32)");
         }
-        String directoryName = "account_" + Helpers.toHexString(address);
+        String directoryName = "account_" + Helpers.bytesToHexString(address);
         return new File(this.topLevelDirectory, directoryName);
     }
 }

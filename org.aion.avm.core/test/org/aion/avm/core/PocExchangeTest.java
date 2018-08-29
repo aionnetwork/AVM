@@ -162,10 +162,10 @@ public class PocExchangeTest {
         System.out.println(">> Deploy \"PEPE\" token contract...");
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
-        System.out.println(Helpers.toHexString(pepe.addr));
+        System.out.println(Helpers.bytesToHexString(pepe.addr));
 
         res = pepe.callTotalSupply();
-        System.out.println(Helpers.toHexString(res.getReturnData()));
+        System.out.println(Helpers.bytesToHexString(res.getReturnData()));
         Assert.assertEquals(0L, TestingHelper.decodeResult(res));
         System.out.println(">> total supply: " + TestingHelper.decodeResult(res));
 

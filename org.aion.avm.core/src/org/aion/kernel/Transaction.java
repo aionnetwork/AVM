@@ -81,10 +81,10 @@ public class Transaction {
     public String toString() {
         return "Transaction{" +
                 "type=" + type +
-                ", from=" + Helpers.toHexString(Arrays.copyOf(from, 4)) +
-                ", to=" + Helpers.toHexString(Arrays.copyOf(to, 4)) +
+                ", from=" + Helpers.bytesToHexString(Arrays.copyOf(from, 4)) +
+                ", to=" + Helpers.bytesToHexString(Arrays.copyOf(to, 4)) +
                 ", value=" + value +
-                ", data=" + Helpers.toHexString(data) +
+                ", data=" + Helpers.bytesToHexString(data) +
                 ", energyLimit=" + energyLimit +
                 '}';
     }

@@ -153,6 +153,6 @@ public class DirectoryBackedAccountStore implements IAccountStore {
         // We need to make sure that this key isn't going to hit some limit since we are back-ending on the filesystem.
         // This is an AssertionError since it is a limitation of this testing implementation, not a usage error.
         RuntimeAssertionError.assertTrue(key.length <= 32);
-        return FILE_PREFIX_KEY + Helpers.toHexString(key);
+        return FILE_PREFIX_KEY + Helpers.bytesToHexString(key);
     }
 }

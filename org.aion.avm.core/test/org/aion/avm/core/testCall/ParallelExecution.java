@@ -94,11 +94,11 @@ public class ParallelExecution {
                     TransactionResult r = f.get();
 
                     Set<String> set = new HashSet<>();
-                    set.add(Helpers.toHexString(tx.getFrom()));
-                    set.add(Helpers.toHexString(tx.getTo()));
+                    set.add(Helpers.bytesToHexString(tx.getFrom()));
+                    set.add(Helpers.bytesToHexString(tx.getTo()));
                     for (InternalTransaction it : r.internalTransactions) {
-                        set.add(Helpers.toHexString(it.getFrom()));
-                        set.add(Helpers.toHexString(it.getTo()));
+                        set.add(Helpers.bytesToHexString(it.getFrom()));
+                        set.add(Helpers.bytesToHexString(it.getTo()));
                     }
 
                     if (set.stream().anyMatch(k -> accounts.contains(k))) {

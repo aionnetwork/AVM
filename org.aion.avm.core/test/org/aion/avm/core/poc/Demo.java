@@ -60,7 +60,7 @@ public class Demo {
         TransactionResult txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
         Address tokenDapp = TestingHelper.buildAddress(txResult.getReturnData());
-        System.out.println(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.toHexString(txResult.getReturnData()) + ")");
+        System.out.println(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.getReturnData()) + ")");
 
         System.out.println("\n>> Deploy the Multi-sig Wallet Dapp...");
         jar = JarBuilder.buildJarForMainAndClasses(Main.class, Wallet.class, Bytes32.class, AionList.class, AionSet.class, AionMap.class);
@@ -71,11 +71,11 @@ public class Demo {
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
         Address walletDapp = TestingHelper.buildAddress(txResult.getReturnData());
-        System.out.println(">> Wallet Dapp is deployed. (Address " + Helpers.toHexString(txResult.getReturnData()) + ")");
+        System.out.println(">> Wallet Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.getReturnData()) + ")");
         System.out.println(">> Owners List:");
-        System.out.println(">>   Deployer - (Address " + Helpers.toHexString(deployer) + ")");
-        System.out.println(">>   Owner 1  - (Address " + Helpers.toHexString(owner1) + ")");
-        System.out.println(">>   Owner 2  - (Address " + Helpers.toHexString(owner2) + ")");
+        System.out.println(">>   Deployer - (Address " + Helpers.bytesToHexString(deployer) + ")");
+        System.out.println(">>   Owner 1  - (Address " + Helpers.bytesToHexString(owner1) + ")");
+        System.out.println(">>   Owner 2  - (Address " + Helpers.bytesToHexString(owner2) + ")");
         System.out.println(">> Minimum number of owners to approve a transaction: " + confirmationsRequired);
 
         //================
@@ -111,7 +111,7 @@ public class Demo {
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
-        System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.toHexString((byte[]) TestingHelper.decodeResult(txResult)) + ")");
+        System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.bytesToHexString((byte[]) TestingHelper.decodeResult(txResult)) + ")");
         byte[] pendingTx = (byte[]) TestingHelper.decodeResult(txResult);
 
         //================
