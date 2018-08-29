@@ -17,7 +17,8 @@ import java.util.Map;
  * Likewise, reading data from a non-existent account safely returns null or 0L, rather than failing.
  */
 public class KernelInterfaceImpl implements KernelInterface {
-    public static final byte[] PREMINED_ADDRESS = Helpers.randomBytes(32);
+
+    public static final byte[] PREMINED_ADDRESS = Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378");
     public static final long PREMINED_AMOUNT = (long) (1L * Math.pow(10, 18));
 
     private final IDataStore dataStore;
