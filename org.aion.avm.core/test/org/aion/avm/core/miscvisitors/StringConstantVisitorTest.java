@@ -36,9 +36,14 @@ public class StringConstantVisitorTest {
         String targetNoStaticName = StringConstantVisitorTestTargetNoStatic.class.getName();
         byte[] targetNoStaticBytes = Helpers.loadRequiredResourceAsBytes(targetNoStaticName.replaceAll("\\.", "/") + ".class");
         
+        // WARNING:  We are providing the class set as both the "classes only" and "classes plus interfaces" sets.
+        // This works for this test but, in general, is not correct.
+        Set<String> userClassDotNameSet = Set.of(targetTestName, targetNoStaticName);
+        PreRenameClassAccessRules classAccessRules = new PreRenameClassAccessRules(userClassDotNameSet, userClassDotNameSet);
+        
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(Set.of(targetTestName, targetNoStaticName)))
+                        .addNextVisitor(new UserClassMappingVisitor(classAccessRules))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()

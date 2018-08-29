@@ -5,6 +5,7 @@ import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
+import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
@@ -55,7 +56,7 @@ public class ClassShadowingTest {
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(Set.of(className)))
+                        .addNextVisitor(new UserClassMappingVisitor(createTestingAccessRules(className)))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
                         .addNextVisitor(new ClassShadowing(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
@@ -99,7 +100,7 @@ public class ClassShadowingTest {
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, 0) /* DO NOT SKIP ANYTHING */
-                        .addNextVisitor(new UserClassMappingVisitor(Collections.singleton(className)))
+                        .addNextVisitor(new UserClassMappingVisitor(createTestingAccessRules(className)))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
                         .addNextVisitor(new ClassShadowing(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
@@ -138,7 +139,7 @@ public class ClassShadowingTest {
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(Set.of(className, innerClassName)))
+                        .addNextVisitor(new UserClassMappingVisitor(createTestingAccessRules(className, innerClassName)))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
                         .addNextVisitor(new ClassShadowing(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
@@ -230,5 +231,12 @@ public class ClassShadowingTest {
             countWrappedStrings += 1;
             return Helper.wrapAsString(input);
         }
+    }
+
+    private PreRenameClassAccessRules createTestingAccessRules(String... userDotNameClasses) {
+        // WARNING:  We are providing the class set as both the "classes only" and "classes plus interfaces" sets.
+        // This works for this test but, in general, is not correct.
+        Set<String> userClassDotNameSet = Set.of(userDotNameClasses);
+        return new PreRenameClassAccessRules(userClassDotNameSet, userClassDotNameSet);
     }
 }

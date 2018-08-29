@@ -6,6 +6,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
+import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
@@ -23,7 +24,6 @@ import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -72,7 +72,7 @@ public class InvokedynamicTransformationTest {
                 .asMutableForest();
         final var shadowPackage = PackageConstants.kShadowSlashPrefix;
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
+                .addNextVisitor(new UserClassMappingVisitor(buildSingletonAccessRules(className, classHierarchy)))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
@@ -101,7 +101,7 @@ public class InvokedynamicTransformationTest {
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy), shadowPackage))
+                .addNextVisitor(new UserClassMappingVisitor(buildSingletonAccessRules(className, classHierarchy), shadowPackage))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
@@ -129,7 +129,7 @@ public class InvokedynamicTransformationTest {
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy), shadowPackage))
+                .addNextVisitor(new UserClassMappingVisitor(buildSingletonAccessRules(classDotName, classHierarchy), shadowPackage))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
@@ -167,11 +167,10 @@ public class InvokedynamicTransformationTest {
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, false, bytecode);
         };
         ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy);
-        Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(classHierarchy);
+        PreRenameClassAccessRules singletonRules = buildSingletonAccessRules(className, classHierarchy);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new RejectionClassVisitor(preRenameUserDefinedClasses))
-                // WARNING:  Strictly speaking, UserClassMappingVisitor should see the classes AND interfaces, but this test doesn't have interfaces.
-                .addNextVisitor(new UserClassMappingVisitor(preRenameUserDefinedClasses))
+                .addNextVisitor(new RejectionClassVisitor(singletonRules))
+                .addNextVisitor(new UserClassMappingVisitor(singletonRules))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, DAppCreator.computeAllPostRenameObjectSizes(classHierarchy)))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
@@ -222,5 +221,11 @@ public class InvokedynamicTransformationTest {
         public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
             return new org.aion.avm.shadow.java.lang.String(input);
         }
+    }
+
+    private PreRenameClassAccessRules buildSingletonAccessRules(final String className, final Forest<String, ClassInfo> classHierarchy) {
+        Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(classHierarchy);
+        Set<String> preRenameUserClassAndInterfaceSet = Collections.singleton(className);
+        return new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserClassAndInterfaceSet);
     }
 }

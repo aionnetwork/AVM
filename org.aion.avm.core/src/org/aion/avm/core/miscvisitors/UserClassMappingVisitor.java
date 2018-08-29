@@ -1,11 +1,9 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.util.DescriptorParser;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.FieldVisitor;
@@ -14,9 +12,6 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -36,26 +31,19 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
     private static final String FIELD_PREFIX = "avm_";
     private static final String METHOD_PREFIX = "avm_";
 
-    private static final String JAVA_LANG = "java/lang/";
-    private static final String JAVA_MATH = "java/math/";
-    private static final String JAVA_NIO = "java/nio/";
-    private static final String JAVA_UTIL = "java/util/";
-    private static final String ORG_AION_AVM_API = "org/aion/avm/api/";
-
-    private final Set<String> userDefinedClassSlashNames;
+    private final PreRenameClassAccessRules preRenameClassAccessRules;
 
     private final String shadowPackageSlash;
 
-    public UserClassMappingVisitor(Set<String> userDefinedClassDotNames, String shadowPackageSlash) {
+    public UserClassMappingVisitor(PreRenameClassAccessRules preRenameClassAccessRules, String shadowPackageSlash) {
         super(Opcodes.ASM6);
         
-        // Note that the input is given in .-style names, so convert these for our uses.
-        this.userDefinedClassSlashNames = userDefinedClassDotNames.stream().map((dotStyle) -> Helpers.fulllyQualifiedNameToInternalName(dotStyle)).collect(Collectors.toSet());
+        this.preRenameClassAccessRules = preRenameClassAccessRules;
         this.shadowPackageSlash = shadowPackageSlash;
     }
 
-    public UserClassMappingVisitor(Set<String> userDefinedClassDotNames) {
-        this(userDefinedClassDotNames, PackageConstants.kShadowSlashPrefix);
+    public UserClassMappingVisitor(PreRenameClassAccessRules preRenameClassAccessRules) {
+        this(preRenameClassAccessRules, PackageConstants.kShadowSlashPrefix);
     }
 
     @Override
@@ -342,14 +330,13 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
         if (type.startsWith("[")){
             newType = mapDescriptor(type);
         }else {
-            if (this.userDefinedClassSlashNames.contains(type)) {
+            if (this.preRenameClassAccessRules.isUserDefinedClassOrInterface(type)) {
                 return PackageConstants.kUserSlashPrefix + type;
 
-            } else if (NodeEnvironment.singleton.isClassFromJCL(type)) {
+            } else if (this.preRenameClassAccessRules.isJclClass(type)) {
                 return shadowPackageSlash + type;
 
-                // TODO: check API class names based on NodeEnvironment
-            } else if (type.startsWith(ORG_AION_AVM_API) || type.startsWith("org/aion/avm/shadow/")) {
+            } else if (this.preRenameClassAccessRules.isApiClass(type)) {
                 return type;
 
             } else {

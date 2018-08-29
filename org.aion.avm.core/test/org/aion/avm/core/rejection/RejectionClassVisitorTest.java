@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
@@ -31,12 +32,13 @@ public class RejectionClassVisitorTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
 
         Set<String> userClassDotNameSet = Set.of(className, className+"$A", className+"$B");
+        PreRenameClassAccessRules preRenameClassAccessRules = createTestingAccessRules(userClassDotNameSet);
         // user class mapper, which also rejects illegal class access
-        mapper = new UserClassMappingVisitor(userClassDotNameSet);
+        mapper = new UserClassMappingVisitor(preRenameClassAccessRules);
 
         // We want to prove we can strip out everything so don't use any special parsing options for this visitor.
         byte[] filteredBytes = new ClassToolchain.Builder(raw, 0)
-                .addNextVisitor(new RejectionClassVisitor(userClassDotNameSet))
+                .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules))
                 .addNextVisitor(mapper)
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
@@ -319,12 +321,19 @@ public class RejectionClassVisitorTest {
 
     private byte[] commonFilterBytes(String classDotName, byte[] testBytes) throws IOException {
         Set<String> userClassDotNameSet = Set.of(classDotName);
+        PreRenameClassAccessRules singletonRules = createTestingAccessRules(userClassDotNameSet);
         byte[] filteredBytes = new ClassToolchain.Builder(testBytes, 0)
-                .addNextVisitor(new RejectionClassVisitor(userClassDotNameSet))
-                .addNextVisitor(new UserClassMappingVisitor(userClassDotNameSet))
+                .addNextVisitor(new RejectionClassVisitor(singletonRules))
+                .addNextVisitor(new UserClassMappingVisitor(singletonRules))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();
         return filteredBytes;
+    }
+
+    private PreRenameClassAccessRules createTestingAccessRules(Set<String> userClassDotNameSet) {
+        // WARNING:  We are providing the class set as both the "classes only" and "classes plus interfaces" sets.
+        // This works for this test but, in general, is not correct.
+        return new PreRenameClassAccessRules(userClassDotNameSet, userClassDotNameSet);
     }
 }

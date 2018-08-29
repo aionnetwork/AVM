@@ -12,6 +12,7 @@ import org.aion.avm.core.SuspendedHelper;
 import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
+import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.types.GeneratedClassConsumer;
@@ -319,9 +320,13 @@ public class ExceptionWrappingTest {
                 LazyWrappingTransformer.this.transformedClasses.put(dotName, bytes);
                 dynamicHierarchyBuilder.addClass(dotName, superDotName, false, bytes);
             };
+            Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(this.classHierarchy);
+            // WARNING:  We are providing the class set as both the "classes only" and "classes plus interfaces" sets.
+            // This works for this test but, in general, is not correct.
+            PreRenameClassAccessRules preRenameClassAccessRules = new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserDefinedClasses);
             ParentPointers parentPointers = new ParentPointers(ClassWhiteList.extractDeclaredClasses(this.classHierarchy), this.classHierarchy);
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                    .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(this.classHierarchy)))
+                    .addNextVisitor(new UserClassMappingVisitor(preRenameClassAccessRules))
                     .addNextVisitor(new ConstantVisitor(TestHelpers.CLASS_NAME))
                     .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, parentPointers, generatedClassesSink))
                     .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME))
