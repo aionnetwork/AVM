@@ -42,6 +42,7 @@ public class AvmFailureTest {
         TransactionResult txResult = avm.run(txContext);
 
         dappAddress = txResult.getReturnData();
+        assertTrue(null != dappAddress);
     }
 
     @Test
