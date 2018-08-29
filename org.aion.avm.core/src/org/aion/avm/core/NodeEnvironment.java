@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -307,8 +308,14 @@ public class NodeEnvironment {
             String jarPath = System.getProperty("avm-rt-jar", "../out/jar/org-aion-avm-rt.jar");
             runtimeModule = RawDappModule.readFromJar(Helpers.readFileToBytes(jarPath));
         }
-        catch (IOException e) {
-            throw new IllegalStateException("Cannot find 'org-aion-avm-rt.jar'.");
+        catch (Exception e) {
+            //TODO - This is a hack for CLI jar
+            try {
+                InputStream rtJar = getClass().getClassLoader().getResourceAsStream("org-aion-avm-rt.jar");
+                runtimeModule = RawDappModule.readFromJar(rtJar.readAllBytes());
+            } catch (Exception ee){
+                throw new IllegalStateException("Cannot find 'org-aion-avm-rt.jar'.");
+            }
         }
 
         // get the forest and prune it to include only the "java.lang.Object" and "java.lang.Throwable" derived classes, as shown in the forest
