@@ -282,7 +282,6 @@ public class AvmCLI implements UserInterface{
 
     static public void main(String[] args){
 
-
         try {
             instance.jc.parse(args);
         }catch (ParameterException e){
@@ -295,23 +294,25 @@ public class AvmCLI implements UserInterface{
             instance.jc.usage();
         }
 
-        if (instance.jc.getParsedCommand().equals("open")){
-            if (instance.open.address.equals("Random generated address")){
-                instance.openAccount(instance.flag.storage, Helpers.randomBytes(Address.LENGTH));
-            }else {
-                instance.openAccount(instance.flag.storage, Helpers.hexStringToBytes(instance.open.address));
+        String parserCommand = instance.jc.getParsedCommand();
+        if (null != parserCommand) {
+            if (parserCommand.equals("open")) {
+                if (instance.open.address.equals("Random generated address")) {
+                    instance.openAccount(instance.flag.storage, Helpers.randomBytes(Address.LENGTH));
+                } else {
+                    instance.openAccount(instance.flag.storage, Helpers.hexStringToBytes(instance.open.address));
+                }
+            }
+
+            if (parserCommand.equals("deploy")) {
+                instance.deploy(instance.flag.storage, instance.deploy.contract, Helpers.hexStringToBytes(instance.deploy.sender));
+            }
+
+            if (parserCommand.equals("call")) {
+                instance.call(instance.flag.storage, Helpers.hexStringToBytes(instance.call.contract),
+                        Helpers.hexStringToBytes(instance.call.sender), instance.call.methodName,
+                        instance.call.arguments.toArray(new String[0]));
             }
         }
-
-        if (instance.jc.getParsedCommand().equals("deploy")){
-            instance.deploy(instance.flag.storage, instance.deploy.contract, Helpers.hexStringToBytes(instance.deploy.sender));
-        }
-
-        if (instance.jc.getParsedCommand().equals("call")){
-            instance.call(instance.flag.storage, Helpers.hexStringToBytes(instance.call.contract),
-                    Helpers.hexStringToBytes(instance.call.sender), instance.call.methodName,
-                    instance.call.arguments.toArray(new String[0]));
-        }
-
     }
 }
