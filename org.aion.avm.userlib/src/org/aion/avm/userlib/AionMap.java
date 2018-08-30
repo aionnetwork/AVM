@@ -7,6 +7,7 @@ import java.util.Set;
 
 /**
  * The first rough cut of the Map-like abstraction we are providing to our user-space apps.
+ * Note:  This implementation depends on keys having a sensible hashCode() implementation.
  * If we proceed with this direction, we will need to improve this implementation/interface significantly, as it only exists
  * to cover very basic uses, at the moment.
  * 
@@ -21,18 +22,22 @@ import java.util.Set;
 public class AionMap<K, V> implements Map<K, V> {
     private static final int DEFAULT_CAPACITY = 1;
 
+    // To avoid faulting in all the keys in storage, we cache their hashes to see if it is even worth checking.
+    private int[] hashes;
     private Object[] keys;
     private Object[] values;
 
     private int size;
 
     public AionMap() {
+        this.hashes = new int[DEFAULT_CAPACITY];
         this.keys = new Object[DEFAULT_CAPACITY];
         this.values = new Object[DEFAULT_CAPACITY];
         this.size = 0;
     }
 
     public V put(K key, V value) {
+        int keyHash = key.hashCode();
         boolean newEntry = false;
         // This implementation is very simple so we just walk the list, seeing if this is already here.
         int insertIndex = this.keys.length;
@@ -44,7 +49,8 @@ public class AionMap<K, V> implements Map<K, V> {
                 newEntry = true;
                 break;
             } else {
-                if (key.equals(elt)) {
+                // Check the hash cache, first (equals() will fault in the object).
+                if ((keyHash == this.hashes[i]) && key.equals(elt)) {
                     // Over-write this.
                     insertIndex = i;
                     break;
@@ -58,14 +64,18 @@ public class AionMap<K, V> implements Map<K, V> {
             if (insertIndex >= this.keys.length) {
                 newEntry = true;
                 // Grow.
+                int[] newHashes = new int[this.hashes.length * 2];
                 Object[] newKeys = new Object[this.keys.length * 2];
                 Object[] newValues = new Object[this.values.length * 2];
+                System.arraycopy(this.hashes, 0, newHashes, 0, this.hashes.length);
                 System.arraycopy(this.keys, 0, newKeys, 0, this.keys.length);
                 System.arraycopy(this.values, 0, newValues, 0, this.values.length);
+                this.hashes = newHashes;
                 this.keys = newKeys;
                 this.values = newValues;
             }
             // Now, insert.
+            this.hashes[insertIndex] = keyHash;
             this.keys[insertIndex] = key;
             this.values[insertIndex] = value;
 
@@ -77,9 +87,11 @@ public class AionMap<K, V> implements Map<K, V> {
 
     @SuppressWarnings("unchecked")
     public V get(Object key) {
+        int keyHash = key.hashCode();
         V found = null;
         for (int i = 0; (null == found) && (i < this.keys.length) && (null != this.keys[i]); ++i) {
-            if (key.equals(this.keys[i])) {
+            // Check the hash cache, first (equals() will fault in the object).
+            if ((keyHash == this.hashes[i]) && key.equals(this.keys[i])) {
                 found = (V) this.values[i];
             }
         }
@@ -92,9 +104,11 @@ public class AionMap<K, V> implements Map<K, V> {
 
     @SuppressWarnings("unchecked")
     public V remove(Object toRemove) {
+        int keyHash = toRemove.hashCode();
         int foundIndex = -1;
         for (int i = 0; (-1 == foundIndex) && (i < this.keys.length) && (null != this.keys[i]); ++i) {
-            if (toRemove.equals(this.keys[i])) {
+            // Check the hash cache, first (equals() will fault in the object).
+            if ((keyHash == this.hashes[i]) && toRemove.equals(this.keys[i])) {
                 foundIndex = i;
             }
         }
@@ -105,6 +119,8 @@ public class AionMap<K, V> implements Map<K, V> {
             
             // We have the size so we can just shift these with arraycopy (and over-write the last entry).
             int newSize = this.size - 1;
+            System.arraycopy(this.hashes, 1, this.hashes, 0, newSize);
+            this.hashes[newSize] = 0;
             System.arraycopy(this.keys, 1, this.keys, 0, newSize);
             this.keys[newSize] = null;
             System.arraycopy(this.values, 1, this.values, 0, newSize);
@@ -120,6 +136,7 @@ public class AionMap<K, V> implements Map<K, V> {
     }
 
     public void clear() {
+        this.hashes = new int[DEFAULT_CAPACITY];
         this.keys = new Object[DEFAULT_CAPACITY];
         this.values = new Object[DEFAULT_CAPACITY];
         this.size = 0;
@@ -141,6 +158,7 @@ public class AionMap<K, V> implements Map<K, V> {
     @Override
     public boolean containsValue(Object value) {
         for (int i = 0; i < this.size; i++){
+            // (we can't use the hash since we only apply that to the key - we don't require values have a sensible hashCode()).
             if (this.values[i].equals(value)){
                 return true;
             }
