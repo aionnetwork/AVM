@@ -14,7 +14,7 @@ public class Arrays extends Object {
 
     private Arrays() {}
 
-    public static int avn_hashCode(ByteArray a) {
+    public static int avm_hashCode(ByteArray a) {
         if (a == null) {
             return 0;
         } else {
