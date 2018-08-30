@@ -31,6 +31,7 @@ public class BasicAppTest {
         this.avm = new SimpleAvm(10000L
                 , BasicAppTestTarget.class
                 , AionMap.class
+                , AionMap.AionMapEntry.class
                 , AionSet.class
                 , AionSet.AionSetIterator.class
                 , AionList.class

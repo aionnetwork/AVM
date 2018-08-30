@@ -1,5 +1,9 @@
 package org.aion.avm.userlib;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -52,5 +56,67 @@ public class AionMapTest {
             Assert.assertEquals("int_ 9", map.remove(j));
         }
         Assert.assertEquals(0, map.size());
+    }
+
+    /**
+     * Adds 10 elements, then walks the key set.
+     */
+    @Test
+    public void checkKeySet() {
+        final int size = 10;
+        boolean[] markMap = new boolean[size];
+        AionMap<Integer, String> map = new AionMap<>();
+        for (int i = 0; i < size; ++i) {
+            map.put(i, "int_ " + i);
+        }
+        Assert.assertEquals(size, map.size());
+        int found = 0;
+        for (int key : map.keySet()) {
+            Assert.assertFalse(markMap[key]);
+            markMap[key] = true;
+            found += 1;
+        }
+        Assert.assertEquals(size, found);
+    }
+
+    /**
+     * Adds 10 elements, then walks the values collection.
+     */
+    @Test
+    public void checkValues() {
+        final int size = 10;
+        Set<String> foundSet = new HashSet<>();
+        AionMap<Integer, String> map = new AionMap<>();
+        for (int i = 0; i < size; ++i) {
+            map.put(i, "int_ " + i);
+        }
+        Assert.assertEquals(size, map.size());
+        for (String value : map.values()) {
+            Assert.assertFalse(foundSet.contains(value));
+            foundSet.add(value);
+        }
+        Assert.assertEquals(size, foundSet.size());
+    }
+
+    /**
+     * Adds 10 elements, then walks the entry set.
+     */
+    @Test
+    public void checkEntrySet() {
+        final int size = 10;
+        boolean[] markMap = new boolean[size];
+        AionMap<Integer, String> map = new AionMap<>();
+        for (int i = 0; i < size; ++i) {
+            map.put(i, "int_ " + i);
+        }
+        Assert.assertEquals(size, map.size());
+        int found = 0;
+        for (Map.Entry<Integer, String> entry : map.entrySet()) {
+            int key = entry.getKey();
+            Assert.assertFalse(markMap[key]);
+            markMap[key] = true;
+            found += 1;
+        }
+        Assert.assertEquals(size, found);
     }
 }

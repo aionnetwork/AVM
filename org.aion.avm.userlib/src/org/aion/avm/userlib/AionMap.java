@@ -1,10 +1,9 @@
 package org.aion.avm.userlib;
 
-
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 
 /**
  * The first rough cut of the Map-like abstraction we are providing to our user-space apps.
@@ -165,6 +164,8 @@ public class AionMap<K, V> implements Map<K, V> {
 
     @Override
     public Set<K> keySet() {
+        // WARNING:  This returns a copy of the key set, meaning that modifications to that set won't reflect in the underlying map
+        // as the interface claims it should.
         Set<K> ret = new AionSet<>();
         for (int i = 0; i < size; i++){
             ret.add((K) this.keys[i]);
@@ -174,7 +175,13 @@ public class AionMap<K, V> implements Map<K, V> {
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        return null;
+        // WARNING:  This returns a copy of the key set, meaning that modifications to that set won't reflect in the underlying map
+        // as the interface claims it should.
+        Set<Entry<K, V>> ret = new AionSet<>();
+        for (int i = 0; i < size; i++){
+            ret.add(new AionMapEntry<K, V>((K) this.keys[i], (V) this.values[i]));
+        }
+        return ret;
     }
 
     @Override
@@ -184,5 +191,27 @@ public class AionMap<K, V> implements Map<K, V> {
             ret.add((V) this.values[i]);
         }
         return ret;
+    }
+
+
+    public static class AionMapEntry<K, V> implements Map.Entry<K, V> {
+        private final K key;
+        private final V value;
+        public AionMapEntry(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+        @Override
+        public K getKey() {
+            return this.key;
+        }
+        @Override
+        public V getValue() {
+            return this.value;
+        }
+        @Override
+        public V setValue(V value) {
+            throw new UnsupportedOperationException();
+        }
     }
 }
