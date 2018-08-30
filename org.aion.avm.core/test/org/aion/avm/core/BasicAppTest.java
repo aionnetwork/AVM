@@ -28,7 +28,13 @@ public class BasicAppTest {
 
     @Before
     public void setup() throws Exception {
-        this.avm = new SimpleAvm(10000L, BasicAppTestTarget.class, AionMap.class, AionSet.class, AionList.class);
+        this.avm = new SimpleAvm(10000L
+                , BasicAppTestTarget.class
+                , AionMap.class
+                , AionSet.class
+                , AionList.class
+                , AionList.AionListIterator.class
+        );
         AvmClassLoader loader = avm.getClassLoader();
         
         this.clazz = loader.loadUserClassByOriginalName(BasicAppTestTarget.class.getName());

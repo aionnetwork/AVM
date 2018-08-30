@@ -1,5 +1,8 @@
 package org.aion.avm.userlib;
 
+import java.util.Iterator;
+import java.util.ListIterator;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -53,5 +56,100 @@ public class AionListTest {
             boolean found = list.contains("int_ " + i);
             Assert.assertEquals(expected, found);
         }
+    }
+
+    /**
+     * Adds 10 elements, then iterates them using iterator().
+     */
+    @Test
+    public void checkIterator() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 10; ++i) {
+            list.add("int_" + i);
+        }
+        Assert.assertEquals(10, list.size());
+        Iterator<String> iterator = list.iterator();
+        int counted = 0;
+        while (iterator.hasNext()) {
+            String elt = iterator.next();
+            String expected = "int_" + counted;
+            Assert.assertEquals(expected, elt);
+            counted += 1;
+        }
+        Assert.assertEquals(10, counted);
+    }
+
+    /**
+     * Adds 10 elements, then iterates them using listIterator().
+     */
+    @Test
+    public void checkListIterator() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 10; ++i) {
+            list.add("int_" + i);
+        }
+        Assert.assertEquals(10, list.size());
+        ListIterator<String> iterator = list.listIterator();
+        int counted = 0;
+        while (iterator.hasNext()) {
+            String elt = iterator.next();
+            String expected = "int_" + counted;
+            Assert.assertEquals(expected, elt);
+            counted += 1;
+        }
+        Assert.assertEquals(10, counted);
+    }
+
+    /**
+     * Adds 10 elements, then iterates them backward using listIterator(int).
+     */
+    @Test
+    public void checkBackwardListIterator() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 10; ++i) {
+            list.add("int_" + i);
+        }
+        Assert.assertEquals(10, list.size());
+        ListIterator<String> iterator = list.listIterator(10);
+        int index = 9;
+        while (iterator.hasPrevious()) {
+            String elt = iterator.previous();
+            String expected = "int_" + index;
+            Assert.assertEquals(expected, elt);
+            index -= 1;
+        }
+        Assert.assertEquals(-1, index);
+    }
+
+    /**
+     * Adds 10 elements, then iterates them backward using listIterator(int).
+     */
+    @Test (expected = IndexOutOfBoundsException.class)
+    public void checkListIteratorOutOfBounds() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 10; ++i) {
+            list.add("int_" + i);
+        }
+        Assert.assertEquals(10, list.size());
+        list.listIterator(11);
+    }
+
+    /**
+     * Adds 10 elements, then iterates them using the for loop shorthand.
+     */
+    @Test
+    public void checkListLoopShorthand() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 10; ++i) {
+            list.add("int_" + i);
+        }
+        Assert.assertEquals(10, list.size());
+        int counted = 0;
+        for (String elt : list) {
+            String expected = "int_" + counted;
+            Assert.assertEquals(expected, elt);
+            counted += 1;
+        }
+        Assert.assertEquals(10, counted);
     }
 }
