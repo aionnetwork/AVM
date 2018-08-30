@@ -43,7 +43,7 @@ public class StringConstantVisitorTest {
         
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(classAccessRules))
+                        .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(classAccessRules)))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()

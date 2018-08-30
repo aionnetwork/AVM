@@ -2,10 +2,6 @@ package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
-import org.aion.avm.core.rejection.RejectedClassException;
-import org.aion.avm.core.util.DescriptorParser;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
@@ -27,27 +23,20 @@ import org.objectweb.asm.Type;
  * NOTE: String & class constant wrapping is in separate class visitor
  */
 public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisitor {
-    private final PreRenameClassAccessRules preRenameClassAccessRules;
+    private final NamespaceMapper mapper;
 
-    private final String shadowPackageSlash;
-
-    public UserClassMappingVisitor(PreRenameClassAccessRules preRenameClassAccessRules, String shadowPackageSlash) {
+    public UserClassMappingVisitor(NamespaceMapper mapper) {
         super(Opcodes.ASM6);
         
-        this.preRenameClassAccessRules = preRenameClassAccessRules;
-        this.shadowPackageSlash = shadowPackageSlash;
-    }
-
-    public UserClassMappingVisitor(PreRenameClassAccessRules preRenameClassAccessRules) {
-        this(preRenameClassAccessRules, PackageConstants.kShadowSlashPrefix);
+        this.mapper = mapper;
     }
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         // We may need to re-map the name, superName, and interfaces.
-        String newName = mapType(name);
-        String newSuperName = mapType(superName);
-        String[] newInterfaces = mapTypeArray(interfaces);
+        String newName = this.mapper.mapType(name);
+        String newSuperName = this.mapper.mapType(superName);
+        String[] newInterfaces = this.mapper.mapTypeArray(interfaces);
         
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
         super.visit(version, access, newName, null, newSuperName, newInterfaces);
@@ -56,8 +45,8 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
         String newName = NamespaceMapper.mapMethodName(name);
-        String newDescriptor = mapDescriptor(descriptor);
-        String[] newExceptions = mapTypeArray(exceptions);
+        String newDescriptor = this.mapper.mapDescriptor(descriptor);
+        String[] newExceptions = this.mapper.mapTypeArray(exceptions);
         
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
         MethodVisitor mv = super.visitMethod(access, newName, newDescriptor, null, newExceptions);
@@ -65,38 +54,38 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
         return new MethodVisitor(Opcodes.ASM6, mv) {
             @Override
             public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-                String newOwner = mapType(owner);
+                String newOwner = UserClassMappingVisitor.this.mapper.mapType(owner);
                 String newName = NamespaceMapper.mapMethodName(name);
-                String newDescriptor = mapDescriptor(descriptor);
+                String newDescriptor = UserClassMappingVisitor.this.mapper.mapDescriptor(descriptor);
                 super.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
             }
             @Override
             public void visitTypeInsn(final int opcode, final String type) {
-                super.visitTypeInsn(opcode, mapType(type));
+                super.visitTypeInsn(opcode, UserClassMappingVisitor.this.mapper.mapType(type));
             }
             @Override
             public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
-                String newOwner = mapType(owner);
+                String newOwner = UserClassMappingVisitor.this.mapper.mapType(owner);
                 String newName = NamespaceMapper.mapFieldName(name);
-                String newDescriptor = mapDescriptor(descriptor);
+                String newDescriptor = UserClassMappingVisitor.this.mapper.mapDescriptor(descriptor);
                 super.visitFieldInsn(opcode, newOwner, newName, newDescriptor);
             }
             @Override
             public void visitInvokeDynamicInsn(String methodName, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
                 String newName = NamespaceMapper.mapMethodName(methodName);
-                String newDescriptor = mapDescriptor(descriptor);
+                String newDescriptor = UserClassMappingVisitor.this.mapper.mapDescriptor(descriptor);
 
                 // NOTE: method descriptor can't be replaced, based on Rom's comments
-                Handle newBootstrapMethodHandle = mapHandle(bootstrapMethodHandle, false);
+                Handle newBootstrapMethodHandle = UserClassMappingVisitor.this.mapper.mapHandle(bootstrapMethodHandle, false);
                 
                 Object newArgs[] = new Object[bootstrapMethodArguments.length];
                 for (int i = 0; i < bootstrapMethodArguments.length; ++i) {
                     Object arg = bootstrapMethodArguments[i];
                     Object newArg = null;
                     if (arg instanceof Type) {
-                        newArg = mapMethodType((Type) arg);
+                        newArg = UserClassMappingVisitor.this.mapper.mapMethodType((Type) arg);
                     } else if (arg instanceof Handle) {
-                        newArg = mapHandle((Handle) arg, true);
+                        newArg = UserClassMappingVisitor.this.mapper.mapHandle((Handle) arg, true);
                     } else {
                         newArg = arg;
                     }
@@ -107,13 +96,13 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
             }
             @Override
             public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
-                String newDescriptor = mapDescriptor(descriptor);
+                String newDescriptor = UserClassMappingVisitor.this.mapper.mapDescriptor(descriptor);
                 super.visitMultiANewArrayInsn(newDescriptor, numDimensions);
             }
             @Override
             public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
                 String newType = (null != type)
-                        ? mapType(type)
+                        ? UserClassMappingVisitor.this.mapper.mapType(type)
                         : null;
                 super.visitTryCatchBlock(start, end, handler, newType);
             }
@@ -123,7 +112,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
                 Object[] newLocals = new Object[local.length];
                 for (int i = 0; i < local.length; ++i) {
                     if (local[i] instanceof String) {
-                        newLocals[i] = mapType((String)local[i]);
+                        newLocals[i] = UserClassMappingVisitor.this.mapper.mapType((String)local[i]);
                     } else {
                         newLocals[i] = local[i];
                     }
@@ -131,7 +120,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
                 Object[] newStack = new Object[stack.length];
                 for (int i = 0; i < stack.length; ++i) {
                     if (stack[i] instanceof String) {
-                        newStack[i] = mapType((String)stack[i]);
+                        newStack[i] = UserClassMappingVisitor.this.mapper.mapType((String)stack[i]);
                     } else {
                         newStack[i] = stack[i];
                     }
@@ -144,9 +133,9 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
                 Object valueToWrite = value;
                 if (value instanceof Type) {
                     if(((Type) value).getSort() == Type.OBJECT){
-                        valueToWrite = Type.getType(mapDescriptor(((Type) value).getDescriptor()));
+                        valueToWrite = Type.getType(UserClassMappingVisitor.this.mapper.mapDescriptor(((Type) value).getDescriptor()));
                     }else if (((Type) value).getSort() == Type.ARRAY){
-                        valueToWrite = Type.getType("L" + ArrayWrappingClassGenerator.getClassWrapper(mapDescriptor((((Type) value).getDescriptor()))) + ";");
+                        valueToWrite = Type.getType("L" + ArrayWrappingClassGenerator.getClassWrapper(UserClassMappingVisitor.this.mapper.mapDescriptor((((Type) value).getDescriptor()))) + ";");
                     }
                 }
                 super.visitLdcInsn(valueToWrite);
@@ -157,7 +146,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
         String newName = NamespaceMapper.mapFieldName(name);
-        String newDescriptor = mapDescriptor(descriptor);
+        String newDescriptor = this.mapper.mapDescriptor(descriptor);
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
         return super.visitField(access, newName, newDescriptor, null, value);
@@ -165,180 +154,21 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
 
     @Override
     public void visitOuterClass(String owner, String name, String descriptor) {
-        String newOwner = mapType(owner);
+        String newOwner = this.mapper.mapType(owner);
         String newName = NamespaceMapper.mapMethodName(name);
-        String newDescriptor = descriptor == null ? null: mapDescriptor(descriptor);
+        String newDescriptor = descriptor == null ? null: this.mapper.mapDescriptor(descriptor);
         super.visitOuterClass(newOwner, newName, newDescriptor);
     }
 
     @Override
     public void visitInnerClass(String name, String outerName, String innerName, int access) {
-        String newName = mapType(name);
+        String newName = this.mapper.mapType(name);
         String newOuterName = (null != outerName)
-                ? mapType(outerName)
+                ? this.mapper.mapType(outerName)
                 : null;
         String newInnerName = (null != innerName)
                 ? innerName // mapType(innerName) TODO: disable because it's simple name, more investigation may be required
                 : null;
         super.visitInnerClass(newName, newOuterName, newInnerName, access);
-    }
-
-
-    private Type mapMethodType(Type type) {
-        return Type.getMethodType(mapDescriptor(type.getDescriptor()));
-    }
-
-    private Handle mapHandle(Handle methodHandle, boolean mapMethodDescriptor) {
-        String methodOwner = methodHandle.getOwner();
-        String methodName = methodHandle.getName();
-        String methodDescriptor = methodHandle.getDesc();
-
-        String newMethodOwner = mapType(methodOwner);
-        String newMethodName = NamespaceMapper.mapMethodName(methodName);
-        String newMethodDescriptor = mapMethodDescriptor ? mapDescriptor(methodDescriptor) : methodDescriptor;
-        return new Handle(methodHandle.getTag(), newMethodOwner, newMethodName, newMethodDescriptor, methodHandle.isInterface());
-    }
-
-    /**
-     * If the given descriptor contains class names is in the user-defined set, it is mapped to the new location.  Otherwise, it is returned, unchanged.
-     * 
-     * @param descriptor The incoming descriptor.
-     * @return The possibly re-mapped descriptor.
-     */
-    private String mapDescriptor(String descriptor) {
-        StringBuilder builder = DescriptorParser.parse(descriptor, new DescriptorParser.Callbacks<>() {
-            @Override
-            public StringBuilder readObject(int arrayDimensions, String type, StringBuilder userData) {
-                writeArrayDimensions(userData, arrayDimensions);
-                String newType = mapType(type);
-                userData.append(DescriptorParser.OBJECT_START);
-                userData.append(newType);
-                userData.append(DescriptorParser.OBJECT_END);
-                return userData;
-            }
-            @Override
-            public StringBuilder readBoolean(int arrayDimensions, StringBuilder userData) {
-                writeArrayDimensions(userData, arrayDimensions);
-                userData.append(DescriptorParser.BOOLEAN);
-                return userData;
-            }
-            @Override
-            public StringBuilder readShort(int arrayDimensions, StringBuilder userData) {
-                writeArrayDimensions(userData, arrayDimensions);
-                userData.append(DescriptorParser.SHORT);
-                return userData;
-            }
-            @Override
-            public StringBuilder readLong(int arrayDimensions, StringBuilder userData) {
-                writeArrayDimensions(userData, arrayDimensions);
-                userData.append(DescriptorParser.LONG);
-                return userData;
-            }
-            @Override
-            public StringBuilder readInteger(int arrayDimensions, StringBuilder userData) {
-                writeArrayDimensions(userData, arrayDimensions);
-                userData.append(DescriptorParser.INTEGER);
-                return userData;
-            }
-            @Override
-            public StringBuilder readFloat(int arrayDimensions, StringBuilder userData) {
-                writeArrayDimensions(userData, arrayDimensions);
-                userData.append(DescriptorParser.FLOAT);
-                return userData;
-            }
-            @Override
-            public StringBuilder readDouble(int arrayDimensions, StringBuilder userData) {
-                writeArrayDimensions(userData, arrayDimensions);
-                userData.append(DescriptorParser.DOUBLE);
-                return userData;
-            }
-            @Override
-            public StringBuilder readChar(int arrayDimensions, StringBuilder userData) {
-                writeArrayDimensions(userData, arrayDimensions);
-                userData.append(DescriptorParser.CHAR);
-                return userData;
-            }
-            @Override
-            public StringBuilder readByte(int arrayDimensions, StringBuilder userData) {
-                writeArrayDimensions(userData, arrayDimensions);
-                userData.append(DescriptorParser.BYTE);
-                return userData;
-            }
-            @Override
-            public StringBuilder argumentStart(StringBuilder userData) {
-                userData.append(DescriptorParser.ARGS_START);
-                return userData;
-            }
-            @Override
-            public StringBuilder argumentEnd(StringBuilder userData) {
-                userData.append(DescriptorParser.ARGS_END);
-                return userData;
-            }
-            @Override
-            public StringBuilder readVoid(StringBuilder userData) {
-                userData.append(DescriptorParser.VOID);
-                return userData;
-            }
-            private void writeArrayDimensions(StringBuilder builder, int dimensions) {
-                for (int i = 0; i < dimensions; ++i) {
-                    builder.append(DescriptorParser.ARRAY);
-                }
-            }
-        }, new StringBuilder());
-        
-        return builder.toString();
-    }
-
-    private String[] mapTypeArray(String[] types) {
-        String[] newNames = null;
-        if (null != types) {
-            newNames = new String[types.length];
-            for (int i = 0; i < types.length; ++i) {
-                newNames[i] = mapType(types[i]);
-            }
-        }
-        return newNames;
-    }
-
-    /**
-     * If the given type name is in the user-defined set, it is mapped to the new location.  Otherwise, it is returned, unchanged.
-     * NOTE:  This method operates on /-style names.
-     * 
-     * @param type The incoming type name.
-     * @return The possibly re-mapped type.
-     */
-    private String mapType(String type) {
-        RuntimeAssertionError.assertTrue(-1 == type.indexOf("."));
-        
-        String newType = null;
-
-        if (type.startsWith("[")){
-            newType = mapDescriptor(type);
-        }else {
-            if (this.preRenameClassAccessRules.isUserDefinedClassOrInterface(type)) {
-                return PackageConstants.kUserSlashPrefix + type;
-
-            } else if (this.preRenameClassAccessRules.isJclClass(type)) {
-                return shadowPackageSlash + type;
-
-            } else if (this.preRenameClassAccessRules.isApiClass(type)) {
-                return type;
-
-            } else {
-                RejectedClassException.nonWhiteListedClass(type);
-            }
-        }
-
-        return newType;
-    }
-
-    // FOR TEST PURPOSE ONLY
-
-    public String testMapDescriptor(String descriptor) {
-        return mapDescriptor(descriptor);
-    }
-
-    public String testMapType(String type) {
-        return mapType(type);
     }
 }

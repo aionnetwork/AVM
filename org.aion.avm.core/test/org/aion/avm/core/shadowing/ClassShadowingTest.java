@@ -57,7 +57,7 @@ public class ClassShadowingTest {
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(createTestingAccessRules(className)))
+                        .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className)))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
                         .addNextVisitor(new ClassShadowing(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
@@ -101,7 +101,7 @@ public class ClassShadowingTest {
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, 0) /* DO NOT SKIP ANYTHING */
-                        .addNextVisitor(new UserClassMappingVisitor(createTestingAccessRules(className)))
+                        .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className)))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
                         .addNextVisitor(new ClassShadowing(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
@@ -140,7 +140,7 @@ public class ClassShadowingTest {
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(createTestingAccessRules(className, innerClassName)))
+                        .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className, innerClassName)))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
                         .addNextVisitor(new ClassShadowing(runtimeClassName))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
@@ -234,10 +234,10 @@ public class ClassShadowingTest {
         }
     }
 
-    private PreRenameClassAccessRules createTestingAccessRules(String... userDotNameClasses) {
+    private NamespaceMapper createTestingMapper(String... userDotNameClasses) {
         // WARNING:  We are providing the class set as both the "classes only" and "classes plus interfaces" sets.
         // This works for this test but, in general, is not correct.
         Set<String> userClassDotNameSet = Set.of(userDotNameClasses);
-        return new PreRenameClassAccessRules(userClassDotNameSet, userClassDotNameSet);
+        return new NamespaceMapper(new PreRenameClassAccessRules(userClassDotNameSet, userClassDotNameSet));
     }
 }

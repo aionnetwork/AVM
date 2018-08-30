@@ -9,6 +9,7 @@ import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.miscvisitors.ClinitStrippingVisitor;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.InterfaceFieldMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.StrictFPVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
@@ -127,6 +128,7 @@ public class DAppCreator {
         Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
         Set<String> preRenameUserClassAndInterfaceSet = classes.keySet();
         PreRenameClassAccessRules preRenameClassAccessRules = new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserClassAndInterfaceSet);
+        NamespaceMapper namespaceMapper = new NamespaceMapper(preRenameClassAccessRules);
         ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy);
         Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy);
 
@@ -142,7 +144,7 @@ public class DAppCreator {
             int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), parsingOptions)
                     .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules))
-                    .addNextVisitor(new UserClassMappingVisitor(preRenameClassAccessRules))
+                    .addNextVisitor(new UserClassMappingVisitor(namespaceMapper))
                     .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))

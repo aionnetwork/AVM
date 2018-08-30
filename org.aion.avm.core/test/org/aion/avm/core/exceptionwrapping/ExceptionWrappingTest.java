@@ -327,7 +327,7 @@ public class ExceptionWrappingTest {
             PreRenameClassAccessRules preRenameClassAccessRules = new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserDefinedClasses);
             ParentPointers parentPointers = new ParentPointers(ClassWhiteList.extractDeclaredClasses(this.classHierarchy), this.classHierarchy);
             final ClassToolchain toolchain = new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                    .addNextVisitor(new UserClassMappingVisitor(preRenameClassAccessRules))
+                    .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(preRenameClassAccessRules)))
                     .addNextVisitor(new ConstantVisitor(TestHelpers.CLASS_NAME))
                     .addNextVisitor(new ExceptionWrapping(TestHelpers.CLASS_NAME, parentPointers, generatedClassesSink))
                     .addNextVisitor(new ClassShadowing(TestHelpers.CLASS_NAME))
