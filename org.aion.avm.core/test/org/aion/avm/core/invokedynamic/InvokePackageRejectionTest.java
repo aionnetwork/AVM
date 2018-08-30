@@ -1,10 +1,10 @@
 package org.aion.avm.core.invokedynamic;
 
-import org.aion.avm.core.*;
+import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.rejection.RejectedClassException;
-import org.aion.avm.core.types.ClassInfo;
-import org.aion.avm.core.types.Forest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -12,7 +12,7 @@ import org.objectweb.asm.ClassWriter;
 
 import java.lang.invoke.*;
 import java.lang.reflect.Member;
-import java.util.Collections;
+import java.util.Set;
 
 import static org.aion.avm.core.invokedynamic.InvokedynamicUtils.getSlashClassNameFrom;
 import static org.aion.avm.core.util.Helpers.loadRequiredResourceAsBytes;
@@ -61,16 +61,14 @@ public class InvokePackageRejectionTest {
     }
 
     private void transformBytecode(byte[] originalBytecode, String classDotName) {
-        final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(classDotName, "java.lang.Object", false, originalBytecode)
-                .addClass("org.aion.avm.core.invokedynamic.InvokePackageRejectionTest", "java.lang.Object", false, originalBytecode)
-                .addClass("java.lang.invoke.StringConcatException", "java.lang.Object", false, originalBytecode)
-                .asMutableForest();
+        final var userDefinedClassDotNames = Set.of("java.lang.Object"
+                , "org.aion.avm.core.invokedynamic.InvokePackageRejectionTest"
+                , "java.lang.invoke.StringConcatException");
+        final var accessRules = new PreRenameClassAccessRules(userDefinedClassDotNames, userDefinedClassDotNames);
+        final var namespaceMapper = new NamespaceMapper(accessRules);
         new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(ClassWhiteList.extractDeclaredClasses(classHierarchy)))
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(classDotName), classHierarchy),
-                        new HierarchyTreeBuilder()))
+                .addNextVisitor(new UserClassMappingVisitor(namespaceMapper))
+                .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();
     }

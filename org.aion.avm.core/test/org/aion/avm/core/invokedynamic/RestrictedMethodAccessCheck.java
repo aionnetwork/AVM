@@ -1,6 +1,8 @@
 package org.aion.avm.core.invokedynamic;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
@@ -11,6 +13,7 @@ import org.objectweb.asm.ClassWriter;
 
 import java.util.Set;
 
+import static org.aion.avm.core.invokedynamic.InvokedynamicUtils.buildSingletonAccessRules;
 import static org.aion.avm.core.invokedynamic.InvokedynamicUtils.getSlashClassNameFrom;
 import static org.aion.avm.core.util.Helpers.loadRequiredResourceAsBytes;
 
@@ -45,9 +48,11 @@ public class RestrictedMethodAccessCheck {
         final var userDefinedClassDotNames = Set.of("java.lang.Object"
                 , "org.aion.avm.core.invokedynamic.Lambda"
                 , "org.aion.avm.core.invokedynamic.LambdaBootsrapMethodCall");
+        final var accessRules = new PreRenameClassAccessRules(userDefinedClassDotNames, userDefinedClassDotNames);
+        final var namespaceMapper = new NamespaceMapper(accessRules);
         new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new RejectionClassVisitor(userDefinedClassDotNames))
-                .addNextVisitor(new UserClassMappingVisitor(userDefinedClassDotNames))
+                .addNextVisitor(new RejectionClassVisitor(accessRules, namespaceMapper))
+                .addNextVisitor(new UserClassMappingVisitor(namespaceMapper))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();
