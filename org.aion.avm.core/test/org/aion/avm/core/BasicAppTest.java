@@ -32,6 +32,7 @@ public class BasicAppTest {
                 , BasicAppTestTarget.class
                 , AionMap.class
                 , AionSet.class
+                , AionSet.AionSetIterator.class
                 , AionList.class
                 , AionList.AionListIterator.class
         );

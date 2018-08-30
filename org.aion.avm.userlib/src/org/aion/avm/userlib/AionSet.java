@@ -1,9 +1,9 @@
 package org.aion.avm.userlib;
 
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+
 
 /**
  * The first rough cut of the Set-like abstraction we are providing to our user-space apps.
@@ -121,6 +121,7 @@ public class AionSet<E> implements Set<E> {
 
     @Override
     public <T> T[] toArray(T[] a) {
+        // NOTE:  This is explicitly excluded from the shadow version of the Set interface so we don't need to implement it.
         return null;
     }
 
@@ -205,33 +206,35 @@ public class AionSet<E> implements Set<E> {
         return ret;
     }
 
-    // TODO: Enable Iterator later
     @Override
     public Iterator<E> iterator() {
-        //return new AionSetIterator(size());
-        return null;
+        return new AionSetIterator(this.size());
     }
-//
-//    final class AionSetIterator implements Iterator<E>{
-//
-//        int remain;
-//        int curIdx;
-//
-//        AionSetIterator(int size){
-//            this.remain = size;
-//            this.curIdx = 0;
-//        }
-//
-//        @Override
-//        public boolean hasNext() {
-//            return remain > 0;
-//        }
-//
-//        @Override
-//        public E next() {
-//            if (!hasNext()) return null;
-//            while (null == storage[curIdx]) curIdx++;
-//            return (E) storage[curIdx];
-//        }
-//    }
+
+    public final class AionSetIterator implements Iterator<E> {
+        int nextIndex;
+        final int endIndex; // (exclusive)
+        public AionSetIterator(int size){
+            this.nextIndex = 0;
+            this.endIndex = size;
+        }
+        @Override
+        public boolean hasNext() {
+            return (this.nextIndex < this.endIndex);
+        }
+        @Override
+        public E next() {
+            E elt = null;
+            if (this.nextIndex < this.endIndex) {
+                // The storage of the parent array is dense so we can always just grab the next.
+                // If the array was modified underneath us, we may not return all the objects or may return null.
+                elt = (E) AionSet.this.storage[this.nextIndex];
+                this.nextIndex += 1;
+            } else {
+                // TODO:  NoSuchElementException is in java.util, not currently included in shadow.
+                elt = null;
+            }
+            return elt;
+        }
+    }
 }

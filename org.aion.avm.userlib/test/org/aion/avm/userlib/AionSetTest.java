@@ -1,5 +1,7 @@
 package org.aion.avm.userlib;
 
+import java.util.Iterator;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,5 +50,51 @@ public class AionSetTest {
             }
         }
         Assert.assertEquals(20, set.size());
+    }
+
+    /**
+     * Adds 10 elements, then tries to iterate them.
+     */
+    @Test
+    public void checkIterator() {
+        final int count = 10;
+        boolean[] markMap = new boolean[count];
+        AionSet<Integer> set = new AionSet<>();
+        for (int i = 0; i < count; ++i) {
+            set.add(i);
+        }
+        Assert.assertEquals(10, set.size());
+        
+        Iterator<Integer> iterator = set.iterator();
+        int found = 0;
+        while (iterator.hasNext()) {
+            int elt = iterator.next();
+            Assert.assertFalse(markMap[elt]);
+            markMap[elt] = true;
+            found += 1;
+        }
+        Assert.assertEquals(10, found);
+    }
+
+    /**
+     * Adds 10 elements, then tries to iterate them using for loop short-hand.
+     */
+    @Test
+    public void checkIterateForLoop() {
+        final int count = 10;
+        boolean[] markMap = new boolean[count];
+        AionSet<Integer> set = new AionSet<>();
+        for (int i = 0; i < count; ++i) {
+            set.add(i);
+        }
+        Assert.assertEquals(10, set.size());
+        
+        int found = 0;
+        for (int elt : set) {
+            Assert.assertFalse(markMap[elt]);
+            markMap[elt] = true;
+            found += 1;
+        }
+        Assert.assertEquals(10, found);
     }
 }

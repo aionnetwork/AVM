@@ -26,7 +26,7 @@ public class PocExchangeTest {
     }
 
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
-    private long energyLimit = 5_000_000;
+    private long energyLimit = 6_000_000;
 
     private byte[] pepeMinter = Helpers.randomBytes(Address.LENGTH);
     private byte[] memeMinter = Helpers.randomBytes(Address.LENGTH);
