@@ -40,10 +40,17 @@
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
 
-        <zip destfile="${dir.global.workspace}/avm.jar">
-            <zipgroupfileset dir="${dir.global.build.main}" includes="*.jar"/>
+        <jar jarfile="${dir.global.workspace}/avm.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.aion.cli.AvmCLI" />
+            </manifest>
+            <zipgroupfileset dir="${dir.global.build.main}" includes="*.jar" excludes="META-INF/*.SF" />
+            <zipgroupfileset dir="${dir.global.workspace}/lib" includes="*.jar" excludes="META-INF/*.SF" />
             <fileset dir="${dir.global.build.main}" includes="org-aion-avm-rt.jar"/>
-        </zip>
+        </jar>
+
+
+
     </target>
 
     <target name="test">
