@@ -60,10 +60,8 @@ public class AionMap<K, V> implements Map<K, V> {
                 // Grow.
                 Object[] newKeys = new Object[this.keys.length * 2];
                 Object[] newValues = new Object[this.values.length * 2];
-                for (int i = 0; i < this.keys.length; ++i) {
-                    newKeys[i] = this.keys[i];
-                    newValues[i] = this.values[i];
-                }
+                System.arraycopy(this.keys, 0, newKeys, 0, this.keys.length);
+                System.arraycopy(this.values, 0, newValues, 0, this.values.length);
                 this.keys = newKeys;
                 this.values = newValues;
             }
@@ -104,18 +102,15 @@ public class AionMap<K, V> implements Map<K, V> {
         V removed = null;
         if (-1 != foundIndex) {
             removed = (V) this.values[foundIndex];
-            for (int i = foundIndex; i < this.keys.length; ++i) {
-                Object toReadKey = ((i + 1) < this.keys.length)
-                        ? this.keys[i+1]
-                        : null;
-                this.keys[i] = toReadKey;
-                
-                Object toReadValue = ((i + 1) < this.values.length)
-                        ? this.values[i+1]
-                        : null;
-                this.values[i] = toReadValue;
-            }
-            size = size - 1;
+            
+            // We have the size so we can just shift these with arraycopy (and over-write the last entry).
+            int newSize = this.size - 1;
+            System.arraycopy(this.keys, 1, this.keys, 0, newSize);
+            this.keys[newSize] = null;
+            System.arraycopy(this.values, 1, this.values, 0, newSize);
+            this.values[newSize] = null;
+            
+            this.size = newSize;
         }
         return removed;
     }

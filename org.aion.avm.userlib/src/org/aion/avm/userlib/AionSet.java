@@ -50,9 +50,7 @@ public class AionSet<E> implements Set<E> {
             if (insertIndex >= this.storage.length) {
                 // Grow.
                 Object[] newStorage = new Object[this.storage.length * 2];
-                for (int i = 0; i < this.storage.length; ++i) {
-                    newStorage[i] = this.storage[i];
-                }
+                System.arraycopy(this.storage, 0, newStorage, 0, this.storage.length);
                 this.storage = newStorage;
             }
             // Now, insert.
@@ -79,6 +77,8 @@ public class AionSet<E> implements Set<E> {
         }
         
         if (-1 != foundIndex) {
+            // Shift everything to beginning, over-writing the removed element.
+            // (we could arraycopy this if we wanted to keep track of the end index).
             for (int i = foundIndex; i < this.storage.length; ++i) {
                 Object toRead = ((i + 1) < this.storage.length)
                         ? this.storage[i+1]
