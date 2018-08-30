@@ -352,6 +352,22 @@ public class HashCodeTest {
         Assert.assertEquals((anotherSecondHashCode - anotherFirstHashCode), (originalSecondHashCode - originalFirstHashCode));
     }
 
+    /**
+     * Tests that the box types have hashCode()s deterministically based on their underlying values.
+     */
+    @Test
+    public void testBoxTypeHashCodes() throws Exception {
+        // Two instances, with the same underlying value, should always have the same hash => 0 XOR.
+        Assert.assertEquals(0, callIntReturnMethod("diffByteHashes"));
+        Assert.assertEquals(0, callIntReturnMethod("diffCharHashes"));
+        Assert.assertEquals(0, callIntReturnMethod("diffDoubleHashes"));
+        Assert.assertEquals(0, callIntReturnMethod("diffFloatHashes"));
+        Assert.assertEquals(0, callIntReturnMethod("diffIntegerHashes"));
+        Assert.assertEquals(0, callIntReturnMethod("diffLongHashes"));
+        Assert.assertEquals(0, callIntReturnMethod("diffShortHashes"));
+        Assert.assertEquals(0, callIntReturnMethod("diffBooleanHashes"));
+    }
+
 
     private byte[] getTransformedTestClass(String className) {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
@@ -363,5 +379,10 @@ public class HashCodeTest {
         
         // Note that the class is renamed during this transformation.
         return transformedClasses.get(PackageConstants.kUserDotPrefix + className);
+    }
+
+    private int callIntReturnMethod(String preTransformMethodName) throws Exception {
+        Method lengthOfClonedByteArray = this.clazz.getMethod(NamespaceMapper.mapMethodName(preTransformMethodName));
+        return (Integer)lengthOfClonedByteArray.invoke(null);
     }
 }
