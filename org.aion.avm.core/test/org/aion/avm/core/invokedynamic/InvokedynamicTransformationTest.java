@@ -1,5 +1,6 @@
-package org.aion.avm.core;
+package org.aion.avm.core.invokedynamic;
 
+import org.aion.avm.core.*;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -38,7 +39,7 @@ import static org.junit.Assert.*;
  * @author Roman Katerinenko
  */
 public class InvokedynamicTransformationTest {
-    static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
+    private static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
 
     @Before
     public void init() {
@@ -54,7 +55,7 @@ public class InvokedynamicTransformationTest {
     @Test
     public void given_stringConcatLambda_then_bootstrapMethodShouldNeShadowed() throws Exception {
         final var className = ConstantStringsConcatIndy.class.getName();
-        final byte[] origBytecode = loadRequiredResourceAsBytes(getSlashClassNameFrom(className));
+        final byte[] origBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         final var actual = (org.aion.avm.shadow.java.lang.String) callInstanceTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
@@ -81,7 +82,7 @@ public class InvokedynamicTransformationTest {
     @Test
     public void given_parametrizedLambda_then_allUserAccessableObjectsShouldBeShadowed() throws Exception {
         final var className = ParametrizedLambda.class.getName();
-        final byte[] origBytecode = loadRequiredResourceAsBytes(getSlashClassNameFrom(className));
+        final byte[] origBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForParametrizedLambdaTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         final Double actual =
@@ -110,7 +111,7 @@ public class InvokedynamicTransformationTest {
     @Test
     public void given_MethodReference_then_itsTransformedAsUsual() throws Exception {
         final var testClassDotName = MethodReferenceTestResource.class.getName();
-        final var originalBytecode = loadRequiredResourceAsBytes(getSlashClassNameFrom(testClassDotName));
+        final var originalBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(testClassDotName));
         final var transformedBytecode = transformForMethodReference(originalBytecode, testClassDotName);
         Assert.assertFalse(Arrays.equals(originalBytecode, transformedBytecode));
         final org.aion.avm.core.testindy.java.lang.Integer actual =
@@ -138,7 +139,7 @@ public class InvokedynamicTransformationTest {
     @Test
     public void given_MultiLineLambda_then_itsTransformedAsUsualCode() throws Exception {
         final var className = LongLambda.class.getName();
-        final byte[] origBytecode = Helpers.loadRequiredResourceAsBytes(getSlashClassNameFrom(className));
+        final byte[] origBytecode = Helpers.loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForMultiLineLambda(origBytecode, className);
         Assert.assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         final org.aion.avm.shadow.java.lang.Double actual =
@@ -185,10 +186,6 @@ public class InvokedynamicTransformationTest {
         return bytecode;
     }
 
-    static String getSlashClassNameFrom(String dotName) {
-        return dotName.replaceAll("\\.", "/") + ".class";
-    }
-
     private Object callInstanceTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
         String mappedClassName = PackageConstants.kUserDotPrefix + className;
         final AvmSharedClassLoader loader = new AvmSharedClassLoader(Map.of(mappedClassName, bytecode));
@@ -207,15 +204,5 @@ public class InvokedynamicTransformationTest {
         final Method method = klass.getMethod(methodName, IObject.class);
         LambdaMetafactory.avm_metafactoryWasCalled = false;
         return method.invoke(null, new org.aion.avm.shadow.java.lang.Object());
-    }
-
-    public static class TestingHelper {
-        public static <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
-            return Helper.wrapAsClass(input);
-        }
-
-        public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
-            return new org.aion.avm.shadow.java.lang.String(input);
-        }
     }
 }

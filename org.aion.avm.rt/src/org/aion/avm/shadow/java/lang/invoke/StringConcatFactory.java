@@ -13,7 +13,6 @@ import java.util.Arrays;
 /**
  * @author Roman Katerinenko
  */
-//TODO:  Determine if this class should be moved into an internal package (should the user be allowed to invoke it, directly?).
 public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Object {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.

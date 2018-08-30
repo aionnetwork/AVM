@@ -1,5 +1,6 @@
-package org.aion.avm.core;
+package org.aion.avm.core.invokedynamic;
 
+import org.aion.avm.core.*;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.types.ClassInfo;
@@ -13,7 +14,7 @@ import java.lang.invoke.*;
 import java.lang.reflect.Member;
 import java.util.Collections;
 
-import static org.aion.avm.core.InvokedynamicTransformationTest.getSlashClassNameFrom;
+import static org.aion.avm.core.invokedynamic.InvokedynamicUtils.getSlashClassNameFrom;
 import static org.aion.avm.core.util.Helpers.loadRequiredResourceAsBytes;
 
 public class InvokePackageRejectionTest {
@@ -61,7 +62,7 @@ public class InvokePackageRejectionTest {
     private void transformBytecode(byte[] originalBytecode, String classDotName) {
         final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
                 .addClass(classDotName, "java.lang.Object", false, originalBytecode)
-                .addClass("org.aion.avm.core.InvokePackageRejectionTest", "java.lang.Object", false, originalBytecode)
+                .addClass("org.aion.avm.core.invokedynamic.InvokePackageRejectionTest", "java.lang.Object", false, originalBytecode)
                 .addClass("java.lang.invoke.StringConcatException", "java.lang.Object", false, originalBytecode)
                 .asMutableForest();
         new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)

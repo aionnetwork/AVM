@@ -1,4 +1,4 @@
-package org.aion.avm.core;
+package org.aion.avm.core.invokedynamic;
 
 public class MethodReferenceTestResource {
     public static final Integer VALUE = 10;

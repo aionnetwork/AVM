@@ -1,4 +1,4 @@
-package org.aion.avm.core;
+package org.aion.avm.core.invokedynamic;
 
 /**
  * @author Roman Katerinenko
