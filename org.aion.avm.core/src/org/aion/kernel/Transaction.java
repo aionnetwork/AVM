@@ -3,6 +3,7 @@ package org.aion.kernel;
 import org.aion.avm.core.util.Helpers;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class Transaction {
 
@@ -27,6 +28,16 @@ public class Transaction {
     long energyPrice;
 
     public Transaction(Type type, byte[] from, byte[] to, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
+        Objects.requireNonNull(type, "The transaction `type` can't be NULL");
+        Objects.requireNonNull(from, "The transaction `from` can't be NULL");
+        if (type == Type.CREATE) {
+           if (to != null) {
+               throw new IllegalArgumentException("The transaction `to` has to be NULL for CREATE");
+           }
+        } else {
+            Objects.requireNonNull(to, "The transaction `to`  can't be NULL for non-CREATE");
+        }
+
         this.type = type;
         this.from = from;
         this.to = to;

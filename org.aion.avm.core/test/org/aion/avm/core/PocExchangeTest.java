@@ -58,7 +58,7 @@ public class PocExchangeTest {
         }
 
         private byte[] initCoin(byte[] jar, byte[] arguments){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, kernel.getNonce(minter), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, null, kernel.getNonce(minter), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -125,7 +125,7 @@ public class PocExchangeTest {
         }
 
         private byte[] initExchange(byte[] jar, byte[] arguments){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, kernel.getNonce(owner), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, null, kernel.getNonce(owner), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());

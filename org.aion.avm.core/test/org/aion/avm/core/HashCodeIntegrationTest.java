@@ -32,7 +32,7 @@ public class HashCodeIntegrationTest {
         // Deploy.
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction create = new Transaction(Transaction.Type.CREATE, deployer, Helpers.address(2), kernel.getNonce(deployer), 0, txData, energyLimit, energyPrice);
+        Transaction create = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContextImpl(create, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());

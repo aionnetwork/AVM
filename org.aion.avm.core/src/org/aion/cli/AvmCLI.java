@@ -54,7 +54,7 @@ public class AvmCLI implements UserInterface{
         }
 
         byte[] to = Helpers.randomBytes(Address.LENGTH);
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, sender, to, kernel.getNonce(sender), 0,
+        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, sender, null, kernel.getNonce(sender), 0,
                 new CodeAndArguments(jar, null).encodeToBytes(), ENERGY_LIMIT, 1);
 
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);

@@ -174,7 +174,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CREATE,
                 ctx.getAddress(),
-                new byte[32],
+                null,
                 this.kernel.getNonce(ctx.getAddress()),
                 value,
                 data.getUnderlying(),

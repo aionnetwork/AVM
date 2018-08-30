@@ -30,7 +30,7 @@ public class AvmImplDeployAndRunTest {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
         byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return avm.run(context);
     }
@@ -39,7 +39,7 @@ public class AvmImplDeployAndRunTest {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
         byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return avm.run(context);
     }
@@ -57,7 +57,7 @@ public class AvmImplDeployAndRunTest {
         byte[] arguments = ABIEncoder.encodeMethodArguments("", 100);
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, to, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 

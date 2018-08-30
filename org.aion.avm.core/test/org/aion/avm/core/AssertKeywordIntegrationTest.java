@@ -98,7 +98,7 @@ public class AssertKeywordIntegrationTest {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         // Deploy.
-        Transaction create = new Transaction(Transaction.Type.CREATE, KernelInterfaceImpl.PREMINED_ADDRESS, Helpers.address(2), this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS), 0, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction create = new Transaction(Transaction.Type.CREATE, KernelInterfaceImpl.PREMINED_ADDRESS, null, this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS), 0, txData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult createResult = this.avm.run(new TransactionContextImpl(create, BLOCK));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         return TestingHelper.buildAddress(createResult.getReturnData());

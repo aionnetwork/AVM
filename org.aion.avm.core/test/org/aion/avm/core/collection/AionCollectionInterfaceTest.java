@@ -33,7 +33,7 @@ public class AionCollectionInterfaceTest {
     private TransactionResult deploy(KernelInterface kernel, Avm avm, byte[] testJar){
 
         byte[] testWalletArguments = new byte[0];
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, to, kernel.getNonce(from), 0,
+        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0,
                 new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
