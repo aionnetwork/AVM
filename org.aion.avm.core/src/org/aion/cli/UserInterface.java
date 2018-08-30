@@ -18,9 +18,9 @@ public interface UserInterface {
      * @param contract     The address of the contract
      * @param sender       The address of the sender
      * @param method       The name of the method
-     * @param args         The arguments of the method
+     * @param arg          The argument of the method
      */
-    void execute(String storagePath, byte[] contract, byte[] sender, String method, String... args);
+    void call(String storagePath, byte[] contract, byte[] sender, String method, String[] arg);
 
     /**
      * Open new account

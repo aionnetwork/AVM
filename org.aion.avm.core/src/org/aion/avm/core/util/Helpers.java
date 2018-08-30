@@ -34,6 +34,10 @@ public class Helpers {
      * @return
      */
     public static String bytesToHexString(byte[] bytes) {
+        if (null == bytes){
+            return "void";
+        }
+
         int length = bytes.length;
 
         char[] hexChars = new char[length * 2];
