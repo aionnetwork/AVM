@@ -50,6 +50,7 @@ public class NodeEnvironment {
                     .map(Helpers::fulllyQualifiedNameToInternalName)
                     .collect(Collectors.toList()));
             this.jclClassNames.add("java/lang/invoke/MethodHandles");
+            jclClassNames.add("java/lang/invoke/MethodHandle");
             this.jclClassNames.add("java/lang/invoke/MethodType");
             this.jclClassNames.add("java/lang/invoke/CallSite");
             this.jclClassNames.add("java/lang/invoke/MethodHandles$Lookup");

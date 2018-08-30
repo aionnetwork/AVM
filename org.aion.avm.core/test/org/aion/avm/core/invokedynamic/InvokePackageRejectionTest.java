@@ -17,29 +17,30 @@ import java.util.Collections;
 import static org.aion.avm.core.invokedynamic.InvokedynamicUtils.getSlashClassNameFrom;
 import static org.aion.avm.core.util.Helpers.loadRequiredResourceAsBytes;
 
+// NOTE 'invoke' here refers to 'java.lang.invoke' package.
 public class InvokePackageRejectionTest {
     @Test
     public void given_InvokePackageRejectedClass_then_ExceptionShouldBeThrown() {
-        tryTransformClass(WrongMethodTypeExceptionCall.class);
-        tryTransformClass(VarHandleCall.class);
-        tryTransformClass(SwitchPointCall.class);
-        tryTransformClass(SerializedLambdaCall.class);
-        tryTransformClass(MethodHandleProxiesCall.class);
-        tryTransformClass(MethodHandleInfoCall.class);
-        tryTransformClass(LambdaConversionExceptionCall.class);
-        tryTransformClass(VolatileCallSiteCall.class);
-        tryTransformClass(MutableCallSiteCall.class);
-        tryTransformClass(ConstantCallSiteCall.class);
+        makeSureTransformationFailOn(WrongMethodTypeExceptionCall.class);
+        makeSureTransformationFailOn(VarHandleCall.class);
+        makeSureTransformationFailOn(SwitchPointCall.class);
+        makeSureTransformationFailOn(SerializedLambdaCall.class);
+        makeSureTransformationFailOn(MethodHandleProxiesCall.class);
+        makeSureTransformationFailOn(MethodHandleInfoCall.class);
+        makeSureTransformationFailOn(LambdaConversionExceptionCall.class);
+        makeSureTransformationFailOn(VolatileCallSiteCall.class);
+        makeSureTransformationFailOn(MutableCallSiteCall.class);
+        makeSureTransformationFailOn(ConstantCallSiteCall.class);
         // todo it is not allowed for a user to call anything on the Types below. Only reference them
-//        tryTransformClass(MethodHandlesCall.class);
-//        tryTransformClass(CallSiteCall.class);
-//        tryTransformClass(LambdaMetafactoryCall.class);
-//        tryTransformClass(StringConcatFactoryCall.class);
-//        tryTransformClass(StringConcatExceptionCall.class);
-//        tryTransformClass(MethodTypeCall.class);
+//        makeSureTransformationFailOn(MethodHandlesCall.class);
+//        makeSureTransformationFailOn(CallSiteCall.class);
+//        makeSureTransformationFailOn(LambdaMetafactoryCall.class);
+//        makeSureTransformationFailOn(StringConcatFactoryCall.class);
+//        makeSureTransformationFailOn(StringConcatExceptionCall.class);
+//        makeSureTransformationFailOn(MethodTypeCall.class);
     }
 
-    private void tryTransformClass(Class<?> clazz) {
+    private void makeSureTransformationFailOn(Class<?> clazz) {
         final var testClassDotName = clazz.getName();
         final var slashClassName = getSlashClassNameFrom(testClassDotName);
         final var originalBytecode = loadRequiredResourceAsBytes(slashClassName);
