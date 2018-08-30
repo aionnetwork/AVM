@@ -27,10 +27,6 @@ import org.objectweb.asm.Type;
  * NOTE: String & class constant wrapping is in separate class visitor
  */
 public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisitor {
-
-    private static final String FIELD_PREFIX = "avm_";
-    private static final String METHOD_PREFIX = "avm_";
-
     private final PreRenameClassAccessRules preRenameClassAccessRules;
 
     private final String shadowPackageSlash;
@@ -59,7 +55,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-        String newName = mapMethodName(name);
+        String newName = NamespaceMapper.mapMethodName(name);
         String newDescriptor = mapDescriptor(descriptor);
         String[] newExceptions = mapTypeArray(exceptions);
         
@@ -70,7 +66,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
             @Override
             public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
                 String newOwner = mapType(owner);
-                String newName = mapMethodName(name);
+                String newName = NamespaceMapper.mapMethodName(name);
                 String newDescriptor = mapDescriptor(descriptor);
                 super.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
             }
@@ -81,13 +77,13 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
             @Override
             public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
                 String newOwner = mapType(owner);
-                String newName = mapFieldName(name);
+                String newName = NamespaceMapper.mapFieldName(name);
                 String newDescriptor = mapDescriptor(descriptor);
                 super.visitFieldInsn(opcode, newOwner, newName, newDescriptor);
             }
             @Override
             public void visitInvokeDynamicInsn(String methodName, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-                String newName = mapMethodName(methodName);
+                String newName = NamespaceMapper.mapMethodName(methodName);
                 String newDescriptor = mapDescriptor(descriptor);
 
                 // NOTE: method descriptor can't be replaced, based on Rom's comments
@@ -160,7 +156,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
 
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
-        String newName = mapFieldName(name);
+        String newName = NamespaceMapper.mapFieldName(name);
         String newDescriptor = mapDescriptor(descriptor);
 
         // Just pass in a null signature, instead of updating it (JVM spec 4.3.4: "This kind of type information is needed to support reflection and debugging, and by a Java compiler").
@@ -170,7 +166,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
     @Override
     public void visitOuterClass(String owner, String name, String descriptor) {
         String newOwner = mapType(owner);
-        String newName = mapMethodName(name);
+        String newName = NamespaceMapper.mapMethodName(name);
         String newDescriptor = descriptor == null ? null: mapDescriptor(descriptor);
         super.visitOuterClass(newOwner, newName, newDescriptor);
     }
@@ -187,17 +183,6 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
         super.visitInnerClass(newName, newOuterName, newInnerName, access);
     }
 
-    public static String mapFieldName(String name) {
-        return FIELD_PREFIX  + name;
-    }
-
-    public static String mapMethodName(String name) {
-        if ("<init>".equals(name) || "<clinit>".equals(name)) {
-            return name;
-        }
-
-        return METHOD_PREFIX + name;
-    }
 
     private Type mapMethodType(Type type) {
         return Type.getMethodType(mapDescriptor(type.getDescriptor()));
@@ -209,7 +194,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
         String methodDescriptor = methodHandle.getDesc();
 
         String newMethodOwner = mapType(methodOwner);
-        String newMethodName = mapMethodName(methodName);
+        String newMethodName = NamespaceMapper.mapMethodName(methodName);
         String newMethodDescriptor = mapMethodDescriptor ? mapDescriptor(methodDescriptor) : methodDescriptor;
         return new Handle(methodHandle.getTag(), newMethodOwner, newMethodName, newMethodDescriptor, methodHandle.isInterface());
     }

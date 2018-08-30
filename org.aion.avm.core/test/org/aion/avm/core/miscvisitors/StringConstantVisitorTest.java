@@ -69,12 +69,12 @@ public class StringConstantVisitorTest {
         Object obj = this.clazz.getConstructor().newInstance();
         
         // Get the constant via the method.
-        Method method = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnStaticStringConstant"));
+        Method method = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnStaticStringConstant"));
         Object ret = method.invoke(obj);
         Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, ret.toString());
         
         // Get the constant directly from the static field.
-        Object direct = this.clazz.getField(UserClassMappingVisitor.mapFieldName("kStringConstant")).get(null);
+        Object direct = this.clazz.getField(NamespaceMapper.mapFieldName("kStringConstant")).get(null);
         Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, direct.toString());
         
         // They should also be the same instance.
@@ -86,12 +86,12 @@ public class StringConstantVisitorTest {
         Object obj = this.clazzNoStatic.getConstructor().newInstance();
         
         // Get the constant via the method.
-        Method method = this.clazzNoStatic.getMethod(UserClassMappingVisitor.mapMethodName("returnStaticStringConstant"));
+        Method method = this.clazzNoStatic.getMethod(NamespaceMapper.mapMethodName("returnStaticStringConstant"));
         Object ret = method.invoke(obj);
         Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, ret.toString());
         
         // Get the constant directly from the static field.
-        Object direct = this.clazzNoStatic.getField(UserClassMappingVisitor.mapFieldName("kStringConstant")).get(null);
+        Object direct = this.clazzNoStatic.getField(NamespaceMapper.mapFieldName("kStringConstant")).get(null);
         Assert.assertEquals(StringConstantVisitorTestTarget.kStringConstant, direct.toString());
         
         // They should also be the same instance.

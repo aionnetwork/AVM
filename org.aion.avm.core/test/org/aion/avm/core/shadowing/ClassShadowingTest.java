@@ -5,6 +5,7 @@ import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
@@ -44,7 +45,7 @@ public class ClassShadowingTest {
         SimpleAvm avm = new SimpleAvm(1_000_000L, TestObjectCreation.class);
         Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestObjectCreation.class.getName());
 
-        Object ret = clazz.getMethod(UserClassMappingVisitor.mapMethodName("accessObject")).invoke(null);
+        Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("accessObject")).invoke(null);
         Assert.assertEquals(Integer.valueOf(1), ret);
         avm.shutdown();
     }
@@ -71,7 +72,7 @@ public class ClassShadowingTest {
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
         Object obj = clazz.getConstructor().newInstance();
 
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("abs"), int.class);
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("abs"), int.class);
         Object ret = method.invoke(obj, -10);
         Assert.assertEquals(10, ret);
 
@@ -80,9 +81,9 @@ public class ClassShadowingTest {
         Assert.assertEquals(0, Testing.countWrappedClasses);
 
         // We can rely on our test-facing toString methods to look into what we got back.
-        Object wrappedClass = clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnClass")).invoke(obj);
+        Object wrappedClass = clazz.getMethod(NamespaceMapper.mapMethodName("returnClass")).invoke(obj);
         Assert.assertEquals("class org.aion.avm.shadow.java.lang.String", wrappedClass.toString());
-        Object wrappedString = clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnString")).invoke(obj);
+        Object wrappedString = clazz.getMethod(NamespaceMapper.mapMethodName("returnString")).invoke(obj);
         Assert.assertEquals("hello", wrappedString.toString());
 
         // Verify that we see wrapped instances.
@@ -122,7 +123,7 @@ public class ClassShadowingTest {
         //Object ret = method.invoke(obj);
         //Assert.assertTrue(loadedClasses.contains(PackageConstants.kShadowJavaLangDotPrefix + "Byte"));
 
-        Method method2 = clazz.getMethod(UserClassMappingVisitor.mapMethodName("localVariable"));
+        Method method2 = clazz.getMethod(NamespaceMapper.mapMethodName("localVariable"));
         Object ret2 = method2.invoke(obj);
         Assert.assertEquals(Integer.valueOf(3), ret2);
 
@@ -156,7 +157,7 @@ public class ClassShadowingTest {
         new Helper(loader, 1_000_000L, 1);
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
 
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getStringForNull"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("getStringForNull"));
         Object ret = method.invoke(null);
         // Note that we can't yet override methods in our contracts so the toString returns false, from Object.
         Assert.assertEquals(null, ret);
@@ -207,8 +208,8 @@ public class ClassShadowingTest {
     public void testShadowObjectEquality() throws Exception {
         SimpleAvm avm = new SimpleAvm(1_000_000L, TestObjectCreation.class);
         Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestObjectCreation.class.getName());
-        Method createInstance = clazz.getMethod(UserClassMappingVisitor.mapMethodName("createInstance"));
-        Method isEqual = clazz.getMethod(UserClassMappingVisitor.mapMethodName("isEqual"), org.aion.avm.internal.IObject.class, org.aion.avm.internal.IObject.class);
+        Method createInstance = clazz.getMethod(NamespaceMapper.mapMethodName("createInstance"));
+        Method isEqual = clazz.getMethod(NamespaceMapper.mapMethodName("isEqual"), org.aion.avm.internal.IObject.class, org.aion.avm.internal.IObject.class);
 
         Object one = createInstance.invoke(null);
         Object two = createInstance.invoke(null);

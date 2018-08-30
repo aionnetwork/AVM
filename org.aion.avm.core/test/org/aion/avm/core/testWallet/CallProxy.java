@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.shadow.java.lang.Boolean;
 
 
@@ -82,7 +82,7 @@ public class CallProxy {
     private static Object callDecode(Supplier<Class<?>> loader) throws Exception {
         Class<?> walletClass = loader.get();
         ByteArray output = (ByteArray)walletClass
-            .getMethod(UserClassMappingVisitor.mapMethodName("main"))
+            .getMethod(NamespaceMapper.mapMethodName("main"))
             .invoke(null);
         return (null != output)
                 ? ABIDecoder.avm_decodeOneObject(output)

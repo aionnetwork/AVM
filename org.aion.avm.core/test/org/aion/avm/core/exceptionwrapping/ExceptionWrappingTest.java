@@ -12,6 +12,7 @@ import org.aion.avm.core.SuspendedHelper;
 import org.aion.avm.core.TypeAwareClassWriter;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
@@ -90,7 +91,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchFinally() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method tryMultiCatchFinally = this.testClass.getMethod(UserClassMappingVisitor.mapMethodName("tryMultiCatchFinally"));
+        Method tryMultiCatchFinally = this.testClass.getMethod(NamespaceMapper.mapMethodName("tryMultiCatchFinally"));
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
@@ -105,7 +106,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testmSimpleManuallyThrowNull() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method manuallyThrowNull = this.testClass.getMethod(UserClassMappingVisitor.mapMethodName("manuallyThrowNull"));
+        Method manuallyThrowNull = this.testClass.getMethod(NamespaceMapper.mapMethodName("manuallyThrowNull"));
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didWrap);
@@ -127,7 +128,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchInteraction() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method tryMultiCatchFinally = this.testClass.getMethod(UserClassMappingVisitor.mapMethodName("tryMultiCatch"));
+        Method tryMultiCatchFinally = this.testClass.getMethod(NamespaceMapper.mapMethodName("tryMultiCatch"));
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
@@ -142,7 +143,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testRecatchCoreException() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method outerCatch = this.testClass.getMethod(UserClassMappingVisitor.mapMethodName("outerCatch"));
+        Method outerCatch = this.testClass.getMethod(NamespaceMapper.mapMethodName("outerCatch"));
         
         // Create an array and make sure it is correct.
         Assert.assertFalse(TestHelpers.didUnwrap);
@@ -182,7 +183,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testUserDefinedThrowCatch() throws Exception {
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method userDefinedCatch = this.testClass.getMethod(UserClassMappingVisitor.mapMethodName("userDefinedCatch"));
+        Method userDefinedCatch = this.testClass.getMethod(NamespaceMapper.mapMethodName("userDefinedCatch"));
         
         Object result = userDefinedCatch.invoke(null);
         // We should see the "two" string if this was thrown and caught.
@@ -206,7 +207,7 @@ public class ExceptionWrappingTest {
         Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestExceptionResource.class.getName());
         
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method userDefinedCatch = clazz.getMethod(UserClassMappingVisitor.mapMethodName("userDefinedCatch"));
+        Method userDefinedCatch = clazz.getMethod(NamespaceMapper.mapMethodName("userDefinedCatch"));
         
         Object result = userDefinedCatch.invoke(null);
         // We should see the "two" string if this was thrown and caught.
@@ -232,7 +233,7 @@ public class ExceptionWrappingTest {
         Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestExceptionResource.class.getName());
         
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method originalNull = clazz.getMethod(UserClassMappingVisitor.mapMethodName("originalNull"));
+        Method originalNull = clazz.getMethod(NamespaceMapper.mapMethodName("originalNull"));
         
         try {
             originalNull.invoke(null);
@@ -260,7 +261,7 @@ public class ExceptionWrappingTest {
         Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestExceptionResource.class.getName());
         
         // We need to use reflection to call this, since the class was loaded by this other classloader.
-        Method originalNull = clazz.getMethod(UserClassMappingVisitor.mapMethodName("innerCatch"));
+        Method originalNull = clazz.getMethod(NamespaceMapper.mapMethodName("innerCatch"));
         
         try {
             originalNull.invoke(null);

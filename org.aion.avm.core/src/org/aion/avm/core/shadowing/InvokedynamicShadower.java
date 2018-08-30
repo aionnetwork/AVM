@@ -1,7 +1,7 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -59,7 +59,7 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
         }
 
         private boolean isStringConcatIndy(String owner, String origMethodName) {
-            return postRenameStringConcatFactory.equals(owner) && UserClassMappingVisitor.mapMethodName("makeConcatWithConstants").equals(origMethodName);
+            return postRenameStringConcatFactory.equals(owner) && NamespaceMapper.mapMethodName("makeConcatWithConstants").equals(origMethodName);
         }
 
         private boolean isLambdaIndy(String owner) {

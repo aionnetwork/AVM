@@ -1,9 +1,7 @@
 package org.aion.avm.core.shadowing.testPrimitive;
 
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.internal.Helper;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.*;
 
 import java.lang.reflect.InvocationTargetException;
@@ -54,7 +52,7 @@ public class PrimitiveShadowingTest {
     public void testBoolean() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testBoolean"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testBoolean"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -64,7 +62,7 @@ public class PrimitiveShadowingTest {
     public void testByte() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testByte"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testByte"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -74,7 +72,7 @@ public class PrimitiveShadowingTest {
     public void testDouble() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testDouble"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testDouble"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -84,7 +82,7 @@ public class PrimitiveShadowingTest {
     public void testFloat() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testFloat"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testFloat"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -94,7 +92,7 @@ public class PrimitiveShadowingTest {
     public void testInteger() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testInteger"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testInteger"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -104,7 +102,7 @@ public class PrimitiveShadowingTest {
     public void testLong() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testLong"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testLong"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -114,7 +112,7 @@ public class PrimitiveShadowingTest {
     public void testShort() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testShort"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testShort"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -124,7 +122,7 @@ public class PrimitiveShadowingTest {
     public void testAutoboxing() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testAutoboxing"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testAutoboxing"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);

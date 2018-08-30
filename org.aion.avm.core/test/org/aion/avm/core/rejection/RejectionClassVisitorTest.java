@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
@@ -246,7 +247,7 @@ public class RejectionClassVisitorTest {
         Assert.assertNull(outputField.attrs);
         
         // Field name and descriptor
-        Assert.assertEquals(UserClassMappingVisitor.mapFieldName(inputField.name), outputField.name);
+        Assert.assertEquals(NamespaceMapper.mapFieldName(inputField.name), outputField.name);
         Assert.assertEquals(mapper.testMapDescriptor(inputField.desc), outputField.desc);
         
         // Neither use any invisible annotations.
@@ -273,7 +274,7 @@ public class RejectionClassVisitorTest {
         Assert.assertEquals(inputMethod.maxLocals, outputMethod.maxLocals);
         Assert.assertEquals(inputMethod.maxStack, outputMethod.maxStack);
 
-        Assert.assertEquals(UserClassMappingVisitor.mapMethodName(inputMethod.name), outputMethod.name);
+        Assert.assertEquals(NamespaceMapper.mapMethodName(inputMethod.name), outputMethod.name);
         
         // Signature is now null.
         Assert.assertNull(outputMethod.signature);

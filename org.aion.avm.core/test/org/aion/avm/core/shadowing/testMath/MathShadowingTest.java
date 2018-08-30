@@ -1,9 +1,7 @@
 package org.aion.avm.core.shadowing.testMath;
 
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.internal.Helper;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.*;
 
 import java.lang.reflect.InvocationTargetException;
@@ -29,7 +27,7 @@ public class MathShadowingTest {
     public void testMaxMin() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMaxMin"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMaxMin"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -40,7 +38,7 @@ public class MathShadowingTest {
      */
     @Test
     public void createSimpleContext() throws Exception {
-        Object result = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMathContext")).invoke(null);
+        Object result = clazz.getMethod(NamespaceMapper.mapMethodName("testMathContext")).invoke(null);
         Assert.assertNotNull(result);
     }
 }

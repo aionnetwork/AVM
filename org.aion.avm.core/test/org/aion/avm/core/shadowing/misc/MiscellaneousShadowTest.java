@@ -3,7 +3,7 @@ package org.aion.avm.core.shadowing.misc;
 import java.lang.reflect.Method;
 
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,10 +33,10 @@ public class MiscellaneousShadowTest {
      */
     @Test
     public void testClassCast() throws Exception {
-        Object string = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnString")).invoke(null);
-        Object object = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnObject")).invoke(null);
-        Object stringClass = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnClass")).invoke(null);
-        Method cast = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("cast"), org.aion.avm.shadow.java.lang.Class.class ,org.aion.avm.internal.IObject.class);
+        Object string = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnString")).invoke(null);
+        Object object = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnObject")).invoke(null);
+        Object stringClass = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnClass")).invoke(null);
+        Method cast = this.clazz.getMethod(NamespaceMapper.mapMethodName("cast"), org.aion.avm.shadow.java.lang.Class.class ,org.aion.avm.internal.IObject.class);
         boolean didCastString = (Boolean)cast.invoke(null, stringClass, string);
         Assert.assertTrue(didCastString);
         boolean didCastObject = (Boolean)cast.invoke(null, stringClass, object);
@@ -48,10 +48,10 @@ public class MiscellaneousShadowTest {
      */
     @Test
     public void testSuperclass() throws Exception {
-        Object string = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnString")).invoke(null);
-        Object object = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("returnObject")).invoke(null);
-        Method getClass = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("getClass"), org.aion.avm.internal.IObject.class);
-        Method getSuperclass = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("getSuperclass"), org.aion.avm.shadow.java.lang.Class.class);
+        Object string = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnString")).invoke(null);
+        Object object = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnObject")).invoke(null);
+        Method getClass = this.clazz.getMethod(NamespaceMapper.mapMethodName("getClass"), org.aion.avm.internal.IObject.class);
+        Method getSuperclass = this.clazz.getMethod(NamespaceMapper.mapMethodName("getSuperclass"), org.aion.avm.shadow.java.lang.Class.class);
         
         Object stringClass = getClass.invoke(null, string);
         Object objectClass = getClass.invoke(null, object);

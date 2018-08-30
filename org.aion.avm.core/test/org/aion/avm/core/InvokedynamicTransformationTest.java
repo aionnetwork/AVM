@@ -6,6 +6,7 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
@@ -62,7 +63,7 @@ public class InvokedynamicTransformationTest {
         final byte[] origBytecode = loadRequiredResourceAsBytes(getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
-        final var actual = (org.aion.avm.shadow.java.lang.String) callInstanceTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+        final var actual = (org.aion.avm.shadow.java.lang.String) callInstanceTestMethod(transformedBytecode, className, NamespaceMapper.mapMethodName("test"));
         Assert.assertEquals("abc", actual.toString());
     }
 
@@ -90,7 +91,7 @@ public class InvokedynamicTransformationTest {
         final byte[] transformedBytecode = transformForParametrizedLambdaTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         final Double actual =
-                (Double) callInstanceTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+                (Double) callInstanceTestMethod(transformedBytecode, className, NamespaceMapper.mapMethodName("test"));
         assertEquals(30, actual.avm_doubleValue(), 0);
         assertTrue(actual.avm_valueOfWasCalled);
     }
@@ -119,7 +120,7 @@ public class InvokedynamicTransformationTest {
         final var transformedBytecode = transformForMethodReference(originalBytecode, testClassDotName);
         Assert.assertFalse(Arrays.equals(originalBytecode, transformedBytecode));
         final org.aion.avm.core.testindy.java.lang.Integer actual =
-                (org.aion.avm.core.testindy.java.lang.Integer) callStaticTestMethod(transformedBytecode, testClassDotName, UserClassMappingVisitor.mapMethodName("function"));
+                (org.aion.avm.core.testindy.java.lang.Integer) callStaticTestMethod(transformedBytecode, testClassDotName, NamespaceMapper.mapMethodName("function"));
         assertEquals(MethodReferenceTestResource.VALUE.intValue(), actual.avm_intValue());
     }
 
@@ -147,7 +148,7 @@ public class InvokedynamicTransformationTest {
         final byte[] transformedBytecode = transformForMultiLineLambda(origBytecode, className);
         Assert.assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         final org.aion.avm.shadow.java.lang.Double actual =
-                (org.aion.avm.shadow.java.lang.Double) callInstanceTestMethod(transformedBytecode, className, UserClassMappingVisitor.mapMethodName("test"));
+                (org.aion.avm.shadow.java.lang.Double) callInstanceTestMethod(transformedBytecode, className, NamespaceMapper.mapMethodName("test"));
         assertEquals(100., actual.avm_doubleValue(), 0);
     }
 

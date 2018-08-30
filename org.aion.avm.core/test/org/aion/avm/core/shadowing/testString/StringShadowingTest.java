@@ -3,7 +3,7 @@ package org.aion.avm.core.shadowing.testString;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.shadow.java.lang.Boolean;
 import org.aion.avm.shadow.java.lang.Character;
 import org.aion.avm.shadow.java.lang.Integer;
@@ -20,7 +20,7 @@ public class StringShadowingTest {
 
         Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
         Object obj = clazz.getConstructor().newInstance();
-        ObjectArray results = (ObjectArray) clazz.getMethod(UserClassMappingVisitor.mapMethodName("singleString")).invoke(obj);
+        ObjectArray results = (ObjectArray) clazz.getMethod(NamespaceMapper.mapMethodName("singleString")).invoke(obj);
 
         int i = 0;
         assertEquals(new Integer(96354), results.get(i++));

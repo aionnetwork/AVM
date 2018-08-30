@@ -10,14 +10,13 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.ClassLoadingResult;
 import org.aion.avm.core.dappreading.DAppClassLoader;
 import org.aion.avm.core.dappreading.DAppLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 
@@ -229,7 +228,7 @@ public class StubGeneratorTest {
         org.aion.avm.shadow.java.lang.Throwable shadow = (org.aion.avm.shadow.java.lang.Throwable)instance;
         
         // Call our getException and make sure it is the cause.
-        Method getException = notFound.getMethod(UserClassMappingVisitor.mapMethodName("getException"));
+        Method getException = notFound.getMethod(NamespaceMapper.mapMethodName("getException"));
         Object result = getException.invoke(shadow);
         Assert.assertTrue(result == cause);
     }

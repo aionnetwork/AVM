@@ -5,7 +5,7 @@ import org.aion.avm.api.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.TestingBlockchainRuntime;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -163,7 +163,7 @@ public class ParallelExecution {
             }.withCaller(tx.getFrom()).withAddress(tx.getTo()).withEnergyLimit(tx.getEnergyLimit()).withData(tx.getData()));
             try {
                 Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(Contract.class.getName());
-                ByteArray ret = (ByteArray) clazz.getMethod(UserClassMappingVisitor.mapMethodName("main")).invoke(null);
+                ByteArray ret = (ByteArray) clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
                 result.returnData = ret.getUnderlying();
             } catch (Exception e) {
                 // revert changes on failure
