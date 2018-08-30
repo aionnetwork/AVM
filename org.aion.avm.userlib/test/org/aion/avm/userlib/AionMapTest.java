@@ -119,4 +119,37 @@ public class AionMapTest {
         }
         Assert.assertEquals(size, found);
     }
+
+    /**
+     * Adds 20 elements, using only 10 unique hashes, and then makes sure that all of the keys are still there.
+     * This verifies that equals()-comparison is ultimately used to find duplicate keys, not depending on unique hashCode(), alone.
+     */
+    @Test
+    public void addElementsWithCollidingHashes() {
+        final int size = 20;
+        final int hashCount = 10;
+        AionMap<TestElement, String> map = new AionMap<>();
+        for (int i = 0; i < size; ++i) {
+            TestElement elt = new TestElement(i % hashCount, i);
+            map.put(elt, elt.toString());
+        }
+        Assert.assertEquals(size, map.size());
+        
+        boolean[] markMap = new boolean[size];
+        int[] hashes = new int[hashCount];
+        int found = 0;
+        for (Map.Entry<TestElement, String> entry : map.entrySet()) {
+            TestElement key = entry.getKey();
+            Assert.assertFalse(markMap[key.value]);
+            markMap[key.value] = true;
+            hashes[key.hash] += 1;
+            Assert.assertEquals(entry.getValue(), key.toString());
+            found += 1;
+        }
+        Assert.assertEquals(size, found);
+        for (int hash : hashes) {
+            // We should see 2 of each.
+            Assert.assertEquals(2, hash);
+        }
+    }
 }

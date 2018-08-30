@@ -97,4 +97,35 @@ public class AionSetTest {
         }
         Assert.assertEquals(10, found);
     }
+
+    /**
+     * Adds 20 elements, using only 10 unique hashes, and then makes sure that all of the keys are still there.
+     * This verifies that equals()-comparison is ultimately used to find duplicate keys, not depending on unique hashCode(), alone.
+     */
+    @Test
+    public void addElementsWithCollidingHashes() {
+        final int size = 20;
+        final int hashCount = 10;
+        AionSet<TestElement> set = new AionSet<>();
+        for (int i = 0; i < size; ++i) {
+            TestElement elt = new TestElement(i % hashCount, i);
+            set.add(elt);
+        }
+        Assert.assertEquals(size, set.size());
+        
+        boolean[] markMap = new boolean[size];
+        int[] hashes = new int[hashCount];
+        int found = 0;
+        for (TestElement elt : set) {
+            Assert.assertFalse(markMap[elt.value]);
+            markMap[elt.value] = true;
+            hashes[elt.hash] += 1;
+            found += 1;
+        }
+        Assert.assertEquals(size, found);
+        for (int hash : hashes) {
+            // We should see 2 of each.
+            Assert.assertEquals(2, hash);
+        }
+    }
 }
