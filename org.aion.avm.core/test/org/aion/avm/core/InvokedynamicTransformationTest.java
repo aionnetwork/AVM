@@ -171,7 +171,7 @@ public class InvokedynamicTransformationTest {
         PreRenameClassAccessRules singletonRules = buildSingletonAccessRules(className, classHierarchy);
         NamespaceMapper mapper = new NamespaceMapper(singletonRules);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new RejectionClassVisitor(singletonRules))
+                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper))
                 .addNextVisitor(new UserClassMappingVisitor(mapper))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, DAppCreator.computeAllPostRenameObjectSizes(classHierarchy)))

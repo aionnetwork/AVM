@@ -39,7 +39,7 @@ public class RejectionClassVisitorTest {
 
         // We want to prove we can strip out everything so don't use any special parsing options for this visitor.
         byte[] filteredBytes = new ClassToolchain.Builder(raw, 0)
-                .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules))
+                .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, mapper))
                 .addNextVisitor(new UserClassMappingVisitor(mapper))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
@@ -333,7 +333,7 @@ public class RejectionClassVisitorTest {
         PreRenameClassAccessRules singletonRules = createTestingAccessRules(userClassDotNameSet);
         NamespaceMapper mapper = new NamespaceMapper(singletonRules);
         byte[] filteredBytes = new ClassToolchain.Builder(testBytes, 0)
-                .addNextVisitor(new RejectionClassVisitor(singletonRules))
+                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper))
                 .addNextVisitor(new UserClassMappingVisitor(mapper))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()

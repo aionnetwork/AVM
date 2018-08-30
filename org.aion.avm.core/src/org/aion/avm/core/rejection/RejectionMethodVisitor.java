@@ -1,5 +1,6 @@
 package org.aion.avm.core.rejection;
 
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -21,10 +22,12 @@ import org.objectweb.asm.TypePath;
  */
 public class RejectionMethodVisitor extends MethodVisitor {
     private final PreRenameClassAccessRules classAccessRules;
+    private final NamespaceMapper namespaceMapper;
 
-    public RejectionMethodVisitor(MethodVisitor visitor, PreRenameClassAccessRules classAccessRules) {
+    public RejectionMethodVisitor(MethodVisitor visitor, PreRenameClassAccessRules classAccessRules, NamespaceMapper namespaceMapper) {
         super(Opcodes.ASM6, visitor);
         this.classAccessRules = classAccessRules;
+        this.namespaceMapper = namespaceMapper;
     }
 
     @Override

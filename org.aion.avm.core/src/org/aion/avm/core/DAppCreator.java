@@ -143,7 +143,7 @@ public class DAppCreator {
             // static call, which is somewhat expensive - this is how we bill for energy).
             int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), parsingOptions)
-                    .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules))
+                    .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper))
                     .addNextVisitor(new UserClassMappingVisitor(namespaceMapper))
                     .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))

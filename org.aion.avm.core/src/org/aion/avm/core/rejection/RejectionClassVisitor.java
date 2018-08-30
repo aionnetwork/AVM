@@ -1,6 +1,7 @@
 package org.aion.avm.core.rejection;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.AnnotationVisitor;
@@ -26,10 +27,12 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
 
     // The names of the classes that the user defined in their JAR (note:  this does NOT include interfaces).
     private final PreRenameClassAccessRules preRenameClassAccessRules;
+    private final NamespaceMapper namespaceMapper;
 
-    public RejectionClassVisitor(PreRenameClassAccessRules preRenameClassAccessRules) {
+    public RejectionClassVisitor(PreRenameClassAccessRules preRenameClassAccessRules, NamespaceMapper namespaceMapper) {
         super(Opcodes.ASM6);
         this.preRenameClassAccessRules = preRenameClassAccessRules;
+        this.namespaceMapper = namespaceMapper;
     }
 
     @Override
@@ -97,6 +100,6 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
         
         // Null the signature, since we don't use it and don't want to make sure it is safe.
         MethodVisitor mv = super.visitMethod(access, name, descriptor, null, exceptions);
-        return new RejectionMethodVisitor(mv, this.preRenameClassAccessRules);
+        return new RejectionMethodVisitor(mv, this.preRenameClassAccessRules, this.namespaceMapper);
     }
 }
