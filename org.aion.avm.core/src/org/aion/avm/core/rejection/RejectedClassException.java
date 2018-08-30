@@ -34,6 +34,10 @@ public class RejectedClassException extends AvmException {
         throw new RejectedClassException(className + " attempted to subclass restricted class: " + superName);
     }
 
+    public static void jclMethodNotImplemented(String receiver, String name, String descriptor) {
+        throw new RejectedClassException("JCL implementation missing method: " + receiver + "#" + name + descriptor);
+    }
+
 
     public RejectedClassException(String message) {
         super(message);

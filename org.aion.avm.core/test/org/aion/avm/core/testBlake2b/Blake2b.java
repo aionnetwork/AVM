@@ -1684,8 +1684,10 @@ public interface Blake2b {
 			public final static String exclusiveLowerBound = "'%s' %d is <= %d";
 			public final static String inclusiveLowerBound = "'%s' %d is < %d";
 			static <T extends Number> String assertFail(final String name, final T v, final String err, final T spec) {
-				new Exception().printStackTrace();
-				return String.format(err, name, v, spec);
+				// NOTE:  We don't support this since we can't write stack traces or format strings this way.
+				return err;
+//				new Exception().printStackTrace();
+//				return String.format(err, name, v, spec);
 			}
 		}
 		// ---------------------------------------------------------------------

@@ -165,6 +165,22 @@ public class RejectionClassVisitorTest {
         commonFilterBytes(className, raw);
     }
 
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_missingMethod_stringStaticJoin() throws Exception {
+        String className = RejectStaticStringCall.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        // Expected to fail since a method we are trying to call is defined on a class we handle, but it is a method we don't.
+        commonFilterBytes(className, raw);
+    }
+
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_missingMethod_decimalVirtualDivide() throws Exception {
+        String className = RejectBigDecimalDivision.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        // Expected to fail since a method we are trying to call is defined on a class we handle, but it is a method we don't.
+        commonFilterBytes(className, raw);
+    }
+
 
     private void compareClasses(ClassNode inputNode, ClassNode outputNode) {
         // Access is unchanged.

@@ -1,7 +1,14 @@
 package org.aion.avm.core.rejection;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
+import org.aion.avm.core.util.DescriptorParser;
+import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Handle;
@@ -96,7 +103,16 @@ public class RejectionMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if (!this.classAccessRules.canUserAccessClass(owner)) {
+        if (this.classAccessRules.canUserAccessClass(owner)) {
+            // Just as a general help to the user (forcing failure earlier), we want to check that, if this is a JCL method, it exists in our shadow.
+            // (otherwise, this creates a very late-bound surprise bug).
+            if (!isInterface && this.classAccessRules.isJclClass(owner)) {
+                boolean didMatch = checkJclMethodExists(owner, name, descriptor);
+                if (!didMatch) {
+                    RejectedClassException.jclMethodNotImplemented(owner, name, descriptor);
+                }
+            }
+        } else {
             RejectedClassException.nonWhiteListedClass(owner);
         }
         checkOpcode(opcode);
@@ -160,5 +176,115 @@ public class RejectionMethodVisitor extends MethodVisitor {
         ) {
             RejectedClassException.blacklistedOpcode(opcode);
         }
+    }
+
+    private boolean checkJclMethodExists(String owner, String name, String descriptor) {
+        boolean didMatch = false;
+        // Map the owner, name, and descriptor into the shadow space, look up the corresponding class, reflect, and see if this method exists.
+        String mappedOwner = this.namespaceMapper.mapType(owner);
+        String mappedName = NamespaceMapper.mapMethodName(name);
+        String mappedDescriptor = this.namespaceMapper.mapDescriptor(descriptor);
+        // TODO:  Determine if we need to implement some kind of cache for these reflected operations.
+        // (if so, it should probably be implemented in NodeEnvironment, since these classes are shared and long-lived).
+        try {
+            Class<?> ownerShadowClass = NodeEnvironment.singleton.loadSharedClass(Helpers.internalNameToFulllyQualifiedName(mappedOwner));
+            if ("<init>".equals(name)) {
+                // We need to apply our logic to the constructors.
+                for (Constructor<?> constructor : ownerShadowClass.getDeclaredConstructors()) {
+                    String oneDesc = buildDescriptor(constructor.getParameterTypes(), Void.TYPE);
+                    didMatch = doDescriptorArgsMatch(mappedDescriptor, oneDesc);
+                    if (didMatch) {
+                        break;
+                    }
+                }
+            } else {
+                // We need to apply our logic to normal methods.
+                // Note that we aren't checking differences between static/virtual invoke since this check is just to eagerly tell the user if they
+                // are going outside of our implemented subset.  This subset doesn't change method receiver nature.
+                // We need to walk up the hierarchy, too.
+                Class<?> next = ownerShadowClass;
+                while (!didMatch && (null != next)) {
+                    for (Method method : next.getDeclaredMethods()) {
+                        if (mappedName.equals(method.getName())) {
+                            String oneDesc = buildDescriptor(method.getParameterTypes(), method.getReturnType());
+                            didMatch = doDescriptorArgsMatch(mappedDescriptor, oneDesc);
+                            if (didMatch) {
+                                break;
+                            }
+                        }
+                    }
+                    next = next.getSuperclass();
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            // This would have been caught before we got here (class check is done before the method check).
+            RuntimeAssertionError.unexpected(e);
+        }
+        return didMatch;
+    }
+
+    private String buildDescriptor(Class<?>[] parameterTypes, Class<?> returnType) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(DescriptorParser.ARGS_START);
+        for (Class<?> one : parameterTypes) {
+            writeClass(builder, one);
+        }
+        builder.append(DescriptorParser.ARGS_END);
+        writeClass(builder, returnType);
+        return builder.toString();
+    }
+
+    private void writeClass(StringBuilder builder, Class<?> clazz) {
+        if (clazz.isArray()) {
+            builder.append(DescriptorParser.ARRAY);
+            writeClass(builder, clazz.getComponentType());
+        } else if (!clazz.isPrimitive()) {
+            // TODO:  Remove these primitive array special-cases once we integrate the array wrapping mapping logic into the NamespaceMapper.
+            // TODO:  Move the explicit IObject->Object special-case into the NamespaceMapper if we can generalize the descriptor case (since,
+            // in general, this mapping should not be applied but it is something we need to do for method descriptors, specifically).
+            String className = clazz.getName();
+            if ("org.aion.avm.arraywrapper.ByteArray".equals(className)) {
+                builder.append("[B");
+            } else if ("org.aion.avm.arraywrapper.CharArray".equals(className)) {
+                builder.append("[C");
+            } else if ("org.aion.avm.internal.IObject".equals(className)) {
+                builder.append(DescriptorParser.OBJECT_START);
+                builder.append("org/aion/avm/shadow/java/lang/Object");
+                builder.append(DescriptorParser.OBJECT_END);
+            } else {
+                builder.append(DescriptorParser.OBJECT_START);
+                builder.append(Helpers.fulllyQualifiedNameToInternalName(className));
+                builder.append(DescriptorParser.OBJECT_END);
+            }
+        } else if (Byte.TYPE == clazz) {
+            builder.append(DescriptorParser.BYTE);
+        } else if (Character.TYPE == clazz) {
+            builder.append(DescriptorParser.CHAR);
+        } else if (Double.TYPE == clazz) {
+            builder.append(DescriptorParser.DOUBLE);
+        } else if (Float.TYPE == clazz) {
+            builder.append(DescriptorParser.FLOAT);
+        } else if (Integer.TYPE == clazz) {
+            builder.append(DescriptorParser.INTEGER);
+        } else if (Long.TYPE == clazz) {
+            builder.append(DescriptorParser.LONG);
+        } else if (Short.TYPE == clazz) {
+            builder.append(DescriptorParser.SHORT);
+        } else if (Boolean.TYPE == clazz) {
+            builder.append(DescriptorParser.BOOLEAN);
+        } else if (Void.TYPE == clazz) {
+            builder.append(DescriptorParser.VOID);
+        } else {
+            // This means we haven't implemented something.
+            RuntimeAssertionError.unreachable("Missing descriptor type: " + clazz);
+        }
+    }
+
+    private boolean doDescriptorArgsMatch(String expected, String check) {
+        // We only want to compare what is in the argument list as this kind of match doesn't care about return type.
+        // (additionally, our ObjectArray handling means we lose some data in the transformation which would require duplication, here).
+        String expectedArgs = expected.substring(1, expected.indexOf(")"));
+        String checkArgs = check.substring(1, check.indexOf(")"));
+        return expectedArgs.equals(checkArgs);
     }
 }
