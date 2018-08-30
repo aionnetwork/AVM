@@ -9,6 +9,9 @@ import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.miscvisitors.ClinitStrippingVisitor;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.InterfaceFieldMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
+import org.aion.avm.core.miscvisitors.StrictFPVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
@@ -124,6 +127,8 @@ public class DAppCreator {
         // Note:  preRenameUserDefinedClasses includes ONLY classes while preRenameUserClassAndInterfaceSet includes classes AND interfaces.
         Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
         Set<String> preRenameUserClassAndInterfaceSet = classes.keySet();
+        PreRenameClassAccessRules preRenameClassAccessRules = new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserClassAndInterfaceSet);
+        NamespaceMapper namespaceMapper = new NamespaceMapper(preRenameClassAccessRules);
         ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy);
         Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy);
 
@@ -138,8 +143,8 @@ public class DAppCreator {
             // static call, which is somewhat expensive - this is how we bill for energy).
             int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
             byte[] bytecode = new ClassToolchain.Builder(classes.get(name), parsingOptions)
-                    .addNextVisitor(new RejectionClassVisitor(preRenameUserDefinedClasses))
-                    .addNextVisitor(new UserClassMappingVisitor(preRenameUserClassAndInterfaceSet))
+                    .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper))
+                    .addNextVisitor(new UserClassMappingVisitor(namespaceMapper))
                     .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
@@ -147,6 +152,7 @@ public class DAppCreator {
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, parentClassResolver, generatedClassesSink))
                     .addNextVisitor(new AutomaticGraphVisitor())
+                    .addNextVisitor(new StrictFPVisitor())
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();

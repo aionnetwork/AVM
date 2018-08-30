@@ -1,13 +1,10 @@
 package org.aion.avm.core.shadowing.testSystem;
 
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.internal.Helper;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -33,7 +30,7 @@ public class SystemShadowingTest {
     public void testArrayCopy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testArrayCopy"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testArrayCopy"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);

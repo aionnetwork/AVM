@@ -19,6 +19,8 @@
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
         <delete dir="${dir.global.build}"/>
+
+        <delete file="${dir.global.workspace}/avm.jar"/>
     </target>
 
     <target name="clean_buildmain">
@@ -37,6 +39,11 @@
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.api/build.xml" target="clean_buildmain">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
+
+        <zip destfile="${dir.global.workspace}/avm.jar">
+            <zipgroupfileset dir="${dir.global.build.main}" includes="*.jar"/>
+            <fileset dir="${dir.global.build.main}" includes="org-aion-avm-rt.jar"/>
+        </zip>
     </target>
 
     <target name="test">

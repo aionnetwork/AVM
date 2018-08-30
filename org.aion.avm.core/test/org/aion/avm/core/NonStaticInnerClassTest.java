@@ -3,7 +3,7 @@ package org.aion.avm.core;
 import java.lang.reflect.Method;
 
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -51,7 +51,7 @@ public class NonStaticInnerClassTest {
         
         Class<?> deeper = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.Inner.Deeper.class.getName());
         Assert.assertNotNull(deeper);
-        Method readParent = deeper.getMethod(UserClassMappingVisitor.mapMethodName("readParent"));
+        Method readParent = deeper.getMethod(NamespaceMapper.mapMethodName("readParent"));
         
         // Initially, the parent is still 0 until we use it to create another instance.
         Object deeper1 = deeper.getConstructor(inner).newInstance(inner1);

@@ -7,7 +7,7 @@ import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.TestingBlockchainRuntime;
 import org.aion.avm.core.SuspendedHelper;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +43,7 @@ public class CallTest {
 
         AvmClassLoader loader = avm.getClassLoader();
         Class<?> clazz = loader.loadUserClassByOriginalName(Caller.class.getName());
-        Object ret = clazz.getMethod(UserClassMappingVisitor.mapMethodName("main")).invoke(null);
+        Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
 
         assertTrue(callbackReceived);
         assertEquals(new ByteArray("world".getBytes()), ret);
@@ -71,7 +71,7 @@ public class CallTest {
                     avm2 = new SimpleAvm(e, Callee.class);
                     avm2.attachBlockchainRuntime(new TestingBlockchainRuntime().withCaller(to).withAddress(a.unwrap()).withData(d.getUnderlying()));
                     Class<?> clazz = avm2.getClassLoader().loadUserClassByOriginalName(Callee.class.getName());
-                    Object ret = clazz.getMethod(UserClassMappingVisitor.mapMethodName("main")).invoke(null);
+                    Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
 
                     // TODO: refund remaining energy
 
@@ -94,7 +94,7 @@ public class CallTest {
 
         AvmClassLoader loader = avm.getClassLoader();
         Class<?> clazz = loader.loadUserClassByOriginalName(Caller.class.getName());
-        Object ret = clazz.getMethod(UserClassMappingVisitor.mapMethodName("main")).invoke(null);
+        Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
 
         assertTrue(callbackReceived);
         assertEquals(new ByteArray("helloworld".getBytes()), ret);

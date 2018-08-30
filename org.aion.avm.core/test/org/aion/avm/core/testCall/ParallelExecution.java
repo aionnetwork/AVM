@@ -5,7 +5,7 @@ import org.aion.avm.api.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.TestingBlockchainRuntime;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -94,11 +94,11 @@ public class ParallelExecution {
                     TransactionResult r = f.get();
 
                     Set<String> set = new HashSet<>();
-                    set.add(Helpers.toHexString(tx.getFrom()));
-                    set.add(Helpers.toHexString(tx.getTo()));
+                    set.add(Helpers.bytesToHexString(tx.getFrom()));
+                    set.add(Helpers.bytesToHexString(tx.getTo()));
                     for (InternalTransaction it : r.internalTransactions) {
-                        set.add(Helpers.toHexString(it.getFrom()));
-                        set.add(Helpers.toHexString(it.getTo()));
+                        set.add(Helpers.bytesToHexString(it.getFrom()));
+                        set.add(Helpers.bytesToHexString(it.getTo()));
                     }
 
                     if (set.stream().anyMatch(k -> accounts.contains(k))) {
@@ -163,7 +163,7 @@ public class ParallelExecution {
             }.withCaller(tx.getFrom()).withAddress(tx.getTo()).withEnergyLimit(tx.getEnergyLimit()).withData(tx.getData()));
             try {
                 Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(Contract.class.getName());
-                ByteArray ret = (ByteArray) clazz.getMethod(UserClassMappingVisitor.mapMethodName("main")).invoke(null);
+                ByteArray ret = (ByteArray) clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
                 result.returnData = ret.getUnderlying();
             } catch (Exception e) {
                 // revert changes on failure

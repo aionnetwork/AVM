@@ -3,7 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.InterfaceFieldMappingVisitor;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.util.Helpers;
 import org.junit.Test;
@@ -81,7 +81,7 @@ public class InterfaceFiledsTest {
         AvmClassLoader classLoader = avm.getClassLoader();
 
         Class<?> clazz = classLoader.loadUserClassByOriginalName(InterfaceTestResource.class.getName());
-        Object ret = clazz.getMethod(UserClassMappingVisitor.mapMethodName("f")).invoke(null);
+        Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("f")).invoke(null);
         assertEquals(6, ret);
 
         avm.shutdown();

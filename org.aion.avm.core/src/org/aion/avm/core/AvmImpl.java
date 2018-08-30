@@ -1,7 +1,6 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.IHelper;
 import org.aion.kernel.TransactionContext;
 
 import java.io.IOException;
@@ -104,10 +103,10 @@ public class AvmImpl implements AvmInternal {
     private TransactionResult commonRun(KernelInterface thisTransactionKernel, TransactionContext ctx) {
         if (logger.isDebugEnabled()) {
             logger.debug("Transaction: address = {}, caller = {}, value = {}, data = {}, energyLimit = {}",
-                    Helpers.toHexString(ctx.getAddress()),
-                    Helpers.toHexString(ctx.getCaller()),
+                    Helpers.bytesToHexString(ctx.getAddress()),
+                    Helpers.bytesToHexString(ctx.getCaller()),
                     ctx.getValue(),
-                    Helpers.toHexString(ctx.getData()),
+                    Helpers.bytesToHexString(ctx.getData()),
                     ctx.getEnergyLimit());
         }
 

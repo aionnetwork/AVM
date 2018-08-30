@@ -239,21 +239,89 @@ public class AionList<E> implements List<E> {
 
     @Override
     public ListIterator<E> listIterator() {
-        return null;
+        return new AionListIterator(0);
     }
 
     @Override
     public ListIterator<E> listIterator(int index) {
-        return null;
+        if ((index < 0) || (index > this.size)) {
+            throw new IndexOutOfBoundsException();
+        }
+        return new AionListIterator(index);
     }
 
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
+        // TODO:  Add sublist handling if we want to continue using this implementation (not included for alpha release).
         return null;
     }
 
     @Override
     public Iterator<E> iterator() {
-        return null;
+        return new AionListIterator(0);
+    }
+
+
+    /**
+     * Note that this is a very simple implementation so it skips all optional operations and doesn't detect concurrent modifications.
+     * (public only to reference it from tests when building the DApp jar)
+     */
+    public class AionListIterator implements ListIterator<E> {
+        private int nextIndex;
+        public AionListIterator(int nextIndex) {
+            this.nextIndex = nextIndex;
+        }
+        @Override
+        public boolean hasNext() {
+            return this.nextIndex < AionList.this.size;
+        }
+        @Override
+        public E next() {
+            E elt = null;
+            if (this.nextIndex < AionList.this.size) {
+                elt = (E) AionList.this.storage[this.nextIndex];
+                this.nextIndex += 1;
+            } else {
+                // TODO:  NoSuchElementException is in java.util, not currently included in shadow.
+                elt = null;
+            }
+            return elt;
+        }
+        @Override
+        public boolean hasPrevious() {
+            return this.nextIndex > 0;
+        }
+        @Override
+        public E previous() {
+            E elt = null;
+            if (this.nextIndex > 0) {
+                this.nextIndex -= 1;
+                elt = (E) AionList.this.storage[this.nextIndex];
+            } else {
+                // TODO:  NoSuchElementException is in java.util, not currently included in shadow.
+                elt = null;
+            }
+            return elt;
+        }
+        @Override
+        public int nextIndex() {
+            return this.nextIndex;
+        }
+        @Override
+        public int previousIndex() {
+            return this.nextIndex - 1;
+        }
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public void set(E e) {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public void add(E e) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

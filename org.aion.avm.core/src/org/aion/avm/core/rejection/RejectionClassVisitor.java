@@ -1,9 +1,8 @@
 package org.aion.avm.core.rejection;
 
-import java.util.Set;
-
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -25,21 +24,15 @@ import org.objectweb.asm.TypePath;
 public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor {
     // This will probably change, in the future, but we currently will only parse Java10 (version 54) classes.
     private static final int SUPPORTED_CLASS_VERSION = 54;
-    // This is the hard-coded list of classes, from the JCL, which we allow the user code to subclass.
-    private static final Set<String> SUBCLASS_WHITELIST_DOT_NAMES = Set.of(
-            Enum.class.getName()
-            , Exception.class.getName()
-            , Object.class.getName()
-            , RuntimeException.class.getName()
-            , Throwable.class.getName()
-    );
 
     // The names of the classes that the user defined in their JAR (note:  this does NOT include interfaces).
-    private final Set<String> preRenameUserDefinedDotClasses;
+    private final PreRenameClassAccessRules preRenameClassAccessRules;
+    private final NamespaceMapper namespaceMapper;
 
-    public RejectionClassVisitor(Set<String> preRenameUserDefinedDotClasses) {
+    public RejectionClassVisitor(PreRenameClassAccessRules preRenameClassAccessRules, NamespaceMapper namespaceMapper) {
         super(Opcodes.ASM6);
-        this.preRenameUserDefinedDotClasses = preRenameUserDefinedDotClasses;
+        this.preRenameClassAccessRules = preRenameClassAccessRules;
+        this.namespaceMapper = namespaceMapper;
     }
 
     @Override
@@ -48,9 +41,8 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
         if (SUPPORTED_CLASS_VERSION != version) {
             RejectedClassException.unsupportedClassVersion(version);
         }
-        String superDotName = Helpers.internalNameToFulllyQualifiedName(superName);
-        if (!this.preRenameUserDefinedDotClasses.contains(superDotName) && !SUBCLASS_WHITELIST_DOT_NAMES.contains(superDotName)) {
-            RejectedClassException.restrictedSuperclass(Helpers.internalNameToFulllyQualifiedName(name), superDotName);
+        if (!this.preRenameClassAccessRules.canUserSubclass(superName)) {
+            RejectedClassException.restrictedSuperclass(name, superName);
         }
 
         // Null the signature, since we don't use it and don't want to make sure it is safe.
@@ -108,6 +100,6 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
         
         // Null the signature, since we don't use it and don't want to make sure it is safe.
         MethodVisitor mv = super.visitMethod(access, name, descriptor, null, exceptions);
-        return new RejectionMethodVisitor(mv);
+        return new RejectionMethodVisitor(mv, this.preRenameClassAccessRules, this.namespaceMapper);
     }
 }

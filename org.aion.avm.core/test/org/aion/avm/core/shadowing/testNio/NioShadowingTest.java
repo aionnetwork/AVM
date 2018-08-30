@@ -1,8 +1,7 @@
 package org.aion.avm.core.shadowing.testNio;
 
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,7 +29,7 @@ public class NioShadowingTest {
     public void testByteBuffer() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testByteBuffer"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testByteBuffer"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -40,7 +39,7 @@ public class NioShadowingTest {
     public void testCharBuffer() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testCharBuffer"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testCharBuffer"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -50,7 +49,7 @@ public class NioShadowingTest {
     public void testDoubleBuffer() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testCharBuffer"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testCharBuffer"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -60,7 +59,7 @@ public class NioShadowingTest {
     public void testFloatBuffer() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testCharBuffer"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testCharBuffer"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -71,7 +70,7 @@ public class NioShadowingTest {
     public void testIntBuffer() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testCharBuffer"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testCharBuffer"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -82,7 +81,7 @@ public class NioShadowingTest {
     public void testLongBuffer() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testCharBuffer"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testCharBuffer"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -92,7 +91,7 @@ public class NioShadowingTest {
     public void testShortBuffer() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testCharBuffer"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testCharBuffer"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);

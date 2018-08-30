@@ -75,7 +75,7 @@ public class RevertAndInvalidTest {
     private void dumpStorage(byte[] dappAddress) {
         Map<ByteArrayWrapper, byte[]> s = kernel.getStorageEntries(dappAddress);
         for (ByteArrayWrapper k : s.keySet()) {
-            System.out.println(k + "=" + Helpers.toHexString(s.get(k)));
+            System.out.println(k + "=" + Helpers.bytesToHexString(s.get(k)));
         }
     }
 }

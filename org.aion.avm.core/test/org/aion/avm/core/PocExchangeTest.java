@@ -58,7 +58,7 @@ public class PocExchangeTest {
         }
 
         private byte[] initCoin(byte[] jar, byte[] arguments){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, addr, kernel.getNonce(minter), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, null, kernel.getNonce(minter), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -125,7 +125,7 @@ public class PocExchangeTest {
         }
 
         private byte[] initExchange(byte[] jar, byte[] arguments){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, addr, kernel.getNonce(owner), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
+            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, null, kernel.getNonce(owner), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -162,10 +162,10 @@ public class PocExchangeTest {
         System.out.println(">> Deploy \"PEPE\" token contract...");
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
-        System.out.println(Helpers.toHexString(pepe.addr));
+        System.out.println(Helpers.bytesToHexString(pepe.addr));
 
         res = pepe.callTotalSupply();
-        System.out.println(Helpers.toHexString(res.getReturnData()));
+        System.out.println(Helpers.bytesToHexString(res.getReturnData()));
         Assert.assertEquals(0L, TestingHelper.decodeResult(res));
         System.out.println(">> total supply: " + TestingHelper.decodeResult(res));
 

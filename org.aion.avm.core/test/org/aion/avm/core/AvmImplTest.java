@@ -153,7 +153,7 @@ public class AvmImplTest {
         // deploy
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, deployer, Helpers.address(2), kernel.getNonce(deployer), 0, txData, energyLimit, energyPrice);
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0, txData, energyLimit, energyPrice);
         TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
 
@@ -548,7 +548,7 @@ public class AvmImplTest {
     private Address createDApp(KernelInterface kernel, Avm avm, byte[] createData) {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction tx1 = new Transaction(Transaction.Type.CREATE, deployer, Helpers.address(2), kernel.getNonce(deployer), 0, createData, energyLimit, energyPrice);
+        Transaction tx1 = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0, createData, energyLimit, energyPrice);
         TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
         assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
         return TestingHelper.buildAddress(result1.getReturnData());

@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -28,12 +28,18 @@ public class BasicAppTest {
 
     @Before
     public void setup() throws Exception {
-        this.avm = new SimpleAvm(10000L, BasicAppTestTarget.class, AionMap.class, AionSet.class, AionList.class);
+        this.avm = new SimpleAvm(10000L
+                , BasicAppTestTarget.class
+                , AionMap.class
+                , AionSet.class
+                , AionList.class
+                , AionList.AionListIterator.class
+        );
         AvmClassLoader loader = avm.getClassLoader();
         
         this.clazz = loader.loadUserClassByOriginalName(BasicAppTestTarget.class.getName());
         // NOTE:  The user's side is pre-shadow so it uses "byte[]" whereas we look up "ByteArray", here.
-        this.decodeMethod = this.clazz.getMethod(UserClassMappingVisitor.mapMethodName("decode"), ByteArray.class);
+        this.decodeMethod = this.clazz.getMethod(NamespaceMapper.mapMethodName("decode"), ByteArray.class);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
     }
 

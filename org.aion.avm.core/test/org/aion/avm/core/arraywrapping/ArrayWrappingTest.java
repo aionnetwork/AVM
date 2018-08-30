@@ -1,9 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.internal.Helper;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.internal.IHelper;
 import org.junit.*;
 
@@ -43,7 +41,7 @@ public class ArrayWrappingTest {
     public void testBooleanArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testBooleanArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testBooleanArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -53,7 +51,7 @@ public class ArrayWrappingTest {
     public void testByteArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testByteArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testByteArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -63,7 +61,7 @@ public class ArrayWrappingTest {
     public void testCharArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testCharArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testCharArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -73,7 +71,7 @@ public class ArrayWrappingTest {
     public void testDoubleArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testDoubleArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testDoubleArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -83,7 +81,7 @@ public class ArrayWrappingTest {
     public void testFloatArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testFloatArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testFloatArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -93,7 +91,7 @@ public class ArrayWrappingTest {
     public void testIntArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testIntArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testIntArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -103,7 +101,7 @@ public class ArrayWrappingTest {
     public void testLongArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testLongArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testLongArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -113,7 +111,7 @@ public class ArrayWrappingTest {
     public void testShortArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testShortArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testShortArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -123,7 +121,7 @@ public class ArrayWrappingTest {
     public void testObjectArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testObjectArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testObjectArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -133,7 +131,7 @@ public class ArrayWrappingTest {
     public void testStringArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testStringArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testStringArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -143,7 +141,7 @@ public class ArrayWrappingTest {
     public void testSignature() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testSignature"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testSignature"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -153,7 +151,7 @@ public class ArrayWrappingTest {
     public void testVarargs() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testVarargs"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testVarargs"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -163,7 +161,7 @@ public class ArrayWrappingTest {
     public void testTypeChecking() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testTypeChecking"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testTypeChecking"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -173,7 +171,7 @@ public class ArrayWrappingTest {
     public void testClassField() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testClassField"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testClassField"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -183,7 +181,7 @@ public class ArrayWrappingTest {
     public void testMultiInt() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMultiInt"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiInt"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -193,7 +191,7 @@ public class ArrayWrappingTest {
     public void testMultiByte() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMultiByte"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiByte"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -203,7 +201,7 @@ public class ArrayWrappingTest {
     public void testMultiChar() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMultiChar"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiChar"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -213,7 +211,7 @@ public class ArrayWrappingTest {
     public void testMultiFloat() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMultiFloat"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiFloat"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -223,7 +221,7 @@ public class ArrayWrappingTest {
     public void testMultiLong() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMultiLong"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiLong"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -233,7 +231,7 @@ public class ArrayWrappingTest {
     public void testMultiDouble() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMultiDouble"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiDouble"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -243,7 +241,7 @@ public class ArrayWrappingTest {
     public void testMultiRef() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testMultiRef"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiRef"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -254,7 +252,7 @@ public class ArrayWrappingTest {
     public void testHierarachy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testHierarachy"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testHierarachy"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -264,7 +262,7 @@ public class ArrayWrappingTest {
     public void testIncompleteArrayIni() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testIncompleteArrayIni"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testIncompleteArrayIni"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -296,7 +294,7 @@ public class ArrayWrappingTest {
     public void testInterfaceArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testInterfaceArray"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testInterfaceArray"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -306,7 +304,7 @@ public class ArrayWrappingTest {
     public void testArrayClone() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testArrayClone"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testArrayClone"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);

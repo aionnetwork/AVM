@@ -28,12 +28,12 @@ public class Helpers {
     private static final char[] hexArray = "0123456789abcdef".toCharArray();
 
     /**
-     * Converts byte array into it's hex string representation.
+     * Converts byte array into its hex string representation.
      *
      * @param bytes
      * @return
      */
-    public static String toHexString(byte[] bytes) {
+    public static String bytesToHexString(byte[] bytes) {
         int length = bytes.length;
 
         char[] hexChars = new char[length * 2];
@@ -43,6 +43,22 @@ public class Helpers {
             hexChars[i * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    /**
+     * Converts hex string into its byte[] representation.
+     *
+     * @param s
+     * @return
+     */
+    public static byte[] hexStringToBytes(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return data;
     }
 
     /**

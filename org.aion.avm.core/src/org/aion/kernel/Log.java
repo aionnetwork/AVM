@@ -46,9 +46,9 @@ public class Log {
     @Override
     public String toString() {
         return "Log{" +
-                "address=" + Helpers.toHexString(address) +
-                ", topics=[" + topics.stream().map(Helpers::toHexString).collect(Collectors.joining(",")) + "]" +
-                ", data=" + Helpers.toHexString(data) +
+                "address=" + Helpers.bytesToHexString(address) +
+                ", topics=[" + topics.stream().map(Helpers::bytesToHexString).collect(Collectors.joining(",")) + "]" +
+                ", data=" + Helpers.bytesToHexString(data) +
                 '}';
     }
 }

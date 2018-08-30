@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
@@ -23,7 +25,7 @@ import org.objectweb.asm.tree.TryCatchBlockNode;
 
 
 public class RejectionClassVisitorTest {
-    private UserClassMappingVisitor mapper = null;
+    private NamespaceMapper mapper = null;
 
     @Test
     public void testFiltering() throws Exception {
@@ -31,13 +33,14 @@ public class RejectionClassVisitorTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
 
         Set<String> userClassDotNameSet = Set.of(className, className+"$A", className+"$B");
+        PreRenameClassAccessRules preRenameClassAccessRules = createTestingAccessRules(userClassDotNameSet);
         // user class mapper, which also rejects illegal class access
-        mapper = new UserClassMappingVisitor(userClassDotNameSet);
+        mapper = new NamespaceMapper(preRenameClassAccessRules);
 
         // We want to prove we can strip out everything so don't use any special parsing options for this visitor.
         byte[] filteredBytes = new ClassToolchain.Builder(raw, 0)
-                .addNextVisitor(new RejectionClassVisitor(userClassDotNameSet))
-                .addNextVisitor(mapper)
+                .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, mapper))
+                .addNextVisitor(new UserClassMappingVisitor(mapper))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();
@@ -154,6 +157,30 @@ public class RejectionClassVisitorTest {
         commonFilterBytes(className, raw);
     }
 
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_nonWhitelistReceiverType() throws Exception {
+        String className = SendToNonWhitelistType.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        // Expected to fail since a method we are trying to call is defined in "java.util.Scanner", which is not on the JCL whitelist.
+        commonFilterBytes(className, raw);
+    }
+
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_missingMethod_stringStaticJoin() throws Exception {
+        String className = RejectStaticStringCall.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        // Expected to fail since a method we are trying to call is defined on a class we handle, but it is a method we don't.
+        commonFilterBytes(className, raw);
+    }
+
+    @Test(expected=RejectedClassException.class)
+    public void testRejection_missingMethod_decimalVirtualDivide() throws Exception {
+        String className = RejectBigDecimalDivision.class.getName();
+        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        // Expected to fail since a method we are trying to call is defined on a class we handle, but it is a method we don't.
+        commonFilterBytes(className, raw);
+    }
+
 
     private void compareClasses(ClassNode inputNode, ClassNode outputNode) {
         // Access is unchanged.
@@ -180,7 +207,7 @@ public class RejectionClassVisitorTest {
         for (int i = 0; i < inputInnerClasses.size(); ++i) {
             // Names received user renaming - but only the classes which are strictly user-defined (not MethodHandles).
             String inputName = inputInnerClasses.get(i).name;
-            String expectedName = mapper.testMapType(inputName);
+            String expectedName = mapper.mapType(inputName);
             Assert.assertEquals(expectedName, outputInnerClasses.get(i).name);
         }
         
@@ -190,7 +217,7 @@ public class RejectionClassVisitorTest {
         Assert.assertEquals(inputInterfaces.size(), outputInterfaces.size());
         
         for (int i = 0; i < inputInterfaces.size(); ++i) {
-            Assert.assertEquals(mapper.testMapType(inputInterfaces.get(i)), outputInterfaces.get(i));
+            Assert.assertEquals(mapper.mapType(inputInterfaces.get(i)), outputInterfaces.get(i));
         }
         
         // Neither use any invisible annotations.
@@ -224,7 +251,7 @@ public class RejectionClassVisitorTest {
         // We expect the sourceFile to be removed.
         Assert.assertNull(outputNode.sourceFile);
         
-        Assert.assertEquals(mapper.testMapType(inputNode.superName), outputNode.superName);
+        Assert.assertEquals(mapper.mapType(inputNode.superName), outputNode.superName);
     }
 
     private void compareFields(FieldNode inputField, FieldNode outputField) {
@@ -236,8 +263,8 @@ public class RejectionClassVisitorTest {
         Assert.assertNull(outputField.attrs);
         
         // Field name and descriptor
-        Assert.assertEquals(UserClassMappingVisitor.mapFieldName(inputField.name), outputField.name);
-        Assert.assertEquals(mapper.testMapDescriptor(inputField.desc), outputField.desc);
+        Assert.assertEquals(NamespaceMapper.mapFieldName(inputField.name), outputField.name);
+        Assert.assertEquals(mapper.mapDescriptor(inputField.desc), outputField.desc);
         
         // Neither use any invisible annotations.
         Assert.assertNull(inputField.invisibleAnnotations);
@@ -258,12 +285,12 @@ public class RejectionClassVisitorTest {
 
     private void compareMethods(MethodNode inputMethod, MethodNode outputMethod) {
         Assert.assertEquals(inputMethod.access, outputMethod.access);
-        Assert.assertEquals(mapper.testMapDescriptor(inputMethod.desc), outputMethod.desc);
+        Assert.assertEquals(mapper.mapDescriptor(inputMethod.desc), outputMethod.desc);
         Assert.assertEquals(inputMethod.invisibleAnnotableParameterCount, outputMethod.invisibleAnnotableParameterCount);
         Assert.assertEquals(inputMethod.maxLocals, outputMethod.maxLocals);
         Assert.assertEquals(inputMethod.maxStack, outputMethod.maxStack);
 
-        Assert.assertEquals(UserClassMappingVisitor.mapMethodName(inputMethod.name), outputMethod.name);
+        Assert.assertEquals(NamespaceMapper.mapMethodName(inputMethod.name), outputMethod.name);
         
         // Signature is now null.
         Assert.assertNull(outputMethod.signature);
@@ -319,12 +346,20 @@ public class RejectionClassVisitorTest {
 
     private byte[] commonFilterBytes(String classDotName, byte[] testBytes) throws IOException {
         Set<String> userClassDotNameSet = Set.of(classDotName);
+        PreRenameClassAccessRules singletonRules = createTestingAccessRules(userClassDotNameSet);
+        NamespaceMapper mapper = new NamespaceMapper(singletonRules);
         byte[] filteredBytes = new ClassToolchain.Builder(testBytes, 0)
-                .addNextVisitor(new RejectionClassVisitor(userClassDotNameSet))
-                .addNextVisitor(new UserClassMappingVisitor(userClassDotNameSet))
+                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper))
+                .addNextVisitor(new UserClassMappingVisitor(mapper))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();
         return filteredBytes;
+    }
+
+    private PreRenameClassAccessRules createTestingAccessRules(Set<String> userClassDotNameSet) {
+        // WARNING:  We are providing the class set as both the "classes only" and "classes plus interfaces" sets.
+        // This works for this test but, in general, is not correct.
+        return new PreRenameClassAccessRules(userClassDotNameSet, userClassDotNameSet);
     }
 }

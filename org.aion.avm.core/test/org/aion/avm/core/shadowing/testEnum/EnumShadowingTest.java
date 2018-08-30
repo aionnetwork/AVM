@@ -2,9 +2,7 @@ package org.aion.avm.core.shadowing.testEnum;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.internal.Helper;
+import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.*;
 
 import java.lang.reflect.InvocationTargetException;
@@ -31,7 +29,7 @@ public class EnumShadowingTest {
     @Test
     public void testEnumAccess() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testEnumAccess"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testEnumAccess"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -40,7 +38,7 @@ public class EnumShadowingTest {
     @Test
     public void testEnumValues() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testEnumValues"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testEnumValues"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);
@@ -49,7 +47,7 @@ public class EnumShadowingTest {
     @Test
     public void testShadowJDKEnum() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testShadowJDKEnum"));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testShadowJDKEnum"));
 
         Object ret = method.invoke(obj);
         Assert.assertEquals(ret, true);

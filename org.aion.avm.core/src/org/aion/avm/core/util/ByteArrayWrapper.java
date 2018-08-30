@@ -36,6 +36,6 @@ public final class ByteArrayWrapper
 
     @Override
     public String toString() {
-        return Helpers.toHexString(data);
+        return Helpers.bytesToHexString(data);
     }
 }

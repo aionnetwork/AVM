@@ -190,7 +190,7 @@ public class TransactionResult {
     public String toString() {
         return "TransactionResult{" +
                 "statusCode=" + statusCode +
-                ", returnData=" + (returnData == null ? "NULL" : Helpers.toHexString(returnData)) +
+                ", returnData=" + (returnData == null ? "NULL" : Helpers.bytesToHexString(returnData)) +
                 ", energyUsed=" + energyUsed +
                 ", logs=[" + logs.stream().map(Log::toString).collect(Collectors.joining(",")) + "]" +
                 '}';
