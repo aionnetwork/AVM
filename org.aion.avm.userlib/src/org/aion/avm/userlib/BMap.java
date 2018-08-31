@@ -2,94 +2,211 @@ package org.aion.avm.userlib;
 
 import java.util.*;
 
+/**
+ * B+ Tree based implementation of the {@code Map} interface.
+ *
+ * This implementation provides all of the optional map operations, and permits {@code null} values.
+ * {@code null} key will be rejected for this map.
+ *
+ * <p>This implementation provides log-time performance for the basic operations ({@code get} and {@code put}),
+ * assuming the hashCode() function disperses the elements properly.
+ * Iteration over collection views requires linear time.
+ * If BMap has more than {@code order} number of entries, it is at least half full.
+ *
+ * Instead of using key as router in internal node, BMap use the hash code of the key as router to make its
+ * energy cost cheap on Aion blockchain.
+ */
+
 public class BMap<K, V> implements Map<K, V> {
 
-    // Current size of the map
+    /**
+     * The default order of Btree map
+     */
+    static final int DEFAULT_ORDER = 4;
+
+    /**
+     * The current size of the map
+     */
     private int size;
 
-    // The root of the BMap
-    // It will be a BLeafNode when size of the map is less than MAX_LEAF_SIZE
-    // It will be a BInternalNode when size of the map is greater than MAX_INTERNAL_SIZE
+    /**
+     * The order of the Btree map
+     * For a BTree, on each node
+     * There will be at least (order) number of entries.
+     * There will be at most (2 * order) number of entries.
+     * Order can not be changed after map is created
+     */
+    private final int order;
+
+    /**
+     * The root of the BTree map
+     * It will be a leaf node when size of the map is less than (2 * order)
+     * It will be a internal node when size of the map is more than (2 * order)
+     */
     private BNode root;
 
-    // The maximum size (number of routers) of the internal node
-    private int order = 4;
-
+    /**
+     * Constructs an empty {@code BMap} with the default order (4).
+     */
     public BMap(){
+        this.order = DEFAULT_ORDER;
         this.size = 0;
         this.root = new BLeafNode();
     }
 
+    /**
+     * Constructs an empty {@code BMap} with initial order.
+     *
+     * @param order The order of the {@code BMap}
+     */
+    public BMap(int order){
+        this.order = order;
+        this.size = 0;
+        this.root = new BLeafNode();
+    }
+
+    /**
+     * Returns the number of key-value mappings in this map.
+     *
+     * @return the number of key-value mappings in this map
+     */
     @Override
     public int size() {
         return size;
     }
 
+
+    /**
+     * Returns {@code true} if this map contains no key-value mappings.
+     *
+     * @return {@code true} if this map contains no key-value mappings
+     */
     @Override
     public boolean isEmpty() {
         return this.size == 0;
     }
 
+    /**
+     * Returns {@code true} if this map contains a mapping for the
+     * specified key.
+     *
+     * @param   key   The key whose presence in this map is to be tested
+     * @return {@code true} if this map contains a mapping for the specified
+     * key.
+     */
     @Override
     public boolean containsKey(Object key) {
-        return (null != this.get(key));
+        keyNullCheck((K) key);
+        BEntry entry = this.searchForLeaf((K)key).searchForEntry(key);
+        return (null != entry);
     }
 
+    /**
+     * Returns {@code true} if this map maps one or more keys to the
+     * specified value.
+     *
+     * @param value value whose presence in this map is to be tested
+     * @return {@code true} if this map maps one or more keys to the
+     *         specified value
+     */
     @Override
     public boolean containsValue(Object value) {
+        for (Entry e : this.entrySet()){
+            if (e.getValue().equals(value)){
+                return true;
+            }
+        }
         return false;
     }
 
+    /**
+     * Returns the value to which the specified key is mapped,
+     * or {@code null} if this map contains no mapping for the key.
+     *
+     * <p>A return value of {@code null} does not <i>necessarily</i>
+     * indicate that the map contains no mapping for the key; it's also
+     * possible that the map explicitly maps the key to {@code null}.
+     * The {@link #containsKey containsKey} operation may be used to
+     * distinguish these two cases.
+     *
+     */
     @Override
     public V get(Object key) {
         keyNullCheck((K) key);
-
         BEntry entry = this.searchForLeaf((K)key).searchForEntry(key);
-
         return (null == entry) ? null : (V) entry.value;
     }
 
+
+    /**
+     * Associates the specified value with the specified key in this map.
+     * If the map previously contained a mapping for the key, the old
+     * value is replaced.
+     *
+     * @param key key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     * @return the previous value associated with {@code key}, or
+     *         {@code null} if there was no mapping for {@code key}.
+     *         (A {@code null} return can also indicate that the map
+     *         previously associated {@code null} with {@code key}.)
+     */
     @Override
     public V put(K key, V value) {
         keyNullCheck(key);
-
         V ret = null;
 
+        // Search for the leaf and slot
         BLeafNode leaf = this.searchForLeaf(key);
-
         int slotIdx = leaf.searchForEntrySlot(key);
 
         if (-1 == slotIdx){
-            // If entry is not present, add it into the leaf node
+            // If slot is not present, insert new entry into the leaf node
             bInsert(key, value);
             size++;
         }else {
-            // If entryHead is present, search for entry
+            // If slot is present, search for entry
             BEntry cur = leaf.searchForEntryInSlot(key, slotIdx);
 
             if (null != cur){
+                // if entry is present, replace the value, return the old value
                 ret = (V) cur.getValue();
                 cur.setValue(value);
             }else{
+                // If entry is not present, add new entry as new head of the slot
                 BEntry<K, V> newEntry = new BEntry<>(key, value);
                 newEntry.next = leaf.entries[slotIdx];
                 leaf.entries[slotIdx] = newEntry;
                 size++;
             }
         }
-
         return ret;
     }
 
+    /**
+     * Removes the mapping for the specified key from this map if present.
+     *
+     * @param  key key whose mapping is to be removed from the map
+     * @return the previous value associated with {@code key}, or
+     *         {@code null} if there was no mapping for {@code key}.
+     *         (A {@code null} return can also indicate that the map
+     *         previously associated {@code null} with {@code key}.)
+     */
     @Override
     public V remove(Object key) {
+        keyNullCheck((K) key);
         V ret = (V) root.delete(key);
-
         if (null != ret){size--;}
-
         return ret;
     }
 
+    /**
+     * Copies all of the mappings from the specified map to this map.
+     * These mappings will replace any mappings that this map had for
+     * any of the keys currently in the specified map.
+     *
+     * @param m mappings to be stored in this map
+     * @throws NullPointerException if the specified map is null
+     */
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         for (Entry e : m.entrySet()){
@@ -97,65 +214,97 @@ public class BMap<K, V> implements Map<K, V> {
         }
     }
 
+
+    /**
+     * Removes all of the mappings from this map.
+     * The map will be empty after this call returns.
+     * The order of this map will remain the same.
+     */
     @Override
     public void clear() {
         this.size = 0;
         this.root = new BLeafNode();
     }
 
+    /**
+     * Returns a {@link Set} view of the keys contained in this map.
+     * The key set is based on snapshot of the map.
+     * Modifications of the map after key set generation will not be reflected back to existing key set, and vice-versa.
+     *
+     * @return a set view of the keys contained in this map
+     */
+    // TODO: Make this a reflection view instead of a snapshot
     @Override
     public Set<K> keySet() {
-        BLeafNode cur = getLeftMostLeaf();
+        BLeafNode curLeaf = getLeftMostLeaf();
         Set<K> ret = new AionSet<>();
 
-        while (null != cur){
-            for (int i = 0; i < cur.nodeSize; i ++){
-                BEntry<K, V> curE = cur.entries[i];
-                while(null != curE){
-                    ret.add(curE.key);
-                    curE = curE.next;
+        // Iterating through all leaf nodes
+        while (null != curLeaf){
+            // Iterating through all slots in current leaf node
+            for (int i = 0; i < curLeaf.nodeSize; i ++){
+                BEntry<K, V> curEntry = curLeaf.entries[i];
+                // Iterating through all entries in current slot
+                while(null != curEntry){
+                    // Put entry into key set
+                    ret.add(curEntry.key);
+                    curEntry = curEntry.next;
                 }
             }
-            cur = (BLeafNode) cur.next;
+            curLeaf = (BLeafNode) curLeaf.next;
         }
         return ret;
     }
 
+    /**
+     * Returns a {@link Collection} view of the values contained in this map.
+     * The values is based on snapshot of the map.
+     * Modifications of the map after values generation will not be reflected back to existing values, and vice-versa.
+     *
+     * @return a view of the values contained in this map
+     */
+    // TODO: Make this a reflection view instead of a snapshot
     @Override
     public Collection<V> values() {
-        BLeafNode cur = getLeftMostLeaf();
+        BLeafNode curLeaf = getLeftMostLeaf();
         List<V> ret = new AionList<>();
 
-        while (null != cur){
-            for (int i = 0; i < cur.nodeSize; i ++){
-                BEntry<K, V> curE = cur.entries[i];
-                while(null != curE){
-                    ret.add(curE.value);
-                    curE = curE.next;
+        while (null != curLeaf){
+            for (int i = 0; i < curLeaf.nodeSize; i ++){
+                BEntry<K, V> curEntry = curLeaf.entries[i];
+                while(null != curEntry){
+                    ret.add(curEntry.value);
+                    curEntry = curEntry.next;
                 }
             }
-            cur = (BLeafNode) cur.next;
+            curLeaf = (BLeafNode) curLeaf.next;
         }
-
         return ret;
     }
 
+    /**
+     * Returns a {@link Set} view of the mappings contained in this map.
+     * The entry set is based on a snapshot of the map.
+     * Modifications of the map after values generation will not be reflected back to existing entry set, and vice-versa.
+     *
+     * @return a set view of the mappings contained in this map
+     */
+    // TODO: Make this a reflection view instead of a snapshot
     @Override
     public Set<Entry<K, V>> entrySet() {
-        BLeafNode cur = getLeftMostLeaf();
+        BLeafNode curLeaf = getLeftMostLeaf();
         Set<Entry<K, V>> ret = new AionSet<>();
 
-        while (null != cur){
-            for (int i = 0; i < cur.nodeSize; i ++){
-                BEntry<K, V> curE = cur.entries[i];
-                while(null != curE){
-                    ret.add(curE);
-                    curE = curE.next;
+        while (null != curLeaf){
+            for (int i = 0; i < curLeaf.nodeSize; i ++){
+                BEntry<K, V> curEntry = curLeaf.entries[i];
+                while(null != curEntry){
+                    ret.add(curEntry);
+                    curEntry = curEntry.next;
                 }
             }
-            cur = (BLeafNode) cur.next;
+            curLeaf = (BLeafNode) curLeaf.next;
         }
-
         return ret;
     }
 
@@ -169,20 +318,22 @@ public class BMap<K, V> implements Map<K, V> {
         return super.hashCode();
     }
 
+    /**
+     * Abstract representation of a node of the BTree
+     * It can be a {@link BInternalNode} or {@link BLeafNode}
+     */
     abstract class BNode<K, V>{
-        int nodeSize;
-
+        //TODO: parent pointer can be discard if we adopt better delete implementation
         BNode parent;
 
         BNode next;
-
         BNode pre;
+
+        int nodeSize;
 
         abstract void insertNonFull(K key, V value);
 
         abstract V delete(K key);
-
-        abstract void splitChild(int i);
 
         void rebalance(){
             if (this.isUnderflow() && root != this){
@@ -247,9 +398,9 @@ public class BMap<K, V> implements Map<K, V> {
     }
 
     /**
-     * The Internal node of a BTree
+     * Internal node of the BTree
      */
-    class BTreeNode<K, V> extends BNode <K, V>{
+    class BInternalNode<K, V> extends BNode <K, V>{
         // Routers array for navigation
         private int[] routers;
 
@@ -257,7 +408,7 @@ public class BMap<K, V> implements Map<K, V> {
         // Children are either all internal nodes or all leaf nodes.
         BNode<K, V>[] children;
 
-        BTreeNode(){
+        BInternalNode(){
             this.routers = new int[2 * order - 1];
             this.children = new BNode[2 * order];
         }
@@ -329,10 +480,10 @@ public class BMap<K, V> implements Map<K, V> {
 
         @Override
         void borrowFromLeft(){
-            BTreeNode leftNode = (BTreeNode)this.pre;
+            BInternalNode leftNode = (BInternalNode)this.pre;
             BNode fChild = this.children[0];
 
-            BTreeNode anchor = (BTreeNode) getAnchor(leftNode);
+            BInternalNode anchor = (BInternalNode) getAnchor(leftNode);
             int slot = findSlot(anchor, leftNode, this);
 
             // Shift current tree node to right by 1, insert the right most node from left sibling
@@ -353,9 +504,9 @@ public class BMap<K, V> implements Map<K, V> {
 
         @Override
         void mergeToLeft(){
-            BTreeNode leftNode = (BTreeNode)this.pre;
+            BInternalNode leftNode = (BInternalNode)this.pre;
 
-            BTreeNode anchor = (BTreeNode) getAnchor(leftNode);
+            BInternalNode anchor = (BInternalNode) getAnchor(leftNode);
             int slot = findSlot(anchor, leftNode, this);
 
             for (int i = 0; i < this.nodeSize; i++){
@@ -376,10 +527,10 @@ public class BMap<K, V> implements Map<K, V> {
 
         @Override
         void borrowFromRight(){
-            BTreeNode rightNode = (BTreeNode)this.next;
+            BInternalNode rightNode = (BInternalNode)this.next;
             BNode childToMove = rightNode.children[0];
 
-            BTreeNode anchor = (BTreeNode) getAnchor(rightNode);
+            BInternalNode anchor = (BInternalNode) getAnchor(rightNode);
             int slot = findSlot(anchor, this, rightNode);
 
             // Move the head of the right node to the tail of the current node
@@ -396,9 +547,9 @@ public class BMap<K, V> implements Map<K, V> {
 
         @Override
         void mergeToRight(){
-            BTreeNode rightNode = (BTreeNode)this.next;
+            BInternalNode rightNode = (BInternalNode)this.next;
 
-            BTreeNode anchor = (BTreeNode) getAnchor(rightNode);
+            BInternalNode anchor = (BInternalNode) getAnchor(rightNode);
             int slot = findSlot(anchor, this, rightNode);
 
             for (int i = 0; i < this.nodeSize; i++){
@@ -426,16 +577,10 @@ public class BMap<K, V> implements Map<K, V> {
             root = this.children[0];
             root.parent = null;
         }
-
-        @Override
-        void splitChild(int i) {
-
-        }
-
     }
 
     /**
-     * The leaf node of a BTree
+     * Leaf node of the BTree
      */
     class BLeafNode<K, V> extends BNode <K, V>{
         // Entry array for data storage
@@ -523,6 +668,7 @@ public class BMap<K, V> implements Map<K, V> {
                 }
                 if (null != cur) {
                     pre.next = cur.next;
+                    ret = cur.value;
                 }
             }
 
@@ -541,7 +687,7 @@ public class BMap<K, V> implements Map<K, V> {
             BLeafNode leftNode = (BLeafNode)this.pre;
 
             // Need to update router within anchor node
-            BTreeNode anchor = (BTreeNode) getAnchor(leftNode);
+            BInternalNode anchor = (BInternalNode) getAnchor(leftNode);
             int slot = findSlot(anchor, leftNode, this);
 
             // Shift current leaf to right by 1, insert the right most node from left sibling
@@ -572,7 +718,7 @@ public class BMap<K, V> implements Map<K, V> {
             BLeafNode rightNode = (BLeafNode)this.next;
 
             // Need to update router within anchor node
-            BTreeNode anchor = (BTreeNode) getAnchor(rightNode);
+            BInternalNode anchor = (BInternalNode) getAnchor(rightNode);
             int slot = findSlot(anchor, this, rightNode);
 
             // Move the head of the right node to the tail of the current node
@@ -601,16 +747,10 @@ public class BMap<K, V> implements Map<K, V> {
         void collapseRoot() {
             // Do nothing is root is leaf node
         }
-
-        @Override
-        void splitChild(int i) {
-
-        }
-
     }
 
     /**
-     * The Entry (K V pair) of BMap
+     * Entry (K V pair) of BMap
      */
     class BEntry<K, V> implements Map.Entry<K, V>{
 
@@ -655,27 +795,26 @@ public class BMap<K, V> implements Map<K, V> {
         }
     }
 
-    public BLeafNode getLeftMostLeaf(){
+
+    /**
+     * Returns the left most {@link BLeafNode} of the BTree.
+     * This node serves as the entry point of data traversal.
+     *
+     * @return the left most {@link BLeafNode} of the BTree.
+     */
+    BLeafNode getLeftMostLeaf(){
         BNode cur = this.root;
-
         while (!(cur instanceof BLeafNode)){
-            cur = ((BTreeNode) cur).children[0];
+            cur = ((BInternalNode) cur).children[0];
         }
-
         return (BLeafNode)cur;
-    }
-
-    private void keyNullCheck(Object key){
-        if (null == key){
-            throw new NullPointerException("BMap does not allow empty key.");
-        }
     }
 
     private BLeafNode searchForLeaf(K key){
         BNode cur = this.root;
 
         while (!(cur instanceof BLeafNode)){
-            BTreeNode tmp = (BTreeNode) cur;
+            BInternalNode tmp = (BInternalNode) cur;
 
             int i = tmp.nodeSize - 1;
             while (i > 0 && key.hashCode() < tmp.routers[i - 1]){
@@ -687,21 +826,16 @@ public class BMap<K, V> implements Map<K, V> {
         return (BLeafNode)cur;
     }
 
-    private BEntry<K, V> searchWithInEntrySlot(BEntry<K, V> head, K key){
-        BEntry cur = head;
-        while(cur != null){
-            if (cur.key.equals(key)){
-                return cur;
-            }
-            cur = cur.next;
+    private void keyNullCheck(Object key){
+        if (null == key){
+            throw new NullPointerException("BMap does not allow empty key.");
         }
-        return null;
     }
 
     private void bInsert(K key, V value){
         BNode r = this.root;
         if (r.nodeSize == ((2 * order))){
-            BTreeNode s = new BTreeNode();
+            BInternalNode s = new BInternalNode();
             this.root = s;
             s.nodeSize = 1;
             s.children[0] = r;
@@ -713,19 +847,19 @@ public class BMap<K, V> implements Map<K, V> {
         }
     }
 
-    private void bSplitChild(BTreeNode x, int i){
-        if (x.children[i] instanceof BTreeNode){
+    private void bSplitChild(BInternalNode x, int i){
+        if (x.children[i] instanceof BMap.BInternalNode){
             bSplitTreeChild(x, i);
         }else{
             bSplitLeafChild(x, i);
         }
     }
 
-    private void bSplitTreeChild(BTreeNode x, int i){
+    private void bSplitTreeChild(BInternalNode x, int i){
         // Left node
-        BTreeNode y = (BTreeNode) x.children[i];
+        BInternalNode y = (BInternalNode) x.children[i];
         // Right node
-        BTreeNode z = new BTreeNode();
+        BInternalNode z = new BInternalNode();
 
         // Right node has t children
         z.nodeSize = order;
@@ -769,7 +903,7 @@ public class BMap<K, V> implements Map<K, V> {
         x.nodeSize++;
     }
 
-    private void bSplitLeafChild(BTreeNode x, int i){
+    private void bSplitLeafChild(BInternalNode x, int i){
         BLeafNode y = (BLeafNode) x.children[i];
         BLeafNode z = new BLeafNode();
 
@@ -806,7 +940,7 @@ public class BMap<K, V> implements Map<K, V> {
         x.nodeSize++;
     }
 
-    private int findSlot(BTreeNode anchor, BLeafNode left, BLeafNode right){
+    private int findSlot(BInternalNode anchor, BLeafNode left, BLeafNode right){
         int lvalue = left.entries[left.nodeSize - 1].hashCode();
         int rvalue = right.entries[0].hashCode();
 
@@ -817,7 +951,7 @@ public class BMap<K, V> implements Map<K, V> {
         return i;
     }
 
-    private int findSlot(BTreeNode anchor, BTreeNode left, BTreeNode right) {
+    private int findSlot(BInternalNode anchor, BInternalNode left, BInternalNode right) {
 
         int lvalue = left.routers[0];
         int rvalue = right.routers[0];
