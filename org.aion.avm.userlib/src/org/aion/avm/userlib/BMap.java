@@ -1,9 +1,6 @@
 package org.aion.avm.userlib;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class BMap<K, V> implements Map<K, V> {
 
@@ -59,16 +56,26 @@ public class BMap<K, V> implements Map<K, V> {
         V ret = null;
 
         BLeafNode leaf = this.searchForLeaf(key);
-        BEntry entry = leaf.searchForEntry(key);
 
-        if (null == entry){
+        int slotIdx = leaf.searchForEntrySlot(key);
+
+        if (-1 == slotIdx){
             // If entry is not present, add it into the leaf node
             bInsert(key, value);
-            size = size + 1;
-        }else{
-            // If entry is present, replace it with new value
-            ret = (V) entry.getValue();
-            entry.setValue(value);
+            size++;
+        }else {
+            // If entryHead is present, search for entry
+            BEntry cur = leaf.searchForEntryInSlot(key, slotIdx);
+
+            if (null != cur){
+                ret = (V) cur.getValue();
+                cur.setValue(value);
+            }else{
+                BEntry<K, V> newEntry = new BEntry<>(key, value);
+                newEntry.next = leaf.entries[slotIdx];
+                leaf.entries[slotIdx] = newEntry;
+                size++;
+            }
         }
 
         return ret;
@@ -103,11 +110,14 @@ public class BMap<K, V> implements Map<K, V> {
 
         while (null != cur){
             for (int i = 0; i < cur.nodeSize; i ++){
-                ret.add((K) cur.entries[i].key);
+                BEntry<K, V> curE = cur.entries[i];
+                while(null != curE){
+                    ret.add(curE.key);
+                    curE = curE.next;
+                }
             }
             cur = (BLeafNode) cur.next;
         }
-
         return ret;
     }
 
@@ -118,7 +128,11 @@ public class BMap<K, V> implements Map<K, V> {
 
         while (null != cur){
             for (int i = 0; i < cur.nodeSize; i ++){
-                ret.add((V) cur.entries[i].value);
+                BEntry<K, V> curE = cur.entries[i];
+                while(null != curE){
+                    ret.add(curE.value);
+                    curE = curE.next;
+                }
             }
             cur = (BLeafNode) cur.next;
         }
@@ -133,7 +147,11 @@ public class BMap<K, V> implements Map<K, V> {
 
         while (null != cur){
             for (int i = 0; i < cur.nodeSize; i ++){
-                ret.add(cur.entries[i]);
+                BEntry<K, V> curE = cur.entries[i];
+                while(null != curE){
+                    ret.add(curE);
+                    curE = curE.next;
+                }
             }
             cur = (BLeafNode) cur.next;
         }
@@ -280,7 +298,6 @@ public class BMap<K, V> implements Map<K, V> {
             return ret;
         }
 
-        //TODO
         private boolean recalibrate(){
             boolean ret = false;
 
@@ -306,8 +323,6 @@ public class BMap<K, V> implements Map<K, V> {
                     }
                 }
             }
-
-            //update the first router
 
             if (ret) this.nodeSize--;
             return ret;
@@ -422,22 +437,51 @@ public class BMap<K, V> implements Map<K, V> {
 
     class BLeafNode<K, V> extends BNode <K, V>{
         // Entry array for data storage
-        private BEntry<K, V>[] entries;
+        BEntry<K, V>[] entries;
 
         BLeafNode(){
             this.entries = new BEntry[2 * order];
         }
 
-        // Search for entry within this leaf node
-        // TODO: Adopt log(N) search for entry within leaf node
-        public BEntry searchForEntry(K key){
+        public int searchForEntrySlot(K key){
             int i = 0;
-            while (i < nodeSize && !key.equals(entries[i].getKey())){
+            while (i < nodeSize && key.hashCode() != entries[i].hashCode()){
                 i = i + 1;
             }
 
-            if (i < nodeSize && key.equals(entries[i].getKey())){
-                return entries[i];
+            if (i < nodeSize && key.hashCode() == entries[i].hashCode()){
+                return i;
+            }
+
+            return -1;
+        }
+
+        public BEntry searchForEntryInSlot(K key, int slot){
+            BEntry cur = entries[slot];
+            while(cur != null){
+                if (cur.key.equals(key)){
+                    return cur;
+                }
+                cur = cur.next;
+            }
+            return null;
+        }
+
+        public BEntry searchForEntry(K key){
+            int i = 0;
+            while (i < nodeSize && key.hashCode() != entries[i].hashCode()){
+                i = i + 1;
+            }
+
+            if (i < nodeSize && key.hashCode() == entries[i].hashCode()){
+                //Find the leaf slot, search within linked list
+                BEntry cur = entries[i];
+                while(cur != null){
+                    if (cur.key.equals(key)){
+                        return cur;
+                    }
+                    cur = cur.next;
+                }
             }
 
             return null;
@@ -460,19 +504,30 @@ public class BMap<K, V> implements Map<K, V> {
         V delete(K key) {
             V ret = null;
 
-            int i = 0;
-            while (i < nodeSize && !key.equals(entries[i].getKey())){
-                i = i + 1;
+            int slotidx = this.searchForEntrySlot(key);
+
+            if (-1 == slotidx) {return ret;}
+
+            BEntry<K, V> pre = entries[slotidx];
+            BEntry<K, V> cur = pre.next;
+
+            if (pre.key.equals(key)){
+                ret = pre.value;
+                entries[slotidx] = pre.next;
+            }else {
+                while (null != cur && !cur.equals(key)) {
+                    cur = cur.next;
+                    pre = pre.next;
+                }
+                if (null != cur) {
+                    pre.next = cur.next;
+                }
             }
 
-            if (i < nodeSize && key.equals(entries[i].getKey())){
-                ret = entries[i].getValue();
-
-                // Shift and remove entry
-                System.arraycopy(this.entries, i + 1, this.entries, i, this.nodeSize - i - 1);
+            if (null == entries[slotidx]){
+                System.arraycopy(this.entries, slotidx + 1, this.entries, slotidx, this.nodeSize - slotidx - 1);
                 entries[nodeSize - 1] = null;
                 this.nodeSize--;
-
                 this.rebalance();
             }
 
@@ -559,9 +614,12 @@ public class BMap<K, V> implements Map<K, V> {
 
         private V value;
 
+        public BEntry<K, V> next;
+
         public BEntry(K key, V value){
             this.key = key;
             this.value = value;
+            this.next = null;
         }
 
         @Override
@@ -617,7 +675,18 @@ public class BMap<K, V> implements Map<K, V> {
         return (BLeafNode)cur;
     }
 
-    private BLeafNode getLeftMostLeaf(){
+    private BEntry<K, V> searchWithInEntrySlot(BEntry<K, V> head, K key){
+        BEntry cur = head;
+        while(cur != null){
+            if (cur.key.equals(key)){
+                return cur;
+            }
+            cur = cur.next;
+        }
+        return null;
+    }
+
+    public BLeafNode getLeftMostLeaf(){
         BNode cur = this.root;
 
         while (!(cur instanceof BLeafNode)){
@@ -750,8 +819,6 @@ public class BMap<K, V> implements Map<K, V> {
 
         int lvalue = left.routers[0];
         int rvalue = right.routers[0];
-
-        assert (lvalue < rvalue);
 
         int i = 0;
         while (!(lvalue < anchor.routers[i] && rvalue >= anchor.routers[i])) {
