@@ -340,7 +340,7 @@ public class AvmCLI implements UserInterface{
 
             @Override
             public void dumpThrowable(Throwable throwable) {
-
+                throwable.printStackTrace();
             }
         };
         internalMain(env, args);
