@@ -59,13 +59,20 @@
         <chmod perm="755" file="${dir.global.workspace}/dist/compile.sh"></chmod>
 
         <javadoc packagenames="org.aion.avm.api.*"
-                 sourcepath="org.aion.avm.api/src/"
                  defaultexcludes="yes"
                  destdir="${dir.global.workspace}/dist/javadoc"
                  author="true"
                  version="true"
                  use="true"
                  windowtitle="AVM Blockchain API">
+            <fileset dir="org.aion.avm.api/src">
+                <include name="**/*.java"/>
+                <exclude name="**/module-info.java"/>
+            </fileset>
+            <fileset dir="org.aion.avm.userlib/src">
+                <include name="**/*.java"/>
+                <exclude name="**/module-info.java"/>
+            </fileset>
         </javadoc>
     </target>
 
