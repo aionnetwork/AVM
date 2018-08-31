@@ -14,7 +14,6 @@ public final class ABIEncoder {
      * Encode one object of any type that Aion ABI allows; generate the byte array that contains the descriptor and the encoded data.
      * @param data one object of any type that Aion ABI allows
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * @return the encoded byte array
      */
     public static byte[] encodeOneObject(Object data) {
         return null;

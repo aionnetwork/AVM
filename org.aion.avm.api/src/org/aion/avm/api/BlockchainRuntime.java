@@ -289,6 +289,8 @@ public final class BlockchainRuntime {
 
     /**
      * Prints a message, for debugging purpose
+     *
+     * @param message the message to print
      */
     public static void print(String message) {
 
@@ -296,6 +298,8 @@ public final class BlockchainRuntime {
 
     /**
      * Prints a message, for debugging purpose
+     *
+     * @param message the message to print
      */
     public static void println(String message) {
 
