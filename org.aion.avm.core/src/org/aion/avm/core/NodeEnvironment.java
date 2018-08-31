@@ -32,6 +32,7 @@ public class NodeEnvironment {
     private final AvmSharedClassLoader sharedClassLoader;
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap;
 
+    private Class<?>[] shadowClasses;
     private Set<String> jclClassNames;
 
     public final Map<String, Integer> shadowObjectSizeMap;  // pre-rename; shadow objects and exceptions
@@ -43,14 +44,75 @@ public class NodeEnvironment {
         Map<String, byte[]> generatedShadowJDK = CommonGenerators.generateShadowJDK();
         this.sharedClassLoader = new AvmSharedClassLoader(generatedShadowJDK);
         try {
-            this.jclClassNames = loadShadowClasses(NodeEnvironment.class.getClassLoader());
+            this.shadowClasses = new Class<?>[] {
+                    org.aion.avm.shadow.java.lang.AssertionError.class
+                    , org.aion.avm.shadow.java.lang.Boolean.class
+                    , org.aion.avm.shadow.java.lang.Byte.class
+                    , org.aion.avm.shadow.java.lang.Character.class
+                    , org.aion.avm.shadow.java.lang.CharSequence.class
+                    , org.aion.avm.shadow.java.lang.Class.class
+                    , org.aion.avm.shadow.java.lang.Double.class
+                    , org.aion.avm.shadow.java.lang.Enum.class
+                    , org.aion.avm.shadow.java.lang.EnumConstantNotPresentException.class
+                    , org.aion.avm.shadow.java.lang.Error.class
+                    , org.aion.avm.shadow.java.lang.Exception.class
+                    , org.aion.avm.shadow.java.lang.Float.class
+                    , org.aion.avm.shadow.java.lang.Integer.class
+                    , org.aion.avm.shadow.java.lang.Iterable.class
+                    , org.aion.avm.shadow.java.lang.Long.class
+                    , org.aion.avm.shadow.java.lang.Math.class
+                    , org.aion.avm.shadow.java.lang.Number.class
+                    , org.aion.avm.shadow.java.lang.Object.class
+                    , org.aion.avm.shadow.java.lang.Runnable.class
+                    , org.aion.avm.shadow.java.lang.RuntimeException.class
+                    , org.aion.avm.shadow.java.lang.Short.class
+                    , org.aion.avm.shadow.java.lang.StrictMath.class
+                    , org.aion.avm.shadow.java.lang.String.class
+                    , org.aion.avm.shadow.java.lang.StringBuffer.class
+                    , org.aion.avm.shadow.java.lang.StringBuilder.class
+                    , org.aion.avm.shadow.java.lang.System.class
+                    , org.aion.avm.shadow.java.lang.Throwable.class
+                    , org.aion.avm.shadow.java.lang.TypeNotPresentException.class
 
+                    , org.aion.avm.shadow.java.lang.invoke.LambdaMetafactory.class
+                    , org.aion.avm.shadow.java.lang.invoke.StringConcatFactory.class
+
+                    , org.aion.avm.shadow.java.math.BigDecimal.class
+                    , org.aion.avm.shadow.java.math.BigInteger.class
+                    , org.aion.avm.shadow.java.math.MathContext.class
+                    , org.aion.avm.shadow.java.math.RoundingMode.class
+
+                    , org.aion.avm.shadow.java.nio.Buffer.class
+                    , org.aion.avm.shadow.java.nio.ByteBuffer.class
+                    , org.aion.avm.shadow.java.nio.ByteOrder.class
+                    , org.aion.avm.shadow.java.nio.CharBuffer.class
+                    , org.aion.avm.shadow.java.nio.DoubleBuffer.class
+                    , org.aion.avm.shadow.java.nio.FloatBuffer.class
+                    , org.aion.avm.shadow.java.nio.IntBuffer.class
+                    , org.aion.avm.shadow.java.nio.LongBuffer.class
+                    , org.aion.avm.shadow.java.nio.ShortBuffer.class
+
+                    , org.aion.avm.shadow.java.util.Arrays.class
+                    , org.aion.avm.shadow.java.util.Collection.class
+                    , org.aion.avm.shadow.java.util.Iterator.class
+                    , org.aion.avm.shadow.java.util.ListIterator.class
+                    , org.aion.avm.shadow.java.util.Map.class
+                    , org.aion.avm.shadow.java.util.Map.Entry.class
+                    , org.aion.avm.shadow.java.util.Set.class
+                    , org.aion.avm.shadow.java.util.List.class
+                    , org.aion.avm.shadow.java.util.function.Function.class
+            };
+
+            this.jclClassNames = new HashSet<>();
+            // include the shadow classes we implement
+            this.jclClassNames.addAll(loadShadowClasses(NodeEnvironment.class.getClassLoader(), shadowClasses));
             // we have to add the common generated exception/error classes as it's not pre-loaded
             this.jclClassNames.addAll(Stream.of(CommonGenerators.kExceptionClassNames)
                     .map(Helpers::fulllyQualifiedNameToInternalName)
                     .collect(Collectors.toList()));
+            // include the invoke classes
             this.jclClassNames.add("java/lang/invoke/MethodHandles");
-            jclClassNames.add("java/lang/invoke/MethodHandle");
+            this.jclClassNames.add("java/lang/invoke/MethodHandle");
             this.jclClassNames.add("java/lang/invoke/MethodType");
             this.jclClassNames.add("java/lang/invoke/CallSite");
             this.jclClassNames.add("java/lang/invoke/MethodHandles$Lookup");
@@ -110,6 +172,18 @@ public class NodeEnvironment {
         return this.jclClassNames.contains(classNameSlash);
     }
 
+    /**
+     * Returns the shadow classes. Note this does not include the exceptions.
+     * @return
+     */
+    public List<Class<?>> getShadowClasses() {
+        return Arrays.asList(shadowClasses);
+    }
+
+    /**
+     * Returns the constant object map.
+     * @return
+     */
     public Map<Long, org.aion.avm.shadow.java.lang.Object> getConstantMap() {
         return this.constantMap;
     }
@@ -126,8 +200,7 @@ public class NodeEnvironment {
         return new AvmImpl(kernel);
     }
 
-
-    private static Set<String> loadShadowClasses(ClassLoader loader) throws ClassNotFoundException {
+    private static Set<String> loadShadowClasses(ClassLoader loader, Class<?>[] shadowClasses) throws ClassNotFoundException {
         // Create the fake IHelper.
         IHelper.currentContractHelper.set(new IHelper() {
             @Override
@@ -176,65 +249,7 @@ public class NodeEnvironment {
         });
 
         // Load all the classes - even just mentioning these might cause them to be loaded, even before the Class.forName().
-        Set<String> loadedClassNames = loadAndInitializeClasses(loader
-                , org.aion.avm.shadow.java.lang.AssertionError.class
-                , org.aion.avm.shadow.java.lang.Boolean.class
-                , org.aion.avm.shadow.java.lang.Byte.class
-                , org.aion.avm.shadow.java.lang.Character.class
-                , org.aion.avm.shadow.java.lang.CharSequence.class
-                , org.aion.avm.shadow.java.lang.Class.class
-                , org.aion.avm.shadow.java.lang.Double.class
-                , org.aion.avm.shadow.java.lang.Enum.class
-                , org.aion.avm.shadow.java.lang.EnumConstantNotPresentException.class
-                , org.aion.avm.shadow.java.lang.Error.class
-                , org.aion.avm.shadow.java.lang.Exception.class
-                , org.aion.avm.shadow.java.lang.Float.class
-                , org.aion.avm.shadow.java.lang.Integer.class
-                , org.aion.avm.shadow.java.lang.Iterable.class
-                , org.aion.avm.shadow.java.lang.Long.class
-                , org.aion.avm.shadow.java.lang.Math.class
-                , org.aion.avm.shadow.java.lang.Number.class
-                , org.aion.avm.shadow.java.lang.Object.class
-                , org.aion.avm.shadow.java.lang.Runnable.class
-                , org.aion.avm.shadow.java.lang.RuntimeException.class
-                , org.aion.avm.shadow.java.lang.Short.class
-                , org.aion.avm.shadow.java.lang.StrictMath.class
-                , org.aion.avm.shadow.java.lang.String.class
-                , org.aion.avm.shadow.java.lang.StringBuffer.class
-                , org.aion.avm.shadow.java.lang.StringBuilder.class
-                , org.aion.avm.shadow.java.lang.System.class
-                , org.aion.avm.shadow.java.lang.Throwable.class
-                , org.aion.avm.shadow.java.lang.TypeNotPresentException.class
-
-                , org.aion.avm.shadow.java.lang.invoke.LambdaMetafactory.class
-                , org.aion.avm.shadow.java.lang.invoke.StringConcatFactory.class
-
-                , org.aion.avm.shadow.java.math.BigDecimal.class
-                , org.aion.avm.shadow.java.math.BigInteger.class
-                , org.aion.avm.shadow.java.math.MathContext.class
-                , org.aion.avm.shadow.java.math.RoundingMode.class
-
-                , org.aion.avm.shadow.java.nio.Buffer.class
-                , org.aion.avm.shadow.java.nio.ByteBuffer.class
-                , org.aion.avm.shadow.java.nio.ByteOrder.class
-                , org.aion.avm.shadow.java.nio.CharBuffer.class
-                , org.aion.avm.shadow.java.nio.DoubleBuffer.class
-                , org.aion.avm.shadow.java.nio.FloatBuffer.class
-                , org.aion.avm.shadow.java.nio.IntBuffer.class
-                , org.aion.avm.shadow.java.nio.LongBuffer.class
-                , org.aion.avm.shadow.java.nio.ShortBuffer.class
-
-                , org.aion.avm.shadow.java.util.Arrays.class
-                , org.aion.avm.shadow.java.util.Collection.class
-                , org.aion.avm.shadow.java.util.Iterator.class
-                , org.aion.avm.shadow.java.util.ListIterator.class
-                , org.aion.avm.shadow.java.util.Map.class
-                , org.aion.avm.shadow.java.util.Map.Entry.class
-                , org.aion.avm.shadow.java.util.Set.class
-                , org.aion.avm.shadow.java.util.List.class
-                , org.aion.avm.shadow.java.util.function.Function.class
-
-        );
+        Set<String> loadedClassNames = loadAndInitializeClasses(loader, shadowClasses);
 
         // Clean-up.
         IHelper.currentContractHelper.remove();
