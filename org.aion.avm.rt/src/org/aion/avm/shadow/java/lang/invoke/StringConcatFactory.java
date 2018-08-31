@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang.invoke;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.shadow.java.lang.String;
 
@@ -56,7 +57,9 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
                 .bindTo(recipe)
                 .bindTo(constants)
                 .asVarargsCollector(String[].class)
+
                 .asType(concatType);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringConcatFactory_avm_makeConcatWithConstants);
         return new ConstantCallSite(concatMethodHandle);
     }
 

@@ -1,14 +1,16 @@
 package org.aion.avm.shadow.java.util;
 
+import org.aion.avm.internal.IObject;
+
 public interface ListIterator<E> extends Iterator<E>{
 
     boolean avm_hasNext();
 
-    E avm_next();
+    IObject avm_next();
 
     boolean avm_hasPrevious();
 
-    E avm_previous();
+    IObject avm_previous();
 
     int avm_nextIndex();
 
@@ -16,8 +18,8 @@ public interface ListIterator<E> extends Iterator<E>{
 
     void avm_remove();
 
-    void avm_set(E e);
+    void avm_set(IObject e);
 
-    void avm_add(E e);
+    void avm_add(IObject e);
 
 }

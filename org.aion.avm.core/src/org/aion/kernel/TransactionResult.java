@@ -98,6 +98,11 @@ public class TransactionResult {
     }
 
     /**
+     * Any uncaught exception that flows to the AVM.
+     */
+    private Throwable uncaughtException;
+
+    /**
      * The status code.
      */
     private Code statusCode;
@@ -184,6 +189,14 @@ public class TransactionResult {
 
     public void rejectInternalTransactions() {
         this.internalTransactions.forEach(InternalTransaction::markAsRejected);
+    }
+
+    public Throwable getUncaughtException() {
+        return uncaughtException;
+    }
+
+    public void setUncaughtException(Throwable uncaughtException) {
+        this.uncaughtException = uncaughtException;
     }
 
     @Override

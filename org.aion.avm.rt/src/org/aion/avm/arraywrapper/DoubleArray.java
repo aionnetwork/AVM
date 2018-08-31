@@ -2,6 +2,8 @@ package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.*;
 import java.util.Arrays;
+import org.aion.avm.internal.IHelper;
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class DoubleArray extends Array {
 
@@ -40,6 +42,7 @@ public class DoubleArray extends Array {
 
     @Override
     public IObject avm_clone() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleArray_avm_clone);
         lazyLoad();
         return new DoubleArray(Arrays.copyOf(underlying, underlying.length));
     }
@@ -55,10 +58,12 @@ public class DoubleArray extends Array {
     //========================================================
 
     public DoubleArray(int c) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleArray_avm_constructor);
         this.underlying = new double[c];
     }
 
     public DoubleArray(double[] underlying) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleArray_avm_constructor_1);
         RuntimeAssertionError.assertTrue(null != underlying);
         this.underlying = underlying;
     }

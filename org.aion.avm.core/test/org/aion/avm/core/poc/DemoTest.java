@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 public class DemoTest {
 
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
-    private long energyLimit = 5_000_000;
+    private long energyLimit = 5_000_0000;
     private long energyPrice = 1;
 
     private byte[] pepeMinter = Helpers.randomBytes(Address.LENGTH);

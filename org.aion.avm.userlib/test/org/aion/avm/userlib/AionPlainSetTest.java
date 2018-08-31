@@ -6,13 +6,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-public class BSetTest {
+public class AionPlainSetTest {
     /**
      * Creates an empty set, checks its size, and verifies we can't read or remove from it.
      */
     @Test
     public void emptySetTest() {
-        BSet<Integer> set = new BSet<>();
+        AionPlainSet<Integer> set = new AionPlainSet<>();
         Assert.assertEquals(0, set.size());
         Assert.assertEquals(false, set.contains(Integer.valueOf(4)));
         Assert.assertEquals(false, set.remove(Integer.valueOf(5)));
@@ -23,7 +23,7 @@ public class BSetTest {
      */
     @Test
     public void addManyElements() {
-        BSet<String> set = new BSet<>();
+        AionPlainSet<String> set = new AionPlainSet<>();
         for (int i = 0; i < 100; ++i) {
             set.add("int_ " + i);
         }
@@ -43,7 +43,7 @@ public class BSetTest {
      */
     @Test
     public void addDuplicates() {
-        BSet<String> set = new BSet<>();
+        AionPlainSet<String> set = new AionPlainSet<>();
         for (int i = 0; i < 10; ++i) {
             for (int j = 0; j < 20; ++j) {
                 set.add("int_ " + j);
@@ -59,12 +59,12 @@ public class BSetTest {
     public void checkIterator() {
         final int count = 10;
         boolean[] markMap = new boolean[count];
-        BSet<Integer> set = new BSet<>();
+        AionPlainSet<Integer> set = new AionPlainSet<>();
         for (int i = 0; i < count; ++i) {
             set.add(i);
         }
         Assert.assertEquals(10, set.size());
-
+        
         Iterator<Integer> iterator = set.iterator();
         int found = 0;
         while (iterator.hasNext()) {
@@ -83,12 +83,12 @@ public class BSetTest {
     public void checkIterateForLoop() {
         final int count = 10;
         boolean[] markMap = new boolean[count];
-        BSet<Integer> set = new BSet<>();
+        AionPlainSet<Integer> set = new AionPlainSet<>();
         for (int i = 0; i < count; ++i) {
             set.add(i);
         }
         Assert.assertEquals(10, set.size());
-
+        
         int found = 0;
         for (int elt : set) {
             Assert.assertFalse(markMap[elt]);
@@ -106,13 +106,13 @@ public class BSetTest {
     public void addElementsWithCollidingHashes() {
         final int size = 20;
         final int hashCount = 10;
-        BSet<TestElement> set = new BSet<>();
+        AionPlainSet<TestElement> set = new AionPlainSet<>();
         for (int i = 0; i < size; ++i) {
             TestElement elt = new TestElement(i % hashCount, i);
             set.add(elt);
         }
         Assert.assertEquals(size, set.size());
-
+        
         boolean[] markMap = new boolean[size];
         int[] hashes = new int[hashCount];
         int found = 0;

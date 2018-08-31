@@ -1,18 +1,18 @@
 package org.aion.avm.core.collection;
 
-import org.aion.avm.userlib.BMap;
-import org.aion.avm.userlib.BSet;
+import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.AionSet;
 import org.junit.Assert;
 import org.junit.Test;
 
 
-public class BMapTest {
+public class AionMapTest {
     /**
      * Creates an empty map, checks its size, and verifies we can't read or remove from it.
      */
     @Test
     public void emptyMapTest() {
-        BMap<Integer, Void> map = new BMap<>();
+        AionMap<Integer, Void> map = new AionMap<>();
         Assert.assertEquals(0, map.size());
         Assert.assertEquals(null, map.get(Integer.valueOf(4)));
         Assert.assertEquals(null, map.remove(Integer.valueOf(5)));
@@ -23,7 +23,7 @@ public class BMapTest {
      */
     @Test
     public void addManyElements() {
-        BMap<Integer, String> map = new BMap<>();
+        AionMap<Integer, String> map = new AionMap<>();
         for (int i = 0; i < 100; ++i) {
             map.put(i, "int_ " + i);
         }
@@ -43,7 +43,7 @@ public class BMapTest {
      */
     @Test
     public void addDuplicates() {
-        BMap<Integer, String> map = new BMap<>();
+        AionMap<Integer, String> map = new AionMap<>();
         for (int i = 0; i < 10; ++i) {
             for (int j = 0; j < 20; ++j) {
                 map.put(j, "int_ " + i);
@@ -58,7 +58,7 @@ public class BMapTest {
 
     @Test
     public void stressOperation(){
-        BMap<Integer, Integer> m = new BMap<>();
+        AionMap<Integer, Integer> m = new AionMap<>();
         Integer res;
 
         m.clear();
@@ -112,7 +112,7 @@ public class BMapTest {
 
     @Test
     public void testBSet(){
-        BSet<Integer> s = new BSet<>();
+        AionSet<Integer> s = new AionSet<>();
         Integer res;
 
         for (int i = 0; i < 10000; i++){

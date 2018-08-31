@@ -33,7 +33,7 @@ public class ShadowCoverageTarget {
 
     public static byte[] main() {
         byte[] input = BlockchainRuntime.getData();
-        return ABIDecoder.decodeAndRunWithObject(new ShadowCoverageTarget(), input);
+        return ABIDecoder.decodeAndRunWithClass(ShadowCoverageTarget.class, input);
     }
 
     public static int populate_JavaLang() {

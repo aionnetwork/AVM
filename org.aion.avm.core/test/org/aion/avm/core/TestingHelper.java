@@ -64,7 +64,7 @@ public class TestingHelper implements IHelper {
 
     @Override
     public void externalChargeEnergy(long cost) {
-        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+        // Free!
     }
 
     @Override

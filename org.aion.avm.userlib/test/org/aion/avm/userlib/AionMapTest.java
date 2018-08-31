@@ -134,7 +134,7 @@ public class AionMapTest {
             map.put(elt, elt.toString());
         }
         Assert.assertEquals(size, map.size());
-        
+
         boolean[] markMap = new boolean[size];
         int[] hashes = new int[hashCount];
         int found = 0;

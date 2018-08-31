@@ -56,6 +56,10 @@ public class Helpers {
      * @return
      */
     public static byte[] hexStringToBytes(String s) {
+        if (s.startsWith("0x")) {
+            s = s.substring(2);
+        }
+
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {

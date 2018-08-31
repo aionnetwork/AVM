@@ -64,7 +64,7 @@ public class AionSetTest {
             set.add(i);
         }
         Assert.assertEquals(10, set.size());
-        
+
         Iterator<Integer> iterator = set.iterator();
         int found = 0;
         while (iterator.hasNext()) {
@@ -88,7 +88,7 @@ public class AionSetTest {
             set.add(i);
         }
         Assert.assertEquals(10, set.size());
-        
+
         int found = 0;
         for (int elt : set) {
             Assert.assertFalse(markMap[elt]);
@@ -112,7 +112,7 @@ public class AionSetTest {
             set.add(elt);
         }
         Assert.assertEquals(size, set.size());
-        
+
         boolean[] markMap = new boolean[size];
         int[] hashes = new int[hashCount];
         int found = 0;

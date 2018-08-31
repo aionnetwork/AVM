@@ -205,7 +205,8 @@ public class AvmImplTest {
         // -write instance (outer) "NORMAL"
                 + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
                 ;
-        assertEquals(tx2.getBasicCost() + costOfBlocks + costOfRuntimeCall + runStorageCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
+        long runtimeCost = 4073;
+        assertEquals(runtimeCost + tx2.getBasicCost() + costOfBlocks + costOfRuntimeCall + runStorageCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 
         // We assume that the IHelper has been cleaned up by this point.
         assertNull(IHelper.currentContractHelper.get());

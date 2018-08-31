@@ -7,27 +7,31 @@ import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.StorageWalker;
+import org.aion.avm.internal.Helper;
 import org.aion.kernel.*;
 import com.beust.jcommander.Parameter;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class AvmCLI implements UserInterface{
     static String DEFAULT_STORAGE = "./storage";
 
-    static byte[] DEFAULT_SENDER = KernelInterfaceImpl.PREMINED_ADDRESS;
+    static String DEFAULT_SENDER_STRING = Helpers.bytesToHexString(KernelInterfaceImpl.PREMINED_ADDRESS);
 
-    static String DEFAULT_SENDER_STRING = Helpers.bytesToHexString(DEFAULT_SENDER);
-
-    static long ENERGY_LIMIT = 100_000_000_000L;
+    static long DEFAULT_ENERGY_LIMIT = 100_000_000L;
 
     static Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
@@ -38,12 +42,6 @@ public class AvmCLI implements UserInterface{
     private CommandDeploy deploy;
     private CommandCall call;
     private CommandExplore explore;
-
-    private static final AvmCLI instance = new AvmCLI();
-
-    public static AvmCLI getInstance(){
-        return instance;
-    }
 
     private AvmCLI(){
         flag = new CLIFlag();
@@ -65,7 +63,7 @@ public class AvmCLI implements UserInterface{
     public class CLIFlag {
 
         @Parameter(names = {"-st", "--storage"}, description = "Specify the storage directory")
-        private String storage = "./storage";
+        private String storage = DEFAULT_STORAGE;
 
         @Parameter(names = {"-h", "--help"}, description = "Show usage of AVMCLI")
         private boolean usage = false;
@@ -91,13 +89,8 @@ public class AvmCLI implements UserInterface{
 
     @Parameters(commandDescription = "Explore storage")
     public class CommandExplore{
-
-        @Parameter(names = "-Dapp", description = "List deployed Dapp only")
-        private boolean dapp = false;
-
-        @Parameter(names = "-account", description = "Explore the specified account")
-        private String account = null;
-
+        @Parameter(description = "DappAddress", required = true)
+        private String contract = null;
     }
 
     @Parameters(commandDescription = "Call Dapp")
@@ -109,13 +102,16 @@ public class AvmCLI implements UserInterface{
         @Parameter(names = {"-sd", "--sender"}, description = "The sender of the request")
         private String sender = DEFAULT_SENDER_STRING;
 
+        @Parameter(names = {"-e", "--energy-limit"}, description = "The energy limit of the request")
+        private long energyLimit = DEFAULT_ENERGY_LIMIT;
+
         @Parameter(names = {"-m", "--method"}, description = "The requested method")
         private String methodName = "";
 
         @Parameter(names = {"-a", "--args"}, description = "The requested arguments. " +
                 "User provided arguments have the format of (Type Value)*. " +
                 "The following type are supported " +
-                "-I int, -J long, -S short, -C char, -F float, -D double, -B byte, -Z boolean. "+
+                "-I int, -J long, -S short, -C char, -F float, -D double, -B byte, -Z boolean, -A address. "+
                 "For example, option \"-a -I 1 -C c -Z true\" will form arguments of [(int) 1, (char) 'c', (boolean) true].",
                 variableArity = true)
         public List<String> arguments = new ArrayList<>();
@@ -123,7 +119,7 @@ public class AvmCLI implements UserInterface{
     }
 
     @Override
-    public void deploy(IEnvironment env, String storagePath, String jarPath, byte[] sender) {
+    public void deploy(IEnvironment env, String storagePath, String jarPath, byte[] sender, long energyLimit) {
 
         reportDeployRequest(env, storagePath, jarPath, sender);
 
@@ -145,7 +141,7 @@ public class AvmCLI implements UserInterface{
         }
 
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, sender, null, kernel.getNonce(sender), 0,
-                new CodeAndArguments(jar, null).encodeToBytes(), ENERGY_LIMIT, 1);
+                new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1);
 
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
@@ -154,7 +150,7 @@ public class AvmCLI implements UserInterface{
     }
 
     public void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, byte[] sender) {
-        lineSeparator();
+        lineSeparator(env);
         env.logLine("DApp deployment request");
         env.logLine("Storage      : " + storagePath);
         env.logLine("Dapp Jar     : " + jarPath);
@@ -162,25 +158,26 @@ public class AvmCLI implements UserInterface{
     }
 
     public void reportDeployResult(IEnvironment env, TransactionResult createResult){
-        lineSeparator();
+        String dappAddress = Helpers.bytesToHexString(createResult.getReturnData());
+        env.noteRelevantAddress(dappAddress);
+        
+        lineSeparator(env);
         env.logLine("DApp deployment status");
         env.logLine("Result status: " + createResult.getStatusCode().name());
-        env.logLine("Dapp Address : " + Helpers.bytesToHexString(createResult.getReturnData()));
+        env.logLine("Dapp Address : " + dappAddress);
         env.logLine("Energy cost  : " + createResult.getEnergyUsed());
     }
 
     @Override
-    public void call(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, String[] args) {
+    public void call(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, String[] args, long energyLimit) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
         if (contract.length != Address.LENGTH){
-            System.out.println("call : Invalid Dapp address ");
-            return;
+            throw env.fail("call : Invalid Dapp address ");
         }
 
         if (sender.length != Address.LENGTH){
-            System.out.println("call : Invalid sender address");
-            return;
+            throw env.fail("call : Invalid sender address");
         }
 
         byte[] arguments = ABIEncoder.encodeMethodArguments(method, parseArgs(args));
@@ -190,7 +187,7 @@ public class AvmCLI implements UserInterface{
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, kernel.getNonce(sender), 0, arguments, ENERGY_LIMIT, 1l);
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, kernel.getNonce(sender), 0, arguments, energyLimit, 1l);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(callContext);
 
@@ -198,27 +195,32 @@ public class AvmCLI implements UserInterface{
     }
 
     private void reportCallRequest(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, String[] args){
-        lineSeparator();
-        System.out.println("DApp call request");
-        System.out.println("Storage      : " + storagePath);
-        System.out.println("Dapp Address : " + Helpers.bytesToHexString(contract));
-        System.out.println("Sender       : " + Helpers.bytesToHexString(sender));
-        System.out.println("Method       : " + method);
-        System.out.println("Arguments    : ");
+        lineSeparator(env);
+        env.logLine("DApp call request");
+        env.logLine("Storage      : " + storagePath);
+        env.logLine("Dapp Address : " + Helpers.bytesToHexString(contract));
+        env.logLine("Sender       : " + Helpers.bytesToHexString(sender));
+        env.logLine("Method       : " + method);
+        env.logLine("Arguments    : ");
         for (int i = 0; i < args.length; i += 2){
-            System.out.println("             : " + args[i] + " " + args[i + 1]);
+            env.logLine("             : " + args[i] + " " + args[i + 1]);
         }
     }
 
     private void reportCallResult(IEnvironment env, TransactionResult callResult){
-        lineSeparator();
-        System.out.println("DApp call result");
-        System.out.println("Result status: " + callResult.getStatusCode().name());
-        System.out.println("Return value : " + Helpers.bytesToHexString(callResult.getReturnData()));
-        System.out.println("Energy cost  : " + callResult.getEnergyUsed());
+        lineSeparator(env);
+        env.logLine("DApp call result");
+        env.logLine("Result status: " + callResult.getStatusCode().name());
+        env.logLine("Return value : " + Helpers.bytesToHexString(callResult.getReturnData()));
+        env.logLine("Energy cost  : " + callResult.getEnergyUsed());
+
+        if (callResult.getStatusCode() == TransactionResult.Code.FAILED_EXCEPTION) {
+            env.dumpThrowable(callResult.getUncaughtException());
+        }
     }
 
-    private Object[] parseArgs(String[] args){
+    // open for testing
+    public static Object[] parseArgs(String[] args){
 
         Object[] argArray = new Object[args.length / 2];
 
@@ -248,26 +250,37 @@ public class AvmCLI implements UserInterface{
                 case "-Z":
                     argArray[i / 2] = Boolean.valueOf(args[i + 1]);
                     break;
+                case "-A": {
+                    // We want to parse an Address but we first need to read the hex to bytes.
+                    if (!args[i + 1].matches("(0x)?[A-Fa-f0-9]{64}")) {
+                        throw new IllegalArgumentException("Invalid address: " + args[i + 1]);
+                    }
+                    // To create an Address instance, we need to temporarily install a Helper (for base class instantiation).
+                    AvmClassLoader avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
+                    new Helper(avmClassLoader, 1_000_000L, 1);
+                    argArray[i / 2] = new Address(Helpers.hexStringToBytes(args[i + 1]));
+                    Helper.clearTestingState();
+                    break;
+                }
             }
         }
 
         return argArray;
     }
 
-    private void lineSeparator(){
-        System.out.println("*******************************************************************************************");
+    private void lineSeparator(IEnvironment env){
+        env.logLine("*******************************************************************************************");
     }
 
     @Override
     public void openAccount(IEnvironment env, String storagePath, byte[] toOpen){
-        lineSeparator();
+        lineSeparator(env);
 
         if (toOpen.length != Address.LENGTH){
-            System.out.println("open : Invalid address to open");
-            return;
+            throw env.fail("open : Invalid address to open");
         }
 
-        System.out.println("Creating Account " + Helpers.bytesToHexString(toOpen));
+        env.logLine("Creating Account " + Helpers.bytesToHexString(toOpen));
 
         File storageFile = new File(storagePath);
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
@@ -275,7 +288,31 @@ public class AvmCLI implements UserInterface{
         kernel.createAccount(toOpen);
         kernel.adjustBalance(toOpen, 100000000000L);
 
-        System.out.println("Account Balance : " + kernel.getBalance(toOpen));
+        env.logLine("Account Balance : " + kernel.getBalance(toOpen));
+    }
+
+    @Override
+    public void exploreStorage(IEnvironment env, String storagePath, byte[] dappAddress) {
+        // Create the PrintStream abstraction that walkAllStaticsForDapp expects.
+        // (ideally, we would incrementally filter this but that could be a later improvement - current Dapps are very small).
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        PrintStream printer = new PrintStream(stream);
+        
+        // Create the directory-backed kernel.
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl(new File(storagePath));
+        
+        // Walk everything, treating unexpected exceptions as fatal.
+        try {
+            StorageWalker.walkAllStaticsForDapp(printer, kernel, dappAddress);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
+            // This tool can fail out if something goes wrong.
+            throw env.fail(e.getMessage());
+        }
+        
+        // Flush all the captured data and feed it to the env.
+        printer.flush();
+        String raw = new String(stream.toByteArray());
+        env.logLine(raw);
     }
 
     public static void testingMain(IEnvironment env, String[] args) {
@@ -300,20 +337,27 @@ public class AvmCLI implements UserInterface{
             public void logLine(String line) {
                 System.out.println(line);
             }
+
+            @Override
+            public void dumpThrowable(Throwable throwable) {
+
+            }
         };
         internalMain(env, args);
     }
 
     private static void internalMain(IEnvironment env, String[] args) {
+        // We handle all the parsing and dispatch through a special instance of ourselves (although this should probably be split into a few concerns).
+        AvmCLI instance = new AvmCLI();
         try {
             instance.jc.parse(args);
         }catch (ParameterException e){
-            callUsage(env);
+            callUsage(env, instance);
             throw env.fail(e.getMessage());
         }
 
         if (instance.flag.usage){
-            callUsage(env);
+            callUsage(env, instance);
         }
 
         String parserCommand = instance.jc.getParsedCommand();
@@ -331,17 +375,21 @@ public class AvmCLI implements UserInterface{
             }
 
             if (parserCommand.equals("deploy")) {
-                instance.deploy(env, instance.flag.storage, instance.deploy.contract, Helpers.hexStringToBytes(instance.deploy.sender));
+                instance.deploy(env, instance.flag.storage, instance.deploy.contract, Helpers.hexStringToBytes(instance.deploy.sender), instance.call.energyLimit);
             }
 
             if (parserCommand.equals("call")) {
                 instance.call(env, instance.flag.storage, Helpers.hexStringToBytes(instance.call.contract),
                         Helpers.hexStringToBytes(instance.call.sender), instance.call.methodName,
-                        instance.call.arguments.toArray(new String[0]));
+                        instance.call.arguments.toArray(new String[0]), instance.call.energyLimit);
+            }
+
+            if (parserCommand.equals("explore")) {
+                instance.exploreStorage(env, instance.flag.storage, Helpers.hexStringToBytes(instance.explore.contract));
             }
         } else {
             // If we specify nothing, print the usage.
-            callUsage(env);
+            callUsage(env, instance);
         }
     }
 
@@ -357,7 +405,7 @@ public class AvmCLI implements UserInterface{
         }
     }
 
-    private static void callUsage(IEnvironment env) {
+    private static void callUsage(IEnvironment env, AvmCLI instance) {
         StringBuilder builder = new StringBuilder();
         instance.jc.usage(builder);
         env.logLine(builder.toString());

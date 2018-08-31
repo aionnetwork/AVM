@@ -111,5 +111,6 @@ public class AvmFailureTest {
         TransactionResult txResult = avm.run(txContext);
 
         assertEquals(TransactionResult.Code.FAILED_EXCEPTION, txResult.getStatusCode());
+        assertTrue(txResult.getUncaughtException() instanceof RuntimeException);
     }
 }

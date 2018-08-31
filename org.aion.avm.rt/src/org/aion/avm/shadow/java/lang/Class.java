@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Class<T> extends Object {
     static {
@@ -17,15 +18,18 @@ public class Class<T> extends Object {
 
     public String avm_getName() {
         // Note that we actively try not to give the same instance of the name wrapper back (since the user could see implementation details of our
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_getName);
         // contract life-cycle or the underlying JVM/ClassLoader.
         return new org.aion.avm.shadow.java.lang.String(v.getName());
     }
 
     public String avm_toString() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_toString);
         return null;
     }
 
     public IObject avm_cast(IObject obj) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_cast);
         return (IObject)this.v.cast(obj);
     }
 
@@ -33,6 +37,7 @@ public class Class<T> extends Object {
 
     @SuppressWarnings("unchecked")
     public Class<T> avm_getSuperclass() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_getSuperclass);
         // Note that we need to return null if the underlying is the shadow object root.
         Class<T> toReturn = null;
         if (org.aion.avm.shadow.java.lang.Object.class != this.v) {
@@ -44,6 +49,7 @@ public class Class<T> extends Object {
     public boolean avm_desiredAssertionStatus() {
         // Note that we currently handle assertions as always-enabled.
         // Internally, these will result in throwing AssertionError which, unless caught by the user's code, results in a FAILED_EXCEPTION status.
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_desiredAssertionStatus);
         // See issue-72 for more details on our thought process and future interpretations of this we may want to entertain.
         return true;
     }
@@ -100,6 +106,7 @@ public class Class<T> extends Object {
     //========================================================
 
     public Class(java.lang.Class<T> v) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_constructor);
         this.v = v;
     }
 

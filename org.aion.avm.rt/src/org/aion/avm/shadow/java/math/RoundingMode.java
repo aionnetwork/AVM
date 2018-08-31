@@ -7,6 +7,7 @@ import org.aion.avm.shadow.java.lang.Enum;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Class;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 // Note that we want to suppress the deprecation warnings since the original RoundingMode also does:  they both depend on deprecated BigDecimal constants.
 @SuppressWarnings("deprecation")
@@ -45,15 +46,18 @@ public class RoundingMode extends org.aion.avm.shadow.java.lang.Enum<RoundingMod
     }
 
     public static ObjectArray avm_values(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_values);
         return (ObjectArray) avm_$VALUES.clone();
     }
 
     public static RoundingMode avm_valueOf(String request){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_valueOf);
         return (RoundingMode) Enum.avm_valueOf(new Class<>(RoundingMode.class), request);
     }
 
     public static RoundingMode avm_valueOf(int idx){
         if (idx > 7 || idx < 0){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_valueOf_1);
             throw new IllegalArgumentException("argument out of range");
         }else{
             return (RoundingMode) avm_$VALUES.get(idx);

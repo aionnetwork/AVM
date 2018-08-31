@@ -12,6 +12,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import org.aion.avm.internal.IHelper;
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public final class ABIEncoder {
     public enum ABITypes{
@@ -620,10 +622,12 @@ public final class ABIEncoder {
      * Runtime-facing implementation.
      */
     public static ByteArray avm_encodeMethodArguments(org.aion.avm.shadow.java.lang.String methodName, ObjectArray arguments)  {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIEncoder_avm_encodeMethodArguments);
         return new ByteArray(encodeMethodArguments(methodName.toString(), arguments.getUnderlying()));
     }
 
     public static ByteArray avm_encodeOneObject(IObject data) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIEncoder_avm_encodeOneObject);
         return new ByteArray(encodeOneObject(data));
     }
 

@@ -10,6 +10,7 @@ import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Comparable;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class ShortBuffer extends Buffer<java.nio.ShortBuffer> implements Comparable<ShortBuffer> {
     static {
@@ -18,94 +19,111 @@ public class ShortBuffer extends Buffer<java.nio.ShortBuffer> implements Compara
     }
 
     public static ShortBuffer avm_allocate(int capacity) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_allocate);
         ShortArray array = ShortArray.initArray(capacity);
         java.nio.ShortBuffer buffer = java.nio.ShortBuffer.wrap(array.getUnderlying());
         return new ShortBuffer(buffer, array, null, null);
     }
 
     public static ShortBuffer avm_wrap(ShortArray array, int offset, int length){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_wrap);
         java.nio.ShortBuffer buffer = java.nio.ShortBuffer.wrap(array.getUnderlying(), offset, length);
         return new ShortBuffer(buffer, array, null, null);
     }
 
     public static ShortBuffer avm_wrap(ShortArray array){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_wrap_1);
         java.nio.ShortBuffer buffer = java.nio.ShortBuffer.wrap(array.getUnderlying());
         return new ShortBuffer(buffer, array, null, null);
     }
 
     public ShortBuffer avm_slice(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_slice);
         lazyLoad();
         return new ShortBuffer(v.slice(), this.shortArray, this.byteArray, this.byteArrayOrder);
     }
 
     public ShortBuffer avm_duplicate(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_duplicate);
         lazyLoad();
         return new ShortBuffer(v.duplicate(), this.shortArray, this.byteArray, this.byteArrayOrder);
     }
 
     public ShortBuffer avm_asReadOnlyBuffer(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_asReadOnlyBuffer);
         lazyLoad();
         return new ShortBuffer(this.v.asReadOnlyBuffer(), this.shortArray, this.byteArray, this.byteArrayOrder);
     }
 
     public short avm_get(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_get);
         lazyLoad();
         return this.v.get();
     };
 
     public ShortBuffer avm_put(short b){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put);
         lazyLoad();
         this.v = this.v.put(b);
         return this;
     }
 
     public short avm_get(int index){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_get_1);
         lazyLoad();
         return this.v.get(index);
     }
 
     public ShortBuffer avm_put(int index, short b){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put_1);
         lazyLoad();
         this.v = this.v.put(index, b);
         return this;
     }
 
     public ShortBuffer avm_get(ShortArray dst, int offset, int length){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_get_2);
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public ShortBuffer avm_get(ShortArray dst){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_get_3);
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public ShortBuffer avm_put(ShortBuffer src) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put_2);
         lazyLoad();
         this.v = this.v.put(src.v);
         return this;
     }
 
     public ShortBuffer avm_put(ShortArray dst, int offset, int length){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put_3);
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public ShortBuffer avm_put(ShortArray dst){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put_4);
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying());
         return this;
     }
 
     public boolean avm_hasArray(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_hasArray);
         lazyLoad();
         return v.hasArray();
     }
 
     public ShortArray avm_array(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_array);
         lazyLoad();
         // If we can make the underlying call, return the array wrapper we already have (otherwise, it will throw).
         this.v.array();
@@ -113,23 +131,27 @@ public class ShortBuffer extends Buffer<java.nio.ShortBuffer> implements Compara
     }
 
     public int avm_arrayOffset(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_arrayOffset);
         lazyLoad();
         return v.arrayOffset();
     }
 
     public final ShortBuffer avm_position(int newPosition) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_position);
         lazyLoad();
         v = v.position(newPosition);
         return this;
     }
 
     public final ShortBuffer avm_limit(int newLimit) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_limit);
         lazyLoad();
         v = v.limit(newLimit);
         return this;
     }
 
     public final ShortBuffer avm_mark() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_mark);
         lazyLoad();
         this.lastMark = this.v.position();
         v = v.mark();
@@ -137,46 +159,54 @@ public class ShortBuffer extends Buffer<java.nio.ShortBuffer> implements Compara
     }
 
     public final ShortBuffer avm_reset() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_reset);
         lazyLoad();
         v = v.reset();
         return this;
     }
 
     public final ShortBuffer avm_clear() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_clear);
         lazyLoad();
         v = v.clear();
         return this;
     }
 
     public final ShortBuffer avm_flip() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_flip);
         lazyLoad();
         v = v.flip();
         return this;
     }
 
     public final ShortBuffer avm_rewind() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_rewind);
         lazyLoad();
         v = v.rewind();
         return this;
     }
 
     public ShortBuffer avm_compact(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_compact);
         lazyLoad();
         this.v = this.v.compact();
         return this;
     }
 
     public boolean avm_isDirect() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_isDirect);
         lazyLoad();
         return v.isDirect();
     }
 
     public int avm_hashCode() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_hashCode);
         lazyLoad();
         return v.hashCode();
     }
 
     public boolean avm_equals(IObject ob) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_equals);
         if (this == ob) {
             return true;
         }
@@ -190,20 +220,24 @@ public class ShortBuffer extends Buffer<java.nio.ShortBuffer> implements Compara
     }
 
     public int avm_compareTo(ShortBuffer that) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_compareTo);
         lazyLoad();
         that.lazyLoad();
         return this.v.compareTo(that.v);
     }
 
     public String avm_toString(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_toString);
         return new String(v.toString());
     }
 
     public final ByteOrder avm_order(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_order);
         return ByteOrder.lookupForConstant(this.v.order());
     }
 
     public boolean avm_isReadOnly(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_isReadOnly);
         return v.isReadOnly();
     }
 
