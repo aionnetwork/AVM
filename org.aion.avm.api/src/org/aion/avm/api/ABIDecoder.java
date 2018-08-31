@@ -1,5 +1,9 @@
 package org.aion.avm.api;
 
+/**
+ * Utility class for AVM ABI decoding. This class contains static methods
+ * for parsing transaction data and invoking corresponding methods.
+ */
 public final class ABIDecoder {
     /**
      * This class cannot be instantiated.
