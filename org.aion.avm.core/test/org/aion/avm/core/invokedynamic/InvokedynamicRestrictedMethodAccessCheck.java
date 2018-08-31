@@ -35,7 +35,9 @@ public class InvokedynamicRestrictedMethodAccessCheck {
             final var methodOwner = "StringConcatFactory";
             final var methodOwnerContainer = StringConcatFactoryMethodCall.class;
             final var expectedFailureCheck = new RejectedBecauseMethodNotInWhitelistForShadowedClass(methodOwner, notAllowedToCallMethod);
-            final var userDefinedClassDotNames = new String[]{"org.aion.avm.core.invokedynamic.StringConcatFactoryMethodCall"};
+            final var userDefinedClassDotNames = new String[]{
+                    "org/aion/avm/core/invokedynamic/InvokedynamicRestrictedMethodAccessCheck$StringConcatFactoryMethodCall",
+                    "org/aion/avm/core/invokedynamic/InvokedynamicRestrictedMethodAccessCheck"};
             makeSureTransformationFail(methodOwnerContainer, expectedFailureCheck, userDefinedClassDotNames);
         }
     }
@@ -222,6 +224,15 @@ public class InvokedynamicRestrictedMethodAccessCheck {
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();
+    }
+
+    private static class StringConcatFactoryMethodCall {
+        private StringConcatFactoryMethodCall() {
+            try {
+                StringConcatFactory.makeConcat(null, null, null);
+            } catch (Exception e) {
+            }
+        }
     }
 
     private static class ConstantCallSiteCall {
