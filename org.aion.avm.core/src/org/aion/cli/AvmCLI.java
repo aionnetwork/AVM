@@ -148,7 +148,7 @@ public class AvmCLI implements UserInterface{
     }
 
     public void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, byte[] sender) {
-        lineSeparator();
+        lineSeparator(env);
         env.logLine("DApp deployment request");
         env.logLine("Storage      : " + storagePath);
         env.logLine("Dapp Jar     : " + jarPath);
@@ -156,7 +156,7 @@ public class AvmCLI implements UserInterface{
     }
 
     public void reportDeployResult(IEnvironment env, TransactionResult createResult){
-        lineSeparator();
+        lineSeparator(env);
         env.logLine("DApp deployment status");
         env.logLine("Result status: " + createResult.getStatusCode().name());
         env.logLine("Dapp Address : " + Helpers.bytesToHexString(createResult.getReturnData()));
@@ -168,13 +168,11 @@ public class AvmCLI implements UserInterface{
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
         if (contract.length != Address.LENGTH){
-            System.out.println("call : Invalid Dapp address ");
-            return;
+            throw env.fail("call : Invalid Dapp address ");
         }
 
         if (sender.length != Address.LENGTH){
-            System.out.println("call : Invalid sender address");
-            return;
+            throw env.fail("call : Invalid sender address");
         }
 
         byte[] arguments = ABIEncoder.encodeMethodArguments(method, parseArgs(args));
@@ -192,24 +190,24 @@ public class AvmCLI implements UserInterface{
     }
 
     private void reportCallRequest(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, String[] args){
-        lineSeparator();
-        System.out.println("DApp call request");
-        System.out.println("Storage      : " + storagePath);
-        System.out.println("Dapp Address : " + Helpers.bytesToHexString(contract));
-        System.out.println("Sender       : " + Helpers.bytesToHexString(sender));
-        System.out.println("Method       : " + method);
-        System.out.println("Arguments    : ");
+        lineSeparator(env);
+        env.logLine("DApp call request");
+        env.logLine("Storage      : " + storagePath);
+        env.logLine("Dapp Address : " + Helpers.bytesToHexString(contract));
+        env.logLine("Sender       : " + Helpers.bytesToHexString(sender));
+        env.logLine("Method       : " + method);
+        env.logLine("Arguments    : ");
         for (int i = 0; i < args.length; i += 2){
-            System.out.println("             : " + args[i] + " " + args[i + 1]);
+            env.logLine("             : " + args[i] + " " + args[i + 1]);
         }
     }
 
     private void reportCallResult(IEnvironment env, TransactionResult callResult){
-        lineSeparator();
-        System.out.println("DApp call result");
-        System.out.println("Result status: " + callResult.getStatusCode().name());
-        System.out.println("Return value : " + Helpers.bytesToHexString(callResult.getReturnData()));
-        System.out.println("Energy cost  : " + callResult.getEnergyUsed());
+        lineSeparator(env);
+        env.logLine("DApp call result");
+        env.logLine("Result status: " + callResult.getStatusCode().name());
+        env.logLine("Return value : " + Helpers.bytesToHexString(callResult.getReturnData()));
+        env.logLine("Energy cost  : " + callResult.getEnergyUsed());
     }
 
     private Object[] parseArgs(String[] args){
@@ -248,20 +246,19 @@ public class AvmCLI implements UserInterface{
         return argArray;
     }
 
-    private void lineSeparator(){
-        System.out.println("*******************************************************************************************");
+    private void lineSeparator(IEnvironment env){
+        env.logLine("*******************************************************************************************");
     }
 
     @Override
     public void openAccount(IEnvironment env, String storagePath, byte[] toOpen){
-        lineSeparator();
+        lineSeparator(env);
 
         if (toOpen.length != Address.LENGTH){
-            System.out.println("open : Invalid address to open");
-            return;
+            throw env.fail("open : Invalid address to open");
         }
 
-        System.out.println("Creating Account " + Helpers.bytesToHexString(toOpen));
+        env.logLine("Creating Account " + Helpers.bytesToHexString(toOpen));
 
         File storageFile = new File(storagePath);
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
@@ -269,7 +266,7 @@ public class AvmCLI implements UserInterface{
         kernel.createAccount(toOpen);
         kernel.adjustBalance(toOpen, 100000000000L);
 
-        System.out.println("Account Balance : " + kernel.getBalance(toOpen));
+        env.logLine("Account Balance : " + kernel.getBalance(toOpen));
     }
 
     public static void testingMain(IEnvironment env, String[] args) {
