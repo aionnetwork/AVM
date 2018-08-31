@@ -29,11 +29,9 @@ import java.util.List;
 public class AvmCLI implements UserInterface{
     static String DEFAULT_STORAGE = "./storage";
 
-    static byte[] DEFAULT_SENDER = KernelInterfaceImpl.PREMINED_ADDRESS;
+    static String DEFAULT_SENDER_STRING = Helpers.bytesToHexString(KernelInterfaceImpl.PREMINED_ADDRESS);
 
-    static String DEFAULT_SENDER_STRING = Helpers.bytesToHexString(DEFAULT_SENDER);
-
-    static long ENERGY_LIMIT = 100_000_000_000L;
+    static long DEFAULT_ENERGY_LIMIT = 100_000_000L;
 
     static Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
@@ -65,7 +63,7 @@ public class AvmCLI implements UserInterface{
     public class CLIFlag {
 
         @Parameter(names = {"-st", "--storage"}, description = "Specify the storage directory")
-        private String storage = "./storage";
+        private String storage = DEFAULT_STORAGE;
 
         @Parameter(names = {"-h", "--help"}, description = "Show usage of AVMCLI")
         private boolean usage = false;
@@ -104,6 +102,9 @@ public class AvmCLI implements UserInterface{
         @Parameter(names = {"-sd", "--sender"}, description = "The sender of the request")
         private String sender = DEFAULT_SENDER_STRING;
 
+        @Parameter(names = {"-e", "--energy-limit"}, description = "The energy limit of the request")
+        private long energyLimit = DEFAULT_ENERGY_LIMIT;
+
         @Parameter(names = {"-m", "--method"}, description = "The requested method")
         private String methodName = "";
 
@@ -118,7 +119,7 @@ public class AvmCLI implements UserInterface{
     }
 
     @Override
-    public void deploy(IEnvironment env, String storagePath, String jarPath, byte[] sender) {
+    public void deploy(IEnvironment env, String storagePath, String jarPath, byte[] sender, long energyLimit) {
 
         reportDeployRequest(env, storagePath, jarPath, sender);
 
@@ -140,7 +141,7 @@ public class AvmCLI implements UserInterface{
         }
 
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, sender, null, kernel.getNonce(sender), 0,
-                new CodeAndArguments(jar, null).encodeToBytes(), ENERGY_LIMIT, 1);
+                new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1);
 
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
@@ -168,7 +169,7 @@ public class AvmCLI implements UserInterface{
     }
 
     @Override
-    public void call(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, String[] args) {
+    public void call(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, String[] args, long energyLimit) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
         if (contract.length != Address.LENGTH){
@@ -186,7 +187,7 @@ public class AvmCLI implements UserInterface{
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, kernel.getNonce(sender), 0, arguments, ENERGY_LIMIT, 1l);
+        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, kernel.getNonce(sender), 0, arguments, energyLimit, 1l);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(callContext);
 
@@ -212,6 +213,10 @@ public class AvmCLI implements UserInterface{
         env.logLine("Result status: " + callResult.getStatusCode().name());
         env.logLine("Return value : " + Helpers.bytesToHexString(callResult.getReturnData()));
         env.logLine("Energy cost  : " + callResult.getEnergyUsed());
+
+        if (callResult.getStatusCode() == TransactionResult.Code.FAILED_EXCEPTION) {
+            env.dumpThrowable(callResult.getUncaughtException());
+        }
     }
 
     // open for testing
@@ -332,6 +337,11 @@ public class AvmCLI implements UserInterface{
             public void logLine(String line) {
                 System.out.println(line);
             }
+
+            @Override
+            public void dumpThrowable(Throwable throwable) {
+                throwable.printStackTrace();
+            }
         };
         internalMain(env, args);
     }
@@ -365,13 +375,13 @@ public class AvmCLI implements UserInterface{
             }
 
             if (parserCommand.equals("deploy")) {
-                instance.deploy(env, instance.flag.storage, instance.deploy.contract, Helpers.hexStringToBytes(instance.deploy.sender));
+                instance.deploy(env, instance.flag.storage, instance.deploy.contract, Helpers.hexStringToBytes(instance.deploy.sender), instance.call.energyLimit);
             }
 
             if (parserCommand.equals("call")) {
                 instance.call(env, instance.flag.storage, Helpers.hexStringToBytes(instance.call.contract),
                         Helpers.hexStringToBytes(instance.call.sender), instance.call.methodName,
-                        instance.call.arguments.toArray(new String[0]));
+                        instance.call.arguments.toArray(new String[0]), instance.call.energyLimit);
             }
 
             if (parserCommand.equals("explore")) {

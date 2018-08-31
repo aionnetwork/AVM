@@ -28,4 +28,11 @@ public interface IEnvironment {
      * @param line A line of output (could be multiple lines but can safely be written with a newline at the end).
      */
     public void logLine(String line);
+
+    /**
+     * Dump a throwable to console.
+     *
+     * @param throwable the throwable object
+     */
+    public void dumpThrowable(Throwable throwable);
 }

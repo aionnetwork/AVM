@@ -298,6 +298,7 @@ public class DAppCreator {
             result.setStatusCode(TransactionResult.Code.FAILED_EXCEPTION);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
+            result.setUncaughtException(e.getCause());
             logger.debug("Uncaught exception", e.getCause());
         } catch (RejectedClassException e) {
             result.setStatusCode(TransactionResult.Code.FAILED_REJECTED);
