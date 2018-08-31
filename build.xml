@@ -55,6 +55,9 @@
         <copy file="docs/README.md" todir="${dir.global.workspace}/dist"></copy>
         <copy file="docs/USER_GUIDE.md" todir="${dir.global.workspace}/dist"></copy>
 
+        <copy file="scripts/compile.sh" todir="${dir.global.workspace}/dist"></copy>
+        <chmod perm="755" file="${dir.global.workspace}/dist/compile.sh"></chmod>
+
         <javadoc packagenames="org.aion.avm.api.*"
                  sourcepath="org.aion.avm.api/src/"
                  defaultexcludes="yes"
