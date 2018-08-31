@@ -78,6 +78,23 @@ public class VerifierTest {
         Assert.assertTrue(CommonTarget.didUserSubLoad);
     }
 
+    @Test
+    public void verifyClinitNotRunByVerifierHelper() throws Exception {
+        // Load the test bytecode.
+        Map<String, byte[]> testCode = VerifierTest.loadClassBytes(UserTarget.class, UserSubTarget.class);
+        
+        // Verify that the common base class did run, but nothing else.
+        Assert.assertTrue(CommonTarget.didILoad);
+        Assert.assertFalse(CommonTarget.didUserLoad);
+        Assert.assertFalse(CommonTarget.didUserSubLoad);
+        
+        // Now, verify the 2 user sub-classes and verify that this hasn't changed.
+        Verifier.verifyUntrustedClasses(testCode);
+        Assert.assertTrue(CommonTarget.didILoad);
+        Assert.assertFalse(CommonTarget.didUserLoad);
+        Assert.assertFalse(CommonTarget.didUserSubLoad);
+    }
+
 
     private static Map<String, byte[]> loadClassBytes(Class<?> ...classes) {
         Map<String, byte[]> map = new HashMap<>();

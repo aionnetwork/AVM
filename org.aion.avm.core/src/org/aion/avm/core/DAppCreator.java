@@ -29,6 +29,7 @@ import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.types.TransformedDappModule;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.verification.Verifier;
 import org.aion.avm.internal.*;
 import org.aion.kernel.*;
 import org.objectweb.asm.ClassReader;
@@ -110,7 +111,10 @@ public class DAppCreator {
      * @return the transformed classes and any generated classes (names specified in .-style)
      */
     public static Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, ClassInfo> preRenameClassHierarchy) {
-
+        // Before anything, pass the list of classes through the verifier.
+        // (this will throw UncaughtException, on verification failure).
+        Verifier.verifyUntrustedClasses(classes);
+        
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
         // WARNING:  This dynamicHierarchyBuilder is both mutable and shared by TypeAwareClassWriter instances.
