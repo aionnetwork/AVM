@@ -5,6 +5,7 @@ import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Character extends Object {
     static {
@@ -149,25 +150,30 @@ public class Character extends Object {
     public static final int avm_MAX_CODE_POINT = 0X10FFFF;
 
     public Character(char c) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_constructor);
         this.v = c;
     }
 
     public static Character avm_valueOf(char c) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_valueOf);
         return new Character(c);
     }
 
     public char avm_charValue() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_charValue);
         lazyLoad();
         return v;
     }
 
     @Override
     public int avm_hashCode() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_hashCode);
         lazyLoad();
         return Character.avm_hashCode(v);
     }
 
     public static int avm_hashCode(char value) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_hashCode_1);
         return (int)value;
     }
 
@@ -179,6 +185,7 @@ public class Character extends Object {
     }
 
     public String avm_toString() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toString);
         lazyLoad();
         char buf[] = {v};
         CharArray a = new CharArray(buf);
@@ -186,304 +193,379 @@ public class Character extends Object {
     }
 
     public static String avm_toString(char c) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toString_1);
         return new String(java.lang.Character.toString(c));
     }
 
     public static boolean avm_isValidCodePoint(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isValidCodePoint);
         return java.lang.Character.isValidCodePoint(codePoint);
     }
 
     public static boolean avm_isBmpCodePoint(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isBmpCodePoint);
         return java.lang.Character.isBmpCodePoint(codePoint);
     }
 
     public static boolean avm_isSupplementaryCodePoint(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isSupplementaryCodePoint);
         return java.lang.Character.isSupplementaryCodePoint(codePoint);
     }
 
     public static boolean avm_isHighSurrogate(char ch) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isHighSurrogate);
         return java.lang.Character.isHighSurrogate(ch);
     }
 
     public static boolean avm_isLowSurrogate(char ch) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isLowSurrogate);
         return java.lang.Character.isLowSurrogate(ch);
     }
 
     public static boolean avm_isSurrogate(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isSurrogate);
         return java.lang.Character.isSurrogate(ch);
     }
 
     public static boolean avm_isSurrogatePair(char high, char low) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isSurrogatePair);
         return java.lang.Character.isSurrogatePair(high, low);
     }
 
     public static int avm_charCount(int codePoint) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_charCount);
         return java.lang.Character.charCount(codePoint);
     }
 
     public static int avm_toCodePoint(char high, char low) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toCodePoint);
         return java.lang.Character.toCodePoint(high, low);
     }
 
     public static int avm_codePointAt(CharSequence seq, int index) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointAt);
         return java.lang.Character.codePointAt(seq.avm_toString().getUnderlying(), index);
     }
 
     public static int avm_codePointAt(CharArray c, int index) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointAt_1);
         return java.lang.Character.codePointAt(c.getUnderlying(), index);
     }
 
     public static int avm_codePointAt(CharArray c, int index, int limit) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointAt_2);
         return java.lang.Character.codePointAt(c.getUnderlying(), index, limit);
     }
 
     public static int avm_codePointBefore(CharSequence seq, int index) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointBefore);
         return java.lang.Character.codePointAt(seq.avm_toString().getUnderlying(), index);
     }
 
     public static int avm_codePointBefore(CharArray c, int index) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointBefore_1);
         return java.lang.Character.codePointBefore(c.getUnderlying(), index);
     }
 
     public static int avm_codePointBefore(CharArray c, int index, int start) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointBefore_2);
         return java.lang.Character.codePointBefore(c.getUnderlying(), index, start);
     }
 
     public static char avm_highSurrogate(int codePoint) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_highSurrogate);
         return java.lang.Character.highSurrogate(codePoint);
     }
 
     public static char avm_lowSurrogate(int codePoint) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_lowSurrogate);
         return java.lang.Character.lowSurrogate(codePoint);
     }
 
     public static int avm_toChars(int codePoint, CharArray des, int dstIndex) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toChars);
         return java.lang.Character.toChars(codePoint, des.getUnderlying(), dstIndex);
     }
 
     public static CharArray avm_toChars(int codePoint) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toChars_1);
         return new CharArray(java.lang.Character.toChars(codePoint));
     }
 
     public static int avm_codePointCount(CharSequence seq, int beginIndex, int endIndex){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointCount);
         return java.lang.Character.codePointCount(seq.avm_toString().getUnderlying(), beginIndex, endIndex);
     }
 
     public static int avm_codePointCount(CharArray a, int offset, int count) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointCount_1);
         return java.lang.Character.codePointCount(a.getUnderlying(), offset, count);
     }
 
     public static int avm_offsetByCodePoints(CharSequence seq, int index, int codePointOffset) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_offsetByCodePoints);
         return java.lang.Character.offsetByCodePoints(seq.avm_toString().getUnderlying(), index, codePointOffset);
     }
 
     public static int avm_offsetByCodePoints(CharArray a, int start, int count,
                                          int index, int codePointOffset) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_offsetByCodePoints_1);
         return java.lang.Character.offsetByCodePoints(a.getUnderlying(), start, count,
                 index, codePointOffset);
     }
 
     public static boolean avm_isLowerCase(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isLowerCase);
         return java.lang.Character.isLowerCase(ch);
     }
 
     public static boolean avm_isLowerCase(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isLowerCase_1);
         return java.lang.Character.isLowerCase(codePoint);
     }
 
     public static boolean avm_isUpperCase(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isUpperCase);
         return java.lang.Character.isUpperCase(ch);
     }
 
     public static boolean avm_isUpperCase(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isUpperCase_1);
         return java.lang.Character.isUpperCase(codePoint);
     }
 
     public static boolean avm_isTitleCase(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isTitleCase);
         return java.lang.Character.isTitleCase(ch);
     }
 
     public static boolean avm_isTitleCase(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isTitleCase_1);
         return java.lang.Character.isTitleCase(codePoint);
     }
 
     public static boolean avm_isDigit(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isDigit);
         return java.lang.Character.isDigit(ch);
     }
 
     public static boolean avm_isDigit(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isDigit_1);
         return java.lang.Character.isDigit(codePoint);
     }
 
     public static boolean avm_isDefined(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isDefined);
         return java.lang.Character.isDefined(ch);
     }
 
     public static boolean avm_isDefined(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isDefined_1);
         return java.lang.Character.isDefined(codePoint);
     }
 
     public static boolean avm_isLetter(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isLetter);
         return java.lang.Character.isLetter(ch);
     }
 
     public static boolean avm_isLetter(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isLetter_1);
         return java.lang.Character.isLetter(codePoint);
     }
 
     public static boolean avm_isLetterOrDigit(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isLetterOrDigit);
         return java.lang.Character.isLetterOrDigit(ch);
     }
 
     public static boolean avm_isLetterOrDigit(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isLetterOrDigit_1);
         return java.lang.Character.isLetterOrDigit(codePoint);
     }
 
     public static boolean avm_isAlphabetic(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isAlphabetic);
         return java.lang.Character.isAlphabetic(codePoint);
     }
 
     public static boolean avm_isIdeographic(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isIdeographic);
         return java.lang.Character.isIdeographic(codePoint);
     }
 
     public static boolean avm_isJavaIdentifierStart(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isJavaIdentifierStart);
         return java.lang.Character.isJavaIdentifierStart(ch);
     }
 
     public static boolean avm_isJavaIdentifierStart(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isJavaIdentifierStart_1);
         return java.lang.Character.isJavaIdentifierStart(codePoint);
     }
 
     public static boolean avm_isJavaIdentifierPart(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isJavaIdentifierPart);
         return java.lang.Character.isJavaIdentifierPart(ch);
     }
 
     public static boolean avm_isJavaIdentifierPart(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isJavaIdentifierPart_1);
         return java.lang.Character.isJavaIdentifierPart(codePoint);
     }
 
     public static boolean avm_isUnicodeIdentifierStart(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isUnicodeIdentifierStart);
         return java.lang.Character.isUnicodeIdentifierStart(ch);
     }
 
     public static boolean avm_isUnicodeIdentifierStart(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isUnicodeIdentifierStart_1);
         return java.lang.Character.isUnicodeIdentifierStart(codePoint);
     }
 
     public static boolean avm_isUnicodeIdentifierPart(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isUnicodeIdentifierPart);
         return java.lang.Character.isUnicodeIdentifierPart(ch);
     }
 
     public static boolean avm_isUnicodeIdentifierPart(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isUnicodeIdentifierPart_1);
         return java.lang.Character.isUnicodeIdentifierPart(codePoint);
     }
 
     public static boolean avm_isIdentifierIgnorable(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isIdentifierIgnorable);
         return java.lang.Character.isIdentifierIgnorable(ch);
     }
 
     public static boolean avm_isIdentifierIgnorable(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isIdentifierIgnorable_1);
         return java.lang.Character.isIdentifierIgnorable(codePoint);
     }
 
     public static char avm_toLowerCase(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toLowerCase);
         return java.lang.Character.toLowerCase(ch);
     }
 
     public static int avm_toLowerCase(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toLowerCase_1);
         return java.lang.Character.toLowerCase(codePoint);
     }
 
     public static char avm_toUpperCase(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toUpperCase);
         return java.lang.Character.toUpperCase(ch);
     }
 
     public static int avm_toUpperCase(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toUpperCase_1);
         return java.lang.Character.toUpperCase(codePoint);
     }
 
     public static char avm_toTitleCase(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toTitleCase);
         return java.lang.Character.toTitleCase(ch);
     }
 
     public static int avm_toTitleCase(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toTitleCase_1);
         return java.lang.Character.toTitleCase(codePoint);
     }
 
     public static int avm_digit(char ch, int radix){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_digit);
         return java.lang.Character.digit(ch, radix);
     }
 
     public static int avm_digit(int codePoint, int radix){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_digit_1);
         return java.lang.Character.digit(codePoint, radix);
     }
 
     public static int avm_getNumericValue(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_getNumericValue);
         return java.lang.Character.getNumericValue(ch);
     }
 
     public static int avm_getNumericValue(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_getNumericValue_1);
         return java.lang.Character.getNumericValue(codePoint);
     }
 
     public static boolean avm_isSpaceChar(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isSpaceChar);
         return java.lang.Character.isSpaceChar(ch);
     }
 
     public static boolean avm_isSpaceChar(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isSpaceChar_1);
         return java.lang.Character.isSpaceChar(codePoint);
     }
 
     public static boolean avm_isWhitespace(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isWhitespace);
         return java.lang.Character.isWhitespace(ch);
     }
 
     public static boolean avm_isWhitespace(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isWhitespace_1);
         return java.lang.Character.isWhitespace(codePoint);
     }
 
     public static boolean avm_isISOControl(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isISOControl);
         return java.lang.Character.isISOControl(ch);
     }
 
     public static boolean avm_isISOControl(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isISOControl_1);
         return java.lang.Character.isISOControl(codePoint);
     }
 
     public static int avm_getType(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_getType);
         return java.lang.Character.getType(ch);
     }
 
     public static int avm_getType(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_getType_1);
         return java.lang.Character.getType(codePoint);
     }
 
     public static char avm_forDigit(int digit, int radix) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_forDigit);
         return java.lang.Character.forDigit(digit, radix);
     }
 
     public static byte avm_getDirectionality(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_getDirectionality);
         return java.lang.Character.getDirectionality(ch);
     }
 
     public static byte avm_getDirectionality(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_getDirectionality_1);
         return java.lang.Character.getDirectionality(codePoint);
     }
 
     public static boolean avm_isMirrored(char ch){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isMirrored);
         return java.lang.Character.isMirrored(ch);
     }
 
     public static boolean avm_isMirrored(int codePoint){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_isMirrored_1);
         return java.lang.Character.isMirrored(codePoint);
     }
 
     public int avm_compareTo(Character anotherCharacter) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_compareTo);
         return avm_compare(this.v, anotherCharacter.v);
     }
 
     public static int avm_compare(char x, char y) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_compare);
         return x - y;
     }
 
@@ -492,14 +574,17 @@ public class Character extends Object {
     public static final int avm_BYTES = java.lang.Character.BYTES;
 
     public static char avm_reverseBytes(char ch) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_reverseBytes);
         return java.lang.Character.reverseBytes(ch);
     }
 
     public static String avm_getName(int codePoint) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_getName);
         return new String(java.lang.Character.getName(codePoint));
     }
 
     public static int avm_codePointOf(String name) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointOf);
         return java.lang.Character.codePointOf(name.getUnderlying());
     }
 

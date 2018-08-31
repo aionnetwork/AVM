@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.arraywrapper.Array;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 
 public final class System extends Object{
@@ -19,6 +20,7 @@ public final class System extends Object{
                                      int length)
     {
         if (!((src instanceof Array) && (dest instanceof Array))){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.System_avm_arraycopy);
             throw new ArrayStoreException();
         }else{
             java.lang.Object asrc = ((Array) src).getUnderlyingAsObject();

@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.lang.invoke;
 import java.lang.invoke.LambdaConversionException;
 
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 
 /**
@@ -21,6 +22,7 @@ public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Objec
                                                             java.lang.invoke.MethodHandle implMethod,
                                                             java.lang.invoke.MethodType instantiatedMethodType)
             throws LambdaConversionException {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LambdaMetafactory_avm_metafactory);
         return java.lang.invoke.LambdaMetafactory.metafactory(owner,
                 invokedName,
                 invokedType,

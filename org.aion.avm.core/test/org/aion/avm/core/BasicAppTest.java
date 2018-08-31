@@ -28,7 +28,7 @@ public class BasicAppTest {
 
     @Before
     public void setup() throws Exception {
-        this.avm = new SimpleAvm(10000L
+        this.avm = new SimpleAvm(1_000_000L
                 , BasicAppTestTarget.class
                 , AionMap.class
                 , AionMap.AionMapEntry.class

@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.nio;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public final class ByteOrder extends org.aion.avm.shadow.java.lang.Object {
     static {
@@ -17,6 +18,7 @@ public final class ByteOrder extends org.aion.avm.shadow.java.lang.Object {
             = new ByteOrder(java.nio.ByteOrder.LITTLE_ENDIAN);
 
     public org.aion.avm.shadow.java.lang.String avm_toString() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ByteOrder_avm_toString);
         return new org.aion.avm.shadow.java.lang.String(v.toString());
     }
 
@@ -27,6 +29,7 @@ public final class ByteOrder extends org.aion.avm.shadow.java.lang.Object {
     private java.nio.ByteOrder v;
 
     private ByteOrder(java.nio.ByteOrder underlying) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ByteOrder_avm_constructor);
         this.v = underlying;
     }
 

@@ -2,6 +2,8 @@ package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.*;
 import java.util.Arrays;
+import org.aion.avm.internal.IHelper;
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class FloatArray2D extends ObjectArray {
 
@@ -16,6 +18,7 @@ public class FloatArray2D extends ObjectArray {
 
     @Override
     public IObject avm_clone() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatArray2D_avm_clone);
         lazyLoad();
         return new FloatArray2D(Arrays.copyOf(underlying, underlying.length));
     }
@@ -51,6 +54,7 @@ public class FloatArray2D extends ObjectArray {
     }
 
     public FloatArray2D(Object[] underlying) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatArray2D_avm_constructor_2);
         RuntimeAssertionError.assertTrue(null != underlying);
         this.underlying = underlying;
     }

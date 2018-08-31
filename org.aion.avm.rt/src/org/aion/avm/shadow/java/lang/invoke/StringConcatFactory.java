@@ -8,6 +8,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.StringConcatException;
 import java.util.Arrays;
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 
 /**
@@ -49,6 +50,7 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
                 .bindTo(constants)
                 .asVarargsCollector(String[].class)
                 .asType(invokedType);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringConcatFactory_avm_makeConcatWithConstants);
         return new ConstantCallSite(concatMethodHandle);
     }
 //    public static org.aion.avm.core.testdoubles.indy.String concat(java.lang.String recipe, // for future use

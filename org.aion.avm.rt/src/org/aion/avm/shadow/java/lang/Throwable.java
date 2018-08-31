@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 /**
  * Our shadow implementation of java.lang.Throwable.
@@ -31,6 +32,7 @@ public class Throwable extends Object {
     }
 
     public Throwable(String message, Throwable cause) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Throwable_avm_constructor_2);
         this.message = message;
         this.cause = cause;
     }
@@ -45,27 +47,32 @@ public class Throwable extends Object {
     }
 
     public String avm_getMessage() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Throwable_avm_getMessage);
         lazyLoad();
         return this.message;
     }
 
     public String avm_getLocalizedMessage() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Throwable_avm_getLocalizedMessage);
         lazyLoad();
         return this.message;
     }
 
     public Throwable avm_getCause() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Throwable_avm_getCause);
         lazyLoad();
         return this.cause;
     }
 
     public Throwable avm_initCause(Throwable cause) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Throwable_avm_initCause);
         lazyLoad();
         this.cause = cause;
         return this;
     }
 
     public String avm_toString() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Throwable_avm_toString);
         lazyLoad();
         return this.message;
     }
@@ -93,6 +100,7 @@ public class Throwable extends Object {
 //    }
 
     public Throwable avm_fillInStackTrace() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Throwable_avm_fillInStackTrace);
         // We don't expose stack traces.
         return this;
     }
@@ -106,9 +114,11 @@ public class Throwable extends Object {
 
     public void avm_addSuppressed(Throwable exception) {
         // TODO:  Does suppression make sense for this?
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Throwable_avm_addSuppressed);
     }
 
     public Throwable[] avm_getSuppressed() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Throwable_avm_getSuppressed);
         // TODO:  Does suppression make sense for this?
         return null;
     }

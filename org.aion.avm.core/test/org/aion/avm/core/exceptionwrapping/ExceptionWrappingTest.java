@@ -198,7 +198,7 @@ public class ExceptionWrappingTest {
         // This test doesn't use the common IHelper from setup() so uninstall it.
         SuspendedHelper suspended = new SuspendedHelper();
         
-        SimpleAvm avm = new SimpleAvm(1000L
+        SimpleAvm avm = new SimpleAvm(1_000_000L
                 , TestExceptionResource.class
                 , TestExceptionResource.UserDefinedException.class
                 , TestExceptionResource.UserDefinedRuntimeException.class

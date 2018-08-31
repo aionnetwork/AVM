@@ -178,7 +178,7 @@ public class PocWalletTest {
         IHelper.currentContractHelper.set(new IHelper() {
             @Override
             public void externalChargeEnergy(long cost) {
-                Assert.fail("Not in test");
+                // free!!!
             }
 
             @Override

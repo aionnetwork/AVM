@@ -5,6 +5,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public abstract class Buffer<B extends java.nio.Buffer> extends org.aion.avm.shadow.java.lang.Object {
     static {
@@ -13,68 +14,80 @@ public abstract class Buffer<B extends java.nio.Buffer> extends org.aion.avm.sha
     }
 
     public final int avm_capacity() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_capacity);
         lazyLoad();
         return v.capacity();
     }
 
     public final int avm_position() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_position);
         lazyLoad();
         return v.position();
     }
 
     public Buffer<B> avm_position(int newPosition) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_position_1);
         lazyLoad();
         this.v = this.forCasting.cast(this.v.position(newPosition));
         return this;
     }
 
     public final int avm_limit() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_limit);
         lazyLoad();
         return v.limit();
     }
 
     public Buffer<B> avm_limit(int newLimit) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_limit_1);
         lazyLoad();
         this.v = this.forCasting.cast(this.v.limit(newLimit));
         return this;
     }
 
     public Buffer<B> avm_mark() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_mark);
         lazyLoad();
         this.v = this.forCasting.cast(this.v.mark());
         return this;
     }
 
     public Buffer<B> avm_reset() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_reset);
         lazyLoad();
         this.v = this.forCasting.cast(this.v.reset());
         return this;
     }
 
     public Buffer<B> avm_clear() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_clear);
         lazyLoad();
         this.v = this.forCasting.cast(this.v.clear());
         return this;
     }
 
     public Buffer<B> avm_flip() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_flip);
         lazyLoad();
         this.v = this.forCasting.cast(this.v.flip());
         return this;
     }
 
     public Buffer<B> avm_rewind() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_rewind);
         lazyLoad();
         this.v = this.forCasting.cast(this.v.rewind());
         return this;
     }
 
     public final int avm_remaining(){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_remaining);
         lazyLoad();
         return v.remaining();
     }
 
     public final boolean avm_hasRemaining() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_hasRemaining);
         lazyLoad();
         return v.hasRemaining();
     }
@@ -103,6 +116,7 @@ public abstract class Buffer<B extends java.nio.Buffer> extends org.aion.avm.sha
     Class<B> forCasting;
 
     protected Buffer(Class<B> forCasting, B underlying){
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Buffer_avm_constructor);
         v = underlying;
         this.forCasting = forCasting;
     }

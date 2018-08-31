@@ -5,6 +5,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.lang.Cloneable;
 import org.aion.avm.shadow.java.lang.Object;
+import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public abstract class Array extends Object implements Cloneable{
     // Initial creation.
