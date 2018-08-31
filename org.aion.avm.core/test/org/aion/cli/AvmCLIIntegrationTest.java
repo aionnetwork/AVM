@@ -112,5 +112,10 @@ public class AvmCLIIntegrationTest {
                 }
             }
         }
+
+        @Override
+        public void dumpThrowable(Throwable throwable) {
+
+        }
     }
 }
