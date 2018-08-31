@@ -7,9 +7,11 @@ import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.StorageWalker;
+import org.aion.avm.internal.Helper;
 import org.aion.kernel.*;
 import com.beust.jcommander.Parameter;
 
@@ -21,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class AvmCLI implements UserInterface{
@@ -211,7 +214,8 @@ public class AvmCLI implements UserInterface{
         env.logLine("Energy cost  : " + callResult.getEnergyUsed());
     }
 
-    private Object[] parseArgs(String[] args){
+    // open for testing
+    public static Object[] parseArgs(String[] args){
 
         Object[] argArray = new Object[args.length / 2];
 
@@ -240,6 +244,15 @@ public class AvmCLI implements UserInterface{
                     break;
                 case "-Z":
                     argArray[i / 2] = Boolean.valueOf(args[i + 1]);
+                    break;
+                case "-A":
+                    if (!args[i + 1].matches("(0x)?[A-Fa-f0-9]{64}")) {
+                        throw new IllegalArgumentException("Invalid address: " + args[i + 1]);
+                    }
+                    AvmClassLoader avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
+                    new Helper(avmClassLoader, 1_000_000L, 1);
+                    argArray[i / 2] = new Address(Helpers.hexStringToBytes(args[i + 1]));
+                    Helper.clearTestingState();
                     break;
             }
         }
