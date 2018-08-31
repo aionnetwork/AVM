@@ -2,7 +2,6 @@ package org.aion.avm.userlib;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 public class BSet<E> implements Set<E> {
@@ -56,22 +55,32 @@ public class BSet<E> implements Set<E> {
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        return false;
+        for (Object obj : c){
+            if (!this.contains(obj)){
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public boolean addAll(Collection<? extends E> c) {
-        return false;
+        for (Object obj : c){
+            if (!this.add((E) obj)){
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        return false;
+        throw new UnsupportedOperationException("retainAll");
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        return false;
+        throw new UnsupportedOperationException("removeAll");
     }
 
     @Override
@@ -107,9 +116,9 @@ public class BSet<E> implements Set<E> {
 
         @Override
         public boolean hasNext() {
-
             return (null != curEntry);
         }
+
         @Override
         public E next() {
             E elt = null;

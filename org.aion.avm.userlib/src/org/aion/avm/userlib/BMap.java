@@ -82,7 +82,6 @@ public class BMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    //TODO
     public V remove(Object key) {
         V ret = (V) root.delete(key);
 
@@ -92,9 +91,10 @@ public class BMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    //TODO
     public void putAll(Map<? extends K, ? extends V> m) {
-
+        for (Entry e : m.entrySet()){
+            this.put((K) e.getKey(), (V) e.getValue());
+        }
     }
 
     @Override
@@ -168,7 +168,6 @@ public class BMap<K, V> implements Map<K, V> {
     public int hashCode() {
         return super.hashCode();
     }
-
 
     abstract class BNode<K, V>{
         int nodeSize;
@@ -435,6 +434,9 @@ public class BMap<K, V> implements Map<K, V> {
 
     }
 
+    /**
+     * The leaf node of a BTree
+     */
     class BLeafNode<K, V> extends BNode <K, V>{
         // Entry array for data storage
         BEntry<K, V>[] entries;
@@ -607,7 +609,9 @@ public class BMap<K, V> implements Map<K, V> {
 
     }
 
-    // Entry (key value pair) of the BMap which implements Map.Entry
+    /**
+     * The Entry (K V pair) of BMap
+     */
     class BEntry<K, V> implements Map.Entry<K, V>{
 
         private K key;
@@ -651,6 +655,15 @@ public class BMap<K, V> implements Map<K, V> {
         }
     }
 
+    public BLeafNode getLeftMostLeaf(){
+        BNode cur = this.root;
+
+        while (!(cur instanceof BLeafNode)){
+            cur = ((BTreeNode) cur).children[0];
+        }
+
+        return (BLeafNode)cur;
+    }
 
     private void keyNullCheck(Object key){
         if (null == key){
@@ -658,7 +671,6 @@ public class BMap<K, V> implements Map<K, V> {
         }
     }
 
-    // Search for the leaf node of the given key.
     private BLeafNode searchForLeaf(K key){
         BNode cur = this.root;
 
@@ -684,16 +696,6 @@ public class BMap<K, V> implements Map<K, V> {
             cur = cur.next;
         }
         return null;
-    }
-
-    public BLeafNode getLeftMostLeaf(){
-        BNode cur = this.root;
-
-        while (!(cur instanceof BLeafNode)){
-            cur = ((BTreeNode) cur).children[0];
-        }
-
-        return (BLeafNode)cur;
     }
 
     private void bInsert(K key, V value){
@@ -804,7 +806,7 @@ public class BMap<K, V> implements Map<K, V> {
         x.nodeSize++;
     }
 
-    int findSlot(BTreeNode anchor, BLeafNode left, BLeafNode right){
+    private int findSlot(BTreeNode anchor, BLeafNode left, BLeafNode right){
         int lvalue = left.entries[left.nodeSize - 1].hashCode();
         int rvalue = right.entries[0].hashCode();
 
@@ -815,7 +817,7 @@ public class BMap<K, V> implements Map<K, V> {
         return i;
     }
 
-    int findSlot(BTreeNode anchor, BTreeNode left, BTreeNode right) {
+    private int findSlot(BTreeNode anchor, BTreeNode left, BTreeNode right) {
 
         int lvalue = left.routers[0];
         int rvalue = right.routers[0];
