@@ -44,3 +44,5 @@ storage/
 
 [master]
 org.aion.avm.microbenchmark/
+utilities/
+org.aion.avm.rt-new/
