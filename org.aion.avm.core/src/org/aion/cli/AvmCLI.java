@@ -39,12 +39,6 @@ public class AvmCLI implements UserInterface{
     private CommandCall call;
     private CommandExplore explore;
 
-    private static final AvmCLI instance = new AvmCLI();
-
-    public static AvmCLI getInstance(){
-        return instance;
-    }
-
     private AvmCLI(){
         flag = new CLIFlag();
         open = new CommandOpen();
@@ -305,15 +299,17 @@ public class AvmCLI implements UserInterface{
     }
 
     private static void internalMain(IEnvironment env, String[] args) {
+        // We handle all the parsing and dispatch through a special instance of ourselves (although this should probably be split into a few concerns).
+        AvmCLI instance = new AvmCLI();
         try {
             instance.jc.parse(args);
         }catch (ParameterException e){
-            callUsage(env);
+            callUsage(env, instance);
             throw env.fail(e.getMessage());
         }
 
         if (instance.flag.usage){
-            callUsage(env);
+            callUsage(env, instance);
         }
 
         String parserCommand = instance.jc.getParsedCommand();
@@ -341,7 +337,7 @@ public class AvmCLI implements UserInterface{
             }
         } else {
             // If we specify nothing, print the usage.
-            callUsage(env);
+            callUsage(env, instance);
         }
     }
 
@@ -357,7 +353,7 @@ public class AvmCLI implements UserInterface{
         }
     }
 
-    private static void callUsage(IEnvironment env) {
+    private static void callUsage(IEnvironment env, AvmCLI instance) {
         StringBuilder builder = new StringBuilder();
         instance.jc.usage(builder);
         env.logLine(builder.toString());
