@@ -40,7 +40,7 @@
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
 
-        <jar jarfile="${dir.global.workspace}/avm.jar">
+        <jar jarfile="${dir.global.workspace}/dist/avm.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.aion.cli.AvmCLI" />
             </manifest>
@@ -49,7 +49,11 @@
             <fileset dir="${dir.global.build.main}" includes="org-aion-avm-rt.jar"/>
         </jar>
 
+        <copy file="${dir.global.build.main}/org-aion-avm-api.jar" todir="${dir.global.workspace}/dist/lib"></copy>
+        <copy file="${dir.global.build.main}/org-aion-avm-userlib.jar" todir="${dir.global.workspace}/dist/lib"></copy>
 
+        <copy file="docs/README.md" todir="${dir.global.workspace}/dist"></copy>
+        <copy file="docs/USER_GUIDE.md" todir="${dir.global.workspace}/dist"></copy>
 
     </target>
 
