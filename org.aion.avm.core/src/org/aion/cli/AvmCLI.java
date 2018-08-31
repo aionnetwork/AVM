@@ -313,6 +313,9 @@ public class AvmCLI implements UserInterface{
                         Helpers.hexStringToBytes(instance.call.sender), instance.call.methodName,
                         instance.call.arguments.toArray(new String[0]));
             }
+        } else {
+            // If we specify nothing, print the usage.
+            instance.jc.usage();
         }
     }
 }
