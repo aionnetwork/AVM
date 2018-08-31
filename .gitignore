@@ -38,8 +38,9 @@ testreports/
 # ant
 .ant-targets-build.xml
 
-# Final built resource.
+# Final built resource (and its default storage directory).
 avm.jar
+storage/
 
 [master]
 org.aion.avm.microbenchmark/

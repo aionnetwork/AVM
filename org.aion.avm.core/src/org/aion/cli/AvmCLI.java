@@ -296,6 +296,10 @@ public class AvmCLI implements UserInterface{
 
         String parserCommand = instance.jc.getParsedCommand();
         if (null != parserCommand) {
+            // Before we run any command, make sure that the specified storage directory exists.
+            // (we want the underlying storage engine to remain very passive so it should always expect that the directory was created for it).
+            verifyStorageExists(instance.flag.storage);
+            
             if (parserCommand.equals("open")) {
                 if (instance.open.address.equals("Random generated address")) {
                     instance.openAccount(instance.flag.storage, Helpers.randomBytes(Address.LENGTH));
@@ -316,6 +320,19 @@ public class AvmCLI implements UserInterface{
         } else {
             // If we specify nothing, print the usage.
             instance.jc.usage();
+        }
+    }
+
+    private static void verifyStorageExists(String storageRoot) {
+        File directory = new File(storageRoot);
+        if (!directory.isDirectory()) {
+            boolean didCreate = directory.mkdirs();
+            // Is this the best way to handle this failure?
+            if (!didCreate) {
+                // System.exit isn't ideal but we are very near the top of the entry-point so this shouldn't cause confusion.
+                System.err.println("Failed to create storage root: \"" + storageRoot + "\"");
+                System.exit(1);
+            }
         }
     }
 }
