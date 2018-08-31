@@ -72,6 +72,8 @@
             <fileset dir="org.aion.avm.userlib/src">
                 <include name="**/*.java"/>
                 <exclude name="**/module-info.java"/>
+                <exclude name="**/AionPlainMap.java"/>
+                <exclude name="**/AionPlainSet.java"/>
             </fileset>
         </javadoc>
     </target>
