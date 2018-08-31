@@ -8,7 +8,7 @@
 
 ## Blockchain API
 
-See [javadoc](./javadoc/index.html)
+Check the `javadoc` folder
 
 ## DApp example
 

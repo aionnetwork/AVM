@@ -55,6 +55,15 @@
         <copy file="docs/README.md" todir="${dir.global.workspace}/dist"></copy>
         <copy file="docs/USER_GUIDE.md" todir="${dir.global.workspace}/dist"></copy>
 
+        <javadoc packagenames="org.aion.avm.api.*"
+                 sourcepath="org.aion.avm.api/src/"
+                 defaultexcludes="yes"
+                 destdir="${dir.global.workspace}/dist/javadoc"
+                 author="true"
+                 version="true"
+                 use="true"
+                 windowtitle="AVM Blockchain API">
+        </javadoc>
     </target>
 
     <target name="test">
