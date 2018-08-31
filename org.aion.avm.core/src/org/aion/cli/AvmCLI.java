@@ -156,10 +156,13 @@ public class AvmCLI implements UserInterface{
     }
 
     public void reportDeployResult(IEnvironment env, TransactionResult createResult){
+        String dappAddress = Helpers.bytesToHexString(createResult.getReturnData());
+        env.noteRelevantAddress(dappAddress);
+        
         lineSeparator(env);
         env.logLine("DApp deployment status");
         env.logLine("Result status: " + createResult.getStatusCode().name());
-        env.logLine("Dapp Address : " + Helpers.bytesToHexString(createResult.getReturnData()));
+        env.logLine("Dapp Address : " + dappAddress);
         env.logLine("Energy cost  : " + createResult.getEnergyUsed());
     }
 
