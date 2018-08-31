@@ -26,7 +26,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
 
-public class Demo {
+public class DemoTest {
 
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 5_000_000;

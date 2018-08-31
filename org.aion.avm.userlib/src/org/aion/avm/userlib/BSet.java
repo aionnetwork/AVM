@@ -7,7 +7,7 @@ import java.util.Set;
 
 public class BSet<E> implements Set<E> {
 
-    private Map<E,Object> map;
+    private BMap<E,Object> map;
 
     private static final Object PRESENT = new Object();
 
@@ -32,11 +32,6 @@ public class BSet<E> implements Set<E> {
     @Override
     public boolean contains(Object o) {
         return map.containsKey(o);
-    }
-
-    @Override
-    public Iterator<E> iterator() {
-        return null;
     }
 
     @Override
@@ -92,5 +87,52 @@ public class BSet<E> implements Set<E> {
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        return new BSetIterator(this.size());
+    }
+
+    public final class BSetIterator implements Iterator<E> {
+        BMap.BLeafNode curLeaf;
+        BMap.BEntry curEntry;
+        int curSlot;
+
+        public BSetIterator(int size){
+            curLeaf = map.getLeftMostLeaf();
+            curSlot = 0;
+            curEntry = curLeaf.entries[curSlot];
+        }
+
+        @Override
+        public boolean hasNext() {
+
+            return (null != curEntry);
+        }
+        @Override
+        public E next() {
+            E elt = null;
+
+            if (null != curEntry){
+                elt = (E) curEntry.getKey();
+            }
+
+            // Advance cursor
+            if (null != curEntry.next){
+                curEntry = curEntry.next;
+            }else if (curSlot + 1 < curLeaf.nodeSize){
+                curSlot++;
+                curEntry = curLeaf.entries[curSlot];
+            }else if (null != curLeaf.next){
+                curLeaf = (BMap.BLeafNode) curLeaf.next;
+                curSlot = 0;
+                curEntry = curLeaf.entries[curSlot];
+            }else{
+                curEntry = null;
+            }
+
+            return elt;
+        }
     }
 }

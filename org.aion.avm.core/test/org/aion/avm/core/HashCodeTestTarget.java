@@ -107,4 +107,48 @@ public class HashCodeTestTarget {
         return (outside.hashCode() == inside.hashCode())
                 && (outside.equals(inside));
     }
+    
+    public static int diffByteHashes() {
+        return diffHashes(Byte.valueOf((byte)1), Byte.valueOf((byte)1));
+    }
+    
+    public static int diffCharHashes() {
+        return diffHashes(Character.valueOf('a'), Character.valueOf('a'));
+    }
+    
+    public static int diffDoubleHashes() {
+        return diffHashes(Double.valueOf(5.0d), Double.valueOf(5.0d));
+    }
+    
+    public static int diffFloatHashes() {
+        return diffHashes(Float.valueOf(5.0f), Float.valueOf(5.0f));
+    }
+    
+    public static int diffIntegerHashes() {
+        return diffHashes(Integer.valueOf(5), Integer.valueOf(5));
+    }
+    
+    public static int diffLongHashes() {
+        return diffHashes(Long.valueOf(5L), Long.valueOf(5L));
+    }
+    
+    public static int diffShortHashes() {
+        return diffHashes(Short.valueOf((short)5), Short.valueOf((short)5));
+    }
+    
+    // NOTE:  We still have this constructor in our shadow JCL and the Boolean.valueOf helper only ever returns the 2 constant instances
+    // so explicitly create these instances to compare them.
+    @SuppressWarnings("deprecation")
+    public static int diffBooleanHashes() {
+        return diffHashes(new Boolean(true), new Boolean(true));
+    }
+    
+    
+    private static int diffHashes(Object one, Object two) {
+        // The test requires that these not be the same instance.
+        if (one == two) {
+            throw new AssertionError();
+        }
+        return one.hashCode() ^ two.hashCode();
+    }
 }

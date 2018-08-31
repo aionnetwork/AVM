@@ -123,6 +123,15 @@ public class Integer extends Number implements Comparable<Integer> {
         return avm_toString(v);
     }
 
+    @Override
+    public int avm_hashCode() {
+        return Integer.avm_hashCode(v);
+    }
+
+    public static int avm_hashCode(int value) {
+        return value;
+    }
+
     public boolean avm_equals(IObject obj) {
         if (obj instanceof Integer) {
             return v == ((Integer)obj).avm_intValue();

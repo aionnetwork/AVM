@@ -40,10 +40,30 @@
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
 
-        <zip destfile="${dir.global.workspace}/avm.jar">
-            <zipgroupfileset dir="${dir.global.build.main}" includes="*.jar"/>
+        <jar jarfile="${dir.global.workspace}/dist/avm.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.aion.cli.AvmCLI" />
+            </manifest>
+            <zipgroupfileset dir="${dir.global.build.main}" includes="*.jar" excludes="META-INF/*.SF" />
+            <zipgroupfileset dir="${dir.global.workspace}/lib" includes="*.jar" excludes="META-INF/*.SF" />
             <fileset dir="${dir.global.build.main}" includes="org-aion-avm-rt.jar"/>
-        </zip>
+        </jar>
+
+        <copy file="${dir.global.build.main}/org-aion-avm-api.jar" todir="${dir.global.workspace}/dist/lib"></copy>
+        <copy file="${dir.global.build.main}/org-aion-avm-userlib.jar" todir="${dir.global.workspace}/dist/lib"></copy>
+
+        <copy file="docs/README.md" todir="${dir.global.workspace}/dist"></copy>
+        <copy file="docs/USER_GUIDE.md" todir="${dir.global.workspace}/dist"></copy>
+
+        <javadoc packagenames="org.aion.avm.api.*"
+                 sourcepath="org.aion.avm.api/src/"
+                 defaultexcludes="yes"
+                 destdir="${dir.global.workspace}/dist/javadoc"
+                 author="true"
+                 version="true"
+                 use="true"
+                 windowtitle="AVM Blockchain API">
+        </javadoc>
     </target>
 
     <target name="test">

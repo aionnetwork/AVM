@@ -1,12 +1,13 @@
 package org.aion.avm.userlib;
 
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
+
 /**
  * The first rough cut of the Set-like abstraction we are providing to our user-space apps.
+ * Note:  This implementation depends on elements having a sensible hashCode() implementation.
  * If we proceed with this direction, we will need to improve this implementation/interface significantly, as it only exists
  * to cover very basic uses, at the moment.
  * 
@@ -21,14 +22,18 @@ import java.util.Set;
 public class AionSet<E> implements Set<E> {
     private static final int kStartSize = 1;
 
+    // To avoid faulting in all the objects in storage, we cache their hashes to see if it is even worth checking.
+    private int[] hashes;
     private Object[] storage;
 
     public AionSet() {
+        this.hashes = new int[kStartSize];
         this.storage = new Object[kStartSize];
     }
 
     public boolean add(E newElement) {
         // This implementation is very simple so we just walk the list, seeing if this is already here.
+        int newHash = newElement.hashCode();
         int insertIndex = this.storage.length;
         for (int i = 0; i < this.storage.length; ++i) {
             Object elt = this.storage[i];
@@ -37,7 +42,8 @@ public class AionSet<E> implements Set<E> {
                 insertIndex = i;
                 break;
             } else {
-                if (newElement.equals(elt)) {
+                // Check the hash cache, first (equals() will fault in the object).
+                if ((newHash == this.hashes[i]) && newElement.equals(elt)) {
                     insertIndex = -1;
                     break;
                 } else {
@@ -49,13 +55,15 @@ public class AionSet<E> implements Set<E> {
         if (insertIndex >= 0) {
             if (insertIndex >= this.storage.length) {
                 // Grow.
+                int[] newHashes = new int[this.hashes.length * 2];
                 Object[] newStorage = new Object[this.storage.length * 2];
-                for (int i = 0; i < this.storage.length; ++i) {
-                    newStorage[i] = this.storage[i];
-                }
+                System.arraycopy(this.hashes, 0, newHashes, 0, this.hashes.length);
+                System.arraycopy(this.storage, 0, newStorage, 0, this.storage.length);
+                this.hashes = newHashes;
                 this.storage = newStorage;
             }
             // Now, insert.
+            this.hashes[insertIndex] = newHash;
             this.storage[insertIndex] = newElement;
             return true;
         }
@@ -63,26 +71,36 @@ public class AionSet<E> implements Set<E> {
     }
 
     public boolean contains(Object check) {
+        int hash = check.hashCode();
         boolean doesContain = false;
         for (int i = 0; !doesContain && (i < this.storage.length) && (null != this.storage[i]); ++i) {
-            doesContain = check.equals(this.storage[i]);
+            // Check the hash cache, first (equals() will fault in the object).
+            doesContain = (hash == this.hashes[i]) && check.equals(this.storage[i]);
         }
         return doesContain;
     }
 
     public boolean remove(Object toRemove) {
+        int hash = toRemove.hashCode();
         int foundIndex = -1;
         for (int i = 0; (-1 == foundIndex) && (i < this.storage.length) && (null != this.storage[i]); ++i) {
-            if (toRemove.equals(this.storage[i])) {
+            // Check the hash cache, first (equals() will fault in the object).
+            if ((hash == this.hashes[i]) && toRemove.equals(this.storage[i])) {
                 foundIndex = i;
             }
         }
         
         if (-1 != foundIndex) {
+            // Shift everything to beginning, over-writing the removed element.
+            // (we could arraycopy this if we wanted to keep track of the end index).
             for (int i = foundIndex; i < this.storage.length; ++i) {
+                int hashMove = ((i + 1) < this.hashes.length)
+                        ? this.hashes[i+1]
+                        : 0;
                 Object toRead = ((i + 1) < this.storage.length)
                         ? this.storage[i+1]
                         : null;
+                this.hashes[i] = hashMove;
                 this.storage[i] = toRead;
             }
         }
@@ -121,6 +139,7 @@ public class AionSet<E> implements Set<E> {
 
     @Override
     public <T> T[] toArray(T[] a) {
+        // NOTE:  This is explicitly excluded from the shadow version of the Set interface so we don't need to implement it.
         return null;
     }
 
@@ -170,6 +189,7 @@ public class AionSet<E> implements Set<E> {
 
     @Override
     public void clear() {
+        this.hashes = new int[kStartSize];
         this.storage = new Object[kStartSize];
     }
 
@@ -205,33 +225,35 @@ public class AionSet<E> implements Set<E> {
         return ret;
     }
 
-    // TODO: Enable Iterator later
     @Override
     public Iterator<E> iterator() {
-        //return new AionSetIterator(size());
-        return null;
+        return new AionSetIterator(this.size());
     }
-//
-//    final class AionSetIterator implements Iterator<E>{
-//
-//        int remain;
-//        int curIdx;
-//
-//        AionSetIterator(int size){
-//            this.remain = size;
-//            this.curIdx = 0;
-//        }
-//
-//        @Override
-//        public boolean hasNext() {
-//            return remain > 0;
-//        }
-//
-//        @Override
-//        public E next() {
-//            if (!hasNext()) return null;
-//            while (null == storage[curIdx]) curIdx++;
-//            return (E) storage[curIdx];
-//        }
-//    }
+
+    public final class AionSetIterator implements Iterator<E> {
+        int nextIndex;
+        final int endIndex; // (exclusive)
+        public AionSetIterator(int size){
+            this.nextIndex = 0;
+            this.endIndex = size;
+        }
+        @Override
+        public boolean hasNext() {
+            return (this.nextIndex < this.endIndex);
+        }
+        @Override
+        public E next() {
+            E elt = null;
+            if (this.nextIndex < this.endIndex) {
+                // The storage of the parent array is dense so we can always just grab the next.
+                // If the array was modified underneath us, we may not return all the objects or may return null.
+                elt = (E) AionSet.this.storage[this.nextIndex];
+                this.nextIndex += 1;
+            } else {
+                // TODO:  NoSuchElementException is in java.util, not currently included in shadow.
+                elt = null;
+            }
+            return elt;
+        }
+    }
 }

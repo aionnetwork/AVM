@@ -8,13 +8,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-public class AionMapTest {
+public class BMapTest {
     /**
      * Creates an empty map, checks its size, and verifies we can't read or remove from it.
      */
     @Test
     public void emptyMapTest() {
-        AionMap<Integer, Void> map = new AionMap<>();
+        BMap<Integer, Void> map = new BMap<>();
         Assert.assertEquals(0, map.size());
         Assert.assertEquals(null, map.get(Integer.valueOf(4)));
         Assert.assertEquals(null, map.remove(Integer.valueOf(5)));
@@ -25,7 +25,7 @@ public class AionMapTest {
      */
     @Test
     public void addManyElements() {
-        AionMap<Integer, String> map = new AionMap<>();
+        BMap<Integer, String> map = new BMap<>();
         for (int i = 0; i < 100; ++i) {
             map.put(i, "int_ " + i);
         }
@@ -45,7 +45,7 @@ public class AionMapTest {
      */
     @Test
     public void addDuplicates() {
-        AionMap<Integer, String> map = new AionMap<>();
+        BMap<Integer, String> map = new BMap<>();
         for (int i = 0; i < 10; ++i) {
             for (int j = 0; j < 20; ++j) {
                 map.put(j, "int_ " + i);
@@ -65,7 +65,7 @@ public class AionMapTest {
     public void checkKeySet() {
         final int size = 10;
         boolean[] markMap = new boolean[size];
-        AionMap<Integer, String> map = new AionMap<>();
+        BMap<Integer, String> map = new BMap<>();
         for (int i = 0; i < size; ++i) {
             map.put(i, "int_ " + i);
         }
@@ -86,7 +86,7 @@ public class AionMapTest {
     public void checkValues() {
         final int size = 10;
         Set<String> foundSet = new HashSet<>();
-        AionMap<Integer, String> map = new AionMap<>();
+        BMap<Integer, String> map = new BMap<>();
         for (int i = 0; i < size; ++i) {
             map.put(i, "int_ " + i);
         }
@@ -105,7 +105,7 @@ public class AionMapTest {
     public void checkEntrySet() {
         final int size = 10;
         boolean[] markMap = new boolean[size];
-        AionMap<Integer, String> map = new AionMap<>();
+        BMap<Integer, String> map = new BMap<>();
         for (int i = 0; i < size; ++i) {
             map.put(i, "int_ " + i);
         }
@@ -128,13 +128,13 @@ public class AionMapTest {
     public void addElementsWithCollidingHashes() {
         final int size = 20;
         final int hashCount = 10;
-        AionMap<TestElement, String> map = new AionMap<>();
+        BMap<TestElement, String> map = new BMap<>();
         for (int i = 0; i < size; ++i) {
             TestElement elt = new TestElement(i % hashCount, i);
             map.put(elt, elt.toString());
         }
         Assert.assertEquals(size, map.size());
-        
+
         boolean[] markMap = new boolean[size];
         int[] hashes = new int[hashCount];
         int found = 0;
