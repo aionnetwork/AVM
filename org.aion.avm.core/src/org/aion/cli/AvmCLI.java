@@ -110,7 +110,7 @@ public class AvmCLI implements UserInterface{
         @Parameter(names = {"-a", "--args"}, description = "The requested arguments. " +
                 "User provided arguments have the format of (Type Value)*. " +
                 "The following type are supported " +
-                "-I int, -J long, -S short, -C char, -F float, -D double, -B byte, -Z boolean. "+
+                "-I int, -J long, -S short, -C char, -F float, -D double, -B byte, -Z boolean, -A address. "+
                 "For example, option \"-a -I 1 -C c -Z true\" will form arguments of [(int) 1, (char) 'c', (boolean) true].",
                 variableArity = true)
         public List<String> arguments = new ArrayList<>();
@@ -245,15 +245,18 @@ public class AvmCLI implements UserInterface{
                 case "-Z":
                     argArray[i / 2] = Boolean.valueOf(args[i + 1]);
                     break;
-                case "-A":
+                case "-A": {
+                    // We want to parse an Address but we first need to read the hex to bytes.
                     if (!args[i + 1].matches("(0x)?[A-Fa-f0-9]{64}")) {
                         throw new IllegalArgumentException("Invalid address: " + args[i + 1]);
                     }
+                    // To create an Address instance, we need to temporarily install a Helper (for base class instantiation).
                     AvmClassLoader avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
                     new Helper(avmClassLoader, 1_000_000L, 1);
                     argArray[i / 2] = new Address(Helpers.hexStringToBytes(args[i + 1]));
                     Helper.clearTestingState();
                     break;
+                }
             }
         }
 
