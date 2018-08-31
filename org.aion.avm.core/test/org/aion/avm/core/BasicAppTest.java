@@ -3,10 +3,12 @@ package org.aion.avm.core;
 import java.lang.reflect.Method;
 
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.arraywrapping.TestResource;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.AionPlainMap;
 import org.aion.avm.userlib.AionSet;
 import org.junit.After;
 import org.junit.Assert;
@@ -32,6 +34,9 @@ public class BasicAppTest {
                 , BasicAppTestTarget.class
                 , AionMap.class
                 , AionMap.AionMapEntry.class
+                , AionMap.BNode.class
+                , AionMap.BInternalNode.class
+                , AionMap.BLeafNode.class
                 , AionSet.class
                 , AionSet.AionSetIterator.class
                 , AionList.class

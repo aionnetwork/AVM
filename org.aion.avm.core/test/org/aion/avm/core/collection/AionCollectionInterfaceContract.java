@@ -55,7 +55,6 @@ public class AionCollectionInterfaceContract {
         targetSet.size();
         targetSet.isEmpty();
         targetSet.contains(Integer.valueOf(1));
-        targetSet.toArray();
         targetSet.add(Integer.valueOf(1));
         targetSet.remove(Integer.valueOf(1));
     }

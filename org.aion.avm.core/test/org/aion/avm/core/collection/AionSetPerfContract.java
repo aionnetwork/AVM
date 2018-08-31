@@ -2,10 +2,8 @@ package org.aion.avm.core.collection;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.AionPlainSet;
 import org.aion.avm.userlib.AionSet;
-import org.aion.avm.userlib.BSet;
-
-import java.util.Set;
 
 public class AionSetPerfContract {
 
@@ -13,11 +11,11 @@ public class AionSetPerfContract {
 
     public static AionSet<Integer> target;
 
-    public static BSet<Integer> targetB;
+    public static AionPlainSet<Integer> targetB;
 
     static{
         target = new AionSet<>();
-        targetB = new BSet<>();
+        targetB = new AionPlainSet<>();
     }
 
     public static byte[] main() {
@@ -71,6 +69,4 @@ public class AionSetPerfContract {
             targetB.remove(Integer.valueOf(i));
         }
     }
-
-
 }

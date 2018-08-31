@@ -1,230 +1,971 @@
 package org.aion.avm.userlib;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
+import java.util.*;
 
 /**
- * The first rough cut of the Map-like abstraction we are providing to our user-space apps.
- * Note:  This implementation depends on keys having a sensible hashCode() implementation.
- * If we proceed with this direction, we will need to improve this implementation/interface significantly, as it only exists
- * to cover very basic uses, at the moment.
- * 
- * Note about userlib package:
- * This is an approach to implementing something analogous to the Java Collections purely in the "user-space" of the contract.
- * That is, these classes are transformed and accessible to contract code, without any special support from our VM.
- * We may expand, change, or remove this idea in favour of something else, as we proceed.  This solution isn't set in stone.
- * 
- * TODO:  This is a VERY basic implementation which must be replace if we expect to proceed this way.
- * We might also want to make the class into a constructor argument, so we can add more aggressive type safety to the internals.
+ * B+ Tree based implementation of the {@code Map} interface.
+ *
+ * This implementation provides all of the optional map operations, and permits {@code null} values.
+ * {@code null} key will be rejected for this map.
+ *
+ * <p>This implementation provides log-time performance for the basic operations ({@code get} and {@code put}),
+ * assuming the hashCode() function disperses the elements properly.
+ * Iteration over collection views requires linear time.
+ * If AionMap has more than {@code order} number of entries, it is at least half full.
+ *
+ * Instead of using key as router in internal node, AionMap use the hash code of the key as router to make its
+ * energy cost cheap on Aion blockchain.
  */
+
 public class AionMap<K, V> implements Map<K, V> {
-    private static final int DEFAULT_CAPACITY = 1;
 
-    // To avoid faulting in all the keys in storage, we cache their hashes to see if it is even worth checking.
-    private int[] hashes;
-    private Object[] keys;
-    private Object[] values;
+    /**
+     * The default order of Btree map
+     */
+    static final int DEFAULT_ORDER = 4;
 
+    /**
+     * The current size of the map
+     */
     private int size;
 
-    public AionMap() {
-        this.hashes = new int[DEFAULT_CAPACITY];
-        this.keys = new Object[DEFAULT_CAPACITY];
-        this.values = new Object[DEFAULT_CAPACITY];
+    /**
+     * The order of the Btree map
+     * For a BTree, on each node
+     * There will be at least (order) number of entries.
+     * There will be at most (2 * order) number of entries.
+     * Order can not be changed after map is created
+     */
+    private final int order;
+
+    /**
+     * The root of the BTree map
+     * It will be a leaf node when size of the map is less than (2 * order)
+     * It will be a internal node when size of the map is more than (2 * order)
+     */
+    private BNode root;
+
+    /**
+     * Constructs an empty {@code AionMap} with the default order (4).
+     */
+    public AionMap(){
+        this.order = DEFAULT_ORDER;
         this.size = 0;
+        this.root = new BLeafNode();
     }
 
-    public V put(K key, V value) {
-        int keyHash = key.hashCode();
-        boolean newEntry = false;
-        // This implementation is very simple so we just walk the list, seeing if this is already here.
-        int insertIndex = this.keys.length;
-        for (int i = 0; i < this.keys.length; ++i) {
-            Object elt = this.keys[i];
-            if (null == elt) {
-                // The data is always packed into the beginning so the first hole is the end.
-                insertIndex = i;
-                newEntry = true;
-                break;
-            } else {
-                // Check the hash cache, first (equals() will fault in the object).
-                if ((keyHash == this.hashes[i]) && key.equals(elt)) {
-                    // Over-write this.
-                    insertIndex = i;
-                    break;
-                } else {
-                    // Keep searching.
-                }
-            }
-        }
-        
-        if (insertIndex >= 0) {
-            if (insertIndex >= this.keys.length) {
-                newEntry = true;
-                // Grow.
-                int[] newHashes = new int[this.hashes.length * 2];
-                Object[] newKeys = new Object[this.keys.length * 2];
-                Object[] newValues = new Object[this.values.length * 2];
-                System.arraycopy(this.hashes, 0, newHashes, 0, this.hashes.length);
-                System.arraycopy(this.keys, 0, newKeys, 0, this.keys.length);
-                System.arraycopy(this.values, 0, newValues, 0, this.values.length);
-                this.hashes = newHashes;
-                this.keys = newKeys;
-                this.values = newValues;
-            }
-            // Now, insert.
-            this.hashes[insertIndex] = keyHash;
-            this.keys[insertIndex] = key;
-            this.values[insertIndex] = value;
-
-            if (newEntry) {size = size + 1;}
-        }
-
-        return null;
+    /**
+     * Constructs an empty {@code AionMap} with initial order.
+     *
+     * @param order The order of the {@code AionMap}
+     */
+    public AionMap(int order){
+        this.order = order;
+        this.size = 0;
+        this.root = new BLeafNode();
     }
 
-    @SuppressWarnings("unchecked")
-    public V get(Object key) {
-        int keyHash = key.hashCode();
-        V found = null;
-        for (int i = 0; (null == found) && (i < this.keys.length) && (null != this.keys[i]); ++i) {
-            // Check the hash cache, first (equals() will fault in the object).
-            if ((keyHash == this.hashes[i]) && key.equals(this.keys[i])) {
-                found = (V) this.values[i];
-            }
-        }
-        return found;
-    }
-
-    public V getOrDefault(Object key, V defaultValue) {
-        return containsKey(key) ? get(key) : defaultValue;
-    }
-
-    @SuppressWarnings("unchecked")
-    public V remove(Object toRemove) {
-        int keyHash = toRemove.hashCode();
-        int foundIndex = -1;
-        for (int i = 0; (-1 == foundIndex) && (i < this.keys.length) && (null != this.keys[i]); ++i) {
-            // Check the hash cache, first (equals() will fault in the object).
-            if ((keyHash == this.hashes[i]) && toRemove.equals(this.keys[i])) {
-                foundIndex = i;
-            }
-        }
-        
-        V removed = null;
-        if (-1 != foundIndex) {
-            removed = (V) this.values[foundIndex];
-            
-            // We have the size so we can just shift these with arraycopy (and over-write the last entry).
-            int newSize = this.size - 1;
-            System.arraycopy(this.hashes, 1, this.hashes, 0, newSize);
-            this.hashes[newSize] = 0;
-            System.arraycopy(this.keys, 1, this.keys, 0, newSize);
-            this.keys[newSize] = null;
-            System.arraycopy(this.values, 1, this.values, 0, newSize);
-            this.values[newSize] = null;
-            
-            this.size = newSize;
-        }
-        return removed;
-    }
-
+    /**
+     * Returns the number of key-value mappings in this map.
+     *
+     * @return the number of key-value mappings in this map
+     */
+    @Override
     public int size() {
-        return this.size;
+        return size;
     }
 
-    public void clear() {
-        this.hashes = new int[DEFAULT_CAPACITY];
-        this.keys = new Object[DEFAULT_CAPACITY];
-        this.values = new Object[DEFAULT_CAPACITY];
-        this.size = 0;
-    }
 
-    public Object[] getKeys() {
-        return keys;
-    }
-
-    public boolean containsKey(Object key){
-        return (this.get(key) != null);
-    }
-
+    /**
+     * Returns {@code true} if this map contains no key-value mappings.
+     *
+     * @return {@code true} if this map contains no key-value mappings
+     */
     @Override
     public boolean isEmpty() {
         return this.size == 0;
     }
 
+    /**
+     * Returns {@code true} if this map contains a mapping for the
+     * specified key.
+     *
+     * @param   key   The key whose presence in this map is to be tested
+     * @return {@code true} if this map contains a mapping for the specified
+     * key.
+     */
+    @Override
+    public boolean containsKey(Object key) {
+        keyNullCheck((K) key);
+        AionMapEntry entry = this.searchForLeaf((K)key).searchForEntry(key);
+        return (null != entry);
+    }
+
+    /**
+     * Returns {@code true} if this map maps one or more keys to the
+     * specified value.
+     *
+     * @param value value whose presence in this map is to be tested
+     * @return {@code true} if this map maps one or more keys to the
+     *         specified value
+     */
     @Override
     public boolean containsValue(Object value) {
-        for (int i = 0; i < this.size; i++){
-            // (we can't use the hash since we only apply that to the key - we don't require values have a sensible hashCode()).
-            if (this.values[i].equals(value)){
+        for (Entry e : this.entrySet()){
+            if (e.getValue().equals(value)){
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Returns the value to which the specified key is mapped,
+     * or {@code null} if this map contains no mapping for the key.
+     *
+     * <p>A return value of {@code null} does not <i>necessarily</i>
+     * indicate that the map contains no mapping for the key; it's also
+     * possible that the map explicitly maps the key to {@code null}.
+     * The {@link #containsKey containsKey} operation may be used to
+     * distinguish these two cases.
+     *
+     */
+    @Override
+    public V get(Object key) {
+        keyNullCheck((K) key);
+        AionMapEntry entry = this.searchForLeaf((K)key).searchForEntry(key);
+        return (null == entry) ? null : (V) entry.value;
+    }
+
+
+    /**
+     * Associates the specified value with the specified key in this map.
+     * If the map previously contained a mapping for the key, the old
+     * value is replaced.
+     *
+     * @param key key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     * @return the previous value associated with {@code key}, or
+     *         {@code null} if there was no mapping for {@code key}.
+     *         (A {@code null} return can also indicate that the map
+     *         previously associated {@code null} with {@code key}.)
+     */
+    @Override
+    public V put(K key, V value) {
+        keyNullCheck(key);
+        V ret = null;
+
+        // Search for the leaf and slot
+        BLeafNode leaf = this.searchForLeaf(key);
+        int slotIdx = leaf.searchForEntrySlot(key);
+
+        if (-1 == slotIdx){
+            // If slot is not present, insert new entry into the leaf node
+            bInsert(key, value);
+            size++;
+        }else {
+            // If slot is present, search for entry
+            AionMapEntry cur = leaf.searchForEntryInSlot(key, slotIdx);
+
+            if (null != cur){
+                // if entry is present, replace the value, return the old value
+                ret = (V) cur.getValue();
+                cur.setValue(value);
+            }else{
+                // If entry is not present, add new entry as new head of the slot
+                AionMapEntry<K, V> newEntry = new AionMapEntry<>(key, value);
+                newEntry.next = leaf.entries[slotIdx];
+                leaf.entries[slotIdx] = newEntry;
+                size++;
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Removes the mapping for the specified key from this map if present.
+     *
+     * @param  key key whose mapping is to be removed from the map
+     * @return the previous value associated with {@code key}, or
+     *         {@code null} if there was no mapping for {@code key}.
+     *         (A {@code null} return can also indicate that the map
+     *         previously associated {@code null} with {@code key}.)
+     */
+    @Override
+    public V remove(Object key) {
+        keyNullCheck((K) key);
+        V ret = (V) root.delete(key);
+        if (null != ret){size--;}
+        return ret;
+    }
+
+    /**
+     * Copies all of the mappings from the specified map to this map.
+     * These mappings will replace any mappings that this map had for
+     * any of the keys currently in the specified map.
+     *
+     * @param m mappings to be stored in this map
+     * @throws NullPointerException if the specified map is null
+     */
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
-        Set<?> ks = m.keySet();
-        for (Object key : ks){
-            Object value = m.get(key);
-            this.put((K) key, (V) value);
+        for (Entry e : m.entrySet()){
+            this.put((K) e.getKey(), (V) e.getValue());
         }
     }
 
+
+    /**
+     * Removes all of the mappings from this map.
+     * The map will be empty after this call returns.
+     * The order of this map will remain the same.
+     */
+    @Override
+    public void clear() {
+        this.size = 0;
+        this.root = new BLeafNode();
+    }
+
+    /**
+     * Returns a {@link Set} view of the keys contained in this map.
+     * The key set is based on snapshot of the map.
+     * Modifications of the map after key set generation will not be reflected back to existing key set, and vice-versa.
+     *
+     * @return a set view of the keys contained in this map
+     */
+    // TODO: Make this a reflection view instead of a snapshot
     @Override
     public Set<K> keySet() {
-        // WARNING:  This returns a copy of the key set, meaning that modifications to that set won't reflect in the underlying map
-        // as the interface claims it should.
+        BLeafNode curLeaf = getLeftMostLeaf();
         Set<K> ret = new AionSet<>();
-        for (int i = 0; i < size; i++){
-            ret.add((K) this.keys[i]);
+
+        // Iterating through all leaf nodes
+        while (null != curLeaf){
+            // Iterating through all slots in current leaf node
+            for (int i = 0; i < curLeaf.nodeSize; i ++){
+                AionMapEntry<K, V> curEntry = curLeaf.entries[i];
+                // Iterating through all entries in current slot
+                while(null != curEntry){
+                    // Put entry into key set
+                    ret.add(curEntry.key);
+                    curEntry = curEntry.next;
+                }
+            }
+            curLeaf = (BLeafNode) curLeaf.next;
         }
         return ret;
     }
 
-    @Override
-    public Set<Entry<K, V>> entrySet() {
-        // WARNING:  This returns a copy of the key set, meaning that modifications to that set won't reflect in the underlying map
-        // as the interface claims it should.
-        Set<Entry<K, V>> ret = new AionSet<>();
-        for (int i = 0; i < size; i++){
-            ret.add(new AionMapEntry<K, V>((K) this.keys[i], (V) this.values[i]));
-        }
-        return ret;
-    }
-
+    /**
+     * Returns a {@link Collection} view of the values contained in this map.
+     * The values is based on snapshot of the map.
+     * Modifications of the map after values generation will not be reflected back to existing values, and vice-versa.
+     *
+     * @return a view of the values contained in this map
+     */
+    // TODO: Make this a reflection view instead of a snapshot
     @Override
     public Collection<V> values() {
-        Collection<V> ret = new AionList<>();
-        for (int i = 0; i < size; i++){
-            ret.add((V) this.values[i]);
+        BLeafNode curLeaf = getLeftMostLeaf();
+        List<V> ret = new AionList<>();
+
+        while (null != curLeaf){
+            for (int i = 0; i < curLeaf.nodeSize; i ++){
+                AionMapEntry<K, V> curEntry = curLeaf.entries[i];
+                while(null != curEntry){
+                    ret.add(curEntry.value);
+                    curEntry = curEntry.next;
+                }
+            }
+            curLeaf = (BLeafNode) curLeaf.next;
         }
         return ret;
     }
 
+    /**
+     * Returns a {@link Set} view of the mappings contained in this map.
+     * The entry set is based on a snapshot of the map.
+     * Modifications of the map after values generation will not be reflected back to existing entry set, and vice-versa.
+     *
+     * @return a set view of the mappings contained in this map
+     */
+    // TODO: Make this a reflection view instead of a snapshot
+    @Override
+    public Set<Entry<K, V>> entrySet() {
+        BLeafNode curLeaf = getLeftMostLeaf();
+        Set<Entry<K, V>> ret = new AionSet<>();
 
-    public static class AionMapEntry<K, V> implements Map.Entry<K, V> {
-        private final K key;
-        private final V value;
-        public AionMapEntry(K key, V value) {
+        while (null != curLeaf){
+            for (int i = 0; i < curLeaf.nodeSize; i ++){
+                AionMapEntry<K, V> curEntry = curLeaf.entries[i];
+                while(null != curEntry){
+                    ret.add(curEntry);
+                    curEntry = curEntry.next;
+                }
+            }
+            curLeaf = (BLeafNode) curLeaf.next;
+        }
+        return ret;
+    }
+
+    public V getOrDefault(Object key, V defaultValue) {
+        return containsKey(key) ? get(key) : defaultValue;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    /**
+     * Abstract representation of a node of the BTree
+     * It can be a {@link BInternalNode} or {@link BLeafNode}
+     */
+    //TODO: remove public
+    public abstract class BNode<K, V>{
+        //TODO: parent pointer can be discard if we adopt better delete implementation
+        BNode parent;
+
+        BNode next;
+        BNode pre;
+
+        int nodeSize;
+
+        abstract void insertNonFull(K key, V value);
+
+        abstract V delete(K key);
+
+        void rebalance(){
+            if (this.isUnderflow() && root != this){
+                // Check if we can borrow from left sibling
+                if (null != this.pre){
+                    // Check if we can borrow from left sibling
+                    if (!this.pre.isMinimal()){
+                        //Borrow
+                        borrowFromLeft();
+                    }else{
+                        mergeToLeft();
+                    }
+                }else{
+                    // Check if we can borrow from right sibling
+                    if (!this.next.isMinimal()){
+                        //Borrow
+                        borrowFromRight();
+                    }else{
+                        mergeToRight();
+                    }
+                }
+            }else if (root == this && needCollapse()){
+                collapseRoot();
+            }
+        }
+
+        boolean isUnderflow(){
+            return nodeSize < order;
+        }
+
+        boolean isMinimal(){
+            return nodeSize == order;
+        }
+
+        boolean needCollapse(){
+            return nodeSize == 1;
+        }
+
+        BNode getAnchor(BNode target){
+            // Find the common ancestor of this and target
+            BNode thisAnchor = this.parent;
+            BNode targetAnchor = target.parent;
+
+            while (thisAnchor != targetAnchor){
+                thisAnchor = thisAnchor.parent;
+                targetAnchor = targetAnchor.parent;
+            }
+
+            return thisAnchor;
+        }
+
+        abstract void borrowFromLeft();
+
+        abstract void mergeToLeft();
+
+        abstract void borrowFromRight();
+
+        abstract void mergeToRight();
+
+        abstract void collapseRoot();
+
+    }
+
+    /**
+     * Internal node of the BTree
+     */
+    public final class BInternalNode<K, V> extends BNode <K, V>{
+        // Routers array for navigation
+        private int[] routers;
+
+        // The children of an internal node.
+        // Children are either all internal nodes or all leaf nodes.
+        BNode<K, V>[] children;
+
+        BInternalNode(){
+            this.routers = new int[2 * order - 1];
+            this.children = new BNode[2 * order];
+        }
+
+        @Override
+        void insertNonFull(K key, V value) {
+            int i = this.nodeSize - 1;
+            while (i > 0 && key.hashCode() < this.routers[i - 1]){
+                i--;
+            }
+
+            if (this.children[i].nodeSize == (2 * order)){
+                bSplitChild(this, i);
+                if (key.hashCode() >= this.routers[i]){
+                    i++;
+                }
+            }
+            this.children[i].insertNonFull(key, value);
+        }
+
+        @Override
+        V delete(K key) {
+            V ret = null;
+            int i = this.nodeSize - 1;
+            while (i > 0 && key.hashCode() < this.routers[i - 1]){
+                i--;
+            }
+
+            ret = this.children[i].delete(key);
+
+            // Delete succeed, check router and rebalance
+            if (ret != null){
+                if (this.recalibrate()){
+                    this.rebalance();
+                }
+            }
+            return ret;
+        }
+
+        private boolean recalibrate(){
+            boolean ret = false;
+
+            // If the first child is removed, shift both children and routers left by 1
+            if (0 == this.children[0].nodeSize){
+                System.arraycopy(this.children, 1, this.children, 0, this.nodeSize);
+                if (this.nodeSize > 2) {
+                    System.arraycopy(this.routers, 1, this.routers, 0, this.nodeSize - 1);
+                }
+
+                ret = true;
+            }else {
+                // Search for the removed children
+                for (int i = 1; i < this.nodeSize; i++) {
+                    if (0 == this.children[i].nodeSize) {
+                        // Empty node
+                        System.arraycopy(this.children, i + 1, this.children, i    , this.nodeSize - i);
+                        if (this.nodeSize > 2) {
+                            System.arraycopy(this.routers, i, this.routers, i - 1, this.nodeSize - i);
+                        }
+                        ret = true;
+                        break;
+                    }
+                }
+            }
+
+            if (ret) this.nodeSize--;
+            return ret;
+        }
+
+        @Override
+        void borrowFromLeft(){
+            BInternalNode leftNode = (BInternalNode)this.pre;
+            BNode fChild = this.children[0];
+
+            BInternalNode anchor = (BInternalNode) getAnchor(leftNode);
+            int slot = findSlot(anchor, leftNode, this);
+
+            // Shift current tree node to right by 1, insert the right most node from left sibling
+            // Shift is always safe
+            System.arraycopy(this.routers,  0, this.routers,  1, this.nodeSize - 1);
+            System.arraycopy(this.children, 0, this.children, 1, this.nodeSize);
+
+            // Set new head router
+            this.routers[0] = anchor.routers[slot];
+            anchor.routers[slot] = leftNode.routers[leftNode.nodeSize - 2];
+            // Move last children from leftNode
+            this.children[0] = leftNode.children[leftNode.nodeSize - 1];
+            this.children[0].parent = this;
+            leftNode.children[leftNode.nodeSize - 1] = null;
+            this.nodeSize++;
+            leftNode.nodeSize--;
+        }
+
+        @Override
+        void mergeToLeft(){
+            BInternalNode leftNode = (BInternalNode)this.pre;
+
+            BInternalNode anchor = (BInternalNode) getAnchor(leftNode);
+            int slot = findSlot(anchor, leftNode, this);
+
+            for (int i = 0; i < this.nodeSize; i++){
+                this.children[i].parent = leftNode;
+            }
+
+            // Move this node to the tail of the leftNode
+            System.arraycopy(this.routers,  0, leftNode.routers,  leftNode.nodeSize, this.nodeSize - 1);
+            System.arraycopy(this.children, 0, leftNode.children, leftNode.nodeSize, this.nodeSize);
+
+            leftNode.routers[leftNode.nodeSize - 1] = anchor.routers[slot];
+            leftNode.nodeSize += this.nodeSize;
+            this.nodeSize = 0;
+
+            if (null != this.next){this.next.pre = leftNode;}
+            leftNode.next = this.next;
+        }
+
+        @Override
+        void borrowFromRight(){
+            BInternalNode rightNode = (BInternalNode)this.next;
+            BNode childToMove = rightNode.children[0];
+
+            BInternalNode anchor = (BInternalNode) getAnchor(rightNode);
+            int slot = findSlot(anchor, this, rightNode);
+
+            // Move the head of the right node to the tail of the current node
+            this.children[this.nodeSize] = childToMove;
+            childToMove.parent = this;
+            this.routers[this.nodeSize - 1] = anchor.routers[slot];
+            anchor.routers[slot] = rightNode.routers[0];
+
+            System.arraycopy(rightNode.routers,  1, rightNode.routers,  0, rightNode.nodeSize - 2);
+            System.arraycopy(rightNode.children, 1, rightNode.children, 0, rightNode.nodeSize - 1);
+            this.nodeSize++;
+            rightNode.nodeSize--;
+        }
+
+        @Override
+        void mergeToRight(){
+            BInternalNode rightNode = (BInternalNode)this.next;
+
+            BInternalNode anchor = (BInternalNode) getAnchor(rightNode);
+            int slot = findSlot(anchor, this, rightNode);
+
+            for (int i = 0; i < this.nodeSize; i++){
+                this.children[i].parent = rightNode;
+            }
+
+            // Move this node to the head of the rightNode
+            System.arraycopy(rightNode.routers, 0, rightNode.routers, this.nodeSize, rightNode.nodeSize - 1);
+            System.arraycopy(this.routers,      0, rightNode.routers, 0,             this.nodeSize - 1);
+
+            System.arraycopy(rightNode.children, 0, rightNode.children, this.nodeSize, rightNode.nodeSize);
+            System.arraycopy(this.children,      0, rightNode.children, 0,             this.nodeSize);
+
+            rightNode.routers[this.nodeSize - 1] = anchor.routers[slot];
+            rightNode.nodeSize += this.nodeSize;
+            this.nodeSize = 0;
+
+            if (null != this.pre){this.pre.next = rightNode;}
+            rightNode.pre = this.pre;
+        }
+
+        @Override
+        void collapseRoot() {
+            // Collapse
+            root = this.children[0];
+            root.parent = null;
+        }
+    }
+
+    /**
+     * Leaf node of the BTree
+     */
+    public final class BLeafNode<K, V> extends BNode <K, V>{
+        // Entry array for data storage
+        AionMapEntry<K, V>[] entries;
+
+        BLeafNode(){
+            this.entries = new AionMapEntry[2 * order];
+        }
+
+        public int searchForEntrySlot(K key){
+            int i = 0;
+            while (i < nodeSize && key.hashCode() != entries[i].hashCode()){
+                i = i + 1;
+            }
+
+            if (i < nodeSize && key.hashCode() == entries[i].hashCode()){
+                return i;
+            }
+
+            return -1;
+        }
+
+        public AionMapEntry searchForEntryInSlot(K key, int slot){
+            AionMapEntry cur = entries[slot];
+            while(cur != null){
+                if (cur.key.equals(key)){
+                    return cur;
+                }
+                cur = cur.next;
+            }
+            return null;
+        }
+
+        public AionMapEntry searchForEntry(K key){
+            int i = 0;
+            while (i < nodeSize && key.hashCode() != entries[i].hashCode()){
+                i = i + 1;
+            }
+
+            if (i < nodeSize && key.hashCode() == entries[i].hashCode()){
+                //Find the leaf slot, search within linked list
+                AionMapEntry cur = entries[i];
+                while(cur != null){
+                    if (cur.key.equals(key)){
+                        return cur;
+                    }
+                    cur = cur.next;
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        void insertNonFull(K key, V value) {
+            int i = this.nodeSize;
+            while (i > 0 && key.hashCode() < this.entries[i - 1].hashCode()){
+                //this.entries[i] = this.entries[i - 1];
+                i--;
+            }
+
+            System.arraycopy(this.entries, i, this.entries, i + 1, this.nodeSize - i);
+            this.entries[i] = new AionMapEntry(key, value);
+            this.nodeSize++;
+        }
+
+        @Override
+        V delete(K key) {
+            V ret = null;
+
+            int slotidx = this.searchForEntrySlot(key);
+
+            if (-1 == slotidx) {return ret;}
+
+            AionMapEntry<K, V> pre = entries[slotidx];
+            AionMapEntry<K, V> cur = pre.next;
+
+            if (pre.key.equals(key)){
+                ret = pre.value;
+                entries[slotidx] = pre.next;
+            }else {
+                while (null != cur && !cur.equals(key)) {
+                    cur = cur.next;
+                    pre = pre.next;
+                }
+                if (null != cur) {
+                    pre.next = cur.next;
+                    ret = cur.value;
+                }
+            }
+
+            if (null == entries[slotidx]){
+                System.arraycopy(this.entries, slotidx + 1, this.entries, slotidx, this.nodeSize - slotidx - 1);
+                entries[nodeSize - 1] = null;
+                this.nodeSize--;
+                this.rebalance();
+            }
+
+            return ret;
+        }
+
+        @Override
+        void borrowFromLeft(){
+            BLeafNode leftNode = (BLeafNode)this.pre;
+
+            // Need to update router within anchor node
+            BInternalNode anchor = (BInternalNode) getAnchor(leftNode);
+            int slot = findSlot(anchor, leftNode, this);
+
+            // Shift current leaf to right by 1, insert the right most node from left sibling
+            // Shift is always safe
+            System.arraycopy(this.entries, 0, this.entries, 1, this.nodeSize);
+            this.entries[0] = leftNode.entries[leftNode.nodeSize - 1];
+            leftNode.entries[leftNode.nodeSize - 1] = null;
+            this.nodeSize++;
+            leftNode.nodeSize--;
+
+            anchor.routers[slot] = this.entries[0].hashCode();
+        }
+
+        @Override
+        void mergeToLeft(){
+            BLeafNode leftNode = (BLeafNode)this.pre;
+            // Move this node to the tail of the leftNode
+            System.arraycopy(this.entries, 0, leftNode.entries, leftNode.nodeSize, this.nodeSize);
+            leftNode.nodeSize += this.nodeSize;
+            this.nodeSize = 0;
+
+            if (null != this.next){this.next.pre = leftNode;}
+            leftNode.next = this.next;
+        }
+
+        @Override
+        void borrowFromRight(){
+            BLeafNode rightNode = (BLeafNode)this.next;
+
+            // Need to update router within anchor node
+            BInternalNode anchor = (BInternalNode) getAnchor(rightNode);
+            int slot = findSlot(anchor, this, rightNode);
+
+            // Move the head of the right node to the tail of the current node
+            this.entries[this.nodeSize] = rightNode.entries[0];
+            System.arraycopy(rightNode.entries, 1, rightNode.entries, 0, rightNode.nodeSize - 1);
+            this.nodeSize++;
+            rightNode.nodeSize--;
+
+            anchor.routers[slot] = rightNode.entries[0].hashCode();
+        }
+
+        @Override
+        void mergeToRight(){
+            BLeafNode rightNode = (BLeafNode)this.next;
+            // Move this node to the head of the rightNode
+            System.arraycopy(rightNode.entries, 0, rightNode.entries, this.nodeSize, rightNode.nodeSize);
+            System.arraycopy(this.entries, 0, rightNode.entries, 0, this.nodeSize);
+            rightNode.nodeSize += this.nodeSize;
+            this.nodeSize = 0;
+
+            if (null != this.pre){this.pre.next = rightNode;}
+            rightNode.pre = this.pre;
+        }
+
+        @Override
+        void collapseRoot() {
+            // Do nothing is root is leaf node
+        }
+    }
+
+    /**
+     * Entry (K V pair) of AionMap
+     */
+    public class AionMapEntry<K, V> implements Map.Entry<K, V>{
+
+        private K key;
+
+        private V value;
+
+        public AionMapEntry<K, V> next;
+
+        public AionMapEntry(K key, V value){
             this.key = key;
             this.value = value;
+            this.next = null;
         }
+
         @Override
         public K getKey() {
-            return this.key;
+            return key;
         }
+
         @Override
         public V getValue() {
-            return this.value;
+            return value;
         }
+
         @Override
         public V setValue(V value) {
-            throw new UnsupportedOperationException();
+            V ret = this.value;
+            this.value = value;
+            return ret;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            return super.equals(obj);
+        }
+
+        // Since our map is hashcode based, the hashcode of an entry is defined as hashcode of the key.
+        @Override
+        public int hashCode() {
+            return key.hashCode();
+        }
+    }
+
+
+    /**
+     * Returns the left most {@link BLeafNode} of the BTree.
+     * This node serves as the entry point of data traversal.
+     *
+     * @return the left most {@link BLeafNode} of the BTree.
+     */
+    BLeafNode getLeftMostLeaf(){
+        BNode cur = this.root;
+        while (!(cur instanceof BLeafNode)){
+            cur = ((BInternalNode) cur).children[0];
+        }
+        return (BLeafNode)cur;
+    }
+
+    private BLeafNode searchForLeaf(K key){
+        BNode cur = this.root;
+
+        while (!(cur instanceof BLeafNode)){
+            BInternalNode tmp = (BInternalNode) cur;
+
+            int i = tmp.nodeSize - 1;
+            while (i > 0 && key.hashCode() < tmp.routers[i - 1]){
+                i--;
+            }
+            cur = tmp.children[i];
+        }
+
+        return (BLeafNode)cur;
+    }
+
+    private void keyNullCheck(Object key){
+        if (null == key){
+            throw new NullPointerException("AionMap does not allow empty key.");
+        }
+    }
+
+    private void bInsert(K key, V value){
+        BNode r = this.root;
+        if (r.nodeSize == ((2 * order))){
+            BInternalNode s = new BInternalNode();
+            this.root = s;
+            s.nodeSize = 1;
+            s.children[0] = r;
+            r.parent = s;
+            bSplitChild(s, 0);
+            s.insertNonFull(key, value);
+        }else{
+            r.insertNonFull(key, value);
+        }
+    }
+
+    private void bSplitChild(BInternalNode x, int i){
+        if (x.children[i] instanceof AionMap.BInternalNode){
+            bSplitTreeChild(x, i);
+        }else{
+            bSplitLeafChild(x, i);
+        }
+    }
+
+    private void bSplitTreeChild(BInternalNode x, int i){
+        // Left node
+        BInternalNode y = (BInternalNode) x.children[i];
+        // Right node
+        BInternalNode z = new BInternalNode();
+
+        // Right node has t children
+        z.nodeSize = order;
+
+        System.arraycopy(y.routers , order, z.routers , 0, order - 1);
+        System.arraycopy(y.children, order, z.children, 0, order);
+        for (int j = 0; j < order; j++){
+            z.children[j].parent = z;
+        }
+
+        // Left node has t children
+        y.nodeSize = order;
+        // Remove reference from left node
+        // TODO: This may not be necessary
+        int newXRouter = y.routers[order - 1];
+        for (int j = order; j < (2 * order) - 1; j++){
+            y.routers [j] = 0;
+            y.children[j] = null;
+        }
+        y.routers [order - 1] = 0;
+        y.children[2 * order - 1] = null;
+
+        // Link tree node
+        z.next = y.next;
+        if (null != y.next) {
+            y.next.pre = z;
+        }
+        z.pre = y;
+        y.next = z;
+        y.parent = x;
+        z.parent = x;
+
+        // Shift parent node
+        if (x.nodeSize > 1) {
+            System.arraycopy(x.routers, i, x.routers, i + 1, x.nodeSize - i - 1);
+            System.arraycopy(x.children, i, x.children, i + 1, x.nodeSize - i);
+        }
+
+        x.children[i + 1] = z;
+        x.routers [i] = newXRouter;
+        x.nodeSize++;
+    }
+
+    private void bSplitLeafChild(BInternalNode x, int i){
+        BLeafNode y = (BLeafNode) x.children[i];
+        BLeafNode z = new BLeafNode();
+
+        // Right node has t children
+        z.nodeSize = order;
+        // Move t children to right node
+        System.arraycopy(y.entries, order, z.entries, 0, order);
+
+        y.nodeSize = order;
+        // Remove reference from left node to prevent future memory leak
+        // TODO: This may not be necessary
+        for (int j = order; j < (2 * order); j++){
+            y.entries[j] = null;
+        }
+
+        // Link leaf nodes
+        z.next = y.next;
+        if (null != y.next) {
+            y.next.pre = z;
+        }
+        z.pre = y;
+        y.next = z;
+        y.parent = x;
+        z.parent = x;
+
+        // Shift parent node
+        if (x.nodeSize > 0) {
+            System.arraycopy(x.routers, i, x.routers, i + 1, x.nodeSize - i - 1);
+            System.arraycopy(x.children, i, x.children, i + 1, x.nodeSize - i);
+        }
+
+        x.children[i + 1] = z;
+        x.routers [i] = z.entries[0].hashCode();
+        x.nodeSize++;
+    }
+
+    private int findSlot(BInternalNode anchor, BLeafNode left, BLeafNode right){
+        int lvalue = left.entries[left.nodeSize - 1].hashCode();
+        int rvalue = right.entries[0].hashCode();
+
+        int i = 0;
+        while (!(lvalue < anchor.routers[i] && rvalue >= anchor.routers[i])){
+            i++;
+        }
+        return i;
+    }
+
+    private int findSlot(BInternalNode anchor, BInternalNode left, BInternalNode right) {
+
+        int lvalue = left.routers[0];
+        int rvalue = right.routers[0];
+
+        int i = 0;
+        while (!(lvalue < anchor.routers[i] && rvalue >= anchor.routers[i])) {
+            i++;
+        }
+
+        return i;
     }
 }

@@ -33,8 +33,8 @@ public class AionCollectionPerfTest {
                 AionList.class,
                 AionSet.class,
                 AionMap.class,
-                BSet.class,
-                BMap.class
+                AionPlainSet.class,
+                AionPlainMap.class
         );
     }
 
@@ -43,7 +43,8 @@ public class AionCollectionPerfTest {
                 AionList.class,
                 AionSet.class,
                 AionMap.class,
-                BMap.class
+                AionPlainSet.class,
+                AionPlainMap.class
         );
     }
 
@@ -133,7 +134,7 @@ public class AionCollectionPerfTest {
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.println(">> Energy measurement for BSet");
+        System.out.println(">> Energy measurement for AionPlainSet");
 
         args = ABIEncoder.encodeMethodArguments("callInitB");
         initResult = call(kernel, avm, contract, from, args);
@@ -183,7 +184,7 @@ public class AionCollectionPerfTest {
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.println(">> Energy measurement for BMap");
+        System.out.println(">> Energy measurement for AionPlainMap");
 
         args = ABIEncoder.encodeMethodArguments("callInitB");
         initResult = call(kernel, avm, contract, from, args);

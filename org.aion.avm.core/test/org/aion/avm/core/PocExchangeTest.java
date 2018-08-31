@@ -21,12 +21,12 @@ public class PocExchangeTest {
 
     @Before
     public void setup() {
-        testERC20Jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
+        testERC20Jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
         testExchangeJar = JarBuilder.buildJarForMainAndClasses(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ByteArrayHelpers.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
     }
 
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
-    private long energyLimit = 6_000_000;
+    private long energyLimit = 6_000_0000;
 
     private byte[] pepeMinter = Helpers.randomBytes(Address.LENGTH);
     private byte[] memeMinter = Helpers.randomBytes(Address.LENGTH);

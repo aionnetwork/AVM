@@ -3,9 +3,7 @@ package org.aion.avm.core.collection;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.BMap;
-
-import java.util.List;
+import org.aion.avm.userlib.AionPlainMap;
 
 public class AionMapPerfContract {
 
@@ -13,11 +11,11 @@ public class AionMapPerfContract {
 
     public static AionMap<Integer, Integer> target;
 
-    public static BMap<Integer, Integer> targetB;
+    public static AionPlainMap<Integer, Integer> targetB;
 
     static{
         target = new AionMap<>();
-        targetB = new BMap<>();
+        targetB = new AionPlainMap<>();
     }
 
     public static byte[] main() {
