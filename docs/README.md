@@ -1,4 +1,4 @@
-# Aion Virtual Mahince
+# Aion Virtual Machine
 
 ## Introduction
 
@@ -13,7 +13,7 @@ It comes with three components:
 
 ## Blockchain API and user library
 
-Check the `javadoc` folder
+Check the `javadoc` folder.
 
 
 ## Supported JCL classes
