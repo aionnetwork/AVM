@@ -40,6 +40,16 @@ public class InvokedynamicRestrictedMethodAccessCheck {
                     "org/aion/avm/core/invokedynamic/InvokedynamicRestrictedMethodAccessCheck"};
             makeSureTransformationFail(methodOwnerContainer, expectedFailureCheck, userDefinedClassDotNames);
         }
+        {
+            final var notAllowedToCallMethod = "makeConcatWithConstants";
+            final var methodOwner = "StringConcatFactory";
+            final var methodOwnerContainer = StringConstantConcatFactoryMethodCall.class;
+            final var expectedFailureCheck = new RejectedBecauseMethodNotInWhitelistForShadowedClass(methodOwner, notAllowedToCallMethod);
+            final var userDefinedClassDotNames = new String[]{
+                    "org/aion/avm/core/invokedynamic/InvokedynamicRestrictedMethodAccessCheck$StringConstantConcatFactoryMethodCall",
+                    "org/aion/avm/core/invokedynamic/InvokedynamicRestrictedMethodAccessCheck"};
+            makeSureTransformationFail(methodOwnerContainer, expectedFailureCheck, userDefinedClassDotNames);
+        }
     }
 
     @Test
@@ -230,6 +240,15 @@ public class InvokedynamicRestrictedMethodAccessCheck {
         private StringConcatFactoryMethodCall() {
             try {
                 StringConcatFactory.makeConcat(null, null, null);
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    private static class StringConstantConcatFactoryMethodCall {
+        private StringConstantConcatFactoryMethodCall() {
+            try {
+                StringConcatFactory.makeConcatWithConstants(null, null, null, null);
             } catch (Exception e) {
             }
         }
