@@ -24,7 +24,7 @@ public class AvmCLIIntegrationTest {
     }
 
     @Test
-    public void deployAndCallShadowCoverageTarget() throws Exception {
+    public void exploreShadowCoverageTarget() throws Exception {
         // Create the JAR and write it to a location we can parse from the command-line.
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
         File temp = this.folder.newFile();
@@ -41,6 +41,12 @@ public class AvmCLIIntegrationTest {
         TestEnvironment callEnv = new TestEnvironment("Result status: SUCCESS");
         AvmCLI.testingMain(callEnv, new String[] {"call", dappAddress, "--method", "populate_JavaLang"});
         Assert.assertTrue(callEnv.didScrapeString);
+        
+        // Now, check the storage.
+        // (note that this NPE is just something in an instance field, as an example of deep data).
+        TestEnvironment exploreEnv = new TestEnvironment("NullPointerException(30):");
+        AvmCLI.testingMain(exploreEnv, new String[] {"explore", dappAddress});
+        Assert.assertTrue(exploreEnv.didScrapeString);
     }
 
 

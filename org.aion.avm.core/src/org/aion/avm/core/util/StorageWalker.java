@@ -193,7 +193,7 @@ public class StorageWalker {
                 }
             } else {
                 // We might do something with this type, in the future, but not right now.
-                output.println("(ignored)");
+                output.println("\t(opaque)");
             }
         }
     }

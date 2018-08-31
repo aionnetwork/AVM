@@ -33,4 +33,13 @@ public interface UserInterface {
      */
     void openAccount(IEnvironment env, String storagePath, byte[] toOpen);
 
+    /**
+     * Print the object graph for a given DApp.
+     *
+     * @param env          The execution environment
+     * @param storagePath  The path to the persistent storage
+     * @param dappAddress  The address of the DApp to explore.
+     */
+    void exploreStorage(IEnvironment env, String storagePath, byte[] dappAddress);
+
 }

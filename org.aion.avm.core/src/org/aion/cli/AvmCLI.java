@@ -9,11 +9,14 @@ import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.StorageWalker;
 import org.aion.kernel.*;
 import com.beust.jcommander.Parameter;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -85,13 +88,8 @@ public class AvmCLI implements UserInterface{
 
     @Parameters(commandDescription = "Explore storage")
     public class CommandExplore{
-
-        @Parameter(names = "-Dapp", description = "List deployed Dapp only")
-        private boolean dapp = false;
-
-        @Parameter(names = "-account", description = "Explore the specified account")
-        private String account = null;
-
+        @Parameter(description = "DappAddress", required = true)
+        private String contract = null;
     }
 
     @Parameters(commandDescription = "Call Dapp")
@@ -272,6 +270,30 @@ public class AvmCLI implements UserInterface{
         env.logLine("Account Balance : " + kernel.getBalance(toOpen));
     }
 
+    @Override
+    public void exploreStorage(IEnvironment env, String storagePath, byte[] dappAddress) {
+        // Create the PrintStream abstraction that walkAllStaticsForDapp expects.
+        // (ideally, we would incrementally filter this but that could be a later improvement - current Dapps are very small).
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        PrintStream printer = new PrintStream(stream);
+        
+        // Create the directory-backed kernel.
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl(new File(storagePath));
+        
+        // Walk everything, treating unexpected exceptions as fatal.
+        try {
+            StorageWalker.walkAllStaticsForDapp(printer, kernel, dappAddress);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
+            // This tool can fail out if something goes wrong.
+            throw env.fail(e.getMessage());
+        }
+        
+        // Flush all the captured data and feed it to the env.
+        printer.flush();
+        String raw = new String(stream.toByteArray());
+        env.logLine(raw);
+    }
+
     public static void testingMain(IEnvironment env, String[] args) {
         internalMain(env, args);
     }
@@ -334,6 +356,10 @@ public class AvmCLI implements UserInterface{
                 instance.call(env, instance.flag.storage, Helpers.hexStringToBytes(instance.call.contract),
                         Helpers.hexStringToBytes(instance.call.sender), instance.call.methodName,
                         instance.call.arguments.toArray(new String[0]));
+            }
+
+            if (parserCommand.equals("explore")) {
+                instance.exploreStorage(env, instance.flag.storage, Helpers.hexStringToBytes(instance.explore.contract));
             }
         } else {
             // If we specify nothing, print the usage.
