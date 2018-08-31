@@ -123,13 +123,12 @@ public class AvmCLI implements UserInterface{
     }
 
     @Override
-    public void deploy(String storagePath, String jarPath, byte[] sender) {
+    public void deploy(IEnvironment env, String storagePath, String jarPath, byte[] sender) {
 
-        reportDeployRequest(storagePath, jarPath, sender);
+        reportDeployRequest(env, storagePath, jarPath, sender);
 
         if (sender.length != Address.LENGTH){
-            System.out.println("deploy : Invalid sender address");
-            return;
+            throw env.fail("deploy : Invalid sender address");
         }
 
         File storageFile = new File(storagePath);
@@ -142,8 +141,7 @@ public class AvmCLI implements UserInterface{
         try {
             jar = Files.readAllBytes(path);
         }catch (IOException e){
-            System.out.println("deploy : Invalid location of Dapp jar");
-            return;
+            throw env.fail("deploy : Invalid location of Dapp jar");
         }
 
         Transaction createTransaction = new Transaction(Transaction.Type.CREATE, sender, null, kernel.getNonce(sender), 0,
@@ -152,28 +150,28 @@ public class AvmCLI implements UserInterface{
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
 
-        reportDeployResult(createResult);
+        reportDeployResult(env, createResult);
     }
 
-    public void reportDeployRequest(String storagePath, String jarPath, byte[] sender) {
+    public void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, byte[] sender) {
         lineSeparator();
-        System.out.println("DApp deployment request");
-        System.out.println("Storage      : " + storagePath);
-        System.out.println("Dapp Jar     : " + jarPath);
-        System.out.println("Sender       : " + Helpers.bytesToHexString(sender));
+        env.logLine("DApp deployment request");
+        env.logLine("Storage      : " + storagePath);
+        env.logLine("Dapp Jar     : " + jarPath);
+        env.logLine("Sender       : " + Helpers.bytesToHexString(sender));
     }
 
-    public void reportDeployResult(TransactionResult createResult){
+    public void reportDeployResult(IEnvironment env, TransactionResult createResult){
         lineSeparator();
-        System.out.println("DApp deployment status");
-        System.out.println("Result status: " + createResult.getStatusCode().name());
-        System.out.println("Dapp Address : " + Helpers.bytesToHexString(createResult.getReturnData()));
-        System.out.println("Energy cost  : " + createResult.getEnergyUsed());
+        env.logLine("DApp deployment status");
+        env.logLine("Result status: " + createResult.getStatusCode().name());
+        env.logLine("Dapp Address : " + Helpers.bytesToHexString(createResult.getReturnData()));
+        env.logLine("Energy cost  : " + createResult.getEnergyUsed());
     }
 
     @Override
-    public void call(String storagePath, byte[] contract, byte[] sender, String method, String[] args) {
-        reportCallRequest(storagePath, contract, sender, method, args);
+    public void call(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, String[] args) {
+        reportCallRequest(env, storagePath, contract, sender, method, args);
 
         if (contract.length != Address.LENGTH){
             System.out.println("call : Invalid Dapp address ");
@@ -196,10 +194,10 @@ public class AvmCLI implements UserInterface{
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(callContext);
 
-        reportCallResult(callResult);
+        reportCallResult(env, callResult);
     }
 
-    private void reportCallRequest(String storagePath, byte[] contract, byte[] sender, String method, String[] args){
+    private void reportCallRequest(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, String[] args){
         lineSeparator();
         System.out.println("DApp call request");
         System.out.println("Storage      : " + storagePath);
@@ -212,7 +210,7 @@ public class AvmCLI implements UserInterface{
         }
     }
 
-    private void reportCallResult(TransactionResult callResult){
+    private void reportCallResult(IEnvironment env, TransactionResult callResult){
         lineSeparator();
         System.out.println("DApp call result");
         System.out.println("Result status: " + callResult.getStatusCode().name());
@@ -260,7 +258,8 @@ public class AvmCLI implements UserInterface{
         System.out.println("*******************************************************************************************");
     }
 
-    public void openAccount(String storagePath, byte[] toOpen){
+    @Override
+    public void openAccount(IEnvironment env, String storagePath, byte[] toOpen){
         lineSeparator();
 
         if (toOpen.length != Address.LENGTH){
@@ -279,59 +278,88 @@ public class AvmCLI implements UserInterface{
         System.out.println("Account Balance : " + kernel.getBalance(toOpen));
     }
 
-    static public void main(String[] args){
+    public static void testingMain(IEnvironment env, String[] args) {
+        internalMain(env, args);
+    }
 
+    static public void main(String[] args){
+        IEnvironment env = new IEnvironment() {
+            @Override
+            public RuntimeException fail(String message) {
+                if (null != message) {
+                    System.err.println(message);
+                }
+                System.exit(1);
+                throw new RuntimeException();
+            }
+            @Override
+            public void noteRelevantAddress(String address) {
+                // This implementation doesn't care.
+            }
+            @Override
+            public void logLine(String line) {
+                System.out.println(line);
+            }
+        };
+        internalMain(env, args);
+    }
+
+    private static void internalMain(IEnvironment env, String[] args) {
         try {
             instance.jc.parse(args);
         }catch (ParameterException e){
-            System.out.println(e.getMessage());
-            instance.jc.usage();
-            return;
+            callUsage(env);
+            throw env.fail(e.getMessage());
         }
 
         if (instance.flag.usage){
-            instance.jc.usage();
+            callUsage(env);
         }
 
         String parserCommand = instance.jc.getParsedCommand();
         if (null != parserCommand) {
             // Before we run any command, make sure that the specified storage directory exists.
             // (we want the underlying storage engine to remain very passive so it should always expect that the directory was created for it).
-            verifyStorageExists(instance.flag.storage);
+            verifyStorageExists(env, instance.flag.storage);
             
             if (parserCommand.equals("open")) {
                 if (instance.open.address.equals("Random generated address")) {
-                    instance.openAccount(instance.flag.storage, Helpers.randomBytes(Address.LENGTH));
+                    instance.openAccount(env, instance.flag.storage, Helpers.randomBytes(Address.LENGTH));
                 } else {
-                    instance.openAccount(instance.flag.storage, Helpers.hexStringToBytes(instance.open.address));
+                    instance.openAccount(env, instance.flag.storage, Helpers.hexStringToBytes(instance.open.address));
                 }
             }
 
             if (parserCommand.equals("deploy")) {
-                instance.deploy(instance.flag.storage, instance.deploy.contract, Helpers.hexStringToBytes(instance.deploy.sender));
+                instance.deploy(env, instance.flag.storage, instance.deploy.contract, Helpers.hexStringToBytes(instance.deploy.sender));
             }
 
             if (parserCommand.equals("call")) {
-                instance.call(instance.flag.storage, Helpers.hexStringToBytes(instance.call.contract),
+                instance.call(env, instance.flag.storage, Helpers.hexStringToBytes(instance.call.contract),
                         Helpers.hexStringToBytes(instance.call.sender), instance.call.methodName,
                         instance.call.arguments.toArray(new String[0]));
             }
         } else {
             // If we specify nothing, print the usage.
-            instance.jc.usage();
+            callUsage(env);
         }
     }
 
-    private static void verifyStorageExists(String storageRoot) {
+    private static void verifyStorageExists(IEnvironment env, String storageRoot) {
         File directory = new File(storageRoot);
         if (!directory.isDirectory()) {
             boolean didCreate = directory.mkdirs();
             // Is this the best way to handle this failure?
             if (!didCreate) {
                 // System.exit isn't ideal but we are very near the top of the entry-point so this shouldn't cause confusion.
-                System.err.println("Failed to create storage root: \"" + storageRoot + "\"");
-                System.exit(1);
+                throw env.fail("Failed to create storage root: \"" + storageRoot + "\"");
             }
         }
+    }
+
+    private static void callUsage(IEnvironment env) {
+        StringBuilder builder = new StringBuilder();
+        instance.jc.usage(builder);
+        env.logLine(builder.toString());
     }
 }
