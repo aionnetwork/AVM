@@ -103,8 +103,6 @@ public class AionSet<E> implements Set<E> {
      * if it's contained in this collection.  If all elements are so
      * contained {@code true} is returned, otherwise {@code false}.
      *
-     * @throws ClassCastException
-     * @throws NullPointerException
      * @see #contains(Object)
      */
     @Override
@@ -121,11 +119,6 @@ public class AionSet<E> implements Set<E> {
     /**
      * This implementation iterates over the specified collection, and adds
      * each object returned by the iterator to this collection, in turn.
-     *
-     * @throws ClassCastException
-     * @throws NullPointerException
-     * @throws IllegalArgumentException
-     * @throws IllegalStateException
      *
      * @see #add(Object)
      */
