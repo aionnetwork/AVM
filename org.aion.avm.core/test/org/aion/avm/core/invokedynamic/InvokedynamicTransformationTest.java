@@ -43,12 +43,6 @@ import static org.junit.Assert.*;
 public class InvokedynamicTransformationTest {
     private static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
 
-    private static PreRenameClassAccessRules buildSingletonAccessRules(final Forest<String, ClassInfo> classHierarchy, final String... className) {
-        Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(classHierarchy);
-        Set<String> preRenameUserClassAndInterfaceSet = Set.of(className);
-        return new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserClassAndInterfaceSet);
-    }
-
     @Before
     public void init() {
         final var avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
@@ -60,32 +54,6 @@ public class InvokedynamicTransformationTest {
         Helper.clearTestingState();
     }
 
-    @Test
-    public void given_stringConcatLambda_then_bootstrapMethodShouldNeShadowed() throws Exception {
-        final var className = ConstantStringsConcatIndy.class.getName();
-        final byte[] origBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
-        final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
-        assertFalse(Arrays.equals(origBytecode, transformedBytecode));
-        final var actual = (org.aion.avm.shadow.java.lang.String) callInstanceTestMethod(transformedBytecode, className, NamespaceMapper.mapMethodName("test"));
-        Assert.assertEquals("abc", actual.toString());
-    }
-
-    private byte[] transformForStringConcatTest(byte[] origBytecode, String className) {
-        final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", false, origBytecode)
-                .asMutableForest();
-        final var shadowPackage = PackageConstants.kShadowSlashPrefix;
-        return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, className))))
-                .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME))
-                .addNextVisitor(new InvokedynamicShadower(shadowPackage))
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(className), classHierarchy),
-                        new HierarchyTreeBuilder()))
-                .build()
-                .runAndGetBytecode();
-    }
 
     @Test
     public void given_parametrizedLambda_then_allUserAccessableObjectsShouldBeShadowed() throws Exception {
@@ -105,7 +73,7 @@ public class InvokedynamicTransformationTest {
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, className), shadowPackage)))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className), shadowPackage)))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
@@ -133,7 +101,7 @@ public class InvokedynamicTransformationTest {
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, classDotName), shadowPackage)))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, classDotName), shadowPackage)))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
                 .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
@@ -171,7 +139,7 @@ public class InvokedynamicTransformationTest {
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, false, bytecode);
         };
         ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy);
-        PreRenameClassAccessRules singletonRules = buildSingletonAccessRules(classHierarchy, className);
+        PreRenameClassAccessRules singletonRules = InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className);
         NamespaceMapper mapper = new NamespaceMapper(singletonRules);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper))
@@ -213,5 +181,4 @@ public class InvokedynamicTransformationTest {
         LambdaMetafactory.avm_metafactoryWasCalled = false;
         return method.invoke(null, new org.aion.avm.shadow.java.lang.Object());
     }
-
 }
