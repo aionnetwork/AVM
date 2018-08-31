@@ -39,4 +39,5 @@ cd ..
 
 # done!
 echo "Success!"
-echo "The jar has been generated under the 'build' folder"
+
+echo "The jar has been generated at: $(realpath ./build/dapp.jar)"
