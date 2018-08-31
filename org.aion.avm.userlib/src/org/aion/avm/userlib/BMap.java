@@ -400,7 +400,7 @@ public class BMap<K, V> implements Map<K, V> {
     /**
      * Internal node of the BTree
      */
-    class BInternalNode<K, V> extends BNode <K, V>{
+    final class BInternalNode<K, V> extends BNode <K, V>{
         // Routers array for navigation
         private int[] routers;
 
@@ -582,7 +582,7 @@ public class BMap<K, V> implements Map<K, V> {
     /**
      * Leaf node of the BTree
      */
-    class BLeafNode<K, V> extends BNode <K, V>{
+    final class BLeafNode<K, V> extends BNode <K, V>{
         // Entry array for data storage
         BEntry<K, V>[] entries;
 
