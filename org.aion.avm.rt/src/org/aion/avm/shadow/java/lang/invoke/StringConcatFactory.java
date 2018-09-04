@@ -14,6 +14,9 @@ import java.lang.invoke.MethodType;
  * @author Roman Katerinenko
  */
 public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Object {
+    private static final char RECIPE_DYNAMIC_ARGUMENT_FLAG = '\u0001';
+    private static final char RECIPE_STATIC_ARGUMENT_FLAG = '\u0002';
+
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();
@@ -25,9 +28,9 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
         int dynamicArgsIdx = 0;
         for (int idx = 0; idx < recipe.length(); idx++) {
             char ch = recipe.charAt(idx);
-            if (ch == '\u0001') {
+            if (ch == RECIPE_DYNAMIC_ARGUMENT_FLAG) {
                 builder.append(dynamicArgs[dynamicArgsIdx++]);
-            } else if (ch == '\u0002') {
+            } else if (ch == RECIPE_STATIC_ARGUMENT_FLAG) {
                 builder.append(staticArgs[staticArgsIdx++]);
             } else {
                 builder.append(ch);
