@@ -40,6 +40,8 @@
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
 
+        <delete dir="${dir.global.workspace}/dist"/>
+
         <jar jarfile="${dir.global.workspace}/dist/avm.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.aion.cli.AvmCLI" />
@@ -54,6 +56,8 @@
 
         <copy file="docs/README.md" todir="${dir.global.workspace}/dist"></copy>
         <copy file="docs/USER_GUIDE.md" todir="${dir.global.workspace}/dist"></copy>
+
+        <copy file="LICENSE" todir="${dir.global.workspace}/dist"></copy>
 
         <copy file="scripts/compile.sh" todir="${dir.global.workspace}/dist"></copy>
         <chmod perm="755" file="${dir.global.workspace}/dist/compile.sh"></chmod>
