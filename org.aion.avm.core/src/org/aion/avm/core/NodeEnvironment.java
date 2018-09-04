@@ -3,15 +3,16 @@ package org.aion.avm.core;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
-import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -325,24 +326,29 @@ public class NodeEnvironment {
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
     private Map<String, Integer> computeRuntimeObjectSizes(Map<String, byte[]> generatedShadowJDK) {
-        RawDappModule runtimeModule;
+        LoadedJar runtimeJar = null;
         try {
             // build the runtime module from the jar TODO - this jar needs to be provided in a safe way
             String jarPath = System.getProperty("avm-rt-jar", "../out/jar/org-aion-avm-rt.jar");
-            runtimeModule = RawDappModule.readFromJar(Helpers.readFileToBytes(jarPath));
-
+            runtimeJar = LoadedJar.fromBytes(Helpers.readFileToBytes(jarPath));
         } catch (Exception e) {
             //TODO - This is a hack for CLI jar
             try {
                 InputStream rtJar = getClass().getClassLoader().getResourceAsStream("org-aion-avm-rt.jar");
-                runtimeModule = RawDappModule.readFromJar(rtJar.readAllBytes());
+                runtimeJar = LoadedJar.fromBytes(rtJar.readAllBytes());
             } catch (Exception ee) {
                 throw new IllegalStateException("Cannot find 'org-aion-avm-rt.jar'.");
             }
         }
 
         // get the forest and prune it to include only the "java.lang.Object" and "java.lang.Throwable" derived classes, as shown in the forest
-        ClassHierarchyForest rtClassesForest = runtimeModule.classHierarchyForest;
+        ClassHierarchyForest rtClassesForest = null;
+        try {
+            rtClassesForest = ClassHierarchyForest.createForestFrom(runtimeJar);
+        } catch (IOException e) {
+            // If the RT jar being something we can't process, our installation is clearly corrupt.
+            throw RuntimeAssertionError.unexpected(e);
+        }
         List<Forest.Node<String, ClassInfo>> newRoots = new ArrayList<>();
         newRoots.add(rtClassesForest.getNodeById("java.lang.Object"));
         newRoots.add(rtClassesForest.getNodeById("java.lang.Throwable"));
