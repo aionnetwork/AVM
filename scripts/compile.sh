@@ -33,8 +33,9 @@ $JAVAC -cp "./lib/*" -d "./build" "${@:2}"  || exit 3
 echo "Assembling the final jar..."
 cd "./build"
 $JAR -xf "../lib/org-aion-avm-userlib.jar"
+# Even though we are creating the manifest in the right location, we need to explicitly add this to jar command line or it includes an empty one, instead.
 echo "Main-Class: $1" > "./META-INF/MANIFEST.MF"
-$JAR -cf "dapp.jar" .
+$JAR -cfm "dapp.jar" "./META-INF/MANIFEST.MF" .
 cd ..
 
 # done!

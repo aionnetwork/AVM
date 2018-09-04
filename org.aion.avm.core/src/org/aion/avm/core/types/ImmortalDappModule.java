@@ -21,11 +21,22 @@ public class ImmortalDappModule {
     // Note that we currently limit the size of an in-memory JAR to 1 MiB.
     private static final int MAX_JAR_BYTES = 1024 * 1024;
 
+    /**
+     * Reads the Dapp module from JAR bytes, in memory.
+     * Note that a Dapp module is expected to specify a main class and contain at least one class.
+     * 
+     * @param jar The JAR bytes.
+     * @return The module, or null if the contents of the JAR were insufficient for a Dapp.
+     * @throws IOException An error occurred while reading the JAR contents.
+     */
     public static ImmortalDappModule readFromJar(byte[] jar) throws IOException {
         LoadedJar loadedJar = LoadedJar.fromBytes(jar);
         Map<String, byte[]> classes = loadedJar.classBytesByQualifiedNames;
         String mainClass = loadedJar.mainClassName;
-        return new ImmortalDappModule(classes, mainClass);
+        // To be a valid Dapp, this must specify a main class and have at least one class.
+        return ((null != mainClass) && !classes.isEmpty())
+                ? new ImmortalDappModule(classes, mainClass)
+                : null;
     }
 
     public static ImmortalDappModule fromImmortalClasses(Map<String, byte[]> classes, String mainClass)  {

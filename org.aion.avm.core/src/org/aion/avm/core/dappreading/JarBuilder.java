@@ -20,6 +20,13 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * would be complicated to communicate (streams are closed when reading the bytes, for example).
  */
 public class JarBuilder {
+    /**
+     * Creates the in-memory representation of a JAR with the given main class and other classes.
+     * 
+     * @param mainClass The main class to include and list in manifest (can be null).
+     * @param otherClasses The other classes to include (main is already included).
+     * @return The bytes representing this JAR.
+     */
     public static byte[] buildJarForMainAndClasses(Class<?> mainClass, Class<?> ...otherClasses) {
         JarBuilder builder = new JarBuilder(mainClass);
         for (Class<?> clazz : otherClasses) {
@@ -39,7 +46,10 @@ public class JarBuilder {
         Attributes mainAttributes = manifest.getMainAttributes();
         // Note that the manifest version seems to be required.  If it isn't specified, we don't see the main class.
         mainAttributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        mainAttributes.put(Attributes.Name.MAIN_CLASS, mainClass.getName());
+        // The main class is technically optional (we mostly use a null main for testing cases).
+        if (null != mainClass) {
+            mainAttributes.put(Attributes.Name.MAIN_CLASS, mainClass.getName());
+        }
         
         // Create the underlying byte stream (hold onto this for serialization).
         this.byteStream = new ByteArrayOutputStream();
@@ -55,7 +65,9 @@ public class JarBuilder {
         this.entriesInJar = new HashSet<>();
         
         // Finally, add this class.
-        addClassAndInners(mainClass);
+        if (null != mainClass) {
+            addClassAndInners(mainClass);
+        }
     }
 
     /**
