@@ -13,4 +13,13 @@ public class IndyConcatenationTestResource {
         // this should compile to lambda
         return 'y' + s1 + s2 + s3 + "x" + 12.8;
     }
+
+    public String nullReferenceConcat() {
+        String nullPointer = null;
+        return "" + nullPointer;
+    }
+
+    public String emptyStringsConcat() {
+        return "" + "";
+    }
 }

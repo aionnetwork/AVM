@@ -42,6 +42,27 @@ public class StringConcatenationTest {
     }
 
     @Test
+    public void given_null_then_NullShouldBeConcatenated() throws Exception {
+        final var clazz = transformClass(IndyConcatenationTestResource.class);
+        final var actual = callMethod(clazz, "avm_concatWithDynamicArgs", null, null, null);
+        Assert.assertEquals("nullnullnull", actual);
+    }
+
+    @Test
+    public void given_nullReference_then_NullShouldBeConcatenated() throws Exception {
+        final var clazz = transformClass(IndyConcatenationTestResource.class);
+        final var actual = callMethod(clazz, "avm_nullReferenceConcat");
+        Assert.assertEquals("null", actual);
+    }
+
+    @Test
+    public void given_twoEmptyStrings_then_EmptyStringShouldBeReturned() throws Exception {
+        final var clazz = transformClass(IndyConcatenationTestResource.class);
+        final var actual = callMethod(clazz, "avm_emptyStringsConcat");
+        Assert.assertEquals("", actual);
+    }
+
+    @Test
     public void given_stringConcatLambda_then_bootstrapMethodShouldBeShadowed() throws Exception {
         final var clazz = transformClass(IndyConcatenationTestResource.class);
         final var actual = callMethod(clazz, "avm_concatWithDynamicArgs",
@@ -70,7 +91,9 @@ public class StringConcatenationTest {
     }
 
     private static Class<?>[] getTypesFrom(Object[] objects) {
-        return Stream.of(objects).map(Object::getClass).toArray(Class[]::new);
+        return Stream.of(objects)
+                .map((obj) -> (obj == null) ? org.aion.avm.shadow.java.lang.String.class : obj.getClass())
+                .toArray(Class[]::new);
     }
 
     private static Class<?> transformClass(Class<?> clazz) throws ClassNotFoundException {
