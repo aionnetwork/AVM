@@ -14,7 +14,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 public class WalletShim {
     public static byte[] main() {
         byte[] input = BlockchainRuntime.getData();
-        return ABIDecoder.decodeAndRunWithObject(new WalletShim(), input);
+        return ABIDecoder.decodeAndRunWithClass(WalletShim.class, input);
     }
 
     public static void avm_initWrapper(Address extra1, Address extra2, int requiredVotes, long dailyLimit) {

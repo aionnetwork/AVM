@@ -35,26 +35,40 @@ public class Deployer {
         // This is eventually just a test harness to invoke the decode() but, for now, it will actually invoke the calls, directly.
         // In order to instantiate Address objects, we need to install the IHelper.
         System.out.println("--- DIRECT ---");
-        IHelper.currentContractHelper.set(new TestingHelper() {
-            @Override
-            public void externalBootstrapOnly() {
-                // Ideally this wouldn't be called but we aren't currently worrying about it for this launcher (as we are moving away from it, anyway).
-            }
-        });
-        invokeDirect(args);
-        IHelper.currentContractHelper.remove();
+        callableInvokeDirect();
         System.out.println("--- DONE (DIRECT) ---");
 
         System.out.println("----- ***** -----");
 
         // Now, try the transformed version.
         System.out.println("--- TRANSFORMED ---");
-        invokeTransformed(args);
+        callableInvokeTransformed();
         System.out.println("--- DONE (TRANSFORMED) ---");
     }
 
+    /**
+     * Pulled out so it can be called from JUnit.
+     */
+    public static void callableInvokeDirect() throws Throwable {
+        IHelper.currentContractHelper.set(new TestingHelper() {
+            @Override
+            public void externalBootstrapOnly() {
+                // Ideally this wouldn't be called but we aren't currently worrying about it for this launcher (as we are moving away from it, anyway).
+            }
+        });
+        invokeDirect();
+        IHelper.currentContractHelper.remove();
+    }
 
-    private static void invokeDirect(String[] args) throws Throwable {
+    /**
+     * Pulled out so it can be called from JUnit.
+     */
+    public static void callableInvokeTransformed() throws Throwable {
+        invokeTransformed();
+    }
+
+
+    private static void invokeDirect() throws Throwable {
         // Note that this loggingRuntime is just to give us a consistent interface for reading the eventCounts.
         Map<String, Integer> eventCounts = new HashMap<>();
         TestingBlockchainRuntime loggingRuntime = new TestingBlockchainRuntime().withEventCounter(eventCounts);
@@ -151,7 +165,7 @@ public class Deployer {
         RuntimeAssertionError.assertTrue(13 == loggingRuntime.getEventCount(EventLogger.kConfirmation));
     }
 
-    private static void invokeTransformed(String[] args) throws Throwable {
+    private static void invokeTransformed() throws Throwable {
         Map<String, Integer> eventCounts = new HashMap<>();
 
         byte[] jarBytes = JarBuilder.buildJarForMainAndClasses(Wallet.class

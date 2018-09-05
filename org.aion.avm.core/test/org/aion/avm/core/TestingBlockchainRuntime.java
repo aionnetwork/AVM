@@ -196,7 +196,8 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     @Override
     public Result avm_call(Address targetAddress, long value, ByteArray payload, long energyLimit) {
-        return new Result(true, null);
+        // We will just bounce back the input, so that the caller can see "something".
+        return new Result(true, payload);
     }
 
     @Override

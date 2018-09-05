@@ -156,18 +156,20 @@ public final class ABIDecoder {
 
 
     /*
-     * These 2 methods are only for getting rid of the compilation errors for the Dapp unit tests.
+     * These 2 methods are mostly just for satisfying compilation of DApp unit tests.
      * Since the unit tests are in "org.aion.avm.core" module, with "import org.aion.avm.api.ABIDecoder", at compilation time,
      * this class is actually referred; instead, in the user space where the real Dapp lives in, the ABIDecoder in "org.aion.avm.api"
      * module (from which the api jar is built) is referred. Thus, at the compilation time, the unit tests need the 2 methods below;
      * while the Dapps do not.
-     * No implementation is needed. At runtime, the unit tests still call into "avm_decodeAndRunWithClass" / "avm_decodeAndRunWithObject".
+     * 
+     * At runtime, most callers have been transformed to call the "avm_*" variants.  Some cases, however, such as the testWallet,
+     * expect that they can test this directly (although that assumption may be removed in the future).
      */
     public static byte[] decodeAndRunWithClass(Class<?> clazz, byte[] txData) {
-        return null;
+        return decodeAndRun(clazz, txData, true);
     }
     public static byte[] decodeAndRunWithObject(Object obj, byte[] txData) {
-        return null;
+        return decodeAndRun(obj, txData, false);
     }
 
     /*
