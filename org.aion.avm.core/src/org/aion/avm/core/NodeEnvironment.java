@@ -33,6 +33,7 @@ public class NodeEnvironment {
     private final AvmSharedClassLoader sharedClassLoader;
     private final Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap;
 
+    private Class<?>[] apiClasses;
     private Class<?>[] shadowClasses;
     private Set<String> jclClassNames;
 
@@ -45,6 +46,14 @@ public class NodeEnvironment {
         Map<String, byte[]> generatedShadowJDK = CommonGenerators.generateShadowJDK();
         this.sharedClassLoader = new AvmSharedClassLoader(generatedShadowJDK);
         try {
+            this.apiClasses = new Class<?>[] {
+                org.aion.avm.api.Address.class,
+                org.aion.avm.api.BlockchainRuntime.class,
+                org.aion.avm.api.ABIDecoder.class,
+                org.aion.avm.api.ABIEncoder.class,
+                org.aion.avm.api.Result.class,
+            };
+
             this.shadowClasses = new Class<?>[] {
                     org.aion.avm.shadow.java.lang.AssertionError.class
                     , org.aion.avm.shadow.java.lang.Boolean.class
@@ -179,6 +188,16 @@ public class NodeEnvironment {
      */
     public boolean isClassFromJCL(String classNameSlash) {
         return this.jclClassNames.contains(classNameSlash);
+    }
+
+
+    /**
+     * Returns the API classes.
+     *
+     * @return a list of class objects
+     */
+    public List<Class<?>> getApiClasses() {
+        return Arrays.asList(apiClasses);
     }
 
     /**
@@ -333,21 +352,24 @@ public class NodeEnvironment {
      * <p>
      * Class name is in the JVM internal name format, see {@link org.aion.avm.core.util.Helpers#fulllyQualifiedNameToInternalName(String)}
      */
-    private Map<String, Integer> computeRuntimeObjectSizes(Map<String, byte[]> generatedShadowJDK) {
-        LoadedJar runtimeJar = null;
-        try {
-            // build the runtime module from the jar TODO - this jar needs to be provided in a safe way
-            String jarPath = System.getProperty("avm-rt-jar", "../out/jar/org-aion-avm-rt.jar");
-            runtimeJar = LoadedJar.fromBytes(Helpers.readFileToBytes(jarPath));
-        } catch (Exception e) {
-            //TODO - This is a hack for CLI jar
+    protected Map<String, Integer> computeRuntimeObjectSizes(Map<String, byte[]> generatedShadowJDK) {
+        // create a fake jar from API and shadow classes
+        Map<String, byte[]> classBytesByQualifiedNames = new HashMap<>();
+        String mainClassName = "java.lang.Object";
+
+        List<Class<?>> classes = new ArrayList<>();
+        classes.addAll(getApiClasses());
+        classes.addAll(getShadowClasses());
+        for (Class<?> clazz : classes) {
             try {
-                InputStream rtJar = getClass().getClassLoader().getResourceAsStream("org-aion-avm-rt.jar");
-                runtimeJar = LoadedJar.fromBytes(rtJar.readAllBytes());
-            } catch (Exception ee) {
-                throw new IllegalStateException("Cannot find 'org-aion-avm-rt.jar'.");
+                String name = clazz.getName();
+                InputStream bytecode = clazz.getClassLoader().getResourceAsStream(name.replaceAll("\\.", "/") + ".class");
+                classBytesByQualifiedNames.put(name, bytecode.readAllBytes());
+            } catch (IOException e) {
+                RuntimeAssertionError.unexpected(e);
             }
         }
+        LoadedJar runtimeJar = new LoadedJar(classBytesByQualifiedNames, mainClassName);
 
         // get the forest and prune it to include only the "java.lang.Object" and "java.lang.Throwable" derived classes, as shown in the forest
         ClassHierarchyForest rtClassesForest = null;

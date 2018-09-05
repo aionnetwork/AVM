@@ -97,7 +97,7 @@ public class LoadedJar {
     public final Map<String, byte[]> classBytesByQualifiedNames;
     public final String mainClassName;
 
-    private LoadedJar(Map<String, byte[]> classBytesByQualifiedNames, String mainClassName) {
+    public LoadedJar(Map<String, byte[]> classBytesByQualifiedNames, String mainClassName) {
         this.classBytesByQualifiedNames = Collections.unmodifiableMap(classBytesByQualifiedNames);
         this.mainClassName = mainClassName;
     }

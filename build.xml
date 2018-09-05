@@ -48,7 +48,6 @@
             </manifest>
             <zipgroupfileset dir="${dir.global.build.main}" includes="*.jar" excludes="META-INF/*.SF" />
             <zipgroupfileset dir="${dir.global.workspace}/lib" includes="*.jar" excludes="META-INF/*.SF" />
-            <fileset dir="${dir.global.build.main}" includes="org-aion-avm-rt.jar"/>
         </jar>
 
         <copy file="${dir.global.build.main}/org-aion-avm-api.jar" todir="${dir.global.workspace}/dist/lib"></copy>

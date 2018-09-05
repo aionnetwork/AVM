@@ -32,8 +32,6 @@ import java.util.function.Supplier;
  */
 public class Deployer {
     public static void main(String[] args) throws Throwable {
-        System.setProperty("avm-rt-jar", "./out/jar/org-aion-avm-rt.jar");
-
         // This is eventually just a test harness to invoke the decode() but, for now, it will actually invoke the calls, directly.
         // In order to instantiate Address objects, we need to install the IHelper.
         System.out.println("--- DIRECT ---");
