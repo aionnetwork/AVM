@@ -280,8 +280,7 @@ public class AionList<E> implements List<E> {
                 elt = (E) AionList.this.storage[this.nextIndex];
                 this.nextIndex += 1;
             } else {
-                // TODO:  NoSuchElementException is in java.util, not currently included in shadow.
-                elt = null;
+                throw new NoSuchElementException();
             }
             return elt;
         }
@@ -296,8 +295,7 @@ public class AionList<E> implements List<E> {
                 this.nextIndex -= 1;
                 elt = (E) AionList.this.storage[this.nextIndex];
             } else {
-                // TODO:  NoSuchElementException is in java.util, not currently included in shadow.
-                elt = null;
+                throw new NoSuchElementException();
             }
             return elt;
         }

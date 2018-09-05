@@ -99,6 +99,7 @@ public class NodeEnvironment {
                     , org.aion.avm.shadow.java.util.ListIterator.class
                     , org.aion.avm.shadow.java.util.Map.class
                     , org.aion.avm.shadow.java.util.Map.Entry.class
+                    , org.aion.avm.shadow.java.util.NoSuchElementException.class
                     , org.aion.avm.shadow.java.util.Set.class
                     , org.aion.avm.shadow.java.util.List.class
                     , org.aion.avm.shadow.java.util.function.Function.class

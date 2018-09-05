@@ -1,6 +1,7 @@
 package org.aion.avm.userlib;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -77,8 +78,7 @@ public class AionSetTest {
     }
 
     /**
-     * Adds 10 elements, then iterates them using iterator(), proving that we keep getting null once we reach the end.
-     * TODO:  Update this to NoSuchElementException when issue-217 is done.
+     * Adds 10 elements, then iterates them using iterator(), proving that we keep getting NoSuchElementException once we reach the end.
      */
     @Test
     public void checkIteratorDone() {
@@ -101,9 +101,23 @@ public class AionSetTest {
         Assert.assertEquals(10, found);
         
         Assert.assertFalse(iterator.hasNext());
-        Assert.assertNull(iterator.next());
+        boolean didCatch = false;
+        try {
+            iterator.next();
+            didCatch = false;
+        } catch (NoSuchElementException e) {
+            didCatch = true;
+        }
+        Assert.assertTrue(didCatch);
         Assert.assertFalse(iterator.hasNext());
-        Assert.assertNull(iterator.next());
+        didCatch = false;
+        try {
+            iterator.next();
+            didCatch = false;
+        } catch (NoSuchElementException e) {
+            didCatch = true;
+        }
+        Assert.assertTrue(didCatch);
     }
 
     /**

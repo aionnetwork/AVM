@@ -2,6 +2,7 @@ package org.aion.avm.userlib;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class AionSet<E> implements Set<E> {
@@ -207,6 +208,8 @@ public class AionSet<E> implements Set<E> {
                 }else{
                     curEntry = null;
                 }
+            } else {
+                throw new NoSuchElementException();
             }
 
             return elt;

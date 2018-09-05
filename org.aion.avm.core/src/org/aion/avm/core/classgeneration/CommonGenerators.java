@@ -79,6 +79,8 @@ public class CommonGenerators {
             "java.lang.SecurityException",
             "java.lang.TypeNotPresentException",
             "java.lang.UnsupportedOperationException",
+
+            "java.util.NoSuchElementException",
     };
 
     // We don't generate the shadows for these ones since we have hand-written them (but wrappers are still required).
@@ -89,6 +91,8 @@ public class CommonGenerators {
             "java.lang.RuntimeException",
             "java.lang.EnumConstantNotPresentException",
             "java.lang.TypeNotPresentException",
+
+            "java.util.NoSuchElementException",
     });
 
     // We generate "legacy-style exception" shadows for these ones (and wrappers are still required).
