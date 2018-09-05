@@ -136,8 +136,8 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public boolean avm_equals(IObject anObject) {
-        if (!(anObject instanceof String)){
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_equals);
+        if (!(anObject instanceof String)){
             return false;
         }
 

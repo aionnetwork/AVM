@@ -141,6 +141,8 @@ public class RuntimeMethodFeeSchedule {
     public static final long Integer_avm_floatValue = 64;
     public static final long Integer_avm_doubleValue = 64;
     public static final long Integer_avm_toString_2 = 122;
+    public static final long Integer_avm_hashCode = 122;
+    public static final long Integer_avm_hashCode_1 = 56;
     public static final long Integer_avm_equals = 333; //maximum cost of multiple blocks;
     public static final long Integer_avm_decode = 636; // byte code cost - 468; invoked methods cost - 168;
     public static final long Integer_avm_compareTo = 134;
@@ -622,7 +624,7 @@ public class RuntimeMethodFeeSchedule {
     public static final long ShortArray_avm_clone = 382; // byte code cost - 362; invoked methods cost - 20;
     public static final long ShortArray_avm_constructor = 176;
     public static final long ShortArray_avm_constructor_1 = 320; //maximum cost of multiple blocks; // byte code cost - 300; invoked methods cost - 20;
-    public static final long Object_avm_getClass = 284; // byte code cost - 244; invoked methods cost - 40;
+    public static final long Object_avm_getClass = 264; // byte code cost - 244; invoked methods cost - 20;
     public static final long Object_avm_hashCode = 128;
     public static final long Object_avm_equals = 159; //maximum cost of multiple blocks;
     public static final long Object_avm_clone = 183; // byte code cost - 163; invoked methods cost - 20;
@@ -749,7 +751,7 @@ public class RuntimeMethodFeeSchedule {
     public static final long Class_avm_getName = 302; // byte code cost - 282; invoked methods cost - 20;
     public static final long Class_avm_toString = 56;
     public static final long Class_avm_cast = 150; // byte code cost - 130; invoked methods cost - 20;
-    public static final long Class_avm_getSuperclass = 369; //maximum cost of multiple blocks; // byte code cost - 329; invoked methods cost - 40;
+    public static final long Class_avm_getSuperclass = 349; //maximum cost of multiple blocks; // byte code cost - 329; invoked methods cost - 20;
     public static final long Class_avm_desiredAssertionStatus = 1357; // byte code cost - 56; invoked methods cost - 1301;
     public static final long Class_avm_constructor = 151; // byte code cost - 131; invoked methods cost - 20;
     public static final long StringBuilder_avm_constructor = 311; // byte code cost - 291; invoked methods cost - 20;
@@ -943,6 +945,7 @@ public class RuntimeMethodFeeSchedule {
     public static final long StringBuffer_avm_append_13 = 122;
     public static final long StringBuffer_avm_append_14 = 134;
     public static final long StringBuffer_avm_append_15 = 122;
+    public static final long Arrays_avm_hashCode = 428; //maximum cost of multiple blocks; // byte code cost - 280; invoked methods cost - 148;
     public static final long Arrays_avm_equals = 781; //maximum cost of multiple blocks; // byte code cost - 505; invoked methods cost - 276;
     public static final long Arrays_avm_copyOfRange = 496; // byte code cost - 348; invoked methods cost - 148;
     public static final long Arrays_avm_fill = 342; // byte code cost - 194; invoked methods cost - 148;

@@ -50,6 +50,7 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
             MethodType concatType,
             java.lang.String recipe,
             Object... constants) throws NoSuchMethodException, IllegalAccessException {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringConcatFactory_avm_makeConcatWithConstants);
         final var concatMethodType = MethodType.methodType(
                 String.class, // NOTE! First arg is return value
                 java.lang.String.class,
@@ -62,7 +63,6 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
                 .asVarargsCollector(String[].class)
 
                 .asType(concatType);
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringConcatFactory_avm_makeConcatWithConstants);
         return new ConstantCallSite(concatMethodHandle);
     }
 

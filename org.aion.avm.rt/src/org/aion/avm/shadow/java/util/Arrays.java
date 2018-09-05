@@ -16,6 +16,7 @@ public class Arrays extends Object {
     private Arrays() {}
 
     public static int avm_hashCode(ByteArray a) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_hashCode);
         if (a == null) {
             return 0;
         } else {

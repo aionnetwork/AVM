@@ -56,8 +56,8 @@ public class RoundingMode extends org.aion.avm.shadow.java.lang.Enum<RoundingMod
     }
 
     public static RoundingMode avm_valueOf(int idx){
-        if (idx > 7 || idx < 0){
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_valueOf_1);
+        if (idx > 7 || idx < 0){
             throw new IllegalArgumentException("argument out of range");
         }else{
             return (RoundingMode) avm_$VALUES.get(idx);

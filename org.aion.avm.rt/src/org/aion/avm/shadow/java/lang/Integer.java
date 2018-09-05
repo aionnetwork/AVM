@@ -151,10 +151,12 @@ public class Integer extends Number implements Comparable<Integer> {
 
     @Override
     public int avm_hashCode() {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_hashCode);
         return Integer.avm_hashCode(v);
     }
 
     public static int avm_hashCode(int value) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_hashCode_1);
         return value;
     }
 

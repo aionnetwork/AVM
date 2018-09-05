@@ -31,9 +31,9 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal(CharArray in, int offset, int len, MathContext mc) {
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_constructor_1);
         v = new java.math.BigDecimal(in.getUnderlying(), offset, len,
                 mc.getUnderlying());
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_constructor_1);
     }
 
     public BigDecimal(CharArray in){

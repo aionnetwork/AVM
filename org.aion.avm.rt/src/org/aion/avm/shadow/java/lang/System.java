@@ -19,8 +19,8 @@ public final class System extends Object{
                                      IObject dest, int destPos,
                                      int length)
     {
-        if (!((src instanceof Array) && (dest instanceof Array))){
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.System_avm_arraycopy);
+        if (!((src instanceof Array) && (dest instanceof Array))){
             throw new ArrayStoreException();
         }else{
             java.lang.Object asrc = ((Array) src).getUnderlyingAsObject();

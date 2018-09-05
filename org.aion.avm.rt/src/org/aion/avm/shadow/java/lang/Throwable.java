@@ -113,8 +113,8 @@ public class Throwable extends Object {
 //    }
 
     public void avm_addSuppressed(Throwable exception) {
-        // TODO:  Does suppression make sense for this?
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Throwable_avm_addSuppressed);
+        // TODO:  Does suppression make sense for this?
     }
 
     public Throwable[] avm_getSuppressed() {
