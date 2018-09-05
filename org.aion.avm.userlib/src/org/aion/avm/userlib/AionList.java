@@ -23,8 +23,6 @@ public class AionList<E> implements List<E> {
 
     private int size;
 
-    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
-
     public AionList() {
         this.storage = new Object[DEFAULT_CAPACITY];
         this.size = 0;
