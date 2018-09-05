@@ -80,6 +80,33 @@ public class AionListTest {
     }
 
     /**
+     * Adds 10 elements, then iterates them using iterator(), proving that we keep getting null once we reach the end.
+     * TODO:  Update this to NoSuchElementException when issue-217 is done.
+     */
+    @Test
+    public void checkIteratorDone() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 10; ++i) {
+            list.add("int_" + i);
+        }
+        Assert.assertEquals(10, list.size());
+        Iterator<String> iterator = list.iterator();
+        int counted = 0;
+        while (iterator.hasNext()) {
+            String elt = iterator.next();
+            String expected = "int_" + counted;
+            Assert.assertEquals(expected, elt);
+            counted += 1;
+        }
+        Assert.assertEquals(10, counted);
+        
+        Assert.assertFalse(iterator.hasNext());
+        Assert.assertNull(iterator.next());
+        Assert.assertFalse(iterator.hasNext());
+        Assert.assertNull(iterator.next());
+    }
+
+    /**
      * Adds 10 elements, then iterates them using listIterator().
      */
     @Test

@@ -193,20 +193,20 @@ public class AionSet<E> implements Set<E> {
 
             if (null != curEntry){
                 elt = (E) curEntry.getKey();
-            }
 
-            // Advance cursor
-            if (null != curEntry.next){
-                curEntry = curEntry.next;
-            }else if (curSlot + 1 < curLeaf.nodeSize){
-                curSlot++;
-                curEntry = curLeaf.entries[curSlot];
-            }else if (null != curLeaf.next){
-                curLeaf = (AionMap.BLeafNode) curLeaf.next;
-                curSlot = 0;
-                curEntry = curLeaf.entries[curSlot];
-            }else{
-                curEntry = null;
+                // Advance cursor
+                if (null != curEntry.next){
+                    curEntry = curEntry.next;
+                }else if (curSlot + 1 < curLeaf.nodeSize){
+                    curSlot++;
+                    curEntry = curLeaf.entries[curSlot];
+                }else if (null != curLeaf.next){
+                    curLeaf = (AionMap.BLeafNode) curLeaf.next;
+                    curSlot = 0;
+                    curEntry = curLeaf.entries[curSlot];
+                }else{
+                    curEntry = null;
+                }
             }
 
             return elt;

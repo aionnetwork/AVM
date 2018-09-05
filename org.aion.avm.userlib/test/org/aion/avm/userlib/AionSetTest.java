@@ -77,6 +77,36 @@ public class AionSetTest {
     }
 
     /**
+     * Adds 10 elements, then iterates them using iterator(), proving that we keep getting null once we reach the end.
+     * TODO:  Update this to NoSuchElementException when issue-217 is done.
+     */
+    @Test
+    public void checkIteratorDone() {
+        final int count = 10;
+        boolean[] markMap = new boolean[count];
+        AionSet<Integer> set = new AionSet<>();
+        for (int i = 0; i < count; ++i) {
+            set.add(i);
+        }
+        Assert.assertEquals(10, set.size());
+
+        Iterator<Integer> iterator = set.iterator();
+        int found = 0;
+        while (iterator.hasNext()) {
+            int elt = iterator.next();
+            Assert.assertFalse(markMap[elt]);
+            markMap[elt] = true;
+            found += 1;
+        }
+        Assert.assertEquals(10, found);
+        
+        Assert.assertFalse(iterator.hasNext());
+        Assert.assertNull(iterator.next());
+        Assert.assertFalse(iterator.hasNext());
+        Assert.assertNull(iterator.next());
+    }
+
+    /**
      * Adds 10 elements, then tries to iterate them using for loop short-hand.
      */
     @Test
