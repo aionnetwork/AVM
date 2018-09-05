@@ -14,17 +14,26 @@ import java.util.function.Function;
  * as part of the contract namespace, but is common and class-immutable across all contracts.
  */
 public class AvmSharedClassLoader extends ClassLoader {
-    // Pre generated shadow JCL classes
-    private final Map<String, byte[]> classes;
+    // Bytecode Map of shared avm static classes
+    private final Map<String, byte[]> bytecodeMap;
 
-    // Since we are using our own loadClass, we need our own cache.
+    // Class object cache
+    // Note that AvmSharedClassLoader will also cache class objects from its parents to speed up class loading request
     private final Map<String, Class<?>> cache;
 
-    // List of class generator entry points
+    // List of dynamic class generation handlers
     private ArrayList<Function<String, byte[]>> handlers;
 
-    public AvmSharedClassLoader(Map<String, byte[]> classes) {
-        this.classes = classes;
+    // If the initialization of the NodeEnvironment is done
+    private boolean initialized = false;
+
+    /**
+     * Constructs a new AVM shared class loader.
+     *
+     * @param bytecodeMap the shared class bytecodes
+     */
+    public AvmSharedClassLoader(Map<String, byte[]> bytecodeMap) {
+        this.bytecodeMap = bytecodeMap;
         this.cache = new ConcurrentHashMap<>();
         this.handlers = new ArrayList<>();
 
@@ -37,49 +46,86 @@ public class AvmSharedClassLoader extends ClassLoader {
         this.handlers.add(wrapperGenerator);
     }
 
+    public void finishInitialization() {
+        for (String name: this.bytecodeMap.keySet()){
+            try {
+                this.loadClass(name, true);
+            }catch (ClassNotFoundException e){
+                RuntimeAssertionError.unreachable("Shared classloader initialization missing entry: " + name);
+            }
+        }
+        this.initialized = true;
+    }
+
+    /**
+     * Loads the class with the specified name.
+     * This method will load two types of classes.
+     * a) Statically generated shadow JCL classes
+     * b) Dynamically generated shared classes (array wrappers)
+     *
+     * Other class loading requests will be delegated to its parent (By default, {@link ClassLoader})
+     * Note that {@link AvmSharedClassLoader} will also cache the returned class object from its parent to speed up
+     * concurrent class access.
+     *
+     * @param  name The name of the class
+     *
+     * @return  The resulting {@code Class} object
+     *
+     * @throws  ClassNotFoundException
+     *          If the class was not found
+     */
     @Override
     public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        // NOTE:  We override this, instead of findClass, since we want to circumvent the normal delegation process of class loaders.
         Class<?> result = null;
         boolean shouldResolve = resolve;
 
-        // Acquire per class class loading lock
-        synchronized (this.getClassLoadingLock(name)) {
+        // All user space class should be loaded with Dapp loader
+        if (name.contains("org.aion.avm.user")){
+            RuntimeAssertionError.unreachable("FAILED: Shared classloader receive request of: " + name);
+        }
 
-            if (this.cache.containsKey(name)) {
-                result = this.cache.get(name);
-                // We got this from the cache so don't resolve.
-                shouldResolve = false;
-            } else if (this.classes.containsKey(name)) {
-                byte[] injected = this.classes.get(name);
-                result = defineClass(name, injected, 0, injected.length);
-                this.cache.putIfAbsent(name, result);
-            } else {
-                // All user space class should be loaded with contract loader
-                RuntimeAssertionError.assertTrue(!name.contains("org.aion.avm.user"));
+        // After initialization, all shadow JCL are loaded, we can get from cache without acquiring a lock
+        // TODO: pre load static array wrappers
+        if (initialized && name.contains("org.aion.avm.shadow.java") && !name.contains("org.aion.avm.arraywrapper")){
+            // lock-free cache access
+            result = this.cache.get(name);
+            shouldResolve = false;
+            RuntimeAssertionError.assertTrue(null != result);
+        }else {
+            // Acquire per class classloading lock
+            synchronized (this.getClassLoadingLock(name)) {
 
-                // Before falling back to the parent, try the dynamic.
-                for (Function<String, byte[]> handler : handlers) {
-                    byte[] code = handler.apply(name);
-                    if (code != null) {
-                        result = defineClass(name, code, 0, code.length);
-                        RuntimeAssertionError.assertTrue(!this.cache.containsKey(name));
+                if (this.cache.containsKey(name)) {
+                    result = this.cache.get(name);
+                    // We got this from the cache so don't resolve.
+                    shouldResolve = false;
+                } else if (this.bytecodeMap.containsKey(name)) {
+                    byte[] injected = this.bytecodeMap.get(name);
+                    result = defineClass(name, injected, 0, injected.length);
+                    this.cache.putIfAbsent(name, result);
+                } else {
+                    // Before falling back to the parent, try the dynamic.
+                    for (Function<String, byte[]> handler : handlers) {
+                        byte[] code = handler.apply(name);
+                        if (code != null) {
+                            result = defineClass(name, code, 0, code.length);
+                            this.cache.putIfAbsent(name, result);
+                            break;
+                        }
+                    }
+
+                    if (null == result) {
+                        result = getParent().loadClass(name);
+                        // We got this from the parent so don't resolve.
+                        shouldResolve = false;
                         this.cache.putIfAbsent(name, result);
-                        break;
                     }
                 }
-
-                if (null == result) {
-                    result = getParent().loadClass(name);
-                    // We got this from the parent so don't resolve.
-                    shouldResolve = false;
-                    this.cache.putIfAbsent(name, result);
-                }
             }
+        }
 
-            if (null != result && shouldResolve) {
-                resolveClass(result);
-            }
+        if (null != result && shouldResolve) {
+            resolveClass(result);
         }
 
         return result;

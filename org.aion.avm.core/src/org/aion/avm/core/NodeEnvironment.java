@@ -52,6 +52,7 @@ public class NodeEnvironment {
                     , org.aion.avm.shadow.java.lang.Character.class
                     , org.aion.avm.shadow.java.lang.CharSequence.class
                     , org.aion.avm.shadow.java.lang.Class.class
+                    , org.aion.avm.shadow.java.lang.Comparable.class
                     , org.aion.avm.shadow.java.lang.Double.class
                     , org.aion.avm.shadow.java.lang.Enum.class
                     , org.aion.avm.shadow.java.lang.EnumConstantNotPresentException.class
@@ -106,18 +107,24 @@ public class NodeEnvironment {
             };
 
             this.jclClassNames = new HashSet<>();
+
             // include the shadow classes we implement
-            this.jclClassNames.addAll(loadShadowClasses(NodeEnvironment.class.getClassLoader(), shadowClasses));
+            this.jclClassNames.addAll(loadShadowClasses(this.sharedClassLoader, shadowClasses));
+
             // we have to add the common generated exception/error classes as it's not pre-loaded
             this.jclClassNames.addAll(Stream.of(CommonGenerators.kExceptionClassNames)
                     .map(Helpers::fulllyQualifiedNameToInternalName)
                     .collect(Collectors.toList()));
+
             // include the invoke classes
             this.jclClassNames.add("java/lang/invoke/MethodHandles");
             this.jclClassNames.add("java/lang/invoke/MethodHandle");
             this.jclClassNames.add("java/lang/invoke/MethodType");
             this.jclClassNames.add("java/lang/invoke/CallSite");
             this.jclClassNames.add("java/lang/invoke/MethodHandles$Lookup");
+
+            // Finish the initialization of shared class loader
+            this.sharedClassLoader.finishInitialization();
 
         } catch (ClassNotFoundException e) {
             // This would be a fatal startup error.
