@@ -1,7 +1,7 @@
 package org.aion.avm.core.invokedynamic;
 
 import org.aion.avm.core.*;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
@@ -13,7 +13,6 @@ import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -29,12 +28,6 @@ import static org.junit.Assert.assertFalse;
 
 public class StringConcatenationTest {
     private static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
-
-    @Before
-    public void init() {
-        final var avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
-        new Helper(avmClassLoader, 1_000_000L, 1);
-    }
 
     @After
     public void teardown() {
@@ -102,8 +95,10 @@ public class StringConcatenationTest {
         final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         java.lang.String mappedClassName = PackageConstants.kUserDotPrefix + className;
-        final var loader = new AvmSharedClassLoader(Map.of(mappedClassName, transformedBytecode));
-        return loader.loadClass(mappedClassName);
+        AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(Map.of(mappedClassName, transformedBytecode));
+        new Helper(dappLoader, 1_000_000L, 1);
+
+        return dappLoader.loadClass(mappedClassName);
     }
 
     private static byte[] transformForStringConcatTest(byte[] origBytecode, String className) {

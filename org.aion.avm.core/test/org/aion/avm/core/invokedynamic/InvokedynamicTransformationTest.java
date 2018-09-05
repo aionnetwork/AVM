@@ -3,7 +3,7 @@ package org.aion.avm.core.invokedynamic;
 import org.aion.avm.core.*;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
@@ -25,7 +25,6 @@ import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -42,12 +41,6 @@ import static org.junit.Assert.*;
  */
 public class InvokedynamicTransformationTest {
     private static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
-
-    @Before
-    public void init() {
-        final var avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
-        new Helper(avmClassLoader, 1_000_000L, 1);
-    }
 
     @After
     public void teardown() {
@@ -164,8 +157,10 @@ public class InvokedynamicTransformationTest {
 
     private Object callInstanceTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
         String mappedClassName = PackageConstants.kUserDotPrefix + className;
-        final AvmSharedClassLoader loader = new AvmSharedClassLoader(Map.of(mappedClassName, bytecode));
-        final Class<?> klass = loader.loadClass(mappedClassName);
+        AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(Map.of(mappedClassName, bytecode));
+        new Helper(dappLoader, 1_000_000L, 1);
+
+        final Class<?> klass = dappLoader.loadClass(mappedClassName);
         final Constructor<?> constructor = klass.getDeclaredConstructor();
         final Object instance = constructor.newInstance();
         final Method method = klass.getDeclaredMethod(methodName);
@@ -175,8 +170,9 @@ public class InvokedynamicTransformationTest {
 
     private Object callStaticTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
         String mappedClassName = PackageConstants.kUserDotPrefix + className;
-        final AvmSharedClassLoader loader = new AvmSharedClassLoader(Map.of(mappedClassName, bytecode));
-        final Class<?> klass = loader.loadClass(mappedClassName);
+        AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(Map.of(mappedClassName, bytecode));
+        new Helper(dappLoader, 1_000_000L, 1);
+        final Class<?> klass = dappLoader.loadClass(mappedClassName);
         final Method method = klass.getMethod(methodName, IObject.class);
         LambdaMetafactory.avm_metafactoryWasCalled = false;
         return method.invoke(null, new org.aion.avm.shadow.java.lang.Object());
