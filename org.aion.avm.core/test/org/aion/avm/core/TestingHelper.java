@@ -94,7 +94,7 @@ public class TestingHelper implements IHelper {
     }
 
     @Override
-    public void applySpanshotAndNextHashCode(int nextHashCode) {
+    public void applySnapshotAndNextHashCode(int nextHashCode) {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 

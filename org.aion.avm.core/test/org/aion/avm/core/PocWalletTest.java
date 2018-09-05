@@ -211,7 +211,7 @@ public class PocWalletTest {
             }
 
             @Override
-            public void applySpanshotAndNextHashCode(int nextHashCode) {
+            public void applySnapshotAndNextHashCode(int nextHashCode) {
                 Assert.fail("Not in test");
             }
 

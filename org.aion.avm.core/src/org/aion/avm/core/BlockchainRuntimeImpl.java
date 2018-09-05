@@ -285,7 +285,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         if (null != this.reentrantState) {
             // Update the next hashcode counter, in case this was a reentrant call and it was changed.
-            helper.applySpanshotAndNextHashCode(this.reentrantState.getEnvironment().nextHashCode);
+            helper.applySnapshotAndNextHashCode(this.reentrantState.getEnvironment().nextHashCode);
         }
 
         // charge energy consumed

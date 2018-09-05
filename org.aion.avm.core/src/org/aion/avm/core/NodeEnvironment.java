@@ -238,7 +238,7 @@ public class NodeEnvironment {
             }
 
             @Override
-            public void applySpanshotAndNextHashCode(int nextHashCode) {
+            public void applySnapshotAndNextHashCode(int nextHashCode) {
                 // We currently only use this for restoring state after a reentrant call, which we don't expect during bootstrap.
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }

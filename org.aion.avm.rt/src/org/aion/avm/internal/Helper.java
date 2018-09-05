@@ -313,7 +313,7 @@ public class Helper implements IHelper {
         return Helper.nextHashCode;
     }
     @Override
-    public void applySpanshotAndNextHashCode(int nextHashCode) {
+    public void applySnapshotAndNextHashCode(int nextHashCode) {
         Helper.blockchainRuntime = this.snapshot_blockchainRuntime;
         Helper.stackWatcher = this.snapshot_stackWatcher;
         Helper.energyLeft = this.snapshot_energyLeft;

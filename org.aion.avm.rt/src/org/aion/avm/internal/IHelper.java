@@ -45,7 +45,7 @@ public interface IHelper {
      * 
      * @param nextHashCode The value to set as the "nextHashCode" (since this is related to the state of the DApp, not the call).
      */
-    public void applySpanshotAndNextHashCode(int nextHashCode);
+    public void applySnapshotAndNextHashCode(int nextHashCode);
 
     /**
      * Optionally called by bootstrapping operations to validate that the IHelper instance they are using is appropriate for bootstrap operations.

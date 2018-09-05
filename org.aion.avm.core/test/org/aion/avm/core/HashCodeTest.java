@@ -339,14 +339,14 @@ public class HashCodeTest {
         
         // Now, switch back to the second, to observe the expected second hashCode.
         suspendedAnother.resume();
-        anotherHelper.applySpanshotAndNextHashCode(anotherNextHashCode);
+        anotherHelper.applySnapshotAndNextHashCode(anotherNextHashCode);
         int anotherSecondHashCode = (Integer)getOneHashCode.invoke(null);
         Assert.assertEquals(2, anotherSecondHashCode);
         IHelper.currentContractHelper.remove();
         
         // Now, switch back to the first, to observe the same "second hashCode", meaning the states have remained distinct.
         suspendedOriginal.resume();
-        originalHelper.applySpanshotAndNextHashCode(originalNextHashCode);
+        originalHelper.applySnapshotAndNextHashCode(originalNextHashCode);
         int originalSecondHashCode = (Integer)getOneHashCode.invoke(null);
         Assert.assertEquals(4, originalSecondHashCode);
         Assert.assertEquals((anotherSecondHashCode - anotherFirstHashCode), (originalSecondHashCode - originalFirstHashCode));
