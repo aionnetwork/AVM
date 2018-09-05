@@ -18,63 +18,90 @@ public class AvmClassLoader extends ClassLoader {
     // The ENUM modifier is defined in Class, but that is private so here is our copy of the constant.
     private static final int CLASS_IS_ENUM = 0x00004000;
 
-    private Map<String, byte[]> classes;
+    // Bytecode Map of static class of Dapp
+    private Map<String, byte[]> bytecodeMap;
+
+    // List of dynamic class generation handlers
     private ArrayList<Function<String, byte[]>> handlers;
 
-    // Since we are using our own loadClass, we need our own cache.
+    // Class object cache
     private final Map<String, Class<?>> cache;
 
     /**
      * Constructs a new AVM class loader.
      *
      * @param parent The explicitly required parent for the contract-namespace code which is shared across all contracts.
-     * @param classes the transformed bytecode
+     * @param bytecodeMap the transformed bytecode
      * @param handlers a list of handlers which can generate byte code for the given name.
      */
-    public AvmClassLoader(AvmSharedClassLoader parent, Map<String, byte[]> classes, ArrayList<Function<String, byte[]>> handlers) {
+    public AvmClassLoader(AvmSharedClassLoader parent, Map<String, byte[]> bytecodeMap, ArrayList<Function<String, byte[]>> handlers) {
         super(parent);
-        this.classes = classes;
+        this.bytecodeMap = bytecodeMap;
         this.handlers = handlers;
         this.cache = new HashMap<>();
 
         registerHandlers();
     }
 
-    public AvmClassLoader(AvmSharedClassLoader parent, Map<String, byte[]> classes) {
-        this(parent, classes, new ArrayList<>());
+    /**
+     * Constructs a new AVM class loader.
+     *
+     * @param parent The explicitly required parent for the contract-namespace code which is shared across all contracts.
+     * @param bytecodeMap the transformed bytecode
+     */
+    public AvmClassLoader(AvmSharedClassLoader parent, Map<String, byte[]> bytecodeMap) {
+        this(parent, bytecodeMap, new ArrayList<>());
     }
 
     private void registerHandlers(){
+        // Array wrapper is the only handler of the dynamic class generation request.
         Function<String, byte[]> wrapperGenerator = (cName) -> ArrayWrappingClassGenerator.arrayWrappingFactory(cName, this);
         this.handlers.add(wrapperGenerator);
     }
 
+    /**
+     * Loads the class with the specified name.
+     * This method will load three type of classes
+     * a) User defined Dapp class
+     * b) Per Dapp internal/api class
+     * c) Dynamically generated user defined class
+     *
+     * Other class loading requests will be delegated to {@link AvmSharedClassLoader}
+     *
+     * @param  name The name of the class
+     *
+     * @return  The resulting {@code Class} object
+     *
+     * @throws  ClassNotFoundException
+     *          If the class was not found
+     */
     @Override
     public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         // NOTE:  We override this, instead of findClass, since we want to circumvent the normal delegation process of class loaders.
         Class<?> result = null;
         boolean shouldResolve = resolve;
-        
-        // We have a priority order to load:
-        // 1) Cache
-        // 2) Injected static code
-        // 3) Dynamically generated
-        // 4) Parent
-        if (this.cache.containsKey(name)) {
-            result = this.cache.get(name);
-            // We got this from the cache so don't resolve.
-            shouldResolve = false;
-        } else if (this.classes.containsKey(name)) {
-            byte[] injected = this.classes.get(name);
-            result = defineClass(name, injected, 0, injected.length);
-            // Note that this class loader should only be able to see classes we have transformed.  This means no enums.
-            RuntimeAssertionError.assertTrue(0 == (CLASS_IS_ENUM & result.getModifiers()));
-            this.cache.put(name, result);
-        } else {
 
-            // Before falling back to the parent, try the dynamic.
-            for (Function<String, byte[]> handler : handlers) {
-                if (name.contains("org.aion.avm.user")) {
+        // Contract classloader only load user Dapp classes and per Dapp internal/api classes
+        // Non user classes will be delegated to shared class loader
+        if (name.contains("org.aion.avm.user") || this.bytecodeMap.containsKey(name)) {
+            // We have a priority order to load:
+            // 1) Cache
+            // 2) Injected static code
+            // 3) Dynamically generated
+            if (this.cache.containsKey(name)) {
+                result = this.cache.get(name);
+                // We got this from the cache so don't resolve.
+                shouldResolve = false;
+            } else if (this.bytecodeMap.containsKey(name)) {
+                byte[] injected = this.bytecodeMap.get(name);
+                result = defineClass(name, injected, 0, injected.length);
+                // TODO: Can this check be removed?
+                // Note that this class loader should only be able to see classes we have transformed.  This means no enums.
+                RuntimeAssertionError.assertTrue(0 == (CLASS_IS_ENUM & result.getModifiers()));
+                this.cache.put(name, result);
+            } else {
+                // Try dynamic generation
+                for (Function<String, byte[]> handler : handlers) {
                     byte[] code = handler.apply(name);
                     if (code != null) {
                         result = defineClass(name, code, 0, code.length);
@@ -83,18 +110,17 @@ public class AvmClassLoader extends ClassLoader {
                     }
                 }
             }
-            
-            // If all else fails, the parent.
-            if (null == result) {
-                result = getParent().loadClass(name);
-                // We got this from the parent so don't resolve.
-                shouldResolve = false;
-            }
+        }else{
+            // Delegate request to parent
+            result = getParent().loadClass(name);
+            // We got this from the parent so don't resolve.
+            shouldResolve = false;
         }
         
         if ((null != result) && shouldResolve) {
             resolveClass(result);
         }
+
         if (null == result) {
             throw new ClassNotFoundException();
         }
@@ -118,10 +144,10 @@ public class AvmClassLoader extends ClassLoader {
     //Internal
     public byte[] getUserClassBytecodeByOriginalName(String className){
         String renamedClass = PackageConstants.kUserDotPrefix + className;
-        return this.classes.get(renamedClass);
+        return this.bytecodeMap.get(renamedClass);
     }
 
     public byte[] getUserClassBytecode(String className){
-        return this.classes.get(className);
+        return this.bytecodeMap.get(className);
     }
 }
