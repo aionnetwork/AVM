@@ -2,7 +2,6 @@ package org.aion.avm.userlib;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class AionSet<E> implements Set<E> {
@@ -134,12 +133,28 @@ public class AionSet<E> implements Set<E> {
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException("retainAll");
+        boolean modified = false;
+        Iterator<E> it = iterator();
+        while (it.hasNext()) {
+            if (!c.contains(it.next())) {
+                it.remove();
+                modified = true;
+            }
+        }
+        return modified;
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        throw new UnsupportedOperationException("removeAll");
+        boolean modified = false;
+        Iterator<?> it = iterator();
+        while (it.hasNext()) {
+            if (c.contains(it.next())) {
+                it.remove();
+                modified = true;
+            }
+        }
+        return modified;
     }
 
     /**
@@ -169,50 +184,6 @@ public class AionSet<E> implements Set<E> {
      */
     @Override
     public Iterator<E> iterator() {
-        return new AionSetIterator();
-    }
-
-    public final class AionSetIterator implements Iterator<E> {
-        AionMap.BLeafNode curLeaf;
-        AionMap.AionMapEntry curEntry;
-        int curSlot;
-
-        public AionSetIterator(){
-            curLeaf = map.getLeftMostLeaf();
-            curSlot = 0;
-            curEntry = curLeaf.entries[curSlot];
-        }
-
-        @Override
-        public boolean hasNext() {
-            return (null != curEntry);
-        }
-
-        @Override
-        public E next() {
-            E elt = null;
-
-            if (null != curEntry){
-                elt = (E) curEntry.getKey();
-
-                // Advance cursor
-                if (null != curEntry.next){
-                    curEntry = curEntry.next;
-                }else if (curSlot + 1 < curLeaf.nodeSize){
-                    curSlot++;
-                    curEntry = curLeaf.entries[curSlot];
-                }else if (null != curLeaf.next){
-                    curLeaf = (AionMap.BLeafNode) curLeaf.next;
-                    curSlot = 0;
-                    curEntry = curLeaf.entries[curSlot];
-                }else{
-                    curEntry = null;
-                }
-            } else {
-                throw new NoSuchElementException();
-            }
-
-            return elt;
-        }
+        return map.keySet().iterator();
     }
 }

@@ -46,7 +46,6 @@ public class BasicAppTest {
                 , AionMap.AionMapValues.class
                 , AionMap.AionMapKeySet.class
                 , AionSet.class
-                , AionSet.AionSetIterator.class
                 , AionList.class
                 , AionList.AionListIterator.class
         );
