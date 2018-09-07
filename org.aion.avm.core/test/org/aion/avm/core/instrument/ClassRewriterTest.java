@@ -1,27 +1,19 @@
 package org.aion.avm.core.instrument;
 
+import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.util.Helpers;
+import org.junit.Assert;
+import org.junit.Test;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.aion.avm.core.classgeneration.CommonGenerators;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
-import org.aion.avm.core.util.Helpers;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.objectweb.asm.*;
-
 
 public class ClassRewriterTest {
-    private static AvmSharedClassLoader sharedClassLoader;
-
-    @BeforeClass
-    public static void setupClass() throws Exception {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
-    }
-
     /**
      * We want to prove that we can instantiate one version of the TestResource and see its original implementation
      * and then change it in the custom classloader.
@@ -44,7 +36,7 @@ public class ClassRewriterTest {
                 rewriteOneMethodInClass(inputBytes, "hashCode", replacer, ClassWriter.COMPUTE_FRAMES);
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, rewriterCall.apply(raw));
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         Class<?> clazz = loader.loadClass(className);
         Object target = clazz.getConstructor(int.class).newInstance(originalHash);
 

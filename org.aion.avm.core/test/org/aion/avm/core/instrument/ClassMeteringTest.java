@@ -1,12 +1,14 @@
 package org.aion.avm.core.instrument;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -18,7 +20,6 @@ import java.util.function.Function;
 
 
 public class ClassMeteringTest {
-    private static AvmSharedClassLoader sharedClassLoader;
 
     private Class<?> clazz;
     // We keep this here just because a lot of cases want to use this sort of "do no instrumentation" cost builder for testing other rewrites.
@@ -28,11 +29,6 @@ public class ClassMeteringTest {
                     .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                     .build()
                     .runAndGetBytecode();
-
-    @BeforeClass
-    public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
-    }
 
     @Before
     public void setup() throws Exception {
@@ -47,7 +43,7 @@ public class ClassMeteringTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, this.commonCostBuilder.apply(raw));
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         this.clazz = loader.loadClass(className);
         
         // We only need to install a IBlockchainRuntime which can afford our energy.
@@ -96,7 +92,7 @@ public class ClassMeteringTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(interfaceName.replaceAll("\\.", "/") + ".class");
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(interfaceName, this.commonCostBuilder.apply(raw));
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         Class<?> theInterface = loader.loadClass(interfaceName);
         Method method = theInterface.getMethod("one");
         Assert.assertNotNull(method);

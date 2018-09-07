@@ -1,27 +1,19 @@
 package org.aion.avm.core.instrument;
 
+import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.util.Helpers;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.objectweb.asm.Opcodes;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.aion.avm.core.classgeneration.CommonGenerators;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
-import org.aion.avm.core.util.Helpers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.objectweb.asm.Opcodes;
-
 
 public class BlockBuildingMethodVisitorTest {
-    private static AvmSharedClassLoader sharedClassLoader;
-
-    @BeforeClass
-    public static void setupClass() throws Exception {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
-    }
 
     private Map<String, List<BasicBlock>> METHOD_BLOCKS;
 
@@ -32,7 +24,7 @@ public class BlockBuildingMethodVisitorTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, raw);
-        AvmClassLoader loader = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         loader.loadClass(className);
         this.METHOD_BLOCKS = BlockSnooper.findPerMethodBlocksFor(raw);
         Assert.assertNotNull(this.METHOD_BLOCKS);

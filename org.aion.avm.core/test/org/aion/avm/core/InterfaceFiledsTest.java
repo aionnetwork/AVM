@@ -1,7 +1,6 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.InterfaceFieldMappingVisitor;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.GeneratedClassConsumer;
@@ -38,7 +37,7 @@ public class InterfaceFiledsTest {
                 .runAndGetBytecode();
         classes.put(OuterInteface.class.getName(), transformed);
 
-        AvmSharedClassLoader loader = new AvmSharedClassLoader(classes);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         Class<?> clazz1 = loader.loadClass(OuterInteface.class.getName());
         assertTrue(clazz1.getFields().length == 0);
 

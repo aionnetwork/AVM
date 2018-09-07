@@ -1,13 +1,8 @@
 package org.aion.avm.core;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Map;
-
-import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.api.Address;
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
@@ -15,13 +10,15 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.api.Address;
-import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
 
 
 /**
@@ -176,8 +173,6 @@ public class HashCodeTest {
      */
     @Test
     public void testTwoLevelClassLoading() throws Exception {
-        // Create the shared instance with the reusable classes.
-        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         
         // Load the testing class.
         String className = HashCodeTestTarget.class.getName();
@@ -185,9 +180,9 @@ public class HashCodeTest {
         Map<String, byte[]> classes = Collections.singletonMap(PackageConstants.kUserDotPrefix + className, transformed);
         
         // Create 2 instances of the contract-specific loaders, each with the same class, and prove that we get 2 instances.
-        AvmClassLoader loader1 = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader1 = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         Class<?> clazz1 = loader1.loadUserClassByOriginalName(className);
-        AvmClassLoader loader2 = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader2 = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         Class<?> clazz2 = loader2.loadUserClassByOriginalName(className);
         // -not the same instances.
         Assert.assertFalse(clazz1 == clazz2);
@@ -212,8 +207,6 @@ public class HashCodeTest {
         
         // Note that we eagerly load 2 constant strings, so bump this up by 2.
         int usedHashCount = 2;
-        // Create the shared instance with the reusable classes.
-        AvmSharedClassLoader sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
         
         // Load the testing class and the Helper.
         String targetClassName = HashCodeTestTarget.class.getName();

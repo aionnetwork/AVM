@@ -1,14 +1,16 @@
 package org.aion.avm.core.stacktracking;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.classgeneration.CommonGenerators;
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.OutOfStackException;
 import org.aion.avm.internal.StackWatcher;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -21,14 +23,8 @@ import java.util.function.Function;
 
 
 public class StackWatcherTest {
-    private static AvmSharedClassLoader sharedClassLoader;
     private static AvmClassLoader classLoader;
     private Class<?> clazz;
-
-    @BeforeClass
-    public static void setupClass() {
-        sharedClassLoader = new AvmSharedClassLoader(CommonGenerators.generateShadowJDK());
-    }
 
     @Before
     // We only need to load the instrumented class once.
@@ -45,7 +41,7 @@ public class StackWatcherTest {
         };
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, transformer.apply(raw));
-        classLoader = new AvmClassLoader(sharedClassLoader, classes);
+        classLoader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         clazz = classLoader.loadClass(className);
     }
 
