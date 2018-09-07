@@ -4,8 +4,8 @@ import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 
@@ -17,9 +17,11 @@ public class AvmSharedClassLoader extends ClassLoader {
     // Bytecode Map of shared avm static classes
     private final Map<String, byte[]> bytecodeMap;
 
-    // Class object cache
-    // Note that AvmSharedClassLoader will also cache class objects from its parents to speed up class loading request
-    private final Map<String, Class<?>> cache;
+    // Static class cache generated during initialization phase, after initialization it can provide lock free access
+    private final Map<String, Class<?>> cacheStatic;
+
+    // Dynamic class cache used for dynamic class generation, require lock before access
+    private final Map<String, Class<?>> cacheDynamic;
 
     // List of dynamic class generation handlers
     private ArrayList<Function<String, byte[]>> handlers;
@@ -34,7 +36,8 @@ public class AvmSharedClassLoader extends ClassLoader {
      */
     public AvmSharedClassLoader(Map<String, byte[]> bytecodeMap) {
         this.bytecodeMap = bytecodeMap;
-        this.cache = new ConcurrentHashMap<>();
+        this.cacheStatic = new HashMap<>();
+        this.cacheDynamic = new HashMap<>();
         this.handlers = new ArrayList<>();
 
         registerHandlers();
@@ -46,6 +49,28 @@ public class AvmSharedClassLoader extends ClassLoader {
         this.handlers.add(wrapperGenerator);
     }
 
+    /**
+     * Inject classes into dynamic cache
+     */
+    public void putIntoDynamicCache(Class<?>[] classes){
+        for (int i = 0; i < classes.length; i++){
+            this.cacheDynamic.putIfAbsent(classes[i].getName(), classes[i]);
+        }
+    }
+
+    /**
+     * Inject classes into static cache
+     */
+    public void putIntoStaticCache(Class<?>[] classes){
+        for (int i = 0; i < classes.length; i++){
+            this.cacheStatic.putIfAbsent(classes[i].getName(), classes[i]);
+        }
+    }
+
+    /**
+     * Finish the initialization phase of the AVM shared class loader.
+     * All classes in the code cache will be eagerly loaded.
+     */
     public void finishInitialization() {
         for (String name: this.bytecodeMap.keySet()){
             try {
@@ -84,42 +109,53 @@ public class AvmSharedClassLoader extends ClassLoader {
             RuntimeAssertionError.unreachable("FAILED: Shared classloader receive request of: " + name);
         }
 
-        // After initialization, all shadow JCL are loaded, we can get from cache without acquiring a lock
-        // TODO: pre load static array wrappers
-        if (initialized && name.contains("org.aion.avm.shadow.java") && !name.contains("org.aion.avm.arraywrapper")){
-            // lock-free cache access
-            result = this.cache.get(name);
-            shouldResolve = false;
-            RuntimeAssertionError.assertTrue(null != result);
+        // Array wrapper classes are either already in dynamic cache, or need to be generated
+        if (name.startsWith("org.aion.avm.arraywrapper")){
+            synchronized (this.cacheDynamic) {
+                if (this.cacheDynamic.containsKey(name)) {
+                    result = this.cacheDynamic.get(name);
+                    // We got this from the cache so don't resolve.
+                    shouldResolve = false;
+                } else {
+                    for (Function<String, byte[]> handler : handlers) {
+                        byte[] code = handler.apply(name);
+                        if (code != null) {
+                            result = defineClass(name, code, 0, code.length);
+                            this.cacheDynamic.putIfAbsent(name, result);
+                            break;
+                        }
+                    }
+                }
+            }
         }else {
-            // Acquire per class classloading lock
-            synchronized (this.getClassLoadingLock(name)) {
-
-                if (this.cache.containsKey(name)) {
-                    result = this.cache.get(name);
+            // Initialization phase
+            // Initialization is guaranteed to be single threaded
+            if (!initialized) {
+                if (this.cacheStatic.containsKey(name)) {
+                    result = this.cacheStatic.get(name);
                     // We got this from the cache so don't resolve.
                     shouldResolve = false;
                 } else if (this.bytecodeMap.containsKey(name)) {
                     byte[] injected = this.bytecodeMap.get(name);
                     result = defineClass(name, injected, 0, injected.length);
-                    this.cache.putIfAbsent(name, result);
+                    this.cacheStatic.putIfAbsent(name, result);
                 } else {
-                    // Before falling back to the parent, try the dynamic.
-                    for (Function<String, byte[]> handler : handlers) {
-                        byte[] code = handler.apply(name);
-                        if (code != null) {
-                            result = defineClass(name, code, 0, code.length);
-                            this.cache.putIfAbsent(name, result);
-                            break;
-                        }
-                    }
+                    // Cache miss, delegate it to parent
+                    result = getParent().loadClass(name);
+                    shouldResolve = false;
+                    this.cacheStatic.putIfAbsent(name, result);
+                }
+            }
 
-                    if (null == result) {
-                        result = getParent().loadClass(name);
-                        // We got this from the parent so don't resolve.
-                        shouldResolve = false;
-                        this.cache.putIfAbsent(name, result);
-                    }
+            // After initialization we have lock free static cache
+            else {
+                if (this.cacheStatic.containsKey(name)) {
+                    result = this.cacheStatic.get(name);
+                    shouldResolve = false;
+                } else {
+                    // Cache miss, delegate it to parent
+                    result = getParent().loadClass(name);
+                    shouldResolve = false;
                 }
             }
         }

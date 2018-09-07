@@ -35,6 +35,8 @@ public class NodeEnvironment {
 
     private Class<?>[] apiClasses;
     private Class<?>[] shadowClasses;
+    private Class<?>[] arraywrapperClasses;
+    private Class<?>[] exceptionwrapperClasses;
     private Set<String> jclClassNames;
 
     public final Map<String, Integer> shadowObjectSizeMap;  // pre-rename; shadow objects and exceptions
@@ -52,6 +54,30 @@ public class NodeEnvironment {
                 org.aion.avm.api.ABIDecoder.class,
                 org.aion.avm.api.ABIEncoder.class,
                 org.aion.avm.api.Result.class,
+            };
+
+            this.arraywrapperClasses = new Class<?>[] {
+                    org.aion.avm.arraywrapper.Array.class
+                    , org.aion.avm.arraywrapper.ArrayElement.class
+                    , org.aion.avm.arraywrapper.ByteArray.class
+                    , org.aion.avm.arraywrapper.ByteArray2D.class
+                    , org.aion.avm.arraywrapper.CharArray.class
+                    , org.aion.avm.arraywrapper.CharArray2D.class
+                    , org.aion.avm.arraywrapper.DoubleArray.class
+                    , org.aion.avm.arraywrapper.DoubleArray2D.class
+                    , org.aion.avm.arraywrapper.FloatArray.class
+                    , org.aion.avm.arraywrapper.FloatArray2D.class
+                    , org.aion.avm.arraywrapper.IntArray.class
+                    , org.aion.avm.arraywrapper.IntArray2D.class
+                    , org.aion.avm.arraywrapper.LongArray.class
+                    , org.aion.avm.arraywrapper.LongArray2D.class
+                    , org.aion.avm.arraywrapper.ObjectArray.class
+                    , org.aion.avm.arraywrapper.ShortArray.class
+                    , org.aion.avm.arraywrapper.ShortArray2D.class
+            };
+
+            this.exceptionwrapperClasses = new Class<?>[] {
+                    org.aion.avm.exceptionwrapper.java.lang.Throwable.class
             };
 
             this.shadowClasses = new Class<?>[] {
@@ -118,7 +144,7 @@ public class NodeEnvironment {
             this.jclClassNames = new HashSet<>();
 
             // include the shadow classes we implement
-            this.jclClassNames.addAll(loadShadowClasses(this.sharedClassLoader, shadowClasses));
+            this.jclClassNames.addAll(loadShadowClasses(NodeEnvironment.class.getClassLoader(), shadowClasses));
 
             // we have to add the common generated exception/error classes as it's not pre-loaded
             this.jclClassNames.addAll(Stream.of(CommonGenerators.kExceptionClassNames)
@@ -133,6 +159,14 @@ public class NodeEnvironment {
             this.jclClassNames.add("java/lang/invoke/MethodHandles$Lookup");
 
             // Finish the initialization of shared class loader
+
+            // Inject pre generated wrapper class into shared classloader enable more optimization opportunities for us
+            this.sharedClassLoader.putIntoDynamicCache(this.arraywrapperClasses);
+
+            // Inject shadow and api class into shared classloader so we can build a static cache
+            this.sharedClassLoader.putIntoStaticCache(this.shadowClasses);
+            this.sharedClassLoader.putIntoStaticCache(this.apiClasses);
+            this.sharedClassLoader.putIntoStaticCache(this.exceptionwrapperClasses);
             this.sharedClassLoader.finishInitialization();
 
         } catch (ClassNotFoundException e) {

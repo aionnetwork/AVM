@@ -17,6 +17,7 @@ import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -220,8 +221,8 @@ public class HashCodeTest {
         Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(PackageConstants.kUserDotPrefix + targetClassName, transformedTarget));
 
         // Now, we will create 2 class loaders with the same classes:  these will be contract-level loaders.
-        AvmClassLoader loader1 = new AvmClassLoader(sharedClassLoader, classes);
-        AvmClassLoader loader2 = new AvmClassLoader(sharedClassLoader, classes);
+        AvmClassLoader loader1 = NodeEnvironment.singleton.createInvocationClassLoader(classes);
+        AvmClassLoader loader2 = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         
         // First, run some tests in helper1.
         IHelper helper1 = Helpers.instantiateHelper(loader1, 1_000_000L, 1);
