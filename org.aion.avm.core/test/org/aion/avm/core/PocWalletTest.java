@@ -25,7 +25,7 @@ public class PocWalletTest {
     private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private byte[] to = Helpers.randomBytes(Address.LENGTH);
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
-    private long energyLimit = 10_000_000;
+    private long energyLimit = 10_000_000_000L;
     private long energyPrice = 1;
 
     private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
@@ -122,7 +122,7 @@ public class PocWalletTest {
         byte[] toConfirm = (byte[]) TestingHelper.decodeResult(executeResult);
 
         // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
-        kernel.adjustBalance(extra1, 1_000_000_000L);
+        kernel.adjustBalance(extra1, 1_000_000_000_000L);
         byte[] confirmArgs = CallEncoder.confirm(toConfirm);
         Transaction confirmTransaction = new Transaction(Transaction.Type.CALL, extra1, contractAddress, kernel.getNonce(extra1), 0, confirmArgs, energyLimit, energyPrice);
         TransactionContext confirmContext = new TransactionContextImpl(confirmTransaction, block);

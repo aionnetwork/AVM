@@ -169,7 +169,7 @@ public class AionSet<E> implements Set<E> {
      */
     @Override
     public Iterator<E> iterator() {
-        return new AionSetIterator(this.size());
+        return new AionSetIterator();
     }
 
     public final class AionSetIterator implements Iterator<E> {
@@ -177,7 +177,7 @@ public class AionSet<E> implements Set<E> {
         AionMap.AionMapEntry curEntry;
         int curSlot;
 
-        public AionSetIterator(int size){
+        public AionSetIterator(){
             curLeaf = map.getLeftMostLeaf();
             curSlot = 0;
             curEntry = curLeaf.entries[curSlot];

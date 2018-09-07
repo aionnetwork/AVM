@@ -1,8 +1,6 @@
 package org.aion.avm.userlib;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -77,6 +75,10 @@ public class AionMapTest {
             found += 1;
         }
         Assert.assertEquals(size, found);
+        for (int i = 0; i < size; i = i + 2) {
+            map.keySet().remove(i);
+            Assert.assertFalse(map.containsKey(i));
+        }
     }
 
     /**
@@ -99,6 +101,51 @@ public class AionMapTest {
     }
 
     /**
+     * Adds 20 elements, remove entrys from its collection views
+     */
+    @Test
+    public void checkCollectionViews(){
+        final int size = 20;
+
+        AionMap<Integer, String> map = new AionMap<>();
+        for (int i = 0; i < size; ++i) {
+            map.put(i, "int_ " + i);
+        }
+
+        Assert.assertEquals(size, map.size());
+
+        Set<Integer> ks = map.keySet();
+        Collection<String> vs = map.values();
+        Set<Map.Entry<Integer, String>> es = map.entrySet();
+
+        Assert.assertEquals(ks.size(), map.size());
+        Assert.assertEquals(vs.size(), map.size());
+        Assert.assertEquals(es.size(), map.size());
+
+        // Remove from map, check views
+        map.remove(10);
+        Assert.assertTrue(!ks.contains(10));
+        Assert.assertTrue(!vs.contains("int_ " + 10));
+        Assert.assertTrue(es.size() == 19);
+
+        // Remove from views, check map
+        ks.remove(15);
+        Assert.assertTrue(!map.containsKey(15));
+        Assert.assertTrue(!vs.contains("int_ " + 15));
+        Assert.assertTrue(es.size() == 18);
+
+        vs.remove("int_ " + 16);
+        Assert.assertTrue(!map.containsKey(16));
+        Assert.assertTrue(!ks.contains(16));
+        Assert.assertTrue(es.size() == 17);
+
+        es.clear();
+        Assert.assertEquals(es.size(), 0);
+        Assert.assertEquals(vs.size(), 0);
+        Assert.assertEquals(map.size(), 0);
+    }
+
+    /**
      * Adds 10 elements, then walks the entry set.
      */
     @Test
@@ -118,6 +165,102 @@ public class AionMapTest {
             found += 1;
         }
         Assert.assertEquals(size, found);
+    }
+
+    /**
+     * Adds 20 elements, use key set iterator to remove half of them.
+     */
+    @Test
+    public void keySetIteratorRemove() {
+        final int size = 20;
+
+        AionMap<Integer, String> map = new AionMap<>();
+        for (int i = 0; i < size; ++i) {
+            map.put(i, "int_ " + i);
+        }
+
+        Assert.assertEquals(size, map.size());
+
+        Iterator<Integer> i = map.keySet().iterator();
+        while (i.hasNext()) {
+            i.next();
+            i.next();
+            i.remove();
+        }
+
+        Assert.assertEquals(size / 2, map.size());
+
+        for (int j = 0; j < size; j = j + 1) {
+            if (j % 2 == 0) {
+                Assert.assertEquals(map.get(j), "int_ " + j);
+            }else{
+                Assert.assertTrue(null == map.get(j));
+            }
+        }
+    }
+
+    /**
+     * Adds 20 elements, use entry set iterator to remove half of them.
+     */
+    @Test
+    public void entrySetIteratorRemove() {
+        final int size = 20;
+
+        AionMap<Integer, String> map = new AionMap<>();
+        for (int i = 0; i < size; ++i) {
+            map.put(i, "int_ " + i);
+        }
+
+        Assert.assertEquals(size, map.size());
+
+        Iterator<Map.Entry<Integer, String>> i = map.entrySet().iterator();
+        while (i.hasNext()) {
+            i.next();
+            i.next();
+            i.remove();
+        }
+
+        Assert.assertEquals(size / 2, map.size());
+
+        for (int j = 0; j < size; j = j + 1) {
+            if (j % 2 == 0) {
+                Assert.assertEquals(map.get(j), "int_ " + j);
+            }else{
+                Assert.assertTrue(null == map.get(j));
+            }
+        }
+    }
+
+    /**
+     * Adds 20 elements, use values iterator to remove half of them.
+     */
+    @Test
+    public void valuesIteratorRemove() {
+        final int size = 20;
+
+        AionMap<Integer, String> map = new AionMap<>();
+        for (int i = 0; i < size; ++i) {
+            map.put(i, "int_ " + i);
+        }
+
+        Assert.assertEquals(size, map.size());
+
+        Iterator<String> i = map.values().iterator();
+        while (i.hasNext()) {
+            i.next();
+            i.next();
+            i.remove();
+        }
+
+        Assert.assertEquals(size / 2, map.size());
+
+        for (int j = 0; j < size; j = j + 1) {
+            if (j % 2 == 0) {
+                Assert.assertEquals(map.get(j), "int_ " + j);
+            }else{
+                Assert.assertTrue(null == map.get(j));
+            }
+        }
     }
 
     /**

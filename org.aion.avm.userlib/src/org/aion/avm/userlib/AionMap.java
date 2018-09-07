@@ -111,8 +111,8 @@ public class AionMap<K, V> implements Map<K, V> {
      */
     @Override
     public boolean containsValue(Object value) {
-        for (Entry e : this.entrySet()){
-            if (e.getValue().equals(value)){
+        for (V v : this.values()){
+            if (v.equals(value)){
                 return true;
             }
         }
@@ -236,23 +236,7 @@ public class AionMap<K, V> implements Map<K, V> {
     // TODO: Make this a reflection view instead of a snapshot
     @Override
     public Set<K> keySet() {
-        BLeafNode curLeaf = getLeftMostLeaf();
-        Set<K> ret = new AionSet<>();
-
-        // Iterating through all leaf nodes
-        while (null != curLeaf){
-            // Iterating through all slots in current leaf node
-            for (int i = 0; i < curLeaf.nodeSize; i ++){
-                AionMapEntry<K, V> curEntry = curLeaf.entries[i];
-                // Iterating through all entries in current slot
-                while(null != curEntry){
-                    // Put entry into key set
-                    ret.add(curEntry.key);
-                    curEntry = curEntry.next;
-                }
-            }
-            curLeaf = (BLeafNode) curLeaf.next;
-        }
+        Set<K> ret = new AionMapKeySet();
         return ret;
     }
 
@@ -266,20 +250,7 @@ public class AionMap<K, V> implements Map<K, V> {
     // TODO: Make this a reflection view instead of a snapshot
     @Override
     public Collection<V> values() {
-        BLeafNode curLeaf = getLeftMostLeaf();
-        List<V> ret = new AionList<>();
-
-        while (null != curLeaf){
-            for (int i = 0; i < curLeaf.nodeSize; i ++){
-                AionMapEntry<K, V> curEntry = curLeaf.entries[i];
-                while(null != curEntry){
-                    ret.add(curEntry.value);
-                    curEntry = curEntry.next;
-                }
-            }
-            curLeaf = (BLeafNode) curLeaf.next;
-        }
-        return ret;
+        return new AionMapValues();
     }
 
     /**
@@ -292,20 +263,7 @@ public class AionMap<K, V> implements Map<K, V> {
     // TODO: Make this a reflection view instead of a snapshot
     @Override
     public Set<Entry<K, V>> entrySet() {
-        BLeafNode curLeaf = getLeftMostLeaf();
-        Set<Entry<K, V>> ret = new AionSet<>();
-
-        while (null != curLeaf){
-            for (int i = 0; i < curLeaf.nodeSize; i ++){
-                AionMapEntry<K, V> curEntry = curLeaf.entries[i];
-                while(null != curEntry){
-                    ret.add(curEntry);
-                    curEntry = curEntry.next;
-                }
-            }
-            curLeaf = (BLeafNode) curLeaf.next;
-        }
-        return ret;
+        return new AionMapEntrySet();
     }
 
     public V getOrDefault(Object key, V defaultValue) {
@@ -797,6 +755,268 @@ public class AionMap<K, V> implements Map<K, V> {
         @Override
         public int hashCode() {
             return key.hashCode();
+        }
+    }
+
+    public abstract class AionAbstractCollection<E> implements Collection<E> {
+        protected AionAbstractCollection(){
+        }
+
+        public abstract Iterator<E> iterator();
+
+        public abstract int size();
+
+        public boolean isEmpty() {
+            return size() == 0;
+        }
+
+        public boolean contains(Object o) {
+            Iterator<E> it = iterator();
+            if (o==null) {
+                while (it.hasNext())
+                    if (it.next()==null)
+                        return true;
+            } else {
+                while (it.hasNext())
+                    if (o.equals(it.next()))
+                        return true;
+            }
+            return false;
+        }
+
+        public Object[] toArray() {
+            throw new UnsupportedOperationException();
+        }
+
+        public <T> T[] toArray(T[] a) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean add(E e) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean remove(Object o) {
+            Iterator<E> it = iterator();
+            if (o==null) {
+                while (it.hasNext()) {
+                    if (it.next()==null) {
+                        it.remove();
+                        return true;
+                    }
+                }
+            } else {
+                while (it.hasNext()) {
+                    if (o.equals(it.next())) {
+                        it.remove();
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public boolean containsAll(Collection<?> c) {
+            for (Object e : c)
+                if (!contains(e))
+                    return false;
+            return true;
+        }
+
+        public boolean addAll(Collection<? extends E> c) {
+            boolean modified = false;
+            for (E e : c)
+                if (add(e))
+                    modified = true;
+            return modified;
+        }
+
+        public boolean removeAll(Collection<?> c) {
+            boolean modified = false;
+            Iterator<?> it = iterator();
+            while (it.hasNext()) {
+                if (c.contains(it.next())) {
+                    it.remove();
+                    modified = true;
+                }
+            }
+            return modified;
+        }
+
+        public boolean retainAll(Collection<?> c) {
+            boolean modified = false;
+            Iterator<E> it = iterator();
+            while (it.hasNext()) {
+                if (!c.contains(it.next())) {
+                    it.remove();
+                    modified = true;
+                }
+            }
+            return modified;
+        }
+
+        public void clear() {
+            Iterator<E> it = iterator();
+            while (it.hasNext()) {
+                it.next();
+                it.remove();
+            }
+        }
+    }
+
+    public final class AionMapKeySet extends AionAbstractCollection<K> implements Set<K> {
+        @Override
+        public final int size() {
+            return AionMap.this.size;
+        }
+
+        @Override
+        public final Iterator<K> iterator() {
+            return new AionMapKeyIterator();
+        }
+
+        @Override
+        public final void clear() {
+            AionMap.this.clear();
+        }
+
+        @Override
+        public final boolean contains(Object o) {
+            return AionMap.this.containsKey(o);
+        }
+
+        @Override
+        public final boolean remove(Object key) {
+            return null != AionMap.this.remove(key);
+        }
+    }
+
+    public final class AionMapValues extends AionAbstractCollection<V> implements Collection<V> {
+        @Override
+        public final int size() {
+            return AionMap.this.size;
+        }
+
+        @Override
+        public final Iterator<V> iterator() {
+            return new AionMapValueIterator();
+        }
+
+        @Override
+        public final void clear() {
+            AionMap.this.clear();
+        }
+
+        @Override
+        public final boolean contains(Object o) {
+            return AionMap.this.containsValue(o);
+        }
+    }
+
+    public final class AionMapEntrySet extends AionAbstractCollection<Entry<K, V>> implements Set<Entry<K, V>> {
+        @Override
+        public final int size() {
+            return AionMap.this.size;
+        }
+
+        @Override
+        public final Iterator<Entry<K, V>> iterator() {
+            return new AionMapEntryIterator();
+        }
+
+        @Override
+        public final void clear() {
+            AionMap.this.clear();
+        }
+
+        @Override
+        public final boolean contains(Object o) {
+            K key   = (K) ((Entry) o).getKey();
+            V value = (V) ((Entry) o).getValue();
+
+            return AionMap.this.containsKey(o) && AionMap.this.get(key).equals(value);
+        }
+
+        @Override
+        public final boolean remove(Object ent) {
+            Entry<K, V> entry = (Entry<K, V> ) ent;
+            return null != AionMap.this.remove(entry.getKey());
+        }
+    }
+
+    public abstract class AionMapIterator{
+        BLeafNode curLeaf;
+
+        AionMapEntry preEntry;
+
+        AionMapEntry curEntry;
+
+        int curSlot;
+
+        AionMapIterator(){
+            curLeaf = AionMap.this.getLeftMostLeaf();
+            curSlot = 0;
+            curEntry = curLeaf.entries[curSlot];
+            preEntry = null;
+        }
+
+        public boolean hasNext() {
+            return (null != curEntry);
+        }
+
+        public AionMapEntry<K, V> nextEntry() {
+            AionMapEntry<K, V> elt = null;
+
+            if (null != curEntry){
+                elt = curEntry;
+
+                // Advance cursor
+                if (null != curEntry.next){
+                    curEntry = curEntry.next;
+                }else if (curSlot + 1 < curLeaf.nodeSize){
+                    curSlot++;
+                    curEntry = curLeaf.entries[curSlot];
+                }else if (null != curLeaf.next){
+                    curLeaf = (BLeafNode) curLeaf.next;
+                    curSlot = 0;
+                    curEntry = curLeaf.entries[curSlot];
+                }else{
+                    curEntry = null;
+                }
+            } else {
+                throw new NoSuchElementException();
+            }
+            preEntry = elt;
+            return elt;
+        }
+
+        public void remove() {
+            AionMap.this.remove(preEntry.key);
+            if (null != curEntry) {
+                curLeaf = AionMap.this.searchForLeaf((K) curEntry.key);
+                curSlot = curLeaf.searchForEntrySlot((K) curEntry.key);
+            }
+        }
+    }
+
+    public final class AionMapEntryIterator extends AionMapIterator implements Iterator<Entry<K, V>> {
+        @Override
+        public AionMapEntry<K, V> next() {
+            return nextEntry();
+        }
+    }
+
+    public final class AionMapKeyIterator extends AionMapIterator implements Iterator<K> {
+        @Override
+        public K next() {
+            return nextEntry().key;
+        }
+    }
+
+    public final class AionMapValueIterator extends AionMapIterator implements Iterator<V> {
+        @Override
+        public V next() {
+            return nextEntry().value;
         }
     }
 

@@ -37,6 +37,14 @@ public class BasicAppTest {
                 , AionMap.BNode.class
                 , AionMap.BInternalNode.class
                 , AionMap.BLeafNode.class
+                , AionMap.AionMapEntryIterator.class
+                , AionMap.AionMapKeyIterator.class
+                , AionMap.AionMapValueIterator.class
+                , AionMap.AionMapIterator.class
+                , AionMap.AionAbstractCollection.class
+                , AionMap.AionMapEntrySet.class
+                , AionMap.AionMapValues.class
+                , AionMap.AionMapKeySet.class
                 , AionSet.class
                 , AionSet.AionSetIterator.class
                 , AionList.class
