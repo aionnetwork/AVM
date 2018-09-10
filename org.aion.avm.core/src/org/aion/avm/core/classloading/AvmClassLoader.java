@@ -83,7 +83,7 @@ public class AvmClassLoader extends ClassLoader {
 
         // Contract classloader only load user Dapp classes and per Dapp internal/api classes
         // Non user classes will be delegated to shared class loader
-        if (name.contains("org.aion.avm.user") || this.bytecodeMap.containsKey(name)) {
+        if (name.contains(PackageConstants.kUserDotPrefix) || this.bytecodeMap.containsKey(name)) {
             // We have a priority order to load:
             // 1) Cache
             // 2) Injected static code

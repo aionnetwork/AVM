@@ -6,6 +6,7 @@ import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
+import org.aion.avm.internal.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -179,7 +180,7 @@ public class InvokedynamicRestrictedMethodAccessCheck {
     @Test
     public void given_methodCallOnTheseClasses_then_dappRejected() {
         {
-            final var weExpectAvmToShadowMethodCallTargetClass = "org.aion.avm.shadow.java.lang.invoke.MethodHandles$Lookup";
+            final var weExpectAvmToShadowMethodCallTargetClass = PackageConstants.kShadowDotPrefix + "java.lang.invoke.MethodHandles$Lookup";
             final var methodCallContainer = LookupCall.class;
             final var expectedFailureCheck = new RejectedBecauseMethodCallOnWhitelistedButNotShadowedClass(weExpectAvmToShadowMethodCallTargetClass);
             final var userDefinedClassNames = new String[]{
@@ -189,7 +190,7 @@ public class InvokedynamicRestrictedMethodAccessCheck {
             makeSureTransformationFail(methodCallContainer, expectedFailureCheck, userDefinedClassNames);
         }
         {
-            final var weExpectAvmToShadowMethodCallTargetClass = "org.aion.avm.shadow.java.lang.invoke.MethodType";
+            final var weExpectAvmToShadowMethodCallTargetClass = PackageConstants.kShadowDotPrefix + "java.lang.invoke.MethodType";
             final var methodCallContainer = MethodTypeCall.class;
             final var expectedFailureCheck = new RejectedBecauseMethodCallOnWhitelistedButNotShadowedClass(weExpectAvmToShadowMethodCallTargetClass);
             final var userDefinedClassNames = new String[]{
@@ -199,7 +200,7 @@ public class InvokedynamicRestrictedMethodAccessCheck {
             makeSureTransformationFail(methodCallContainer, expectedFailureCheck, userDefinedClassNames);
         }
         {
-            final var weExpectAvmToShadowMethodCallTargetClass = "org.aion.avm.shadow.java.lang.invoke.MethodHandles";
+            final var weExpectAvmToShadowMethodCallTargetClass = PackageConstants.kShadowDotPrefix + "java.lang.invoke.MethodHandles";
             final var targetClassContainer = MethodHandlesCall.class;
             final var expectedFailureCheck = new RejectedBecauseMethodCallOnWhitelistedButNotShadowedClass(weExpectAvmToShadowMethodCallTargetClass);
             final var userDefinedClassDotNames = new String[]{

@@ -5,6 +5,7 @@ import org.aion.avm.internal.ABICodecException;
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.MethodAccessException;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.internal.UncaughtException;
 import org.aion.avm.shadow.java.lang.Boolean;
@@ -437,7 +438,7 @@ public final class ABIDecoder {
     public static Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor){
         Method[] methods = clazz.getMethods();
 
-        String ARRAY_WRAPPER_PREFIX = "org.aion.avm.arraywrapper.";
+        String ARRAY_WRAPPER_PREFIX = PackageConstants.kArrayWrapperDotPrefix;
 
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {

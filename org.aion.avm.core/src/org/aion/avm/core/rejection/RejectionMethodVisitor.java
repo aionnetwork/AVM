@@ -8,6 +8,7 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -243,13 +244,13 @@ public class RejectionMethodVisitor extends MethodVisitor {
             // TODO:  Move the explicit IObject->Object special-case into the NamespaceMapper if we can generalize the descriptor case (since,
             // in general, this mapping should not be applied but it is something we need to do for method descriptors, specifically).
             String className = clazz.getName();
-            if ("org.aion.avm.arraywrapper.ByteArray".equals(className)) {
+            if ((PackageConstants.kArrayWrapperDotPrefix + "ByteArray").equals(className)) {
                 builder.append("[B");
-            } else if ("org.aion.avm.arraywrapper.CharArray".equals(className)) {
+            } else if ((PackageConstants.kArrayWrapperDotPrefix + "CharArray").equals(className)) {
                 builder.append("[C");
-            } else if ("org.aion.avm.internal.IObject".equals(className)) {
+            } else if ((PackageConstants.kInternalDotPrefix + "IObject").equals(className)) {
                 builder.append(DescriptorParser.OBJECT_START);
-                builder.append("org/aion/avm/shadow/java/lang/Object");
+                builder.append(PackageConstants.kShadowSlashPrefix + "java/lang/Object");
                 builder.append(DescriptorParser.OBJECT_END);
             } else {
                 builder.append(DescriptorParser.OBJECT_START);

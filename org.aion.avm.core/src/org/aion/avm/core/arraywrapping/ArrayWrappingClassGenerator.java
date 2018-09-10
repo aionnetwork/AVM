@@ -371,7 +371,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         methodVisitor.visitMethodInsn(INVOKESPECIAL, superName, initName, "()V", false);
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitFieldInsn(PUTFIELD, "org/aion/avm/arraywrapper/ObjectArray", "underlying", "[Ljava/lang/Object;");
+        methodVisitor.visitFieldInsn(PUTFIELD, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", "underlying", "[Ljava/lang/Object;");
         methodVisitor.visitInsn(RETURN);
         methodVisitor.visitMaxs(2, 2);
         methodVisitor.visitEnd();

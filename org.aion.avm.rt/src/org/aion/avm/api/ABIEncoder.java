@@ -3,6 +3,7 @@ package org.aion.avm.api;
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.ABICodecException;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.shadow.java.lang.Double;
 import org.aion.avm.shadow.java.lang.Float;
 import org.aion.avm.shadow.java.lang.Integer;
@@ -17,7 +18,7 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public final class ABIEncoder {
     public enum ABITypes{
-        avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", "org.aion.avm.shadow.java.lang.Byte", "org.aion.avm.arraywrapper.ByteArray", "org.aion.avm.arraywrapper.ByteArray2D", "[B", "[[B"}) {
+        avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", PackageConstants.kShadowDotPrefix + "java.lang.Byte", PackageConstants.kArrayWrapperDotPrefix + "ByteArray", PackageConstants.kArrayWrapperDotPrefix + "ByteArray2D", "[B", "[[B"}) {
             @Override
             public byte[] encode(Object data) {
                 return new byte[]{(byte)data};
@@ -74,7 +75,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_BOOLEAN ('Z', 1, new String[]{"Z", "boolean", "java.lang.Boolean", "org.aion.avm.shadow.java.lang.Boolean", "[Z", "[[Z"}) {
+        avm_BOOLEAN ('Z', 1, new String[]{"Z", "boolean", "java.lang.Boolean", PackageConstants.kShadowDotPrefix + "java.lang.Boolean", "[Z", "[[Z"}) {
             @Override
             public byte[] encode(Object data) {
                 return new byte[]{(byte) (((java.lang.Boolean)data) ? 1 : 0)};
@@ -138,7 +139,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_CHAR    ('C', 0, new String[]{"C", "char", "java.lang.Character", "org.aion.avm.shadow.java.lang.Character", "org.aion.avm.arraywrapper.CharArray", "org.aion.avm.arraywrapper.CharArray2D", "[C", "[[C"}) { // variable length
+        avm_CHAR    ('C', 0, new String[]{"C", "char", "java.lang.Character", PackageConstants.kShadowDotPrefix + "java.lang.Character", PackageConstants.kArrayWrapperDotPrefix + "CharArray", PackageConstants.kArrayWrapperDotPrefix + "CharArray2D", "[C", "[[C"}) { // variable length
             @Override
             public byte[] encode(Object data) {
                 return Character.toString((char)data).getBytes();
@@ -197,7 +198,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_SHORT   ('S', 2, new String[]{"S", "short", "java.lang.Short", "org.aion.avm.shadow.java.lang.Short", "org.aion.avm.arraywrapper.ShortArray", "org.aion.avm.arraywrapper.ShortArray2D", "[S", "[[S"}) {
+        avm_SHORT   ('S', 2, new String[]{"S", "short", "java.lang.Short", PackageConstants.kShadowDotPrefix + "java.lang.Short", PackageConstants.kArrayWrapperDotPrefix + "ShortArray", PackageConstants.kArrayWrapperDotPrefix + "ShortArray2D", "[S", "[[S"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(2).putShort((short)data).array();
@@ -259,7 +260,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_INT     ('I', 4, new String[]{"I", "int", "java.lang.Integer", "org.aion.avm.shadow.java.lang.Integer", "org.aion.avm.arraywrapper.IntArray", "org.aion.avm.arraywrapper.IntArray2D", "[I", "[[I"}) {
+        avm_INT     ('I', 4, new String[]{"I", "int", "java.lang.Integer", PackageConstants.kShadowDotPrefix + "java.lang.Integer", PackageConstants.kArrayWrapperDotPrefix + "IntArray", PackageConstants.kArrayWrapperDotPrefix + "IntArray2D", "[I", "[[I"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(4).putInt((int)data).array();
@@ -321,7 +322,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_LONG    ('L', 8, new String[]{"L", "long", "java.lang.Long", "org.aion.avm.shadow.java.lang.Long", "org.aion.avm.arraywrapper.LongArray", "org.aion.avm.arraywrapper.LongArray2D", "[J", "[[J"}) {
+        avm_LONG    ('L', 8, new String[]{"L", "long", "java.lang.Long", PackageConstants.kShadowDotPrefix + "java.lang.Long", PackageConstants.kArrayWrapperDotPrefix + "LongArray", PackageConstants.kArrayWrapperDotPrefix + "LongArray2D", "[J", "[[J"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(8).putLong((long)data).array();
@@ -383,7 +384,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_FLOAT   ('F', 4, new String[]{"F", "float", "java.lang.Float", "org.aion.avm.shadow.java.lang.Float", "org.aion.avm.arraywrapper.FloatArray", "org.aion.avm.arraywrapper.FloatArray2D", "[F", "[[F"}) {
+        avm_FLOAT   ('F', 4, new String[]{"F", "float", "java.lang.Float", PackageConstants.kShadowDotPrefix + "PackageConstants.kShadowDotPrefix + \"java.lang.Float", PackageConstants.kArrayWrapperDotPrefix + "FloatArray", PackageConstants.kArrayWrapperDotPrefix + "FloatArray2D", "[F", "[[F"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(4).putFloat((float)data).array();
@@ -445,7 +446,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_DOUBLE  ('D', 8, new String[]{"D", "double", "java.lang.Double", "org.aion.avm.shadow.java.lang.Double", "org.aion.avm.arraywrapper.DoubleArray", "org.aion.avm.arraywrapper.DoubleArray2D", "[D", "[[D"}) {
+        avm_DOUBLE  ('D', 8, new String[]{"D", "double", "java.lang.Double", PackageConstants.kShadowDotPrefix + "java.lang.Double", PackageConstants.kArrayWrapperDotPrefix + "DoubleArray", PackageConstants.kArrayWrapperDotPrefix + "DoubleArray2D", "[D", "[[D"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(8).putDouble((double)data).array();
@@ -507,7 +508,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_ADDRESS ('A', Address.avm_LENGTH, new String[]{"A", "org.aion.avm.api.Address"}) {
+        avm_ADDRESS ('A', Address.avm_LENGTH, new String[]{"A", PackageConstants.kApiDotPrefix + "Address"}) {
             @Override
             public byte[] encode(Object data) {
                 return ((Address)data).unwrap();
@@ -708,14 +709,14 @@ public final class ABIEncoder {
         }
         String className = data.getClass().getName();
 
-        if (className.startsWith("org.aion.avm.arraywrapper.") && className.endsWith("2D")) {
+        if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "") && className.endsWith("2D")) {
             // data is a 2D array
             return encode2DArray((ObjectArray)data, mapABITypes(className));
         }
         else {
             ABITypes type = mapABITypes(className);
 
-            if (className.startsWith("org.aion.avm.arraywrapper.")) {
+            if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "")) {
                 // data is an 1D array
                 return type.encode1DArray(((Array)data).getUnderlyingAsObject());
             }
@@ -730,7 +731,7 @@ public final class ABIEncoder {
                 byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
 
                 ret[0] = Character.toString(type.symbol).getBytes();
-                if (className.startsWith("org.aion.avm.shadow.java.lang.")) {
+                if (className.startsWith(PackageConstants.kShadowDotPrefix + "java.lang.")) {
                     ret[1] = type.encodeShadowType(data);
                 } else {
                     // "java.lang.*" in this case. e.g. java.lang.[Integer|Byte|Boolean|Character|Short|Long|Float|Double]
@@ -744,9 +745,9 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode a 2D wrapped array ("org.aion.avm.arraywrapper.ObjectArray" class object); generate the 2-element 2D byte array,
+     * Encode a 2D wrapped array (PackageConstants.kArrayWrapperDotPrefix + "ObjectArray" class object); generate the 2-element 2D byte array,
      * of which the first byte array contains the descriptor and the second the encoded data.
-     * @param data the "org.aion.avm.arraywrapper.ObjectArray" class object
+     * @param data the PackageConstants.kArrayWrapperDotPrefix + "ObjectArray" class object
      * @param type the ABI type of the 2D array elements
      * @return the 2-element 2D byte array, of which the first byte array contains the descriptor and the second the encoded data.
      */

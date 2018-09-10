@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -48,7 +49,7 @@ public class AssertionErrorIntegrationTest {
         
         // Do the call.
         String result = callStaticString(dapp, "throwableError");
-        Assert.assertEquals("org.aion.avm.shadow.java.lang.AssertionError: null", result);
+        Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.AssertionError: null", result);
     }
 
     @Test

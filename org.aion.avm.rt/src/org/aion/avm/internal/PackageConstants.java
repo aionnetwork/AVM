@@ -8,7 +8,7 @@ package org.aion.avm.internal;
  */
 public class PackageConstants {
     public static final String kShadowDotPrefix = "org.aion.avm.shadow.";
-    public static final String kApiDotPrefix = "org.aion.avm.shadow.";
+    public static final String kApiDotPrefix = "org.aion.avm.api.";
     public static final String kExceptionWrapperDotPrefix = "org.aion.avm.exceptionwrapper.";
     public static final String kArrayWrapperDotPrefix = "org.aion.avm.arraywrapper.";
     public static final String kInternalDotPrefix = "org.aion.avm.internal.";

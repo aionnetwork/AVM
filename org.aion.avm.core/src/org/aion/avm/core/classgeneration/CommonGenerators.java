@@ -102,7 +102,7 @@ public class CommonGenerators {
     });
 
     public static final Set<String> kShadowEnumClassNames = Set.of(new String[] {
-            "org.aion.avm.shadow.java.math.RoundingMode",
+            PackageConstants.kShadowDotPrefix + "java.math.RoundingMode",
     });
 
     // Record the parent class of each generated class. This information is needed by the heap size calculation.

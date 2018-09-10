@@ -5,6 +5,7 @@ import java.util.Stack;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.ClassWriter;
 
@@ -14,7 +15,7 @@ import org.objectweb.asm.ClassWriter;
  * to compute this relationship between our generated classes, before they can be loaded.
  */
 public class TypeAwareClassWriter extends ClassWriter {
-    private static final String IOBJECT_SLASH_NAME = "org/aion/avm/internal/IObject";
+    private static final String IOBJECT_SLASH_NAME = PackageConstants.kInternalSlashPrefix + "IObject";
 
     private final ParentPointers staticClassHierarchy;
     // WARNING:  This dynamicHierarchyBuilder is changing, externally, while we hold a reference to it.

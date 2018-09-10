@@ -421,11 +421,11 @@ public class NodeEnvironment {
         // add the generated classes, i.e., exceptions in the generated shadow JDK
         for (String generatedClassName : generatedShadowJDK.keySet()) {
             // User cannot create the exception wrappers, so not to include them
-            if (!generatedClassName.startsWith("org.aion.avm.exceptionwrapper.")) {
+            if (!generatedClassName.startsWith(PackageConstants.kExceptionWrapperDotPrefix)) {
                 String parentName = CommonGenerators.parentClassMap.get(generatedClassName);
                 byte[] parentClass;
                 if (parentName == null) {
-                    parentName = "org.aion.avm.shadow.java.lang.Throwable";
+                    parentName = PackageConstants.kShadowDotPrefix + "java.lang.Throwable";
                     parentClass = rtClassesForest.getNodeById(parentName).getContent().getBytes();
                 } else {
                     parentClass = generatedShadowJDK.get(parentName);

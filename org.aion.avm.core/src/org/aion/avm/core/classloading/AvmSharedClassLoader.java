@@ -1,6 +1,7 @@
 package org.aion.avm.core.classloading;
 
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.util.ArrayList;
@@ -105,12 +106,12 @@ public class AvmSharedClassLoader extends ClassLoader {
         boolean shouldResolve = resolve;
 
         // All user space class should be loaded with Dapp loader
-        if (name.contains("org.aion.avm.user")){
+        if (name.contains(PackageConstants.kUserDotPrefix)){
             RuntimeAssertionError.unreachable("FAILED: Shared classloader receive request of: " + name);
         }
 
         // Array wrapper classes are either already in dynamic cache, or need to be generated
-        if (name.startsWith("org.aion.avm.arraywrapper")){
+        if (name.startsWith(PackageConstants.kArrayWrapperDotPrefix)){
             synchronized (this.cacheDynamic) {
                 if (this.cacheDynamic.containsKey(name)) {
                     result = this.cacheDynamic.get(name);
