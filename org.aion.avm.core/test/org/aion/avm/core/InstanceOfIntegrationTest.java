@@ -104,6 +104,11 @@ public class InstanceOfIntegrationTest {
     }
 
     @Test
+    public void targetIsTargetArray() throws Exception {
+        Assert.assertEquals(InstanceOfIntegrationTestTarget.targetIsTargetArray(), callStaticBoolean("targetIsTargetArray"));
+    }
+
+    @Test
     public void subArrayIsTargetArray() throws Exception {
         Assert.assertEquals(InstanceOfIntegrationTestTarget.subArrayIsTargetArray(), callStaticBoolean("subArrayIsTargetArray"));
     }

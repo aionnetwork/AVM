@@ -72,6 +72,11 @@ public class InstanceOfIntegrationTestTarget {
         return (sub instanceof Object[]);
     }
     
+    public static boolean targetIsTargetArray() {
+        InstanceOfIntegrationTestTarget[] target = new InstanceOfIntegrationTestTarget[0];
+        return (target instanceof InstanceOfIntegrationTestTarget[]);
+    }
+    
     public static boolean subArrayIsTargetArray() {
         Sub[] sub = new Sub[0];
         return (sub instanceof InstanceOfIntegrationTestTarget[]);

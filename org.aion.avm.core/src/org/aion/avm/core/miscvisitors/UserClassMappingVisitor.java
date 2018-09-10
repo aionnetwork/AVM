@@ -135,7 +135,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
                     if(((Type) value).getSort() == Type.OBJECT){
                         valueToWrite = Type.getType(UserClassMappingVisitor.this.mapper.mapDescriptor(((Type) value).getDescriptor()));
                     }else if (((Type) value).getSort() == Type.ARRAY){
-                        valueToWrite = Type.getType("L" + ArrayWrappingClassGenerator.getClassWrapper(UserClassMappingVisitor.this.mapper.mapDescriptor((((Type) value).getDescriptor()))) + ";");
+                        valueToWrite = Type.getType("L" + ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(UserClassMappingVisitor.this.mapper.mapDescriptor((((Type) value).getDescriptor()))) + ";");
                     }
                 }
                 super.visitLdcInsn(valueToWrite);

@@ -194,22 +194,30 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
         switch(opcode){
             case Opcodes.ANEWARRAY:
                 if (type.startsWith("[")){
-                    wName = ArrayWrappingClassGenerator.getClassWrapper("[" + type);
+                    wName = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor("[" + type);
                 }else{
-                    wName = ArrayWrappingClassGenerator.getClassWrapper("[L" + type);
+                    wName = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor("[L" + type);
                 }
 
                 this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", "(I)L" + wName + ";", false);
                 break;
 
-            case Opcodes.CHECKCAST:
-            case Opcodes.INSTANCEOF:
+            case Opcodes.CHECKCAST: {
                 wName = type;
                 if (type.startsWith("[")) {
-                    wName = ArrayWrappingClassGenerator.getClassWrapper(type);
+                    wName = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(type);
                 }
                 this.mv.visitTypeInsn(opcode, wName);
                 break;
+            }
+            case Opcodes.INSTANCEOF: {
+                wName = type;
+                if (type.startsWith("[")) {
+                    wName = ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(type);
+                }
+                this.mv.visitTypeInsn(opcode, wName);
+                break;
+            }
             default:
                 this.mv.visitTypeInsn(opcode, type);
         }
@@ -223,7 +231,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
         }
 
         desc = ArrayWrappingClassGenerator.updateMethodDesc(desc);
-        String newOwner = ArrayWrappingClassGenerator.getClassWrapper(owner);
+        String newOwner = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(owner);
         this.mv.visitMethodInsn(opcode, newOwner, name, desc, isInterface);
     }
 
@@ -237,7 +245,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     {
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingClassGenerator.getClassWrapper(descriptor) + ";";
+            desc = "L" + ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(descriptor) + ";";
         }
 
         this.mv.visitLocalVariable(name, desc, signature, start, end, index);
@@ -251,7 +259,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     {
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingClassGenerator.getClassWrapper(descriptor) + ";";
+            desc = "L" + ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(descriptor) + ";";
         }
 
         this.mv.visitFieldInsn(opcode, owner, name, desc);
@@ -265,7 +273,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             this.mv.visitIntInsn(Opcodes.BIPUSH, 0);
             d++;
         }
-        String wName = ArrayWrappingClassGenerator.getClassWrapper(descriptor);
+        String wName = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(descriptor);
         String facDesc = ArrayWrappingClassGenerator.getFactoryDescriptor(wName, sd);
 
         this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc, false);

@@ -181,7 +181,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
                     Class<?> elementSuperClass = elementClass.getSuperclass();
                     String superClassDotName = buildArrayDescriptor(dim, typeDescriptorForClass(elementSuperClass));
                     String slashName = Helpers.fulllyQualifiedNameToInternalName(superClassDotName);
-                    superClassSlashName = ArrayWrappingClassGenerator.getClassWrapper(slashName);
+                    superClassSlashName = ArrayWrappingClassGenerator.getClassWrapperDescriptor(slashName);
                 }
                 bytecode = generateClassBytecode(wrapperClassSlashName, superClassSlashName, dim, superInterfaces);
 
@@ -332,7 +332,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             childArray[i] = '[';
         }
         childWrapper = new String(childArray);
-        childWrapper = getClassWrapper(childWrapper);
+        childWrapper = getClassWrapperDescriptor(childWrapper);
         childFacDesc = ArrayWrappingClassGenerator.getFactoryDescriptor(childWrapper, d - 1);
 
         mv.visitMethodInsn(INVOKESTATIC, childWrapper, "initArray", childFacDesc, false);
@@ -428,7 +428,18 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     // Return the wrapper descriptor of an array
-    public static java.lang.String getClassWrapper(java.lang.String desc){
+    public static String getPreciseArrayWrapperDescriptor(String desc){
+        return getClassWrapperDescriptor(desc);
+    }
+
+    // Return the wrapper descriptor of an array
+    public static String getUnifyingArrayWrapperDescriptor(String desc){
+        // TODO:  Change this to the interface shadow hierarchy.
+        return getClassWrapperDescriptor(desc);
+    }
+
+    // Return the wrapper descriptor of an array
+    private static String getClassWrapperDescriptor(String desc){
         if (desc.endsWith(";")){
             desc = desc.substring(0, desc.length() - 1);
         }
@@ -446,35 +457,35 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     private static java.lang.String getObjectArrayWrapper(java.lang.String type, int dim){
-        return getClassWrapper(buildArrayDescriptor(dim, 'L' + type + ';'));
+        return getClassWrapperDescriptor(buildArrayDescriptor(dim, 'L' + type + ';'));
     }
 
     private static java.lang.String getByteArrayWrapper(int dim){
-        return getClassWrapper(buildArrayDescriptor(dim, "B"));
+        return getClassWrapperDescriptor(buildArrayDescriptor(dim, "B"));
     }
 
     private static java.lang.String getCharArrayWrapper(int dim){
-        return getClassWrapper(buildArrayDescriptor(dim, "C"));
+        return getClassWrapperDescriptor(buildArrayDescriptor(dim, "C"));
     }
 
     private static java.lang.String getIntArrayWrapper(int dim){
-        return getClassWrapper(buildArrayDescriptor(dim, "I"));
+        return getClassWrapperDescriptor(buildArrayDescriptor(dim, "I"));
     }
 
     private static java.lang.String getDoubleArrayWrapper(int dim){
-        return getClassWrapper(buildArrayDescriptor(dim, "D"));
+        return getClassWrapperDescriptor(buildArrayDescriptor(dim, "D"));
     }
 
     private static java.lang.String getFloatArrayWrapper(int dim){
-        return getClassWrapper(buildArrayDescriptor(dim, "F"));
+        return getClassWrapperDescriptor(buildArrayDescriptor(dim, "F"));
     }
 
     private static java.lang.String getLongArrayWrapper(int dim){
-        return getClassWrapper(buildArrayDescriptor(dim, "J"));
+        return getClassWrapperDescriptor(buildArrayDescriptor(dim, "J"));
     }
 
     private static java.lang.String getShortArrayWrapper(int dim){
-        return getClassWrapper(buildArrayDescriptor(dim, "S"));
+        return getClassWrapperDescriptor(buildArrayDescriptor(dim, "S"));
     }
 
     // Return the wrapper descriptor of an array
