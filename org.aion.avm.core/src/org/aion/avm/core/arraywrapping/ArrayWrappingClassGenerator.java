@@ -2,6 +2,7 @@ package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.arraywrapper.ArrayElement;
 import org.aion.avm.core.util.DescriptorParser;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.ClassWriter;
@@ -9,8 +10,11 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 public class ArrayWrappingClassGenerator implements Opcodes {
     static private boolean DEBUG = false;
@@ -18,7 +22,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
     static private String SHADOW_ARRAY = PackageConstants.kArrayWrapperSlashPrefix + "Array";
 
-    static private String[] PRIMITIVES = {"I", "J", "Z", "B", "S", "D", "F", "C"};
+    static private Set<String> PRIMITIVES = Stream.of("I", "J", "Z", "B", "S", "D", "F", "C").collect(Collectors.toSet());
     static private HashMap<String, String> CLASS_WRAPPER_MAP = new HashMap<>();
     static private HashMap<String, String> INTERFACE_WRAPPER_MAP = new HashMap<>();
 
@@ -33,7 +37,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         CLASS_WRAPPER_MAP.put("[D", PackageConstants.kArrayWrapperSlashPrefix + "DoubleArray");
         CLASS_WRAPPER_MAP.put("[Ljava/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
         CLASS_WRAPPER_MAP.put("[L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
-        CLASS_WRAPPER_MAP.put("[Lorg/aion/avm/internal/IObject", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
+        CLASS_WRAPPER_MAP.put("[L" + PackageConstants.kInternalSlashPrefix + "IObject", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
 
         CLASS_WRAPPER_MAP.put("[[I", PackageConstants.kArrayWrapperSlashPrefix + "IntArray2D");
         CLASS_WRAPPER_MAP.put("[[B", PackageConstants.kArrayWrapperSlashPrefix + "ByteArray2D");
@@ -67,37 +71,32 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             System.out.println("requestInterface : " + requestInterface);
         }
 
-        String wrapperInterfaceName = requestInterface.replace('.', '/');
+        String wrapperInterfaceSlashName = Helpers.fulllyQualifiedNameToInternalName(requestInterface);
         // Get element class and array dim
-        String elementInterfaceName = wrapperInterfaceName.substring((PackageConstants.kArrayWrapperDotPrefix + "interface.").length());
-        int dim = 0;
-        while (elementInterfaceName.charAt(dim) == '_') {dim++;}
-        elementInterfaceName = elementInterfaceName.substring(dim).replace('/', '.');
-        if (elementInterfaceName.startsWith("L")){elementInterfaceName = elementInterfaceName.substring(1);}
+        String elementInterfaceSlashName = wrapperInterfaceSlashName.substring((PackageConstants.kArrayWrapperSlashPrefix + "interface/").length());
+        int dim = getPrefixSize(elementInterfaceSlashName, '_');
+        String elementInterfaceDotName = Helpers.internalNameToFulllyQualifiedName(elementInterfaceSlashName.substring(dim));
+        if (elementInterfaceDotName.startsWith("L")){elementInterfaceDotName = elementInterfaceDotName.substring(1);}
 
-        Class<?> c = null;
+        Class<?> elementClass = null;
         try {
-            c = loader.loadClass(elementInterfaceName);
+            elementClass = loader.loadClass(elementInterfaceDotName);
         } catch (ClassNotFoundException e) {
-            throw RuntimeAssertionError.unreachable("No valid component : " + elementInterfaceName);
+            throw RuntimeAssertionError.unreachable("No valid component : " + elementInterfaceDotName);
         }
 
-        String superInterfaceName;
-        Class<?>[] superInterfaceClasses =  c.getInterfaces();
+        Class<?>[] superInterfaceClasses =  elementClass.getInterfaces();
         String[] superInterfaces = new String[superInterfaceClasses.length];
         int i = 0;
         for (Class<?> curI : superInterfaceClasses){
-            superInterfaceName = (new String(new char[dim]).replace("\0", "[")) + 'L' + curI.getName() + ";";
-            superInterfaceName = superInterfaceName.replace('.', '/');
-            superInterfaceName = ArrayWrappingClassGenerator.getInterfaceWrapper(superInterfaceName);
-            superInterfaces[i++] = superInterfaceName;
+            String superInterfaceDotName = buildArrayDescriptor(dim, typeDescriptorForClass(curI));
+            String superInterfaceSlashName = Helpers.fulllyQualifiedNameToInternalName(superInterfaceDotName);
+            String superInterfaceWrapperSlashName = ArrayWrappingClassGenerator.getInterfaceWrapper(superInterfaceSlashName);
+            superInterfaces[i++] = superInterfaceWrapperSlashName;
         }
 
-        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        classWriter.visit(V10, ACC_PUBLIC | ACC_ABSTRACT | ACC_INTERFACE , wrapperInterfaceName, null, "java/lang/Object", superInterfaces);
-
         if (DEBUG) {
-            System.out.println("Generating interface : " + wrapperInterfaceName);
+            System.out.println("Generating interface : " + wrapperInterfaceSlashName);
             for (String s : superInterfaces) {
                 System.out.println("Interfaces : " + s);
             }
@@ -105,10 +104,15 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             System.out.println("*********************************");
         }
 
+        return generateInterfaceBytecode(wrapperInterfaceSlashName, superInterfaces);
+
+    }
+
+    private static byte[] generateInterfaceBytecode(String wrapperInterfaceSlashName, String[] superInterfaces) {
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        classWriter.visit(V10, ACC_PUBLIC | ACC_ABSTRACT | ACC_INTERFACE , wrapperInterfaceSlashName, null, "java/lang/Object", superInterfaces);
         classWriter.visitEnd();
-
         return classWriter.toByteArray();
-
     }
 
     private static byte[] genWrapperClass(String requestClass, ClassLoader loader) {
@@ -118,52 +122,50 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         }
 
         // Class name in bytecode
-        String wrapperClassName = requestClass.replace('.', '/');
+        String wrapperClassSlashName = Helpers.fulllyQualifiedNameToInternalName(requestClass);
 
         // Get element class and array dim
-        String elementClassName = wrapperClassName.substring(PackageConstants.kArrayWrapperDotPrefix.length());
-        int dim = 0;
-        while (elementClassName.charAt(dim) == '$') {dim++;}
-        elementClassName = elementClassName.substring(dim).replace('/', '.');
-        if (elementClassName.startsWith("L")){elementClassName = elementClassName.substring(1);}
+        String elementClassSlashName = wrapperClassSlashName.substring(PackageConstants.kArrayWrapperDotPrefix.length());
+        int dim = getPrefixSize(elementClassSlashName, '$');
+        String elementClassDotName = Helpers.internalNameToFulllyQualifiedName(elementClassSlashName.substring(dim));
+        if (elementClassDotName.startsWith("L")){elementClassDotName = elementClassDotName.substring(1);}
 
         // Default super class is ObjectArray
 
-        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        byte[] bytecode = null;
         // If element is not primitive type, we need to find its super class
-        if (! Arrays.asList(PRIMITIVES).contains(elementClassName)) {
-            Class<?> c = null;
+        if (!PRIMITIVES.contains(elementClassDotName)) {
+            // Element is NOT primitive.
+            Class<?> elementClass = null;
             try {
-                c = loader.loadClass(elementClassName);
+                elementClass = loader.loadClass(elementClassDotName);
             } catch (ClassNotFoundException e) {
-                throw RuntimeAssertionError.unreachable("No valid component : " + elementClassName);
+                throw RuntimeAssertionError.unreachable("No valid component : " + elementClassDotName);
             }
 
-            String superInterfaceName;
-            Class<?>[] superInterfaceClasses =  c.getInterfaces();
+            Class<?>[] superInterfaceClasses =  elementClass.getInterfaces();
             String[] superInterfaces = new String[superInterfaceClasses.length];
-            if (c.isInterface()){superInterfaces = new String[superInterfaceClasses.length + 1];}
+            if (elementClass.isInterface()){superInterfaces = new String[superInterfaceClasses.length + 1];}
 
             int i = 0;
             for (Class<?> curI : superInterfaceClasses){
-                superInterfaceName = (new String(new char[dim]).replace("\0", "[")) + 'L' + curI.getName() + ";";
-                superInterfaceName = superInterfaceName.replace('.', '/');
-                superInterfaceName = ArrayWrappingClassGenerator.getInterfaceWrapper(superInterfaceName);
-                superInterfaces[i++] = superInterfaceName;
+                String superInterfaceDotName = buildArrayDescriptor(dim, typeDescriptorForClass(curI));
+                String superInterfaceSlashName = Helpers.fulllyQualifiedNameToInternalName(superInterfaceDotName);
+                String superInterfaceWrapperSlashName = ArrayWrappingClassGenerator.getInterfaceWrapper(superInterfaceSlashName);
+                superInterfaces[i++] = superInterfaceWrapperSlashName;
             }
 
             // Element is an interface
-            if (c.isInterface()){
-                String curInterfaceName = (new String(new char[dim]).replace("\0", "[")) + 'L' + c.getName() + ";";
-                curInterfaceName = curInterfaceName.replace('.', '/');
-                curInterfaceName = ArrayWrappingClassGenerator.getInterfaceWrapper(curInterfaceName);
-                superInterfaces[i++] = curInterfaceName;
+            if (elementClass.isInterface()){
+                String curInterfaceDotName = buildArrayDescriptor(dim, typeDescriptorForClass(elementClass));
+                String curInterfaceSlashName = Helpers.fulllyQualifiedNameToInternalName(curInterfaceDotName);
+                String curInterfaceWrapperSlashName = ArrayWrappingClassGenerator.getInterfaceWrapper(curInterfaceSlashName);
+                superInterfaces[i++] = curInterfaceWrapperSlashName;
 
                 // Generate
-                classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", superInterfaces);
-                generateClass(classWriter,wrapperClassName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim);
+                bytecode = generateClassBytecode(wrapperClassSlashName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim, superInterfaces);
                 if (DEBUG) {
-                    System.out.println("Generating Interface wrapper class : " + wrapperClassName);
+                    System.out.println("Generating Interface wrapper class : " + wrapperClassSlashName);
                     System.out.println("Wrapper Dimension : " + dim);
                     for (String s : superInterfaces) {
                         System.out.println("Interfaces : " + s);
@@ -174,19 +176,18 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             }
             // Element is a class
             else{
-                String superClassName = PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray";
-                if (!c.getName().equals("java.lang.Object")) {
-                    c = c.getSuperclass();
-                    superClassName = (new String(new char[dim]).replace("\0", "[")) + 'L' + c.getName() + ";";
-                    superClassName = superClassName.replace('.', '/');
-                    superClassName = ArrayWrappingClassGenerator.getClassWrapper(superClassName);
+                String superClassSlashName = PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray";
+                if (!elementClass.getName().equals("java.lang.Object")) {
+                    Class<?> elementSuperClass = elementClass.getSuperclass();
+                    String superClassDotName = buildArrayDescriptor(dim, typeDescriptorForClass(elementSuperClass));
+                    String slashName = Helpers.fulllyQualifiedNameToInternalName(superClassDotName);
+                    superClassSlashName = ArrayWrappingClassGenerator.getClassWrapper(slashName);
                 }
-                classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, superClassName, superInterfaces);
-                generateClass(classWriter,wrapperClassName, superClassName, dim);
+                bytecode = generateClassBytecode(wrapperClassSlashName, superClassSlashName, dim, superInterfaces);
 
                 if (DEBUG) {
-                    System.out.println("Generating class : " + wrapperClassName);
-                    System.out.println("Superclass class : " + superClassName);
+                    System.out.println("Generating class : " + wrapperClassSlashName);
+                    System.out.println("Superclass class : " + superClassSlashName);
                     for (String s : superInterfaces) {
                         System.out.println("Interfaces : " + s);
                     }
@@ -195,35 +196,41 @@ public class ArrayWrappingClassGenerator implements Opcodes {
                 }
             }
         }else{
-            classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassName, null, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", null);
-            generateClass(classWriter,wrapperClassName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim);
+            // Element IS primitive
+            bytecode = generateClassBytecode(wrapperClassSlashName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim, null);
             if (DEBUG) {
-                System.out.println("Generating Prim Class : " + wrapperClassName);
+                System.out.println("Generating Prim Class : " + wrapperClassSlashName);
                 System.out.println("Wrapper Dimension : " + dim);
                 System.out.println("*********************************");
             }
         }
+        
+        // If this is null, an incomplete code path was added.
+        RuntimeAssertionError.assertTrue(null != bytecode);
+        return bytecode;
+    }
+
+    private static byte[] generateClassBytecode(String wrapperClassSlashName, String superClassSlashName, int dimensions, String[] superInterfaceSlashNames){
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassSlashName, null, superClassSlashName, superInterfaceSlashNames);
+        // Static factory for one dimensional array
+        // We always generate one D factory for corner case like int[][][][] a = new int[10][][][];
+        genSingleDimensionFactory(classWriter, wrapperClassSlashName, 1);
+
+        if (dimensions > 1) {
+            //Static factory for multidimensional array
+            genMultiDimensionFactory(classWriter, wrapperClassSlashName, dimensions);
+        }
+
+        //Constructor
+        genConstructor(classWriter, superClassSlashName);
+
+        //Clone
+        genClone(classWriter, wrapperClassSlashName);
 
         classWriter.visitEnd();
 
         return classWriter.toByteArray();
-    }
-
-    private static void generateClass(ClassWriter cw, String wrapper, String zuper, int d){
-        // Static factory for one dimensional array
-        // We always generate one D factory for corner case like int[][][][] a = new int[10][][][];
-        genSingleDimensionFactory(cw, wrapper, 1);
-
-        if (d > 1) {
-            //Static factory for multidimensional array
-            genMultiDimensionFactory(cw, wrapper, d);
-        }
-
-        //Constructor
-        genConstructor(cw, zuper);
-
-        //Clone
-        genClone(cw, wrapper);
     }
 
     private static void genSingleDimensionFactory(ClassWriter cw, String wrapper, int d){
@@ -439,35 +446,35 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     private static java.lang.String getObjectArrayWrapper(java.lang.String type, int dim){
-        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "L" + type);
+        return getClassWrapper(buildArrayDescriptor(dim, 'L' + type + ';'));
     }
 
     private static java.lang.String getByteArrayWrapper(int dim){
-        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "B");
+        return getClassWrapper(buildArrayDescriptor(dim, "B"));
     }
 
     private static java.lang.String getCharArrayWrapper(int dim){
-        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "C");
+        return getClassWrapper(buildArrayDescriptor(dim, "C"));
     }
 
     private static java.lang.String getIntArrayWrapper(int dim){
-        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "I");
+        return getClassWrapper(buildArrayDescriptor(dim, "I"));
     }
 
     private static java.lang.String getDoubleArrayWrapper(int dim){
-        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "D");
+        return getClassWrapper(buildArrayDescriptor(dim, "D"));
     }
 
     private static java.lang.String getFloatArrayWrapper(int dim){
-        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "F");
+        return getClassWrapper(buildArrayDescriptor(dim, "F"));
     }
 
     private static java.lang.String getLongArrayWrapper(int dim){
-        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "J");
+        return getClassWrapper(buildArrayDescriptor(dim, "J"));
     }
 
     private static java.lang.String getShortArrayWrapper(int dim){
-        return getClassWrapper((new String(new char[dim]).replace("\0", "[")) + "S");
+        return getClassWrapper(buildArrayDescriptor(dim, "S"));
     }
 
     // Return the wrapper descriptor of an array
@@ -491,7 +498,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
     // Return the wrapper descriptor of an array
     static java.lang.String getFactoryDescriptor(java.lang.String wrapper, int d){
-        String facDesc = new String(new char[d]).replace("\0", "I");
+        String facDesc = buildFullString(d, 'I');
         facDesc = "(" + facDesc + ")L" + wrapper + ";";
         return facDesc;
     }
@@ -527,8 +534,13 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     public static int getDimension(java.lang.String desc){
+        // In this case, we are using the '[' as a prefix.
+        return getPrefixSize(desc, '[');
+    }
+
+    public static int getPrefixSize(String input, char prefixChar) {
         int d = 0;
-        while (desc.charAt(d) == '[') {
+        while (input.charAt(d) == prefixChar) {
             d++;
         }
         return d;
@@ -679,4 +691,16 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         return builder.toString();
     }
 
+
+    private static String buildArrayDescriptor(int length, String elementDescriptor) {
+        return buildFullString(length, '[') + elementDescriptor;
+    }
+
+    private static String buildFullString(int length, char element) {
+        return new String(new char[length]).replace('\0', element);
+    }
+
+    private static String typeDescriptorForClass(Class<?> clazz) {
+        return 'L' + clazz.getName() + ';';
+    }
 }
