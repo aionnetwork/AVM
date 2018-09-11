@@ -10,7 +10,9 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,6 +67,11 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     private static byte[] genWrapperInterface(String requestInterface, ClassLoader loader) {
+        // A wrapper interface backs all classes and interfaces made into arrays (as well as the interface implemented by those).
+        // We do this to generalize the solution to a type unification problem (issue-82).
+        // The responsibility of this wrapper interface is to represent all the type relationship of the class/interface element type, within the array.
+        // This means that all the interfaces of that class/interface and any superclass of that class must be realized here, as an interface wrapper relationship.
+        
 
         if (DEBUG) {
             System.out.println("*********************************");
@@ -85,26 +92,34 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             throw RuntimeAssertionError.unreachable("No valid component : " + elementInterfaceDotName);
         }
 
+        // Handle the element interfaces.
         Class<?>[] superInterfaceClasses =  elementClass.getInterfaces();
-        String[] superInterfaces = new String[superInterfaceClasses.length];
-        int i = 0;
+        List<String> elementInterfaceWrapperNames = new ArrayList<>();
         for (Class<?> curI : superInterfaceClasses){
             String superInterfaceDotName = buildArrayDescriptor(dim, typeDescriptorForClass(curI));
             String superInterfaceSlashName = Helpers.fulllyQualifiedNameToInternalName(superInterfaceDotName);
             String superInterfaceWrapperSlashName = ArrayWrappingClassGenerator.getInterfaceWrapper(superInterfaceSlashName);
-            superInterfaces[i++] = superInterfaceWrapperSlashName;
+            elementInterfaceWrapperNames.add(superInterfaceWrapperSlashName);
+        }
+
+        // Handle the element superclass (if not an interface).
+        if (!elementClass.isInterface() && !elementClass.getName().equals("java.lang.Object")) {
+            Class<?> elementSuperClass = elementClass.getSuperclass();
+            String superClassDotName = buildArrayDescriptor(dim, typeDescriptorForClass(elementSuperClass));
+            String slashName = Helpers.fulllyQualifiedNameToInternalName(superClassDotName);
+            elementInterfaceWrapperNames.add(ArrayWrappingClassGenerator.getInterfaceWrapper(slashName));
         }
 
         if (DEBUG) {
             System.out.println("Generating interface : " + wrapperInterfaceSlashName);
-            for (String s : superInterfaces) {
+            for (String s : elementInterfaceWrapperNames) {
                 System.out.println("Interfaces : " + s);
             }
             System.out.println("Wrapper Dimension : " + dim);
             System.out.println("*********************************");
         }
 
-        return generateInterfaceBytecode(wrapperInterfaceSlashName, superInterfaces);
+        return generateInterfaceBytecode(wrapperInterfaceSlashName, elementInterfaceWrapperNames.toArray(new String[elementInterfaceWrapperNames.size()]));
 
     }
 
@@ -143,57 +158,20 @@ public class ArrayWrappingClassGenerator implements Opcodes {
                 throw RuntimeAssertionError.unreachable("No valid component : " + elementClassDotName);
             }
 
-            Class<?>[] superInterfaceClasses =  elementClass.getInterfaces();
-            String[] superInterfaces = new String[superInterfaceClasses.length];
-            if (elementClass.isInterface()){superInterfaces = new String[superInterfaceClasses.length + 1];}
+            // All of these ObjectArray classes are of the same shape:  subclass ObjectArray and implement their own single interface wrapper.
+            String interfaceDotName = buildArrayDescriptor(dim, typeDescriptorForClass(elementClass));
+            String interfaceSlashName = Helpers.fulllyQualifiedNameToInternalName(interfaceDotName);
+            String interfaceWrapperSlashName = ArrayWrappingClassGenerator.getInterfaceWrapper(interfaceSlashName);
+            
+            String superClassSlashName = PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray";
+            bytecode = generateClassBytecode(wrapperClassSlashName, superClassSlashName, dim, new String[] {interfaceWrapperSlashName});
 
-            int i = 0;
-            for (Class<?> curI : superInterfaceClasses){
-                String superInterfaceDotName = buildArrayDescriptor(dim, typeDescriptorForClass(curI));
-                String superInterfaceSlashName = Helpers.fulllyQualifiedNameToInternalName(superInterfaceDotName);
-                String superInterfaceWrapperSlashName = ArrayWrappingClassGenerator.getInterfaceWrapper(superInterfaceSlashName);
-                superInterfaces[i++] = superInterfaceWrapperSlashName;
-            }
-
-            // Element is an interface
-            if (elementClass.isInterface()){
-                String curInterfaceDotName = buildArrayDescriptor(dim, typeDescriptorForClass(elementClass));
-                String curInterfaceSlashName = Helpers.fulllyQualifiedNameToInternalName(curInterfaceDotName);
-                String curInterfaceWrapperSlashName = ArrayWrappingClassGenerator.getInterfaceWrapper(curInterfaceSlashName);
-                superInterfaces[i++] = curInterfaceWrapperSlashName;
-
-                // Generate
-                bytecode = generateClassBytecode(wrapperClassSlashName, PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", dim, superInterfaces);
-                if (DEBUG) {
-                    System.out.println("Generating Interface wrapper class : " + wrapperClassSlashName);
-                    System.out.println("Wrapper Dimension : " + dim);
-                    for (String s : superInterfaces) {
-                        System.out.println("Interfaces : " + s);
-                    }
-                    System.out.println("*********************************");
-                }
-
-            }
-            // Element is a class
-            else{
-                String superClassSlashName = PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray";
-                if (!elementClass.getName().equals("java.lang.Object")) {
-                    Class<?> elementSuperClass = elementClass.getSuperclass();
-                    String superClassDotName = buildArrayDescriptor(dim, typeDescriptorForClass(elementSuperClass));
-                    String slashName = Helpers.fulllyQualifiedNameToInternalName(superClassDotName);
-                    superClassSlashName = ArrayWrappingClassGenerator.getClassWrapperDescriptor(slashName);
-                }
-                bytecode = generateClassBytecode(wrapperClassSlashName, superClassSlashName, dim, superInterfaces);
-
-                if (DEBUG) {
-                    System.out.println("Generating class : " + wrapperClassSlashName);
-                    System.out.println("Superclass class : " + superClassSlashName);
-                    for (String s : superInterfaces) {
-                        System.out.println("Interfaces : " + s);
-                    }
-                    System.out.println("Wrapper Dimension : " + dim);
-                    System.out.println("*********************************");
-                }
+            if (DEBUG) {
+                System.out.println("Generating class : " + wrapperClassSlashName);
+                System.out.println("Superclass class : " + superClassSlashName);
+                System.out.println("Backing Interfaces : " + interfaceWrapperSlashName);
+                System.out.println("Wrapper Dimension : " + dim);
+                System.out.println("*********************************");
             }
         }else{
             // Element IS primitive
@@ -434,8 +412,13 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
     // Return the wrapper descriptor of an array
     public static String getUnifyingArrayWrapperDescriptor(String desc){
-        // TODO:  Change this to the interface shadow hierarchy.
-        return getClassWrapperDescriptor(desc);
+        // Note that we can't do any special unifying operation for primitive arrays so just handle them as "precise" types.
+        boolean isPrimitiveArray = (2 == desc.length())
+                && ('[' == desc.charAt(0))
+                && (PRIMITIVES.contains(desc.substring(1)));
+        return isPrimitiveArray
+                ? getClassWrapperDescriptor(desc)
+                : getInterfaceWrapper(desc);
     }
 
     // Return the wrapper descriptor of an array

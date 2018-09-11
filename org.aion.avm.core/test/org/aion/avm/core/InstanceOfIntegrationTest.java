@@ -13,7 +13,6 @@ import org.aion.kernel.TransactionResult;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -113,13 +112,11 @@ public class InstanceOfIntegrationTest {
         Assert.assertEquals(InstanceOfIntegrationTestTarget.subArrayIsTargetArray(), callStaticBoolean("subArrayIsTargetArray"));
     }
 
-    @Ignore
     @Test
     public void subArrayIsCArray() throws Exception {
         Assert.assertEquals(InstanceOfIntegrationTestTarget.subArrayIsCArray(), callStaticBoolean("subArrayIsCArray"));
     }
 
-    @Ignore
     @Test
     public void subArrayIsAArray() throws Exception {
         Assert.assertEquals(InstanceOfIntegrationTestTarget.subArrayIsAArray(), callStaticBoolean("subArrayIsAArray"));
@@ -130,13 +127,11 @@ public class InstanceOfIntegrationTest {
         Assert.assertEquals(InstanceOfIntegrationTestTarget.bArrayIsAArray(), callStaticBoolean("bArrayIsAArray"));
     }
 
-    @Ignore
     @Test
     public void bArrayIsBArray() throws Exception {
         Assert.assertEquals(InstanceOfIntegrationTestTarget.bArrayIsBArray(), callStaticBoolean("bArrayIsBArray"));
     }
 
-    @Ignore
     @Test
     public void intCArrayIsBArray() throws Exception {
         Assert.assertEquals(InstanceOfIntegrationTestTarget.intCArrayIsBArray(), callStaticBoolean("intCArrayIsBArray"));
