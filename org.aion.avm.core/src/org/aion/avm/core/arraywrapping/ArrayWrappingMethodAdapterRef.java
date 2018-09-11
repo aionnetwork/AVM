@@ -1,6 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
-import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.IObjectArray;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -45,13 +46,12 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void visitEnd(){
 
-        Frame[] frames = null;
+        Frame<BasicValue>[] frames = null;
         if (instructions.size() > 0) {
             try{
-                Analyzer analyzer = new Analyzer(new ArrayWrappingInterpreter());
+                Analyzer<BasicValue> analyzer = new Analyzer<>(new ArrayWrappingInterpreter());
                 analyzer.analyze(this.className, this);
                 frames = analyzer.getFrames();
             }catch (AnalyzerException e){
@@ -68,7 +68,7 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
 
         for(int i = 0; i < insns.length; i++) {
             AbstractInsnNode insn = insns[i];
-            Frame f = frames[i];
+            Frame<BasicValue> f = frames[i];
 
             // We only handle aaload here since aastore is generic
             // the log is the following
@@ -81,11 +81,11 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 String elementType = ArrayWrappingClassGenerator.getElementType(targetDesc);
 
                 MethodInsnNode invokeVNode =
-                    new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
-                                        PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray",
+                    new MethodInsnNode(Opcodes.INVOKEINTERFACE,
+                                        Helpers.fulllyQualifiedNameToInternalName(IObjectArray.class.getName()),
                                         "get",
                                         "(I)Ljava/lang/Object;",
-                                        false);
+                                        true);
 
                 TypeInsnNode checkcastNode =
                     new TypeInsnNode(Opcodes.CHECKCAST,
@@ -107,11 +107,11 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 String elementType = ArrayWrappingClassGenerator.getElementType(targetDesc);
 
                 MethodInsnNode invokeVNode =
-                        new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
-                                PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray",
+                        new MethodInsnNode(Opcodes.INVOKEINTERFACE,
+                                Helpers.fulllyQualifiedNameToInternalName(IObjectArray.class.getName()),
                                 "set",
                                 "(ILjava/lang/Object;)V",
-                                false);
+                                true);
 
                 TypeInsnNode checkcastNode =
                         new TypeInsnNode(Opcodes.CHECKCAST,

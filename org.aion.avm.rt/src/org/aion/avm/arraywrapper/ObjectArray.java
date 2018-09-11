@@ -2,10 +2,17 @@ package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.*;
 import java.util.Arrays;
-import org.aion.avm.internal.IHelper;
+
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
-public class ObjectArray extends Array {
+
+/**
+ * Note that the IObjectArray interface exists here to provide type unification capabilities between the Class[] objects and Interface[] objects
+ * where Class implements Interface.  They need to unify in an interface, and be usable, but the actual implementation is always ObjectArray.
+ * In the future, all generated intermediary array interfaces also need to implement IObjectArray.  Much like IObject, in the class space,
+ * IObjectArray is the "top" of the array space.
+ */
+public class ObjectArray extends Array implements IObjectArray {
 
     protected Object[] underlying;
 
