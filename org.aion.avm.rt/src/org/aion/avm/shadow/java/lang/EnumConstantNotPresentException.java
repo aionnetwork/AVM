@@ -3,7 +3,6 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 
-import org.aion.avm.RuntimeMethodFeeSchedule;
 
 /**
  * Our shadow implementation of java.lang.EnumConstantNotPresentException.
@@ -29,13 +28,11 @@ public class EnumConstantNotPresentException extends RuntimeException {
     }
 
     public String avm_constantName() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.EnumConstantNotPresentException_avm_constantName);
         lazyLoad();
         return this.constantName;
     }
 
     public Class<? extends Enum> avm_enumType() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.EnumConstantNotPresentException_avm_enumType);
         lazyLoad();
         return this.enumType;
     }

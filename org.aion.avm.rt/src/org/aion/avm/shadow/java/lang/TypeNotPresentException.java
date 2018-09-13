@@ -3,7 +3,6 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 
-import org.aion.avm.RuntimeMethodFeeSchedule;
 
 /**
  * Our shadow implementation of java.lang.TypeNotPresentException.

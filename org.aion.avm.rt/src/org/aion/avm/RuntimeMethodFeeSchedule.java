@@ -52,8 +52,8 @@ public class RuntimeMethodFeeSchedule {
     public static final long BigInteger_avm_byteValueExact = 142; // byte code cost - 122; invoked methods cost - 20;
     public static final long BigInteger_avm_constructor_6 = 131;
     public static final long BigInteger_avm_compareTo_1 = 124;
-    public static final long ABIEncoder_avm_encodeMethodArguments = 530; // byte code cost - 402; invoked methods cost - 128;
-    public static final long ABIEncoder_avm_encodeOneObject = 1192; // byte code cost - 276; invoked methods cost - 916;
+    public static final long ABIEncoder_avm_encodeMethodArguments = 17372; // byte code cost - 402; invoked methods cost - 16970;
+    public static final long ABIEncoder_avm_encodeOneObject = 55511; // byte code cost - 276; invoked methods cost - 55235;
     public static final long Number_avm_byteValue = 118;
     public static final long Number_avm_shortValue = 118;
     public static final long LongBuffer_avm_allocate = 935; // byte code cost - 432; invoked methods cost - 503;
@@ -100,22 +100,11 @@ public class RuntimeMethodFeeSchedule {
     public static final long LongBuffer_avm_limit_1 = 122;
     public static final long LongBuffer_avm_position_1 = 122;
     public static final long LongBuffer_avm_compareTo_1 = 124;
-    public static final long Throwable_avm_constructor_2 = 128;
-    public static final long Throwable_avm_getMessage = 128;
-    public static final long Throwable_avm_getLocalizedMessage = 128;
-    public static final long Throwable_avm_getCause = 128;
-    public static final long Throwable_avm_initCause = 137;
-    public static final long Throwable_avm_toString = 128;
-    public static final long Throwable_avm_fillInStackTrace = 56;
-    public static final long Throwable_avm_addSuppressed = 50;
-    public static final long Throwable_avm_getSuppressed = 96; // byte code cost - 56; invoked methods cost - 40;
     public static final long ShortArray2D_avm_clone = 442; // byte code cost - 362; invoked methods cost - 80;
     public static final long ShortArray2D_avm_constructor_2 = 704; //maximum cost of multiple blocks;
     public static final long Result_avm_constructor = 146;
     public static final long Result_avm_isSuccess = 62;
     public static final long Result_avm_getReturnData = 190; // byte code cost - 62; invoked methods cost - 128;
-    public static final long EnumConstantNotPresentException_avm_constantName = 128;
-    public static final long EnumConstantNotPresentException_avm_enumType = 128;
     public static final long Integer_avm_toString = 302; // byte code cost - 282; invoked methods cost - 20;
     public static final long Integer_avm_toUnsignedString = 302; // byte code cost - 282; invoked methods cost - 20;
     public static final long Integer_avm_toHexString = 296; // byte code cost - 276; invoked methods cost - 20;
@@ -166,11 +155,11 @@ public class RuntimeMethodFeeSchedule {
     public static final long ByteOrder_avm_toString = 302; // byte code cost - 282; invoked methods cost - 20;
     public static final long ByteOrder_avm_constructor = 131;
     public static final long LambdaMetafactory_avm_metafactory = 166; // byte code cost - 146; invoked methods cost - 20;
-    public static final long ABIDecoder_avm_decodeAndRunWithClass = 710; //maximum cost of multiple blocks; // byte code cost - 520; invoked methods cost - 190;
-    public static final long ABIDecoder_avm_decodeAndRunWithObject = 588; //maximum cost of multiple blocks; // byte code cost - 460; invoked methods cost - 128;
-    public static final long ABIDecoder_avm_decodeMethodName = 464; // byte code cost - 336; invoked methods cost - 128;
-    public static final long ABIDecoder_avm_decodeArguments = 576; //maximum cost of multiple blocks; // byte code cost - 448; invoked methods cost - 128;
-    public static final long ABIDecoder_avm_decodeOneObject = 2851; // byte code cost - 335; invoked methods cost - 2516;
+    public static final long ABIDecoder_avm_decodeAndRunWithClass = 37234; //maximum cost of multiple blocks; // byte code cost - 520; invoked methods cost - 36714;
+    public static final long ABIDecoder_avm_decodeAndRunWithObject = 37112; //maximum cost of multiple blocks; // byte code cost - 460; invoked methods cost - 36652;
+    public static final long ABIDecoder_avm_decodeMethodName = 1161; // byte code cost - 336; invoked methods cost - 825;
+    public static final long ABIDecoder_avm_decodeArguments = 2600; //maximum cost of multiple blocks; // byte code cost - 448; invoked methods cost - 2152;
+    public static final long ABIDecoder_avm_decodeOneObject = 223678; // byte code cost - 335; invoked methods cost - 223343;
     public static final long ByteArray_avm_clone = 442; // byte code cost - 362; invoked methods cost - 80;
     public static final long ByteArray_avm_constructor = 176;
     public static final long ByteArray_avm_constructor_1 = 320; //maximum cost of multiple blocks; // byte code cost - 300; invoked methods cost - 20;
@@ -1258,5 +1247,4 @@ public class RuntimeMethodFeeSchedule {
     public static final long Short_avm_reverseBytes = 136; // byte code cost - 116; invoked methods cost - 20;
     public static final long Short_avm_toUnsignedInt = 65;
     public static final long Short_avm_toUnsignedLong = 67;
-    public static final long AssertionError_avm_constructor = 122;
 }

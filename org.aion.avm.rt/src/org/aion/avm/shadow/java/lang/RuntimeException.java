@@ -3,7 +3,6 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 
-
 /**
  * Our shadow implementation of java.lang.RuntimeException.
  * 

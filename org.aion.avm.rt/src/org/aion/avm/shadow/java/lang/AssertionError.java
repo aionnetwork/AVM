@@ -4,8 +4,6 @@ import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 
-import org.aion.avm.RuntimeMethodFeeSchedule;
-
 /**
  * Our shadow implementation of java.lang.AssertionError.
  * 
@@ -18,7 +16,6 @@ public class AssertionError extends Error {
     }
 
     public AssertionError() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.AssertionError_avm_constructor);
     }
 
     private AssertionError(String detailMessage) {
