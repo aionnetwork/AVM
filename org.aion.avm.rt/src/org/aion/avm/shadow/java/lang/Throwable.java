@@ -12,9 +12,10 @@ import org.aion.avm.internal.IHelper;
  * Avoiding carrying those instances around means that this implementation becomes very safely defined.
  * It does, however, mean that we can't expose stack traces since those are part of the VM-generated exceptions.
  *
- * NOTE: All shadow Throwable and its derived exceptions and errors' APIs are not charged explicitly; since the native exceptions are not charged
- * in the constructors, to have a more consistent fee schedule, the shadow methods are free as well. Then the user doesn't experience different charges
- * in slightly different scenarios. Also note that at the creation of these exception/error objects, the 'new' bytecode and the heap size are charged.
+ * NOTE: All shadow Throwable and its derived exceptions and errors' APIs are not billed; since the native exception object is not billed in the constructor,
+ * and we replace them with the shadow instances only when it is caught (in a catch or finally block), to have a more consistent fee schedule, the shadow
+ * methods are free of energy charges as well. Then the user doesn't experience different charges in slightly different scenarios (created and thrown, caught or not caught).
+ * Also note that at the creation of these exception/error objects, the 'new' bytecode and the heap size are billed.
  */
 public class Throwable extends Object {
     static {
