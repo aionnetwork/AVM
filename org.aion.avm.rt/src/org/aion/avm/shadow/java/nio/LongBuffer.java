@@ -82,35 +82,35 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
     }
 
     public LongBuffer avm_get(LongArray dst, int offset, int length){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_get_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_get_2 + 5 * length);
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public LongBuffer avm_get(LongArray dst){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_get_3);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_get_3 + 5 * dst.length());
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public LongBuffer avm_put(LongBuffer src) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_put_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_put_2 + 5 * src.avm_remaining());
         lazyLoad();
         this.v = this.v.put(src.v);
         return this;
     }
 
     public LongBuffer avm_put(LongArray dst, int offset, int length){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_put_3);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_put_3 + 5 * length);
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public LongBuffer avm_put(LongArray dst){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_put_4);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_put_4 + 5 * dst.length());
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying());
         return this;
@@ -206,7 +206,7 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
     }
 
     public boolean avm_equals(IObject ob) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_equals);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_equals + Math.max(avm_limit() - avm_position(), 0));
         if (this == ob) {
             return true;
         }
@@ -220,7 +220,7 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
     }
 
     public int avm_compareTo(LongBuffer that) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_compareTo);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongBuffer_avm_compareTo + Math.max(avm_limit() - avm_position(), 0));
         lazyLoad();
         that.lazyLoad();
         return this.v.compareTo(that.v);

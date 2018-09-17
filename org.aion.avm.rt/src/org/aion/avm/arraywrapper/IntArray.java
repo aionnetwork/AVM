@@ -42,7 +42,7 @@ public class IntArray extends Array {
 
     @Override
     public IObject avm_clone() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.IntArray_avm_clone);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.IntArray_avm_clone + 5 * length());
         lazyLoad();
         return new IntArray(Arrays.copyOf(underlying, underlying.length));
     }

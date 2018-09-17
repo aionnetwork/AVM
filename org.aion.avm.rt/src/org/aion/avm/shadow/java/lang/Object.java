@@ -67,30 +67,26 @@ public class Object extends java.lang.Object implements IObject {
     }
 
     public final void avm_notify() {
-
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_notify);
     }
 
     public final void avm_notifyAll() {
-
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_notifyAll);
     }
 
     public final void avm_wait() throws InterruptedException {
-
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait);
     }
 
     public final void avm_wait​(long timeout) throws InterruptedException {
-
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait_1);
     }
 
     public final void avm_wait​(long timeout, int nanos) throws InterruptedException {
-
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait_2);
     }
 
     protected void avm_finalize() throws java.lang.Throwable {
-
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_finalize);
     }
 

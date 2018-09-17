@@ -42,7 +42,7 @@ public class FloatArray extends Array {
 
     @Override
     public IObject avm_clone() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatArray_avm_clone);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatArray_avm_clone + 5 * length());
         lazyLoad();
         return new FloatArray(Arrays.copyOf(underlying, underlying.length));
     }

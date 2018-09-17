@@ -181,7 +181,7 @@ public class AvmImplTest {
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
         // Account for the cost:  (blocks in call method) + runtime.call
         long costOfBlocks = 111l + 57l + 509l;
-        long costOfRuntimeCall = 111l + 57l + 116l;
+        long costOfRuntimeCall = 111l + 57l + 116l + 2577l;
         // All persistence load/store cost (note that this is a reentrant call):
         long runStorageCost = 0L
         // -read statics (outer)

@@ -82,35 +82,35 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
     }
 
     public DoubleBuffer avm_get(DoubleArray dst, int offset, int length){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_get_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_get_2 + 5 * length);
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public DoubleBuffer avm_get(DoubleArray dst){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_get_3);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_get_3 + 5 * dst.length());
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public DoubleBuffer avm_put(DoubleBuffer src) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_2 + 5 * src.avm_remaining());
         lazyLoad();
         this.v = this.v.put(src.v);
         return this;
     }
 
     public DoubleBuffer avm_put(DoubleArray dst, int offset, int length){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_3);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_3 + 5 * length);
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public DoubleBuffer avm_put(DoubleArray dst){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_4);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_4 + 5 * dst.length());
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying());
         return this;
@@ -200,13 +200,13 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
     }
 
     public int avm_hashCode() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_hashCode);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_hashCode + Math.max(avm_limit() - avm_position(), 0));
         lazyLoad();
         return v.hashCode();
     }
 
     public boolean avm_equals(IObject ob) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_equals);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_equals + Math.max(avm_limit() - avm_position(), 0));
         if (this == ob) {
             return true;
         }
@@ -220,7 +220,7 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
     }
 
     public int avm_compareTo(DoubleBuffer that) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_compareTo);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_compareTo + Math.max(avm_limit() - avm_position(), 0));
         lazyLoad();
         that.lazyLoad();
         return this.v.compareTo(that.v);

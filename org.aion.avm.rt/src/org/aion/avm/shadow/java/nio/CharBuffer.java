@@ -43,7 +43,7 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
     }
 
     public int avm_read(CharBuffer target) throws IOException {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_read);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_read + 5 * Math.min(avm_remaining(), target.avm_remaining()));
         return this.v.read(target.v);
     }
 
@@ -99,49 +99,49 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
     }
 
     public CharBuffer avm_get(CharArray dst, int offset, int length) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_get_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_get_1 + 5 * length);
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public CharBuffer avm_get(CharArray dst) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_get_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_get_2 + 5 * dst.length());
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public CharBuffer avm_put(CharBuffer src) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_put_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_put_2 + 5 * src.avm_remaining());
         lazyLoad();
         this.v = this.v.put(src.v);
         return this;
     }
 
     public CharBuffer avm_put(CharArray dst, int offset, int length) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_put_3);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_put_3 + 5 * length);
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public CharBuffer avm_put(CharArray dst) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_put_4);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_put_4 + 5 * dst.length());
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying());
         return this;
     }
 
     public CharBuffer avm_put(String src, int start, int end) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_put_5);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_put_5 + 5 * Math.max(end - start, 0));
         lazyLoad();
         this.v = this.v.put(src.getUnderlying(), start, end);
         return this;
     }
 
     public CharBuffer avm_put(String src) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_put_6);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_put_6 + 5 * src.avm_length());
         lazyLoad();
         this.v = this.v.put(src.getUnderlying());
         return this;
@@ -231,13 +231,13 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
     }
 
     public int avm_hashCode() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_hashCode);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_hashCode + Math.max(avm_limit() - avm_position(), 0));
         lazyLoad();
         return v.hashCode();
     }
 
     public boolean avm_equals(IObject ob) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_equals);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_equals + Math.max(avm_limit() - avm_position(), 0));
         if (this == ob) {
             return true;
         }
@@ -251,7 +251,7 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
     }
 
     public int avm_compareTo(CharBuffer that) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_compareTo);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_compareTo + Math.max(avm_limit() - avm_position(), 0));
         lazyLoad();
         that.lazyLoad();
         return this.v.compareTo(that.v);
@@ -276,20 +276,20 @@ public class CharBuffer extends Buffer<java.nio.CharBuffer> implements Comparabl
     }
 
     public CharBuffer avm_subSequence(int start, int end){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_subSequence);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_subSequence + 5 * Math.max(end - start, 0));
         lazyLoad();
         return new CharBuffer(this.v.subSequence(start, end), this.charArray, this.byteArray, this.byteArrayOrder, this.sequence);
     }
 
     public CharBuffer avm_append(CharSequence csq){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_append);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_append + 5 * csq.avm_length());
         lazyLoad();
         this.v = this.v.append(csq.avm_toString().getUnderlying());
         return this;
     }
 
     public CharBuffer avm_append(CharSequence csq, int start, int end){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_append_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharBuffer_avm_append_1 + 5 * Math.max(end - start, 0));
         lazyLoad();
         this.v = this.v.append(csq.avm_toString().getUnderlying(), start, end);
         return this;

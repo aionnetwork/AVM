@@ -106,7 +106,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public int avm_codePointCount(int beginIndex, int endIndex) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_codePointCount);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_codePointCount + java.lang.Math.max(endIndex - beginIndex, 0));
         lazyLoad();
         return this.v.codePointCount(beginIndex, endIndex);
     }
@@ -118,25 +118,25 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public void avm_getChars(int srcBegin, int srcEnd, CharArray dst, int dstBegin) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_getChars);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_getChars + 5 * java.lang.Math.max(srcEnd - srcBegin, 0));
         lazyLoad();
         this.v.getChars(srcBegin, srcEnd, dst.getUnderlying(), dstBegin);
     }
 
     public ByteArray avm_getBytes(String charsetName) throws UnsupportedEncodingException {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_getBytes);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_getBytes + 5 * avm_length());
         lazyLoad();
         return new ByteArray(this.v.getBytes(charsetName.v));
     }
 
     public ByteArray avm_getBytes(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_getBytes_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_getBytes_1 + 5 * avm_length());
         lazyLoad();
         return new ByteArray(this.v.getBytes());
     }
 
     public boolean avm_equals(IObject anObject) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_equals);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_equals + 5 * avm_length());
         if (!(anObject instanceof String)){
             return false;
         }
@@ -149,164 +149,164 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public boolean avm_contentEquals(StringBuffer sb) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_contentEquals);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_contentEquals + 5 * avm_length());
         lazyLoad();
         return this.v.contentEquals(sb.getUnderlying());
     }
 
     public boolean avm_contentEquals(CharSequence cs){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_contentEquals_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_contentEquals_1 + 5 * avm_length());
         lazyLoad();
         return this.v.contentEquals(cs.avm_toString().getUnderlying());
     }
 
     public boolean avm_equalsIgnoreCase(String anotherString) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_equalsIgnoreCase);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_equalsIgnoreCase + 5 * avm_length());
         lazyLoad();
         return this.v.equalsIgnoreCase(anotherString.v);
     }
 
     public int avm_compareTo(String anotherString) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_compareTo);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_compareTo + 5 * avm_length());
         lazyLoad();
         return this.v.compareTo(anotherString.getUnderlying());
     }
 
     public int avm_compareToIgnoreCase(String str){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_compareToIgnoreCase);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_compareToIgnoreCase + 5 * avm_length());
         lazyLoad();
         return this.v.compareToIgnoreCase(str.v);
     }
 
     public boolean avm_regionMatches(int toffset, String other, int ooffset, int len) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_regionMatches);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_regionMatches + 5 * len);
         lazyLoad();
         return this.v.regionMatches(toffset, other.v, ooffset, len);
     }
 
     public boolean avm_regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_regionMatches_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_regionMatches_1 + 5 * len);
         lazyLoad();
         return this.v.regionMatches(ignoreCase, toffset, other.v, ooffset, len);
     }
 
     public boolean avm_startsWith(String prefix, int toffset) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_startsWith);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_startsWith + 5 * prefix.avm_length());
         lazyLoad();
         return this.v.startsWith(prefix.v, toffset);
     }
 
     public boolean avm_startsWith(String prefix) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_startsWith_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_startsWith_1 + 5 * prefix.avm_length());
         lazyLoad();
         return this.v.startsWith(prefix.v);
     }
 
     public boolean avm_endsWith(String prefix) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_endsWith);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_endsWith + 5 * prefix.avm_length());
         lazyLoad();
         return this.v.endsWith(prefix.v);
     }
 
     @Override
     public int avm_hashCode() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_hashCode);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_hashCode + 5 * avm_length());
         lazyLoad();
         return this.v.hashCode();
     }
 
     public int avm_indexOf(int ch) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_indexOf);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_indexOf + 5 * avm_length());
         lazyLoad();
         return this.v.indexOf(ch);
     }
 
     public int avm_indexOf(int ch, int fromIndex) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_indexOf_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_indexOf_1 + 5 * java.lang.Math.max(avm_length() - fromIndex, 0));
         lazyLoad();
         return this.v.indexOf(ch, fromIndex);
     }
 
     public int avm_lastIndexOf(int ch) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_lastIndexOf);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_lastIndexOf + 5 * avm_length());
         lazyLoad();
         return this.v.lastIndexOf(ch);
     }
 
     public int avm_lastIndexOf(int ch, int fromIndex) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_lastIndexOf_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_lastIndexOf_1 + 5 * java.lang.Math.max(avm_length() - fromIndex, 0));
         lazyLoad();
         return this.v.lastIndexOf(ch, fromIndex);
     }
 
     public int avm_indexOf(String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_indexOf_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_indexOf_2 + 5 * avm_length());
         lazyLoad();
         str.lazyLoad();
         return this.v.indexOf(str.v);
     }
 
     public int avm_lastIndexOf(String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_lastIndexOf_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_lastIndexOf_2 + 5 * avm_length());
         lazyLoad();
         str.lazyLoad();
         return this.v.lastIndexOf(str.v);
     }
 
     public int avm_lastIndexOf(String str, int fromIndex) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_lastIndexOf_3);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_lastIndexOf_3 + 5 * java.lang.Math.max(avm_length() - fromIndex, 0));
         lazyLoad();
         str.lazyLoad();
         return this.v.lastIndexOf(str.v, fromIndex);
     }
 
     public String avm_substring(int beginIndex) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_substring);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_substring + 5 * java.lang.Math.max(avm_length() - beginIndex, 0));
         lazyLoad();
         return new String(this.v.substring(beginIndex));
     }
 
     public String avm_substring(int beginIndex, int endIndex) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_substring_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_substring_1 + 5 * java.lang.Math.max(endIndex - beginIndex, 0));
         lazyLoad();
         return new String(this.v.substring(beginIndex, endIndex));
     }
 
     public CharSequence avm_subSequence(int beginIndex, int endIndex){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_subSequence);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_subSequence + 5 * java.lang.Math.max(endIndex - beginIndex, 0));
         lazyLoad();
         return this.avm_substring(beginIndex, endIndex);
     }
 
     public String avm_concat(String str){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_concat);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_concat + 5 * (str.avm_length() + avm_length()));
         lazyLoad();
         str.lazyLoad();
         return new String(this.v.concat(str.v));
     }
 
     public String avm_replace(char oldChar, char newChar) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_replace);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_replace + 5 * avm_length());
         lazyLoad();
         return new String(this.v.replace(oldChar, newChar));
     }
 
     public boolean avm_matches(String regex){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_matches);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_matches + 5 * avm_length());
         lazyLoad();
         regex.lazyLoad();
         return this.v.matches(regex.v);
     }
 
     public boolean avm_contains(CharSequence s){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_contains);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_contains + 5 * avm_length());
         lazyLoad();
         ((Object)s).lazyLoad();
         return avm_indexOf(s.avm_toString()) >= 0;
     }
 
     public String avm_replaceFirst(String regex, String replacement){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_replaceFirst);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_replaceFirst + 5 * avm_length());
         lazyLoad();
         regex.lazyLoad();
         replacement.lazyLoad();
@@ -314,7 +314,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public String avm_replaceAll(String regex, String replacement) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_replaceAll);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_replaceAll + 5 * avm_length());
         lazyLoad();
         regex.lazyLoad();
         replacement.lazyLoad();
@@ -322,7 +322,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public String avm_replace(CharSequence target, CharSequence replacement){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_replace_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_replace_1 + 5 * avm_length());
         lazyLoad();
         ((Object)target).lazyLoad();
         ((Object)replacement).lazyLoad();
@@ -335,19 +335,19 @@ public class String extends Object implements Comparable<String>, CharSequence {
     //public String[] split(String regex){}
 
     public String avm_toLowerCase(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_toLowerCase);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_toLowerCase + 5 * avm_length());
         lazyLoad();
         return new String(this.v.toLowerCase());
     }
 
     public String avm_toUpperCase(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_toUpperCase);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_toUpperCase + 5 * avm_length());
         lazyLoad();
         return new String(this.v.toUpperCase());
     }
 
     public String avm_trim() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_trim);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_trim + 5 * avm_length());
         lazyLoad();
         return new String(this.v.trim());
     }
@@ -358,7 +358,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public CharArray avm_toCharArray() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_toCharArray);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_toCharArray + 5 * avm_length());
         lazyLoad();
         return new CharArray(this.v.toCharArray());
     }
@@ -372,25 +372,25 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     public static String avm_valueOf(CharArray a){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_valueOf_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_valueOf_1 + 5 * a.length());
         a.lazyLoad();
         return new String(java.lang.String.valueOf(a.getUnderlying()));
     }
 
     public static String avm_valueOf(CharArray data, int offset, int count){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_valueOf_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_valueOf_2 + 5 * count);
         data.lazyLoad();
         return new String(java.lang.String.valueOf(data.getUnderlying(), offset, count));
     }
 
     public static String avm_copyValueOf(CharArray data, int offset, int count){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_copyValueOf);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_copyValueOf + 5 * count);
         data.lazyLoad();
         return new String(java.lang.String.copyValueOf(data.getUnderlying(), offset, count));
     }
 
     public static String avm_copyValueOf(CharArray a){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_copyValueOf_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_copyValueOf_1 + 5 * a.length());
         a.lazyLoad();
         return new String(java.lang.String.copyValueOf(a.getUnderlying()));
     }

@@ -49,7 +49,7 @@ public class ObjectArray extends Array implements IObjectArray {
 
     @Override
     public IObject avm_clone() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ObjectArray_avm_clone);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ObjectArray_avm_clone + 5 * length());
         lazyLoad();
         return new ObjectArray(Arrays.copyOf(underlying, underlying.length));
     }

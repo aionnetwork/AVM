@@ -42,7 +42,7 @@ public class LongArray extends Array {
 
     @Override
     public IObject avm_clone() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongArray_avm_clone);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.LongArray_avm_clone + 5 * length());
         lazyLoad();
         return new LongArray(Arrays.copyOf(underlying, underlying.length));
     }

@@ -293,23 +293,23 @@ public class Character extends Object {
     }
 
     public static int avm_codePointCount(CharSequence seq, int beginIndex, int endIndex){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointCount);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointCount + 5 * java.lang.Math.max(endIndex - beginIndex, 0));
         return java.lang.Character.codePointCount(seq.avm_toString().getUnderlying(), beginIndex, endIndex);
     }
 
     public static int avm_codePointCount(CharArray a, int offset, int count) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointCount_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointCount_1 + 5 * count);
         return java.lang.Character.codePointCount(a.getUnderlying(), offset, count);
     }
 
     public static int avm_offsetByCodePoints(CharSequence seq, int index, int codePointOffset) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_offsetByCodePoints);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_offsetByCodePoints + java.lang.Math.abs(codePointOffset));
         return java.lang.Character.offsetByCodePoints(seq.avm_toString().getUnderlying(), index, codePointOffset);
     }
 
     public static int avm_offsetByCodePoints(CharArray a, int start, int count,
                                          int index, int codePointOffset) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_offsetByCodePoints_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_offsetByCodePoints_1 + java.lang.Math.abs(codePointOffset));
         return java.lang.Character.offsetByCodePoints(a.getUnderlying(), start, count,
                 index, codePointOffset);
     }

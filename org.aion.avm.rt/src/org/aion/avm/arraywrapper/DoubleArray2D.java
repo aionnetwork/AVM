@@ -18,7 +18,7 @@ public class DoubleArray2D extends ObjectArray {
 
     @Override
     public IObject avm_clone() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleArray2D_avm_clone);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleArray2D_avm_clone + 5 * length());
         lazyLoad();
         return new DoubleArray2D(Arrays.copyOf(underlying, underlying.length));
     }

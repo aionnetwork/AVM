@@ -18,7 +18,7 @@ public class ShortArray2D extends ObjectArray {
 
     @Override
     public IObject avm_clone() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortArray2D_avm_clone);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortArray2D_avm_clone + 5 * length());
         lazyLoad();
         return new ShortArray2D(Arrays.copyOf(underlying, underlying.length));
     }

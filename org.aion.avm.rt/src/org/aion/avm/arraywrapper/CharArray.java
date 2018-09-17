@@ -42,7 +42,7 @@ public class CharArray extends Array {
 
     @Override
     public IObject avm_clone() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharArray_avm_clone);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.CharArray_avm_clone + 5 * length());
         lazyLoad();
         return new CharArray(Arrays.copyOf(underlying, underlying.length));
     }

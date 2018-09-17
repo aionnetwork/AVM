@@ -42,7 +42,7 @@ public class DoubleArray extends Array {
 
     @Override
     public IObject avm_clone() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleArray_avm_clone);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleArray_avm_clone + 5 * length());
         lazyLoad();
         return new DoubleArray(Arrays.copyOf(underlying, underlying.length));
     }

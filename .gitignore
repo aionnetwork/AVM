@@ -41,6 +41,7 @@ testreports/
 # generated files
 /dist/
 storage/
+out/
 
 [master]
 org.aion.avm.microbenchmark/

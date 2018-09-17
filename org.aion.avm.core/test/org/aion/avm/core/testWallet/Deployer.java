@@ -188,7 +188,7 @@ public class Deployer {
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(transformedClasses);
 
         // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
-        Helpers.instantiateHelper(loader, 5_000_000L, 1);
+        Helpers.instantiateHelper(loader, 6_000_000L, 1);
         // Note that this single externalRuntime instance doesn't really make sense - it is only useful in the cases where we aren't using
         // it for invocation context, just environment (energy counter, event logging, etc).
         TestingBlockchainRuntime externalRuntime = new TestingBlockchainRuntime().withEventCounter(eventCounts);

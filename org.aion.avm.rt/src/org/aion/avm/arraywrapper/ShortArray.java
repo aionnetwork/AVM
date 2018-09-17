@@ -48,7 +48,7 @@ public class ShortArray extends Array {
 
     @Override
     public IObject avm_clone() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortArray_avm_clone);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortArray_avm_clone + 5 * length());
         lazyLoad();
         return new ShortArray(Arrays.copyOf(underlying, underlying.length));
     }

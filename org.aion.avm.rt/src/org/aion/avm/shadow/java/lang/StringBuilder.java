@@ -46,37 +46,37 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public StringBuilder avm_append(String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_1 + 5 * str.avm_length());
         this.v.append(str.getUnderlying());
         return this;
     }
 
     public StringBuilder avm_append(StringBuffer sb) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_2 + 5 * sb.avm_length());
         this.v.append(sb.getUnderlying());
         return this;
     }
 
     public StringBuilder avm_append(CharArray str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_3);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_3 + 5 * str.length());
         this.v.append(str.getUnderlying());
         return this;
     }
 
     public StringBuilder avm_append(CharArray str, int offset, int len) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_4);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_4 + 5 * len);
         this.v.append(str.getUnderlying(), offset, len);
         return this;
     }
 
     public StringBuilder avm_append(CharSequence s){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_5);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_5 + 5 * s.avm_length());
         this.v.append(s.avm_toString());
         return this;
     }
 
     public StringBuilder avm_append(CharSequence s, int start, int end){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_6);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_6 + 5 * java.lang.Math.max(end - start, 0));
         this.v.append(s.avm_toString().getUnderlying(), start, end);
         return this;
     }
@@ -136,7 +136,7 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public StringBuilder avm_replace(int start, int end, String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_replace);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_replace + 5 * java.lang.Math.max(end - start, 0));
         this.v = this.v.replace(start, end, str.getUnderlying());
         return this;
     }
@@ -144,38 +144,38 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     public StringBuilder avm_insert(int index, CharArray str, int offset,
                                                 int len)
     {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert + 5 * len);
         this.v.insert(index, str.getUnderlying(), offset, len);
         return this;
     }
 
     //TODO: IOBJECT?
     public StringBuilder avm_insert(int offset, Object obj) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_1 + 5 * java.lang.Math.max(avm_length() - offset, 0));
         this.v.insert(offset, obj);
         return this;
     }
 
     public StringBuilder avm_insert(int offset, String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_2 + 5 * (str.avm_length() + java.lang.Math.max(avm_length() - offset, 0)));
         this.v.insert(offset, str.getUnderlying());
         return this;
     }
 
     public StringBuilder avm_insert(int offset, CharArray str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_3);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_3 + 5 * (str.length() + java.lang.Math.max(avm_length() - offset, 0)));
         this.v.insert(offset, str.getUnderlying());
         return this;
     }
 
     public StringBuilder avm_insert(int dstOffset, CharSequence s) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_4);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_4 + 5 * (s.avm_length() + java.lang.Math.max(avm_length() - dstOffset, 0)));
         this.v.insert(dstOffset, s.avm_toString().getUnderlying());
         return this;
     }
 
     public StringBuilder avm_insert(int dstOffset, CharSequence s, int start, int end) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_5);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_5 + java.lang.Math.max(end - start, 0) + java.lang.Math.max(avm_length() - dstOffset, 0));
         this.v.insert(dstOffset, s.avm_subSequence(start, end).avm_toString().getUnderlying());
         return this;
     }
@@ -217,27 +217,27 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public int avm_indexOf(String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_indexOf);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_indexOf + 5 * avm_length());
         return this.v.indexOf(str.getUnderlying());
     }
 
     public int avm_indexOf(String str, int fromIndex) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_indexOf_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_indexOf_1 + 5 * java.lang.Math.max(avm_length() - fromIndex, 0));
         return this.v.indexOf(str.getUnderlying(), fromIndex);
     }
 
     public int avm_lastIndexOf(String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_lastIndexOf);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_lastIndexOf + 5 * avm_length());
         return this.v.lastIndexOf(str.getUnderlying());
     }
 
     public int avm_lastIndexOf(String str, int fromIndex) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_lastIndexOf_1);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_lastIndexOf_1 + 5 * java.lang.Math.max(avm_length() - fromIndex, 0));
         return this.v.lastIndexOf(str.getUnderlying(), fromIndex);
     }
 
     public StringBuilder avm_reverse() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_reverse);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_reverse + 5 * avm_length());
         this.v.reverse();
         return this;
     }
@@ -253,7 +253,7 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public CharSequence avm_subSequence(int start, int end) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_subSequence);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_subSequence + 5 * java.lang.Math.max(end - start, 0));
         return this.avm_toString().avm_subSequence(start, end);
     }
 

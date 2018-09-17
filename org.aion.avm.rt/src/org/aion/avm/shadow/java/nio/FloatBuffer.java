@@ -82,35 +82,35 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
     }
 
     public FloatBuffer avm_get(FloatArray dst, int offset, int length){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_get_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_get_2 + 5 * length);
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public FloatBuffer avm_get(FloatArray dst){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_get_3);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_get_3 + 5 * dst.length());
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public FloatBuffer avm_put(FloatBuffer src) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_put_2);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_put_2 + 5 * src.avm_remaining());
         lazyLoad();
         this.v = this.v.put(src.v);
         return this;
     }
 
     public FloatBuffer avm_put(FloatArray dst, int offset, int length){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_put_3);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_put_3 + 5 * length);
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public FloatBuffer avm_put(FloatArray dst){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_put_4);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_put_4 + 5 * dst.length());
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying());
         return this;
@@ -206,7 +206,7 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
     }
 
     public boolean avm_equals(IObject ob) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_equals);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_equals + Math.max(avm_limit() - avm_position(), 0));
         if (this == ob) {
             return true;
         }
@@ -220,7 +220,7 @@ public class FloatBuffer extends Buffer<java.nio.FloatBuffer> implements Compara
     }
 
     public int avm_compareTo(FloatBuffer that) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_compareTo);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.FloatBuffer_avm_compareTo + Math.max(avm_limit() - avm_position(), 0));
         lazyLoad();
         return this.v.compareTo(that.v);
     }
