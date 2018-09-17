@@ -192,7 +192,7 @@ public class ReentrantCrossCallResource {
             // Make the reentrant call.
             long value = 0;
             byte[] data = ABIEncoder.encodeMethodArguments("recursiveChangeNested", ourState.hashCode(), iterationsToCall - 1);
-            long energyLimit = 1_000_000L;
+            long energyLimit = 2_000_000L;
             byte[] result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
             int responseHash = ((Integer)ABIDecoder.decodeOneObject(result)).intValue();
             

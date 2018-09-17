@@ -556,7 +556,7 @@ public class AvmImplTest {
     }
 
     private Object callDApp(KernelInterface kernel, Avm avm, Address dAppAddress, byte[] argData) {
-        long energyLimit = 1_000_000l;
+        long energyLimit = 2_000_000l;
         Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dAppAddress.unwrap(), kernel.getNonce(deployer), 0, argData, energyLimit, 1l);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
         assertEquals(TransactionResult.Code.SUCCESS, result2.getStatusCode());
