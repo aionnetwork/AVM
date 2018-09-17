@@ -35,24 +35,8 @@ public class AvmImplDeployAndRunTest {
         return avm.run(context);
     }
 
-    public TransactionResult deployTheDeployAndRunTest() {
-        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
-        byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
-
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        return avm.run(context);
-    }
-
     @Test
-    public void testDeploy() {
-        TransactionResult result = deployHelloWorld();
-
-        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-    }
-
-    @Test
-    public void testDeployWithMethodCall() {
+    public void testDeployWithClinitCall() {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
         byte[] arguments = ABIEncoder.encodeMethodArguments("", 100);
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
@@ -65,8 +49,9 @@ public class AvmImplDeployAndRunTest {
     }
 
     @Test
-    public void testDeployAndRun() {
+    public void testDeployAndMethodCalls() {
         TransactionResult deployResult = deployHelloWorld();
+        assertEquals(TransactionResult.Code.SUCCESS, deployResult.getStatusCode());
 
         // call the "run" method
         byte[] txData = ABIEncoder.encodeMethodArguments("run");
@@ -76,20 +61,24 @@ public class AvmImplDeployAndRunTest {
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals("Hello, world!", new String((byte[]) TestingHelper.decodeResult(result)));
-    }
-
-    @Test
-    public void testDeployAndRunWithArgs() {
-        TransactionResult deployResult = deployHelloWorld();
 
         // test another method call, "add" with arguments
-        byte[] txData = ABIEncoder.encodeMethodArguments("add", 123, 1);
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(context);
+        txData = ABIEncoder.encodeMethodArguments("add", 123, 1);
+        tx = new Transaction(Transaction.Type.CALL, from, deployResult.getReturnData(), kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals(124, TestingHelper.decodeResult(result));
+    }
+
+    public TransactionResult deployTheDeployAndRunTest() {
+        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
+        byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
+
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        return avm.run(context);
     }
 
     @Test

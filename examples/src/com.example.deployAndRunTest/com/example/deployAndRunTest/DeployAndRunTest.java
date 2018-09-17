@@ -29,6 +29,10 @@ public class DeployAndRunTest {
         return res;
     }
 
+    public String concatString(String[] s) {
+        return s[0] + s[1];
+    }
+
     public char[][] swap(char[][] s) {
         char[][] res = new char[2][2];
         res[0] = s[1];
