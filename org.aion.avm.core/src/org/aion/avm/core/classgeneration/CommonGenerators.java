@@ -81,6 +81,8 @@ public class CommonGenerators {
             "java.lang.UnsupportedOperationException",
 
             "java.util.NoSuchElementException",
+            "java.nio.BufferUnderflowException",
+            "java.nio.BufferOverflowException"
     };
 
     // We don't generate the shadows for these ones since we have hand-written them (but wrappers are still required).
