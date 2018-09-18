@@ -5,7 +5,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 /**
@@ -19,19 +19,19 @@ public class Object extends java.lang.Object implements IObject {
 
     private int hashCode;
 
-    public long instanceId;
+    public IPersistenceToken persistenceToken;
 
     // We hold on to this deserializer until we need to load the instance (this is cleared after lazyLoad() completes).
     private IDeserializer deserializer;
 
     public Object() {
         this.hashCode = IHelper.currentContractHelper.get().externalGetNextHashCode();
-        this.instanceId = 0l;
+        this.persistenceToken = null;
     }
 
     // Special constructor only invoked when instantiating this as an instance stub.
-    public Object(IDeserializer deserializer, long instanceId) {
-        this.instanceId = instanceId;
+    public Object(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        this.persistenceToken = persistenceToken;
         this.deserializer = deserializer;
     }
 
@@ -111,7 +111,7 @@ public class Object extends java.lang.Object implements IObject {
     public final void lazyLoad() {
         if (null != this.deserializer) {
             // Tell the deserializer to invoke the deserialization pipeline (which may call back to us).
-            this.deserializer.startDeserializeInstance(this, this.instanceId);
+            this.deserializer.startDeserializeInstance(this, this.persistenceToken);
             this.deserializer = null;
         }
     }

@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 
+import org.aion.avm.internal.IPersistenceToken;
 
 /**
  * Our shadow implementation of java.lang.Exception.
@@ -32,7 +33,7 @@ public class Exception extends Throwable {
     }
 
     // Deserializer support.
-    public Exception(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Exception(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 }

@@ -11,6 +11,7 @@ import java.util.Queue;
 import java.util.function.Function;
 
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -37,7 +38,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
      */
     private static IDeserializer DONE_MARKER = new IDeserializer() {
         @Override
-        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
+        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
         }};
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
@@ -53,7 +54,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     
     // We only hold the deserializerField because we need to check if it is null when traversing the graph for objects to serialize.
     private final Field deserializerField;
-    private final Field instanceIdField;
+    private final Field persistenceTokenField;
     
     // (mostly non-final just to prove that the state machine is being used correctly).
     private Queue<Object> previousStatics;
@@ -69,8 +70,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         try {
             this.deserializerField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("deserializer");
             this.deserializerField.setAccessible(true);
-            this.instanceIdField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("instanceId");
-            this.instanceIdField.setAccessible(true);
+            this.persistenceTokenField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("persistenceToken");
+            this.persistenceTokenField.setAccessible(true);
         } catch (NoSuchFieldException | SecurityException e) {
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
@@ -146,7 +147,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                             org.aion.avm.shadow.java.lang.Object stub = internalGetCalleeStubForCaller(contents);
                             field.set(null, stub);
                         }
-                        byteSize += SerializedInstanceStub.sizeOfInstanceStub(contents, this.instanceIdField);
+                        byteSize += SerializedInstanceStub.sizeOfInstanceStub(contents, this.persistenceTokenField);
                     }
                 }
             }
@@ -383,9 +384,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                         org.aion.avm.shadow.java.lang.Object caller = mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, callee);
                         // We normally prefer the caller (technically, these should be the same size since we are writing the same data, either way, but this is the pattern to be sure).
                         if (null != caller) {
-                            staticByteSize += SerializedInstanceStub.sizeOfInstanceStub(caller, this.instanceIdField);
+                            staticByteSize += SerializedInstanceStub.sizeOfInstanceStub(caller, this.persistenceTokenField);
                         } else {
-                            staticByteSize += SerializedInstanceStub.sizeOfInstanceStub(callee, this.instanceIdField);
+                            staticByteSize += SerializedInstanceStub.sizeOfInstanceStub(callee, this.persistenceTokenField);
                         }
                     }
                 }
@@ -590,7 +591,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     private org.aion.avm.shadow.java.lang.Object internalGetCalleeStubForCaller(org.aion.avm.shadow.java.lang.Object caller) {
         // Before anything, check to see if this is something we even _want_ to copy from the caller space or if it is immutable.
         org.aion.avm.shadow.java.lang.Object callee = null;
-        if (SerializedInstanceStub.objectUsesReentrantCopy(caller, this.instanceIdField)) {
+        if (SerializedInstanceStub.objectUsesReentrantCopy(caller, this.persistenceTokenField)) {
             // First, see if we already have a stub for this caller.
             callee = this.callerToCalleeMap.get(caller);
             if (null == callee) {
@@ -600,9 +601,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 // never serialized to the storage.  The only objects which can be added to the caller's graph are new objects (which don't have an
                 // instanceId, either).
                 try {
-                    Constructor<?> constructor = caller.getClass().getConstructor(IDeserializer.class, long.class);
+                    Constructor<?> constructor = caller.getClass().getConstructor(IDeserializer.class, IPersistenceToken.class);
                     constructor.setAccessible(true);
-                    callee = (org.aion.avm.shadow.java.lang.Object) constructor.newInstance(new CopyingDeserializer(caller), SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID);
+                    callee = (org.aion.avm.shadow.java.lang.Object) constructor.newInstance(new CopyingDeserializer(caller), SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_TOKEN);
                 } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     // TODO:  These should probably come through a cache.
                     RuntimeAssertionError.unexpected(e);
@@ -621,7 +622,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
 
     private org.aion.avm.shadow.java.lang.Object mapCalleeToCallerAndEnqueueForCommitProcessing(Queue<org.aion.avm.shadow.java.lang.Object> calleeObjectsToProcess, org.aion.avm.shadow.java.lang.Object calleeSpace) {
         org.aion.avm.shadow.java.lang.Object callerSpace = null;
-        if (SerializedInstanceStub.objectUsesReentrantCopy(calleeSpace, this.instanceIdField)) {
+        if (SerializedInstanceStub.objectUsesReentrantCopy(calleeSpace, this.persistenceTokenField)) {
             // We want to replace this with a reference to caller-space (unless this object is new - has no mapping).
             callerSpace = this.calleeToCallerMap.get(calleeSpace);
             
@@ -681,9 +682,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 // We normally prefer the caller (technically, these should be the same size since we are writing the same data, either way, but this is the pattern to be sure).
                 try {
                     if (null != caller) {
-                        instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(caller, this.instanceIdField);
+                        instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(caller, this.persistenceTokenField);
                     } else {
-                        instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(callee, this.instanceIdField);
+                        instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(callee, this.persistenceTokenField);
                     }
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     // This exception wouldn't show up so late/deep in a run.
@@ -708,9 +709,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             this.callerSpaceOriginal = callerSpaceOriginal;
         }
         @Override
-        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
-            // All the objects we are creating to deserialize in the callee space have SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID as the instanceId.
-            RuntimeAssertionError.assertTrue(SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_ID == instanceId);
+        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
+            // All the objects we are creating to deserialize in the callee space have SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_TOKEN as the persistenceToken.
+            RuntimeAssertionError.assertTrue(SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken);
             
             // Make sure that it is loaded.
             this.callerSpaceOriginal.lazyLoad();

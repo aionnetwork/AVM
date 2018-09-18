@@ -3,7 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public final class Byte extends Object implements Comparable<Byte> {
@@ -151,8 +151,8 @@ public final class Byte extends Object implements Comparable<Byte> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    public Byte(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Byte(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
         lazyLoad();
     }
 

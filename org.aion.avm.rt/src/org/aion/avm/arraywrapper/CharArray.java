@@ -2,7 +2,7 @@ package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.*;
 import java.util.Arrays;
-import org.aion.avm.internal.IHelper;
+
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class CharArray extends Array {
@@ -96,8 +96,8 @@ public class CharArray extends Array {
     // Persistent Memory Support
     //========================================================
 
-    public CharArray(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public CharArray(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

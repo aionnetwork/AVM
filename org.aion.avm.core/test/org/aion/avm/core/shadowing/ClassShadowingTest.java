@@ -11,6 +11,7 @@ import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
@@ -178,7 +179,7 @@ public class ClassShadowingTest {
         Assert.assertNotNull(instance);
         
         // Try the deserialization constructor.
-        Object stub = clazz.getConstructor(IDeserializer.class, long.class).newInstance(null, 6l);
+        Object stub = clazz.getConstructor(IDeserializer.class, IPersistenceToken.class).newInstance(null, null);
         Assert.assertNotNull(stub);
         avm.shutdown();
     }
@@ -196,7 +197,7 @@ public class ClassShadowingTest {
         Assert.assertNotNull(instance);
         
         // Try the deserialization constructor.
-        Object stub = clazz.getConstructor(IDeserializer.class, long.class).newInstance(null, 6l);
+        Object stub = clazz.getConstructor(IDeserializer.class, IPersistenceToken.class).newInstance(null, null);
         Assert.assertNotNull(stub);
         avm.shutdown();
     }

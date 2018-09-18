@@ -7,6 +7,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Comparable;
 
@@ -262,8 +263,8 @@ public class LongBuffer extends Buffer<java.nio.LongBuffer> implements Comparabl
     }
 
     // Deserializer support.
-    public LongBuffer(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public LongBuffer(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

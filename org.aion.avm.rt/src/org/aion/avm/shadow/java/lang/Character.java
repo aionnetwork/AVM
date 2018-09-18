@@ -4,7 +4,7 @@ import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Character extends Object {
@@ -592,8 +592,8 @@ public class Character extends Object {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    public Character(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Character(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
         lazyLoad();
     }
 

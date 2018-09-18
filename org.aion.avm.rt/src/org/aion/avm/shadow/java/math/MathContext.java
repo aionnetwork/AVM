@@ -5,6 +5,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Object;
 import org.aion.avm.shadow.java.lang.String;
 
@@ -85,8 +86,8 @@ public final class MathContext extends Object {
     }
 
     // Deserializer support.
-    public MathContext(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public MathContext(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
         lazyLoad();
     }
 

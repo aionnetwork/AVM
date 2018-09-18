@@ -6,7 +6,9 @@ import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.persistence.ReflectionStructureCodec.IFieldPopulator;
+import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.IPersistenceToken;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,7 +16,7 @@ import org.junit.Test;
 
 
 public class SerializedInstanceStubTest {
-    private Field instanceIdField;
+    private Field persistenceTokenField;
     private IFieldPopulator fieldPopulator;
 
     @Before
@@ -23,7 +25,7 @@ public class SerializedInstanceStubTest {
         Assert.assertNotNull(NodeEnvironment.singleton);
         
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
-        this.instanceIdField = org.aion.avm.shadow.java.lang.Object.class.getField("instanceId");
+        this.persistenceTokenField = org.aion.avm.shadow.java.lang.Object.class.getField("persistenceToken");
         this.fieldPopulator = new BasicPopulator();
     }
 
@@ -37,13 +39,13 @@ public class SerializedInstanceStubTest {
         org.aion.avm.shadow.java.lang.Object inputInstance = null;
         
         // Size this.
-        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.instanceIdField);
+        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.persistenceTokenField);
         // Null is a direct special-case, serialized as 4 bytes (stub type).
         Assert.assertEquals(4, byteSize);
         
         // Encode this.
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.instanceIdField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
         
         // Nulls should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
@@ -59,13 +61,13 @@ public class SerializedInstanceStubTest {
         org.aion.avm.shadow.java.lang.Object inputInstance = org.aion.avm.shadow.java.lang.Boolean.avm_TYPE;
         
         // Size this.
-        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.instanceIdField);
+        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.persistenceTokenField);
         // Constants are a special-case, encoded as 4 bytes (stub type) + 8 bytes (constant id).
         Assert.assertEquals(4 + 8, byteSize);
         
         // Encode this.
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.instanceIdField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
         
         // Constants should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
@@ -81,13 +83,13 @@ public class SerializedInstanceStubTest {
         org.aion.avm.shadow.java.lang.Class<?> inputInstance = new org.aion.avm.shadow.java.lang.Class<>(String.class);
         
         // Size this.
-        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.instanceIdField);
+        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.persistenceTokenField);
         // Classes are stored as 4 bytes (stub type) + 4 bytes (type name length) + n bytes (type name UTF-8).
         Assert.assertEquals(4 + 4 + String.class.getName().getBytes(StandardCharsets.UTF_8).length, byteSize);
         
         // Encode this.
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.instanceIdField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
         
         // Classes should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
@@ -103,13 +105,13 @@ public class SerializedInstanceStubTest {
         org.aion.avm.shadow.java.lang.Object inputInstance = new org.aion.avm.shadow.java.lang.Object();
         
         // Size this.
-        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.instanceIdField);
+        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.persistenceTokenField);
         // Normal references are stored as 4 bytes (type name length) + n bytes (type name UTF-8) + 8 bytes (instance id).
         Assert.assertEquals(4 + org.aion.avm.shadow.java.lang.Object.class.getName().getBytes(StandardCharsets.UTF_8).length + 8, byteSize);
         
         // Encode this.
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.instanceIdField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
         
         // Instances should be enqueued.
         Assert.assertTrue(shouldEnqueue);
@@ -140,7 +142,8 @@ public class SerializedInstanceStubTest {
 
     private static class BasicPopulator implements IFieldPopulator {
         @Override
-        public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, long instanceId) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
             return new org.aion.avm.shadow.java.lang.String(testingInstance(instanceId));
         }
         @Override
@@ -148,7 +151,8 @@ public class SerializedInstanceStubTest {
             return new org.aion.avm.shadow.java.lang.String(testingClass(className));
         }
         @Override
-        public org.aion.avm.shadow.java.lang.Object createConstant(long instanceId) {
+        public org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken) {
+            long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
             return new org.aion.avm.shadow.java.lang.String(testingConstant(instanceId));
         }
         @Override

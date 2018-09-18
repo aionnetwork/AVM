@@ -7,9 +7,11 @@ import java.lang.reflect.Modifier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
 
@@ -29,7 +31,7 @@ import org.aion.kernel.KernelInterface;
 public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDeserializer.IAutomatic, SingleInstanceSerializer.IAutomatic {
     private static IDeserializer DONE_MARKER = new IDeserializer() {
         @Override
-        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
+        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
         }};
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
@@ -43,7 +45,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private final Method serializeSelf;
     // We only hold the deserializerField because we need to check if it is null when traversing the graph for objects to serialize.
     private final Field deserializerField;
-    private final Field instanceIdField;
+    private final Field persistenceTokenField;
     private long nextInstanceId;
 
     public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, KernelInterface kernel, byte[] address, long nextInstanceId) {
@@ -57,8 +59,8 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             this.serializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("serializeSelf", java.lang.Class.class, IObjectSerializer.class);
             this.deserializerField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("deserializer");
             this.deserializerField.setAccessible(true);
-            this.instanceIdField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("instanceId");
-            this.instanceIdField.setAccessible(true);
+            this.persistenceTokenField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("persistenceToken");
+            this.persistenceTokenField.setAccessible(true);
         } catch (NoSuchFieldException | SecurityException | NoSuchMethodException e) {
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
@@ -171,7 +173,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 this.nextInstanceId += 1;
                 return instanceId;
             };
-            boolean shouldEnqueueInstance = SerializedInstanceStub.serializeInstanceStub(encoder, contents, this.instanceIdField, instanceIdProducer);
+            boolean shouldEnqueueInstance = SerializedInstanceStub.serializeInstanceStub(encoder, contents, this.persistenceTokenField, instanceIdProducer);
             if (shouldEnqueueInstance) {
                 // The helper thinks we should enqueue this instance, since it is a normal instance type.
                 // If this instance has been loaded, set it to not loaded and add it to the queue.
@@ -263,12 +265,12 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     @Override
-    public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId) {
-        // This instance cannot be 0 since that implies we are deserializing a new object.
-        // (we also want to define negative numbers as something special, in the future).
-        RuntimeAssertionError.assertTrue(instanceId > 0);
+    public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
+        // The persistenceToken cannot be null since that implies we are deserializing a new object.
+        RuntimeAssertionError.assertTrue(null != persistenceToken);
         
         // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
+        long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
         byte[] rawData = this.kernel.getStorage(address, StorageKeys.forInstance(instanceId));
         this.feeProcessor.readOneInstanceFromStorage(rawData.length);
         deserializeInstance(instance, rawData);
@@ -276,11 +278,12 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         try {
-            long instanceId = this.instanceIdField.getLong(instance);
+            IPersistenceToken persistenceToken = (IPersistenceToken)this.persistenceTokenField.get(instance);
             byte[] serialized = internalSerializeInstance(instance, nextObjectSink);
             // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
             // we run out of energy, part-way.
             this.feeProcessor.writeOneInstanceToStorage(serialized.length);
+            long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
             this.kernel.putStorage(this.address, StorageKeys.forInstance(instanceId), serialized);
         } catch (IllegalAccessException | IllegalArgumentException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
@@ -357,10 +360,10 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
          * Regular instances are non-null and are neither Class objects, nor explicit constants of the shadow JCL.
          * 
          * @param className The name of the type.
-         * @param instanceId The id of this specific instance.
+         * @param persistenceToken The token of this specific instance.
          * @return The created or found shadow object instance.
          */
-        org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, long instanceId) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+        org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
         /**
          * Called to create/find a Class object representing the given className.
          * 
@@ -372,10 +375,10 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
          * Called to create/find an instance corresponding to the given constant instanceId.
          * Note that constants are explicitly defined by the shadow JCL.
          * 
-         * @param instanceId The instanceId of the constant.
+         * @param persistenceToken The token of this specific instance.
          * @return The created or found shadow object constant instance.
          */
-        org.aion.avm.shadow.java.lang.Object createConstant(long instanceId);
+        org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken);
         /**
          * Called to create a representation of a null object instance.
          * Note that this is usually literally "null" but this call allows implementors the opportunity to act on this.

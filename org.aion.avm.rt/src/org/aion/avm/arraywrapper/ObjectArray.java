@@ -106,8 +106,8 @@ public class ObjectArray extends Array implements IObjectArray {
     // Persistent Memory Support
     //========================================================
 
-    public ObjectArray(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public ObjectArray(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

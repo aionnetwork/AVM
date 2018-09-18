@@ -7,6 +7,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Comparable;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Number;
@@ -407,8 +408,8 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     // Deserializer support.
-    public BigDecimal(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public BigDecimal(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
         lazyLoad();
     }
 

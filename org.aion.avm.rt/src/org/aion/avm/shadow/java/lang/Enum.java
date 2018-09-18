@@ -2,7 +2,7 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public abstract class Enum<E extends Enum<E>> extends Object {
@@ -34,8 +34,8 @@ public abstract class Enum<E extends Enum<E>> extends Object {
     }
 
     // Deserializer support.
-    public Enum(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Enum(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     public String avm_toString() {

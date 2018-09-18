@@ -3,9 +3,10 @@ package org.aion.avm.arraywrapper;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Cloneable;
 import org.aion.avm.shadow.java.lang.Object;
-import org.aion.avm.RuntimeMethodFeeSchedule;
+
 
 public abstract class Array extends Object implements Cloneable{
     // Initial creation.
@@ -13,8 +14,8 @@ public abstract class Array extends Object implements Cloneable{
     }
 
     // Deserializer support.
-    public Array(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Array(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     public abstract java.lang.Object getUnderlyingAsObject();

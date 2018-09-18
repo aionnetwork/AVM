@@ -11,7 +11,7 @@ public interface IDeserializer {
      * This call will result in deserializeSelf() being invoked on that instance.
      * 
      * @param instance The instance to load.
-     * @param instanceId The persistence identifier of instance.
+     * @param persistenceToken The persistence identifier of instance.
      */
-    void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, long instanceId);
+    void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken);
 }

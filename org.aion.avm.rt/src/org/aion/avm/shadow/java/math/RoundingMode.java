@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.math;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Enum;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Class;
@@ -69,8 +70,8 @@ public class RoundingMode extends org.aion.avm.shadow.java.lang.Enum<RoundingMod
     }
 
     // Deserializer support.
-    public RoundingMode(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public RoundingMode(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
         lazyLoad();
     }
 

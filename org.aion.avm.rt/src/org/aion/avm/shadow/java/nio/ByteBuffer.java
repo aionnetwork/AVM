@@ -6,6 +6,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
@@ -472,8 +473,8 @@ public class ByteBuffer extends Buffer<java.nio.ByteBuffer> implements org.aion.
     }
 
     // Deserializer support.
-    public ByteBuffer(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public ByteBuffer(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

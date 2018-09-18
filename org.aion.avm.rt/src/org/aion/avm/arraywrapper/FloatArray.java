@@ -2,7 +2,7 @@ package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.*;
 import java.util.Arrays;
-import org.aion.avm.internal.IHelper;
+
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class FloatArray extends Array {
@@ -96,8 +96,8 @@ public class FloatArray extends Array {
     // Persistent Memory Support
     //========================================================
 
-    public FloatArray(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public FloatArray(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

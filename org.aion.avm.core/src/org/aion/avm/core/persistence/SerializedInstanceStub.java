@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
 import org.aion.avm.core.persistence.ReflectionStructureCodec.IFieldPopulator;
+import org.aion.avm.core.persistence.graph.InstanceIdToken;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
@@ -21,18 +23,23 @@ public class SerializedInstanceStub {
 
     // Note that this is probably just a temporary measure but, in order to better track bugs in the reentrant case, all instance stubs created
     // in the callee space are given this special instance ID.
-    public static final long REENTRANT_CALLEE_INSTANCE_ID = Long.MIN_VALUE;
+    public static final IPersistenceToken REENTRANT_CALLEE_INSTANCE_TOKEN = new IPersistenceToken() {
+        @Override
+        public boolean isNormalInstance() {
+            // This is just a placeholder instance so it should never be called.
+            throw RuntimeAssertionError.unreachable("Not a real token");
+        }};
 
     /**
      * Serializes a given object reference as an instance stub.  Note that this helper will apply an instanceId to the instance if it doesn't already have one and is a type which should.
      * 
      * @param encoder The instance stub will be serialized using this encoder.
      * @param instance The object instance to encode.
-     * @param instanceIdField The reflection Field reference to use when reading or writing an instanceId into the instance.
+     * @param persistenceTokenField The reflection Field reference to use when reading or writing an IPersistenceToken into the instance.
      * @param instanceIdProducer Called when a new instanceId is required for the instance.  If this is called, the instanceId should be considered used, by the implementation, and not given out again.
      * @return True if the instance was the type of object which should, itself, be serialized.
      */
-    public static boolean serializeInstanceStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Field instanceIdField, Supplier<Long> instanceIdProducer) throws IllegalArgumentException, IllegalAccessException {
+    public static boolean serializeInstanceStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Field persistenceTokenField, Supplier<Long> instanceIdProducer) throws IllegalArgumentException, IllegalAccessException {
         boolean shouldEnqueueInstance = false;
         // See issue-147 for more information regarding this interpretation:
         // - null: (int)0.
@@ -49,7 +56,15 @@ public class SerializedInstanceStub {
             encoder.encodeInt(STUB_DESCRIPTOR_NULL);
         } else {
             // Check the instanceId to see if this is a special-case.
-            long instanceId = instanceIdField.getLong(instance);
+            IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
+            // TODO:  This bug where we interpreted all reentract callee instances as constants is preserved, for now, since it is a different
+            // problem.  The _actual_ solution requires further leveraging the IPersistenceToken to point directly at the object.
+            boolean isUnreadFromCaller = (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken);
+            long instanceId = isUnreadFromCaller
+                    ? -1L
+                    : (null != persistenceToken)
+                        ? ((InstanceIdToken)persistenceToken).instanceId
+                        : 0L;
             if (instanceId < 0) {
                 // Constants.
                 encoder.encodeInt(STUB_DESCRIPTOR_CONSTANT);
@@ -74,7 +89,8 @@ public class SerializedInstanceStub {
                 if (0 == instanceId) {
                     // We have to assign this.
                     instanceId = instanceIdProducer.get();
-                    instanceIdField.setLong(instance, instanceId);
+                    persistenceToken = new InstanceIdToken(instanceId);
+                    persistenceTokenField.set(instance, persistenceToken);
                 }
                 
                 // Now, serialize the standard form.
@@ -120,7 +136,8 @@ public class SerializedInstanceStub {
             // Constants have negative instance IDs.
             RuntimeAssertionError.assertTrue(instanceId < 0);
             
-            instanceToStore = populator.createConstant(instanceId);
+            IPersistenceToken persistenceToken = new InstanceIdToken(instanceId);
+            instanceToStore = populator.createConstant(persistenceToken);
             // We can't fail to find these.
             RuntimeAssertionError.assertTrue(null != instanceToStore);
         } else if (STUB_DESCRIPTOR_CLASS == stubDescriptor) {
@@ -146,7 +163,8 @@ public class SerializedInstanceStub {
             long instanceId = decoder.decodeLong();
             
             // This instance might already exist so ask our helper which will instantiate, if need be.
-            instanceToStore = populator.createRegularInstance(className, instanceId);
+            IPersistenceToken persistenceToken = new InstanceIdToken(instanceId);
+            instanceToStore = populator.createRegularInstance(className, persistenceToken);
         }
         return instanceToStore;
     }
@@ -155,10 +173,10 @@ public class SerializedInstanceStub {
      * Determines the size of a serialized reference to the given instance.
      * 
      * @param instance The object instance to measure.
-     * @param instanceIdField The reflection Field reference to use when reading the instanceId from the instance.
+     * @param persistenceTokenField The reflection Field reference to use when reading or writing an IPersistenceToken into the instance.
      * @return The serialized size fo the reference to this instance.
      */
-    public static int sizeOfInstanceStub(org.aion.avm.shadow.java.lang.Object instance, Field instanceIdField) throws IllegalArgumentException, IllegalAccessException {
+    public static int sizeOfInstanceStub(org.aion.avm.shadow.java.lang.Object instance, Field persistenceTokenField) throws IllegalArgumentException, IllegalAccessException {
         int sizeInBytes = 0;
         // See issue-147 for more information regarding this interpretation:
         // - null: (int)0.
@@ -175,7 +193,15 @@ public class SerializedInstanceStub {
             sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT;
         } else {
             // Check the instanceId to see if this is a special-case.
-            long instanceId = instanceIdField.getLong(instance);
+            IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
+            // TODO:  This bug where we interpreted all reentract callee instances as constants is preserved, for now, since it is a different
+            // problem.  The _actual_ solution requires further leveraging the IPersistenceToken to point directly at the object.
+            boolean isUnreadFromCaller = (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken);
+            long instanceId = isUnreadFromCaller
+                    ? -1L
+                    : (null != persistenceToken)
+                        ? ((InstanceIdToken)persistenceToken).instanceId
+                        : 0L;
             if (instanceId < 0) {
                 // Constants.
                 // Encode the constant stub constant as an int.
@@ -211,10 +237,10 @@ public class SerializedInstanceStub {
      * This is important for cases like "Class" or constants where there is no real notion of how to make a "duplicate copy".
      * 
      * @param instance The object instance to check.
-     * @param instanceIdField The reflected access to instanceId.
+     * @param persistenceTokenField The reflected access to persistenceToken.
      * @return True if a copy should be made, false if the instance should be shared.
      */
-    public static boolean objectUsesReentrantCopy(org.aion.avm.shadow.java.lang.Object instance, Field instanceIdField) {
+    public static boolean objectUsesReentrantCopy(org.aion.avm.shadow.java.lang.Object instance, Field persistenceTokenField) {
         boolean shouldCopy = false;
         if (null == instance) {
             // Copy null doesn't make sense.
@@ -225,13 +251,12 @@ public class SerializedInstanceStub {
         } else {
             // Check if this has a constant instance ID.
             try {
-                long instanceId = instanceIdField.getLong(instance);
-                // Copy normal serialized instances (>0) or normal net instances (0), but NOT constants (<0).
-                shouldCopy = (instanceId >= 0);
+                IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
+                // Copy new instances (null) and normal instances (NOT constants or classes).
                 // We want the stubs is in the reentrant space to be copied, obviously.
-                if (REENTRANT_CALLEE_INSTANCE_ID == instanceId) {
-                    shouldCopy = true;
-                }
+                shouldCopy = (null == persistenceToken)
+                        || (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken)
+                        || persistenceToken.isNormalInstance();
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 // Any failure related to this would have happened much earlier.
                 RuntimeAssertionError.unexpected(e);

@@ -9,6 +9,7 @@ import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
+import org.aion.avm.internal.IPersistenceToken;
 
 import java.io.UnsupportedEncodingException;
 
@@ -437,8 +438,8 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     // Deserializer support.
-    public String(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public String(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

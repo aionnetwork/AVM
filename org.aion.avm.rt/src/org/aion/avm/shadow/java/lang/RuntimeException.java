@@ -2,6 +2,7 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IPersistenceToken;
 
 /**
  * Our shadow implementation of java.lang.RuntimeException.
@@ -31,7 +32,7 @@ public class RuntimeException extends Exception {
     }
 
     // Deserializer support.
-    public RuntimeException(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public RuntimeException(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 }

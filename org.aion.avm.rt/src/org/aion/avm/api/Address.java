@@ -4,6 +4,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Object;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.internal.IHelper;
@@ -146,8 +147,8 @@ public class Address extends Object {
     }
 
     // Support for deserialization
-    public Address(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Address(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
         lazyLoad();
     }
 }

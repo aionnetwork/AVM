@@ -2,7 +2,7 @@ package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.*;
 import java.util.Arrays;
-import org.aion.avm.internal.IHelper;
+
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class IntArray2D extends ObjectArray {
@@ -72,8 +72,8 @@ public class IntArray2D extends ObjectArray {
     // Persistent Memory Support
     //========================================================
 
-    public IntArray2D(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public IntArray2D(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
 

@@ -3,7 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Float extends Number implements Comparable<Float> {
@@ -185,8 +185,8 @@ public class Float extends Number implements Comparable<Float> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    public Float(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Float(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     private float v;

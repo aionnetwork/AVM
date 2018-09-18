@@ -26,8 +26,8 @@ import org.objectweb.asm.tree.analysis.Frame;
 public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor {
     private static final String CLINIT_NAME = "<clinit>";
     private static final String INIT_NAME = "<init>";
-    // The special constructor takes (IDeserializer deserializer, int hashCode, long instanceId).
-    private static final String SPECIAL_CONSTRUCTOR_DESCRIPTOR = "(Lorg/aion/avm/internal/IDeserializer;J)V";
+    // The special constructor takes (IDeserializer deserializer, IPersistenceToken persistenceToken).
+    private static final String SPECIAL_CONSTRUCTOR_DESCRIPTOR = "(Lorg/aion/avm/internal/IDeserializer;Lorg/aion/avm/internal/IPersistenceToken;)V";
 
     private boolean isInterface;
     private String className;
@@ -105,7 +105,7 @@ public class AutomaticGraphVisitor extends ClassToolchain.ToolChainClassVisitor 
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-            methodVisitor.visitVarInsn(Opcodes.LLOAD, 2);
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 2);
             methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superClassName, INIT_NAME, SPECIAL_CONSTRUCTOR_DESCRIPTOR, false);
             methodVisitor.visitInsn(Opcodes.RETURN);
             methodVisitor.visitMaxs(4, 4);

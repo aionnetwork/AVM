@@ -1,6 +1,7 @@
 package org.aion.avm.core.persistence;
 
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IPersistenceToken;
 
 
 /**
@@ -33,7 +34,7 @@ public class ReflectionStructureCodecTargetSub extends ReflectionStructureCodecT
     }
 
     // We need to manually define the deserialization constructor since we aren't a transformed test.
-    public ReflectionStructureCodecTargetSub(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public ReflectionStructureCodecTargetSub(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 }

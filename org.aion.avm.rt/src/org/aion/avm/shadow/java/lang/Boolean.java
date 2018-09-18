@@ -3,7 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Boolean extends Object implements Comparable<Boolean> {
@@ -105,8 +105,8 @@ public class Boolean extends Object implements Comparable<Boolean> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    public Boolean(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Boolean(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
         lazyLoad();
     }
 

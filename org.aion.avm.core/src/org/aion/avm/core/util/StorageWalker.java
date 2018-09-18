@@ -21,8 +21,10 @@ import org.aion.avm.core.persistence.ReflectedFieldCache;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.StorageKeys;
 import org.aion.avm.core.persistence.StreamingPrimitiveCodec;
+import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.kernel.KernelInterface;
 
@@ -107,14 +109,15 @@ public class StorageWalker {
                 output.println("\t" + field.getName() + ": ref(" + val + ")");
             }
             @Override
-            public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, long instanceId) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
                 // Note that we can't decode all object instances (most shadows and array wrappers, for example), but we will determine that on the reading side.
                 // For now, just make sure we enqueue each instance only once.
                 if (!processed.contains(instanceId)) {
                     processed.add(instanceId);
-                    Constructor<?> con = Class.forName(className, false, loader).getConstructor(IDeserializer.class, long.class);
+                    Constructor<?> con = Class.forName(className, false, loader).getConstructor(IDeserializer.class, IPersistenceToken.class);
                     con.setAccessible(true);
-                    org.aion.avm.shadow.java.lang.Object stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(null, instanceId);
+                    org.aion.avm.shadow.java.lang.Object stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(null, persistenceToken);
                     instanceQueue.add(stub);
                 }
                 return new org.aion.avm.shadow.java.lang.String("instance(" + shortenClassName(className) + ", " + instanceId + ")");
@@ -124,7 +127,8 @@ public class StorageWalker {
                 return new org.aion.avm.shadow.java.lang.String("class(" + shortenClassName(className) + ")");
             }
             @Override
-            public org.aion.avm.shadow.java.lang.Object createConstant(long instanceId) {
+            public org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken) {
+                long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
                 return new org.aion.avm.shadow.java.lang.String("constant(" + instanceId + ")");
             }
             @Override
@@ -148,12 +152,13 @@ public class StorageWalker {
         }
         
         // Walk each instance in the queue (potentially adding more as we go), writing each to the storage.
-        Field instanceIdField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("instanceId");
-        instanceIdField.setAccessible(true);
+        Field persistenceTokenField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("persistenceToken");
+        persistenceTokenField.setAccessible(true);
         while (!instanceQueue.isEmpty()) {
             org.aion.avm.shadow.java.lang.Object instance = instanceQueue.poll();
             String className = instance.getClass().getName();
-            long instanceId = instanceIdField.getLong(instance);
+            IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
+            long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
             output.println(shortenClassName(className) + "("+ instanceId + "): ");
             
             // We need to look into a few special-cases here:

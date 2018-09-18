@@ -2,7 +2,7 @@ package org.aion.avm.shadow.java.util;
 
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.RuntimeException;
 import org.aion.avm.shadow.java.lang.String;
 
@@ -27,7 +27,7 @@ public class NoSuchElementException extends RuntimeException {
     }
 
     // Deserializer support.
-    public NoSuchElementException(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public NoSuchElementException(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 }

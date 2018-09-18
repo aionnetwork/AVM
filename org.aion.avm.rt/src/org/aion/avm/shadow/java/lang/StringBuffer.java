@@ -6,7 +6,7 @@ import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 /**
@@ -335,8 +335,8 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     // Deserializer support.
-    public StringBuffer(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public StringBuffer(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IPersistenceToken;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -63,7 +64,7 @@ public class AutomaticGraphVisitorTest {
 
     @Test
     public void createSecondarySpecialConstructor() throws Exception {
-        Object secondary = this.secondaryClass.getConstructor(IDeserializer.class, long.class).newInstance(null, 6l);
+        Object secondary = this.secondaryClass.getConstructor(IDeserializer.class, IPersistenceToken.class).newInstance(null, null);
         Assert.assertEquals(0, this.secondaryClass.getDeclaredField("avm_value").getInt(secondary));
         this.secondaryClass.getMethod("avm_setValue", int.class).invoke(secondary, 1);
         Assert.assertEquals(1, this.secondaryClass.getDeclaredField("avm_value").getInt(secondary));

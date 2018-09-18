@@ -11,6 +11,7 @@ import org.aion.avm.arraywrapper.LongArray;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.arraywrapper.ShortArray;
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.internal.Helper;
 import org.junit.After;
 import org.junit.Assert;
@@ -56,7 +57,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        ByteArray bytes = new ByteArray(null, 1l);
+        ByteArray bytes = new ByteArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new byte[] {1,2,3}, bytes.getUnderlying()));
     }
@@ -72,7 +73,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        ShortArray bytes = new ShortArray(null, 1l);
+        ShortArray bytes = new ShortArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new short[] {1,2,3}, bytes.getUnderlying()));
     }
@@ -88,7 +89,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        CharArray bytes = new CharArray(null, 1l);
+        CharArray bytes = new CharArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new char[] {1,2,3}, bytes.getUnderlying()));
     }
@@ -104,7 +105,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        IntArray bytes = new IntArray(null, 1l);
+        IntArray bytes = new IntArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new int[] {1,2,3}, bytes.getUnderlying()));
     }
@@ -120,7 +121,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        FloatArray bytes = new FloatArray(null, 1l);
+        FloatArray bytes = new FloatArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new float[] {1.0f,2.0f,3.0f}, bytes.getUnderlying()));
     }
@@ -136,7 +137,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        LongArray bytes = new LongArray(null, 1l);
+        LongArray bytes = new LongArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new long[] {1,2,3}, bytes.getUnderlying()));
     }
@@ -152,7 +153,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        DoubleArray bytes = new DoubleArray(null, 1l);
+        DoubleArray bytes = new DoubleArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
         Assert.assertTrue(Arrays.equals(new double[] {1.0,2.0,3.0}, bytes.getUnderlying()));
     }
@@ -185,7 +186,7 @@ public class SingleInstanceDeserializerTest {
         };
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(expected);
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
-        ObjectArray bytes = new ObjectArray(null, 1l);
+        ObjectArray bytes = new ObjectArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
         Assert.assertEquals(2, bytes.length());
         Assert.assertNotNull(bytes.get(0));

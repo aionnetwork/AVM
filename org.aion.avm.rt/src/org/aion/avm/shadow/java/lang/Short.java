@@ -3,7 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Short extends Number {
@@ -154,8 +154,8 @@ public class Short extends Number {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    public Short(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Short(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     private short v;

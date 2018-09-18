@@ -7,8 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IPersistenceToken;
 
 
 /**
@@ -34,12 +36,13 @@ public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IField
         this.deserializer = deserializer;
     }
     @Override
-    public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, long instanceId) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
         org.aion.avm.shadow.java.lang.Object stub = this.instanceStubMap.get(instanceId);
         if (null == stub) {
             // Create the new stub and put it in the map.
             Constructor<?> con = getConstructorForClassName(className);
-            stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(this.deserializer, instanceId);
+            stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(this.deserializer, persistenceToken);
             this.instanceStubMap.put(instanceId, stub);
         }
         return stub;
@@ -50,7 +53,8 @@ public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IField
         return IHelper.currentContractHelper.get().externalWrapAsClass(jdkClass);
     }
     @Override
-    public org.aion.avm.shadow.java.lang.Object createConstant(long instanceId) {
+    public org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken) {
+        long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
         // Look this up in the constant map.
         return this.shadowConstantMap.get(instanceId);
     }
@@ -101,7 +105,7 @@ public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IField
         Constructor<?> constructor = this.constructorCacheMap.get(className);
         if (null == constructor) {
             Class<?> contentClass = this.loader.loadClass(className);
-            constructor = contentClass.getConstructor(IDeserializer.class, long.class);
+            constructor = contentClass.getConstructor(IDeserializer.class, IPersistenceToken.class);
             constructor.setAccessible(true);
             this.constructorCacheMap.put(className, constructor);
         }

@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IPersistenceToken;
 
 /**
  * Our shadow implementation of java.lang.AssertionError.
@@ -55,7 +56,7 @@ public class AssertionError extends Error {
     }
 
     // Deserializer support.
-    public AssertionError(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public AssertionError(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 }

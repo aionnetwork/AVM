@@ -3,7 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObject;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Long extends Number implements Comparable<Long> {
@@ -266,8 +266,8 @@ public class Long extends Number implements Comparable<Long> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    public Long(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Long(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     private long v;

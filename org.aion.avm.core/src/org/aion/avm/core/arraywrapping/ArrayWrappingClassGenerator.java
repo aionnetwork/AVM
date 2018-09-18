@@ -370,12 +370,12 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         methodVisitor.visitEnd();
 
         // Create the deserialization constructor (as seen in AutomaticGraphVisitor).
-        String deserializationConstructorDescriptor = "(Lorg/aion/avm/internal/IDeserializer;J)V";
+        String deserializationConstructorDescriptor = "(Lorg/aion/avm/internal/IDeserializer;Lorg/aion/avm/internal/IPersistenceToken;)V";
         methodVisitor = cw.visitMethod(Opcodes.ACC_PUBLIC, initName, deserializationConstructorDescriptor, null, null);
         methodVisitor.visitCode();
         methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-        methodVisitor.visitVarInsn(Opcodes.LLOAD, 2);
+        methodVisitor.visitVarInsn(Opcodes.ALOAD, 2);
         methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, initName, deserializationConstructorDescriptor, false);
         methodVisitor.visitInsn(Opcodes.RETURN);
         methodVisitor.visitMaxs(4, 4);

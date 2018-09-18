@@ -4,7 +4,7 @@ import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public abstract class Buffer<B extends java.nio.Buffer> extends org.aion.avm.shadow.java.lang.Object {
@@ -122,8 +122,8 @@ public abstract class Buffer<B extends java.nio.Buffer> extends org.aion.avm.sha
     }
 
     // Deserializer support.
-    public Buffer(IDeserializer deserializer, long instanceId) {
-        super(deserializer, instanceId);
+    public Buffer(IDeserializer deserializer, IPersistenceToken persistenceToken) {
+        super(deserializer, persistenceToken);
     }
 
     // We need to act like a real implementation since our field is actually serialized by our subclasses.
