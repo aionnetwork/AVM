@@ -121,6 +121,29 @@ public class Address extends Object {
         return this.underlying.getUnderlying();
     }
 
+    @Override
+    public boolean equals(java.lang.Object obj) {
+        boolean isEqual = this == obj;
+        if (!isEqual && (obj instanceof Address)) {
+            Address other = (Address) obj;
+            if (this.underlying.length() == other.underlying.length()) {
+                isEqual = true;
+                for (int i = 0; isEqual && (i < other.underlying.length()); ++i) {
+                    isEqual = (this.underlying.get(i) == other.underlying.get(i));
+                }
+            }
+        }
+        return isEqual;
+    }
+
+    @Override
+    public int hashCode() {
+        int code = 0;
+        for (byte elt : this.underlying.getUnderlying()) {
+            code += (int)elt;
+        }
+        return code;
+    }
 
     // Support for deserialization
     public Address(IDeserializer deserializer, long instanceId) {
