@@ -57,12 +57,9 @@ public class SerializedInstanceStub {
         } else {
             // Check the instanceId to see if this is a special-case.
             IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
-            // TODO:  This bug where we interpreted all reentract callee instances as constants is preserved, for now, since it is a different
-            // problem.  The _actual_ solution requires further leveraging the IPersistenceToken to point directly at the object.
-            boolean isUnreadFromCaller = (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken);
-            long instanceId = isUnreadFromCaller
-                    ? -1L
-                    : (null != persistenceToken)
+            // This serialization call is only used when writing to disk so we can't see REENTRANT_CALLEE_INSTANCE_TOKEN.
+            RuntimeAssertionError.assertTrue(REENTRANT_CALLEE_INSTANCE_TOKEN != persistenceToken);
+            long instanceId = (null != persistenceToken)
                         ? ((InstanceIdToken)persistenceToken).instanceId
                         : 0L;
             if (instanceId < 0) {
@@ -194,15 +191,24 @@ public class SerializedInstanceStub {
         } else {
             // Check the instanceId to see if this is a special-case.
             IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
-            // TODO:  This bug where we interpreted all reentract callee instances as constants is preserved, for now, since it is a different
-            // problem.  The _actual_ solution requires further leveraging the IPersistenceToken to point directly at the object.
-            boolean isUnreadFromCaller = (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken);
-            long instanceId = isUnreadFromCaller
-                    ? -1L
-                    : (null != persistenceToken)
-                        ? ((InstanceIdToken)persistenceToken).instanceId
-                        : 0L;
-            if (instanceId < 0) {
+            /*
+             * NOTE:  This method is called both to capture the size of statics/objects being read _from_ the caller space and also to capture the
+             * size of statics/objects being written back _to_ the caller space, from the callee space.
+             * 
+             * In the caller->callee (read from) case, we see normal instance references, nulls, constants, and classes.
+             * In the callee->caller (write to) case, we see reentrant instant references, nulls, constants, and classes.
+             * 
+             * Note the distinction:  the first case NEVER sees REENTRANT_CALLEE_INSTANCE_TOKEN while the second ONLY sees it.
+             * 
+             * Note that we don't see any instances of REENTRANT_CALLEE_INSTANCE_TOKEN, once we get going (since all of these are the callee copies,
+             * which are not part of caller space and are not being moved there) but we do see them during sizing.  These all correspond to normal
+             * instances (not constants or classes), so we size them accordingly.
+             */
+            // We need to check constants, first, since they can otherwise be confused for these other cases (unfortunately, we do a type check to
+            // avoid the null or REENTRANT_CALLEE_INSTANCE_TOKEN cases).
+            boolean isConstant = ((persistenceToken instanceof InstanceIdToken) && (((InstanceIdToken)persistenceToken).instanceId < 0L));
+            
+            if (isConstant) {
                 // Constants.
                 // Encode the constant stub constant as an int.
                 sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT;

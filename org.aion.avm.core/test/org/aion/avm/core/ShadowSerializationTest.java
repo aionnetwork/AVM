@@ -76,6 +76,9 @@ public class ShadowSerializationTest {
         
         // Verify that things are consistent across reentrant modifications.
         verifyReentrantChange(avm, contractAddr, "JavaLang");
+        
+        // Call to verify, again, to detect the bug where reentrant serializing was incorrectly injecting constant stubs.
+        verifyReentrantChange(avm, contractAddr, "JavaLang");
     }
 
     @Test
@@ -116,6 +119,9 @@ public class ShadowSerializationTest {
         Assert.assertEquals(HASH_JAVA_MATH, firstHash);
         
         // Verify that things are consistent across reentrant modifications.
+        verifyReentrantChange(avm, contractAddr, "JavaMath");
+        
+        // Call to verify, again, to detect the bug where reentrant serializing was incorrectly injecting constant stubs.
         verifyReentrantChange(avm, contractAddr, "JavaMath");
     }
 
@@ -158,6 +164,9 @@ public class ShadowSerializationTest {
         
         // Verify that things are consistent across reentrant modifications.
         verifyReentrantChange(avm, contractAddr, "JavaNio");
+        
+        // Call to verify, again, to detect the bug where reentrant serializing was incorrectly injecting constant stubs.
+        verifyReentrantChange(avm, contractAddr, "JavaNio");
     }
 
     @Test
@@ -198,6 +207,9 @@ public class ShadowSerializationTest {
         Assert.assertEquals(HASH_API, firstHash);
         
         // Verify that things are consistent across reentrant modifications.
+        verifyReentrantChange(avm, contractAddr, "Api");
+        
+        // Call to verify, again, to detect the bug where reentrant serializing was incorrectly injecting constant stubs.
         verifyReentrantChange(avm, contractAddr, "Api");
     }
 
