@@ -8,7 +8,7 @@ import org.aion.avm.shadow.java.lang.Cloneable;
 import org.aion.avm.shadow.java.lang.Object;
 
 
-public abstract class Array extends Object implements Cloneable{
+public abstract class Array extends Object implements Cloneable, IArray {
     // Initial creation.
     public Array() {
     }

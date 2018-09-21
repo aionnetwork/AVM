@@ -21,6 +21,7 @@ import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;

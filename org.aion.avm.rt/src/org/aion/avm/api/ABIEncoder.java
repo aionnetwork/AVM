@@ -3,6 +3,7 @@ package org.aion.avm.api;
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.ABICodecException;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectArray;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.shadow.java.lang.Double;
 import org.aion.avm.shadow.java.lang.Float;
@@ -656,9 +657,9 @@ public final class ABIEncoder {
     /*
      * Runtime-facing implementation.
      */
-    public static ByteArray avm_encodeMethodArguments(org.aion.avm.shadow.java.lang.String methodName, ObjectArray arguments)  {
+    public static ByteArray avm_encodeMethodArguments(org.aion.avm.shadow.java.lang.String methodName, IObjectArray arguments)  {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIEncoder_avm_encodeMethodArguments);
-        return new ByteArray(encodeMethodArguments(methodName.toString(), arguments.getUnderlying()));
+        return new ByteArray(encodeMethodArguments(methodName.toString(), ((ObjectArray) arguments).getUnderlying()));
     }
 
     public static ByteArray avm_encodeOneObject(IObject data) {

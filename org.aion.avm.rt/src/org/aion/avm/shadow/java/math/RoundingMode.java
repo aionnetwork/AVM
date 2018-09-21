@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.math;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IObjectArray;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Enum;
 import org.aion.avm.shadow.java.lang.String;
@@ -46,7 +47,7 @@ public class RoundingMode extends Enum<RoundingMode>{
         v = u;
     }
 
-    public static ObjectArray avm_values(){
+    public static IObjectArray avm_values(){
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_values);
         return (ObjectArray) avm_$VALUES.clone();
     }

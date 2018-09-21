@@ -137,6 +137,20 @@ public class InstanceOfIntegrationTest {
         Assert.assertEquals(InstanceOfIntegrationTestTarget.intCArrayIsBArray(), callStaticBoolean("intCArrayIsBArray"));
     }
 
+    @Test
+    public void call_getSub() {
+        Assert.assertEquals(InstanceOfIntegrationTestTarget.call_getSub(), callStaticBoolean("call_getSub"));
+    }
+
+    @Test
+    public void call_getSub2() {
+        Assert.assertEquals(InstanceOfIntegrationTestTarget.call_getSub2(), callStaticBoolean("call_getSub2"));
+    }
+
+    @Test
+    public void checkArrayParams() {
+        Assert.assertEquals(InstanceOfIntegrationTestTarget.checkArrayParams(), callStaticBoolean("checkArrayParams"));
+    }
 
     private boolean callStaticBoolean(String methodName) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);

@@ -2,6 +2,11 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.arraywrapper.ObjectArray;
+import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectArray;
+import org.aion.avm.shadow.java.lang.Class;
+import org.aion.avm.shadow.java.lang.String;
 
 
 /**
@@ -26,7 +31,7 @@ public class InstanceOfIntegrationTestTarget {
         Sub sub = new Sub();
         return (sub instanceof InstanceOfIntegrationTestTarget);
     }
-    
+
     public static boolean checkSubFalse() {
         InstanceOfIntegrationTestTarget target = new InstanceOfIntegrationTestTarget();
         return (target instanceof Sub);
@@ -106,20 +111,60 @@ public class InstanceOfIntegrationTestTarget {
         InterfaceC[] c = new InterfaceC[0];
         return (c instanceof InterfaceB[]);
     }
-    
-    
+
+    // Ensures method overloading compiles and works fine
+    public static boolean call_getSub() {
+        Sub[] sub = new Sub[]{new Sub()};
+        InterfaceA inner = getSub(sub);
+        return (inner instanceof Sub);
+    }
+
+    // Ensures method overloading compiles and works fine
+    public static boolean call_getSub2() {
+        Sub[] sub = new Sub[]{new Sub(), new Sub()};
+        InterfaceA inner = getSub(sub);
+        return (inner instanceof Sub);
+    }
+
+    // Ensures multiple array params compiles and works fine
+    public static boolean checkArrayParams() {
+        Sub[] array1 = new Sub[]{new Sub()};
+        ClassC[] array2 = new ClassC[]{new ClassC()};
+        return compareArrays(array1, array2);
+    }
+
+    private static InterfaceA getSub(InterfaceC[] array) {
+        return array[0];
+    }
+
+    private static InterfaceA getSub(InterfaceD[] array) {
+        return array[1];
+    }
+
+    private static boolean compareArrays(InterfaceC[] array1, InterfaceD[] array2) {
+        return (array1[0] instanceof InstanceOfIntegrationTestTarget)
+            && (array2[0] instanceof InstanceOfIntegrationTestTarget)
+            && (array2[0] instanceof InterfaceC);
+    }
+
     private static class Sub extends InstanceOfIntegrationTestTarget implements InterfaceC {
     }
-    
+
     private static class ClassB implements InterfaceB {
     }
-    
+
+    private static class ClassC implements InterfaceD {
+    }
+
     private interface InterfaceA {
     }
-    
+
     private interface InterfaceB {
     }
-    
-    private interface InterfaceC extends InterfaceA, InterfaceB {
+
+    private interface InterfaceC extends InterfaceA, InterfaceB, InterfaceD {
+    }
+
+    private interface InterfaceD extends InterfaceA, InterfaceB {
     }
 }

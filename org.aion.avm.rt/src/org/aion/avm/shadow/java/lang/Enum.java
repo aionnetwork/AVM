@@ -57,7 +57,7 @@ public abstract class Enum<E extends Enum<E>> extends Object {
     }
 
     @Override
-    protected final Object avm_clone() throws CloneNotSupportedException {
+    public final Object avm_clone() throws CloneNotSupportedException {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Enum_avm_clone);
         throw new CloneNotSupportedException();
     }

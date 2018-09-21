@@ -609,6 +609,9 @@ public class TestResource {
         String[] osa = new String[10];
         String[] oscp = osa.clone();
 
+        String[][] osa2 = new String[10][10];
+        String[][] osa2cp = osa2.clone();
+
         short[] sa = new short[10];
         short[] scp = sa.clone();
 

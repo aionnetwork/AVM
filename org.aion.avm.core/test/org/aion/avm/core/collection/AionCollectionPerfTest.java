@@ -10,6 +10,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.*;
 import org.aion.kernel.*;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class AionCollectionPerfTest {

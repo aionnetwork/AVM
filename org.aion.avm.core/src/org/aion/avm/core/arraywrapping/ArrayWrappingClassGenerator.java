@@ -1,6 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
+import java.util.regex.Pattern;
 import org.aion.avm.arraywrapper.ArrayElement;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.core.util.Helpers;
@@ -20,10 +21,13 @@ import java.util.stream.Stream;
 
 
 public class ArrayWrappingClassGenerator implements Opcodes {
-    static private boolean DEBUG = false;
+    static private boolean DEBUG = true;
     static private boolean ENERGY_METERING = true;
 
     static private String SHADOW_ARRAY = PackageConstants.kArrayWrapperSlashPrefix + "Array";
+    static private Pattern PRIMITIVE_ARRAY_FORMAT = Pattern.compile("[\\$\\[]+[IJZBSDFC]");
+    static private Pattern IOBJECT_INTERFACE_FORMAT = Pattern.compile("[_]{2,}Lorg/aion/avm/internal/IObject");
+    static private Pattern OBJECT_INTERFACE_FORMAT = Pattern.compile("[_\\[]{2,}Lorg/aion/avm/shadow/java/lang/Object");
 
     static private Set<String> PRIMITIVES = Stream.of("I", "J", "Z", "B", "S", "D", "F", "C").collect(Collectors.toSet());
     static private HashMap<String, String> CLASS_WRAPPER_MAP = new HashMap<>();
@@ -51,6 +55,10 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         CLASS_WRAPPER_MAP.put("[[J", PackageConstants.kArrayWrapperSlashPrefix + "LongArray2D");
         CLASS_WRAPPER_MAP.put("[[D", PackageConstants.kArrayWrapperSlashPrefix + "DoubleArray2D");
 
+        // renames [IObject to IObjectArray for unification
+        INTERFACE_WRAPPER_MAP.put("[L" + PackageConstants.kInternalSlashPrefix + "IObject", PackageConstants.kInternalSlashPrefix + "IObjectArray");
+        INTERFACE_WRAPPER_MAP.put("L" + PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", PackageConstants.kInternalSlashPrefix + "IObjectArray");
+        INTERFACE_WRAPPER_MAP.put("[L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object", PackageConstants.kInternalSlashPrefix + "IObjectArray");
     }
 
     public static byte[] arrayWrappingFactory(String request, ClassLoader loader){
@@ -111,6 +119,27 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             elementInterfaceWrapperNames.add(ArrayWrappingClassGenerator.getInterfaceWrapper(slashName));
         }
 
+        // Handle if we have a multi-dimensional IObject interface wrapper to point to its lower dimensional self.
+        if (IOBJECT_INTERFACE_FORMAT.matcher(elementInterfaceSlashName).matches()) {
+            String slashName = elementInterfaceSlashName.substring(1);  // remove a _ from name
+            String fullSlashName = PackageConstants.kArrayWrapperSlashPrefix + "interface/" + slashName;
+            elementInterfaceWrapperNames.add(ArrayWrappingClassGenerator.getInterfaceWrapper(fullSlashName));
+        }
+
+        // Handle if we have a multi-dimensional Object interface wrapper to point to its lower dimensional self.
+        if (OBJECT_INTERFACE_FORMAT.matcher(elementInterfaceSlashName).matches()) {
+            String slashName = elementInterfaceSlashName.substring(1);
+            String fullSlashName = PackageConstants.kArrayWrapperSlashPrefix + "interface/" + slashName;
+            String interfaceName = ArrayWrappingClassGenerator.getInterfaceWrapper(fullSlashName);
+            elementInterfaceWrapperNames.add(interfaceName);
+        }
+
+        // Handle _IObject unifying type so that it unifies under IObjectArray.
+        String IObject1D = PackageConstants.kArrayWrapperSlashPrefix + "interface/_L" + PackageConstants.kInternalSlashPrefix + "IObject";
+        if (wrapperInterfaceSlashName.equals(IObject1D)) {
+            elementInterfaceWrapperNames.add(PackageConstants.kInternalSlashPrefix + "IObjectArray");
+        }
+
         if (DEBUG) {
             System.out.println("Generating interface : " + wrapperInterfaceSlashName);
             for (String s : elementInterfaceWrapperNames) {
@@ -163,7 +192,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             String interfaceDotName = buildArrayDescriptor(dim, typeDescriptorForClass(elementClass));
             String interfaceSlashName = Helpers.fulllyQualifiedNameToInternalName(interfaceDotName);
             String interfaceWrapperSlashName = ArrayWrappingClassGenerator.getInterfaceWrapper(interfaceSlashName);
-            
+
             String superClassSlashName = PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray";
             bytecode = generateClassBytecode(wrapperClassSlashName, superClassSlashName, dim, new String[] {interfaceWrapperSlashName});
 
@@ -421,7 +450,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     static java.lang.String updateMethodDesc(java.lang.String desc) {
-        return mapDescriptor(desc);
+        return arrayTypesToUnifyingTypes(mapDescriptor(desc));
     }
 
     // Return the wrapper descriptor of an array
@@ -459,7 +488,8 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     private static java.lang.String getObjectArrayWrapper(java.lang.String type, int dim){
-        return getClassWrapperDescriptor(buildArrayDescriptor(dim, 'L' + type + ';'));
+//        return getClassWrapperDescriptor(buildArrayDescriptor(dim, 'L' + type + ';'));
+        return getUnifyingArrayWrapperDescriptor(buildArrayDescriptor(dim, 'L' + type + ';'));
     }
 
     private static java.lang.String getByteArrayWrapper(int dim){
@@ -490,6 +520,10 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         return getClassWrapperDescriptor(buildArrayDescriptor(dim, "S"));
     }
 
+    private static java.lang.String getBooleanArrayWrapper(int dim){
+        return getClassWrapperDescriptor(buildArrayDescriptor(dim, "Z"));
+    }
+
     // Return the wrapper descriptor of an array
     static java.lang.String getInterfaceWrapper(java.lang.String desc){
         if (desc.endsWith(";")){
@@ -497,16 +531,42 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         }
 
         java.lang.String ret;
-        if (desc.charAt(0) != '['){
-            ret = desc;
-        }else if (INTERFACE_WRAPPER_MAP.containsKey(desc)){
-            ret = INTERFACE_WRAPPER_MAP.get(desc);
-        }else{
-            INTERFACE_WRAPPER_MAP.put(desc, newInterfaceWrapper(desc));
-            ret = INTERFACE_WRAPPER_MAP.get(desc);
+
+        if (OBJECT_INTERFACE_FORMAT.matcher(desc).matches()) {
+            if (desc.charAt(0) != '[') {
+                ret = desc;
+            } else if (INTERFACE_WRAPPER_MAP.containsKey(desc)) {
+                ret = INTERFACE_WRAPPER_MAP.get(desc);
+            } else {
+                INTERFACE_WRAPPER_MAP.put(desc, handleArrayOfObject(desc));
+                ret = INTERFACE_WRAPPER_MAP.get(desc);
+            }
+        } else {
+            if (desc.charAt(0) != '[') {
+                ret = desc;
+            } else if (INTERFACE_WRAPPER_MAP.containsKey(desc)) {
+                ret = INTERFACE_WRAPPER_MAP.get(desc);
+            } else {
+                INTERFACE_WRAPPER_MAP.put(desc, newInterfaceWrapper(desc));
+                ret = INTERFACE_WRAPPER_MAP.get(desc);
+            }
         }
 
         return ret;
+    }
+
+    /**
+     * Converts a multi-dimensional java/lang/Object array descriptor into its unifying descriptor.
+     * That is, an IObject descriptor.
+     *
+     * @param descriptor
+     * @return
+     */
+    private static String handleArrayOfObject(String descriptor) {
+        int dim = descriptor.lastIndexOf('[') + 1;
+        String dimPrefix = new String(new char[dim]).replace('\0', '_');
+        return PackageConstants.kArrayWrapperSlashPrefix + "interface/" + dimPrefix + "L"
+            + PackageConstants.kInternalSlashPrefix + "IObject";
     }
 
     // Return the wrapper descriptor of an array
@@ -532,7 +592,10 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     private static java.lang.String newInterfaceWrapper(java.lang.String desc){
-        //System.out.println(desc);
+        if (PRIMITIVE_ARRAY_FORMAT.matcher(desc).matches()) {
+            return wrapperForPrimitiveArrays(desc);
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append(PackageConstants.kArrayWrapperSlashPrefix + "interface/");
 
@@ -716,4 +779,172 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     private static String typeDescriptorForClass(Class<?> clazz) {
         return 'L' + clazz.getName() + ';';
     }
+
+    /**
+     * Wraps primitive arrays correctly so that primitive arrays of any dimensionality are wrapped
+     * properly.
+     *
+     * @param desc The array descriptor.
+     * @return The wrapped descriptor.
+     */
+    private static java.lang.String wrapperForPrimitiveArrays(java.lang.String desc) {
+        int index = desc.lastIndexOf('[');
+        index = (index == -1) ? desc.lastIndexOf('$') : index;
+        int dimension = index + 1;
+
+        if (dimension > 2) {
+            return newClassWrapper(desc);
+        } else {
+            switch (desc.substring(dimension)) {
+                case "B": return getByteArrayWrapper(dimension);
+                case "Z": return getBooleanArrayWrapper(dimension);
+                case "J": return getLongArrayWrapper(dimension);
+                case "I": return getIntArrayWrapper(dimension);
+                case "S": return getShortArrayWrapper(dimension);
+                case "F": return getFloatArrayWrapper(dimension);
+                case "D": return getDoubleArrayWrapper(dimension);
+                case "C": return getCharArrayWrapper(dimension);
+                default: return null;
+            }
+        }
+    }
+
+    /**
+     * Converts any array types in the method signature given by descriptor to their respective
+     * unifying types.
+     *
+     * This method exists so that transformed array types will behave according to the type rules of
+     * regular Java arrays.
+     *
+     * @param descriptor The method signature descriptor.
+     * @return The descriptor with array types converted to their unifying types.
+     */
+    private static String arrayTypesToUnifyingTypes(String descriptor) {
+        // split descriptor into parameters [0] and return type [1]
+        String[] splitDescriptor = descriptor.substring(1).split("\\)");
+        if (splitDescriptor[0].isEmpty()) {
+            return "()" + arrayReturnTypeToUnifyingType(splitDescriptor[1]);
+        }
+        return arrayParametersToUnifyingTypes(splitDescriptor[0]) + arrayReturnTypeToUnifyingType(splitDescriptor[1]);
+    }
+
+    /**
+     * Returns the method parameter descriptor parameters but with each object array type promoted
+     * to its unifying type.
+     *
+     * @param parameters A method parameter descriptor.
+     * @return The method parameter descriptor with all object array types promoted to their unifying
+     * types.
+     */
+    private static String arrayParametersToUnifyingTypes(String parameters) {
+        if (parameters.length() == 1) {
+            return "(" + parameters + ")";
+        }
+
+        StringBuilder builder = new StringBuilder("(");
+        String token;
+
+        int index = 0;
+        while ((token = nextToken(parameters, index)) != null) {
+            if (token.length() == 1) {
+                builder.append(token);
+            } else {
+                // Increment in here because token strips the semi-colon, so token.length() is 1 less.
+                builder.append(unifyIfObjectArray(token));
+                index++;
+            }
+            index += token.length();
+        }
+
+        return builder.append(")").toString();
+    }
+
+    /**
+     * Returns a method return type descriptor that is equivalent to methodType unless methodType
+     * is an object array, in which case the array type is promoted to its unifying type.
+     *
+     * @param methodType A method return type descriptor.
+     * @return The method return type descriptor with array object type unifying promotion.
+     */
+    private static String arrayReturnTypeToUnifyingType(String methodType) {
+        return (methodType.length() == 1) ? methodType : unifyIfObjectArray(methodType);
+    }
+
+    /**
+     * Returns the next token in parameters beginning at the index start, where a token is one of
+     * the primitives (B, C, D, F, I, J, S, Z) or an object. In the case of an object, the trailing
+     * semi-colon (;) is removed.
+     *
+     * @param parameters A method parameter descriptor.
+     * @param start The start of the next token.
+     * @return The next token.
+     */
+    private static String nextToken(String parameters, int start) {
+        if (start >= parameters.length()) {
+            return null;
+        }
+
+        start = (parameters.charAt(start) == ';') ? start + 1 : start;
+        if (PRIMITIVES.contains(String.valueOf(parameters.charAt(start)))) {
+            return String.valueOf(parameters.charAt(start));
+        } else {
+            int end = parameters.indexOf(';', start);
+            if (end == -1) {
+                // This indicates an error right? An object L not ending with ;
+                return parameters.substring(start);
+            } else {
+                return parameters.substring(start, end);
+            }
+        }
+    }
+
+    /**
+     * Returns a unified type descriptor if descriptor is an object array and otherwise returns
+     * descriptor back to the caller -- but ensuring that a leading 'L' and trailing ';' are attached
+     * to the returned descriptor.
+     *
+     * @param descriptor An object descriptor.
+     * @return A possibly unified object descriptor.
+     */
+    private static String unifyIfObjectArray(String descriptor) {
+        String objectArrayPrefix = "L" + PackageConstants.kArrayWrapperSlashPrefix + "$";
+        if (descriptor.startsWith(objectArrayPrefix)) {
+            String array = descriptor.substring(objectArrayPrefix.length());
+            if (PRIMITIVE_ARRAY_FORMAT.matcher(array).matches()) {
+                return objectArrayPrefix + array + ";";
+            }
+            String preparedArray = "[" + prepareObjectArrayForUnification(array);
+            String unifiedArray = ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(preparedArray);
+            return "L" + unifiedArray + ";";
+        } else {
+            String starting = (descriptor.startsWith("L")) ? "" : "L";
+            String ending = (descriptor.endsWith(";")) ? "" : ";";
+            return starting + descriptor + ending;
+        }
+    }
+
+    /**
+     * Converts a multi-dimensional object array descriptor, given by descriptor, into the expected
+     * format for the getUnifyingArrayWrapperDescriptor method.
+     *
+     * This method is primarily concerned with making sure a multi-dimensional object array is
+     * correctly represented.
+     *
+     * @param descriptor The multi-dimensional object array descriptor.
+     * @return The unifying multi-dimensional object array descriptor.
+     */
+    private static String prepareObjectArrayForUnification(String descriptor) {
+        int numLeadingTokens = 0;
+        for (char c : descriptor.toCharArray()) {
+            if (c == '$') {
+                numLeadingTokens++;
+            } else {
+                break;
+            }
+        }
+        String transformedTokens = new String(new char[numLeadingTokens]).replace("\0", "[");
+        String remainder = descriptor.substring(numLeadingTokens);
+        return transformedTokens + remainder;
+    }
+
 }

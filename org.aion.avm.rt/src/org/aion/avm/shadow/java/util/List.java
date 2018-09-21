@@ -1,7 +1,7 @@
 package org.aion.avm.shadow.java.util;
 
-import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectArray;
 
 public interface List<E> extends Collection<E> {
 
@@ -13,7 +13,7 @@ public interface List<E> extends Collection<E> {
 
     boolean avm_contains(IObject o);
 
-    ObjectArray avm_toArray();
+    IObjectArray avm_toArray();
 
     boolean avm_add(IObject e);
 

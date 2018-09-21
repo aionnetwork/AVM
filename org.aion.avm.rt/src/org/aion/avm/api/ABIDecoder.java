@@ -4,6 +4,7 @@ import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.ABICodecException;
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IObjectArray;
 import org.aion.avm.internal.MethodAccessException;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -136,7 +137,7 @@ public final class ABIDecoder {
      * @param txData the transaction data that has the encoded arguments descriptor and arguments.
      * @return an object array that contains all of the arguments.
      */
-    public static ObjectArray avm_decodeArguments(ByteArray txData) {
+    public static IObjectArray avm_decodeArguments(ByteArray txData) {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeArguments);
         Object[] result = decodeArguments(txData.getUnderlying());
         return (null != result)

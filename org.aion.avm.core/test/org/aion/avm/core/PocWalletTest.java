@@ -12,6 +12,7 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -52,6 +53,7 @@ public class PocWalletTest {
      * This means that it transformed it correctly and nothing was missing.
      */
     @Test
+    @Ignore
     public void testDeployWritesCode() {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];

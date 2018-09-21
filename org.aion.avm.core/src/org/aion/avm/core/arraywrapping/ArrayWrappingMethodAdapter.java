@@ -1,5 +1,6 @@
 package org.aion.avm.core.arraywrapping;
 
+import java.util.regex.Pattern;
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -45,8 +46,10 @@ import java.util.Set;
  */
 
 class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
+    static private Pattern PRIMITIVE_ARRAY_FORMAT = Pattern.compile("[\\$\\[]+[IJZBSDFC]");
 
-    private Type typeA = Type.getType(org.aion.avm.arraywrapper.Array.class);
+    private Type typeAA = Type.getType(org.aion.avm.arraywrapper.IArray.class);
+//    private Type typeA = Type.getType(org.aion.avm.arraywrapper.Array.class);
     private Type typeBA = Type.getType(ByteArray.class);
     private Type typeCA = Type.getType(CharArray.class);
     private Type typeDA = Type.getType(DoubleArray.class);
@@ -130,7 +133,8 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
                 break;
             case Opcodes.ARRAYLENGTH:
                 m = Method.getMethod("int length()");
-                invokeVirtual(typeA, m);
+                invokeInterface(typeAA, m);
+//                invokeVirtual(typeA, m);
                 break;
 
             case Opcodes.AALOAD:
@@ -193,6 +197,13 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
         switch(opcode){
             case Opcodes.ANEWARRAY:
+                // handle the case of a 2D primitive array specially.
+                if (type.startsWith("[") && (type.length() == 2)) {
+                    visitMultiANewArrayInsn("[" + type, 0);
+                    break;
+                }
+
+                // allows us to continue to do invokestatic but then return in terms of unifying type.
                 if (type.startsWith("[")){
                     wName = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor("[" + type);
                 }else{
@@ -205,7 +216,8 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             case Opcodes.CHECKCAST: {
                 wName = type;
                 if (type.startsWith("[")) {
-                    wName = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(type);
+                    wName = ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(type);
+//                    wName = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(type);
                 }
                 this.mv.visitTypeInsn(opcode, wName);
                 break;
@@ -228,10 +240,14 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
         String desc = descriptor;
         if (name.equals("avm_values") && SHADOW_JDK_ENUM_DESC.contains(descriptor)){
             desc = "()[L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object;";
+        } else if ((name.equals("avm_clone") && (!PRIMITIVE_ARRAY_FORMAT.matcher(owner).matches()))) {
+            opcode = INVOKEINTERFACE;
+            isInterface = true;
         }
 
         desc = ArrayWrappingClassGenerator.updateMethodDesc(desc);
-        String newOwner = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(owner);
+        String newOwner = ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(owner);
+//        String newOwner = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(owner);
         this.mv.visitMethodInsn(opcode, newOwner, name, desc, isInterface);
     }
 
@@ -245,7 +261,8 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     {
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(descriptor) + ";";
+            desc = "L" + ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(descriptor) + ";";
+//            desc = "L" + ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(descriptor) + ";";
         }
 
         this.mv.visitLocalVariable(name, desc, signature, start, end, index);
@@ -259,7 +276,8 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     {
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(descriptor) + ";";
+            desc = "L" + ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(descriptor) + ";";
+//            desc = "L" + ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(descriptor) + ";";
         }
 
         this.mv.visitFieldInsn(opcode, owner, name, desc);

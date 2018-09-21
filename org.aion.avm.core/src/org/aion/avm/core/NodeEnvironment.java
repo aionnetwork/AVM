@@ -58,7 +58,8 @@ public class NodeEnvironment {
             };
 
             this.arraywrapperClasses = new Class<?>[] {
-                    org.aion.avm.arraywrapper.Array.class
+                    org.aion.avm.arraywrapper.IArray.class
+                    , org.aion.avm.arraywrapper.Array.class
                     , org.aion.avm.arraywrapper.ArrayElement.class
                     , org.aion.avm.arraywrapper.ByteArray.class
                     , org.aion.avm.arraywrapper.ByteArray2D.class
