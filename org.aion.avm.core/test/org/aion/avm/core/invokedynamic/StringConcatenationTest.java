@@ -79,7 +79,7 @@ public class StringConcatenationTest {
                                      String methodName, org.aion.avm.shadow.java.lang.String... stringArgs) throws Exception {
         final var instance = clazz.getDeclaredConstructor().newInstance();
         final var method = clazz.getDeclaredMethod(methodName, getTypesFrom(stringArgs));
-        final var actual = (org.aion.avm.shadow.java.lang.String) method.invoke(instance, stringArgs);
+        final var actual = (org.aion.avm.shadow.java.lang.String) method.invoke(instance, (Object[])stringArgs);
         return actual.getUnderlying();
     }
 
