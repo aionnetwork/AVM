@@ -107,7 +107,7 @@ public class LoadedDApp {
      * @return The graph processor which has captured the state of the statics.
      */
     public ReentrantGraphProcessor replaceClassStaticsWithClones(IStorageFeeProcessor feeProcessor) {
-        ReentrantGraphProcessor processor = new ReentrantGraphProcessor(this.fieldCache, feeProcessor, this.classes);
+        ReentrantGraphProcessor processor = new ReentrantGraphProcessor(new ConstructorCache(this.loader), this.fieldCache, feeProcessor, this.classes);
         processor.captureAndReplaceStaticState();
         return processor;
     }

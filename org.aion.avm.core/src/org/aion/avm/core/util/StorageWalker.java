@@ -17,13 +17,13 @@ import java.util.Set;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.persistence.ConstructorCache;
 import org.aion.avm.core.persistence.ReflectedFieldCache;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.StorageKeys;
 import org.aion.avm.core.persistence.StreamingPrimitiveCodec;
 import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.kernel.KernelInterface;
@@ -69,6 +69,7 @@ public class StorageWalker {
         // These objects are filled/used by the populator.
         Set<Long> processed = new HashSet<>();
         Queue<org.aion.avm.shadow.java.lang.Object> instanceQueue = new LinkedList<>();
+        ConstructorCache constructorCache = new ConstructorCache(loader);
         
         // Create the populator which describes and outputs what it sees.
         ReflectionStructureCodec.IFieldPopulator populator =  new ReflectionStructureCodec.IFieldPopulator() {
@@ -115,8 +116,7 @@ public class StorageWalker {
                 // For now, just make sure we enqueue each instance only once.
                 if (!processed.contains(instanceId)) {
                     processed.add(instanceId);
-                    Constructor<?> con = Class.forName(className, false, loader).getConstructor(IDeserializer.class, IPersistenceToken.class);
-                    con.setAccessible(true);
+                    Constructor<?> con = constructorCache.getConstructorForClassName(className);
                     org.aion.avm.shadow.java.lang.Object stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(null, persistenceToken);
                     instanceQueue.add(stub);
                 }

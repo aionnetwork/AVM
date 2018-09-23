@@ -42,6 +42,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         }};
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
+    private final ConstructorCache constructorCache;
     private final ReflectedFieldCache fieldCache;
     private final IStorageFeeProcessor feeProcessor;
     private final List<Class<?>> classes;
@@ -59,7 +60,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     // (mostly non-final just to prove that the state machine is being used correctly).
     private Queue<Object> previousStatics;
 
-    public ReentrantGraphProcessor(ReflectedFieldCache fieldCache, IStorageFeeProcessor feeProcessor, List<Class<?>> classes) {
+    public ReentrantGraphProcessor(ConstructorCache constructorCache, ReflectedFieldCache fieldCache, IStorageFeeProcessor feeProcessor, List<Class<?>> classes) {
+        this.constructorCache = constructorCache;
         this.fieldCache = fieldCache;
         this.feeProcessor = feeProcessor;
         this.classes = classes;
@@ -600,10 +602,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 // never serialized to the storage.  The only objects which can be added to the caller's graph are new objects (which don't have an
                 // instanceId, either).
                 try {
-                    Constructor<?> constructor = caller.getClass().getConstructor(IDeserializer.class, IPersistenceToken.class);
-                    constructor.setAccessible(true);
+                    Constructor<?> constructor = this.constructorCache.getConstructorForClassName(caller.getClass().getName());
                     callee = (org.aion.avm.shadow.java.lang.Object) constructor.newInstance(new CopyingDeserializer(caller), SerializedInstanceStub.REENTRANT_CALLEE_INSTANCE_TOKEN);
-                } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
                     // TODO:  These should probably come through a cache.
                     RuntimeAssertionError.unexpected(e);
                 }
