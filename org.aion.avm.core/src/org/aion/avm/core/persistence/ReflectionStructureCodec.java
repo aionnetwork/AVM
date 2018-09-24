@@ -275,13 +275,13 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
         byte[] rawData = this.kernel.getStorage(address, StorageKeys.forInstance(instanceId));
         this.feeProcessor.readOneInstanceFromStorage(rawData.length - KeyValueExtentCodec.OVERHEAD_BYTES);
-        deserializeInstance(instance, rawData);
+        deserializeInstance(instance, KeyValueExtentCodec.decode(rawData));
     }
 
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         try {
             IPersistenceToken persistenceToken = (IPersistenceToken)this.persistenceTokenField.get(instance);
-            byte[] serialized = internalSerializeInstance(instance, nextObjectSink);
+            byte[] serialized = KeyValueExtentCodec.encode(internalSerializeInstance(instance, nextObjectSink));
             // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
             // we run out of energy, part-way.
             this.feeProcessor.writeOneInstanceToStorage(serialized.length - KeyValueExtentCodec.OVERHEAD_BYTES);
@@ -294,7 +294,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     // Note that this is only public so tests can use it.
-    public byte[] internalSerializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
+    public Extent internalSerializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer singleSerializer = new SingleInstanceSerializer(this, encoder, nextObjectSink);
         try {
@@ -303,15 +303,15 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             // If there are any problems with this access, we must have resolved it before getting to this point.
             throw RuntimeAssertionError.unexpected(e);
         }
-        return KeyValueExtentCodec.encode(encoder.toExtent());
+        return encoder.toExtent();
     }
 
     // Note that this is only public so tests can use it.
-    public void deserializeInstance(org.aion.avm.shadow.java.lang.Object instance, byte[] rawData) {
+    public void deserializeInstance(org.aion.avm.shadow.java.lang.Object instance, Extent extent) {
         // To see it referenced here, we must have saved this data, in the past.
-        RuntimeAssertionError.assertTrue(null != rawData);
+        RuntimeAssertionError.assertTrue(null != extent);
         
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(rawData));
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(extent);
         SingleInstanceDeserializer singleDeserializer = new SingleInstanceDeserializer(this, decoder);
         try {
             this.deserializeSelf.invoke(instance, null, singleDeserializer);

@@ -140,11 +140,12 @@ public class ReflectionStructureCodecTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //i_seven
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //i_eight
         };
+        Extent extent = KeyValueExtentCodec.decode(expected);
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
         ReflectionStructureCodec deserializer = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
         // Note that the deserializer always assumes it is operating on stubs so create the instance and pass it in.
         ReflectionStructureCodecTarget target = new ReflectionStructureCodecTarget();
-        deserializer.deserializeInstance(target, expected);
+        deserializer.deserializeInstance(target, extent);
         
         Assert.assertEquals(1, target.avm_hashCode());
         Assert.assertEquals(true, target.i_one);
@@ -172,9 +173,9 @@ public class ReflectionStructureCodecTest {
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
-        Extent rootExtent = KeyValueExtentCodec.decode(codec.internalSerializeInstance(root, NULL_CONSUMER));
-        Extent oneExtent = KeyValueExtentCodec.decode(codec.internalSerializeInstance(one, NULL_CONSUMER));
-        Extent twoExtent = KeyValueExtentCodec.decode(codec.internalSerializeInstance(two, NULL_CONSUMER));
+        Extent rootExtent = codec.internalSerializeInstance(root, NULL_CONSUMER);
+        Extent oneExtent = codec.internalSerializeInstance(one, NULL_CONSUMER);
+        Extent twoExtent = codec.internalSerializeInstance(two, NULL_CONSUMER);
         // Verify that the primitive data for all these differs only in hashcode.
         // Compare the middle segments of these to a zero array.
         byte[] zero = new byte[30];
@@ -212,8 +213,8 @@ public class ReflectionStructureCodecTest {
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
-        Extent root1Extent = KeyValueExtentCodec.decode(codec.internalSerializeInstance(root1, NULL_CONSUMER));
-        Extent root2Extent = KeyValueExtentCodec.decode(codec.internalSerializeInstance(root2, NULL_CONSUMER));
+        Extent root1Extent = codec.internalSerializeInstance(root1, NULL_CONSUMER);
+        Extent root2Extent = codec.internalSerializeInstance(root2, NULL_CONSUMER);
         // These are empty and point to the same instance so they should be identical, after the hashcode.
         Assert.assertTrue(Arrays.equals(root1Extent.data, 4, root1Extent.data.length -4 - 1, root2Extent.data, 4, root2Extent.data.length -4 - 1));
         // Verify that the last byte is this instanceId of "1".
@@ -256,18 +257,21 @@ public class ReflectionStructureCodecTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //i_seven
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //i_eight
         };
+        Extent extent1 = KeyValueExtentCodec.decode(expected1);
+        Extent extent2 = KeyValueExtentCodec.decode(expected2);
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
         ReflectionStructureCodec deserializer = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
         ReflectionStructureCodecTarget target1 = new ReflectionStructureCodecTarget();
-        deserializer.deserializeInstance(target1, expected1);
+        deserializer.deserializeInstance(target1, extent1);
         ReflectionStructureCodecTarget target2 = new ReflectionStructureCodecTarget();
-        deserializer.deserializeInstance(target2, expected2);
+        deserializer.deserializeInstance(target2, extent2);
         Assert.assertTrue(target1.i_nine == target2.i_nine);
     }
 
 
     private static byte[] serializeSinceInstanceHelper(ReflectionStructureCodec codec, ReflectionStructureCodecTarget instance) {
-        return codec.internalSerializeInstance(instance, NULL_CONSUMER);
+        Extent extent = codec.internalSerializeInstance(instance, NULL_CONSUMER);
+        return KeyValueExtentCodec.encode(extent);
     }
 
     private static int readIntAtOffset(byte[] bytes, int offset) {
