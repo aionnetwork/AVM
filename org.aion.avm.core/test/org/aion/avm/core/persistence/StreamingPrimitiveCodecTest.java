@@ -16,7 +16,7 @@ public class StreamingPrimitiveCodecTest {
         long five = 5;
         byte[] six = new byte[] {1,2,3,4,5};
         
-        byte[] result = StreamingPrimitiveCodec.buildEncoder()
+        byte[] result = new StreamingPrimitiveCodec.Encoder()
             .encodeByte(one)
             .encodeShort(two)
             .encodeChar(three)
@@ -26,7 +26,7 @@ public class StreamingPrimitiveCodecTest {
             .toBytes();
         Assert.assertEquals(Byte.BYTES + Short.BYTES + Character.BYTES + Integer.BYTES + Long.BYTES + six.length, result.length);
         
-        StreamingPrimitiveCodec.Decoder decoder = StreamingPrimitiveCodec.buildDecoder(result);
+        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(result);
         Assert.assertEquals(one, decoder.decodeByte());
         Assert.assertEquals(two, decoder.decodeShort());
         Assert.assertEquals(three, decoder.decodeChar());
@@ -39,7 +39,7 @@ public class StreamingPrimitiveCodecTest {
 
     @Test
     public void serializeEachExtreme() {
-        byte[] result = StreamingPrimitiveCodec.buildEncoder()
+        byte[] result = new StreamingPrimitiveCodec.Encoder()
             .encodeByte(Byte.MAX_VALUE)
             .encodeByte(Byte.MIN_VALUE)
             .encodeShort(Short.MAX_VALUE)
@@ -53,7 +53,7 @@ public class StreamingPrimitiveCodecTest {
             .toBytes();
         Assert.assertEquals(2 * Byte.BYTES + 2 * Short.BYTES + 2 * Character.BYTES + 2 * Integer.BYTES + 2 * Long.BYTES, result.length);
         
-        StreamingPrimitiveCodec.Decoder decoder = StreamingPrimitiveCodec.buildDecoder(result);
+        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(result);
         Assert.assertEquals(Byte.MAX_VALUE, decoder.decodeByte());
         Assert.assertEquals(Byte.MIN_VALUE, decoder.decodeByte());
         Assert.assertEquals(Short.MAX_VALUE, decoder.decodeShort());

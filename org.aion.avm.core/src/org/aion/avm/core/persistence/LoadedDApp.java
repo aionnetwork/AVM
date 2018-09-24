@@ -90,7 +90,7 @@ public class LoadedDApp {
         // Extract the raw data for the class statics.
         byte[] rawData = kernelInterface.getStorage(this.address, StorageKeys.CLASS_STATICS);
         feeProcessor.readStaticDataFromStorage(rawData.length);
-        StreamingPrimitiveCodec.Decoder decoder = StreamingPrimitiveCodec.buildDecoder(rawData);
+        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
         
         // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
         for (Class<?> clazz : this.classes) {
@@ -122,7 +122,7 @@ public class LoadedDApp {
     public long saveClassStaticsToStorage(long nextInstanceId, IStorageFeeProcessor feeProcessor, KernelInterface kernelInterface) {
         // Build the encoder.
         ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, null, feeProcessor, kernelInterface, this.address, nextInstanceId);
-        StreamingPrimitiveCodec.Encoder encoder = StreamingPrimitiveCodec.buildEncoder();
+        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
         
         // Create the queue of instances reachable from here and consumer abstraction.
         Queue<org.aion.avm.shadow.java.lang.Object> instancesToWrite = new LinkedList<>();

@@ -145,7 +145,7 @@ public class StorageWalker {
         
         // Extract the raw data for the class statics.
         byte[] staticData = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
-        StreamingPrimitiveCodec.Decoder staticDecoder = StreamingPrimitiveCodec.buildDecoder(staticData);
+        StreamingPrimitiveCodec.Decoder staticDecoder = new StreamingPrimitiveCodec.Decoder(staticData);
         for (Class<?> clazz : classes) {
             output.println("Class(" + shortenClassName(clazz.getName()) + "): ");
             codec.deserializeClass(staticDecoder, clazz);
@@ -171,7 +171,7 @@ public class StorageWalker {
             if (isStringCase || isObjectArrayCase || isCommonUserDefinedCase) {
                 // We are going to process this instance so load its data and create its decoder.
                 byte[] instanceData = kernel.getStorage(address, StorageKeys.forInstance(instanceId));
-                StreamingPrimitiveCodec.Decoder instanceDecoder = StreamingPrimitiveCodec.buildDecoder(instanceData);
+                StreamingPrimitiveCodec.Decoder instanceDecoder = new StreamingPrimitiveCodec.Decoder(instanceData);
                 
                 // We need to special-case the hashCode (normally handled by the shadow Object implementation).
                 output.println("\thashCode: int(" + instanceDecoder.decodeInt() + "), ");

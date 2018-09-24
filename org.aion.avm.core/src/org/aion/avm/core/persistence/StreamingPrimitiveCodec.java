@@ -11,15 +11,6 @@ import java.io.ByteArrayOutputStream;
  * See issue-127 for more information.
  */
 public class StreamingPrimitiveCodec {
-    public static Encoder buildEncoder() {
-        return new Encoder();
-    }
-
-    public static Decoder buildDecoder(byte[] bytesToDecode) {
-        return new Decoder(bytesToDecode);
-    }
-
-
     public static class Encoder {
         // We want a variable-length output so just use a stream and copy it to bytes at the end.
         private final ByteArrayOutputStream output;
