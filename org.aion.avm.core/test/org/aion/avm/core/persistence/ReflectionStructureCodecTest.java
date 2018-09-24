@@ -52,7 +52,7 @@ public class ReflectionStructureCodecTest {
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, null, null, 1);
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         codec.serializeClass(encoder, ReflectionStructureCodecTarget.class, NULL_CONSUMER);
         byte[] result = encoder.toBytes();
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.

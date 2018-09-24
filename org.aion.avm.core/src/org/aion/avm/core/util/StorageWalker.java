@@ -18,10 +18,10 @@ import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.persistence.ConstructorCache;
+import org.aion.avm.core.persistence.ExtentBasedCodec;
 import org.aion.avm.core.persistence.ReflectedFieldCache;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.StorageKeys;
-import org.aion.avm.core.persistence.StreamingPrimitiveCodec;
 import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IPersistenceToken;
@@ -145,7 +145,7 @@ public class StorageWalker {
         
         // Extract the raw data for the class statics.
         byte[] staticData = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
-        StreamingPrimitiveCodec.Decoder staticDecoder = new StreamingPrimitiveCodec.Decoder(staticData);
+        ExtentBasedCodec.Decoder staticDecoder = new ExtentBasedCodec.Decoder(staticData);
         for (Class<?> clazz : classes) {
             output.println("Class(" + shortenClassName(clazz.getName()) + "): ");
             codec.deserializeClass(staticDecoder, clazz);
@@ -171,7 +171,7 @@ public class StorageWalker {
             if (isStringCase || isObjectArrayCase || isCommonUserDefinedCase) {
                 // We are going to process this instance so load its data and create its decoder.
                 byte[] instanceData = kernel.getStorage(address, StorageKeys.forInstance(instanceId));
-                StreamingPrimitiveCodec.Decoder instanceDecoder = new StreamingPrimitiveCodec.Decoder(instanceData);
+                ExtentBasedCodec.Decoder instanceDecoder = new ExtentBasedCodec.Decoder(instanceData);
                 
                 // We need to special-case the hashCode (normally handled by the shadow Object implementation).
                 output.println("\thashCode: int(" + instanceDecoder.decodeInt() + "), ");

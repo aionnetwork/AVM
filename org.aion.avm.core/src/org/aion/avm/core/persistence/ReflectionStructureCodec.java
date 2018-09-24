@@ -72,7 +72,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         return this.nextInstanceId;
     }
 
-    public void serializeClass(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+    public void serializeClass(ExtentBasedCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
             // Note that only direct class statics are serialized with the class:  superclass statics are saved in the superclass.
             // Hence, just call the serializer, directly.
@@ -83,7 +83,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         }
     }
 
-    public void deserializeClass(StreamingPrimitiveCodec.Decoder decoder, Class<?> clazz) {
+    public void deserializeClass(ExtentBasedCodec.Decoder decoder, Class<?> clazz) {
         try {
             // Note that only direct class statics are deserialized with the class:  superclass statics are loaded from the superclass.
             // Hence, just call the deserializer, directly.
@@ -95,7 +95,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
 
-    private void safeSerialize(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) throws IllegalArgumentException, IllegalAccessException {
+    private void safeSerialize(ExtentBasedCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) throws IllegalArgumentException, IllegalAccessException {
         // This method is recursive since we are looking to find the root where we need to begin:
         // -for Objects this is the shadow Object
         // -for interfaces, it is when we hit null (since they have no super-class but the interface may have statics)
@@ -117,7 +117,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         }
     }
 
-    private void safeSerializeOneClass(StreamingPrimitiveCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) throws IllegalArgumentException, IllegalAccessException {
+    private void safeSerializeOneClass(ExtentBasedCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) throws IllegalArgumentException, IllegalAccessException {
         // Note that we serialize objects and classes the same way, just looking for instance versus static fields.
         int expectedModifier = (null == object)
                 ? Modifier.STATIC
@@ -166,7 +166,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         } 
     }
 
-    private void deflateInstanceAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object contents, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+    private void deflateInstanceAsStub(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object contents, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
             Supplier<Long> instanceIdProducer = () -> {
                 long instanceId = this.nextInstanceId;
@@ -188,7 +188,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         }
     }
 
-    private void safeDeserialize(StreamingPrimitiveCodec.Decoder decoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Class<?> firstManualClass) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    private void safeDeserialize(ExtentBasedCodec.Decoder decoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Class<?> firstManualClass) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
         // This method is recursive since we are looking to find the root where we need to begin:
         // -for Objects this is the shadow Object
         // -for interfaces, it is when we hit null (since they have no super-class but the interface may have statics)
@@ -210,7 +210,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         }
     }
 
-    private void safeDeserializeOneClass(StreamingPrimitiveCodec.Decoder decoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    private void safeDeserializeOneClass(ExtentBasedCodec.Decoder decoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
         // Note that we deserialize objects and classes the same way, just looking for instance versus static fields.
         int expectedModifier = (null == object)
                 ? Modifier.STATIC
@@ -255,7 +255,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         } 
     }
 
-    private org.aion.avm.shadow.java.lang.Object inflateStubAsInstance(StreamingPrimitiveCodec.Decoder decoder) {
+    private org.aion.avm.shadow.java.lang.Object inflateStubAsInstance(ExtentBasedCodec.Decoder decoder) {
         try {
             return SerializedInstanceStub.deserializeInstanceStub(decoder, this.populator);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -293,7 +293,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     // Note that this is only public so tests can use it.
     public byte[] internalSerializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer singleSerializer = new SingleInstanceSerializer(this, encoder, nextObjectSink);
         try {
             this.serializeSelf.invoke(instance, null, singleSerializer);
@@ -309,7 +309,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         // To see it referenced here, we must have saved this data, in the past.
         RuntimeAssertionError.assertTrue(null != rawData);
         
-        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(rawData);
         SingleInstanceDeserializer singleDeserializer = new SingleInstanceDeserializer(this, decoder);
         try {
             this.deserializeSelf.invoke(instance, null, singleDeserializer);
@@ -320,7 +320,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     @Override
-    public void partialAutomaticDeserializeInstance(StreamingPrimitiveCodec.Decoder decoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
+    public void partialAutomaticDeserializeInstance(ExtentBasedCodec.Decoder decoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
         try {
             safeDeserialize(decoder, instance.getClass(), instance, firstManualClass);
         } catch (IllegalArgumentException | IllegalAccessException | ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -330,7 +330,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     @Override
-    public void partialAutomaticSerializeInstance(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+    public void partialAutomaticSerializeInstance(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
             safeSerialize(encoder, instance.getClass(), instance, firstManualClass, nextObjectQueue);
         } catch (IllegalArgumentException | IllegalAccessException | SecurityException e) {
@@ -340,12 +340,12 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     @Override
-    public void encodeAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+    public void encodeAsStub(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         deflateInstanceAsStub(encoder, object, nextObjectQueue);
     }
 
     @Override
-    public org.aion.avm.shadow.java.lang.Object decodeStub(StreamingPrimitiveCodec.Decoder decoder) {
+    public org.aion.avm.shadow.java.lang.Object decodeStub(ExtentBasedCodec.Decoder decoder) {
         return inflateStubAsInstance(decoder);
     }
 

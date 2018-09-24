@@ -22,10 +22,10 @@ import org.junit.Test;
 public class SingleInstanceSerializerTest {
     private static final SingleInstanceSerializer.IAutomatic NULL_AUTOMATIC = new SingleInstanceSerializer.IAutomatic() {
         @Override
-        public void partialAutomaticSerializeInstance(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+        public void partialAutomaticSerializeInstance(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         }
         @Override
-        public void encodeAsStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
+        public void encodeAsStub(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object object, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
             // For this test, we will just write a 0x1 or 0x0 depending on whether or not object was null (since this is a unit test of the flow, not the encoding).
             if (null != object) {
                 encoder.encodeByte((byte)0x1);
@@ -50,7 +50,7 @@ public class SingleInstanceSerializerTest {
 
     @Test
     public void serializeByteArray() {
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder, NULL_OBJECT_SINK);
         ByteArray bytes = new ByteArray(new byte[] {1,2,3});
         bytes.serializeSelf(null, target);
@@ -68,7 +68,7 @@ public class SingleInstanceSerializerTest {
 
     @Test
     public void serializeShortArray() {
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder, NULL_OBJECT_SINK);
         ShortArray bytes = new ShortArray(new short[] {1,2,3});
         bytes.serializeSelf(null, target);
@@ -86,7 +86,7 @@ public class SingleInstanceSerializerTest {
 
     @Test
     public void serializeCharArray() {
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder, NULL_OBJECT_SINK);
         CharArray bytes = new CharArray(new char[] {1,2,3});
         bytes.serializeSelf(null, target);
@@ -104,7 +104,7 @@ public class SingleInstanceSerializerTest {
 
     @Test
     public void serializeIntArray() {
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder, NULL_OBJECT_SINK);
         IntArray bytes = new IntArray(new int[] {1,2,3});
         bytes.serializeSelf(null, target);
@@ -122,7 +122,7 @@ public class SingleInstanceSerializerTest {
 
     @Test
     public void serializeFloatArray() {
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder, NULL_OBJECT_SINK);
         FloatArray bytes = new FloatArray(new float[] {1.0f,2.0f,3.0f});
         bytes.serializeSelf(null, target);
@@ -140,7 +140,7 @@ public class SingleInstanceSerializerTest {
 
     @Test
     public void serializeLongArray() {
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder, NULL_OBJECT_SINK);
         LongArray bytes = new LongArray(new long[] {1,2,3});
         bytes.serializeSelf(null, target);
@@ -158,7 +158,7 @@ public class SingleInstanceSerializerTest {
 
     @Test
     public void serializeDoubleArray() {
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder, NULL_OBJECT_SINK);
         DoubleArray bytes = new DoubleArray(new double[] {1.0,2.0,3.0});
         bytes.serializeSelf(null, target);
@@ -176,7 +176,7 @@ public class SingleInstanceSerializerTest {
 
     @Test
     public void serializeShadowString() {
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder, NULL_OBJECT_SINK);
         org.aion.avm.shadow.java.lang.String bytes = new org.aion.avm.shadow.java.lang.String("TEST");
         bytes.serializeSelf(null, target);
@@ -195,7 +195,7 @@ public class SingleInstanceSerializerTest {
 
     @Test
     public void serializeObjectArray() {
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer target = new SingleInstanceSerializer(NULL_AUTOMATIC, encoder, NULL_OBJECT_SINK);
         ObjectArray holder = new ObjectArray(2);
         ObjectArray bytes = new ObjectArray(new Object[] {holder, null});

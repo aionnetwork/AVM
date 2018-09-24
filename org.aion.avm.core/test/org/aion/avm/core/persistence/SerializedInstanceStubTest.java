@@ -44,14 +44,14 @@ public class SerializedInstanceStubTest {
         Assert.assertEquals(4, byteSize);
         
         // Encode this.
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
         
         // Nulls should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
         
         // Decode this.
-        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(encoder.toBytes());
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(encoder.toBytes());
         org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
         Assert.assertEquals(testingNull(), instance.toString());
     }
@@ -66,14 +66,14 @@ public class SerializedInstanceStubTest {
         Assert.assertEquals(4 + 8, byteSize);
         
         // Encode this.
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
         
         // Constants should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
         
         // Decode this.
-        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(encoder.toBytes());
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(encoder.toBytes());
         org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
         Assert.assertEquals(testingConstant(-18L), instance.toString());
     }
@@ -88,14 +88,14 @@ public class SerializedInstanceStubTest {
         Assert.assertEquals(4 + 4 + String.class.getName().getBytes(StandardCharsets.UTF_8).length, byteSize);
         
         // Encode this.
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
         
         // Classes should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
         
         // Decode this.
-        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(encoder.toBytes());
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(encoder.toBytes());
         org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
         Assert.assertEquals(testingClass(String.class.getName()), instance.toString());
     }
@@ -110,14 +110,14 @@ public class SerializedInstanceStubTest {
         Assert.assertEquals(4 + org.aion.avm.shadow.java.lang.Object.class.getName().getBytes(StandardCharsets.UTF_8).length + 8, byteSize);
         
         // Encode this.
-        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
         
         // Instances should be enqueued.
         Assert.assertTrue(shouldEnqueue);
         
         // Decode this.
-        StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(encoder.toBytes());
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(encoder.toBytes());
         org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
         Assert.assertEquals(testingInstance(1L), instance.toString());
     }

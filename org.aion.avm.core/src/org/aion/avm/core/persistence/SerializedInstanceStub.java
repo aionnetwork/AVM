@@ -39,7 +39,7 @@ public class SerializedInstanceStub {
      * @param instanceIdProducer Called when a new instanceId is required for the instance.  If this is called, the instanceId should be considered used, by the implementation, and not given out again.
      * @return True if the instance was the type of object which should, itself, be serialized.
      */
-    public static boolean serializeInstanceStub(StreamingPrimitiveCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Field persistenceTokenField, Supplier<Long> instanceIdProducer) throws IllegalArgumentException, IllegalAccessException {
+    public static boolean serializeInstanceStub(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Field persistenceTokenField, Supplier<Long> instanceIdProducer) throws IllegalArgumentException, IllegalAccessException {
         boolean shouldEnqueueInstance = false;
         // See issue-147 for more information regarding this interpretation:
         // - null: (int)0.
@@ -109,7 +109,7 @@ public class SerializedInstanceStub {
      * @param populator Used to create the actual object instance, itself.
      * @return The object instance (built by populator).
      */
-    public static org.aion.avm.shadow.java.lang.Object deserializeInstanceStub(StreamingPrimitiveCodec.Decoder decoder, IFieldPopulator populator) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public static org.aion.avm.shadow.java.lang.Object deserializeInstanceStub(ExtentBasedCodec.Decoder decoder, IFieldPopulator populator) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         // See issue-147 for more information regarding this interpretation:
         // - null: (int)0.
         // - -1: (int)-1, (long) instanceId (of constant - negative).
