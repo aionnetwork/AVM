@@ -111,35 +111,35 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                     if (boolean.class == type) {
                         boolean val = field.getBoolean(null);
                         inOrderData.add(val);
-                        byteSize += StreamingPrimitiveCodec.ByteSizes.BOOLEAN;
+                        byteSize += ByteSizes.BOOLEAN;
                     } else if (byte.class == type) {
                         byte val = field.getByte(null);
                         inOrderData.add(val);
-                        byteSize += StreamingPrimitiveCodec.ByteSizes.BYTE;
+                        byteSize += ByteSizes.BYTE;
                     } else if (short.class == type) {
                         short val = field.getShort(null);
                         inOrderData.add(val);
-                        byteSize += StreamingPrimitiveCodec.ByteSizes.SHORT;
+                        byteSize += ByteSizes.SHORT;
                     } else if (char.class == type) {
                         char val = field.getChar(null);
                         inOrderData.add(val);
-                        byteSize += StreamingPrimitiveCodec.ByteSizes.CHAR;
+                        byteSize += ByteSizes.CHAR;
                     } else if (int.class == type) {
                         int val = field.getInt(null);
                         inOrderData.add(val);
-                        byteSize += StreamingPrimitiveCodec.ByteSizes.INT;
+                        byteSize += ByteSizes.INT;
                     } else if (float.class == type) {
                         float val = field.getFloat(null);
                         inOrderData.add(val);
-                        byteSize += StreamingPrimitiveCodec.ByteSizes.FLOAT;
+                        byteSize += ByteSizes.FLOAT;
                     } else if (long.class == type) {
                         long val = field.getLong(null);
                         inOrderData.add(val);
-                        byteSize += StreamingPrimitiveCodec.ByteSizes.LONG;
+                        byteSize += ByteSizes.LONG;
                     } else if (double.class == type) {
                         double val = field.getDouble(null);
                         inOrderData.add(val);
-                        byteSize += StreamingPrimitiveCodec.ByteSizes.DOUBLE;
+                        byteSize += ByteSizes.DOUBLE;
                     } else {
                         // This should be a shadow object.
                         org.aion.avm.shadow.java.lang.Object contents = (org.aion.avm.shadow.java.lang.Object)field.get(null);
@@ -363,21 +363,21 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 if (Modifier.STATIC == (Modifier.STATIC & field.getModifiers())) {
                     Class<?> type = field.getType();
                     if (boolean.class == type) {
-                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.BOOLEAN;
+                        staticByteSize += ByteSizes.BOOLEAN;
                     } else if (byte.class == type) {
-                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.BYTE;
+                        staticByteSize += ByteSizes.BYTE;
                     } else if (short.class == type) {
-                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.SHORT;
+                        staticByteSize += ByteSizes.SHORT;
                     } else if (char.class == type) {
-                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.CHAR;
+                        staticByteSize += ByteSizes.CHAR;
                     } else if (int.class == type) {
-                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.INT;
+                        staticByteSize += ByteSizes.INT;
                     } else if (float.class == type) {
-                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.FLOAT;
+                        staticByteSize += ByteSizes.FLOAT;
                     } else if (long.class == type) {
-                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.LONG;
+                        staticByteSize += ByteSizes.LONG;
                     } else if (double.class == type) {
-                        staticByteSize += StreamingPrimitiveCodec.ByteSizes.DOUBLE;
+                        staticByteSize += ByteSizes.DOUBLE;
                     } else {
                         // Load the field (it will be either a new object or the callee-space object which we need to replace with its caller-space).
                         org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)field.get(null);
@@ -658,21 +658,21 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             Object elt = dataQueue.remove();
             // Handle all the boxed primitives from LoopbackCodec and our own auto methods.
             if (elt instanceof Boolean) {
-                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.BOOLEAN;
+                instanceByteSize += ByteSizes.BOOLEAN;
             } else if (elt instanceof Byte) {
-                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.BYTE;
+                instanceByteSize += ByteSizes.BYTE;
             } else if (elt instanceof Short) {
-                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.SHORT;
+                instanceByteSize += ByteSizes.SHORT;
             } else if (elt instanceof Character) {
-                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.CHAR;
+                instanceByteSize += ByteSizes.CHAR;
             } else if (elt instanceof Integer) {
-                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.INT;
+                instanceByteSize += ByteSizes.INT;
             } else if (elt instanceof Float) {
-                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.FLOAT;
+                instanceByteSize += ByteSizes.FLOAT;
             } else if (elt instanceof Long) {
-                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.LONG;
+                instanceByteSize += ByteSizes.LONG;
             } else if (elt instanceof Double) {
-                instanceByteSize += StreamingPrimitiveCodec.ByteSizes.DOUBLE;
+                instanceByteSize += ByteSizes.DOUBLE;
             } else {
                 // This better be a shadow object.
                 RuntimeAssertionError.assertTrue((null == elt) || (elt instanceof org.aion.avm.shadow.java.lang.Object));

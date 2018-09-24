@@ -187,7 +187,7 @@ public class SerializedInstanceStub {
         // - normal references go last (includes those with 0 or >0 instanceIds).
         if (null == instance) {
             // Just encoding the null stub constant as an int.
-            sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT;
+            sizeInBytes += ByteSizes.INT;
         } else {
             // Check the instanceId to see if this is a special-case.
             IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
@@ -211,27 +211,27 @@ public class SerializedInstanceStub {
             if (isConstant) {
                 // Constants.
                 // Encode the constant stub constant as an int.
-                sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT;
+                sizeInBytes += ByteSizes.INT;
                 // Then encode the instanceId as a long.
-                sizeInBytes += StreamingPrimitiveCodec.ByteSizes.LONG;
+                sizeInBytes += ByteSizes.LONG;
             } else if (instance instanceof org.aion.avm.shadow.java.lang.Class) {
                 // Non-constant Class reference.
                 // Encode the class stub constant as an int.
-                sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT;
+                sizeInBytes += ByteSizes.INT;
                 
                 // Get the class name.
                 String className = ((org.aion.avm.shadow.java.lang.Class<?>)instance).getRealClass().getName();
                 byte[] utf8Name = className.getBytes(StandardCharsets.UTF_8);
                 
                 // Write the length and the bytes.
-                sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT + utf8Name.length;
+                sizeInBytes += ByteSizes.INT + utf8Name.length;
             } else {
                 // This a normal reference so get the type.
                 String typeName = instance.getClass().getName();
                 byte[] utf8Name = typeName.getBytes(StandardCharsets.UTF_8);
                 
                 // Serialize as the type name length, byte, and the the instanceId.
-                sizeInBytes += StreamingPrimitiveCodec.ByteSizes.INT + utf8Name.length + StreamingPrimitiveCodec.ByteSizes.LONG;
+                sizeInBytes += ByteSizes.INT + utf8Name.length + ByteSizes.LONG;
             }
         }
         return sizeInBytes;
