@@ -14,6 +14,7 @@ import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
@@ -89,8 +90,9 @@ public class LoadedDApp {
         
         // Extract the raw data for the class statics.
         byte[] rawData = kernelInterface.getStorage(this.address, StorageKeys.CLASS_STATICS);
-        feeProcessor.readStaticDataFromStorage(rawData.length);
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(rawData);
+        feeProcessor.readStaticDataFromStorage(rawData.length - KeyValueExtentCodec.OVERHEAD_BYTES);
+        Extent staticData = KeyValueExtentCodec.decode(rawData);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(staticData);
         
         // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
         for (Class<?> clazz : this.classes) {
@@ -138,8 +140,9 @@ public class LoadedDApp {
         }
         
         // Save the raw bytes.
-        byte[] rawData = encoder.toBytes();
-        feeProcessor.writeStaticDataToStorage(rawData.length);
+        Extent staticData = encoder.toExtent();
+        byte[] rawData = KeyValueExtentCodec.encode(staticData);
+        feeProcessor.writeStaticDataToStorage(rawData.length - KeyValueExtentCodec.OVERHEAD_BYTES);
         kernelInterface.putStorage(this.address, StorageKeys.CLASS_STATICS, rawData);
         
         // Now, drain the queue.

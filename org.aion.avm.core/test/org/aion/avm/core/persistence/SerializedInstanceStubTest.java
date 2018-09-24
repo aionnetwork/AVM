@@ -50,8 +50,12 @@ public class SerializedInstanceStubTest {
         // Nulls should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
         
+        // This should be a single INode reference.
+        Extent extent = encoder.toExtent();
+        Assert.assertEquals(1, extent.references.length);
+        
         // Decode this.
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(encoder.toBytes());
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(extent);
         org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
         Assert.assertEquals(testingNull(), instance.toString());
     }
@@ -72,8 +76,12 @@ public class SerializedInstanceStubTest {
         // Constants should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
         
+        // This should be a single INode reference.
+        Extent extent = encoder.toExtent();
+        Assert.assertEquals(1, extent.references.length);
+        
         // Decode this.
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(encoder.toBytes());
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(extent);
         org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
         Assert.assertEquals(testingConstant(-18L), instance.toString());
     }
@@ -94,8 +102,12 @@ public class SerializedInstanceStubTest {
         // Classes should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
         
+        // This should be a single INode reference.
+        Extent extent = encoder.toExtent();
+        Assert.assertEquals(1, extent.references.length);
+        
         // Decode this.
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(encoder.toBytes());
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(extent);
         org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
         Assert.assertEquals(testingClass(String.class.getName()), instance.toString());
     }
@@ -116,8 +128,12 @@ public class SerializedInstanceStubTest {
         // Instances should be enqueued.
         Assert.assertTrue(shouldEnqueue);
         
+        // This should be a single INode reference.
+        Extent extent = encoder.toExtent();
+        Assert.assertEquals(1, extent.references.length);
+        
         // Decode this.
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(encoder.toBytes());
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(encoder.toExtent());
         org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
         Assert.assertEquals(testingInstance(1L), instance.toString());
     }

@@ -55,7 +55,7 @@ public class RevertAndInvalidTest {
         assertTrue(energyLimit > txResult.getEnergyUsed());
 
         dumpStorage(dappAddress);
-        assertArrayEquals(kernel.getStorage(dappAddress, StorageKeys.CLASS_STATICS), new byte[]{0,0,0,0});
+        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, kernel.getStorage(dappAddress, StorageKeys.CLASS_STATICS));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class RevertAndInvalidTest {
         assertEquals(energyLimit, txResult.getEnergyUsed());
 
         dumpStorage(dappAddress);
-        assertArrayEquals(kernel.getStorage(dappAddress, StorageKeys.CLASS_STATICS), new byte[]{0,0,0,0});
+        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, kernel.getStorage(dappAddress, StorageKeys.CLASS_STATICS));
     }
 
     private void dumpStorage(byte[] dappAddress) {

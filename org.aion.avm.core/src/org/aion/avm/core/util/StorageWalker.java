@@ -23,6 +23,7 @@ import org.aion.avm.core.persistence.ReflectedFieldCache;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.StorageKeys;
 import org.aion.avm.core.persistence.graph.InstanceIdToken;
+import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.PackageConstants;
@@ -145,7 +146,7 @@ public class StorageWalker {
         
         // Extract the raw data for the class statics.
         byte[] staticData = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
-        ExtentBasedCodec.Decoder staticDecoder = new ExtentBasedCodec.Decoder(staticData);
+        ExtentBasedCodec.Decoder staticDecoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(staticData));
         for (Class<?> clazz : classes) {
             output.println("Class(" + shortenClassName(clazz.getName()) + "): ");
             codec.deserializeClass(staticDecoder, clazz);
@@ -171,7 +172,7 @@ public class StorageWalker {
             if (isStringCase || isObjectArrayCase || isCommonUserDefinedCase) {
                 // We are going to process this instance so load its data and create its decoder.
                 byte[] instanceData = kernel.getStorage(address, StorageKeys.forInstance(instanceId));
-                ExtentBasedCodec.Decoder instanceDecoder = new ExtentBasedCodec.Decoder(instanceData);
+                ExtentBasedCodec.Decoder instanceDecoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(instanceData));
                 
                 // We need to special-case the hashCode (normally handled by the shadow Object implementation).
                 output.println("\thashCode: int(" + instanceDecoder.decodeInt() + "), ");

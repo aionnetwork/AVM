@@ -55,7 +55,7 @@ public class SingleInstanceDeserializerTest {
                 0x2,
                 0x3,
         };
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(expected);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(new Extent(expected, new INode[0]));
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         ByteArray bytes = new ByteArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
@@ -71,7 +71,7 @@ public class SingleInstanceDeserializerTest {
                 0x0, 0x2,
                 0x0, 0x3,
         };
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(expected);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(new Extent(expected, new INode[0]));
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         ShortArray bytes = new ShortArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
@@ -87,7 +87,7 @@ public class SingleInstanceDeserializerTest {
                 0x0, 0x2,
                 0x0, 0x3,
         };
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(expected);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(new Extent(expected, new INode[0]));
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         CharArray bytes = new CharArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
@@ -103,7 +103,7 @@ public class SingleInstanceDeserializerTest {
                 0x0, 0x0, 0x0, 0x2,
                 0x0, 0x0, 0x0, 0x3,
         };
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(expected);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(new Extent(expected, new INode[0]));
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         IntArray bytes = new IntArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
@@ -119,7 +119,7 @@ public class SingleInstanceDeserializerTest {
                 0x40, 0x0, 0x0, 0x0,
                 0x40, 0x40, 0x0, 0x0,
         };
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(expected);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(new Extent(expected, new INode[0]));
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         FloatArray bytes = new FloatArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
@@ -135,7 +135,7 @@ public class SingleInstanceDeserializerTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2,
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3,
         };
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(expected);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(new Extent(expected, new INode[0]));
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         LongArray bytes = new LongArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
@@ -151,7 +151,7 @@ public class SingleInstanceDeserializerTest {
                 0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
                 0x40, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
         };
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(expected);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(new Extent(expected, new INode[0]));
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         DoubleArray bytes = new DoubleArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
@@ -168,7 +168,7 @@ public class SingleInstanceDeserializerTest {
                 0x53,
                 0x54,
         };
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(expected);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(new Extent(expected, new INode[0]));
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         org.aion.avm.shadow.java.lang.String bytes = new org.aion.avm.shadow.java.lang.String((String)null);
         bytes.deserializeSelf(null, target);
@@ -184,7 +184,7 @@ public class SingleInstanceDeserializerTest {
                 0x1, // instance
                 0x0, // null
         };
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(expected);
+        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(new Extent(expected, new INode[] {null}));
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         ObjectArray bytes = new ObjectArray(null, new InstanceIdToken(1L));
         bytes.deserializeSelf(null, target);
