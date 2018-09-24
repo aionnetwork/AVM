@@ -1,4 +1,4 @@
-package org.aion.avm.core.persistence;
+package org.aion.avm.core.persistence.keyvalue;
 
 import java.nio.charset.StandardCharsets;
 

@@ -1,5 +1,6 @@
 package org.aion.avm.core.persistence;
 
+import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
 

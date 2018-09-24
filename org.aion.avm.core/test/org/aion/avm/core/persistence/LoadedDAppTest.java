@@ -3,6 +3,7 @@ package org.aion.avm.core.persistence;
 import java.util.Arrays;
 
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
