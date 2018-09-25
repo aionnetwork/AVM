@@ -542,6 +542,40 @@ public final class ABIEncoder {
             public Object construct2DNativeArray(Object[] data) {
                 return null;
             }
+        },
+        avm_String  ('T', 0, new String[]{"T", "java.lang.String", PackageConstants.kShadowDotPrefix + "java.lang.String", "[Ljava.lang.String;", PackageConstants.kArrayWrapperDotPrefix + "$L" + PackageConstants.kShadowDotPrefix + "java.lang.String"}) {
+            @Override
+            public byte[] encode(Object data) {
+                return ((String) data).getBytes();
+            }
+            @Override
+            public byte[] encodeShadowType(Object data) {
+                return ((org.aion.avm.shadow.java.lang.String) data).avm_getBytes().getUnderlying();
+            }
+            @Override
+            public byte[][] encode1DArray(Object data) {
+                return null;
+            }
+            @Override
+            public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
+                return null;
+            }
+            @Override
+            public Array construct1DWrappedArray(Object[] data) {
+                return null;
+            }
+            @Override
+            public Object constructNativeArray(Object[] data) {
+                return null;
+            }
+            @Override
+            public ObjectArray construct2DWrappedArray(Object[] data) {
+                return null;
+            }
+            @Override
+            public Object construct2DNativeArray(Object[] data) {
+                return null;
+            }
         };
 
         public final char symbol;
@@ -730,7 +764,15 @@ public final class ABIEncoder {
                 // data should not be an array
                 byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
 
-                ret[0] = Character.toString(type.symbol).getBytes();
+                if (type == ABITypes.avm_String) {
+                    int length = className.startsWith(PackageConstants.kShadowDotPrefix) ?
+                            ((org.aion.avm.shadow.java.lang.String) data).avm_length() :
+                            ((String) data).length();
+                    ret[0] = ("[" + type.symbol + length + "]").getBytes();
+                } else {
+                    ret[0] = Character.toString(type.symbol).getBytes();
+                }
+
                 if (className.startsWith(PackageConstants.kShadowDotPrefix + "java.lang.")) {
                     ret[1] = type.encodeShadowType(data);
                 } else {
