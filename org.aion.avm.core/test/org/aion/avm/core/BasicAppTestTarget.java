@@ -1,5 +1,8 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.shadow.java.util.Arrays;
 import org.aion.avm.userlib.AionMap;
 
 
@@ -10,109 +13,58 @@ import org.aion.avm.userlib.AionMap;
  * while we finish our ABI and deployment message design.
  */
 public class BasicAppTestTarget {
-    public static final byte kMethodIdentity = 1;
-    public static final byte kMethodSum = 2;
-    public static final byte kMethodLowOrderByteArrayHash = 3;
-    public static final byte kMethodSwapInputsFromLastCall = 5;
-    public static final byte kMethodTestArrayEquality = 6;
-    public static final byte kMethodAllocateObjectArray = 7;
-    public static final byte kMethodByteAutoboxing = 8;
-    public static final byte kMethodMapPut = 9;
-    public static final byte kMethodMapGet = 10;
-
     // NOTE:  This use of a static is something we will definitely be changing, later on, once we decide how static and instance state interacts with storage.
-    private static byte[] swappingPoint;
+    private static int swappingPoint;
     private static AionMap<Byte, Byte> longLivedMap = new AionMap<>();
 
     // NOTE:  Even though this is "byte[]" on the user's side, we will call it from the outside as "ByteArray"
-    public static byte[] decode(byte[] input) {
-        byte instruction = input[0];
-        byte[] output = null;
-        switch (instruction) {
-        case kMethodIdentity:
-            output = identity(input);
-            break;
-        case kMethodSum:
-            output = sum(input);
-            break;
-        case kMethodLowOrderByteArrayHash:
-            output = lowOrderByteArrayHash(input);
-            break;
-        case kMethodSwapInputsFromLastCall:
-            output = swapInputs(input);
-            break;
-        case kMethodTestArrayEquality:
-            output = arrayEquality(input);
-            break;
-        case kMethodAllocateObjectArray:
-            output = allocateObjectArray(input);
-            break;
-        case kMethodByteAutoboxing:
-            output = byteAutoboxing(input);
-            break;
-        case kMethodMapPut:
-            output = mapPut(input);
-            break;
-        case kMethodMapGet:
-            output = mapGet(input);
-            break;
-        default:
-            throw new AssertionError("Unknown instruction");
-        }
-        return output;
+    public static byte[] main() {
+        String methodName = ABIDecoder.decodeMethodName(BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(BasicAppTestTarget.class, BlockchainRuntime.getData());
     }
 
-    private static byte[] identity(byte[] input) {
+    public static byte[] identity(byte[] input) {
         return input;
     }
 
-    private static byte[] sum(byte[] input) {
-        byte total = 0;
+    public static int sum(byte[] input) {
+        int total = 0;
         for (int i = 0; i < input.length; ++i) {
             total += input[i];
         }
-        return new byte[] {total};
+        return total;
     }
 
-    private static byte[] lowOrderByteArrayHash(byte[] input) {
-        return new byte[] {(byte)(0xff & input.hashCode())};
-    }
-
-    private static byte[] swapInputs(byte[] input) {
-        byte[] result = swappingPoint;
+    public static int swapInputs(int input) {
+        int result = swappingPoint;
         swappingPoint = input;
         return result;
     }
 
-    private static byte[] arrayEquality(byte[] input) {
+    public static boolean arrayEquality(byte[] input) {
         byte[] target = new byte[] {5, 6, 7, 8};
-        boolean isEqual = target.equals(input);
-        byte result = (byte)(isEqual ? 1 : 0);
-        return new byte[] { result };
+        return target.equals(input);
     }
 
-    private static byte[] allocateObjectArray(byte[] input) {
+    public static int allocateObjectArray() {
         // We just want to create the array.
         Object[] array = new Object[] {"test", "two"};
-        return new byte[] { (byte)array.length };
+        return array.length;
     }
 
-    private static byte[] byteAutoboxing(byte[] input) {
+    public static byte[] byteAutoboxing(byte input) {
         // Take the second byte, auto-boxed, and use that information to build the response.
-        Byte value = input[1];
+        Byte value = input;
         return new byte[] { (byte)value.hashCode(), value.byteValue() };
     }
 
-    private static byte[] mapPut(byte[] input) {
-        byte key = input[1];
-        byte value = input[2];
+    public static byte mapPut(byte key, byte value) {
         longLivedMap.put(key, value);
-        return new byte[] {value};
+        return value;
     }
 
-    private static byte[] mapGet(byte[] input) {
-        byte key = input[1];
+    public static byte mapGet(byte key) {
         byte value = longLivedMap.get(key);
-        return new byte[] {value};
+        return value;
     }
 }

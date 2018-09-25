@@ -1,16 +1,14 @@
 package org.aion.avm.core;
 
-import java.lang.reflect.Method;
-
-import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.core.arraywrapping.TestResource;
-import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
+import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionPlainMap;
 import org.aion.avm.userlib.AionSet;
-import org.junit.After;
+import org.aion.kernel.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,70 +22,52 @@ import org.junit.Test;
  * this design (especially considering that the entry-point interface is likely temporary).
  */
 public class BasicAppTest {
-    private SimpleAvm avm;
-    private Class<?> clazz;
-    private Method decodeMethod;
+    private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private byte[] dappAddr;
+
+    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private long energyLimit = 6_000_0000;
+    private long energyPrice = 1;
+
+    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
     @Before
-    public void setup() throws Exception {
-        this.avm = new SimpleAvm(1_000_000L
-                , BasicAppTestTarget.class
+    public void setup() {
+        byte[] basicAppTestJar = JarBuilder.buildJarForMainAndClasses(BasicAppTestTarget.class
                 , AionMap.class
-                , AionMap.AionMapEntry.class
-                , AionMap.BNode.class
-                , AionMap.BInternalNode.class
-                , AionMap.BLeafNode.class
-                , AionMap.AionMapEntryIterator.class
-                , AionMap.AionMapKeyIterator.class
-                , AionMap.AionMapValueIterator.class
-                , AionMap.AionMapIterator.class
-                , AionMap.AionAbstractCollection.class
-                , AionMap.AionMapEntrySet.class
-                , AionMap.AionMapValues.class
-                , AionMap.AionMapKeySet.class
                 , AionSet.class
                 , AionList.class
-                , AionList.AionListIterator.class
         );
-        AvmClassLoader loader = avm.getClassLoader();
-        
-        this.clazz = loader.loadUserClassByOriginalName(BasicAppTestTarget.class.getName());
-        // NOTE:  The user's side is pre-shadow so it uses "byte[]" whereas we look up "ByteArray", here.
-        this.decodeMethod = this.clazz.getMethod(NamespaceMapper.mapMethodName("decode"), ByteArray.class);
-        Assert.assertEquals(loader, this.clazz.getClassLoader());
-    }
 
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
+        byte[] txData = new CodeAndArguments(basicAppTestJar, null).encodeToBytes();
+
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        dappAddr = avm.run(context).getReturnData();
     }
 
     @Test
-    public void testIdentity() throws Exception {
-        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodIdentity, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
+    public void testIdentity() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("identity", new byte[] {42, 13});
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
+
         // These should be the same instance.
-        Assert.assertEquals(input, output);
+        Assert.assertEquals(42, ((byte[]) TestingHelper.decodeResult(result))[0]);
+        Assert.assertEquals(13, ((byte[]) TestingHelper.decodeResult(result))[1]);
     }
 
     @Test
-    public void testSumInput() throws Exception {
-        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodSum, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
+    public void testSumInput() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("sum", new byte[] {42, 13});
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
+
         // Should be just 1 byte, containing the sum.
-        Assert.assertEquals(1, output.length());
-        Assert.assertEquals(BasicAppTestTarget.kMethodSum + 42 + 13, output.get(0));
-    }
-
-    @Test
-    public void testLowOrderByteArrayHash() throws Exception {
-        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodLowOrderByteArrayHash, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
-        // Should be just 1 byte, containing the low hash byte.
-        Assert.assertEquals(1, output.length());
-        byte result = output.get(0);
-        // This should match the input we gave them.
-        Assert.assertEquals(input.avm_hashCode(), result);
+        Assert.assertEquals(42 + 13, TestingHelper.decodeResult(result));
     }
 
     /**
@@ -96,60 +76,88 @@ public class BasicAppTest {
      * to save and resume state.
      */
     @Test
-    public void testRepeatedSwaps() throws Exception {
-        ByteArray input1 = new ByteArray(new byte[] {BasicAppTestTarget.kMethodSwapInputsFromLastCall, 1});
-        ByteArray input2 = new ByteArray(new byte[] {BasicAppTestTarget.kMethodSwapInputsFromLastCall, 2});
-        ByteArray output1 = (ByteArray)this.decodeMethod.invoke(null, input1);
-        Assert.assertNull(output1);
-        ByteArray output2 = (ByteArray)this.decodeMethod.invoke(null, input2);
-        Assert.assertEquals(input1.get(1), output2.get(1));
-        ByteArray output3 = (ByteArray)this.decodeMethod.invoke(null, input1);
-        Assert.assertEquals(input2.get(1), output3.get(1));
+    public void testRepeatedSwaps() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("swapInputs", 1);
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
+
+        Assert.assertEquals(0, TestingHelper.decodeResult(result));
+
+        txData = ABIEncoder.encodeMethodArguments("swapInputs", 2);
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+
+        Assert.assertEquals(1, TestingHelper.decodeResult(result));
+
+        txData = ABIEncoder.encodeMethodArguments("swapInputs", 1);
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+
+        Assert.assertEquals(2, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testArrayEquality() throws Exception {
-        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodTestArrayEquality, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
-        // Should be just 1 byte: 0 (since they should never be equal).
-        Assert.assertEquals(1, output.length());
-        Assert.assertEquals(0, output.get(0));
+    public void testArrayEquality() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("arrayEquality", new byte[] {42, 13});
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
+
+        Assert.assertEquals(false, TestingHelper.decodeResult(result));
+
+        txData = ABIEncoder.encodeMethodArguments("arrayEquality", new byte[] {5, 6, 7, 8});
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+
+        Assert.assertEquals(false, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testAllocateArray() throws Exception {
-        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodAllocateObjectArray, 42, 13});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
-        // Should be just 1 byte: 2 (since that is the length).
-        Assert.assertEquals(1, output.length());
-        Assert.assertEquals(2, output.get(0));
+    public void testAllocateArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("allocateObjectArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
+
+        Assert.assertEquals(2, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testByteAutoboxing() throws Exception {
-        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodByteAutoboxing, 42});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
-        // Should be just 2 bytes: 2 wrapper hashcode low byte and unwrapped value.
-        Assert.assertEquals(2, output.length());
-        Assert.assertEquals(42, output.get(0));
-        Assert.assertEquals(42, output.get(1));
+    public void testByteAutoboxing() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("byteAutoboxing", (byte) 42);
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
+
+        Assert.assertEquals(42, ((byte[]) TestingHelper.decodeResult(result))[0]);
+        Assert.assertEquals(42, ((byte[]) TestingHelper.decodeResult(result))[1]);
     }
 
     @Test
-    public void testMapInteraction() throws Exception {
-        ByteArray input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodMapPut, 1, 42});
-        ByteArray output = (ByteArray)this.decodeMethod.invoke(null, input);
-        Assert.assertEquals(1, output.length());
-        Assert.assertEquals(42, output.get(0));
-        
-        input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodMapPut, 2, 13});
-        output = (ByteArray)this.decodeMethod.invoke(null, input);
-        Assert.assertEquals(1, output.length());
-        Assert.assertEquals(13, output.get(0));
-        
-        input = new ByteArray(new byte[] {BasicAppTestTarget.kMethodMapGet, 2});
-        output = (ByteArray)this.decodeMethod.invoke(null, input);
-        Assert.assertEquals(1, output.length());
-        Assert.assertEquals(13, output.get(0));
+    public void testMapInteraction() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("mapPut", (byte)1, (byte)42);
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
+
+        Assert.assertEquals((byte) 42, TestingHelper.decodeResult(result));
+
+        txData = ABIEncoder.encodeMethodArguments("mapPut", (byte)2, (byte)13);
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+
+        Assert.assertEquals((byte) 13, TestingHelper.decodeResult(result));
+
+        txData = ABIEncoder.encodeMethodArguments("mapGet", (byte)2);
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+
+        Assert.assertEquals((byte) 13, TestingHelper.decodeResult(result));
     }
 }
