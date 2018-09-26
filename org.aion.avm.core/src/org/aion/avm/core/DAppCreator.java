@@ -16,6 +16,7 @@ import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
+import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
@@ -230,7 +231,7 @@ public class DAppCreator {
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
             // We can now construct the abstraction of the loaded DApp which has the machinery for the rest of the initialization.
-            LoadedDApp dapp = DAppLoader.fromTransformed(transformedDapp, dappAddress);
+            LoadedDApp dapp = DAppLoader.fromTransformed(transformedDapp, new KeyValueObjectGraph(kernel, dappAddress));
             
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
@@ -270,9 +271,9 @@ public class DAppCreator {
             // Save back the state before we return.
             // -first, save out the classes
             long initialInstanceId = 1l;
-            long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, feeProcessor, kernel);
+            long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, feeProcessor);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToStorage(kernel, dappAddress, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
+            ContractEnvironmentState.saveToGraph(dapp.graphStore, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
 
             // TODO: whether we should return the dapp address is subject to change
             result.setStatusCode(TransactionResult.Code.SUCCESS);

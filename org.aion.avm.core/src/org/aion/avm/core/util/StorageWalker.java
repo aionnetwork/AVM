@@ -23,6 +23,7 @@ import org.aion.avm.core.persistence.ReflectedFieldCache;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
+import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IPersistenceToken;
@@ -61,12 +62,13 @@ public class StorageWalker {
         // (We are using ReflectionStructureCodec.IFieldPopulator to store human-readable reference descriptions into fields).
         final AvmClassLoader avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
         new Helper(avmClassLoader, 1_000_000L, 1);
-        doReadEntireStorage(output, classLoader, kernel, dappAddress, alphabeticalContractClasses);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, dappAddress);
+        doReadEntireStorage(output, classLoader, objectGraph, alphabeticalContractClasses);
         Helper.clearTestingState();
     }
 
 
-    private static void doReadEntireStorage(PrintStream output, ClassLoader loader, KernelInterface kernel, byte[] address, List<Class<?>> classes) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    private static void doReadEntireStorage(PrintStream output, ClassLoader loader, KeyValueObjectGraph objectGraph, List<Class<?>> classes) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         // These objects are filled/used by the populator.
         Set<Long> processed = new HashSet<>();
         Queue<org.aion.avm.shadow.java.lang.Object> instanceQueue = new LinkedList<>();
@@ -141,11 +143,11 @@ public class StorageWalker {
         // Create the codec back-ended on the populator.
         // (note that it requires a fieldCache but we don't attempt to reuse this, in our case).
         ReflectedFieldCache fieldCache = new ReflectedFieldCache();
-        NullFeeProcessor feeProcessor = new NullFeeProcessor();
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, feeProcessor, kernel, address, 0);
+        NullFeeProcessor feeProcessor = new NullFeeProcessor(); 
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, feeProcessor, objectGraph, 0);
         
         // Extract the raw data for the class statics.
-        byte[] staticData = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] staticData = objectGraph.getStorage(StorageKeys.CLASS_STATICS);
         ExtentBasedCodec.Decoder staticDecoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(staticData));
         for (Class<?> clazz : classes) {
             output.println("Class(" + shortenClassName(clazz.getName()) + "): ");
@@ -171,7 +173,7 @@ public class StorageWalker {
             boolean isCommonUserDefinedCase = (!className.startsWith(PackageConstants.kShadowDotPrefix) && !className.startsWith(PackageConstants.kArrayWrapperDotPrefix));
             if (isStringCase || isObjectArrayCase || isCommonUserDefinedCase) {
                 // We are going to process this instance so load its data and create its decoder.
-                byte[] instanceData = kernel.getStorage(address, StorageKeys.forInstance(instanceId));
+                byte[] instanceData = objectGraph.getStorage(StorageKeys.forInstance(instanceId));
                 ExtentBasedCodec.Decoder instanceDecoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(instanceData));
                 
                 // We need to special-case the hashCode (normally handled by the shadow Object implementation).

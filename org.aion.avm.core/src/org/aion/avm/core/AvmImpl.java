@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 import org.aion.avm.core.persistence.LoadedDApp;
+import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
 import org.aion.kernel.KernelInterface;
@@ -142,7 +143,7 @@ public class AvmImpl implements AvmInternal {
                 if (null == dapp) {
                     // If we didn't find it there, just load it.
                     try {
-                        dapp = DAppLoader.loadFromKernel(thisTransactionKernel, dappAddress);
+                        dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, dappAddress));
                     } catch (IOException e) {
                         unexpected(e); // the jar was created by AVM; IOException is unexpected
                     }

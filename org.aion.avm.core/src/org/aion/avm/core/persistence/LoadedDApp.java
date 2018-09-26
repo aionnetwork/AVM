@@ -24,7 +24,6 @@ import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.internal.UncaughtException;
-import org.aion.kernel.KernelInterface;
 
 
 /**
@@ -46,7 +45,7 @@ import org.aion.kernel.KernelInterface;
  */
 public class LoadedDApp {
     private final ClassLoader loader;
-    private final byte[] address;
+    public final IObjectGraphStore graphStore;
     private final List<Class<?>> classes;
     private final String originalMainClassName;
     // Note that this fieldCache is populated by the calls to ReflectionStructureCodec.
@@ -64,12 +63,12 @@ public class LoadedDApp {
      * Creates the LoadedDApp to represent the classes related to DApp at address.
      * 
      * @param loader The class loader to look up shape.
-     * @param address The address of the contract.
+     * @param graphStore The storage under the DApp.
      * @param classes The list of classes to populate (order must always be the same).
      */
-    public LoadedDApp(ClassLoader loader, byte[] address, List<Class<?>> classes, String originalMainClassName) {
+    public LoadedDApp(ClassLoader loader, IObjectGraphStore graphStore, List<Class<?>> classes, String originalMainClassName) {
         this.loader = loader;
-        this.address = address;
+        this.graphStore = graphStore;
         this.classes = classes;
         this.originalMainClassName = originalMainClassName;
         this.fieldCache = new ReflectedFieldCache();
@@ -79,18 +78,17 @@ public class LoadedDApp {
      * Populates the statics of the DApp classes with the primitives and instance stubs described by the on-disk data.
      * 
      * @param feeProcessor The billing mechanism for storage operations.
-     * @param kernelInterface The kernel storage API.
      */
-    public void populateClassStaticsFromStorage(IStorageFeeProcessor feeProcessor, KernelInterface kernelInterface) {
+    public void populateClassStaticsFromStorage(IStorageFeeProcessor feeProcessor) {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(this.loader);
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, kernelInterface, this.address, 0);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore, 0);
         // The populator needs to know to attach the codec, itself, as the IDeserializer of new instances.
         populator.setDeserializer(codec);
         
         // Extract the raw data for the class statics.
-        byte[] rawData = kernelInterface.getStorage(this.address, StorageKeys.CLASS_STATICS);
+        byte[] rawData = this.graphStore.getStorage(StorageKeys.CLASS_STATICS);
         feeProcessor.readStaticDataFromStorage(rawData.length - KeyValueExtentCodec.OVERHEAD_BYTES);
         Extent staticData = KeyValueExtentCodec.decode(rawData);
         ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(staticData);
@@ -120,11 +118,10 @@ public class LoadedDApp {
      * 
      * @param nextInstanceId The next instanceId to assign to an object which needs to be serialized.
      * @param feeProcessor The billing mechanism for storage operations.
-     * @param kernelInterface The kernel storage API.
      */
-    public long saveClassStaticsToStorage(long nextInstanceId, IStorageFeeProcessor feeProcessor, KernelInterface kernelInterface) {
+    public long saveClassStaticsToStorage(long nextInstanceId, IStorageFeeProcessor feeProcessor) {
         // Build the encoder.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, null, feeProcessor, kernelInterface, this.address, nextInstanceId);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, null, feeProcessor, this.graphStore, nextInstanceId);
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         
         // Create the queue of instances reachable from here and consumer abstraction.
@@ -144,7 +141,7 @@ public class LoadedDApp {
         Extent staticData = encoder.toExtent();
         byte[] rawData = KeyValueExtentCodec.encode(staticData);
         feeProcessor.writeStaticDataToStorage(rawData.length - KeyValueExtentCodec.OVERHEAD_BYTES);
-        kernelInterface.putStorage(this.address, StorageKeys.CLASS_STATICS, rawData);
+        this.graphStore.putStorage(StorageKeys.CLASS_STATICS, rawData);
         
         // Now, drain the queue.
         while (!instancesToWrite.isEmpty()) {

@@ -15,7 +15,6 @@ import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.KernelInterface;
 
 
 /**
@@ -40,8 +39,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private final ReflectedFieldCache fieldCache;
     private final IFieldPopulator populator;
     private final IStorageFeeProcessor feeProcessor;
-    private final KernelInterface kernel;
-    private final byte[] address;
+    private final IObjectGraphStore graphStore;
     // We cache the method entry-point we will use to invoke the load operation on any instance.
     private final Method deserializeSelf;
     private final Method serializeSelf;
@@ -50,12 +48,11 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private final Field persistenceTokenField;
     private long nextInstanceId;
 
-    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, KernelInterface kernel, byte[] address, long nextInstanceId) {
+    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore, long nextInstanceId) {
         this.fieldCache = fieldCache;
         this.populator = populator;
         this.feeProcessor = feeProcessor;
-        this.kernel = kernel;
-        this.address = address;
+        this.graphStore = graphStore;
         try {
             this.deserializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("deserializeSelf", java.lang.Class.class, IObjectDeserializer.class);
             this.serializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("serializeSelf", java.lang.Class.class, IObjectSerializer.class);
@@ -273,7 +270,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         
         // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
         long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
-        byte[] rawData = this.kernel.getStorage(address, StorageKeys.forInstance(instanceId));
+        byte[] rawData = this.graphStore.getStorage(StorageKeys.forInstance(instanceId));
         this.feeProcessor.readOneInstanceFromStorage(rawData.length - KeyValueExtentCodec.OVERHEAD_BYTES);
         deserializeInstance(instance, KeyValueExtentCodec.decode(rawData));
     }
@@ -286,7 +283,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             // we run out of energy, part-way.
             this.feeProcessor.writeOneInstanceToStorage(serialized.length - KeyValueExtentCodec.OVERHEAD_BYTES);
             long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
-            this.kernel.putStorage(this.address, StorageKeys.forInstance(instanceId), serialized);
+            this.graphStore.putStorage(StorageKeys.forInstance(instanceId), serialized);
         } catch (IllegalAccessException | IllegalArgumentException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
             throw RuntimeAssertionError.unexpected(e);

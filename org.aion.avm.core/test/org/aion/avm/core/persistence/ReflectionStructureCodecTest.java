@@ -6,9 +6,10 @@ import java.util.function.Consumer;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
+import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
-
+import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,7 +53,10 @@ public class ReflectionStructureCodecTest {
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, null, null, 1);
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        byte[] address = {1,2,3};
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph, 1);
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         codec.serializeClass(encoder, ReflectionStructureCodecTarget.class, NULL_CONSUMER);
         byte[] result = KeyValueExtentCodec.encode(encoder.toExtent());
@@ -94,7 +98,10 @@ public class ReflectionStructureCodecTest {
         target.i_eight = 5.0d;
         target.i_nine = new ReflectionStructureCodecTarget();
         
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, null, null, 1);
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        byte[] address = {1,2,3};
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph, 1);
         byte[] result = serializeSinceInstanceHelper(codec, target);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         // This is the same as what we got for the class except that this also has a hashcode.
@@ -140,12 +147,15 @@ public class ReflectionStructureCodecTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //i_seven
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //i_eight
         };
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        byte[] address = {1,2,3};
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         Extent extent = KeyValueExtentCodec.decode(expected);
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
-        ReflectionStructureCodec deserializer = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, 1);
         // Note that the deserializer always assumes it is operating on stubs so create the instance and pass it in.
         ReflectionStructureCodecTarget target = new ReflectionStructureCodecTarget();
-        deserializer.deserializeInstance(target, extent);
+        codec.deserializeInstance(target, extent);
         
         Assert.assertEquals(1, target.avm_hashCode());
         Assert.assertEquals(true, target.i_one);
@@ -170,9 +180,12 @@ public class ReflectionStructureCodecTest {
         root.i_nine = one;
         one.i_nine = two;
         
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        byte[] address = {1,2,3};
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, 1);
         Extent rootExtent = codec.internalSerializeInstance(root, NULL_CONSUMER);
         Extent oneExtent = codec.internalSerializeInstance(one, NULL_CONSUMER);
         Extent twoExtent = codec.internalSerializeInstance(two, NULL_CONSUMER);
@@ -210,9 +223,12 @@ public class ReflectionStructureCodecTest {
         root1.i_nine = overlap;
         root2.i_nine = overlap;
         
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        byte[] address = {1,2,3};
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, 1);
         Extent root1Extent = codec.internalSerializeInstance(root1, NULL_CONSUMER);
         Extent root2Extent = codec.internalSerializeInstance(root2, NULL_CONSUMER);
         // These are empty and point to the same instance so they should be identical, after the hashcode.
@@ -257,14 +273,17 @@ public class ReflectionStructureCodecTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //i_seven
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //i_eight
         };
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        byte[] address = {1,2,3};
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         Extent extent1 = KeyValueExtentCodec.decode(expected1);
         Extent extent2 = KeyValueExtentCodec.decode(expected2);
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
-        ReflectionStructureCodec deserializer = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, null, null, 1);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, 1);
         ReflectionStructureCodecTarget target1 = new ReflectionStructureCodecTarget();
-        deserializer.deserializeInstance(target1, extent1);
+        codec.deserializeInstance(target1, extent1);
         ReflectionStructureCodecTarget target2 = new ReflectionStructureCodecTarget();
-        deserializer.deserializeInstance(target2, extent2);
+        codec.deserializeInstance(target2, extent2);
         Assert.assertTrue(target1.i_nine == target2.i_nine);
     }
 

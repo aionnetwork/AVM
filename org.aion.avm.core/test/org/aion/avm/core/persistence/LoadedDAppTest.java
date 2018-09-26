@@ -3,6 +3,7 @@ package org.aion.avm.core.persistence;
 import java.util.Arrays;
 
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
@@ -58,7 +59,8 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = new LoadedDApp(null, address, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR, kernel);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        long nextInstanceId = new LoadedDApp(null, objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -133,7 +135,8 @@ public class LoadedDAppTest {
         kernel.putStorage(address, StorageKeys.CLASS_STATICS, expected);
         
         // Populate the classes.
-        new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).populateClassStaticsFromStorage(FEE_PROCESSOR, kernel);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).populateClassStaticsFromStorage(FEE_PROCESSOR);
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -172,7 +175,8 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        long nextInstanceId = new LoadedDApp(null, address, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName()).saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR, kernel);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        long nextInstanceId = new LoadedDApp(null, objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName()).saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
         // We serialized a single instance so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(1 + initialInstanceId, nextInstanceId);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -247,8 +251,9 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName());
-        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR, kernel);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName());
+        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
         // We serialized 2 instances so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(2 + initialInstanceId, nextInstanceId);
         // Check the size of the saved static data (should only store local copies of statics, not superclass statics, per class).
@@ -258,7 +263,7 @@ public class LoadedDAppTest {
         
         // Now, clear the class states and reload this.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, kernel);
+        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR);
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -305,7 +310,7 @@ public class LoadedDAppTest {
         Assert.assertTrue(ReflectionStructureCodecTarget.s_nine == ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine);
         
         // Re-serialize these to prove that the instanceId doesn't increment (since we aren't adding any new objects to the graph).
-        long finalInstanceId = dapp.saveClassStaticsToStorage(nextInstanceId, FEE_PROCESSOR, kernel);
+        long finalInstanceId = dapp.saveClassStaticsToStorage(nextInstanceId, FEE_PROCESSOR);
         // We serialized 2 instances so we expect the nextInstanceId to be advanced.
         Assert.assertEquals(nextInstanceId, finalInstanceId);
     }
@@ -320,8 +325,9 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
-        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR, kernel);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
+        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -346,7 +352,7 @@ public class LoadedDAppTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, kernel);
+        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR);
         Assert.assertTrue(org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN == LoadedDAppTarget.s_nine);
     }
 
@@ -361,8 +367,9 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
-        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR, kernel);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
+        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -388,7 +395,7 @@ public class LoadedDAppTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, kernel);
+        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR);
         Assert.assertTrue(originalClassRef == LoadedDAppTarget.s_nine);
     }
 
@@ -402,8 +409,9 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         long initialInstanceId = 1l;
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
-        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR, kernel);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
+        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
         // Note that this attempt to serialize has no instances so the counter should be unchanged.
         Assert.assertEquals(initialInstanceId, nextInstanceId);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -428,7 +436,7 @@ public class LoadedDAppTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, kernel);
+        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR);
         Assert.assertTrue(org.aion.avm.shadow.java.lang.Byte.avm_TYPE == LoadedDAppTarget.s_nine);
     }
 
@@ -440,20 +448,21 @@ public class LoadedDAppTest {
         // Create the DApp.
         byte[] address = new byte[] {1,2,3};
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), address, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
         
         // Set the empty state and write it to disk.
         ReflectionStructureCodecTarget.s_nine = null;
-        dapp.saveClassStaticsToStorage(1L, FEE_PROCESSOR, kernel);
+        dapp.saveClassStaticsToStorage(1L, FEE_PROCESSOR);
         
         // First, the disk variant.
         CallCountingProcessor diskCount = new CallCountingProcessor();
         // Start from disk (we need this so that both versions start from "read initial state").
-        dapp.populateClassStaticsFromStorage(diskCount, kernel);
+        dapp.populateClassStaticsFromStorage(diskCount);
         // Populate a basic state.
         ReflectionStructureCodecTarget.s_nine = buildSmallGraph();
         // Save to disk.
-        dapp.saveClassStaticsToStorage(1L, diskCount, kernel);
+        dapp.saveClassStaticsToStorage(1L, diskCount);
         
         // Now, the in-memory variant.
         CallCountingProcessor memoryCount = new CallCountingProcessor();

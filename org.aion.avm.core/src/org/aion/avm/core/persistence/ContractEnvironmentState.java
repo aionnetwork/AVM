@@ -2,15 +2,14 @@ package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.KernelInterface;
 
 
 /**
  * Represents the part of the contract environment which must be persistent between invocations.
  */
 public class ContractEnvironmentState {
-    public static ContractEnvironmentState loadFromStorage(KernelInterface kernel, byte[] address) {
-        byte[] rawData = kernel.getStorage(address, StorageKeys.CONTRACT_ENVIRONMENT);
+    public static ContractEnvironmentState loadFromGraph(IObjectGraphStore graphStore) {
+        byte[] rawData = graphStore.getStorage(StorageKeys.CONTRACT_ENVIRONMENT);
         RuntimeAssertionError.assertTrue(rawData.length == (Integer.BYTES + Long.BYTES));
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
         int nextHashCode = decoder.decodeInt();
@@ -18,12 +17,12 @@ public class ContractEnvironmentState {
         return new ContractEnvironmentState(nextHashCode, nextInstanceId);
     }
 
-    public static void saveToStorage(KernelInterface kernel, byte[] address, ContractEnvironmentState state) {
+    public static void saveToGraph(IObjectGraphStore graphStore, ContractEnvironmentState state) {
         byte[] bytes = new StreamingPrimitiveCodec.Encoder()
                 .encodeInt(state.nextHashCode)
                 .encodeLong(state.nextInstanceId)
                 .toBytes();
-        kernel.putStorage(address, StorageKeys.CONTRACT_ENVIRONMENT, bytes);
+        graphStore.putStorage(StorageKeys.CONTRACT_ENVIRONMENT, bytes);
     }
 
 

@@ -22,7 +22,7 @@ public class DAppExecutor {
         // (note that ContractEnvironmentState is immutable, so it is safe to just access the environment from a different invocation).
         ContractEnvironmentState initialState = (null != stateToResume)
                 ? stateToResume.getEnvironment()
-                : ContractEnvironmentState.loadFromStorage(kernel, dappAddress);
+                : ContractEnvironmentState.loadFromGraph(dapp.graphStore);
         
         // Note that we need to store the state of this invocation on the reentrant stack in case there is another call into the same app.
         // We only put this here so that the call() mechanism can access it to save/reload its ContractEnvironmentState but we don't change it.
@@ -42,7 +42,7 @@ public class DAppExecutor {
             reentrantGraphData = dapp.replaceClassStaticsWithClones(feeProcessor);
         } else {
             // This is the first invocation of this DApp so just load the static state from disk.
-            dapp.populateClassStaticsFromStorage(feeProcessor, kernel);
+            dapp.populateClassStaticsFromStorage(feeProcessor);
         }
 
         // Call the main within the DApp.
@@ -57,10 +57,10 @@ public class DAppExecutor {
             } else {
                 // We are at the "top" so write this back to disk.
                 // -first, save out the classes
-                long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, feeProcessor, kernel);
+                long nextInstanceId = dapp.saveClassStaticsToStorage(initialState.nextInstanceId, feeProcessor);
                 // -finally, save back the final state of the environment so we restore it on the next invocation.
                 ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId);
-                ContractEnvironmentState.saveToStorage(kernel, dappAddress, updatedEnvironment);
+                ContractEnvironmentState.saveToGraph(dapp.graphStore, updatedEnvironment);
             }
 
             result.setStatusCode(TransactionResult.Code.SUCCESS);
