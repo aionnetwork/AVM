@@ -10,10 +10,4 @@ public class ClassPersistenceToken implements IPersistenceToken {
     public ClassPersistenceToken(String className) {
         this.className = className;
     }
-
-    @Override
-    public boolean isNormalInstance() {
-        // Classes are, by definition, not normal instances.
-        return false;
-    }
 }

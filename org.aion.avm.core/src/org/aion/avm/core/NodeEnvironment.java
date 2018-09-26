@@ -4,10 +4,10 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.LoadedJar;
-import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -376,7 +376,7 @@ public class NodeEnvironment {
     }
 
     private void setConstantInstanceId(Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap, org.aion.avm.shadow.java.lang.Object object, long instanceId) {
-        object.persistenceToken = new InstanceIdToken(instanceId);
+        object.persistenceToken = new ConstantPersistenceToken(instanceId);
         constantMap.put(instanceId, object);
     }
 

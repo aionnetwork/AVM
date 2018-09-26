@@ -9,6 +9,7 @@ import org.aion.avm.core.persistence.ReflectionStructureCodec.IFieldPopulator;
 import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
 import org.aion.avm.internal.ClassPersistenceToken;
+import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -21,11 +22,7 @@ public class SerializedInstanceStub {
     // Note that this is probably just a temporary measure but, in order to better track bugs in the reentrant case, all instance stubs created
     // in the callee space are given this special instance ID.
     public static final IPersistenceToken REENTRANT_CALLEE_INSTANCE_TOKEN = new IPersistenceToken() {
-        @Override
-        public boolean isNormalInstance() {
-            // This is just a placeholder instance so it should never be called.
-            throw RuntimeAssertionError.unreachable("Not a real token");
-        }};
+    };
 
     /**
      * Serializes a given object reference as an instance stub.  Note that this helper will apply an instanceId to the instance if it doesn't already have one and is a type which should.
@@ -48,11 +45,8 @@ public class SerializedInstanceStub {
             IPersistenceToken persistenceToken = safeExtractPersistenceToken(persistenceTokenField, target);
             // This serialization call is only used when writing to disk so we can't see REENTRANT_CALLEE_INSTANCE_TOKEN.
             RuntimeAssertionError.assertTrue(REENTRANT_CALLEE_INSTANCE_TOKEN != persistenceToken);
-            long instanceId = (persistenceToken instanceof InstanceIdToken)
-                        ? ((InstanceIdToken)persistenceToken).instanceId
-                        : 0L;
-            if (instanceId < 0) {
-                referenceToTarget = new ConstantNode(instanceId);
+            if (persistenceToken instanceof ConstantPersistenceToken) {
+                referenceToTarget = new ConstantNode(((ConstantPersistenceToken)persistenceToken).stableConstantId);
             } else if (persistenceToken instanceof ClassPersistenceToken) {
                 RuntimeAssertionError.assertTrue(target instanceof org.aion.avm.shadow.java.lang.Class);
                 String className = ((org.aion.avm.shadow.java.lang.Class<?>)target).getRealClass().getName();
@@ -61,7 +55,8 @@ public class SerializedInstanceStub {
                 // Common case of a normal reference (may or may not already have an instanceId assigned.
                 // This a normal reference (although might need an instanceId assigned).
                 String typeName = target.getClass().getName();
-                if (0 == instanceId) {
+                long instanceId = 0L;
+                if (null == persistenceToken) {
                     // We have to assign this.
                     instanceId = instanceIdProducer.get();
                     persistenceToken = new InstanceIdToken(instanceId);
@@ -71,6 +66,8 @@ public class SerializedInstanceStub {
                         // Any failure related to this would have happened much earlier.
                         throw RuntimeAssertionError.unexpected(e);
                     }
+                } else {
+                    instanceId = ((InstanceIdToken)persistenceToken).instanceId;
                 }
                 
                 referenceToTarget = new KeyValueNode(typeName, instanceId);
@@ -156,9 +153,8 @@ public class SerializedInstanceStub {
              */
             // We need to check constants, first, since they can otherwise be confused for these other cases (unfortunately, we do a type check to
             // avoid the null or REENTRANT_CALLEE_INSTANCE_TOKEN cases).
-            boolean isConstant = ((persistenceToken instanceof InstanceIdToken) && (((InstanceIdToken)persistenceToken).instanceId < 0L));
             
-            if (isConstant) {
+            if (persistenceToken instanceof ConstantPersistenceToken) {
                 // Constants.
                 // Encode the constant stub constant as an int.
                 sizeInBytes += ByteSizes.INT;
@@ -207,13 +203,20 @@ public class SerializedInstanceStub {
             if (persistenceToken instanceof ClassPersistenceToken) {
                 // Classes don't get copied.
                 shouldCopy = false;
+            } else if (persistenceToken instanceof ConstantPersistenceToken) {
+                // Constants don't get copied.
+                shouldCopy = false;
             } else {
-                // Check if this has a constant instance ID.
-                // Copy new instances (null) and normal instances (NOT constants or classes).
-                // We want the stubs is in the reentrant space to be copied, obviously.
-                shouldCopy = (null == persistenceToken)
+                // This last case is for all the cases which we _should_ copy:
+                // -null (new object, not yet assigned - normal instance)
+                // -reentrant special token (this was copied, from a parent call, so we should also copy it)
+                // -is a normal instanceId token
+                // Note that we don't expect any other cases here so we can just assert these and return true.
+                RuntimeAssertionError.assertTrue((null == persistenceToken)
                         || (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken)
-                        || persistenceToken.isNormalInstance();
+                        || (persistenceToken instanceof InstanceIdToken)
+                );
+                shouldCopy = true;
             }
         }
         return shouldCopy;

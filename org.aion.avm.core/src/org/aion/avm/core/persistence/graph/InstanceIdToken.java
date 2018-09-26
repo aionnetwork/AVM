@@ -12,9 +12,4 @@ public class InstanceIdToken implements IPersistenceToken {
     public InstanceIdToken(long instanceId) {
         this.instanceId = instanceId;
     }
-    
-    @Override
-    public boolean isNormalInstance() {
-        return this.instanceId > 0L;
-    }
 }
