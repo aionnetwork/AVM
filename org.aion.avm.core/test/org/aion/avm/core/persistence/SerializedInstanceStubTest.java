@@ -88,7 +88,8 @@ public class SerializedInstanceStubTest {
 
     @Test
     public void testClass() throws Exception {
-        org.aion.avm.shadow.java.lang.Class<?> inputInstance = new org.aion.avm.shadow.java.lang.Class<>(String.class);
+        // Note that we need to use the Helper in order to set the persistenceToken.
+        org.aion.avm.shadow.java.lang.Class<?> inputInstance = Helper.wrapAsClass(String.class);
         
         // Size this.
         int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.persistenceTokenField);

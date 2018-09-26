@@ -1,5 +1,6 @@
 package org.aion.avm.internal;
 
+import java.lang.reflect.Field;
 import java.util.IdentityHashMap;
 
 
@@ -26,6 +27,8 @@ public class Helper implements IHelper {
      */
     private static IdentityHashMap<String, org.aion.avm.shadow.java.lang.String> internedStringWrappers;
     private static IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers;
+
+    private static Field persistenceTokenField;
 
     // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
     private static AvmThrowable forceExitState;
@@ -61,6 +64,15 @@ public class Helper implements IHelper {
         stackWatcher.setPolicy(StackWatcher.POLICY_SIZE);
         stackWatcher.setMaxStackDepth(512);
         stackWatcher.setMaxStackSize(16 * 1024);
+
+        // We need to look up the persistenceTokenField so we can install the special token for classes.
+        try {
+            persistenceTokenField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("persistenceToken");
+        } catch (NoSuchFieldException | SecurityException e) {
+            // Clearly a fatal error.
+            RuntimeAssertionError.unexpected(e);
+        }
+        persistenceTokenField.setAccessible(true);
     }
 
     public static void clearTestingState() {
@@ -91,6 +103,14 @@ public class Helper implements IHelper {
                 wrapper = new org.aion.avm.shadow.java.lang.Class<T>(input);
                 // Restore the normal hashcode counter.
                 nextHashCode = normalHashCode;
+                // We treat classes much like constants, so add the IPersistenceToken for classes so that the persistence model knows how to ignore this.
+                try {
+                    persistenceTokenField.set(wrapper, new ClassPersistenceToken(input.getName()));
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // This is something statically wrong with the shadow JCL.
+                    RuntimeAssertionError.unexpected(e);
+                }
+                
                 internedClassWrappers.put(input, wrapper);
             }
         }

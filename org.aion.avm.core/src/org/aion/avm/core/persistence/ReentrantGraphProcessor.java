@@ -680,15 +680,10 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)elt;
                 org.aion.avm.shadow.java.lang.Object caller = calleeToCallerRefMappingFunction.apply(callee);
                 // We normally prefer the caller (technically, these should be the same size since we are writing the same data, either way, but this is the pattern to be sure).
-                try {
-                    if (null != caller) {
-                        instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(caller, this.persistenceTokenField);
-                    } else {
-                        instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(callee, this.persistenceTokenField);
-                    }
-                } catch (IllegalArgumentException | IllegalAccessException e) {
-                    // This exception wouldn't show up so late/deep in a run.
-                    RuntimeAssertionError.unexpected(e);
+                if (null != caller) {
+                    instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(caller, this.persistenceTokenField);
+                } else {
+                    instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(callee, this.persistenceTokenField);
                 }
             }
         }

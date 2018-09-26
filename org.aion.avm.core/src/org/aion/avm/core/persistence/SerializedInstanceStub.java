@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.aion.avm.core.persistence.ReflectionStructureCodec.IFieldPopulator;
 import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
+import org.aion.avm.internal.ClassPersistenceToken;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -30,49 +31,57 @@ public class SerializedInstanceStub {
      * Serializes a given object reference as an instance stub.  Note that this helper will apply an instanceId to the instance if it doesn't already have one and is a type which should.
      * 
      * @param encoder The instance stub will be serialized using this encoder.
-     * @param instance The object instance to encode.
+     * @param target The object reference to encode.
      * @param persistenceTokenField The reflection Field reference to use when reading or writing an IPersistenceToken into the instance.
      * @param instanceIdProducer Called when a new instanceId is required for the instance.  If this is called, the instanceId should be considered used, by the implementation, and not given out again.
      * @return True if the instance was the type of object which should, itself, be serialized.
      */
-    public static boolean serializeInstanceStub(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Field persistenceTokenField, Supplier<Long> instanceIdProducer) throws IllegalArgumentException, IllegalAccessException {
-        boolean shouldEnqueueInstance = false;
-        INode reference = null;
+    public static boolean serializeInstanceStub(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object target, Field persistenceTokenField, Supplier<Long> instanceIdProducer) {
+        INode referenceToTarget = null;
+        boolean isRegularReference = false;
         
-        if (null == instance) {
-            reference = null;
+        if (null == target) {
+            // Just leave the null.
+            referenceToTarget = null;
         } else {
             // Check the instanceId to see if this is a special-case.
-            IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
+            IPersistenceToken persistenceToken = safeExtractPersistenceToken(persistenceTokenField, target);
             // This serialization call is only used when writing to disk so we can't see REENTRANT_CALLEE_INSTANCE_TOKEN.
             RuntimeAssertionError.assertTrue(REENTRANT_CALLEE_INSTANCE_TOKEN != persistenceToken);
-            long instanceId = (null != persistenceToken)
+            long instanceId = (persistenceToken instanceof InstanceIdToken)
                         ? ((InstanceIdToken)persistenceToken).instanceId
                         : 0L;
             if (instanceId < 0) {
-                reference = new ConstantNode(instanceId);
-            } else if (instance instanceof org.aion.avm.shadow.java.lang.Class) {
-                String className = ((org.aion.avm.shadow.java.lang.Class<?>)instance).getRealClass().getName();
-                reference = new ClassNode(className);
+                referenceToTarget = new ConstantNode(instanceId);
+            } else if (persistenceToken instanceof ClassPersistenceToken) {
+                RuntimeAssertionError.assertTrue(target instanceof org.aion.avm.shadow.java.lang.Class);
+                String className = ((org.aion.avm.shadow.java.lang.Class<?>)target).getRealClass().getName();
+                referenceToTarget = new ClassNode(className);
             } else {
                 // Common case of a normal reference (may or may not already have an instanceId assigned.
                 // This a normal reference (although might need an instanceId assigned).
-                String typeName = instance.getClass().getName();
+                String typeName = target.getClass().getName();
                 if (0 == instanceId) {
                     // We have to assign this.
                     instanceId = instanceIdProducer.get();
                     persistenceToken = new InstanceIdToken(instanceId);
-                    persistenceTokenField.set(instance, persistenceToken);
+                    try {
+                        persistenceTokenField.set(target, persistenceToken);
+                    } catch (IllegalArgumentException | IllegalAccessException e) {
+                        // Any failure related to this would have happened much earlier.
+                        throw RuntimeAssertionError.unexpected(e);
+                    }
                 }
                 
-                reference = new KeyValueNode(typeName, instanceId);
+                referenceToTarget = new KeyValueNode(typeName, instanceId);
                
                 // The common case implies that we should try to serialize the instance, itself.
-                shouldEnqueueInstance = true;
+                isRegularReference = true;
             }
+            RuntimeAssertionError.assertTrue(null != referenceToTarget);
         }
-        encoder.encodeReference(reference);
-        return shouldEnqueueInstance;
+        encoder.encodeReference(referenceToTarget);
+        return isRegularReference;
     }
 
     /**
@@ -112,9 +121,9 @@ public class SerializedInstanceStub {
      * 
      * @param instance The object instance to measure.
      * @param persistenceTokenField The reflection Field reference to use when reading or writing an IPersistenceToken into the instance.
-     * @return The serialized size fo the reference to this instance.
+     * @return The serialized size of the reference to this instance.
      */
-    public static int sizeOfInstanceStub(org.aion.avm.shadow.java.lang.Object instance, Field persistenceTokenField) throws IllegalArgumentException, IllegalAccessException {
+    public static int sizeOfInstanceStub(org.aion.avm.shadow.java.lang.Object instance, Field persistenceTokenField) {
         int sizeInBytes = 0;
         // See issue-147 for more information regarding this interpretation:
         // - null: (int)0.
@@ -131,7 +140,7 @@ public class SerializedInstanceStub {
             sizeInBytes += ByteSizes.INT;
         } else {
             // Check the instanceId to see if this is a special-case.
-            IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
+            IPersistenceToken persistenceToken = safeExtractPersistenceToken(persistenceTokenField, instance);
             /*
              * NOTE:  This method is called both to capture the size of statics/objects being read _from_ the caller space and also to capture the
              * size of statics/objects being written back _to_ the caller space, from the callee space.
@@ -155,8 +164,9 @@ public class SerializedInstanceStub {
                 sizeInBytes += ByteSizes.INT;
                 // Then encode the instanceId as a long.
                 sizeInBytes += ByteSizes.LONG;
-            } else if (instance instanceof org.aion.avm.shadow.java.lang.Class) {
+            } else if (persistenceToken instanceof ClassPersistenceToken) {
                 // Non-constant Class reference.
+                RuntimeAssertionError.assertTrue(instance instanceof org.aion.avm.shadow.java.lang.Class);
                 // Encode the class stub constant as an int.
                 sizeInBytes += ByteSizes.INT;
                 
@@ -192,23 +202,29 @@ public class SerializedInstanceStub {
         if (null == instance) {
             // Copy null doesn't make sense.
             shouldCopy = false;
-        } else if (instance instanceof org.aion.avm.shadow.java.lang.Class) {
-            // Classes don't get copied.
-            shouldCopy = false;
         } else {
-            // Check if this has a constant instance ID.
-            try {
-                IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
+            IPersistenceToken persistenceToken = safeExtractPersistenceToken(persistenceTokenField, instance);
+            if (persistenceToken instanceof ClassPersistenceToken) {
+                // Classes don't get copied.
+                shouldCopy = false;
+            } else {
+                // Check if this has a constant instance ID.
                 // Copy new instances (null) and normal instances (NOT constants or classes).
                 // We want the stubs is in the reentrant space to be copied, obviously.
                 shouldCopy = (null == persistenceToken)
                         || (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken)
                         || persistenceToken.isNormalInstance();
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                // Any failure related to this would have happened much earlier.
-                RuntimeAssertionError.unexpected(e);
             }
         }
         return shouldCopy;
+    }
+
+    private static IPersistenceToken safeExtractPersistenceToken(Field persistenceTokenField, org.aion.avm.shadow.java.lang.Object instance) {
+        try {
+            return (IPersistenceToken)persistenceTokenField.get(instance);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any failure related to this would have happened much earlier.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 }
