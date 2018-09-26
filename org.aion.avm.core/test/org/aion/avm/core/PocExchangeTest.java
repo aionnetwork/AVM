@@ -159,116 +159,116 @@ public class PocExchangeTest {
     @Test
     public void testERC20() {
         TransactionResult res;
-        System.out.println(">> Deploy \"PEPE\" token contract...");
+        //System.out.println(">> Deploy \"PEPE\" token contract...");
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
-        System.out.println(Helpers.bytesToHexString(pepe.addr));
+        //System.out.println(Helpers.bytesToHexString(pepe.addr));
 
         res = pepe.callTotalSupply();
-        System.out.println(Helpers.bytesToHexString(res.getReturnData()));
+        //System.out.println(Helpers.bytesToHexString(res.getReturnData()));
         Assert.assertEquals(0L, TestingHelper.decodeResult(res));
-        System.out.println(">> total supply: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> total supply: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr1);
         Assert.assertEquals(0L, TestingHelper.decodeResult(res));
-        System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr2);
         Assert.assertEquals(0L, TestingHelper.decodeResult(res));
-        System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callMint(usr1, 5000L);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));
-        System.out.println(">> Mint to deliver 5000 tokens to User1: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> Mint to deliver 5000 tokens to User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr1);
         Assert.assertEquals(5000L, TestingHelper.decodeResult(res));
-        System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callMint(usr2, 10000L);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));
-        System.out.println(">> Mint to deliver 10000 tokens to User2: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> Mint to deliver 10000 tokens to User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr2);
         Assert.assertEquals(10000L, TestingHelper.decodeResult(res));
-        System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callTransfer(usr1, usr2, 2000L);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));
-        System.out.println(">> User1 to transfer 2000 tokens to User2: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> User1 to transfer 2000 tokens to User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr1);
         Assert.assertEquals(3000L, TestingHelper.decodeResult(res));
-        System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr2);
         Assert.assertEquals(12000L, TestingHelper.decodeResult(res));
-        System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callAllowance(usr1, usr2);
         Assert.assertEquals(0L, TestingHelper.decodeResult(res));
-        System.out.println(">> Allowance User1 grants to User2: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> Allowance User1 grants to User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callApprove(usr1, usr3, 1000L);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));
-        System.out.println(">> User1 grants User3 the allowance of 1000 tokens: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> User1 grants User3 the allowance of 1000 tokens: " + TestingHelper.decodeResult(res));
 
         res = pepe.callAllowance(usr1, usr3);
         Assert.assertEquals(1000L, TestingHelper.decodeResult(res));
-        System.out.println(">> Allowance User1 grants to User3: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> Allowance User1 grants to User3: " + TestingHelper.decodeResult(res));
 
         res = pepe.callTransferFrom(usr3, usr1, usr2, 500L);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));
-        System.out.println(">> User3 to transfer 500 tokens to User2, from the allowance granted by User1: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> User3 to transfer 500 tokens to User2, from the allowance granted by User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callAllowance(usr1, usr3);
         Assert.assertEquals(500L, TestingHelper.decodeResult(res));
-        System.out.println(">> Allowance User1 grants to User3: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> Allowance User1 grants to User3: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr1);
         Assert.assertEquals(2500L, TestingHelper.decodeResult(res));
-        System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr2);
         Assert.assertEquals(12500L, TestingHelper.decodeResult(res));
-        System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
     }
 
     @Test
     public void testExchange() {
-        System.out.println(">> Deploy \"PEPE\" token contract...");
+        //System.out.println(">> Deploy \"PEPE\" token contract...");
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
 
-        System.out.println(">> Deploy \"MEME\" token contract...");
+        //System.out.println(">> Deploy \"MEME\" token contract...");
         arguments = ABIEncoder.encodeMethodArguments("", "Meme".toCharArray(), "MEME".toCharArray(), 8);
         CoinContract meme = new CoinContract(null, memeMinter, testERC20Jar, arguments);
 
-        System.out.println(">> Deploy the Exchange contract...");
+        //System.out.println(">> Deploy the Exchange contract...");
         ExchangeContract ex = new ExchangeContract(null, exchangeOwner, testExchangeJar);
 
         TransactionResult res;
 
         res = ex.callListCoin("PEPE", pepe.addr);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));
-        System.out.println(">> List \"PEPE\" token on Exchange: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> List \"PEPE\" token on Exchange: " + TestingHelper.decodeResult(res));
 
         res = ex.callListCoin("MEME", meme.addr);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));
-        System.out.println(">> List \"MEME\" token on Exchange: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> List \"MEME\" token on Exchange: " + TestingHelper.decodeResult(res));
 
         res = pepe.callMint(usr1, 5000L);
-        System.out.println(">> Mint to deliver 5000 tokens to User1: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> Mint to deliver 5000 tokens to User1: " + TestingHelper.decodeResult(res));
         res = pepe.callMint(usr2, 5000L);
-        System.out.println(">> Mint to deliver 5000 tokens to User2: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> Mint to deliver 5000 tokens to User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callApprove(usr1, ex.addr, 2000L);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));
-        System.out.println(">> User1 grants to the Exchange the allowance of 2000 tokens: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> User1 grants to the Exchange the allowance of 2000 tokens: " + TestingHelper.decodeResult(res));
 
         res = ex.callRequestTransfer("PEPE", usr1, usr2, 1000L);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));
-        System.out.println(">> Exchange to request transfer 1000 tokens from User1 to User2, from the allowance granted by User1: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> Exchange to request transfer 1000 tokens from User1 to User2, from the allowance granted by User1: " + TestingHelper.decodeResult(res));
 
         //res = pepe.callAllowance(usr1, ex.addr);
         //Assert.assertEquals(2000L, TestingHelper.decodeResult(res));
@@ -276,18 +276,18 @@ public class PocExchangeTest {
 
         res = ex.callProcessExchangeTransaction(exchangeOwner);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));
-        System.out.println(">> Exchange to process the transactions: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> Exchange to process the transactions: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr1);
         Assert.assertEquals(4000L, TestingHelper.decodeResult(res));
-        System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> balance of User1: " + TestingHelper.decodeResult(res));
 
         res = pepe.callBalanceOf(usr2);
         Assert.assertEquals(6000L, TestingHelper.decodeResult(res));
-        System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> balance of User2: " + TestingHelper.decodeResult(res));
 
         res = pepe.callAllowance(usr1, ex.addr);
         Assert.assertEquals(1000L, TestingHelper.decodeResult(res));
-        System.out.println(">> Allowance User1 grants to Exchange: " + TestingHelper.decodeResult(res));
+        //System.out.println(">> Allowance User1 grants to Exchange: " + TestingHelper.decodeResult(res));
     }
 }

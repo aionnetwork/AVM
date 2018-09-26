@@ -2,7 +2,6 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.shadow.java.util.Arrays;
 import org.aion.avm.userlib.AionMap;
 
 
@@ -17,9 +16,7 @@ public class BasicAppTestTarget {
     private static int swappingPoint;
     private static AionMap<Byte, Byte> longLivedMap = new AionMap<>();
 
-    // NOTE:  Even though this is "byte[]" on the user's side, we will call it from the outside as "ByteArray"
     public static byte[] main() {
-        String methodName = ABIDecoder.decodeMethodName(BlockchainRuntime.getData());
         return ABIDecoder.decodeAndRunWithClass(BasicAppTestTarget.class, BlockchainRuntime.getData());
     }
 

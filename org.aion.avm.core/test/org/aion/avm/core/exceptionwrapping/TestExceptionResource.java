@@ -1,10 +1,17 @@
 package org.aion.avm.core.exceptionwrapping;
 
 
+import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.BlockchainRuntime;
+
 /**
  * Note that this class is just used as a resource by the other tests in this package.
  */
 public class TestExceptionResource {
+    public static byte[] main() {
+        return ABIDecoder.decodeAndRunWithClass(TestExceptionResource.class, BlockchainRuntime.getData());
+    }
+
     public static int tryMultiCatchFinally() {
         int r = 0;
         try {
