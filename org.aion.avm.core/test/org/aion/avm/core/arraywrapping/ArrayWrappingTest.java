@@ -1,275 +1,272 @@
 package org.aion.avm.core.arraywrapping;
 
-import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
+import org.aion.avm.core.Avm;
+import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.TestingHelper;
+import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.Helpers;
+import org.aion.kernel.*;
 import org.junit.*;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 
 public class ArrayWrappingTest {
 
-    private SimpleAvm avm;
-    private Class<?> clazz;
-    private IHelper helper;
+    private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private byte[] dappAddr;
+
+    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private long energyLimit = 6_000_0000;
+    private long energyPrice = 1;
+
+    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
     @Before
-    public void setup() throws ClassNotFoundException {
-        avm = new SimpleAvm(1000000000000000000L,
-                TestResource.class,
-                TestResource.A.class,
-                TestResource.B.class,
-                TestResource.C.class,
-                TestResource.X.class,
-                TestResource.Y.class,
-                TestResource.Z.class
-        );
-        helper = avm.getHelper();
-        clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
+    public void setup() {
+        byte[] arrayWrappingTestJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
 
-        helper.externalSetEnergy(1000000000000L);
-    }
+        byte[] txData = new CodeAndArguments(arrayWrappingTestJar, null).encodeToBytes();
 
-    @After
-    public void teardown() {
-        avm.shutdown();
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        dappAddr = avm.run(context).getReturnData();
     }
 
     @Test
-    public void testBooleanArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testBooleanArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testBooleanArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testBooleanArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testByteArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testByteArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testByteArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testByteArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testCharArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testCharArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testCharArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testCharArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testDoubleArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testDoubleArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testDoubleArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testDoubleArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testFloatArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testFloatArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testFloatArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testFloatArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testIntArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testIntArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testIntArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testIntArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testLongArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testLongArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testLongArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testLongArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testShortArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testShortArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testShortArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testShortArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testObjectArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testObjectArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testObjectArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testObjectArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testStringArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testStringArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testStringArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testStringArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testSignature() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testSignature() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testSignature");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testSignature"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testVarargs() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testVarargs() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testVarargs");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testVarargs"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testTypeChecking() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testTypeChecking() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testTypeChecking");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testTypeChecking"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testClassField() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testClassField() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testClassField");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testClassField"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testMultiInt() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testMultiInt() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiInt");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiInt"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testMultiByte() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testMultiByte() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiByte");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiByte"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testMultiChar() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testMultiChar() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiChar");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiChar"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testMultiFloat() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testMultiFloat() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiFloat");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiFloat"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testMultiLong() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testMultiLong() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiLong");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiLong"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testMultiDouble() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testMultiDouble() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiDouble");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiDouble"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testMultiRef() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testMultiRef() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiRef");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testMultiRef"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
-    }
-
-
-    @Test
-    public void testHierarachy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testHierarachy"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testIncompleteArrayIni() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testHierarachy() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testHierarachy");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testIncompleteArrayIni"));
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
+    }
 
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+    @Test
+    public void testIncompleteArrayIni() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testIncompleteArrayIni");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
+
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
 //    @Test
-//    public void testArrayEnergy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+//    public void testArrayEnergy() {
 //
 //        Object obj = clazz.getConstructor().newInstance();
 //        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testArrayEnergy"));
@@ -291,23 +288,22 @@ public class ArrayWrappingTest {
 //    }
 
     @Test
-    public void testInterfaceArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testInterfaceArray() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testInterfaceArray");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testInterfaceArray"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testArrayClone() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testArrayClone() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayClone");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testArrayClone"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
-
 }

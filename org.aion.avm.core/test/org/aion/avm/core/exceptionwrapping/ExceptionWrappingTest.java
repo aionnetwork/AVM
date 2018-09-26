@@ -6,7 +6,6 @@ import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.TestingHelper;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.kernel.*;
@@ -18,9 +17,6 @@ import static org.aion.avm.core.util.Helpers.randomBytes;
 
 
 public class ExceptionWrappingTest {
-    private AvmClassLoader loader;
-    private Class<?> testClass;
-
     private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private byte[] dappAddr;
 

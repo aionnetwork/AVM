@@ -1,5 +1,8 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.BlockchainRuntime;
+
 public class TestResource {
 
     public interface X {}
@@ -15,6 +18,10 @@ public class TestResource {
     public static int[] ois;
     public String[][][] fieldMDString;
     public int[][][] fieldMDInt;
+
+    public static byte[] main() {
+        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+    }
 
     public boolean testBasic(){
         boolean res = true;
