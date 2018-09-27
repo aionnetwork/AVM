@@ -151,9 +151,10 @@ public class ReflectionStructureCodecTest {
         byte[] address = {1,2,3};
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         Extent extent = KeyValueExtentCodec.decode(graph, expected);
-        CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
+        StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
         // Note that the deserializer always assumes it is operating on stubs so create the instance and pass it in.
+        graph.setLateComponents(ReflectionStructureCodecTarget.class.getClassLoader(), codec, (n) -> new NodePersistenceToken(n));
         ReflectionStructureCodecTarget target = new ReflectionStructureCodecTarget();
         codec.deserializeInstance(target, extent);
         
@@ -184,7 +185,7 @@ public class ReflectionStructureCodecTest {
         byte[] address = {1,2,3};
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
-        CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
+        StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
         Extent rootExtent = codec.internalSerializeInstance(root, NULL_CONSUMER);
         Extent oneExtent = codec.internalSerializeInstance(one, NULL_CONSUMER);
@@ -227,7 +228,7 @@ public class ReflectionStructureCodecTest {
         byte[] address = {1,2,3};
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
-        CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
+        StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
         Extent root1Extent = codec.internalSerializeInstance(root1, NULL_CONSUMER);
         Extent root2Extent = codec.internalSerializeInstance(root2, NULL_CONSUMER);
@@ -278,8 +279,9 @@ public class ReflectionStructureCodecTest {
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         Extent extent1 = KeyValueExtentCodec.decode(graph, expected1);
         Extent extent2 = KeyValueExtentCodec.decode(graph, expected2);
-        CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
+        StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
+        graph.setLateComponents(ReflectionStructureCodecTarget.class.getClassLoader(), codec, (n) -> new NodePersistenceToken(n));
         ReflectionStructureCodecTarget target1 = new ReflectionStructureCodecTarget();
         codec.deserializeInstance(target1, extent1);
         ReflectionStructureCodecTarget target2 = new ReflectionStructureCodecTarget();

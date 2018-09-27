@@ -8,4 +8,17 @@ package org.aion.avm.core.persistence;
  * exists to provide a portable type check to the higher-level components.
  */
 public interface IRegularNode extends INode {
+    /**
+     * Loads the actual data describing the instance pointed to by this INode.
+     * 
+     * @return The extent containing the serialized target instance.
+     */
+    Extent loadRegularData();
+
+    /**
+     * Saves the actual data describing the instance pointed to by this INode.
+     * 
+     * @param extent The data containing the serialized target instance.
+     */
+    void saveRegularData(Extent extent);
 }

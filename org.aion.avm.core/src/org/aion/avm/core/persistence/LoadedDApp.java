@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IBlockchainRuntime;
@@ -20,6 +21,7 @@ import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.MethodAccessException;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
@@ -82,17 +84,17 @@ public class LoadedDApp {
      */
     public void populateClassStaticsFromStorage(IStorageFeeProcessor feeProcessor) {
         // We will create the field populator to build objects with the correct canonicalizing caches.
-        CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(this.loader);
+        StandardFieldPopulator populator = new StandardFieldPopulator();
         // Create the codec which will make up the long-lived deserialization approach, within the system.
         ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore);
-        // The populator needs to know to attach the codec, itself, as the IDeserializer of new instances.
-        populator.setDeserializer(codec);
+        // Configure the storage graph.
+        Function<IRegularNode, IPersistenceToken> tokenBuilder = (regularNode) -> new NodePersistenceToken(regularNode);
+        this.graphStore.setLateComponents(this.loader, codec, tokenBuilder);
         
         // Extract the raw data for the class statics.
         byte[] rawData = this.graphStore.getStorage(StorageKeys.CLASS_STATICS);
-        // TODO: Remove these assumptions regarding the underlying IObjectGraphStore being KeyValueObjectGraph.
-        feeProcessor.readStaticDataFromStorage(rawData.length - KeyValueObjectGraph.OVERHEAD_BYTES);
         Extent staticData = KeyValueExtentCodec.decode((KeyValueObjectGraph)this.graphStore, rawData);
+        feeProcessor.readStaticDataFromStorage(staticData.getBillableSize());
         ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(staticData);
         
         // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
@@ -140,8 +142,8 @@ public class LoadedDApp {
         
         // Save the raw bytes.
         Extent staticData = encoder.toExtent();
+        feeProcessor.writeStaticDataToStorage(staticData.getBillableSize());
         byte[] rawData = KeyValueExtentCodec.encode(staticData);
-        feeProcessor.writeStaticDataToStorage(rawData.length - KeyValueObjectGraph.OVERHEAD_BYTES);
         this.graphStore.putStorage(StorageKeys.CLASS_STATICS, rawData);
         
         // Now, drain the queue.

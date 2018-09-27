@@ -1,5 +1,10 @@
 package org.aion.avm.core.persistence;
 
+import java.util.function.Function;
+
+import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IPersistenceToken;
+
 
 /**
  * An abstract interface over the storage back-end (since we want to allow that to be changed, later).
@@ -26,6 +31,15 @@ public interface IObjectGraphStore {
      * @param value The value to store for this key.
      */
     public void putStorage(byte[] key, byte[] value);
+
+    /**
+     * Used for late initialization of the implementation in cases where not all requirements can be built before it is loaded.
+     * 
+     * @param classLoader The loader to use for looking up classes when initializing objects.
+     * @param logicalDeserializer The deserializer to give to newly-instantiated objects, for when they want to load.
+     * @param tokenBuilder Used to create the deserialization token for newly-instantiated objects, for when they want to load.
+     */
+    public void setLateComponents(ClassLoader classLoader, IDeserializer logicalDeserializer, Function<IRegularNode, IPersistenceToken> tokenBuilder);
 
     /**
      * Builds a node referencing a regular object.

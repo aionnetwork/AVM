@@ -1,75 +1,21 @@
 package org.aion.avm.core.persistence;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.IdentityHashMap;
-import java.util.Map;
 
-import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
-import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
 /**
- * An implementation of IFieldPopulator which knows how to delegate to the appropriate canonicalizing caches.
- * 
- * Its implementation of all the field interaction methods is the literal version expected but its implementation
- * of the instance creation calls utilize these canonicalizing caches.
+ * An implementation of IFieldPopulator which should be used in the common case.
+ * This is the variant which directly applies the field values, so it should be used in all cases where the graph is being fully deserialized.
  */
-public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IFieldPopulator {
-    private final ConstructorCache constructorCache;
-    private final Map<IRegularNode, org.aion.avm.shadow.java.lang.Object> instanceStubMap;
-    private final Map<Long, org.aion.avm.shadow.java.lang.Object> shadowConstantMap;
-    private IDeserializer deserializer;
-
-    public CacheAwareFieldPopulator(ClassLoader loader) {
-        this.constructorCache = new ConstructorCache(loader);
-        this.instanceStubMap = new IdentityHashMap<>();
-        this.shadowConstantMap = NodeEnvironment.singleton.getConstantMap();
-    }
-    public void setDeserializer(IDeserializer deserializer) {
-        this.deserializer = deserializer;
-    }
+public class StandardFieldPopulator implements ReflectionStructureCodec.IFieldPopulator {
     @Override
     public org.aion.avm.shadow.java.lang.Object instantiateReference(INode node) {
-        org.aion.avm.shadow.java.lang.Object stub = null;
-        if (node instanceof IRegularNode) {
-            IRegularNode regularNode = (IRegularNode)node;
-            // First, consult the stub map and then create this, if this is the first time.
-            stub = this.instanceStubMap.get(regularNode);
-            if (null == stub) {
-                // TODO:  Remove this assumption that we are talking to the key-value store.
-                KeyValueNode keyValueNode = (KeyValueNode) regularNode;
-                
-                Constructor<?> con = this.constructorCache.getConstructorForClassName(keyValueNode.getInstanceClassName());
-                try {
-                    stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(this.deserializer, new NodePersistenceToken(regularNode));
-                } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    // Any error like this means a serious bug or a fatal mis-configuration.
-                    throw RuntimeAssertionError.unexpected(e);
-                }
-                this.instanceStubMap.put(regularNode, stub);
-            }
-        } else if (node instanceof ClassNode) {
-            try {
-                Class<?> jdkClass = Class.forName(((ClassNode)node).className);
-                stub = IHelper.currentContractHelper.get().externalWrapAsClass(jdkClass);
-            } catch (ClassNotFoundException e) {
-                // Any error like this means a serious bug or a fatal mis-configuration.
-                throw RuntimeAssertionError.unexpected(e);
-            }
-        } else if (node instanceof ConstantNode) {
-            long instanceId = ((ConstantNode)node).constantId;
-            stub = this.shadowConstantMap.get(instanceId);
-        } else if (null == node) {
-            stub = null;
-        } else {
-            RuntimeAssertionError.unreachable("Unknown node type");
-        }
-        return stub;
+        // This implementation just returns the instance.
+        return (null != node)
+                ? node.getObjectInstance()
+                : null;
     }
 
     @Override

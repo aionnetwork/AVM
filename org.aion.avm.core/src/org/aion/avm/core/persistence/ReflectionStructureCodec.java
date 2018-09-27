@@ -6,10 +6,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.function.Consumer;
 
-import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
-import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
-import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
-import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
@@ -247,24 +243,26 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
         // The persistenceToken cannot be null since that implies we are deserializing a new object.
         RuntimeAssertionError.assertTrue(null != persistenceToken);
+        // This MUST be a NodeToken.
+        IRegularNode node = ((NodePersistenceToken)persistenceToken).node;
         
         // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
-        long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
-        byte[] rawData = this.graphStore.getStorage(StorageKeys.forInstance(instanceId));
-        // TODO: Remove these assumptions regarding the underlying IObjectGraphStore being KeyValueObjectGraph.
-        this.feeProcessor.readOneInstanceFromStorage(rawData.length - KeyValueObjectGraph.OVERHEAD_BYTES);
-        deserializeInstance(instance, KeyValueExtentCodec.decode((KeyValueObjectGraph)this.graphStore, rawData));
+        Extent extent = node.loadRegularData();
+        this.feeProcessor.readOneInstanceFromStorage(extent.getBillableSize());
+        deserializeInstance(instance, extent);
     }
 
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         try {
             IPersistenceToken persistenceToken = (IPersistenceToken)this.persistenceTokenField.get(instance);
-            byte[] serialized = KeyValueExtentCodec.encode(internalSerializeInstance(instance, nextObjectSink));
+            // Note that, even if this is a new instance, someone would have already assigned a persistence token so this can't be null.
+            RuntimeAssertionError.assertTrue(null != persistenceToken);
+            
+            Extent extent = internalSerializeInstance(instance, nextObjectSink);
             // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
             // we run out of energy, part-way.
-            this.feeProcessor.writeOneInstanceToStorage(serialized.length - KeyValueObjectGraph.OVERHEAD_BYTES);
-            long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
-            this.graphStore.putStorage(StorageKeys.forInstance(instanceId), serialized);
+            this.feeProcessor.writeOneInstanceToStorage(extent.getBillableSize());
+            ((NodePersistenceToken)persistenceToken).node.saveRegularData(extent);
         } catch (IllegalAccessException | IllegalArgumentException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
             throw RuntimeAssertionError.unexpected(e);
