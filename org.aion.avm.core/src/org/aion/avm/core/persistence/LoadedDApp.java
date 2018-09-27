@@ -84,7 +84,7 @@ public class LoadedDApp {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(this.loader);
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore, 0);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore);
         // The populator needs to know to attach the codec, itself, as the IDeserializer of new instances.
         populator.setDeserializer(codec);
         
@@ -118,12 +118,11 @@ public class LoadedDApp {
     /**
      * Serializes the static fields of the DApp classes and stores them on disk.
      * 
-     * @param nextInstanceId The next instanceId to assign to an object which needs to be serialized.
      * @param feeProcessor The billing mechanism for storage operations.
      */
-    public long saveClassStaticsToStorage(long nextInstanceId, IStorageFeeProcessor feeProcessor) {
+    public void saveClassStaticsToStorage(IStorageFeeProcessor feeProcessor) {
         // Build the encoder.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, null, feeProcessor, this.graphStore, nextInstanceId);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, null, feeProcessor, this.graphStore);
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         
         // Create the queue of instances reachable from here and consumer abstraction.
@@ -150,9 +149,6 @@ public class LoadedDApp {
             org.aion.avm.shadow.java.lang.Object instance = instancesToWrite.poll();
             codec.serializeInstance(instance, instanceSink);
         }
-        
-        // We need to pull out the nextInstanceId so that it can be set in the codec, when we are next invoked.
-        return codec.getNextInstanceId();
     }
 
     /**

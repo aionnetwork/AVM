@@ -5,10 +5,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
+import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.internal.IDeserializer;
@@ -47,9 +46,8 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     // We only hold the deserializerField because we need to check if it is null when traversing the graph for objects to serialize.
     private final Field deserializerField;
     private final Field persistenceTokenField;
-    private long nextInstanceId;
 
-    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore, long nextInstanceId) {
+    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
         this.fieldCache = fieldCache;
         this.populator = populator;
         this.feeProcessor = feeProcessor;
@@ -65,11 +63,6 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
         }
-        this.nextInstanceId = nextInstanceId;
-    }
-
-    public long getNextInstanceId() {
-        return this.nextInstanceId;
     }
 
     public void serializeClass(ExtentBasedCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
@@ -163,13 +156,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     private void deflateInstanceAsStub(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object contents, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
-            Supplier<Long> instanceIdProducer = () -> {
-                long instanceId = this.nextInstanceId;
-                this.nextInstanceId += 1;
-                return instanceId;
-            };
-            boolean shouldEnqueueInstance = SerializedInstanceStub.serializeInstanceStub(encoder, contents, this.persistenceTokenField, instanceIdProducer);
-            if (shouldEnqueueInstance) {
+            boolean isNormalInstance = SerializedInstanceStub.serializeAsReference(encoder, contents, this.graphStore, this.persistenceTokenField);
+            
+            if (isNormalInstance) {
                 // The helper thinks we should enqueue this instance, since it is a normal instance type.
                 // If this instance has been loaded, set it to not loaded and add it to the queue.
                 if (null == this.deserializerField.get(contents)) {
@@ -243,15 +232,15 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
                 } else {
                     // Shape:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
                     // Null:  (int)0.
-                    org.aion.avm.shadow.java.lang.Object instanceToStore = inflateStubAsInstance(decoder);
+                    org.aion.avm.shadow.java.lang.Object instanceToStore = inflateStubAsInstance(decoder.decodeReference());
                     this.populator.setObject(field, object, instanceToStore);
                 }
             }
         } 
     }
 
-    private org.aion.avm.shadow.java.lang.Object inflateStubAsInstance(ExtentBasedCodec.Decoder decoder) {
-        return SerializedInstanceStub.deserializeInstanceStub(decoder, this.populator);
+    private org.aion.avm.shadow.java.lang.Object inflateStubAsInstance(INode oneNode) {
+        return SerializedInstanceStub.deserializeReferenceAsInstance(oneNode, this.populator);
     }
 
     @Override
@@ -260,7 +249,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         RuntimeAssertionError.assertTrue(null != persistenceToken);
         
         // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
-        long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
+        long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
         byte[] rawData = this.graphStore.getStorage(StorageKeys.forInstance(instanceId));
         // TODO: Remove these assumptions regarding the underlying IObjectGraphStore being KeyValueObjectGraph.
         this.feeProcessor.readOneInstanceFromStorage(rawData.length - KeyValueObjectGraph.OVERHEAD_BYTES);
@@ -274,7 +263,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
             // we run out of energy, part-way.
             this.feeProcessor.writeOneInstanceToStorage(serialized.length - KeyValueObjectGraph.OVERHEAD_BYTES);
-            long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
+            long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
             this.graphStore.putStorage(StorageKeys.forInstance(instanceId), serialized);
         } catch (IllegalAccessException | IllegalArgumentException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
@@ -337,7 +326,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
 
     @Override
     public org.aion.avm.shadow.java.lang.Object decodeStub(ExtentBasedCodec.Decoder decoder) {
-        return inflateStubAsInstance(decoder);
+        return inflateStubAsInstance(decoder.decodeReference());
     }
 
 

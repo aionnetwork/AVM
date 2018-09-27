@@ -5,9 +5,12 @@ import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.persistence.ReflectionStructureCodec.IFieldPopulator;
-import org.aion.avm.core.persistence.graph.InstanceIdToken;
+import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
+import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
+import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IPersistenceToken;
+import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,6 +20,7 @@ import org.junit.Test;
 public class SerializedInstanceStubTest {
     private Field persistenceTokenField;
     private IFieldPopulator fieldPopulator;
+    private IObjectGraphStore graphStore;
 
     @Before
     public void setup() throws Exception {
@@ -26,6 +30,9 @@ public class SerializedInstanceStubTest {
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
         this.persistenceTokenField = org.aion.avm.shadow.java.lang.Object.class.getField("persistenceToken");
         this.fieldPopulator = new BasicPopulator();
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        byte[] address = new byte[] {1,2,3};
+        this.graphStore = new KeyValueObjectGraph(kernel, address);
     }
 
     @After
@@ -44,7 +51,7 @@ public class SerializedInstanceStubTest {
         
         // Encode this.
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeAsReference(encoder, inputInstance, this.graphStore, this.persistenceTokenField);
         
         // Nulls should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
@@ -54,14 +61,14 @@ public class SerializedInstanceStubTest {
         Assert.assertEquals(1, extent.references.length);
         
         // Decode this.
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(extent);
-        org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
+        org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeReferenceAsInstance(extent.references[0], this.fieldPopulator);
         Assert.assertEquals(testingNull(), instance.toString());
     }
 
     @Test
     public void testConstant() throws Exception {
         org.aion.avm.shadow.java.lang.Object inputInstance = org.aion.avm.shadow.java.lang.Boolean.avm_TYPE;
+        this.persistenceTokenField.set(inputInstance, new ConstantPersistenceToken(-18L));
         
         // Size this.
         int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.persistenceTokenField);
@@ -70,7 +77,7 @@ public class SerializedInstanceStubTest {
         
         // Encode this.
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeAsReference(encoder, inputInstance, this.graphStore, this.persistenceTokenField);
         
         // Constants should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
@@ -80,8 +87,7 @@ public class SerializedInstanceStubTest {
         Assert.assertEquals(1, extent.references.length);
         
         // Decode this.
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(extent);
-        org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
+        org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeReferenceAsInstance(extent.references[0], this.fieldPopulator);
         Assert.assertEquals(testingConstant(-18L), instance.toString());
     }
 
@@ -97,7 +103,7 @@ public class SerializedInstanceStubTest {
         
         // Encode this.
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeAsReference(encoder, inputInstance, this.graphStore, this.persistenceTokenField);
         
         // Classes should never be enqueued.
         Assert.assertFalse(shouldEnqueue);
@@ -107,8 +113,7 @@ public class SerializedInstanceStubTest {
         Assert.assertEquals(1, extent.references.length);
         
         // Decode this.
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(extent);
-        org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
+        org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeReferenceAsInstance(extent.references[0], this.fieldPopulator);
         Assert.assertEquals(testingClass(String.class.getName()), instance.toString());
     }
 
@@ -123,7 +128,7 @@ public class SerializedInstanceStubTest {
         
         // Encode this.
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
-        boolean shouldEnqueue = SerializedInstanceStub.serializeInstanceStub(encoder, inputInstance, this.persistenceTokenField, () -> 1L);
+        boolean shouldEnqueue = SerializedInstanceStub.serializeAsReference(encoder, inputInstance, this.graphStore, this.persistenceTokenField);
         
         // Instances should be enqueued.
         Assert.assertTrue(shouldEnqueue);
@@ -133,8 +138,7 @@ public class SerializedInstanceStubTest {
         Assert.assertEquals(1, extent.references.length);
         
         // Decode this.
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(encoder.toExtent());
-        org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeInstanceStub(decoder, this.fieldPopulator);
+        org.aion.avm.shadow.java.lang.Object instance = SerializedInstanceStub.deserializeReferenceAsInstance(extent.references[0], this.fieldPopulator);
         Assert.assertEquals(testingInstance(1L), instance.toString());
     }
 
@@ -159,7 +163,7 @@ public class SerializedInstanceStubTest {
     private static class BasicPopulator implements IFieldPopulator {
         @Override
         public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) {
-            long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
+            long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
             return new org.aion.avm.shadow.java.lang.String(testingInstance(instanceId));
         }
         @Override
@@ -168,7 +172,7 @@ public class SerializedInstanceStubTest {
         }
         @Override
         public org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken) {
-            long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
+            long instanceId = ((ConstantPersistenceToken)persistenceToken).stableConstantId;
             return new org.aion.avm.shadow.java.lang.String(testingConstant(instanceId));
         }
         @Override

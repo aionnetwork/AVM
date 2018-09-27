@@ -3,7 +3,6 @@ package org.aion.avm.core;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReentrantGraphProcessor;
-import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.internal.*;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.KernelInterface;
@@ -58,12 +57,10 @@ public class DAppExecutor {
             } else {
                 // We are at the "top" so write this back to disk.
                 // -first, save out the classes
-                long nextInstanceId = ((KeyValueObjectGraph)dapp.graphStore).getNextInstanceId();
-                nextInstanceId = dapp.saveClassStaticsToStorage(nextInstanceId, feeProcessor);
+                dapp.saveClassStaticsToStorage(feeProcessor);
                 // -finally, save back the final state of the environment so we restore it on the next invocation.
                 ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(helper.externalGetNextHashCode());
                 ContractEnvironmentState.saveToGraph(dapp.graphStore, updatedEnvironment);
-                ((KeyValueObjectGraph)dapp.graphStore).setNextInstanceId(nextInstanceId);
             }
             dapp.graphStore.flushWrites();
 

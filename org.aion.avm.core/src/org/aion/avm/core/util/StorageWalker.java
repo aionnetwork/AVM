@@ -19,12 +19,14 @@ import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.persistence.ConstructorCache;
 import org.aion.avm.core.persistence.ExtentBasedCodec;
+import org.aion.avm.core.persistence.NodePersistenceToken;
 import org.aion.avm.core.persistence.ReflectedFieldCache;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
-import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
+import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
+import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.PackageConstants;
@@ -115,7 +117,7 @@ public class StorageWalker {
             }
             @Override
             public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) {
-                long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
+                long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
                 // Note that we can't decode all object instances (most shadows and array wrappers, for example), but we will determine that on the reading side.
                 // For now, just make sure we enqueue each instance only once.
                 if (!processed.contains(instanceId)) {
@@ -137,7 +139,7 @@ public class StorageWalker {
             }
             @Override
             public org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken) {
-                long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
+                long instanceId = ((ConstantPersistenceToken)persistenceToken).stableConstantId;
                 return new org.aion.avm.shadow.java.lang.String("constant(" + instanceId + ")");
             }
             @Override
@@ -150,7 +152,7 @@ public class StorageWalker {
         // (note that it requires a fieldCache but we don't attempt to reuse this, in our case).
         ReflectedFieldCache fieldCache = new ReflectedFieldCache();
         NullFeeProcessor feeProcessor = new NullFeeProcessor(); 
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, feeProcessor, objectGraph, 0);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, feeProcessor, objectGraph);
         
         // Extract the raw data for the class statics.
         byte[] staticData = objectGraph.getStorage(StorageKeys.CLASS_STATICS);
@@ -167,7 +169,7 @@ public class StorageWalker {
             org.aion.avm.shadow.java.lang.Object instance = instanceQueue.poll();
             String className = instance.getClass().getName();
             IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
-            long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
+            long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
             output.println(shortenClassName(className) + "("+ instanceId + "): ");
             
             // We need to look into a few special-cases here:

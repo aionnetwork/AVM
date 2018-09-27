@@ -58,11 +58,8 @@ public class LoadedDAppTest {
 
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
-        long initialInstanceId = 1l;
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        long nextInstanceId = new LoadedDApp(null, objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
-        // Note that this attempt to serialize has no instances so the counter should be unchanged.
-        Assert.assertEquals(initialInstanceId, nextInstanceId);
+        new LoadedDApp(null, objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).saveClassStaticsToStorage(FEE_PROCESSOR);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -174,11 +171,8 @@ public class LoadedDAppTest {
         
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
-        long initialInstanceId = 1l;
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        long nextInstanceId = new LoadedDApp(null, objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName()).saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
-        // We serialized a single instance so we expect the nextInstanceId to be advanced.
-        Assert.assertEquals(1 + initialInstanceId, nextInstanceId);
+        new LoadedDApp(null, objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName()).saveClassStaticsToStorage(FEE_PROCESSOR);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -250,12 +244,9 @@ public class LoadedDAppTest {
         
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
-        long initialInstanceId = 1l;
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName());
-        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
-        // We serialized 2 instances so we expect the nextInstanceId to be advanced.
-        Assert.assertEquals(2 + initialInstanceId, nextInstanceId);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR);
         // Check the size of the saved static data (should only store local copies of statics, not superclass statics, per class).
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // (note that this is "309" if the superclass static fields are redundantly stored in sub-classes).
@@ -308,11 +299,6 @@ public class LoadedDAppTest {
         Assert.assertTrue(sub == sub.i_nine);
         Assert.assertEquals(42, ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_five);
         Assert.assertTrue(ReflectionStructureCodecTarget.s_nine == ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine);
-        
-        // Re-serialize these to prove that the instanceId doesn't increment (since we aren't adding any new objects to the graph).
-        long finalInstanceId = dapp.saveClassStaticsToStorage(nextInstanceId, FEE_PROCESSOR);
-        // We serialized 2 instances so we expect the nextInstanceId to be advanced.
-        Assert.assertEquals(nextInstanceId, finalInstanceId);
     }
 
     /**
@@ -324,12 +310,9 @@ public class LoadedDAppTest {
         
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
-        long initialInstanceId = 1l;
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
-        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
-        // Note that this attempt to serialize has no instances so the counter should be unchanged.
-        Assert.assertEquals(initialInstanceId, nextInstanceId);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -366,12 +349,9 @@ public class LoadedDAppTest {
         
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
-        long initialInstanceId = 1l;
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
-        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
-        // Note that this attempt to serialize has no instances so the counter should be unchanged.
-        Assert.assertEquals(initialInstanceId, nextInstanceId);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -408,12 +388,9 @@ public class LoadedDAppTest {
         
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
-        long initialInstanceId = 1l;
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
-        long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, FEE_PROCESSOR);
-        // Note that this attempt to serialize has no instances so the counter should be unchanged.
-        Assert.assertEquals(initialInstanceId, nextInstanceId);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -453,7 +430,7 @@ public class LoadedDAppTest {
         
         // Set the empty state and write it to disk.
         ReflectionStructureCodecTarget.s_nine = null;
-        dapp.saveClassStaticsToStorage(1L, FEE_PROCESSOR);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR);
         
         // First, the disk variant.
         CallCountingProcessor diskCount = new CallCountingProcessor();
@@ -462,7 +439,7 @@ public class LoadedDAppTest {
         // Populate a basic state.
         ReflectionStructureCodecTarget.s_nine = buildSmallGraph();
         // Save to disk.
-        dapp.saveClassStaticsToStorage(1L, diskCount);
+        dapp.saveClassStaticsToStorage(diskCount);
         
         // Now, the in-memory variant.
         CallCountingProcessor memoryCount = new CallCountingProcessor();

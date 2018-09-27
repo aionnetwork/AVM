@@ -2,10 +2,8 @@ package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Supplier;
 
 import org.aion.avm.core.persistence.ReflectionStructureCodec.IFieldPopulator;
-import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
 import org.aion.avm.internal.ClassPersistenceToken;
 import org.aion.avm.internal.ConstantPersistenceToken;
@@ -24,15 +22,15 @@ public class SerializedInstanceStub {
     };
 
     /**
-     * Serializes a given object reference as an instance stub.  Note that this helper will apply an instanceId to the instance if it doesn't already have one and is a type which should.
+     * Serializes a reference to the given object into the given encoder.
      * 
      * @param encoder The instance stub will be serialized using this encoder.
      * @param target The object reference to encode.
+     * @param graphStore The object graph, used to create the appropriate abstract node type for the reference.
      * @param persistenceTokenField The reflection Field reference to use when reading or writing an IPersistenceToken into the instance.
-     * @param instanceIdProducer Called when a new instanceId is required for the instance.  If this is called, the instanceId should be considered used, by the implementation, and not given out again.
      * @return True if the instance was the type of object which should, itself, be serialized.
      */
-    public static boolean serializeInstanceStub(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object target, Field persistenceTokenField, Supplier<Long> instanceIdProducer) {
+    public static boolean serializeAsReference(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object target, IObjectGraphStore graphStore, Field persistenceTokenField) {
         INode referenceToTarget = null;
         boolean isRegularReference = false;
         
@@ -40,39 +38,36 @@ public class SerializedInstanceStub {
             // Just leave the null.
             referenceToTarget = null;
         } else {
-            // Check the instanceId to see if this is a special-case.
+            // Request the token.
             IPersistenceToken persistenceToken = safeExtractPersistenceToken(persistenceTokenField, target);
-            // This serialization call is only used when writing to disk so we can't see REENTRANT_CALLEE_INSTANCE_TOKEN.
-            RuntimeAssertionError.assertTrue(REENTRANT_CALLEE_INSTANCE_TOKEN != persistenceToken);
+            // Check:
+            // -constant
+            // -class
+            // -regular or null
+            // -null
             if (persistenceToken instanceof ConstantPersistenceToken) {
-                referenceToTarget = new ConstantNode(((ConstantPersistenceToken)persistenceToken).stableConstantId);
+                referenceToTarget = graphStore.buildConstantNode(((ConstantPersistenceToken)persistenceToken).stableConstantId);
             } else if (persistenceToken instanceof ClassPersistenceToken) {
-                RuntimeAssertionError.assertTrue(target instanceof org.aion.avm.shadow.java.lang.Class);
-                String className = ((org.aion.avm.shadow.java.lang.Class<?>)target).getRealClass().getName();
-                referenceToTarget = new ClassNode(className);
-            } else {
-                // Common case of a normal reference (may or may not already have an instanceId assigned.
-                // This a normal reference (although might need an instanceId assigned).
-                String typeName = target.getClass().getName();
-                long instanceId = 0L;
-                if (null == persistenceToken) {
-                    // We have to assign this.
-                    instanceId = instanceIdProducer.get();
-                    persistenceToken = new InstanceIdToken(instanceId);
-                    try {
-                        persistenceTokenField.set(target, persistenceToken);
-                    } catch (IllegalArgumentException | IllegalAccessException e) {
-                        // Any failure related to this would have happened much earlier.
-                        throw RuntimeAssertionError.unexpected(e);
-                    }
-                } else {
-                    instanceId = ((InstanceIdToken)persistenceToken).instanceId;
-                }
-                
-                referenceToTarget = new KeyValueNode(typeName, instanceId);
-               
-                // The common case implies that we should try to serialize the instance, itself.
+                referenceToTarget = graphStore.buildClassNode(((ClassPersistenceToken)persistenceToken).className);
+            } else if (persistenceToken instanceof NodePersistenceToken) {
+                referenceToTarget = ((NodePersistenceToken)persistenceToken).node;
                 isRegularReference = true;
+            } else if (null == persistenceToken) {
+                // Note that we used to have an assumption that these were lazily assigned to classes so verify we aren't in that case.
+                RuntimeAssertionError.assertTrue(!(target instanceof org.aion.avm.shadow.java.lang.Class));
+                
+                // Create the node and set it.
+                IRegularNode regularNode = graphStore.buildNewRegularNode(target.getClass().getName());
+                try {
+                    persistenceTokenField.set(target, new NodePersistenceToken(regularNode));
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // Any failure related to this would have happened much earlier.
+                    throw RuntimeAssertionError.unexpected(e);
+                }
+                referenceToTarget = regularNode;
+                isRegularReference = true;
+            } else {
+                RuntimeAssertionError.unreachable("Unknown token type");
             }
             RuntimeAssertionError.assertTrue(null != referenceToTarget);
         }
@@ -87,15 +82,14 @@ public class SerializedInstanceStub {
      * @param populator Used to create the actual object instance, itself.
      * @return The object instance (built by populator).
      */
-    public static org.aion.avm.shadow.java.lang.Object deserializeInstanceStub(ExtentBasedCodec.Decoder decoder, IFieldPopulator populator) {
+    public static org.aion.avm.shadow.java.lang.Object deserializeReferenceAsInstance(INode reference, IFieldPopulator populator) {
         org.aion.avm.shadow.java.lang.Object instanceToStore = null;
         
-        INode reference = decoder.decodeReference();
         if (null == reference) {
             instanceToStore = populator.createNull();
         } else if (reference instanceof ConstantNode) {
             long instanceId = ((ConstantNode)reference).constantId;
-            IPersistenceToken persistenceToken = new InstanceIdToken(instanceId);
+            IPersistenceToken persistenceToken = new ConstantPersistenceToken(instanceId);
             instanceToStore = populator.createConstant(persistenceToken);
             // We can't fail to find these.
             RuntimeAssertionError.assertTrue(null != instanceToStore);
@@ -104,7 +98,7 @@ public class SerializedInstanceStub {
             instanceToStore = populator.createClass(className);
         } else if (reference instanceof KeyValueNode) {
             KeyValueNode node = (KeyValueNode)reference;
-            IPersistenceToken persistenceToken = new InstanceIdToken(node.getInstanceId());
+            IPersistenceToken persistenceToken = new NodePersistenceToken(node);
             instanceToStore = populator.createRegularInstance(node.getInstanceClassName(), persistenceToken);
         } else {
             RuntimeAssertionError.unreachable("Unknown node type");
@@ -133,7 +127,7 @@ public class SerializedInstanceStub {
         // - normal references go last (includes those with 0 or >0 instanceIds).
         if (null == instance) {
             // Just encoding the null stub constant as an int.
-            sizeInBytes += ByteSizes.INT;
+            sizeInBytes = ByteSizes.INT;
         } else {
             // Check the instanceId to see if this is a special-case.
             IPersistenceToken persistenceToken = safeExtractPersistenceToken(persistenceTokenField, instance);
@@ -152,32 +146,32 @@ public class SerializedInstanceStub {
              */
             // We need to check constants, first, since they can otherwise be confused for these other cases (unfortunately, we do a type check to
             // avoid the null or REENTRANT_CALLEE_INSTANCE_TOKEN cases).
-            
+            // TODO:  Sizing data should be moved out.  This logic is duplicated from the INode hierarchy (where it also doesn't really belong).
             if (persistenceToken instanceof ConstantPersistenceToken) {
-                // Constants.
                 // Encode the constant stub constant as an int.
-                sizeInBytes += ByteSizes.INT;
+                int constantSize = ByteSizes.INT;
                 // Then encode the instanceId as a long.
-                sizeInBytes += ByteSizes.LONG;
+                int instanceIdSize = ByteSizes.LONG;
+                sizeInBytes = constantSize + instanceIdSize;
             } else if (persistenceToken instanceof ClassPersistenceToken) {
                 // Non-constant Class reference.
                 RuntimeAssertionError.assertTrue(instance instanceof org.aion.avm.shadow.java.lang.Class);
                 // Encode the class stub constant as an int.
-                sizeInBytes += ByteSizes.INT;
+                int constantSize = ByteSizes.INT;
                 
                 // Get the class name.
-                String className = ((org.aion.avm.shadow.java.lang.Class<?>)instance).getRealClass().getName();
-                byte[] utf8Name = className.getBytes(StandardCharsets.UTF_8);
+                byte[] utf8Name = ((ClassPersistenceToken)persistenceToken).className.getBytes(StandardCharsets.UTF_8);
                 
                 // Write the length and the bytes.
-                sizeInBytes += ByteSizes.INT + utf8Name.length;
-            } else {
-                // This a normal reference so get the type.
-                String typeName = instance.getClass().getName();
-                byte[] utf8Name = typeName.getBytes(StandardCharsets.UTF_8);
+                int nameSize = ByteSizes.INT + utf8Name.length;
+                sizeInBytes = constantSize + nameSize;
+            } else if ((null == persistenceToken) || (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken) || (persistenceToken instanceof NodePersistenceToken)) {
+                byte[] utf8Name = instance.getClass().getName().getBytes(StandardCharsets.UTF_8);
                 
                 // Serialize as the type name length, byte, and the the instanceId.
-                sizeInBytes += ByteSizes.INT + utf8Name.length + ByteSizes.LONG;
+                sizeInBytes = ByteSizes.INT + utf8Name.length + ByteSizes.LONG;
+            } else {
+                RuntimeAssertionError.unreachable("Unknown token type during sizing");
             }
         }
         return sizeInBytes;
@@ -213,7 +207,7 @@ public class SerializedInstanceStub {
                 // Note that we don't expect any other cases here so we can just assert these and return true.
                 RuntimeAssertionError.assertTrue((null == persistenceToken)
                         || (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken)
-                        || (persistenceToken instanceof InstanceIdToken)
+                        || (persistenceToken instanceof NodePersistenceToken)
                 );
                 shouldCopy = true;
             }

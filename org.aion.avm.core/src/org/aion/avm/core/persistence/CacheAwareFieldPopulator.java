@@ -7,7 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.persistence.graph.InstanceIdToken;
+import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
+import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IPersistenceToken;
@@ -36,7 +37,7 @@ public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IField
     }
     @Override
     public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) {
-        long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
+        long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
         org.aion.avm.shadow.java.lang.Object stub = this.instanceStubMap.get(instanceId);
         if (null == stub) {
             // Create the new stub and put it in the map.
@@ -63,7 +64,7 @@ public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IField
     }
     @Override
     public org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken) {
-        long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
+        long instanceId = ((ConstantPersistenceToken)persistenceToken).stableConstantId;
         // Look this up in the constant map.
         return this.shadowConstantMap.get(instanceId);
     }

@@ -28,6 +28,14 @@ public interface IObjectGraphStore {
     public void putStorage(byte[] key, byte[] value);
 
     /**
+     * Builds a node referencing a regular object.
+     * 
+     * @param typeName The name of the object's type (class name).
+     * @return The IRegularNode instance representing the instance in storage.
+     */
+    public IRegularNode buildNewRegularNode(String typeName);
+
+    /**
      * Builds a node referencing a constant.
      * 
      * @param constantId The ID of the constant (must be negative).

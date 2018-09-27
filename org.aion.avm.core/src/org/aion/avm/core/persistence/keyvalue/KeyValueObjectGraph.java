@@ -1,6 +1,8 @@
 package org.aion.avm.core.persistence.keyvalue;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.aion.avm.core.persistence.ClassNode;
 import org.aion.avm.core.persistence.ConstantNode;
@@ -20,11 +22,13 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     // just need a way to remove the overhead introduced by this codec (2 "size" ints).
     public static final int OVERHEAD_BYTES = 8;
 
+    private final Map<Long, KeyValueNode> idToNodeMap;
     private final KernelInterface store;
     private final byte[] address;
     private long nextInstanceId;
 
     public KeyValueObjectGraph(KernelInterface store, byte[] address) {
+        this.idToNodeMap = new HashMap<>();
         this.store = store;
         this.address = address;
         
@@ -55,8 +59,25 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         this.store.putStorage(this.address, key, value);
     }
 
+    @Override
+    public IRegularNode buildNewRegularNode(String typeName) {
+        // Consume the next ID (make sure it doesn't overflow our limit).
+        long instanceId = this.nextInstanceId;
+        this.nextInstanceId += 1;
+        
+        // Create the new node and add it to the map.
+        KeyValueNode node = new KeyValueNode(typeName, instanceId);
+        this.idToNodeMap.put(instanceId, node);
+        return node;
+    }
+
     public IRegularNode buildExistingRegularNode(String typeName, long instanceId) {
-        return new KeyValueNode(typeName, instanceId);
+        KeyValueNode node = this.idToNodeMap.get(instanceId);
+        if (null == node) {
+            node = new KeyValueNode(typeName, instanceId);
+            this.idToNodeMap.put(instanceId, node);
+        }
+        return node;
     }
 
     @Override
@@ -82,13 +103,5 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     @Override
     public String toString() {
         return "KeyValueObjectGraph @" + Arrays.toString(this.address);
-    }
-
-    // TODO:  Change the nextInstanceId to purely internal once we manage node allocation here.
-    public long getNextInstanceId() {
-        return this.nextInstanceId;
-    }
-    public void setNextInstanceId(long nextInstanceId) {
-        this.nextInstanceId = nextInstanceId;
     }
 }
