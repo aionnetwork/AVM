@@ -1,38 +1,48 @@
 package org.aion.avm.core.shadowing.testSystem;
 
-import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.junit.After;
+import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
+import org.aion.avm.core.Avm;
+import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.TestingHelper;
+import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.Helpers;
+import org.aion.kernel.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public class SystemShadowingTest {
+    private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private byte[] dappAddr;
 
-    private SimpleAvm avm;
-    private Class<?> clazz;
+    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private long energyLimit = 6_000_0000;
+    private long energyPrice = 1;
+
+    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
     @Before
     public void setup() throws ClassNotFoundException {
-        avm = new SimpleAvm(1000000000000000000L, TestResource.class);
-        clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
+        byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
+        byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
+
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        dappAddr = avm.run(context).getReturnData();
     }
 
-    @After
-    public void teardown() {
-        avm.shutdown();
-    }
 
     @Test
-    public void testArrayCopy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testArrayCopy() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayCopy");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testArrayCopy"));
-
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 }

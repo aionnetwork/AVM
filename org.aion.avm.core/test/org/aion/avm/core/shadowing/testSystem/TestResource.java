@@ -1,6 +1,13 @@
 package org.aion.avm.core.shadowing.testSystem;
 
+import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.BlockchainRuntime;
+
 public class TestResource {
+    public static byte[] main() {
+        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+    }
+
     public boolean testArrayCopy(){
         boolean ret = true;
 

@@ -28,7 +28,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
 
     public String(String original) {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_constructor_1);
-        this.v = new java.lang.String(original.v);
+        this.v = new java.lang.String(original.getUnderlying());
     }
 
     public String(CharArray value) {

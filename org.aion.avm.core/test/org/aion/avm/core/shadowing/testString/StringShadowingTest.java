@@ -1,44 +1,71 @@
 package org.aion.avm.core.shadowing.testString;
 
-import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.aion.avm.shadow.java.lang.Boolean;
-import org.aion.avm.shadow.java.lang.Character;
-import org.aion.avm.shadow.java.lang.Integer;
-import org.aion.avm.shadow.java.lang.String;
+import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
+import org.aion.avm.core.Avm;
+import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.TestingHelper;
+import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.Helpers;
+import org.aion.kernel.*;
+import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class StringShadowingTest {
 
     @Test
-    public void testSingleString() throws Exception {
-        SimpleAvm avm = new SimpleAvm(1000000L, TestResource.class);
+    public void testSingleString() {
+        byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
+        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        long energyLimit = 6_000_0000;
+        long energyPrice = 1;
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
-        Object obj = clazz.getConstructor().newInstance();
-        ObjectArray results = (ObjectArray) clazz.getMethod(NamespaceMapper.mapMethodName("singleString")).invoke(obj);
+        // deploy it
+        byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
+        byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        byte[] dappAddr = avm.run(context).getReturnData();
 
-        int i = 0;
-        assertEquals(new Integer(96354), results.get(i++));
-        assertEquals(new Integer(3), results.get(i++));
-        assertEquals(Boolean.avm_TRUE, results.get(i++));
-        assertEquals(Boolean.avm_FALSE, results.get(i++));
-        assertEquals(Boolean.avm_TRUE, results.get(i++));
-        assertEquals(Boolean.avm_FALSE, results.get(i++));
-        assertEquals(Boolean.avm_TRUE, results.get(i++));
-        assertEquals(Boolean.avm_FALSE, results.get(i++));
-        assertEquals(Boolean.avm_FALSE, results.get(i++));
-        assertEquals(new Character('a'), results.get(i++));
-        assertEquals(new ByteArray(new byte[]{'a', 'b', 'c'}), results.get(i++));
-        assertEquals(new String("abc"), results.get(i++));
-        assertEquals(new String("ABC"), results.get(i++));
-        assertEquals(new Integer(1), results.get(i++));
-        assertEquals(new Integer(-1), results.get(i++));
-        assertEquals(null, results.get(i++));
-        avm.shutdown();
+        // call transactions and validate the results
+        txData = ABIEncoder.encodeMethodArguments("singleStringReturnInt");
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
+        Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, (int[]) TestingHelper.decodeResult(result)));
+
+        txData = ABIEncoder.encodeMethodArguments("singleStringReturnBoolean");
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+        Assert.assertTrue(java.util.Arrays.equals(new byte[]{1, 0, 1, 0, 1, 0, 0}, (byte[]) TestingHelper.decodeResult(result)));
+        //Assert.assertTrue(java.util.Arrays.equals(new boolean[]{true, false, true, false, true, false, false}, (boolean[]) TestingHelper.decodeResult(result)));
+
+        txData = ABIEncoder.encodeMethodArguments("singleStringReturnChar");
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+        Assert.assertEquals('a', TestingHelper.decodeResult(result));
+
+        txData = ABIEncoder.encodeMethodArguments("singleStringReturnBytes");
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+        Assert.assertTrue(java.util.Arrays.equals(new byte[]{'a', 'b', 'c'}, (byte[]) TestingHelper.decodeResult(result)));
+
+        txData = ABIEncoder.encodeMethodArguments("singleStringReturnLowerCase");
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+        Assert.assertEquals("abc", TestingHelper.decodeResult(result));
+
+        txData = ABIEncoder.encodeMethodArguments("singleStringReturnUpperCase");
+        tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(context);
+        Assert.assertEquals("ABC", TestingHelper.decodeResult(result));
     }
 }
