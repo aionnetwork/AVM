@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.core.persistence.ReflectionStructureCodec.IFieldPopulator;
-import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
 import org.aion.avm.internal.ClassPersistenceToken;
 import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.IPersistenceToken;
@@ -75,35 +74,8 @@ public class SerializedInstanceStub {
         return isRegularReference;
     }
 
-    /**
-     * Creates a new instance stub instance (that is, an object which is in memory but it fields aren't yet loaded) based on the data available in decoder.
-     * 
-     * @param decoder Contains the primitive data describing the instance stub to instantiate.
-     * @param populator Used to create the actual object instance, itself.
-     * @return The object instance (built by populator).
-     */
-    public static org.aion.avm.shadow.java.lang.Object deserializeReferenceAsInstance(INode reference, IFieldPopulator populator) {
-        org.aion.avm.shadow.java.lang.Object instanceToStore = null;
-        
-        if (null == reference) {
-            instanceToStore = populator.createNull();
-        } else if (reference instanceof ConstantNode) {
-            long instanceId = ((ConstantNode)reference).constantId;
-            IPersistenceToken persistenceToken = new ConstantPersistenceToken(instanceId);
-            instanceToStore = populator.createConstant(persistenceToken);
-            // We can't fail to find these.
-            RuntimeAssertionError.assertTrue(null != instanceToStore);
-        } else if (reference instanceof ClassNode) {
-            String className = ((ClassNode)reference).className;
-            instanceToStore = populator.createClass(className);
-        } else if (reference instanceof KeyValueNode) {
-            KeyValueNode node = (KeyValueNode)reference;
-            IPersistenceToken persistenceToken = new NodePersistenceToken(node);
-            instanceToStore = populator.createRegularInstance(node.getInstanceClassName(), persistenceToken);
-        } else {
-            RuntimeAssertionError.unreachable("Unknown node type");
-        }
-        return instanceToStore;
+    public static org.aion.avm.shadow.java.lang.Object deserializeReferenceAsInstance(INode oneNode, IFieldPopulator populator) {
+        return populator.instantiateReference(oneNode);
     }
 
     /**

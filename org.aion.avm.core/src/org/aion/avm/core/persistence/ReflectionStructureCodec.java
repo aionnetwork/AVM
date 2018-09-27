@@ -325,8 +325,8 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     @Override
-    public org.aion.avm.shadow.java.lang.Object decodeStub(ExtentBasedCodec.Decoder decoder) {
-        return inflateStubAsInstance(decoder.decodeReference());
+    public org.aion.avm.shadow.java.lang.Object decodeStub(INode node) {
+        return inflateStubAsInstance(node);
     }
 
 
@@ -345,32 +345,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
          * @param persistenceToken The token of this specific instance.
          * @return The created or found shadow object instance.
          */
-        org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken);
-        /**
-         * Called to create/find a Class object representing the given className.
-         * Failure to create the instance is considered fatal.
-         * 
-         * @param className The name of the Class to be represented.
-         * @return The created or found shadow class object instance.
-         */
-        org.aion.avm.shadow.java.lang.Object createClass(String className);
-        /**
-         * Called to create/find an instance corresponding to the given constant instanceId.
-         * Note that constants are explicitly defined by the shadow JCL.
-         * Failure to create the instance is considered fatal.
-         * 
-         * @param persistenceToken The token of this specific instance.
-         * @return The created or found shadow object constant instance.
-         */
-        org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken);
-        /**
-         * Called to create a representation of a null object instance.
-         * Note that this is usually literally "null" but this call allows implementors the opportunity to act on this.
-         * Failure to create the instance is considered fatal.
-         * 
-         * @return The representation of null (typically null).
-         */
-        org.aion.avm.shadow.java.lang.Object createNull();
+        org.aion.avm.shadow.java.lang.Object instantiateReference(INode node);
         
         void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val);
         void setDouble(Field field, org.aion.avm.shadow.java.lang.Object object, double val);

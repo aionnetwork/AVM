@@ -17,8 +17,11 @@ import java.util.Set;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.persistence.ClassNode;
+import org.aion.avm.core.persistence.ConstantNode;
 import org.aion.avm.core.persistence.ConstructorCache;
 import org.aion.avm.core.persistence.ExtentBasedCodec;
+import org.aion.avm.core.persistence.INode;
 import org.aion.avm.core.persistence.NodePersistenceToken;
 import org.aion.avm.core.persistence.ReflectedFieldCache;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
@@ -26,7 +29,6 @@ import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
-import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.PackageConstants;
@@ -40,6 +42,9 @@ import org.aion.kernel.KernelInterface;
  * the entire storage, from the class static roots, and dump a human-readable representation to an output stream.
  * Note that the output is produced as a queue, not a stack, so the representation is completely flat (not attempting to
  * indent or otherwise render the graph).  Each line is a single class or object instance.
+ * 
+ * NOTE:  This is currently tightly coupled to the key-value object graph implementation since it actually wants to show the
+ * links in their native form (instanceIds).
  */
 public class StorageWalker {
     /**
@@ -116,35 +121,40 @@ public class StorageWalker {
                 output.println("\t" + field.getName() + ": ref(" + val + ")");
             }
             @Override
-            public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) {
-                long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
-                // Note that we can't decode all object instances (most shadows and array wrappers, for example), but we will determine that on the reading side.
-                // For now, just make sure we enqueue each instance only once.
-                if (!processed.contains(instanceId)) {
-                    processed.add(instanceId);
-                    try {
-                        Constructor<?> con = constructorCache.getConstructorForClassName(className);
-                        org.aion.avm.shadow.java.lang.Object stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(null, persistenceToken);
-                        instanceQueue.add(stub);
-                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                        // Not expected in this tool (this would be a static bug).
-                        throw RuntimeAssertionError.unexpected(e);
+            public org.aion.avm.shadow.java.lang.Object instantiateReference(INode rawNode) {
+                // We handle these in differently descriptive way (note that this implementation is tightly coupled to the KeyValueObjectGraph).
+                org.aion.avm.shadow.java.lang.Object result = null;
+                if (rawNode instanceof KeyValueNode) {
+                    KeyValueNode node = (KeyValueNode) rawNode;
+                    String className = node.getInstanceClassName();
+                    long instanceId = node.getInstanceId();
+                    
+                    // Note that we can't decode all object instances (most shadows and array wrappers, for example), but we will determine that on the reading side.
+                    // For now, just make sure we enqueue each instance only once.
+                    if (!processed.contains(instanceId)) {
+                        processed.add(instanceId);
+                        try {
+                            Constructor<?> con = constructorCache.getConstructorForClassName(className);
+                            org.aion.avm.shadow.java.lang.Object stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(null, new NodePersistenceToken(node));
+                            instanceQueue.add(stub);
+                        } catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                            // Errors not handled in this tool.
+                            throw RuntimeAssertionError.unexpected(e);
+                        }
                     }
+                    result = new org.aion.avm.shadow.java.lang.String("instance(" + shortenClassName(className) + ", " + instanceId + ")");
+                } else if (rawNode instanceof ClassNode) {
+                    ClassNode node = (ClassNode) rawNode;
+                    result = new org.aion.avm.shadow.java.lang.String("class(" + shortenClassName(node.className) + ")");
+                } else if (rawNode instanceof ConstantNode) {
+                    ConstantNode node = (ConstantNode) rawNode;
+                    result = new org.aion.avm.shadow.java.lang.String("constant(" + node.constantId + ")");
+                } else {
+                    // This better be null.
+                    RuntimeAssertionError.assertTrue(null == rawNode);
+                    result = new org.aion.avm.shadow.java.lang.String("null");
                 }
-                return new org.aion.avm.shadow.java.lang.String("instance(" + shortenClassName(className) + ", " + instanceId + ")");
-            }
-            @Override
-            public org.aion.avm.shadow.java.lang.Object createClass(String className) {
-                return new org.aion.avm.shadow.java.lang.String("class(" + shortenClassName(className) + ")");
-            }
-            @Override
-            public org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken) {
-                long instanceId = ((ConstantPersistenceToken)persistenceToken).stableConstantId;
-                return new org.aion.avm.shadow.java.lang.String("constant(" + instanceId + ")");
-            }
-            @Override
-            public org.aion.avm.shadow.java.lang.Object createNull() {
-                return new org.aion.avm.shadow.java.lang.String("null");
+                return result;
             }
         };
         
@@ -199,7 +209,7 @@ public class StorageWalker {
                     int length = instanceDecoder.decodeInt();
                     output.println(length + "[");
                     for (int i = 0; i < length; ++i) {
-                        org.aion.avm.shadow.java.lang.Object stub = codec.decodeStub(instanceDecoder);
+                        org.aion.avm.shadow.java.lang.Object stub = codec.decodeStub(instanceDecoder.decodeReference());
                         output.println("\tref(" + stub + "), ");
                     }
                     output.println("]");

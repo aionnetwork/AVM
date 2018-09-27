@@ -24,10 +24,9 @@ public class SingleInstanceDeserializerTest {
         public void partialAutomaticDeserializeInstance(ExtentBasedCodec.Decoder decoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
         }
         @Override
-        public org.aion.avm.shadow.java.lang.Object decodeStub(ExtentBasedCodec.Decoder decoder) {
-            // We just check null, or not, by looking at the next byte:  if 0x1, return an ObjectArray, if 0x0, return null.
-            byte next = decoder.decodeByte();
-            return (0x0 == next) 
+        public org.aion.avm.shadow.java.lang.Object decodeStub(INode node) {
+            // We just check null, or not.
+            return (null == node)
                     ? null
                     : new ObjectArray(1);
         }};
@@ -179,16 +178,13 @@ public class SingleInstanceDeserializerTest {
         // (note that we are using the fake stub encoding, in NULL_AUTOMATIC).
         byte[] expected = {
                 0x0, 0x0, 0x0, 0x2, //hashcode
-                0x0, 0x0, 0x0, 0x2, //length
-                0x1, // instance
-                0x0, // null
+                0x0, 0x0, 0x0, 0x1, //length
         };
         ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(new Extent(expected, new INode[] {null}));
         SingleInstanceDeserializer target = new SingleInstanceDeserializer(NULL_AUTOMATIC, decoder);
         ObjectArray bytes = new ObjectArray(null, null);
         bytes.deserializeSelf(null, target);
-        Assert.assertEquals(2, bytes.length());
-        Assert.assertNotNull(bytes.get(0));
-        Assert.assertNull(bytes.get(1));
+        Assert.assertEquals(1, bytes.length());
+        Assert.assertNull(bytes.get(0));
     }
 }

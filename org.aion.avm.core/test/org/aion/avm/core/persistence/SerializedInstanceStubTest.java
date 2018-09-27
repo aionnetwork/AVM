@@ -9,7 +9,7 @@ import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.After;
 import org.junit.Assert;
@@ -162,22 +162,25 @@ public class SerializedInstanceStubTest {
 
     private static class BasicPopulator implements IFieldPopulator {
         @Override
-        public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) {
-            long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
-            return new org.aion.avm.shadow.java.lang.String(testingInstance(instanceId));
-        }
-        @Override
-        public org.aion.avm.shadow.java.lang.Object createClass(String className) {
-            return new org.aion.avm.shadow.java.lang.String(testingClass(className));
-        }
-        @Override
-        public org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken) {
-            long instanceId = ((ConstantPersistenceToken)persistenceToken).stableConstantId;
-            return new org.aion.avm.shadow.java.lang.String(testingConstant(instanceId));
-        }
-        @Override
-        public org.aion.avm.shadow.java.lang.Object createNull() {
-            return new org.aion.avm.shadow.java.lang.String(testingNull());
+        public org.aion.avm.shadow.java.lang.Object instantiateReference(INode rawNode) {
+            // We handle these in differently descriptive way (note that this implementation is tightly coupled to the KeyValueObjectGraph).
+            org.aion.avm.shadow.java.lang.Object result = null;
+            if (rawNode instanceof KeyValueNode) {
+                KeyValueNode node = (KeyValueNode) rawNode;
+                long instanceId = node.getInstanceId();
+                result = new org.aion.avm.shadow.java.lang.String(testingInstance(instanceId));
+            } else if (rawNode instanceof ClassNode) {
+                ClassNode node = (ClassNode) rawNode;
+                result = new org.aion.avm.shadow.java.lang.String(testingClass(node.className));
+            } else if (rawNode instanceof ConstantNode) {
+                ConstantNode node = (ConstantNode) rawNode;
+                result = new org.aion.avm.shadow.java.lang.String(testingConstant(node.constantId));
+            } else {
+                // This better be null.
+                RuntimeAssertionError.assertTrue(null == rawNode);
+                result = new org.aion.avm.shadow.java.lang.String(testingNull());
+            }
+            return result;
         }
         @Override
         public void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val) {

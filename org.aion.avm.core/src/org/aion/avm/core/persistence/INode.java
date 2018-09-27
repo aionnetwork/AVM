@@ -2,7 +2,7 @@ package org.aion.avm.core.persistence;
 
 
 /**
- * The abstract type used by the ExtentBasedCodec to describe a reference to another object.
+ * The INode instances MUST be uniqued by the underlying data store which created them.
  */
 public interface INode {
 }

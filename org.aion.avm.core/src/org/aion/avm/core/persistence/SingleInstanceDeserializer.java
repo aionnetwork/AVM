@@ -48,7 +48,7 @@ public class SingleInstanceDeserializer implements IObjectDeserializer {
 
     @Override
     public org.aion.avm.shadow.java.lang.Object readStub() {
-        return this.automaticPart.decodeStub(this.decoder);
+        return this.automaticPart.decodeStub(this.decoder.decodeReference());
     }
 
 
@@ -73,9 +73,9 @@ public class SingleInstanceDeserializer implements IObjectDeserializer {
          * Note that all references to the same stub see references to the same instance, when decoded.
          * This is called during lazy loading of an instance which has a reference type instance variable.
          * 
-         * @param decoder The decoder to use.
+         * @param node The node to decode as an instance.
          * @return The new instance described by the stub (could be null if the stub described a null).
          */
-        org.aion.avm.shadow.java.lang.Object decodeStub(ExtentBasedCodec.Decoder decoder);
+        org.aion.avm.shadow.java.lang.Object decodeStub(INode node);
     }
 }
