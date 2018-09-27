@@ -1,7 +1,6 @@
 package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
@@ -88,7 +87,7 @@ public class SerializedInstanceStub {
      * @param populator Used to create the actual object instance, itself.
      * @return The object instance (built by populator).
      */
-    public static org.aion.avm.shadow.java.lang.Object deserializeInstanceStub(ExtentBasedCodec.Decoder decoder, IFieldPopulator populator) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public static org.aion.avm.shadow.java.lang.Object deserializeInstanceStub(ExtentBasedCodec.Decoder decoder, IFieldPopulator populator) {
         org.aion.avm.shadow.java.lang.Object instanceToStore = null;
         
         INode reference = decoder.decodeReference();

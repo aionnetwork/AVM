@@ -83,14 +83,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     public void deserializeClass(ExtentBasedCodec.Decoder decoder, Class<?> clazz) {
-        try {
-            // Note that only direct class statics are deserialized with the class:  superclass statics are loaded from the superclass.
-            // Hence, just call the deserializer, directly.
-            safeDeserializeOneClass(decoder, clazz, null);
-        } catch (IllegalArgumentException | IllegalAccessException | ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            // This would be a serious mis-configuration.
-            throw RuntimeAssertionError.unexpected(e);
-        }
+        // Note that only direct class statics are deserialized with the class:  superclass statics are loaded from the superclass.
+        // Hence, just call the deserializer, directly.
+        safeDeserializeOneClass(decoder, clazz, null);
     }
 
 
@@ -209,7 +204,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         }
     }
 
-    private void safeDeserializeOneClass(ExtentBasedCodec.Decoder decoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    private void safeDeserializeOneClass(ExtentBasedCodec.Decoder decoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) {
         // Note that we deserialize objects and classes the same way, just looking for instance versus static fields.
         int expectedModifier = (null == object)
                 ? Modifier.STATIC
@@ -255,12 +250,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     }
 
     private org.aion.avm.shadow.java.lang.Object inflateStubAsInstance(ExtentBasedCodec.Decoder decoder) {
-        try {
-            return SerializedInstanceStub.deserializeInstanceStub(decoder, this.populator);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            // If there are any problems with this access, we must have resolved it before getting to this point.
-            throw RuntimeAssertionError.unexpected(e);
-        }
+        return SerializedInstanceStub.deserializeInstanceStub(decoder, this.populator);
     }
 
     @Override
@@ -352,27 +342,31 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     /**
      * An interface which must be provided when using the ReflectionStructureCodec to deserialize data.
      * The implementation is responsible for building/finding various kinds of instances as well as populating field with actual data.
+     * Note that no exceptions are exposed by this interface since any failures should be static, only.
      */
     public static interface IFieldPopulator {
         /**
          * Called to create/find a regular instance of the given className and instanceId.
          * Regular instances are non-null and are neither Class objects, nor explicit constants of the shadow JCL.
+         * Failure to create the instance is considered fatal.
          * 
          * @param className The name of the type.
          * @param persistenceToken The token of this specific instance.
          * @return The created or found shadow object instance.
          */
-        org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+        org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken);
         /**
          * Called to create/find a Class object representing the given className.
+         * Failure to create the instance is considered fatal.
          * 
          * @param className The name of the Class to be represented.
          * @return The created or found shadow class object instance.
          */
-        org.aion.avm.shadow.java.lang.Object createClass(String className) throws ClassNotFoundException;
+        org.aion.avm.shadow.java.lang.Object createClass(String className);
         /**
          * Called to create/find an instance corresponding to the given constant instanceId.
          * Note that constants are explicitly defined by the shadow JCL.
+         * Failure to create the instance is considered fatal.
          * 
          * @param persistenceToken The token of this specific instance.
          * @return The created or found shadow object constant instance.
@@ -381,19 +375,20 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         /**
          * Called to create a representation of a null object instance.
          * Note that this is usually literally "null" but this call allows implementors the opportunity to act on this.
+         * Failure to create the instance is considered fatal.
          * 
          * @return The representation of null (typically null).
          */
         org.aion.avm.shadow.java.lang.Object createNull();
         
-        void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val) throws IllegalArgumentException, IllegalAccessException;
-        void setDouble(Field field, org.aion.avm.shadow.java.lang.Object object, double val) throws IllegalArgumentException, IllegalAccessException;
-        void setLong(Field field, org.aion.avm.shadow.java.lang.Object object, long val) throws IllegalArgumentException, IllegalAccessException;
-        void setFloat(Field field, org.aion.avm.shadow.java.lang.Object object, float val) throws IllegalArgumentException, IllegalAccessException;
-        void setInt(Field field, org.aion.avm.shadow.java.lang.Object object, int val) throws IllegalArgumentException, IllegalAccessException;
-        void setChar(Field field, org.aion.avm.shadow.java.lang.Object object, char val) throws IllegalArgumentException, IllegalAccessException;
-        void setShort(Field field, org.aion.avm.shadow.java.lang.Object object, short val) throws IllegalArgumentException, IllegalAccessException;
-        void setByte(Field field, org.aion.avm.shadow.java.lang.Object object, byte val) throws IllegalArgumentException, IllegalAccessException;
-        void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val) throws IllegalArgumentException, IllegalAccessException;
+        void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val);
+        void setDouble(Field field, org.aion.avm.shadow.java.lang.Object object, double val);
+        void setLong(Field field, org.aion.avm.shadow.java.lang.Object object, long val);
+        void setFloat(Field field, org.aion.avm.shadow.java.lang.Object object, float val);
+        void setInt(Field field, org.aion.avm.shadow.java.lang.Object object, int val);
+        void setChar(Field field, org.aion.avm.shadow.java.lang.Object object, char val);
+        void setShort(Field field, org.aion.avm.shadow.java.lang.Object object, short val);
+        void setByte(Field field, org.aion.avm.shadow.java.lang.Object object, byte val);
+        void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val);
     }
 }

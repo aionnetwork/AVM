@@ -1,7 +1,6 @@
 package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.core.NodeEnvironment;
@@ -159,12 +158,12 @@ public class SerializedInstanceStubTest {
 
     private static class BasicPopulator implements IFieldPopulator {
         @Override
-        public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) {
             long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
             return new org.aion.avm.shadow.java.lang.String(testingInstance(instanceId));
         }
         @Override
-        public org.aion.avm.shadow.java.lang.Object createClass(String className) throws ClassNotFoundException {
+        public org.aion.avm.shadow.java.lang.Object createClass(String className) {
             return new org.aion.avm.shadow.java.lang.String(testingClass(className));
         }
         @Override
@@ -177,39 +176,39 @@ public class SerializedInstanceStubTest {
             return new org.aion.avm.shadow.java.lang.String(testingNull());
         }
         @Override
-        public void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val) throws IllegalArgumentException, IllegalAccessException {
+        public void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val) {
             Assert.fail("Not called in test");
         }
         @Override
-        public void setDouble(Field field, org.aion.avm.shadow.java.lang.Object object, double val) throws IllegalArgumentException, IllegalAccessException {
+        public void setDouble(Field field, org.aion.avm.shadow.java.lang.Object object, double val) {
             Assert.fail("Not called in test");
         }
         @Override
-        public void setLong(Field field, org.aion.avm.shadow.java.lang.Object object, long val) throws IllegalArgumentException, IllegalAccessException {
+        public void setLong(Field field, org.aion.avm.shadow.java.lang.Object object, long val) {
             Assert.fail("Not called in test");
         }
         @Override
-        public void setFloat(Field field, org.aion.avm.shadow.java.lang.Object object, float val) throws IllegalArgumentException, IllegalAccessException {
+        public void setFloat(Field field, org.aion.avm.shadow.java.lang.Object object, float val) {
             Assert.fail("Not called in test");
         }
         @Override
-        public void setInt(Field field, org.aion.avm.shadow.java.lang.Object object, int val) throws IllegalArgumentException, IllegalAccessException {
+        public void setInt(Field field, org.aion.avm.shadow.java.lang.Object object, int val) {
             Assert.fail("Not called in test");
         }
         @Override
-        public void setChar(Field field, org.aion.avm.shadow.java.lang.Object object, char val) throws IllegalArgumentException, IllegalAccessException {
+        public void setChar(Field field, org.aion.avm.shadow.java.lang.Object object, char val) {
             Assert.fail("Not called in test");
         }
         @Override
-        public void setShort(Field field, org.aion.avm.shadow.java.lang.Object object, short val) throws IllegalArgumentException, IllegalAccessException {
+        public void setShort(Field field, org.aion.avm.shadow.java.lang.Object object, short val) {
             Assert.fail("Not called in test");
         }
         @Override
-        public void setByte(Field field, org.aion.avm.shadow.java.lang.Object object, byte val) throws IllegalArgumentException, IllegalAccessException {
+        public void setByte(Field field, org.aion.avm.shadow.java.lang.Object object, byte val) {
             Assert.fail("Not called in test");
         }
         @Override
-        public void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val) throws IllegalArgumentException, IllegalAccessException {
+        public void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val) {
             Assert.fail("Not called in test");
         }
     }

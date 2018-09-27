@@ -11,6 +11,7 @@ import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 
 /**
@@ -34,21 +35,31 @@ public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IField
         this.deserializer = deserializer;
     }
     @Override
-    public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) {
         long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
         org.aion.avm.shadow.java.lang.Object stub = this.instanceStubMap.get(instanceId);
         if (null == stub) {
             // Create the new stub and put it in the map.
             Constructor<?> con = this.constructorCache.getConstructorForClassName(className);
-            stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(this.deserializer, persistenceToken);
+            try {
+                stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(this.deserializer, persistenceToken);
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                // Any error like this means a serious bug or a fatal mis-configuration.
+                throw RuntimeAssertionError.unexpected(e);
+            }
             this.instanceStubMap.put(instanceId, stub);
         }
         return stub;
     }
     @Override
-    public org.aion.avm.shadow.java.lang.Object createClass(String className) throws ClassNotFoundException {
-        Class<?> jdkClass = Class.forName(className);
-        return IHelper.currentContractHelper.get().externalWrapAsClass(jdkClass);
+    public org.aion.avm.shadow.java.lang.Object createClass(String className) {
+        try {
+            Class<?> jdkClass = Class.forName(className);
+            return IHelper.currentContractHelper.get().externalWrapAsClass(jdkClass);
+        } catch (ClassNotFoundException e) {
+            // Any error like this means a serious bug or a fatal mis-configuration.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
     @Override
     public org.aion.avm.shadow.java.lang.Object createConstant(IPersistenceToken persistenceToken) {
@@ -62,39 +73,84 @@ public class CacheAwareFieldPopulator implements ReflectionStructureCodec.IField
     }
 
     @Override
-    public void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val) throws IllegalArgumentException, IllegalAccessException {
-        field.setBoolean(object, val);
+    public void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val) {
+        try {
+            field.setBoolean(object, val);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any error like this means a serious bug or a fatal mis-configuration.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
     @Override
-    public void setDouble(Field field, org.aion.avm.shadow.java.lang.Object object, double val) throws IllegalArgumentException, IllegalAccessException {
-        field.setDouble(object, val);
+    public void setDouble(Field field, org.aion.avm.shadow.java.lang.Object object, double val) {
+        try {
+            field.setDouble(object, val);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any error like this means a serious bug or a fatal mis-configuration.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
     @Override
-    public void setLong(Field field, org.aion.avm.shadow.java.lang.Object object, long val) throws IllegalArgumentException, IllegalAccessException {
-        field.setLong(object, val);
+    public void setLong(Field field, org.aion.avm.shadow.java.lang.Object object, long val) {
+        try {
+            field.setLong(object, val);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any error like this means a serious bug or a fatal mis-configuration.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
     @Override
-    public void setFloat(Field field, org.aion.avm.shadow.java.lang.Object object, float val) throws IllegalArgumentException, IllegalAccessException {
-        field.setFloat(object, val);
+    public void setFloat(Field field, org.aion.avm.shadow.java.lang.Object object, float val) {
+        try {
+            field.setFloat(object, val);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any error like this means a serious bug or a fatal mis-configuration.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
     @Override
-    public void setInt(Field field, org.aion.avm.shadow.java.lang.Object object, int val) throws IllegalArgumentException, IllegalAccessException {
-        field.setInt(object, val);
+    public void setInt(Field field, org.aion.avm.shadow.java.lang.Object object, int val) {
+        try {
+            field.setInt(object, val);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
     @Override
-    public void setChar(Field field, org.aion.avm.shadow.java.lang.Object object, char val) throws IllegalArgumentException, IllegalAccessException {
-        field.setChar(object, val);
+    public void setChar(Field field, org.aion.avm.shadow.java.lang.Object object, char val) {
+        try {
+            field.setChar(object, val);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any error like this means a serious bug or a fatal mis-configuration.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
     @Override
-    public void setShort(Field field, org.aion.avm.shadow.java.lang.Object object, short val) throws IllegalArgumentException, IllegalAccessException {
-        field.setShort(object, val);
+    public void setShort(Field field, org.aion.avm.shadow.java.lang.Object object, short val) {
+        try {
+            field.setShort(object, val);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any error like this means a serious bug or a fatal mis-configuration.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
     @Override
-    public void setByte(Field field, org.aion.avm.shadow.java.lang.Object object, byte val) throws IllegalArgumentException, IllegalAccessException {
-        field.setByte(object, val);
+    public void setByte(Field field, org.aion.avm.shadow.java.lang.Object object, byte val) {
+        try {
+            field.setByte(object, val);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any error like this means a serious bug or a fatal mis-configuration.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
     @Override
-    public void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val) throws IllegalArgumentException, IllegalAccessException {
-        field.set(object, val);
+    public void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val) {
+        try {
+            field.set(object, val);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any error like this means a serious bug or a fatal mis-configuration.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 }

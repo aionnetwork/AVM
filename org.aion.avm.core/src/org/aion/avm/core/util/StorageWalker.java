@@ -28,6 +28,7 @@ import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
 
 
@@ -77,56 +78,61 @@ public class StorageWalker {
         // Create the populator which describes and outputs what it sees.
         ReflectionStructureCodec.IFieldPopulator populator =  new ReflectionStructureCodec.IFieldPopulator() {
             @Override
-            public void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val) throws IllegalArgumentException, IllegalAccessException {
+            public void setBoolean(Field field, org.aion.avm.shadow.java.lang.Object object, boolean val) {
                 output.println("\t" + field.getName() + ": boolean(" + val + ")");
             }
             @Override
-            public void setDouble(Field field, org.aion.avm.shadow.java.lang.Object object, double val) throws IllegalArgumentException, IllegalAccessException {
+            public void setDouble(Field field, org.aion.avm.shadow.java.lang.Object object, double val) {
                 output.println("\t" + field.getName() + ": double(" + val + ")");
             }
             @Override
-            public void setLong(Field field, org.aion.avm.shadow.java.lang.Object object, long val) throws IllegalArgumentException, IllegalAccessException {
+            public void setLong(Field field, org.aion.avm.shadow.java.lang.Object object, long val) {
                 output.println("\t" + field.getName() + ": long(" + val + ")");
             }
             @Override
-            public void setFloat(Field field, org.aion.avm.shadow.java.lang.Object object, float val) throws IllegalArgumentException, IllegalAccessException {
+            public void setFloat(Field field, org.aion.avm.shadow.java.lang.Object object, float val) {
                 output.println("\t" + field.getName() + ": float(" + val + ")");
             }
             @Override
-            public void setInt(Field field, org.aion.avm.shadow.java.lang.Object object, int val) throws IllegalArgumentException, IllegalAccessException {
+            public void setInt(Field field, org.aion.avm.shadow.java.lang.Object object, int val) {
                 output.println("\t" + field.getName() + ": int(" + val + ")");
             }
             @Override
-            public void setChar(Field field, org.aion.avm.shadow.java.lang.Object object, char val) throws IllegalArgumentException, IllegalAccessException {
+            public void setChar(Field field, org.aion.avm.shadow.java.lang.Object object, char val) {
                 output.println("\t" + field.getName() + ": char(" + val + ")");
             }
             @Override
-            public void setShort(Field field, org.aion.avm.shadow.java.lang.Object object, short val) throws IllegalArgumentException, IllegalAccessException {
+            public void setShort(Field field, org.aion.avm.shadow.java.lang.Object object, short val) {
                 output.println("\t" + field.getName() + ": short(" + val + ")");
             }
             @Override
-            public void setByte(Field field, org.aion.avm.shadow.java.lang.Object object, byte val) throws IllegalArgumentException, IllegalAccessException {
+            public void setByte(Field field, org.aion.avm.shadow.java.lang.Object object, byte val) {
                 output.println("\t" + field.getName() + ": byte(" + val + ")");
             }
             @Override
-            public void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val) throws IllegalArgumentException, IllegalAccessException {
+            public void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val) {
                 output.println("\t" + field.getName() + ": ref(" + val + ")");
             }
             @Override
-            public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            public org.aion.avm.shadow.java.lang.Object createRegularInstance(String className, IPersistenceToken persistenceToken) {
                 long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
                 // Note that we can't decode all object instances (most shadows and array wrappers, for example), but we will determine that on the reading side.
                 // For now, just make sure we enqueue each instance only once.
                 if (!processed.contains(instanceId)) {
                     processed.add(instanceId);
-                    Constructor<?> con = constructorCache.getConstructorForClassName(className);
-                    org.aion.avm.shadow.java.lang.Object stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(null, persistenceToken);
-                    instanceQueue.add(stub);
+                    try {
+                        Constructor<?> con = constructorCache.getConstructorForClassName(className);
+                        org.aion.avm.shadow.java.lang.Object stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(null, persistenceToken);
+                        instanceQueue.add(stub);
+                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                        // Not expected in this tool (this would be a static bug).
+                        throw RuntimeAssertionError.unexpected(e);
+                    }
                 }
                 return new org.aion.avm.shadow.java.lang.String("instance(" + shortenClassName(className) + ", " + instanceId + ")");
             }
             @Override
-            public org.aion.avm.shadow.java.lang.Object createClass(String className) throws ClassNotFoundException {
+            public org.aion.avm.shadow.java.lang.Object createClass(String className) {
                 return new org.aion.avm.shadow.java.lang.String("class(" + shortenClassName(className) + ")");
             }
             @Override
