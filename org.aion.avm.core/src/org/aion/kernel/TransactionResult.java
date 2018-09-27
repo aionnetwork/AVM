@@ -76,7 +76,12 @@ public class TransactionResult {
         /**
          * CREATE transaction failed due to a rejected of the user-provided classes.
          */
-        FAILED_REJECTED(CodeType.FAILED);
+        FAILED_REJECTED(CodeType.FAILED),
+
+        /**
+         * Transaction failed due to an early abort.
+         */
+        FAILED_ABORT(CodeType.FAILED);
 
         private CodeType type;
 

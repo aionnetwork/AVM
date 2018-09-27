@@ -305,6 +305,10 @@ public class DAppCreator {
             result.setStatusCode(TransactionResult.Code.FAILED_REJECTED);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
+        } catch (EarlyAbortException e) {
+            result.setStatusCode(TransactionResult.Code.FAILED_ABORT);
+            result.setEnergyUsed(0);
+
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             result.setStatusCode(TransactionResult.Code.FAILED);

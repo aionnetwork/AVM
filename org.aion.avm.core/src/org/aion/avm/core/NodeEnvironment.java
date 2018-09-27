@@ -309,6 +309,11 @@ public class NodeEnvironment {
             public void externalBootstrapOnly() {
                 // This is ok since we are the bootstrapping helper.
             }
+
+            @Override
+            public void externalSetAbortState() {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
         });
 
         // Load all the classes - even just mentioning these might cause them to be loaded, even before the Class.forName().

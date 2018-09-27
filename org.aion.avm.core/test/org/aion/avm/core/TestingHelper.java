@@ -102,4 +102,9 @@ public class TestingHelper implements IHelper {
     public void externalBootstrapOnly() {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
+
+    @Override
+    public void externalSetAbortState() {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
 }

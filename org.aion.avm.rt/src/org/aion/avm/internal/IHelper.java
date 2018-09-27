@@ -29,6 +29,8 @@ public interface IHelper {
 
     public int externalGetNextHashCode();
 
+    public void externalSetAbortState();
+
     /**
      * Instructs the receiver to capture a snapshot of the static Helper state it can access and store that in its own instance state for later
      * application.

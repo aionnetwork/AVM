@@ -94,7 +94,14 @@ public class DAppExecutor {
             result.setStatusCode(TransactionResult.Code.FAILED_INVALID);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
-        }  catch (UncaughtException e) {
+        } catch (EarlyAbortException e) {
+            if (null != reentrantGraphData) {
+                reentrantGraphData.revertToStoredFields();
+            }
+            result.setStatusCode(TransactionResult.Code.FAILED_ABORT);
+            result.setEnergyUsed(0);
+
+        } catch (UncaughtException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }

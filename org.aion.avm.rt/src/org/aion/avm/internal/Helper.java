@@ -12,6 +12,7 @@ public class Helper implements IHelper {
     private static long energyLeft;
     private static ClassLoader lateLoader;
     private static int nextHashCode;
+    private static boolean abortState;
 
 
     /**
@@ -50,6 +51,9 @@ public class Helper implements IHelper {
 
         energyLeft = nrgLeft;
         Helper.nextHashCode = nextHashCode;
+
+        //TODO: inherit abortState from parent?
+        abortState = false;
         
         // Reset our interning state.
         // Note that we want to fail on any attempt to use the interned string map which isn't the initial call (since <clinit> needs it but any
@@ -216,6 +220,13 @@ public class Helper implements IHelper {
             forceExitState = error;
             throw error;
         }
+
+        // Check if we are in abort state.
+        if (abortState){
+            EarlyAbortException error = new EarlyAbortException();
+            forceExitState = error;
+            throw error;
+        }
     }
 
     public static long energyLeft() {
@@ -228,6 +239,10 @@ public class Helper implements IHelper {
     public static int getNextHashCode() {
         // NOTE:  In the case of a Class object, this value is swapped out, temporarily.
         return nextHashCode++;
+    }
+
+    public void externalSetAbortState() {
+        abortState = true;
     }
 
     public static int getCurStackSize(){

@@ -219,6 +219,11 @@ public class PocWalletTest {
             public void externalBootstrapOnly() {
                 Assert.fail("Not in test");
             }
+
+            @Override
+            public void externalSetAbortState() {
+                Assert.fail("Not in test");
+            }
         });
         Address instance = new Address(bytes);
         IHelper.currentContractHelper.remove();
