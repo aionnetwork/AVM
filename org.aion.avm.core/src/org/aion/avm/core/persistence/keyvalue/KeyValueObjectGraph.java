@@ -7,6 +7,7 @@ import org.aion.avm.core.persistence.ConstantNode;
 import org.aion.avm.core.persistence.INode;
 import org.aion.avm.core.persistence.IObjectGraphStore;
 import org.aion.avm.core.persistence.IRegularNode;
+import org.aion.avm.core.persistence.StreamingPrimitiveCodec;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
 
@@ -21,10 +22,22 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
 
     private final KernelInterface store;
     private final byte[] address;
+    private long nextInstanceId;
 
     public KeyValueObjectGraph(KernelInterface store, byte[] address) {
         this.store = store;
         this.address = address;
+        
+        // We will scoop the nextInstanceId out of our hidden key.
+        byte[] rawData = this.store.getStorage(this.address, StorageKeys.INTERNAL_DATA);
+        if (null != rawData) {
+            RuntimeAssertionError.assertTrue(rawData.length == Long.BYTES);
+            StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
+            this.nextInstanceId = decoder.decodeLong();
+        } else {
+            // This must be new.
+            this.nextInstanceId = 1L;
+        }
     }
 
     @Override
@@ -59,7 +72,23 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     }
 
     @Override
+    public void flushWrites() {
+        StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
+        encoder.encodeLong(this.nextInstanceId);
+        byte[] rawData = encoder.toBytes();
+        this.store.putStorage(this.address, StorageKeys.INTERNAL_DATA, rawData);
+    }
+
+    @Override
     public String toString() {
         return "KeyValueObjectGraph @" + Arrays.toString(this.address);
+    }
+
+    // TODO:  Change the nextInstanceId to purely internal once we manage node allocation here.
+    public long getNextInstanceId() {
+        return this.nextInstanceId;
+    }
+    public void setNextInstanceId(long nextInstanceId) {
+        this.nextInstanceId = nextInstanceId;
     }
 }

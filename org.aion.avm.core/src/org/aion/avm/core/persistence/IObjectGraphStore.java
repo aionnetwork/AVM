@@ -42,4 +42,9 @@ public interface IObjectGraphStore {
      * @return The INode instance representing this class reference in storage.
      */
     public INode buildClassNode(String className);
+
+    /**
+     * Tells the implementation to write-back any internally-managed state to its persistent layer.
+     */
+    public void flushWrites();
 }

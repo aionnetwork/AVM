@@ -74,7 +74,7 @@ public class ReentrantDAppStack {
         }
         
         public void updateEnvironment(int nextHashCode) {
-            this.environment = new ContractEnvironmentState(nextHashCode, this.environment.nextInstanceId);
+            this.environment = new ContractEnvironmentState(nextHashCode);
         }
     }
 }

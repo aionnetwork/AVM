@@ -270,10 +270,12 @@ public class DAppCreator {
 
             // Save back the state before we return.
             // -first, save out the classes
-            long initialInstanceId = 1l;
+            long initialInstanceId = ((KeyValueObjectGraph)dapp.graphStore).getNextInstanceId();
             long nextInstanceId = dapp.saveClassStaticsToStorage(initialInstanceId, feeProcessor);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToGraph(dapp.graphStore, new ContractEnvironmentState(helper.externalGetNextHashCode(), nextInstanceId));
+            ContractEnvironmentState.saveToGraph(dapp.graphStore, new ContractEnvironmentState(helper.externalGetNextHashCode()));
+            ((KeyValueObjectGraph)dapp.graphStore).setNextInstanceId(nextInstanceId);
+            dapp.graphStore.flushWrites();
 
             // TODO: whether we should return the dapp address is subject to change
             result.setStatusCode(TransactionResult.Code.SUCCESS);

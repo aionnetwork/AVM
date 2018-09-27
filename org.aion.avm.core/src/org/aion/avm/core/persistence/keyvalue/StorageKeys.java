@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 public class StorageKeys {
     public static final byte[] CLASS_STATICS = new byte[] {11,12,13,14,15,16,17,18,19,10};
     public static final byte[] CONTRACT_ENVIRONMENT = new byte[] {1,2,3,4,5,6,7,8,9,0};
+    public static final byte[] INTERNAL_DATA = new byte[] {21,22,23,24,25,26,27,28,29,20};
 
     public static byte[] forInstance(long instanceId) {
         String key = "instance_" + instanceId;
