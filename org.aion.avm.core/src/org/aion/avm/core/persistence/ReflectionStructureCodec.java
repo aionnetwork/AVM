@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import org.aion.avm.core.persistence.graph.InstanceIdToken;
 import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
+import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObjectDeserializer;
@@ -261,8 +262,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
         long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
         byte[] rawData = this.graphStore.getStorage(StorageKeys.forInstance(instanceId));
-        this.feeProcessor.readOneInstanceFromStorage(rawData.length - KeyValueExtentCodec.OVERHEAD_BYTES);
-        deserializeInstance(instance, KeyValueExtentCodec.decode(rawData));
+        // TODO: Remove these assumptions regarding the underlying IObjectGraphStore being KeyValueObjectGraph.
+        this.feeProcessor.readOneInstanceFromStorage(rawData.length - KeyValueObjectGraph.OVERHEAD_BYTES);
+        deserializeInstance(instance, KeyValueExtentCodec.decode((KeyValueObjectGraph)this.graphStore, rawData));
     }
 
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
@@ -271,7 +273,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             byte[] serialized = KeyValueExtentCodec.encode(internalSerializeInstance(instance, nextObjectSink));
             // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
             // we run out of energy, part-way.
-            this.feeProcessor.writeOneInstanceToStorage(serialized.length - KeyValueExtentCodec.OVERHEAD_BYTES);
+            this.feeProcessor.writeOneInstanceToStorage(serialized.length - KeyValueObjectGraph.OVERHEAD_BYTES);
             long instanceId = ((InstanceIdToken)persistenceToken).instanceId;
             this.graphStore.putStorage(StorageKeys.forInstance(instanceId), serialized);
         } catch (IllegalAccessException | IllegalArgumentException e) {

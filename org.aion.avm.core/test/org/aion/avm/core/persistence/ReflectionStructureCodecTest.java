@@ -150,7 +150,7 @@ public class ReflectionStructureCodecTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = {1,2,3};
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
-        Extent extent = KeyValueExtentCodec.decode(expected);
+        Extent extent = KeyValueExtentCodec.decode(graph, expected);
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, 1);
         // Note that the deserializer always assumes it is operating on stubs so create the instance and pass it in.
@@ -276,8 +276,8 @@ public class ReflectionStructureCodecTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = {1,2,3};
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
-        Extent extent1 = KeyValueExtentCodec.decode(expected1);
-        Extent extent2 = KeyValueExtentCodec.decode(expected2);
+        Extent extent1 = KeyValueExtentCodec.decode(graph, expected1);
+        Extent extent2 = KeyValueExtentCodec.decode(graph, expected2);
         CacheAwareFieldPopulator populator = new CacheAwareFieldPopulator(ReflectionStructureCodecTarget.class.getClassLoader());
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, 1);
         ReflectionStructureCodecTarget target1 = new ReflectionStructureCodecTarget();

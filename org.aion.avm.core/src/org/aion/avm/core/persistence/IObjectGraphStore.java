@@ -4,8 +4,6 @@ package org.aion.avm.core.persistence;
 /**
  * An abstract interface over the storage back-end (since we want to allow that to be changed, later).
  * Note that a single instance of this interface is meant to represent the graph for a single DApp so there is no need for "address" arguments.
- * 
- * Currently, this is just a thin wrapper over KernelInterface's key-value store but it will evolve, as we progress.
  */
 public interface IObjectGraphStore {
     /**
@@ -28,4 +26,20 @@ public interface IObjectGraphStore {
      * @param value The value to store for this key.
      */
     public void putStorage(byte[] key, byte[] value);
+
+    /**
+     * Builds a node referencing a constant.
+     * 
+     * @param constantId The ID of the constant (must be negative).
+     * @return The INode instance representing this constant reference in storage.
+     */
+    public INode buildConstantNode(long constantId);
+
+    /**
+     * Builds a node referencing a class.
+     * 
+     * @param className The name of the class.
+     * @return The INode instance representing this class reference in storage.
+     */
+    public INode buildClassNode(String className);
 }

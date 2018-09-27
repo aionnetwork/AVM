@@ -1,12 +1,12 @@
 package org.aion.avm.core.persistence.keyvalue;
 
-import org.aion.avm.core.persistence.INode;
+import org.aion.avm.core.persistence.IRegularNode;
 
 
 /**
  * The data required to describe a normal object reference, in the serialization layer.
  */
-public class KeyValueNode implements INode {
+public class KeyValueNode implements IRegularNode {
     private final String instanceClassName;
     private final long instanceId;
 

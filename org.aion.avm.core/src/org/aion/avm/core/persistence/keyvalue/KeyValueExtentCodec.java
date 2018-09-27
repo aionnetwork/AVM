@@ -20,10 +20,6 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * This is specific to the key-value implementation.
  */
 public class KeyValueExtentCodec {
-    // Used to fix the billing size calculation:  in the future, we will derive this from the logical content of the Extent but, for now, callers
-    // just need a way to remove the overhead introduced by this codec (2 "size" ints).
-    public static final int OVERHEAD_BYTES = 8;
-
     // There are no constants for stub descriptors greater than 0 since that is a string length field.
     private static final int STUB_DESCRIPTOR_NULL = 0;
     private static final int STUB_DESCRIPTOR_CONSTANT = -1;
@@ -83,7 +79,7 @@ public class KeyValueExtentCodec {
         return encoder.toBytes();
     }
 
-    public static Extent decode(byte[] data) {
+    public static Extent decode(KeyValueObjectGraph factory, byte[] data) {
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(data);
         
         int referenceCount = decoder.decodeInt();
@@ -98,7 +94,7 @@ public class KeyValueExtentCodec {
                 }
                 case STUB_DESCRIPTOR_CONSTANT: {
                     long constantId = decoder.decodeLong();
-                    references[i] = new ConstantNode(constantId);
+                    references[i] = factory.buildConstantNode(constantId);
                     break;
                 }
                 case STUB_DESCRIPTOR_CLASS: {
@@ -106,7 +102,7 @@ public class KeyValueExtentCodec {
                     byte[] utf8Name = new byte[length];
                     decoder.decodeBytesInto(utf8Name);
                     String className = new String(utf8Name, StandardCharsets.UTF_8);
-                    references[i] = new ClassNode(className);
+                    references[i] = factory.buildClassNode(className);
                     break;
                 }
                 default: {
@@ -114,7 +110,7 @@ public class KeyValueExtentCodec {
                     decoder.decodeBytesInto(utf8Name);
                     String instanceClassName = new String(utf8Name, StandardCharsets.UTF_8);
                     long instanceId = decoder.decodeLong();
-                    references[i] = new KeyValueNode(instanceClassName, instanceId);
+                    references[i] = factory.buildExistingRegularNode(instanceClassName, instanceId);
                     break;
                 }
             }

@@ -154,7 +154,7 @@ public class StorageWalker {
         
         // Extract the raw data for the class statics.
         byte[] staticData = objectGraph.getStorage(StorageKeys.CLASS_STATICS);
-        ExtentBasedCodec.Decoder staticDecoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(staticData));
+        ExtentBasedCodec.Decoder staticDecoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(objectGraph, staticData));
         for (Class<?> clazz : classes) {
             output.println("Class(" + shortenClassName(clazz.getName()) + "): ");
             codec.deserializeClass(staticDecoder, clazz);
@@ -180,7 +180,7 @@ public class StorageWalker {
             if (isStringCase || isObjectArrayCase || isCommonUserDefinedCase) {
                 // We are going to process this instance so load its data and create its decoder.
                 byte[] instanceData = objectGraph.getStorage(StorageKeys.forInstance(instanceId));
-                ExtentBasedCodec.Decoder instanceDecoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(instanceData));
+                ExtentBasedCodec.Decoder instanceDecoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(objectGraph, instanceData));
                 
                 // We need to special-case the hashCode (normally handled by the shadow Object implementation).
                 output.println("\thashCode: int(" + instanceDecoder.decodeInt() + "), ");
