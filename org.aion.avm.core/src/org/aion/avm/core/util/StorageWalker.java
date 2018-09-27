@@ -20,6 +20,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.persistence.ClassNode;
 import org.aion.avm.core.persistence.ConstantNode;
 import org.aion.avm.core.persistence.ConstructorCache;
+import org.aion.avm.core.persistence.Extent;
 import org.aion.avm.core.persistence.ExtentBasedCodec;
 import org.aion.avm.core.persistence.INode;
 import org.aion.avm.core.persistence.IRegularNode;
@@ -216,7 +217,15 @@ public class StorageWalker {
                 }
             } else {
                 // We might do something with this type, in the future, but not right now.
-                output.println("\t(opaque)");
+                // Just write the references.
+                Extent extent = persistenceToken.loadRegularData();
+                
+                output.println("\t(opaque) refs: " + extent.references.length + "[");
+                for (int i = 0; i < extent.references.length; ++i) {
+                    org.aion.avm.shadow.java.lang.Object stub = codec.decodeStub(instanceDecoder.decodeReference());
+                    output.println("\tref(" + stub + "), ");
+                }
+                output.println("]");
             }
         }
     }
