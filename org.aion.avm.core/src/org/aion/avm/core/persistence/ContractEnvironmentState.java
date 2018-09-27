@@ -1,6 +1,5 @@
 package org.aion.avm.core.persistence;
 
-import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
@@ -9,7 +8,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
  */
 public class ContractEnvironmentState {
     public static ContractEnvironmentState loadFromGraph(IObjectGraphStore graphStore) {
-        byte[] rawData = graphStore.getStorage(StorageKeys.CONTRACT_ENVIRONMENT);
+        byte[] rawData = graphStore.getMetaData();
         RuntimeAssertionError.assertTrue(rawData.length == Integer.BYTES);
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
         int nextHashCode = decoder.decodeInt();
@@ -20,7 +19,7 @@ public class ContractEnvironmentState {
         byte[] bytes = new StreamingPrimitiveCodec.Encoder()
                 .encodeInt(state.nextHashCode)
                 .toBytes();
-        graphStore.putStorage(StorageKeys.CONTRACT_ENVIRONMENT, bytes);
+        graphStore.setNewMetaData(bytes);
     }
 
 

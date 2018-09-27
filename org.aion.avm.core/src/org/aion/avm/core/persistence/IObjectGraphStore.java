@@ -17,22 +17,6 @@ public interface IObjectGraphStore {
     public byte[] getCode();
 
     /**
-     * Loads the data for the given key from this DApp's storage.
-     * 
-     * @param key The key to load.
-     * @return The value for the key, null if it isn't found.
-     */
-    public byte[] getStorage(byte[] key);
-
-    /**
-     * Stores the given value for the given key in this DApp's storage.
-     * 
-     * @param key The key to store.
-     * @param value The value to store for this key.
-     */
-    public void putStorage(byte[] key, byte[] value);
-
-    /**
      * Used for late initialization of the implementation in cases where not all requirements can be built before it is loaded.
      * 
      * @param classLoader The loader to use for looking up classes when initializing objects.
@@ -69,4 +53,32 @@ public interface IObjectGraphStore {
      * Tells the implementation to write-back any internally-managed state to its persistent layer.
      */
     public void flushWrites();
+
+    /**
+     * Reads the high-level meta-data from storage.
+     * 
+     * @return The high-level meta-data (null if there isn't any).
+     */
+    public byte[] getMetaData();
+
+    /**
+     * Updates the on-disk representation of high-level meta-data.
+     * 
+     * @param data The meta-data to store.
+     */
+    public void setNewMetaData(byte[] data);
+
+    /**
+     * Reads the data extent representing the graph root (class statics) from storage.
+     * 
+     * @return The graph root data (null if there isn't any).
+     */
+    public Extent getRoot();
+
+    /**
+     * Updates the on-disk representation of graph root (class statics) data.
+     * 
+     * @param root The graph root data to store.
+     */
+    public void setRoot(Extent root);
 }

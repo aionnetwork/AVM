@@ -9,6 +9,7 @@ import java.util.function.Function;
 import org.aion.avm.core.persistence.ClassNode;
 import org.aion.avm.core.persistence.ConstantNode;
 import org.aion.avm.core.persistence.ConstructorCache;
+import org.aion.avm.core.persistence.Extent;
 import org.aion.avm.core.persistence.INode;
 import org.aion.avm.core.persistence.IObjectGraphStore;
 import org.aion.avm.core.persistence.IRegularNode;
@@ -61,13 +62,29 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     }
 
     @Override
-    public byte[] getStorage(byte[] key) {
-        return this.store.getStorage(this.address, key);
+    public byte[] getMetaData() {
+        return this.store.getStorage(this.address, StorageKeys.CONTRACT_ENVIRONMENT);
     }
 
     @Override
-    public void putStorage(byte[] key, byte[] value) {
-        this.store.putStorage(this.address, key, value);
+    public void setNewMetaData(byte[] data) {
+        this.store.putStorage(this.address, StorageKeys.CONTRACT_ENVIRONMENT, data);
+    }
+
+    @Override
+    public Extent getRoot() {
+        // Wipe any stale node state since we are reading the root, again.
+        this.idToNodeMap.clear();
+        
+        byte[] rootBytes = this.store.getStorage(this.address, StorageKeys.CLASS_STATICS);
+        RuntimeAssertionError.assertTrue(null != rootBytes);
+        return KeyValueExtentCodec.decode(this, rootBytes);
+    }
+
+    public void setRoot(Extent root) {
+        byte[] rootBytes = KeyValueExtentCodec.encode(root);
+        RuntimeAssertionError.assertTrue(null != rootBytes);
+        this.store.putStorage(this.address, StorageKeys.CLASS_STATICS, rootBytes);
     }
 
     @Override

@@ -22,15 +22,13 @@ import org.aion.avm.core.persistence.ConstantNode;
 import org.aion.avm.core.persistence.ConstructorCache;
 import org.aion.avm.core.persistence.ExtentBasedCodec;
 import org.aion.avm.core.persistence.INode;
+import org.aion.avm.core.persistence.IRegularNode;
 import org.aion.avm.core.persistence.NodePersistenceToken;
 import org.aion.avm.core.persistence.ReflectedFieldCache;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
-import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
-import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
@@ -161,12 +159,11 @@ public class StorageWalker {
         // Create the codec back-ended on the populator.
         // (note that it requires a fieldCache but we don't attempt to reuse this, in our case).
         ReflectedFieldCache fieldCache = new ReflectedFieldCache();
-        NullFeeProcessor feeProcessor = new NullFeeProcessor(); 
+        NullFeeProcessor feeProcessor = new NullFeeProcessor();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, feeProcessor, objectGraph);
         
         // Extract the raw data for the class statics.
-        byte[] staticData = objectGraph.getStorage(StorageKeys.CLASS_STATICS);
-        ExtentBasedCodec.Decoder staticDecoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(objectGraph, staticData));
+        ExtentBasedCodec.Decoder staticDecoder = new ExtentBasedCodec.Decoder(objectGraph.getRoot());
         for (Class<?> clazz : classes) {
             output.println("Class(" + shortenClassName(clazz.getName()) + "): ");
             codec.deserializeClass(staticDecoder, clazz);
@@ -178,8 +175,9 @@ public class StorageWalker {
         while (!instanceQueue.isEmpty()) {
             org.aion.avm.shadow.java.lang.Object instance = instanceQueue.poll();
             String className = instance.getClass().getName();
-            IPersistenceToken persistenceToken = (IPersistenceToken)persistenceTokenField.get(instance);
-            long instanceId = ((KeyValueNode)((NodePersistenceToken)persistenceToken).node).getInstanceId();
+            // We know that these are INode instances.
+            IRegularNode persistenceToken = ((NodePersistenceToken)persistenceTokenField.get(instance)).node;
+            long instanceId = ((KeyValueNode) persistenceToken).getInstanceId();
             output.println(shortenClassName(className) + "("+ instanceId + "): ");
             
             // We need to look into a few special-cases here:
@@ -189,11 +187,10 @@ public class StorageWalker {
             boolean isObjectArrayCase = className.equals(org.aion.avm.arraywrapper.ObjectArray.class.getName());
             // -we decode all user-defined objects.
             boolean isCommonUserDefinedCase = (!className.startsWith(PackageConstants.kShadowDotPrefix) && !className.startsWith(PackageConstants.kArrayWrapperDotPrefix));
+            // We are going to process this instance so load its data and create its decoder.
+            ExtentBasedCodec.Decoder instanceDecoder = new ExtentBasedCodec.Decoder(persistenceToken.loadRegularData());
+            
             if (isStringCase || isObjectArrayCase || isCommonUserDefinedCase) {
-                // We are going to process this instance so load its data and create its decoder.
-                byte[] instanceData = objectGraph.getStorage(StorageKeys.forInstance(instanceId));
-                ExtentBasedCodec.Decoder instanceDecoder = new ExtentBasedCodec.Decoder(KeyValueExtentCodec.decode(objectGraph, instanceData));
-                
                 // We need to special-case the hashCode (normally handled by the shadow Object implementation).
                 output.println("\thashCode: int(" + instanceDecoder.decodeInt() + "), ");
                 

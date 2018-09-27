@@ -15,9 +15,6 @@ import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
-import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
-import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
@@ -92,8 +89,7 @@ public class LoadedDApp {
         this.graphStore.setLateComponents(this.loader, codec, tokenBuilder);
         
         // Extract the raw data for the class statics.
-        byte[] rawData = this.graphStore.getStorage(StorageKeys.CLASS_STATICS);
-        Extent staticData = KeyValueExtentCodec.decode((KeyValueObjectGraph)this.graphStore, rawData);
+        Extent staticData = this.graphStore.getRoot();
         feeProcessor.readStaticDataFromStorage(staticData.getBillableSize());
         ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(staticData);
         
@@ -143,8 +139,7 @@ public class LoadedDApp {
         // Save the raw bytes.
         Extent staticData = encoder.toExtent();
         feeProcessor.writeStaticDataToStorage(staticData.getBillableSize());
-        byte[] rawData = KeyValueExtentCodec.encode(staticData);
-        this.graphStore.putStorage(StorageKeys.CLASS_STATICS, rawData);
+        this.graphStore.setRoot(staticData);
         
         // Now, drain the queue.
         while (!instancesToWrite.isEmpty()) {
