@@ -75,10 +75,8 @@ public class TestResource {
             }
 
             public static void main(String[] args) throws Exception {
-                check(String.valueOf(Byte.MIN_VALUE), Byte.MIN_VALUE);
-                check(String.valueOf(Byte.MAX_VALUE), Byte.MAX_VALUE);
-                /*check(new String(""+Byte.MIN_VALUE), Byte.MIN_VALUE);
-                check(new String(""+Byte.MAX_VALUE), Byte.MAX_VALUE);*/
+                check(new String(""+Byte.MIN_VALUE), Byte.MIN_VALUE);
+                check(new String(""+Byte.MAX_VALUE), Byte.MAX_VALUE);
 
                 check("10",   (byte)10);
                 check("0x10", (byte)16);
@@ -539,10 +537,8 @@ public class TestResource {
             }
 
             public static void main(String[] args) throws Exception {
-                check(String.valueOf(Integer.MIN_VALUE), Integer.MIN_VALUE);
-                check(String.valueOf(Integer.MAX_VALUE), Integer.MAX_VALUE);
-                /*check(new String(""+Integer.MIN_VALUE), Integer.MIN_VALUE);  // see issue #262
-                check(new String(""+Integer.MAX_VALUE), Integer.MAX_VALUE);*/
+                check(new String(""+Integer.MIN_VALUE), Integer.MIN_VALUE);
+                check(new String(""+Integer.MAX_VALUE), Integer.MAX_VALUE);
 
                 check("10",   10);
                 check("0x10", 16);
@@ -785,10 +781,8 @@ public class TestResource {
             }
 
             public static void main(String[] args) throws Exception {
-                check(String.valueOf(Long.MIN_VALUE), Long.MIN_VALUE);
-                check(String.valueOf(Long.MAX_VALUE), Long.MAX_VALUE);
-                /*check(new String("" + Long.MIN_VALUE), Long.MIN_VALUE);
-                check(new String("" + Long.MAX_VALUE), Long.MAX_VALUE);*/
+                check(new String("" + Long.MIN_VALUE), Long.MIN_VALUE);
+                check(new String("" + Long.MAX_VALUE), Long.MAX_VALUE);
 
                 check("10", 10L);
                 check("0x10", 16L);
@@ -1043,10 +1037,8 @@ public class TestResource {
             }
 
             public static void main(String[] args) throws Exception {
-                check(String.valueOf(Short.MIN_VALUE), Short.MIN_VALUE);
-                check(String.valueOf(Short.MAX_VALUE), Short.MAX_VALUE);
-                /*check(new String(""+Short.MIN_VALUE), Short.MIN_VALUE);
-                check(new String(""+Short.MAX_VALUE), Short.MAX_VALUE);*/
+                check(new String(""+Short.MIN_VALUE), Short.MIN_VALUE);
+                check(new String(""+Short.MAX_VALUE), Short.MAX_VALUE);
 
                 check("10",   (short)10);
                 check("0x10", (short)16);
