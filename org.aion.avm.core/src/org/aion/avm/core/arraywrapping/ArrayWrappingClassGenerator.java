@@ -1,5 +1,6 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.arraywrapper.ArrayElement;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.core.util.Helpers;
@@ -386,6 +387,24 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         String cloneMethodName = "avm_clone";
         String cloneMethodDesc = "()Lorg/aion/avm/internal/IObject;";
         MethodVisitor methodVisitor = cw.visitMethod(ACC_PUBLIC, cloneMethodName, cloneMethodDesc, null, null);
+
+        // energy charge
+        methodVisitor.visitFieldInsn(GETSTATIC, "org/aion/avm/internal/IHelper", "currentContractHelper", "Ljava/lang/ThreadLocal;");
+        methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/ThreadLocal", "get", "()Ljava/lang/Object;", false);
+        methodVisitor.visitTypeInsn(CHECKCAST, "org/aion/avm/internal/IHelper");
+        methodVisitor.visitLdcInsn(RuntimeMethodFeeSchedule.ObjectArray_avm_clone);
+        methodVisitor.visitInsn(ICONST_5);
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitMethodInsn(INVOKEVIRTUAL, wrapper, "length", "()I", false);
+        methodVisitor.visitInsn(IMUL);
+        methodVisitor.visitInsn(I2L);
+        methodVisitor.visitInsn(LADD);
+        methodVisitor.visitMethodInsn(INVOKEINTERFACE, "org/aion/avm/internal/IHelper", "externalChargeEnergy", "(J)V", true);
+
+        // lazyLoad
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitMethodInsn(INVOKEVIRTUAL, wrapper, "lazyLoad", "()V", false);
+
         methodVisitor.visitCode();
         methodVisitor.visitTypeInsn(NEW, wrapper);
         methodVisitor.visitInsn(DUP);

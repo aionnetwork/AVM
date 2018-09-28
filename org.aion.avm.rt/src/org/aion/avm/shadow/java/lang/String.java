@@ -459,6 +459,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
 
     @Override
     public int hashCode() {
+        lazyLoad();
         // We probably want a consistent hashCode answer, for strings, since they are data-defined.
         return this.v.hashCode();
     }
