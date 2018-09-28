@@ -153,6 +153,8 @@ public class AvmImpl implements AvmInternal {
                     DAppExecutor.call(thisTransactionKernel, this, this.dAppStack, dapp, stateToResume, ctx, result);
                     if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
                         dapp.cleanForCache();
+                        // TODO:  Remove this once we define the actual transaction type (it is just here to test issue-234).
+                        dapp.graphStore.gc();
                         this.hotCache.checkin(addressWrapper, dapp);
                     }
                 }
