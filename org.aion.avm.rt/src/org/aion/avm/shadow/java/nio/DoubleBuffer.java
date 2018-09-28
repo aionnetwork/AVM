@@ -83,35 +83,35 @@ public class DoubleBuffer extends Buffer<java.nio.DoubleBuffer> implements Compa
     }
 
     public DoubleBuffer avm_get(DoubleArray dst, int offset, int length){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_get_2 + 5 * length);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_get_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length);
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public DoubleBuffer avm_get(DoubleArray dst){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_get_3 + 5 * dst.length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_get_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * dst.length());
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public DoubleBuffer avm_put(DoubleBuffer src) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_2 + 5 * src.avm_remaining());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * src.avm_remaining());
         lazyLoad();
         this.v = this.v.put(src.v);
         return this;
     }
 
     public DoubleBuffer avm_put(DoubleArray dst, int offset, int length){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_3 + 5 * length);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length);
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public DoubleBuffer avm_put(DoubleArray dst){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_4 + 5 * dst.length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.DoubleBuffer_avm_put_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * dst.length());
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying());
         return this;

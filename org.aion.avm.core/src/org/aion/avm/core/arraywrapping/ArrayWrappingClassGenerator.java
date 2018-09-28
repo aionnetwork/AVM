@@ -393,11 +393,11 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/ThreadLocal", "get", "()Ljava/lang/Object;", false);
         methodVisitor.visitTypeInsn(CHECKCAST, "org/aion/avm/internal/IHelper");
         methodVisitor.visitLdcInsn(RuntimeMethodFeeSchedule.ObjectArray_avm_clone);
-        methodVisitor.visitInsn(ICONST_5);
+        methodVisitor.visitLdcInsn(RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR);
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL, wrapper, "length", "()I", false);
-        methodVisitor.visitInsn(IMUL);
         methodVisitor.visitInsn(I2L);
+        methodVisitor.visitInsn(LMUL);
         methodVisitor.visitInsn(LADD);
         methodVisitor.visitMethodInsn(INVOKEINTERFACE, "org/aion/avm/internal/IHelper", "externalChargeEnergy", "(J)V", true);
 

@@ -38,7 +38,7 @@ public class Arrays extends Object {
     }
 
     public static ByteArray avm_copyOfRange(ByteArray a, int start, int end) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_copyOfRange + 5 * Math.max(end - start, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_copyOfRange + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * Math.max(end - start, 0));
         return new ByteArray(java.util.Arrays.copyOfRange(a.getUnderlying(), start, end));
     }
 

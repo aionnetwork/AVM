@@ -109,37 +109,37 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public StringBuffer avm_append(String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_1 + 5 * str.avm_length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * str.avm_length());
         this.v = this.v.append(str);
         return this;
     }
 
     public StringBuffer avm_append(StringBuffer sb) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_2 + 5 * sb.avm_length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * sb.avm_length());
         this.v = this.v.append(sb.v);
         return this;
     }
 
     public StringBuffer avm_append(CharSequence s){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_3 + 5 * s.avm_length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * s.avm_length());
         this.v = this.v.append(s.avm_toString());
         return this;
     }
 
     public StringBuffer avm_append(CharSequence s, int start, int end){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_4 + 5 * java.lang.Math.max(end - start, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(end - start, 0));
         this.v = this.v.append(s.avm_toString().getUnderlying(), start, end);
         return this;
     }
 
     public StringBuffer avm_append(CharArray str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_5 + 5 * str.length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_5 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * str.length());
         this.v = this.v.append(str.getUnderlying());
         return this;
     }
 
     public StringBuffer avm_append(CharArray str, int offset, int len) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_6 + 5 * len);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_6 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * len);
         this.v = this.v.append(str.getUnderlying(), offset, len);
         return this;
     }
@@ -187,73 +187,73 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public StringBuffer avm_delete(int start, int end) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_delete + 5 * java.lang.Math.max(avm_length() - start, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_delete + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - start, 0));
         this.v = this.v.delete(start, end);
         return this;
     }
 
     public StringBuffer avm_deleteCharAt(int index) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_deleteCharAt + 5 * java.lang.Math.max(avm_length() - index, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_deleteCharAt + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - index, 0));
         this.v = this.v.deleteCharAt(index);
         return this;
     }
 
     public StringBuffer avm_replace(int start, int end, String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_replace + 5 * java.lang.Math.max(avm_length() - start, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_replace + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - start, 0));
         this.v = this.v.replace(start, end, str.getUnderlying());
         return this;
     }
 
     public String avm_substring(int start) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_substring + 5 * java.lang.Math.max(avm_length() - start, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_substring + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - start, 0));
         return new String(this.v.substring(start));
     }
 
     public CharSequence avm_subSequence(int start, int end){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_subSequence + 5 * java.lang.Math.max(end - start, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_subSequence + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(end - start, 0));
         return new String(this.v.subSequence(start, end).toString());
     }
 
     public String avm_substring(int start, int end) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_substring_1 + 5 * java.lang.Math.max(end - start, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_substring_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(end - start, 0));
         return new String(this.v.substring(start, end));
     }
 
     public StringBuffer avm_insert(int index, CharArray str, int offset,
                                             int len)
     {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert + 5 * java.lang.Math.max(avm_length() - index, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - index, 0));
         this.v.insert(index, str.getUnderlying(), offset, len);
         return this;
     }
 
     //TODO: IOBJECT?
     public StringBuffer avm_insert(int offset, Object obj) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_1 + 5 * java.lang.Math.max(avm_length() - offset, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - offset, 0));
         this.v.insert(offset, obj);
         return this;
     }
 
     public StringBuffer avm_insert(int offset, String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_2 + 5 * (str.avm_length() + java.lang.Math.max(avm_length() - offset, 0)));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (str.avm_length() + java.lang.Math.max(avm_length() - offset, 0)));
         this.v.insert(offset, str.getUnderlying());
         return this;
     }
 
     public StringBuffer avm_insert(int offset, CharArray str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_3 + 5 * (str.length() + java.lang.Math.max(avm_length() - offset, 0)));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (str.length() + java.lang.Math.max(avm_length() - offset, 0)));
         this.v.insert(offset, str.getUnderlying());
         return this;
     }
 
     public StringBuffer avm_insert(int dstOffset, CharSequence s){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_4 + 5 * (s.avm_length() + java.lang.Math.max(avm_length() - dstOffset, 0)));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (s.avm_length() + java.lang.Math.max(avm_length() - dstOffset, 0)));
         this.v.insert(dstOffset, s.avm_toString());
         return this;
     }
 
     public StringBuffer avm_insert(int dstOffset, CharSequence s, int start, int end) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_5 + 5 * (java.lang.Math.max(end - start, 0) + java.lang.Math.max(avm_length() - dstOffset, 0)));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_5 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (java.lang.Math.max(end - start, 0) + java.lang.Math.max(avm_length() - dstOffset, 0)));
         this.v.insert(dstOffset, s.avm_subSequence(start, end));
         return this;
     }
@@ -295,27 +295,27 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public int avm_indexOf(String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_indexOf + 5 * avm_length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_indexOf + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * avm_length());
         return this.v.indexOf(str.getUnderlying());
     }
 
     public int avm_indexOf(String str, int fromIndex) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_indexOf_1 + 5 * java.lang.Math.max(avm_length() - fromIndex, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_indexOf_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - fromIndex, 0));
         return this.v.indexOf(str.getUnderlying(), fromIndex);
     }
 
     public int avm_lastIndexOf(String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_lastIndexOf + 5 * avm_length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_lastIndexOf + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * avm_length());
         return this.v.lastIndexOf(str.getUnderlying());
     }
 
     public int avm_lastIndexOf(String str, int fromIndex) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_lastIndexOf_1 + 5 * java.lang.Math.max(avm_length() - fromIndex, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_lastIndexOf_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - fromIndex, 0));
         return this.v.lastIndexOf(str.getUnderlying(), fromIndex);
     }
 
     public StringBuffer avm_reverse() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_reverse + 5 * avm_length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_reverse + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * avm_length());
         this.v.reverse();
         return this;
     }

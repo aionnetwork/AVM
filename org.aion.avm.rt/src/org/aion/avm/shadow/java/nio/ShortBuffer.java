@@ -83,35 +83,35 @@ public class ShortBuffer extends Buffer<java.nio.ShortBuffer> implements Compara
     }
 
     public ShortBuffer avm_get(ShortArray dst, int offset, int length){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_get_2 + 5 * length);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_get_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length);
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public ShortBuffer avm_get(ShortArray dst){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_get_3 + 5 * dst.length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_get_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * dst.length());
         lazyLoad();
         this.v = this.v.get(dst.getUnderlying());
         return this;
     }
 
     public ShortBuffer avm_put(ShortBuffer src) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put_2 + 5 * src.avm_remaining());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * src.avm_remaining());
         lazyLoad();
         this.v = this.v.put(src.v);
         return this;
     }
 
     public ShortBuffer avm_put(ShortArray dst, int offset, int length){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put_3 + 5 * length);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length);
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying(), offset, length);
         return this;
     }
 
     public ShortBuffer avm_put(ShortArray dst){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put_4 + 5 * dst.length());
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ShortBuffer_avm_put_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * dst.length());
         lazyLoad();
         this.v = this.v.put(dst.getUnderlying());
         return this;

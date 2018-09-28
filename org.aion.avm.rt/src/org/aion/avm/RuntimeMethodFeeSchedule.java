@@ -6,6 +6,8 @@ public class RuntimeMethodFeeSchedule {
     public static final long RT_METHOD_FEE_LEVEL_3 = 600;
     public static final long RT_METHOD_FEE_LEVEL_4 = 1500;
 
+    public static final long RT_METHOD_FEE_FACTOR = 5;
+
     public static final long BigInteger_avm_constructor = RT_METHOD_FEE_LEVEL_3; // totalCost - 687; // byte code cost - 459; invoked methods cost - 228;
     public static final long BigInteger_avm_constructor_2 = RT_METHOD_FEE_LEVEL_3; // totalCost - 693; // byte code cost - 465; invoked methods cost - 228;
     public static final long BigInteger_avm_constructor_4 = RT_METHOD_FEE_LEVEL_3; // totalCost - 681; // byte code cost - 453; invoked methods cost - 228;

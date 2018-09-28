@@ -293,12 +293,12 @@ public class Character extends Object {
     }
 
     public static int avm_codePointCount(CharSequence seq, int beginIndex, int endIndex){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointCount + 5 * java.lang.Math.max(endIndex - beginIndex, 0));
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointCount + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(endIndex - beginIndex, 0));
         return java.lang.Character.codePointCount(seq.avm_toString().getUnderlying(), beginIndex, endIndex);
     }
 
     public static int avm_codePointCount(CharArray a, int offset, int count) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointCount_1 + 5 * count);
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Character_avm_codePointCount_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * count);
         return java.lang.Character.codePointCount(a.getUnderlying(), offset, count);
     }
 
