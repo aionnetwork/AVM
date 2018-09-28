@@ -1,11 +1,18 @@
 package org.aion.avm.core.shadowing.testEnum;
 
+import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.BlockchainRuntime;
+
 import java.math.RoundingMode;
 
 public class TestResource {
     TestEnum earth = TestEnum.EARTH;
     TestEnum jupiter = TestEnum.JUPITER;
     TestEnum mars = TestEnum.MARS;
+
+    public static byte[] main() {
+        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+    }
 
     public boolean testEnumAccess(){
         boolean ret = true;

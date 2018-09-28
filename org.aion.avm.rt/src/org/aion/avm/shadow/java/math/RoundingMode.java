@@ -12,7 +12,7 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 
 // Note that we want to suppress the deprecation warnings since the original RoundingMode also does:  they both depend on deprecated BigDecimal constants.
 @SuppressWarnings("deprecation")
-public class RoundingMode extends org.aion.avm.shadow.java.lang.Enum<RoundingMode>{
+public class RoundingMode extends Enum<RoundingMode>{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IHelper.currentContractHelper.get().externalBootstrapOnly();

@@ -1,55 +1,64 @@
 package org.aion.avm.core.shadowing.testEnum;
 
+import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
+import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.core.TestingHelper;
+import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.Helpers;
+import org.aion.kernel.*;
 import org.junit.*;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 public class EnumShadowingTest {
-    private SimpleAvm avm;
-    private Class<?> clazz;
+    private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private byte[] dappAddr;
+
+    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private long energyLimit = 600_000_00000L;
+    private long energyPrice = 1;
+
+    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
     @Before
-    public void setup() throws ClassNotFoundException {
-        // Force the initialization of the NodeEnvironment singleton.
-        Assert.assertNotNull(NodeEnvironment.singleton);
-        
-        this.avm = new SimpleAvm(1000000L, TestResource.class, TestEnum.class);
-        this.clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName());
-    }
+    public void setup() {
+        byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class, TestEnum.class);
+        byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
 
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
+        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        dappAddr = avm.run(context).getReturnData();
     }
 
     @Test
-    public void testEnumAccess() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testEnumAccess"));
+    public void testEnumAccess() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testEnumAccess");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testEnumValues() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testEnumValues"));
+    public void testEnumValues() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testEnumValues");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
     @Test
-    public void testShadowJDKEnum() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        Object obj = clazz.getConstructor().newInstance();
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testShadowJDKEnum"));
+    public void testShadowJDKEnum() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testShadowJDKEnum");
+        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
 
-        Object ret = method.invoke(obj);
-        Assert.assertEquals(ret, true);
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 }

@@ -1,9 +1,15 @@
 package org.aion.avm.core.shadowing.testMath;
 
+import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.BlockchainRuntime;
+
 import java.math.MathContext;
 
-
 public class TestResource {
+    public static byte[] main() {
+        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+    }
+
     public boolean testMaxMin(){
         boolean ret = true;
 
@@ -13,7 +19,7 @@ public class TestResource {
         return ret;
     }
 
-    public static Object testMathContext() {
-        return new MathContext(5);
+    public static int testMathContext() {
+        return new MathContext(5).getPrecision();
     }
 }
