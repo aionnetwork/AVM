@@ -67,6 +67,7 @@ public class DAppExecutor {
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setReturnData(ret);
             result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
+            result.setStorageRootHash(dapp.graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();

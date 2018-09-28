@@ -35,6 +35,7 @@ public class HashCodeIntegrationTest {
         Transaction create = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContextImpl(create, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+        Assert.assertEquals(-2100857470, createResult.getStorageRootHash());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
         
         // Store an object.
@@ -53,6 +54,8 @@ public class HashCodeIntegrationTest {
         Transaction call = new Transaction(Transaction.Type.CALL, deployer, contractAddr.unwrap(), kernel.getNonce(deployer), 0, argData, energyLimit, 1l);
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.
+        Assert.assertEquals(257970589, result.getStorageRootHash());
         return TestingHelper.decodeResult(result);
     }
 }

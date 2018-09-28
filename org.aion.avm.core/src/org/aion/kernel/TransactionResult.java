@@ -123,6 +123,13 @@ public class TransactionResult {
     private long energyUsed;
 
     /**
+     * The storage root hash of the target account, after the transaction.
+     * Note that this is only set on SUCCESS.
+     * This is just a proof-of-concept for issue-246 and will change in the future.
+     */
+    private int storageRootHash;
+
+    /**
      * The logs emitted during execution.
      */
     private List<Log> logs = new ArrayList<>();
@@ -178,6 +185,14 @@ public class TransactionResult {
 
     public void setEnergyUsed(long energyUsed) {
         this.energyUsed = energyUsed;
+    }
+
+    public int getStorageRootHash() {
+        return this.storageRootHash;
+    }
+
+    public void setStorageRootHash(int storageRootHash) {
+        this.storageRootHash = storageRootHash;
     }
 
     public List<Log> getLogs() {

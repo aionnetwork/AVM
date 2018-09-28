@@ -28,6 +28,8 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     private final KernelInterface store;
     private final byte[] address;
     private long nextInstanceId;
+    private int[][] merkleTree;
+    private boolean[] dirtyLeaves;
 
     private ConstructorCache constructorCache;
     private IDeserializer logicalDeserializer;
@@ -41,12 +43,33 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         // We will scoop the nextInstanceId out of our hidden key.
         byte[] rawData = this.store.getStorage(this.address, StorageKeys.INTERNAL_DATA);
         if (null != rawData) {
-            RuntimeAssertionError.assertTrue(rawData.length == Long.BYTES);
             StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
             this.nextInstanceId = decoder.decodeLong();
+            
+            // Read the Merkle tree:  start with the number of levels (we are just using a binary tree).
+            // If we proceed with this approach, we should find a way to store this where we don't need to load/store the entire thing on each call.
+            int levelCount = decoder.decodeInt();
+            this.merkleTree = new int[levelCount][];
+            int leafLevelSize = 0;
+            for (int i = 0; i < levelCount; ++i) {
+                // Read the size of this level.
+                int size = decoder.decodeInt();
+                this.merkleTree[i] = new int[size];
+                
+                // Read every element.
+                for (int j = 0; j < size; ++j) {
+                    this.merkleTree[i][j] = decoder.decodeInt();
+                }
+                if (0 == i) {
+                    leafLevelSize = size;
+                }
+            }
+            this.dirtyLeaves = new boolean[leafLevelSize];
         } else {
             // This must be new.
             this.nextInstanceId = 1L;
+            this.merkleTree = new int[0][];
+            this.dirtyLeaves = new boolean[0];
         }
     }
 
@@ -85,6 +108,12 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         byte[] rootBytes = KeyValueExtentCodec.encode(root);
         RuntimeAssertionError.assertTrue(null != rootBytes);
         this.store.putStorage(this.address, StorageKeys.CLASS_STATICS, rootBytes);
+        
+        // Update index-0, in the Merkle tree.
+        ensureTreeSize(0);
+        // Hash the data into the leaf.
+        this.merkleTree[0][0] = Arrays.hashCode(rootBytes);
+        this.dirtyLeaves[0] = true;
     }
 
     @Override
@@ -122,10 +151,26 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
 
     @Override
     public void flushWrites() {
+        lazyComputeHash();
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
         encoder.encodeLong(this.nextInstanceId);
+        
+        // Number of levels.
+        encoder.encodeInt(this.merkleTree.length);
+        // Each level.
+        for (int[] level : this.merkleTree) {
+            encoder.encodeInt(level.length);
+            for (int elt : level) {
+                encoder.encodeInt(elt);
+            }
+        }
         byte[] rawData = encoder.toBytes();
         this.store.putStorage(this.address, StorageKeys.INTERNAL_DATA, rawData);
+    }
+
+    @Override
+    public int simpleHashCode() {
+        return lazyComputeHash();
     }
 
     @Override
@@ -158,5 +203,63 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
 
     public void storeDataForInstance(long instanceId, byte[] data) {
         this.store.putStorage(this.address, StorageKeys.forInstance(instanceId), data);
+        // NOTE:  Just as a proof of concept, we build the Merkle tree on this raw data (it should actually be the Extent).
+        int index = (int)instanceId;
+        ensureTreeSize(index);
+        // Hash the data into the leaf.
+        this.merkleTree[0][index] = Arrays.hashCode(data);
+        this.dirtyLeaves[index] = true;
+    }
+
+    private void ensureTreeSize(int index) {
+        if (index >= this.dirtyLeaves.length) {
+            // Grow the tree.
+            int[][] newTree = new int[this.merkleTree.length + 1][];
+            for (int i = 0; i < this.merkleTree.length; ++i) {
+                newTree[i] = new int[this.merkleTree[i].length * 2];
+                System.arraycopy(this.merkleTree[i], 0, newTree[i], 0, this.merkleTree[i].length);
+            }
+            // (the new root goes at the top).
+            newTree[newTree.length - 1] = new int[1];
+            this.merkleTree = newTree;
+            
+            // And the leaves.
+            int oldDirtyLength = this.dirtyLeaves.length;
+            boolean[] newDirty = new boolean[(oldDirtyLength > 0) ? (oldDirtyLength * 2) : 1];
+            System.arraycopy(this.dirtyLeaves, 0, newDirty, 0, oldDirtyLength);
+            this.dirtyLeaves = newDirty;
+            
+            // Just to make sure that the new parts of the tree are populated, mark them as dirty (although they are just empty).
+            for (int i = oldDirtyLength; i < this.dirtyLeaves.length; ++i) {
+                this.dirtyLeaves[i] = true;
+            }
+        }
+    }
+
+    private int lazyComputeHash() {
+        // Recalculate the dirty leaves and push this up the tree.
+        int branchLevel = 1;
+        boolean[] leafLevelDirty = this.dirtyLeaves;
+        while (branchLevel < this.merkleTree.length) {
+            boolean[] branchLevelDirty = new boolean[leafLevelDirty.length / 2];
+            for (int i = 0; i < branchLevelDirty.length; ++i) {
+                boolean shouldRecalculate = (leafLevelDirty[2*i] || leafLevelDirty[2*i + 1]);
+                if (shouldRecalculate) {
+                    int[] leafHashes = this.merkleTree[branchLevel - 1];
+                    this.merkleTree[branchLevel][i] = (leafHashes[2*i] ^ leafHashes[2*i + 1]);
+                }
+                branchLevelDirty[i] = shouldRecalculate;
+            }
+            // Advance up the tree.
+            branchLevel += 1;
+            leafLevelDirty = branchLevelDirty;
+        }
+        // Wipe the leaves.
+        Arrays.fill(this.dirtyLeaves, false);
+        
+        // Return the root of the tree.
+        return (this.merkleTree.length > 0)
+                ? this.merkleTree[this.merkleTree.length - 1][0]
+                : 0;
     }
 }

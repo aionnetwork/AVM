@@ -81,4 +81,15 @@ public interface IObjectGraphStore {
      * @param root The graph root data to store.
      */
     public void setRoot(Extent root);
+
+    /**
+     * A proof-of-concept done under issue-246.
+     * This either needs to be changed to the correct size/algorithm (currently just the Arrays hash for byte[]) and/or changed
+     * into a different approach, entirely.  This is currently using a Merkle tree where each instance is a leaf but we may
+     * want a more compact implementation (n instances are a leaf, etc) or a different approach (streaming delta hash, for
+     * example).
+     * 
+     * @return The hash representing the state of the storage graph.
+     */
+    public int simpleHashCode();
 }

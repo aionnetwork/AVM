@@ -279,6 +279,7 @@ public class DAppCreator {
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
             result.setReturnData(dappAddress);
+            result.setStorageRootHash(dapp.graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
             result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
