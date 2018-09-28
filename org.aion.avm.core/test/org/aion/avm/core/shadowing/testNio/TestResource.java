@@ -1,8 +1,14 @@
 package org.aion.avm.core.shadowing.testNio;
 
+import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.BlockchainRuntime;
+
 import java.nio.*;
 
 public class TestResource {
+    public static byte[] main() {
+        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+    }
 
     public boolean testByteBuffer(){
 
