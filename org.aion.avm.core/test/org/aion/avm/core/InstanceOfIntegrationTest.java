@@ -18,7 +18,6 @@ import org.junit.Test;
 
 /**
  * Tests various cases around the instanceof opcode.
- * NOTE:  The ignored cases will be resolved before issue-82 is resolved.
  */
 public class InstanceOfIntegrationTest {
     private static final long ENERGY_LIMIT = 10_000_000L;

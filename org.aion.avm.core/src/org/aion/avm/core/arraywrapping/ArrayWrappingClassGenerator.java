@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 
 public class ArrayWrappingClassGenerator implements Opcodes {
-    static private boolean DEBUG = true;
+    static private boolean DEBUG = false;
     static private boolean ENERGY_METERING = true;
 
     static private String SHADOW_ARRAY = PackageConstants.kArrayWrapperSlashPrefix + "Array";
@@ -488,7 +488,6 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     }
 
     private static java.lang.String getObjectArrayWrapper(java.lang.String type, int dim){
-//        return getClassWrapperDescriptor(buildArrayDescriptor(dim, 'L' + type + ';'));
         return getUnifyingArrayWrapperDescriptor(buildArrayDescriptor(dim, 'L' + type + ';'));
     }
 

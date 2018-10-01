@@ -53,7 +53,6 @@ public class PocWalletTest {
      * This means that it transformed it correctly and nothing was missing.
      */
     @Test
-    @Ignore
     public void testDeployWritesCode() {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
