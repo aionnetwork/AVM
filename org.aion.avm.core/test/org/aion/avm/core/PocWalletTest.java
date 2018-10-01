@@ -24,7 +24,6 @@ public class PocWalletTest {
 
     // For now, we will just reuse the from, to, and block for each call (in the future, this will change).
     private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private byte[] to = Helpers.randomBytes(Address.LENGTH);
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 10_000_000_000L;
     private long energyPrice = 1;
@@ -57,8 +56,7 @@ public class PocWalletTest {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
 
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0,
-                new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), 0L, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
 
@@ -79,8 +77,7 @@ public class PocWalletTest {
 
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0,
-                new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), 0L, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -89,7 +86,7 @@ public class PocWalletTest {
         byte[] contractAddress = createResult.getReturnData();
 
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
-        Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, kernel.getNonce(from), 0, initArgs, energyLimit, energyPrice);
+        Transaction initTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), 0, initArgs, energyLimit, energyPrice);
         TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
         TransactionResult initResult = avm.run(initContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
@@ -116,7 +113,7 @@ public class PocWalletTest {
         byte[] to = Helpers.randomBytes(Address.LENGTH);
         byte[] data = Helpers.randomBytes(Address.LENGTH);
         byte[] execArgs = encodeExecute(to, dailyLimit + 1, data);
-        Transaction executeTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, kernel.getNonce(from), 0, execArgs, energyLimit, energyPrice);
+        Transaction executeTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), 0, execArgs, energyLimit, energyPrice);
         TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
         TransactionResult executeResult = avm.run(executeContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, executeResult.getStatusCode());
@@ -125,7 +122,7 @@ public class PocWalletTest {
         // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
         kernel.adjustBalance(extra1, 1_000_000_000_000L);
         byte[] confirmArgs = CallEncoder.confirm(toConfirm);
-        Transaction confirmTransaction = new Transaction(Transaction.Type.CALL, extra1, contractAddress, kernel.getNonce(extra1), 0, confirmArgs, energyLimit, energyPrice);
+        Transaction confirmTransaction = Transaction.call(extra1, contractAddress, kernel.getNonce(extra1), 0, confirmArgs, energyLimit, energyPrice);
         TransactionContext confirmContext = new TransactionContextImpl(confirmTransaction, block);
         TransactionResult confirmResult = avm.run(confirmContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, confirmResult.getStatusCode()); // transfer to non-existing accounts
@@ -134,7 +131,7 @@ public class PocWalletTest {
 
     private void runInit(byte[] contractAddress, byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) throws Exception {
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
-        Transaction initTransaction = new Transaction(Transaction.Type.CALL, from, contractAddress, kernel.getNonce(from), 0, initArgs, energyLimit, energyPrice);
+        Transaction initTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), 0, initArgs, energyLimit, energyPrice);
         TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
         TransactionResult initResult = avm.run(initContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
@@ -144,8 +141,7 @@ public class PocWalletTest {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
 
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0,
-                new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), 0L, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());

@@ -37,7 +37,7 @@ public class AvmFailureTest {
     public AvmFailureTest() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmFailureTestResource.class);
         byte[] arguments = null;
-        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -48,7 +48,7 @@ public class AvmFailureTest {
     @Test
     public void testFailedTransaction() {
         byte[] data = ABIEncoder.encodeMethodArguments("reentrantCall", 5);
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, kernel.getNonce(deployer), 0, data, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -64,7 +64,7 @@ public class AvmFailureTest {
     @Test
     public void testOutOfEnergy() {
         byte[] data = ABIEncoder.encodeMethodArguments("testOutOfEnergy");
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, kernel.getNonce(deployer), 0, data, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -74,7 +74,7 @@ public class AvmFailureTest {
     @Test
     public void testOutOfStack() {
         byte[] data = ABIEncoder.encodeMethodArguments("testOutOfStack");
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, kernel.getNonce(deployer), 0, data, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -84,7 +84,7 @@ public class AvmFailureTest {
     @Test
     public void testRevert() {
         byte[] data = ABIEncoder.encodeMethodArguments("testRevert");
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, kernel.getNonce(deployer), 0, data, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -95,7 +95,7 @@ public class AvmFailureTest {
     @Test
     public void testInvalid() {
         byte[] data = ABIEncoder.encodeMethodArguments("testInvalid");
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, kernel.getNonce(deployer), 0, data, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -106,7 +106,7 @@ public class AvmFailureTest {
     @Test
     public void testUncaughtException() {
         byte[] data = ABIEncoder.encodeMethodArguments("testUncaughtException");
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, kernel.getNonce(deployer), 0, data, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 

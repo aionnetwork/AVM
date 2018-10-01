@@ -5,10 +5,25 @@ import org.aion.avm.core.util.Helpers;
 import java.util.Arrays;
 import java.util.Objects;
 
+
 public class Transaction {
+    public static Transaction create(byte[] from, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
+        return new Transaction(Type.CREATE, from, null, nonce, value, data, energyLimit, energyPrice);
+    }
+
+    public static Transaction call(byte[] from, byte[] to, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
+        return new Transaction(Type.CALL, from, to, nonce, value, data, energyLimit, energyPrice);
+    }
 
     public enum Type {
-        CREATE, CALL
+        /**
+         * The CREATE is used to deploy a new DApp.
+         */
+        CREATE,
+        /**
+         * The CALL is used when sending an invocation to an existing DApp.
+         */
+        CALL,
     }
 
     Type type;
@@ -27,7 +42,7 @@ public class Transaction {
 
     long energyPrice;
 
-    public Transaction(Type type, byte[] from, byte[] to, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
+    protected Transaction(Type type, byte[] from, byte[] to, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
         Objects.requireNonNull(type, "The transaction `type` can't be NULL");
         Objects.requireNonNull(from, "The transaction `from` can't be NULL");
         if (type == Type.CREATE) {

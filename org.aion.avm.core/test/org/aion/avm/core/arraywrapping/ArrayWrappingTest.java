@@ -30,7 +30,7 @@ public class ArrayWrappingTest {
 
         byte[] txData = new CodeAndArguments(arrayWrappingTestJar, null).encodeToBytes();
 
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         dappAddr = avm.run(context).getReturnData();
     }
@@ -38,7 +38,7 @@ public class ArrayWrappingTest {
     @Test
     public void testBooleanArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testBooleanArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -48,7 +48,7 @@ public class ArrayWrappingTest {
     @Test
     public void testByteArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testByteArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -58,7 +58,7 @@ public class ArrayWrappingTest {
     @Test
     public void testCharArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testCharArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -68,7 +68,7 @@ public class ArrayWrappingTest {
     @Test
     public void testDoubleArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testDoubleArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -78,7 +78,7 @@ public class ArrayWrappingTest {
     @Test
     public void testFloatArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testFloatArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -88,7 +88,7 @@ public class ArrayWrappingTest {
     @Test
     public void testIntArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testIntArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -98,7 +98,7 @@ public class ArrayWrappingTest {
     @Test
     public void testLongArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testLongArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -108,7 +108,7 @@ public class ArrayWrappingTest {
     @Test
     public void testShortArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testShortArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -118,7 +118,7 @@ public class ArrayWrappingTest {
     @Test
     public void testObjectArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testObjectArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -128,7 +128,7 @@ public class ArrayWrappingTest {
     @Test
     public void testStringArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testStringArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -138,7 +138,7 @@ public class ArrayWrappingTest {
     @Test
     public void testSignature() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testSignature");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -148,7 +148,7 @@ public class ArrayWrappingTest {
     @Test
     public void testVarargs() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testVarargs");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -158,7 +158,7 @@ public class ArrayWrappingTest {
     @Test
     public void testTypeChecking() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testTypeChecking");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -168,7 +168,7 @@ public class ArrayWrappingTest {
     @Test
     public void testClassField() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testClassField");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -178,7 +178,7 @@ public class ArrayWrappingTest {
     @Test
     public void testMultiInt() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testMultiInt");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -188,7 +188,7 @@ public class ArrayWrappingTest {
     @Test
     public void testMultiByte() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testMultiByte");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -198,7 +198,7 @@ public class ArrayWrappingTest {
     @Test
     public void testMultiChar() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testMultiChar");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -208,7 +208,7 @@ public class ArrayWrappingTest {
     @Test
     public void testMultiFloat() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testMultiFloat");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -218,7 +218,7 @@ public class ArrayWrappingTest {
     @Test
     public void testMultiLong() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testMultiLong");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -228,7 +228,7 @@ public class ArrayWrappingTest {
     @Test
     public void testMultiDouble() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testMultiDouble");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -238,7 +238,7 @@ public class ArrayWrappingTest {
     @Test
     public void testMultiRef() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testMultiRef");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -248,7 +248,7 @@ public class ArrayWrappingTest {
     @Test
     public void testHierarachy() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testHierarachy");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -258,7 +258,7 @@ public class ArrayWrappingTest {
     @Test
     public void testIncompleteArrayIni() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testIncompleteArrayIni");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -290,7 +290,7 @@ public class ArrayWrappingTest {
     @Test
     public void testInterfaceArray() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testInterfaceArray");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -300,7 +300,7 @@ public class ArrayWrappingTest {
     @Test
     public void testArrayClone() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testArrayClone");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 

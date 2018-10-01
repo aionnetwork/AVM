@@ -35,7 +35,7 @@ public class InstanceOfIntegrationTest {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         // Deploy.
-        Transaction create = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), 0L, txData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult createResult = avm.run(new TransactionContextImpl(create, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         dappAddress = TestingHelper.buildAddress(createResult.getReturnData());
@@ -153,7 +153,7 @@ public class InstanceOfIntegrationTest {
 
     private boolean callStaticBoolean(String methodName) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
-        Transaction call = new Transaction(Transaction.Type.CALL, deployer, dappAddress.unwrap(), kernel.getNonce(deployer), 0, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), 0, argData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return ((Boolean)TestingHelper.decodeResult(result)).booleanValue();

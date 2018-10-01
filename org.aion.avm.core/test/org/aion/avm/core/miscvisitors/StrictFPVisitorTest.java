@@ -39,7 +39,7 @@ public class StrictFPVisitorTest {
     public StrictFPVisitorTest() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(StrictFPVisitorTestResource.class);
         byte[] arguments = null;
-        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -60,7 +60,7 @@ public class StrictFPVisitorTest {
 
     @Test
     public void testFp() {
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, kernel.getNonce(deployer), 0, new byte[0], energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0, new byte[0], energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());

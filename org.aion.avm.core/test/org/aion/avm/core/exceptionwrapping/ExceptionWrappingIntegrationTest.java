@@ -34,7 +34,7 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction create = new Transaction(Transaction.Type.CREATE, KernelInterfaceImpl.PREMINED_ADDRESS, null, 0, 0, txData, energyLimit, energyPrice);
+        Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, 0L, 0L, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContextImpl(create, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
@@ -59,7 +59,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
-        Transaction call = new Transaction(Transaction.Type.CALL, from, contractAddr.unwrap(), kernel.getNonce(from), 0, argData, energyLimit, 1l);
+        Transaction call = Transaction.call(from, contractAddr.unwrap(), kernel.getNonce(from), 0, argData, energyLimit, 1l);
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return TestingHelper.decodeResult(result);

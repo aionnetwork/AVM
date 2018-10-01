@@ -16,7 +16,6 @@ import org.junit.Test;
 public class AionCollectionPerfTest {
 
     private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private byte[] to = Helpers.randomBytes(Address.LENGTH);
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 100_000_000_000L;
     private long energyPrice = 1;
@@ -53,8 +52,7 @@ public class AionCollectionPerfTest {
 
 
         byte[] testWalletArguments = new byte[0];
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0,
-                new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), 0L, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
 
@@ -65,7 +63,7 @@ public class AionCollectionPerfTest {
 
 
     private TransactionResult call(KernelInterface kernel, Avm avm, byte[] contract, byte[] sender, byte[] args) {
-        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, kernel.getNonce(sender), 0, args, energyLimit, 1l);
+        Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), 0, args, energyLimit, 1l);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(callContext);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());

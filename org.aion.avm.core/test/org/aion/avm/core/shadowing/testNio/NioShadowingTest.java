@@ -30,7 +30,7 @@ public class NioShadowingTest {
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
 
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         dappAddr = avm.run(context).getReturnData();
     }
@@ -38,7 +38,7 @@ public class NioShadowingTest {
     @Test
     public void testByteBuffer() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testByteBuffer");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -48,7 +48,7 @@ public class NioShadowingTest {
     @Test
     public void testCharBuffer() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testCharBuffer");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -58,7 +58,7 @@ public class NioShadowingTest {
     @Test
     public void testDoubleBuffer() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testDoubleBuffer");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -68,7 +68,7 @@ public class NioShadowingTest {
     @Test
     public void testFloatBuffer() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testFloatBuffer");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -79,7 +79,7 @@ public class NioShadowingTest {
     @Test
     public void testIntBuffer() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testIntBuffer");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -90,7 +90,7 @@ public class NioShadowingTest {
     @Test
     public void testLongBuffer() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testLongBuffer");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -100,7 +100,7 @@ public class NioShadowingTest {
     @Test
     public void testShortBuffer() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testShortBuffer");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 

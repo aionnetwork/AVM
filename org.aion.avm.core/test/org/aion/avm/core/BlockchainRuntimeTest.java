@@ -27,7 +27,7 @@ public class BlockchainRuntimeTest {
     public BlockchainRuntimeTest() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class);
         byte[] arguments = null;
-        Transaction tx = new Transaction(Transaction.Type.CREATE, premined, null, kernel.getNonce(premined), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), 1_000_000L, 1L);
+        Transaction tx = Transaction.create(premined, kernel.getNonce(premined), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), 1_000_000L, 1L);
         TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]));
         TransactionResult txResult = avm.run(txContext);
 
@@ -37,7 +37,6 @@ public class BlockchainRuntimeTest {
 
     @Test
     public void testBlockchainRuntime() {
-        Transaction.Type type = Transaction.Type.CALL;
         byte[] from = premined;
         byte[] to = dappAddress;
         long value = 1;
@@ -51,7 +50,7 @@ public class BlockchainRuntimeTest {
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
-        Transaction tx = new Transaction(type, from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);

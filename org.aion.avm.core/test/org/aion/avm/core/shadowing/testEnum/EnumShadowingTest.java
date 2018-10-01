@@ -27,7 +27,7 @@ public class EnumShadowingTest {
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class, TestEnum.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
 
-        Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         dappAddr = avm.run(context).getReturnData();
     }
@@ -35,7 +35,7 @@ public class EnumShadowingTest {
     @Test
     public void testEnumAccess() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testEnumAccess");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -45,7 +45,7 @@ public class EnumShadowingTest {
     @Test
     public void testEnumValues() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testEnumValues");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 
@@ -55,7 +55,7 @@ public class EnumShadowingTest {
     @Test
     public void testShadowJDKEnum() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testShadowJDKEnum");
-        Transaction tx = new Transaction(Transaction.Type.CALL, from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(context);
 

@@ -37,7 +37,7 @@ public class RevertAndInvalidTest {
     private byte[] deploy() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RevertAndInvalidTestResource.class);
         byte[] arguments = null;
-        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -46,7 +46,7 @@ public class RevertAndInvalidTest {
 
     @Test
     public void testRevert() {
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, kernel.getNonce(deployer), 0, new byte[]{1}, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0, new byte[]{1}, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 
@@ -60,7 +60,7 @@ public class RevertAndInvalidTest {
 
     @Test
     public void testInvalid() {
-        Transaction tx = new Transaction(Transaction.Type.CALL, deployer, dappAddress, kernel.getNonce(deployer), 0, new byte[]{2}, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0, new byte[]{2}, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(txContext);
 

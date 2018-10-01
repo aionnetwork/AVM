@@ -14,7 +14,6 @@ import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -37,7 +36,7 @@ public class TransformedMethodTest {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         // Deploy.
-        Transaction create = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), 0L, txData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult createResult = avm.run(new TransactionContextImpl(create, block));
         assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         dappAddress = TestingHelper.buildAddress(createResult.getReturnData());
@@ -46,7 +45,7 @@ public class TransformedMethodTest {
     @Test
     public void testCallNothing() {
         byte[] argData = ABIEncoder.encodeMethodArguments("nothing");
-        Transaction call = new Transaction(Transaction.Type.CALL, deployer, dappAddress.unwrap(), kernel.getNonce(deployer), 0, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), 0L, argData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
     }
@@ -376,8 +375,7 @@ public class TransformedMethodTest {
     }
 
     private TransactionResult runTransaction(byte[] argData) {
-        Transaction call = new Transaction(Transaction.Type.CALL, deployer, dappAddress.unwrap(),
-            kernel.getNonce(deployer), 0, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), 0L, argData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContextImpl(call, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return result;

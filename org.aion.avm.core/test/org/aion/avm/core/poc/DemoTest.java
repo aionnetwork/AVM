@@ -56,7 +56,7 @@ public class DemoTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, pepeMinter, null, kernel.getNonce(pepeMinter), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction createTransaction = Transaction.create(pepeMinter, kernel.getNonce(pepeMinter), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
@@ -67,7 +67,7 @@ public class DemoTest {
         jar = JarBuilder.buildJarForMainAndClasses(Main.class, Wallet.class, Bytes32.class, AionList.class, AionSet.class, AionMap.class);
         int confirmationsRequired = 2;
         arguments = ABIEncoder.encodeMethodArguments("", TestingHelper.buildAddress(owner1), TestingHelper.buildAddress(owner2), confirmationsRequired);
-        Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
@@ -83,21 +83,21 @@ public class DemoTest {
         // FUNDING and CHECK BALANCE
         //================
         arguments = ABIEncoder.encodeMethodArguments("mint", walletDapp, 5000L);
-        tx = new Transaction(Transaction.Type.CALL, pepeMinter, tokenDapp.unwrap(), kernel.getNonce(pepeMinter), 0, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(pepeMinter, tokenDapp.unwrap(), kernel.getNonce(pepeMinter), 0, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
         System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + TestingHelper.decodeResult(txResult));
 
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", walletDapp);
-        tx = new Transaction(Transaction.Type.CALL, pepeMinter, tokenDapp.unwrap(), kernel.getNonce(pepeMinter), 0, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(pepeMinter, tokenDapp.unwrap(), kernel.getNonce(pepeMinter), 0, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
         System.out.println(">> balance of wallet: " + TestingHelper.decodeResult(txResult));
 
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", TestingHelper.buildAddress(receiver));
-        tx = new Transaction(Transaction.Type.CALL, pepeMinter, tokenDapp.unwrap(), kernel.getNonce(pepeMinter), 0, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(pepeMinter, tokenDapp.unwrap(), kernel.getNonce(pepeMinter), 0, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
@@ -108,7 +108,7 @@ public class DemoTest {
         //================
         byte[] data = ABIEncoder.encodeMethodArguments("transfer", TestingHelper.buildAddress(receiver), 3000L);
         arguments = ABIEncoder.encodeMethodArguments("propose", tokenDapp, 0L, data, energyLimit);
-        tx = new Transaction(Transaction.Type.CALL, deployer, walletDapp.unwrap(), kernel.getNonce(deployer), 0L, arguments, 2_000_000L, energyPrice);
+        tx = Transaction.call(deployer, walletDapp.unwrap(), kernel.getNonce(deployer), 0L, arguments, 2_000_000L, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
@@ -119,7 +119,7 @@ public class DemoTest {
         // CONFIRM #1
         //================
         arguments = ABIEncoder.encodeMethodArguments("confirm", pendingTx);
-        tx = new Transaction(Transaction.Type.CALL, owner1, walletDapp.unwrap(), kernel.getNonce(owner1), 0L, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(owner1, walletDapp.unwrap(), kernel.getNonce(owner1), 0L, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
@@ -129,7 +129,7 @@ public class DemoTest {
         // CONFIRM #2
         //================
         arguments = ABIEncoder.encodeMethodArguments("confirm", pendingTx);
-        tx = new Transaction(Transaction.Type.CALL, owner2, walletDapp.unwrap(), kernel.getNonce(owner2), 0L, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(owner2, walletDapp.unwrap(), kernel.getNonce(owner2), 0L, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
@@ -141,14 +141,14 @@ public class DemoTest {
         // CHECK BALANCE
         //================
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", walletDapp);
-        tx = new Transaction(Transaction.Type.CALL, pepeMinter, tokenDapp.unwrap(), kernel.getNonce(pepeMinter), 0, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(pepeMinter, tokenDapp.unwrap(), kernel.getNonce(pepeMinter), 0, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
         System.out.println("\n>> balance of wallet: " + TestingHelper.decodeResult(txResult));
 
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", TestingHelper.buildAddress(receiver));
-        tx = new Transaction(Transaction.Type.CALL, pepeMinter, tokenDapp.unwrap(), kernel.getNonce(pepeMinter), 0, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(pepeMinter, tokenDapp.unwrap(), kernel.getNonce(pepeMinter), 0, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());

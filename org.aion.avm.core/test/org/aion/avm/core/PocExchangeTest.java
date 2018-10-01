@@ -59,7 +59,7 @@ public class PocExchangeTest {
         }
 
         private byte[] initCoin(byte[] jar, byte[] arguments){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, minter, null, kernel.getNonce(minter), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
+            Transaction createTransaction = Transaction.create(minter, kernel.getNonce(minter), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -73,11 +73,6 @@ public class PocExchangeTest {
 
         private TransactionResult callBalanceOf(byte[] toQuery) {
             byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", TestingHelper.buildAddress(toQuery));
-            return call(minter, args);
-        }
-
-        private TransactionResult callOpenAccount(byte[] toOpen) {
-            byte[] args = ABIEncoder.encodeMethodArguments("openAccount", TestingHelper.buildAddress(toOpen));
             return call(minter, args);
         }
 
@@ -107,7 +102,7 @@ public class PocExchangeTest {
         }
 
         private TransactionResult call(byte[] sender, byte[] args) {
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, kernel.getNonce(sender), 0, args, energyLimit, 1l);
+            Transaction callTransaction = Transaction.call(sender, addr, kernel.getNonce(sender), 0, args, energyLimit, 1l);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
             TransactionResult callResult = avm.run(callContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
@@ -126,7 +121,7 @@ public class PocExchangeTest {
         }
 
         private byte[] initExchange(byte[] jar, byte[] arguments){
-            Transaction createTransaction = new Transaction(Transaction.Type.CREATE, owner, null, kernel.getNonce(owner), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1l);
+            Transaction createTransaction = Transaction.create(owner, kernel.getNonce(owner), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
             TransactionResult createResult = avm.run(createContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -149,7 +144,7 @@ public class PocExchangeTest {
         }
 
         private TransactionResult call(byte[] sender, byte[] args) {
-            Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, addr, kernel.getNonce(sender), 0, args, energyLimit, 1l);
+            Transaction callTransaction = Transaction.call(sender, addr, kernel.getNonce(sender), 0, args, energyLimit, 1l);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
             TransactionResult callResult = avm.run(callContext);
             Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());

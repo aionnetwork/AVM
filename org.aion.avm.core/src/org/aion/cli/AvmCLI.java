@@ -140,8 +140,7 @@ public class AvmCLI implements UserInterface{
             throw env.fail("deploy : Invalid location of Dapp jar");
         }
 
-        Transaction createTransaction = new Transaction(Transaction.Type.CREATE, sender, null, kernel.getNonce(sender), 0,
-                new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1);
+        Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), 0, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
 
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
@@ -187,7 +186,7 @@ public class AvmCLI implements UserInterface{
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
         Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        Transaction callTransaction = new Transaction(Transaction.Type.CALL, sender, contract, kernel.getNonce(sender), 0, arguments, energyLimit, 1l);
+        Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), 0L, arguments, energyLimit, 1L);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(callContext);
 
