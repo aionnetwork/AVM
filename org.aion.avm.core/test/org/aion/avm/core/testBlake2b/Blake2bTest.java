@@ -25,9 +25,7 @@ public class Blake2bTest {
     private byte[] dappAddress;
 
     public Blake2bTest() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, Blake2b.class, Blake2b.Engine.State.class,
-                Blake2b.Param.Default.class, Blake2b.Param.Xoff.class, Blake2b.Engine.Assert.class,
-                Blake2b.Engine.LittleEndian.class, Blake2b.Engine.flag.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, Blake2b.class);
         byte[] arguments = null;
         Transaction tx = new Transaction(Transaction.Type.CREATE, deployer, null, kernel.getNonce(deployer), 0, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);

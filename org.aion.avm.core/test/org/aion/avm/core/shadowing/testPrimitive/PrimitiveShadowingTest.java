@@ -24,26 +24,7 @@ public class PrimitiveShadowingTest {
 
     @Before
     public void setup() {
-        byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class,
-                TestResource.BooleanTest.Factory.class,
-                TestResource.BooleanTest.ParseBoolean.class,
-                TestResource.ByteTest.Decode.class,
-                TestResource.DoubleTest.Constants.class,
-                TestResource.DoubleTest.Extrema.class,
-                TestResource.DoubleTest.NaNInfinityParsing.class,
-                TestResource.DoubleTest.ToString.class,
-                TestResource.FloatTest.Constants.class,
-                TestResource.FloatTest.Extrema.class,
-                TestResource.FloatTest.NaNInfinityParsing.class,
-                TestResource.IntegerTest.ToString.class,
-                TestResource.IntegerTest.Decode.class,
-                TestResource.IntegerTest.ParsingTest.class,
-                TestResource.LongTest.Decode.class,
-                TestResource.LongTest.ToString.class,
-                TestResource.LongTest.ParsingTest.class,
-                TestResource.ShortTest.Decode.class,
-                TestResource.ShortTest.ByteSwap.class
-        );
+        byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
 
         Transaction tx = new Transaction(Transaction.Type.CREATE, from, null, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);

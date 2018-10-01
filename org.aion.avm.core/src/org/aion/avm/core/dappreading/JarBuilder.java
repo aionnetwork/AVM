@@ -82,7 +82,7 @@ public class JarBuilder {
             loadClassAndAnonymous(clazz);
             // Now, include any declared classes.
             for (Class<?> one : clazz.getDeclaredClasses()) {
-                loadClassAndAnonymous(one);
+                addClassAndInners(one);
             }
         } catch (IOException e) {
             // We are serializing to a byte array so this is unexpected.
