@@ -149,7 +149,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                             org.aion.avm.shadow.java.lang.Object stub = internalGetCalleeStubForCaller(contents);
                             field.set(null, stub);
                         }
-                        byteSize += SerializedInstanceStub.sizeOfInstanceStub(contents, this.persistenceTokenField);
+                        // Use the fixed-size reference accounting.
+                        byteSize += ByteSizes.REFERENCE;
                     }
                 }
             }
@@ -383,13 +384,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                         org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)field.get(null);
                         // See if there is a caller version.
                         // NOTE:  We use mapCalleeToCallerAndEnqueueForCommitProcessing since the dry run is where we build the object graph.
-                        org.aion.avm.shadow.java.lang.Object caller = mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, callee);
-                        // We normally prefer the caller (technically, these should be the same size since we are writing the same data, either way, but this is the pattern to be sure).
-                        if (null != caller) {
-                            staticByteSize += SerializedInstanceStub.sizeOfInstanceStub(caller, this.persistenceTokenField);
-                        } else {
-                            staticByteSize += SerializedInstanceStub.sizeOfInstanceStub(callee, this.persistenceTokenField);
-                        }
+                        mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, callee);
+                        // Use the fixed-size reference accounting.
+                        staticByteSize += ByteSizes.REFERENCE;
                     }
                 }
             }
@@ -676,15 +673,11 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             } else {
                 // This better be a shadow object.
                 RuntimeAssertionError.assertTrue((null == elt) || (elt instanceof org.aion.avm.shadow.java.lang.Object));
-                // We need to size this as an instance stub.
+                // We need to apply the function we were given to this reference.
                 org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)elt;
-                org.aion.avm.shadow.java.lang.Object caller = calleeToCallerRefMappingFunction.apply(callee);
-                // We normally prefer the caller (technically, these should be the same size since we are writing the same data, either way, but this is the pattern to be sure).
-                if (null != caller) {
-                    instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(caller, this.persistenceTokenField);
-                } else {
-                    instanceByteSize += SerializedInstanceStub.sizeOfInstanceStub(callee, this.persistenceTokenField);
-                }
+                calleeToCallerRefMappingFunction.apply(callee);
+                // Use the fixed-size reference accounting.
+                instanceByteSize += ByteSizes.REFERENCE;
             }
         }
         // Prove that we didn't miss anything.

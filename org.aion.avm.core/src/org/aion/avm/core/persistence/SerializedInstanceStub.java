@@ -1,7 +1,6 @@
 package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.core.persistence.ReflectionStructureCodec.IFieldPopulator;
 import org.aion.avm.internal.ClassPersistenceToken;
@@ -76,77 +75,6 @@ public class SerializedInstanceStub {
 
     public static org.aion.avm.shadow.java.lang.Object deserializeReferenceAsInstance(INode oneNode, IFieldPopulator populator) {
         return populator.instantiateReference(oneNode);
-    }
-
-    /**
-     * Determines the size of a serialized reference to the given instance.
-     * 
-     * @param instance The object instance to measure.
-     * @param persistenceTokenField The reflection Field reference to use when reading or writing an IPersistenceToken into the instance.
-     * @return The serialized size of the reference to this instance.
-     */
-    public static int sizeOfInstanceStub(org.aion.avm.shadow.java.lang.Object instance, Field persistenceTokenField) {
-        int sizeInBytes = 0;
-        // See issue-147 for more information regarding this interpretation:
-        // - null: (int)0.
-        // - -1: (int)-1, (long) instanceId (of constant - negative).
-        // - -2: (int)-2, (int) buffer length, (n) UTF-8 class name buffer
-        // - >0:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
-        // Reason for order of evaluation:
-        // - null goes first, since it is easy to detect on either side (and probably a common case).
-        // - constants go second since they are arbitrary objects, including some Class objects, and already have the correct instanceId.
-        // - Classes go third since we will we don't to look at their instanceIds (we will see the 0 and take the wrong action).
-        // - normal references go last (includes those with 0 or >0 instanceIds).
-        if (null == instance) {
-            // Just encoding the null stub constant as an int.
-            sizeInBytes = ByteSizes.INT;
-        } else {
-            // Check the instanceId to see if this is a special-case.
-            IPersistenceToken persistenceToken = safeExtractPersistenceToken(persistenceTokenField, instance);
-            /*
-             * NOTE:  This method is called both to capture the size of statics/objects being read _from_ the caller space and also to capture the
-             * size of statics/objects being written back _to_ the caller space, from the callee space.
-             * 
-             * In the caller->callee (read from) case, we see normal instance references, nulls, constants, and classes.
-             * In the callee->caller (write to) case, we see reentrant instant references, nulls, constants, and classes.
-             * 
-             * Note the distinction:  the first case NEVER sees REENTRANT_CALLEE_INSTANCE_TOKEN while the second ONLY sees it.
-             * 
-             * Note that we don't see any instances of REENTRANT_CALLEE_INSTANCE_TOKEN, once we get going (since all of these are the callee copies,
-             * which are not part of caller space and are not being moved there) but we do see them during sizing.  These all correspond to normal
-             * instances (not constants or classes), so we size them accordingly.
-             */
-            // We need to check constants, first, since they can otherwise be confused for these other cases (unfortunately, we do a type check to
-            // avoid the null or REENTRANT_CALLEE_INSTANCE_TOKEN cases).
-            // TODO:  Sizing data should be moved out.  This logic is duplicated from the INode hierarchy (where it also doesn't really belong).
-            if (persistenceToken instanceof ConstantPersistenceToken) {
-                // Encode the constant stub constant as an int.
-                int constantSize = ByteSizes.INT;
-                // Then encode the instanceId as a long.
-                int instanceIdSize = ByteSizes.LONG;
-                sizeInBytes = constantSize + instanceIdSize;
-            } else if (persistenceToken instanceof ClassPersistenceToken) {
-                // Non-constant Class reference.
-                RuntimeAssertionError.assertTrue(instance instanceof org.aion.avm.shadow.java.lang.Class);
-                // Encode the class stub constant as an int.
-                int constantSize = ByteSizes.INT;
-                
-                // Get the class name.
-                byte[] utf8Name = ((ClassPersistenceToken)persistenceToken).className.getBytes(StandardCharsets.UTF_8);
-                
-                // Write the length and the bytes.
-                int nameSize = ByteSizes.INT + utf8Name.length;
-                sizeInBytes = constantSize + nameSize;
-            } else if ((null == persistenceToken) || (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken) || (persistenceToken instanceof NodePersistenceToken)) {
-                byte[] utf8Name = instance.getClass().getName().getBytes(StandardCharsets.UTF_8);
-                
-                // Serialize as the type name length, byte, and the the instanceId.
-                sizeInBytes = ByteSizes.INT + utf8Name.length + ByteSizes.LONG;
-            } else {
-                RuntimeAssertionError.unreachable("Unknown token type during sizing");
-            }
-        }
-        return sizeInBytes;
     }
 
     /**

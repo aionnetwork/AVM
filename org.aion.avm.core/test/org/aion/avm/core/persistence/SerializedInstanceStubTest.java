@@ -1,7 +1,6 @@
 package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.persistence.ReflectionStructureCodec.IFieldPopulator;
@@ -44,11 +43,6 @@ public class SerializedInstanceStubTest {
     public void testNull() throws Exception {
         org.aion.avm.shadow.java.lang.Object inputInstance = null;
         
-        // Size this.
-        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.persistenceTokenField);
-        // Null is a direct special-case, serialized as 4 bytes (stub type).
-        Assert.assertEquals(4, byteSize);
-        
         // Encode this.
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         boolean shouldEnqueue = SerializedInstanceStub.serializeAsReference(encoder, inputInstance, this.graphStore, this.persistenceTokenField);
@@ -69,11 +63,6 @@ public class SerializedInstanceStubTest {
     public void testConstant() throws Exception {
         org.aion.avm.shadow.java.lang.Object inputInstance = org.aion.avm.shadow.java.lang.Boolean.avm_TYPE;
         this.persistenceTokenField.set(inputInstance, new ConstantPersistenceToken(-18L));
-        
-        // Size this.
-        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.persistenceTokenField);
-        // Constants are a special-case, encoded as 4 bytes (stub type) + 8 bytes (constant id).
-        Assert.assertEquals(4 + 8, byteSize);
         
         // Encode this.
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
@@ -96,11 +85,6 @@ public class SerializedInstanceStubTest {
         // Note that we need to use the Helper in order to set the persistenceToken.
         org.aion.avm.shadow.java.lang.Class<?> inputInstance = Helper.wrapAsClass(String.class);
         
-        // Size this.
-        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.persistenceTokenField);
-        // Classes are stored as 4 bytes (stub type) + 4 bytes (type name length) + n bytes (type name UTF-8).
-        Assert.assertEquals(4 + 4 + String.class.getName().getBytes(StandardCharsets.UTF_8).length, byteSize);
-        
         // Encode this.
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         boolean shouldEnqueue = SerializedInstanceStub.serializeAsReference(encoder, inputInstance, this.graphStore, this.persistenceTokenField);
@@ -120,11 +104,6 @@ public class SerializedInstanceStubTest {
     @Test
     public void testInstance() throws Exception {
         org.aion.avm.shadow.java.lang.Object inputInstance = new org.aion.avm.shadow.java.lang.Object();
-        
-        // Size this.
-        int byteSize = SerializedInstanceStub.sizeOfInstanceStub(inputInstance, this.persistenceTokenField);
-        // Normal references are stored as 4 bytes (type name length) + n bytes (type name UTF-8) + 8 bytes (instance id).
-        Assert.assertEquals(4 + org.aion.avm.shadow.java.lang.Object.class.getName().getBytes(StandardCharsets.UTF_8).length + 8, byteSize);
         
         // Encode this.
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
