@@ -84,6 +84,13 @@ public class BasicPerfTest {
                 Transaction tx1 = Transaction.call(deployer, this.contractAddress, kernel.getNonce(deployer), 0L, new byte[0], transaction1EnergyLimit, 1L);
                 TransactionResult result1 = this.avm.run(new TransactionContextImpl(tx1, block));
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+                
+                // Every 100 iterations, we also want to run a GC, to verify that this doesn't break anything in a long-running test.
+                if (0 == (i % 100)) {
+                    Transaction gcCall = Transaction.garbageCollect(this.contractAddress, kernel.getNonce(this.contractAddress), transaction1EnergyLimit, 1L);
+                    TransactionResult gcResult = this.avm.run(new TransactionContextImpl(gcCall, block));
+                    Assert.assertEquals(TransactionResult.Code.SUCCESS, gcResult.getStatusCode());
+                }
             }
         }
     }

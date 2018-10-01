@@ -48,6 +48,11 @@ public class TransactionContextImpl implements TransactionContext {
     }
 
     @Override
+    public boolean isGarbageCollectionRequest() {
+        return tx.getType() == Transaction.Type.GARBAGE_COLLECT;
+    }
+
+    @Override
     public byte[] getAddress() {
         if (isCreate()) {
             ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(tx.getFrom()).putLong(tx.getNonce());

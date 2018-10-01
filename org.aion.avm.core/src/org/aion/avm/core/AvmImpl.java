@@ -10,6 +10,7 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionResult;
 import org.aion.kernel.TransactionalKernel;
@@ -46,17 +47,48 @@ public class AvmImpl implements AvmInternal {
             error = TransactionResult.Code.REJECTED;
         }
 
+        // nonce check
+        byte[] sender = ctx.getCaller();
+        if (kernel.getNonce(sender) != ctx.getNonce()) {
+            error = TransactionResult.Code.REJECTED_INVALID_NONCE;
+        }
+
+        TransactionResult result = null;
+        if (null == error) {
+            // If this is a GC, we need to handle it specially.  Otherwise, use the common invoke path (handles both CREATE and CALL).
+            if (ctx.isGarbageCollectionRequest()) {
+                // The GC case operates directly on the top-level KernelInterface.
+                // (remember that the "sender" is who we are updating).
+                result = runGc(sender);
+            } else {
+                // The CREATE/CALL case is handled via the common external invoke path.
+                result = runExternalInvoke(ctx);
+            }
+        } else {
+            result = new TransactionResult();
+            result.setStatusCode(error);
+            result.setEnergyUsed(ctx.getEnergyLimit());
+        }
+        return result;
+    }
+
+    @Override
+    public TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionContext context) {
+        return commonInvoke(parentKernel, context);
+    }
+
+
+    private TransactionResult runExternalInvoke(TransactionContext ctx) {
+        // to capture any error during validation
+        TransactionResult.Code error = null;
+
+        // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
         byte[] sender = ctx.getCaller();
         long senderBalance = kernel.getBalance(sender);
         if (BigInteger.valueOf(ctx.getValue()).add(BigInteger.valueOf(ctx.getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getEneryPrice())))
                 .compareTo(BigInteger.valueOf(senderBalance)) > 0) {
             error = TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
-        }
-
-        // nonce check
-        if (kernel.getNonce(sender) != ctx.getNonce()) {
-            error = TransactionResult.Code.REJECTED_INVALID_NONCE;
         }
 
         // exit if validation check fails
@@ -74,8 +106,8 @@ public class AvmImpl implements AvmInternal {
         // withhold the total energy cost
         this.kernel.adjustBalance(ctx.getCaller(), -(ctx.getEnergyLimit() * ctx.getEneryPrice()));
 
-        // effectively, we're running an internal transaction with no parent
-        TransactionResult result = runInternalTransaction(kernel, ctx);
+        // Run the common logic with the parent kernel as the top-level one.
+        TransactionResult result = commonInvoke(kernel, ctx);
 
         // refund the remaining energy
         long remainingEnergy = ctx.getEnergyLimit() - result.getEnergyUsed();
@@ -86,22 +118,7 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    @Override
-    public TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionContext context) {
-        // Internal calls must build their transaction on top of an existing "parent" kernel.
-        TransactionalKernel childKernel = new TransactionalKernel(parentKernel);
-        TransactionResult result = commonRun(childKernel, context);
-        if (result.getStatusCode().isSuccess()) {
-            childKernel.commit();
-        } else {
-            result.clearLogs();
-            result.rejectInternalTransactions();
-        }
-        return result;
-    }
-
-
-    private TransactionResult commonRun(KernelInterface thisTransactionKernel, TransactionContext ctx) {
+    private TransactionResult commonInvoke(KernelInterface parentKernel, TransactionContext ctx) {
         if (logger.isDebugEnabled()) {
             logger.debug("Transaction: address = {}, caller = {}, value = {}, data = {}, energyLimit = {}",
                     Helpers.bytesToHexString(ctx.getAddress()),
@@ -110,6 +127,11 @@ public class AvmImpl implements AvmInternal {
                     Helpers.bytesToHexString(ctx.getData()),
                     ctx.getEnergyLimit());
         }
+        // We expect that the GC transactions are handled specially, within the caller.
+        RuntimeAssertionError.assertTrue(!ctx.isGarbageCollectionRequest());
+
+        // Invoke calls must build their transaction on top of an existing "parent" kernel.
+        TransactionalKernel thisTransactionKernel = new TransactionalKernel(parentKernel);
 
         // only one result (mutable) shall be created per transaction execution
         TransactionResult result = new TransactionResult();
@@ -153,15 +175,47 @@ public class AvmImpl implements AvmInternal {
                     DAppExecutor.call(thisTransactionKernel, this, this.dAppStack, dapp, stateToResume, ctx, result);
                     if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
                         dapp.cleanForCache();
-                        // TODO:  Remove this once we define the actual transaction type (it is just here to test issue-234).
-                        dapp.graphStore.gc();
                         this.hotCache.checkin(addressWrapper, dapp);
                     }
                 }
             }
         }
+        if (result.getStatusCode().isSuccess()) {
+            thisTransactionKernel.commit();
+        } else {
+            result.clearLogs();
+            result.rejectInternalTransactions();
+        }
 
         logger.debug("Result: {}", result);
+        return result;
+    }
+
+    private TransactionResult runGc(byte[] dappAddress) {
+        ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress);
+        
+        LoadedDApp dapp = this.hotCache.checkout(addressWrapper);
+        if (null == dapp) {
+            // If we didn't find it there, just load it.
+            try {
+                dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(this.kernel, dappAddress));
+            } catch (IOException e) {
+                unexpected(e); // the jar was created by AVM; IOException is unexpected
+            }
+        }
+        
+        TransactionResult result = new TransactionResult();
+        if (null != dapp) {
+            // Run the GC and check this into the hot DApp cache.
+            dapp.graphStore.gc();
+            this.hotCache.checkin(addressWrapper, dapp);
+            // For now, we always succeed and have no other information.
+            result.setStatusCode(TransactionResult.Code.SUCCESS);
+        } else {
+            // If we failed to find the application, we will currently return this as a generic FAILED_INVALID but we may want a more
+            // specific code in the future.
+            result.setStatusCode(TransactionResult.Code.FAILED_INVALID);
+        }
         return result;
     }
 }
