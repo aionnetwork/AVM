@@ -32,7 +32,7 @@
         <mkdir dir="${dir.local.build.main}"/>
         <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
                srcdir="${dir.local.src.main}"
-               destdir="${dir.local.build.main}" includes="**/*.java,module-info.java">
+            destdir="${dir.local.build.main}" includes="**/*.java,module-info.java">
             <modulepath>
                 <pathelement location="${dir.global.lib}"/>
                 <pathelement location="${dir.global.build.main}"/>

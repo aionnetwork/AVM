@@ -44,6 +44,7 @@
 
         <jar jarfile="${dir.global.workspace}/dist/avm.jar">
             <manifest>
+                <attribute name="Automatic-Module-Name" value="avm" />
                 <attribute name="Main-Class" value="org.aion.cli.AvmCLI" />
             </manifest>
             <zipgroupfileset dir="${dir.global.build.main}" includes="*.jar" excludes="META-INF/*.SF" />
