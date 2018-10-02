@@ -14,11 +14,6 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * This is how a field (static or instance) which refers to a reference type is encoded in the storage system.
  */
 public class SerializedInstanceStub {
-    // Note that this is probably just a temporary measure but, in order to better track bugs in the reentrant case, all instance stubs created
-    // in the callee space are given this special instance ID.
-    public static final IPersistenceToken REENTRANT_CALLEE_INSTANCE_TOKEN = new IPersistenceToken() {
-    };
-
     /**
      * Serializes a reference to the given object into the given encoder.
      * 
@@ -102,11 +97,11 @@ public class SerializedInstanceStub {
             } else {
                 // This last case is for all the cases which we _should_ copy:
                 // -null (new object, not yet assigned - normal instance)
-                // -reentrant special token (this was copied, from a parent call, so we should also copy it)
+                // -reentrant caller reference token (this was copied, from a parent call, so we should also copy it)
                 // -is a normal instanceId token
                 // Note that we don't expect any other cases here so we can just assert these and return true.
                 RuntimeAssertionError.assertTrue((null == persistenceToken)
-                        || (REENTRANT_CALLEE_INSTANCE_TOKEN == persistenceToken)
+                        || (persistenceToken instanceof ReentrantCallerReferenceToken)
                         || (persistenceToken instanceof NodePersistenceToken)
                 );
                 shouldCopy = true;
