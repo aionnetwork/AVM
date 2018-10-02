@@ -30,15 +30,15 @@ import org.aion.avm.internal.RuntimeAssertionError;
  */
 public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerializer, LoopbackCodec.AutomaticDeserializer, IDeserializer {
     /**
-     * We apply the DONE_MARKER to a callee object when we determine it (or its corresponding caller) has been added to a queue to process.
+     * We apply the DONE_MARKER to a callee object when we add it to a queue to process for possible write-back to the caller.
      * This is used to mark the object so we don't add it to the queue more than once.
-     * We only mark the callee objects since we want a consistent convention and fewer of them require cleanup.
-     * Note that the DONE_MARKER MUST be removed from any objects which remain in the live graph or they may be missed in later
-     * serialization attempts.
+     * We only mark the callee objects since we want a consistent convention.
+     * NOTE:  No references to DONE_MARKER should be reachable in the graph when any user code is being run.
      */
     private static IDeserializer DONE_MARKER = new IDeserializer() {
         @Override
         public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
+            RuntimeAssertionError.unreachable("This marker is not able to deserialize");
         }};
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
@@ -276,7 +276,6 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                         org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)field.get(null);
                         if (null != callee) {
                             // See if there is a caller version.
-                            // NOTE:  We access calleeToCallerMap directly, since the DONE_MARKER was already applied in doDryRunForCommit.
                             org.aion.avm.shadow.java.lang.Object caller = this.calleeToCallerMap.get(callee);
                             // If there was a caller version, copy this back (otherwise, we will continue looking at the callee).
                             if (null != caller) {
@@ -289,12 +288,10 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         }
         
         // Now that the statics are processed, we can process the queue until it is empty (this will complete the graph).
-        // (we also need to remember which "new object" instances need to have their DONE_MARKER cleared - must be done in a second phase).
-        Queue<org.aion.avm.shadow.java.lang.Object> placeholdersToUnset = new LinkedList<>();
         while (!calleeObjectsToProcess.isEmpty()) {
             org.aion.avm.shadow.java.lang.Object calleeSpaceToProcess = calleeObjectsToProcess.remove();
             
-            // NOTE:  Due to the above-mentioned DONE_MARKER restrictions, this is always a callee-space object but we usually want the caller-space instance.
+            // This is always a callee-space object but we usually want the caller-space instance.
             org.aion.avm.shadow.java.lang.Object callerSpaceCounterpart = this.calleeToCallerMap.get(calleeSpaceToProcess);
             
             // We want to copy "back" to the caller space so serialize the callee and deserialize them into either the caller or callee (if there was no caller).
@@ -303,7 +300,6 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 org.aion.avm.shadow.java.lang.Object caller = null;
                 // We only want to map this back if we are non-null and there actually is a corresponding caller-space object.
                 if ((null != calleeField) && this.calleeToCallerMap.containsKey(calleeField)) {
-                    // NOTE:  We access calleeToCallerMap directly, since the DONE_MARKER was already applied in doDryRunForCommit.
                     caller = this.calleeToCallerMap.get(calleeField);
                 } else {
                     // Otherwise, just return whatever we were given (leave the field unchanged).
@@ -322,17 +318,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 // This means that the callee object is being stitched into the caller graph as a new object.
                 // We want need to update any object references which may point back at older caller objects.
                 calleeSpaceToProcess.deserializeSelf(null, loopback);
-                // We will need to remove the placeholder since that could confuse later serialization (placeholder is only set of the callee instances).
-                placeholdersToUnset.add(calleeSpaceToProcess);
             }
             // Prove that we didn't miss anything.
             loopback.verifyDone();
-        }
-        
-        // Finally, clear the markers so we can return.
-        while (!placeholdersToUnset.isEmpty()) {
-            org.aion.avm.shadow.java.lang.Object calleeSpaceToClear = placeholdersToUnset.remove();
-            this.deserializerField.set(calleeSpaceToClear, null);
         }
     }
 
@@ -345,8 +333,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
      * commit, if we decide to start it.
      * This means that this method is allowed to fail for any reason which should logically cause the commit to fail (typically, this is for
      * write-back billing).
+     * NOTE:  The DONE_MARKER is only set on any objects inside this method.  All of the objects in the returned queue have been cleaned of this.
      * 
-     * @return The queue of all objects found which need to be committed and then cleaned of their DONE_MARKERs.
+     * @return The queue of all objects found which need to be committed back to the caller's graph.
      */
     private Queue<org.aion.avm.shadow.java.lang.Object> doDryRunForCommit() throws IllegalArgumentException, IllegalAccessException {
         // This is the complicated case:  walk the previous statics, writing only the instances back but updating each of those instances written to
@@ -406,6 +395,11 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             // Write each instance, one at a time.
             this.feeProcessor.writeOneInstanceToHeap(instanceByteSize);
             calleeSpaceObjectsToCopyBack.add(calleeSpaceToScan);
+        }
+        
+        // Clear the DONE_MARKER, since we want to make sure no deserializeSelf calls are made to objects while one of these markers is in the graph.
+        for (org.aion.avm.shadow.java.lang.Object calleeSpaceToClear : calleeSpaceObjectsToCopyBack) {
+            this.deserializerField.set(calleeSpaceToClear, null);
         }
         return calleeSpaceObjectsToCopyBack;
     }

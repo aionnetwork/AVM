@@ -29,6 +29,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private static IDeserializer DONE_MARKER = new IDeserializer() {
         @Override
         public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
+            RuntimeAssertionError.unreachable("This marker is not able to deserialize");
         }};
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
