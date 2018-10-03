@@ -76,7 +76,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_BOOLEAN ('Z', 1, new String[]{"Z", "boolean", "java.lang.Boolean", PackageConstants.kShadowDotPrefix + "java.lang.Boolean", "[Z", "[[Z"}) {
+        avm_BOOLEAN ('Z', 1, new String[]{"Z", "boolean", "java.lang.Boolean", PackageConstants.kShadowDotPrefix + "java.lang.Boolean", PackageConstants.kArrayWrapperDotPrefix + "BooleanArray", "[Z", "[[Z"}) {
             @Override
             public byte[] encode(Object data) {
                 return new byte[]{(byte) (((java.lang.Boolean)data) ? 1 : 0)};
@@ -106,9 +106,9 @@ public final class ABIEncoder {
             }
             @Override
             public Array construct1DWrappedArray(Object[] data) {
-                ByteArray array = new ByteArray(data.length);
+                BooleanArray array = new BooleanArray(data.length);
                 for (int i = 0; i < data.length; i++) {
-                    array.set(i, (byte)data[i]);
+                    array.set(i, (boolean)data[i]);
                 }
                 return array;
             }
@@ -122,6 +122,8 @@ public final class ABIEncoder {
             }
             @Override
             public ObjectArray construct2DWrappedArray(Object[] data) {
+                // note - still use ByteArray2D for now. We may remove the 2D array classes once we have the code that
+                // allows rt to request object of generated classes from the AVM core.
                 byte[][] bytes = new byte[data.length][];
                 for (int i = 0; i < data.length; i++) {
                     bytes[i] = new byte[((boolean[]) data[i]).length];

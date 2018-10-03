@@ -50,6 +50,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
     private Type typeA = Type.getType(org.aion.avm.arraywrapper.IArray.class);
     private Type typeBA = Type.getType(ByteArray.class);
+    private Type typeZA = Type.getType(BooleanArray.class);
     private Type typeCA = Type.getType(CharArray.class);
     private Type typeDA = Type.getType(DoubleArray.class);
     private Type typeFA = Type.getType(FloatArray.class);
@@ -152,6 +153,9 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
         if (opcode == Opcodes.NEWARRAY) {
             switch (operand) {
                 case Opcodes.T_BOOLEAN:
+                    m = Method.getMethod(PackageConstants.kArrayWrapperDotPrefix + "BooleanArray initArray(int)");
+                    invokeStatic(typeZA, m);
+                    break;
                 case Opcodes.T_BYTE:
                     m = Method.getMethod(PackageConstants.kArrayWrapperDotPrefix + "ByteArray initArray(int)");
                     invokeStatic(typeBA, m);

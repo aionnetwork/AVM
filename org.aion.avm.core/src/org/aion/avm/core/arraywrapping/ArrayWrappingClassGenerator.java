@@ -36,7 +36,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
     static{
         CLASS_WRAPPER_MAP.put("[I", PackageConstants.kArrayWrapperSlashPrefix + "IntArray");
         CLASS_WRAPPER_MAP.put("[B", PackageConstants.kArrayWrapperSlashPrefix + "ByteArray");
-        CLASS_WRAPPER_MAP.put("[Z", PackageConstants.kArrayWrapperSlashPrefix + "ByteArray");
+        CLASS_WRAPPER_MAP.put("[Z", PackageConstants.kArrayWrapperSlashPrefix + "BooleanArray");
         CLASS_WRAPPER_MAP.put("[C", PackageConstants.kArrayWrapperSlashPrefix + "CharArray");
         CLASS_WRAPPER_MAP.put("[F", PackageConstants.kArrayWrapperSlashPrefix + "FloatArray");
         CLASS_WRAPPER_MAP.put("[S", PackageConstants.kArrayWrapperSlashPrefix + "ShortArray");
@@ -417,18 +417,20 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         String cloneMethodDesc = "()Lorg/aion/avm/internal/IObject;";
         MethodVisitor methodVisitor = cw.visitMethod(ACC_PUBLIC, cloneMethodName, cloneMethodDesc, null, null);
 
-        // energy charge
-        methodVisitor.visitFieldInsn(GETSTATIC, "org/aion/avm/internal/IHelper", "currentContractHelper", "Ljava/lang/ThreadLocal;");
-        methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/ThreadLocal", "get", "()Ljava/lang/Object;", false);
-        methodVisitor.visitTypeInsn(CHECKCAST, "org/aion/avm/internal/IHelper");
-        methodVisitor.visitLdcInsn(RuntimeMethodFeeSchedule.ObjectArray_avm_clone);
-        methodVisitor.visitLdcInsn(RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR);
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitMethodInsn(INVOKEVIRTUAL, wrapper, "length", "()I", false);
-        methodVisitor.visitInsn(I2L);
-        methodVisitor.visitInsn(LMUL);
-        methodVisitor.visitInsn(LADD);
-        methodVisitor.visitMethodInsn(INVOKEINTERFACE, "org/aion/avm/internal/IHelper", "externalChargeEnergy", "(J)V", true);
+        if (ENERGY_METERING) {
+            // energy charge
+            methodVisitor.visitFieldInsn(GETSTATIC, "org/aion/avm/internal/IHelper", "currentContractHelper", "Ljava/lang/ThreadLocal;");
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/ThreadLocal", "get", "()Ljava/lang/Object;", false);
+            methodVisitor.visitTypeInsn(CHECKCAST, "org/aion/avm/internal/IHelper");
+            methodVisitor.visitLdcInsn(RuntimeMethodFeeSchedule.ObjectArray_avm_clone);
+            methodVisitor.visitLdcInsn(RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR);
+            methodVisitor.visitVarInsn(ALOAD, 0);
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, wrapper, "length", "()I", false);
+            methodVisitor.visitInsn(I2L);
+            methodVisitor.visitInsn(LMUL);
+            methodVisitor.visitInsn(LADD);
+            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "org/aion/avm/internal/IHelper", "externalChargeEnergy", "(J)V", true);
+        }
 
         // lazyLoad
         methodVisitor.visitVarInsn(ALOAD, 0);
@@ -642,7 +644,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             public StringBuilder readBoolean(int arrayDimensions, StringBuilder userData) {
                 if (arrayDimensions > 0) {
                     userData.append(DescriptorParser.OBJECT_START);
-                    userData.append(getByteArrayWrapper(arrayDimensions));
+                    userData.append(getBooleanArrayWrapper(arrayDimensions));
                     userData.append(DescriptorParser.OBJECT_END);
                 }else {
                     userData.append(DescriptorParser.BOOLEAN);

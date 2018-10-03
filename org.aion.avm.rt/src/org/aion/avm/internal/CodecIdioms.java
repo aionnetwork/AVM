@@ -46,4 +46,22 @@ public final class CodecIdioms {
             serializer.writeByte(array[i]);
         }
     }
+    
+    public static boolean[] deserializeBooleanArray(IObjectDeserializer deserializer) {
+        // TODO:  We probably want faster array copies.
+        int length = deserializer.readInt();
+        boolean[] array = new boolean[length];
+        for (int i = 0; i < length; ++i) {
+            array[i] = (deserializer.readByte() == 0) ? false : true;
+        }
+        return array;
+    }
+
+    public static void serializeBooleanArray(IObjectSerializer serializer, boolean[] array) {
+        // TODO:  We probably want faster array copies.
+        serializer.writeInt(array.length);
+        for (int i = 0; i < array.length; ++i) {
+            serializer.writeByte((byte) (array[i] ? 1 : 0));
+        }
+    }
 }

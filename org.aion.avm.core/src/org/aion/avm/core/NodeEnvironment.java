@@ -61,6 +61,7 @@ public class NodeEnvironment {
                     org.aion.avm.arraywrapper.IArray.class
                     , org.aion.avm.arraywrapper.Array.class
                     , org.aion.avm.arraywrapper.ArrayElement.class
+                    , org.aion.avm.arraywrapper.BooleanArray.class
                     , org.aion.avm.arraywrapper.ByteArray.class
                     , org.aion.avm.arraywrapper.ByteArray2D.class
                     , org.aion.avm.arraywrapper.CharArray.class

@@ -1,5 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.arraywrapper.BooleanArray;
+import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IObjectArray;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -123,7 +125,56 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 instructions.insert(insn, checkcastNode);
                 instructions.remove(insn);
             }
+
+            if (insn.getOpcode() == Opcodes.BALOAD) {
+                f.pop();
+                BasicValue t = f.pop();
+                String targetDesc = t.toString();
+
+                MethodInsnNode invokeVNode;
+                if (targetDesc.equals("[Z")) {
+                        invokeVNode = new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
+                                        Helpers.fulllyQualifiedNameToInternalName(BooleanArray.class.getName()),
+                                        "get",
+                                        "(I)Z",
+                                        false);
+                } else {
+                        invokeVNode = new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
+                                        Helpers.fulllyQualifiedNameToInternalName(ByteArray.class.getName()),
+                                        "get",
+                                        "(I)B",
+                                        false);
+                }
+
+                instructions.insert(insn, invokeVNode);
+                instructions.remove(insn);
+            }
+
+            if (insn.getOpcode() == Opcodes.BASTORE) {
+                f.pop();
+                f.pop();
+                BasicValue t = f.pop();
+                String targetDesc = t.toString();
+
+                MethodInsnNode invokeVNode;
+                if (targetDesc.equals("[Z")) {
+                        invokeVNode = new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
+                                        Helpers.fulllyQualifiedNameToInternalName(BooleanArray.class.getName()),
+                                        "set",
+                                        "(IZ)V",
+                                        false);
+                    } else {
+                        invokeVNode = new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
+                                        Helpers.fulllyQualifiedNameToInternalName(ByteArray.class.getName()),
+                                        "set",
+                                        "(IB)V",
+                                        false);
+                    }
+                instructions.insert(insn, invokeVNode);
+                instructions.remove(insn);
+            }
         }
+
         accept(mv);
     }
 }
