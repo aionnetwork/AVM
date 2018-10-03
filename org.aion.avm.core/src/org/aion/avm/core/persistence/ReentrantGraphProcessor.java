@@ -303,7 +303,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 }
                 return caller;
             };
-            LoopbackCodec loopback = new LoopbackCodec(this, this, deserializeHelper, (passthrough) -> passthrough);
+            LoopbackCodec loopback = new LoopbackCodec(this, this, deserializeHelper);
             // Serialize the callee-space object.
             calleeSpaceToProcess.serializeSelf(null, loopback);
             
@@ -423,15 +423,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         // We want to use the same codec logic which exists in all shadow objects (since the shadow and API classes do special things here which we don't want to duplicate).
         // In this case, we want to provide an object deserialization helper which can create a callee-space instance stub.
         Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper = (callerField) -> internalGetCalleeStubForCaller(callerField);
-        Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> stubWrapper = (callerObject) -> {
-            try {
-                return internalGetCalleeStubForCaller(callerObject);
-            } catch (IllegalArgumentException | SecurityException e) {
-                throw RuntimeAssertionError.unexpected(e);
-            }
-        };
 
-        LoopbackCodec loopback = new LoopbackCodec(this, this, deserializeHelper, stubWrapper);
+        LoopbackCodec loopback = new LoopbackCodec(this, this, deserializeHelper);
         // Serialize the original.
         callerSpaceOriginal.serializeSelf(null, loopback);
         // Deserialize this data into the new instance.
@@ -632,7 +625,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
 
     private int measureByteSizeOfInstance(org.aion.avm.shadow.java.lang.Object instance, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> calleeToCallerRefMappingFunction) {
         // We will use the loopback codec to serialize the object into a list we can operate on, directly, to infer size and interpret stubs.
-        LoopbackCodec loopback = new LoopbackCodec(this, null, null, null);
+        LoopbackCodec loopback = new LoopbackCodec(this, null, null);
         // Serialize the callee-space object.
         instance.serializeSelf(null, loopback);
         // Now, take ownership of the captured data and process it.

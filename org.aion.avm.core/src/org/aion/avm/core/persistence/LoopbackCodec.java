@@ -21,7 +21,6 @@ public class LoopbackCodec implements IObjectSerializer, IObjectDeserializer {
     private final AutomaticSerializer serializer;
     private final AutomaticDeserializer deserializer;
     private final Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper;
-    private final Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> stubWrapper;
     private Queue<Object> sequence;
 
     /**
@@ -32,14 +31,11 @@ public class LoopbackCodec implements IObjectSerializer, IObjectDeserializer {
      * @param deserializer Consulted to invoke partial-automatic deserialization on objects for which this is requested.
      * @param deserializeHelper Given to the deserializer to assist with partial deserialization.  This exists because symmetric codec uses (from
      * space A to B and back to A) typically want the same core deserializer implementation, just using a slightly different mapping function.
-     * @param stubWrapper Called when reading a stub - this allows it to be processed before returning.
-     * This avoids duplication we would otherwise require in the deserializer implementation.
      */
-    public LoopbackCodec(AutomaticSerializer serializer, AutomaticDeserializer deserializer, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> stubWrapper) {
+    public LoopbackCodec(AutomaticSerializer serializer, AutomaticDeserializer deserializer, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper) {
         this.serializer = serializer;
         this.deserializer = deserializer;
         this.deserializeHelper = deserializeHelper;
-        this.stubWrapper = stubWrapper;
         this.sequence = new LinkedList<>();
     }
 
@@ -97,7 +93,7 @@ public class LoopbackCodec implements IObjectSerializer, IObjectDeserializer {
 
     @Override
     public org.aion.avm.shadow.java.lang.Object readStub() {
-        return this.stubWrapper.apply((org.aion.avm.shadow.java.lang.Object)this.sequence.remove());
+        return (org.aion.avm.shadow.java.lang.Object)this.sequence.remove();
     }
 
     @Override
