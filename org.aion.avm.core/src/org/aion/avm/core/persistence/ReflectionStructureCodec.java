@@ -26,11 +26,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * TODO:  Test the benefit of caching the reflected field access instances for user-defined classes (there is a great deal of re-use).
  */
 public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDeserializer.IAutomatic, SingleInstanceSerializer.IAutomatic {
-    private static IDeserializer DONE_MARKER = new IDeserializer() {
-        @Override
-        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
-            RuntimeAssertionError.unreachable("This marker is not able to deserialize");
-        }};
+    private static IDeserializer DONE_MARKER = new GraphWalkingMarker();
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
     private final ReflectedFieldCache fieldCache;

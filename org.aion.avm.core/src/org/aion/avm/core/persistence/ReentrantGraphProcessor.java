@@ -35,11 +35,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
      * We only mark the callee objects since we want a consistent convention.
      * NOTE:  No references to DONE_MARKER should be reachable in the graph when any user code is being run.
      */
-    private static IDeserializer DONE_MARKER = new IDeserializer() {
-        @Override
-        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
-            RuntimeAssertionError.unreachable("This marker is not able to deserialize");
-        }};
+    private static IDeserializer DONE_MARKER = new GraphWalkingMarker();
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
     private final ConstructorCache constructorCache;
