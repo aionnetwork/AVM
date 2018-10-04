@@ -12,6 +12,7 @@ import org.aion.avm.shadow.java.lang.Long;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.aion.avm.internal.IHelper;
@@ -123,7 +124,7 @@ public final class ABIEncoder {
             @Override
             public ObjectArray construct2DWrappedArray(Object[] data) {
                 // note - still use ByteArray2D for now. We may remove the 2D array classes once we have the code that
-                // allows rt to request object of generated classes from the AVM core.
+                // allows rt to request objects of generated classes from the AVM core.
                 byte[][] bytes = new byte[data.length][];
                 for (int i = 0; i < data.length; i++) {
                     bytes[i] = new byte[((boolean[]) data[i]).length];
@@ -649,7 +650,17 @@ public final class ABIEncoder {
         public abstract Object construct2DNativeArray(Object[] data);
     }
 
-    private static Map<String, ABITypes> ABITypesMap = null;
+    private static final Map<String, ABITypes> ABITypesMap;
+    static {
+        // create the map
+        Map<String, ABITypes> map = new HashMap<>();
+        for (ABITypes abiTypes : ABITypes.values()) {
+            for (String id : abiTypes.identifiers) {
+                map.put(id, abiTypes);
+            }
+        }
+        ABITypesMap = Collections.unmodifiableMap(map);
+    }
 
     /**
      * This class cannot be instantiated.
@@ -838,16 +849,6 @@ public final class ABIEncoder {
      * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     public static ABITypes mapABITypes(String identifier) {
-        // create the map, if not yet
-        if (ABITypesMap == null) {
-            ABITypesMap = new HashMap<>();
-            for (ABITypes abiTypes : ABITypes.values()) {
-                for (String id : abiTypes.identifiers) {
-                    ABITypesMap.put(id, abiTypes);
-                }
-            }
-        }
-
         // return the type
         if (!ABITypesMap.containsKey(identifier)) {
             throw new ABICodecException("data type is not compatible to Aion ABI types");
