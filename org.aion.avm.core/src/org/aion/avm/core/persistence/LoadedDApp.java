@@ -157,6 +157,9 @@ public class LoadedDApp {
         feeProcessor.writeStaticDataToStorage(staticData.getBillableSize());
         this.graphStore.setRoot(staticData);
         
+        // Do the pass over additional roots.
+        codec.reserializeAdditionalRoots(instanceSink);
+        
         // Now, drain the queue.
         while (!instancesToWrite.isEmpty()) {
             org.aion.avm.shadow.java.lang.Object instance = instancesToWrite.poll();

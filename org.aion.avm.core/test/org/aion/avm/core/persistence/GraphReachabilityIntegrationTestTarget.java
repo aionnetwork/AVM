@@ -100,8 +100,7 @@ public class GraphReachabilityIntegrationTestTarget {
         rootLeft.next.next.value = 5;
         
         // Hide the change by breaking the connection (the change should still be visible by other paths, but a simple reachability won't find it).
-        // TODO:  Enable the following line once the bug is fixed - committing this test as a demonstration of the problem which passes without this line.
-//        rootLeft.next = null;
+        rootLeft.next.next = null;
     }
     
     private static void reentrantCallModify() {

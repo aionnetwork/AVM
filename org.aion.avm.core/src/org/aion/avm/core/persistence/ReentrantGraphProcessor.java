@@ -55,6 +55,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     
     // (mostly non-final just to prove that the state machine is being used correctly).
     private Queue<Object> previousStatics;
+    
+    // We scan all the objects we loaded as roots since we don't want to hide changes to them if reachable via other paths (issue-249).
+    private final List<org.aion.avm.shadow.java.lang.Object> loadedObjectInstances;
 
     public ReentrantGraphProcessor(ConstructorCache constructorCache, ReflectedFieldCache fieldCache, IStorageFeeProcessor feeProcessor, List<Class<?>> classes) {
         this.constructorCache = constructorCache;
@@ -74,6 +77,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
         }
+        this.loadedObjectInstances = new LinkedList<>();
     }
 
     /**
@@ -289,6 +293,10 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             
             // This is always a callee-space object but we usually want the caller-space instance.
             org.aion.avm.shadow.java.lang.Object callerSpaceCounterpart = this.calleeToCallerMap.get(calleeSpaceToProcess);
+            if (null != callerSpaceCounterpart) {
+                // If there is a caller-space object, it MUST already be loaded by the time we get here.
+                RuntimeAssertionError.assertTrue(null == this.deserializerField.get(callerSpaceCounterpart));
+            }
             
             // We want to copy "back" to the caller space so serialize the callee and deserialize them into either the caller or callee (if there was no caller).
             // (the reason to serialize/deserialize the same object is to process the object references in a general way:  try to map back into the caller space).
@@ -378,6 +386,11 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         }
         // Statics are "written" as a single unit.
         this.feeProcessor.writeStaticDataToHeap(staticByteSize);
+        
+        // Treat any of the instances we loaded as potential roots.
+        for (org.aion.avm.shadow.java.lang.Object calleeSpaceRoot : this.loadedObjectInstances) {
+            mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, calleeSpaceRoot);
+        }
         
         // Note only is this pass measuring size, but it is also finding the graph of objects to write-back, on commit, so provide that mapping function.
         Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> calleeToCallerRefMappingFunction = (calleeRef) -> mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, calleeRef);
@@ -683,5 +696,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         callerSpaceOriginal.lazyLoad();
         
         populateCalleeSpaceObject(instance, callerSpaceOriginal);
+        
+        // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
+        this.loadedObjectInstances.add(instance);
     }
 }

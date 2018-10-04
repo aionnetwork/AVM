@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.aion.avm.internal.IDeserializer;
@@ -39,6 +41,8 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     // We only hold the deserializerField because we need to check if it is null when traversing the graph for objects to serialize.
     private final Field deserializerField;
     private final Field persistenceTokenField;
+    // We scan all the objects we loaded as roots since we don't want to hide changes to them if reachable via other paths (issue-249).
+    private final List<org.aion.avm.shadow.java.lang.Object> loadedObjectInstances;
 
     public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
         this.fieldCache = fieldCache;
@@ -56,6 +60,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
         }
+        this.loadedObjectInstances = new LinkedList<>();
     }
 
     public void serializeClass(ExtentBasedCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
@@ -247,6 +252,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         Extent extent = node.loadRegularData();
         this.feeProcessor.readOneInstanceFromStorage(extent.getBillableSize());
         deserializeInstance(instance, extent);
+        
+        // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
+        this.loadedObjectInstances.add(instance);
     }
 
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
@@ -322,6 +330,27 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     @Override
     public org.aion.avm.shadow.java.lang.Object decodeStub(INode node) {
         return inflateStubAsInstance(node);
+    }
+
+    /**
+     * Called to walk any additional roots the code knows about, beyond class statics, before the final serialization pass.
+     * In our case, we want to walk the objects we loaded, since they might have changed in a way which was hidden by graph changes.
+     * 
+     * @param instanceSink Where to enqueue any other objects we find while walking the roots.
+     */
+    public void reserializeAdditionalRoots(Consumer<org.aion.avm.shadow.java.lang.Object> instanceSink) {
+        try {
+            for (org.aion.avm.shadow.java.lang.Object root : this.loadedObjectInstances) {
+                // Everything we loaded here is a real normal instance which was already serialized so just check the IDeserializer to see if it has already been marked.
+                if (null == this.deserializerField.get(root)) {
+                    this.deserializerField.set(root, DONE_MARKER);
+                    instanceSink.accept(root);
+                }
+            }
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any such problem would have been detected much sooner.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 
 
