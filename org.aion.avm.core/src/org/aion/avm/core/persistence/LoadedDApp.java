@@ -78,8 +78,10 @@ public class LoadedDApp {
      * Populates the statics of the DApp classes with the primitives and instance stubs described by the on-disk data.
      * 
      * @param feeProcessor The billing mechanism for storage operations.
+     * @return The codec which should be used when saving the state of the receiver back out (since the codec could
+     * have state needed for serialization).
      */
-    public void populateClassStaticsFromStorage(IStorageFeeProcessor feeProcessor) {
+    public ReflectionStructureCodec populateClassStaticsFromStorage(IStorageFeeProcessor feeProcessor) {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         // Create the codec which will make up the long-lived deserialization approach, within the system.
@@ -97,6 +99,20 @@ public class LoadedDApp {
         for (Class<?> clazz : this.classes) {
             codec.deserializeClass(decoder, clazz);
         }
+        return codec;
+    }
+
+    /**
+     * Creates the codec to be used to save out the initial state of the DApp (only configuration, but no data loaded).
+     * 
+     * @param feeProcessor The billing mechanism for storage operations.
+     * @return The codec which should be used when saving the initial DApp state.
+     */
+    public ReflectionStructureCodec createCodecForInitialStore(IStorageFeeProcessor feeProcessor) {
+        // We will create the field populator to build objects with the correct canonicalizing caches.
+        StandardFieldPopulator populator = new StandardFieldPopulator();
+        // Create the codec which will make up the long-lived deserialization approach, within the system.
+        return new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore);
     }
 
     /**
@@ -117,10 +133,10 @@ public class LoadedDApp {
      * Serializes the static fields of the DApp classes and stores them on disk.
      * 
      * @param feeProcessor The billing mechanism for storage operations.
+     * @param codec The codec which did the initial state reading (populateClassStaticsFromStorage or createCodecForInitialStore).
      */
-    public void saveClassStaticsToStorage(IStorageFeeProcessor feeProcessor) {
+    public void saveClassStaticsToStorage(IStorageFeeProcessor feeProcessor, ReflectionStructureCodec codec) {
         // Build the encoder.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, null, feeProcessor, this.graphStore);
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         
         // Create the queue of instances reachable from here and consumer abstraction.

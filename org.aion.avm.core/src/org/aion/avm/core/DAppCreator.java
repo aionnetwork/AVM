@@ -16,6 +16,7 @@ import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
+import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
@@ -270,7 +271,8 @@ public class DAppCreator {
 
             // Save back the state before we return.
             // -first, save out the classes
-            dapp.saveClassStaticsToStorage(feeProcessor);
+            ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(feeProcessor);
+            dapp.saveClassStaticsToStorage(feeProcessor, directGraphData);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
             ContractEnvironmentState.saveToGraph(dapp.graphStore, new ContractEnvironmentState(helper.externalGetNextHashCode()));
             dapp.graphStore.flushWrites();

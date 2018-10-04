@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReentrantGraphProcessor;
+import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.internal.*;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.KernelInterface;
@@ -36,13 +37,14 @@ public class DAppExecutor {
 
         // Now that we can load classes for the contract, load and populate all their classes.
         ReentrantGraphProcessor reentrantGraphData = null;
+        ReflectionStructureCodec directGraphData = null;
         if (null != stateToResume) {
             // We are invoking a reentrant call so we don't want to pull this data from storage, but create in-memory duplicates which we can
             // swap out, pointing to memory-backed instance stubs.
             reentrantGraphData = dapp.replaceClassStaticsWithClones(feeProcessor);
         } else {
             // This is the first invocation of this DApp so just load the static state from disk.
-            dapp.populateClassStaticsFromStorage(feeProcessor);
+            directGraphData = dapp.populateClassStaticsFromStorage(feeProcessor);
         }
 
         // Call the main within the DApp.
@@ -57,7 +59,7 @@ public class DAppExecutor {
             } else {
                 // We are at the "top" so write this back to disk.
                 // -first, save out the classes
-                dapp.saveClassStaticsToStorage(feeProcessor);
+                dapp.saveClassStaticsToStorage(feeProcessor, directGraphData);
                 // -finally, save back the final state of the environment so we restore it on the next invocation.
                 ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(helper.externalGetNextHashCode());
                 ContractEnvironmentState.saveToGraph(dapp.graphStore, updatedEnvironment);
