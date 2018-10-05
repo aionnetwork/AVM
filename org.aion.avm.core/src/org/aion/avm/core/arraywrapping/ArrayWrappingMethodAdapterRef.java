@@ -21,6 +21,8 @@ import org.objectweb.asm.tree.analysis.Frame;
  *
  * AALOAD
  * AASTORE
+ * BALOAD
+ * BASTORE
  *
  * with corresponding array wrapper virtual call.
  *

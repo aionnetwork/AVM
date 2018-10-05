@@ -441,6 +441,7 @@ public final class ABIDecoder {
 
     /**
      * A helper method to match the method selector with the main-class methods.
+     * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     public static Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor){
         Method[] methods = clazz.getMethods();
@@ -515,7 +516,7 @@ public final class ABIDecoder {
                 return method;
             }
         }
-        return null;
+        throw new ABICodecException("cannot find the method to call according to the transaction data");
     }
 
     /**
