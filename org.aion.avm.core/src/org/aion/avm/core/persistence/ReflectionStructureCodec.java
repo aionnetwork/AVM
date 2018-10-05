@@ -4,8 +4,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.function.Consumer;
 
 import org.aion.avm.internal.IDeserializer;
@@ -48,6 +50,8 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
     private boolean isActiveInstanceLoader;
 
     private final NotLoadedDeserializer initialDeserializer;
+    private final PreLoadedDeserializer preLoadedDeserializer;
+    private final IdentityHashMap<org.aion.avm.shadow.java.lang.Object, Integer> objectSizesLoadedForCallee;
 
     public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
         this.fieldCache = fieldCache;
@@ -68,6 +72,8 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
         this.loadedObjectInstances = new LinkedList<>();
         this.isActiveInstanceLoader = true;
         this.initialDeserializer = new NotLoadedDeserializer();
+        this.preLoadedDeserializer = new PreLoadedDeserializer();
+        this.objectSizesLoadedForCallee = new IdentityHashMap<>();
     }
 
     public void serializeClass(ExtentBasedCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
@@ -357,9 +363,29 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
                     instanceSink.accept(root);
                 }
             }
+            // Clear this so we can assert we are done with it in the finishCommit().
+            this.loadedObjectInstances.clear();
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Any such problem would have been detected much sooner.
             throw RuntimeAssertionError.unexpected(e);
+        }
+    }
+
+    public void finishCommit() {
+        RuntimeAssertionError.assertTrue(this.loadedObjectInstances.isEmpty());
+        Queue<org.aion.avm.shadow.java.lang.Object> instancesToWrite = new LinkedList<>(this.objectSizesLoadedForCallee.keySet());
+        this.objectSizesLoadedForCallee.clear();
+        Consumer<org.aion.avm.shadow.java.lang.Object> instanceSink = (instance) -> {
+            // These should only be new objects but the persistence token is set right before this call so we can't verify it.
+            instancesToWrite.add(instance);
+        };
+        
+        // Here, we just need to walk the remaining objects we loaded for a callee but never touched, ourselves:  we still need to write them back.
+        while (!instancesToWrite.isEmpty()) {
+            org.aion.avm.shadow.java.lang.Object toWrite = instancesToWrite.poll();
+            // We don't need the size that this returns since these write-backs are free (another invoke already paid for them).
+            // We also pass in null for the nextObjectSink since this case doesn't need to walk the graph, just write-back anything it read.
+            serializeAndWriteBackInstance(toWrite, instanceSink);
         }
     }
 
@@ -414,10 +440,63 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
             deserializeInstance(instance, extent);
             
             int instanceBytes = extent.getBillableSize();
-            ReflectionStructureCodec.this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
+            // Check to see if we are currently active or if this deserialization was triggered by a callee while we are dormant.
+            if (ReflectionStructureCodec.this.isActiveInstanceLoader) {
+                // We are on top so we directly loaded this in response to this DApp running.
+                
+                // This means that we need to bill them for it.
+                ReflectionStructureCodec.this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
+                
+                // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
+                ReflectionStructureCodec.this.loadedObjectInstances.add(instance);
+            } else {
+                // Someone else is actually loading this and we are a caller of theirs so we have to pretend this didn't happen.
+                
+                // First, record the billing fee we _would_ have charged them (this map is also used for the "free write-back" set).
+                ReflectionStructureCodec.this.objectSizesLoadedForCallee.put(instance, instanceBytes);
+                
+                // Install our pre-loaded deserializer so we can bill them for this, later.
+                try {
+                    ReflectionStructureCodec.this.deserializerField.set(instance, ReflectionStructureCodec.this.preLoadedDeserializer);
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // Failures here would have happened during startup.
+                    throw RuntimeAssertionError.unexpected(e);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * The deserializer installed in an object instance which was fully loaded, but not while this instance loader was active.
+     * This kind of deserializer is special since it knows how to delay the cost of loading, if not yet referenced, as well as
+     * handling the logic of how this should be written-back.
+     * Note that this isn't static since it still depends on the state/capabilities of the outer class instance.
+     */
+    private class PreLoadedDeserializer implements IDeserializer {
+        @Override
+        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
+            RuntimeAssertionError.assertTrue(persistenceToken instanceof NodePersistenceToken);
             
-            // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
-            ReflectionStructureCodec.this.loadedObjectInstances.add(instance);
+            // See if we are the active loader.
+            if (ReflectionStructureCodec.this.isActiveInstanceLoader) {
+                // We are on top so we can now bill them for this load (we can check the billing instance map which we populated during the load).
+                int instanceBytes = ReflectionStructureCodec.this.objectSizesLoadedForCallee.remove(instance);
+                ReflectionStructureCodec.this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
+                
+                // This also needs to be moved to the root set to scan for re-save (the issue-249 case).
+                // It is no longer required in the billing map.
+                ReflectionStructureCodec.this.loadedObjectInstances.add(instance);
+            } else {
+                // We still aren't active but we already did the load so just re-install the deserializer.
+                // NOTE:  This assumes that the derializer is cleared _before_ calling this, not after.
+                try {
+                    ReflectionStructureCodec.this.deserializerField.set(instance, this);
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // Failures here would have happened during startup.
+                    throw RuntimeAssertionError.unexpected(e);
+                }
+            }
         }
     }
 }

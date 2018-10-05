@@ -110,9 +110,11 @@ public class Object extends java.lang.Object implements IObject {
      */
     public final void lazyLoad() {
         if (null != this.deserializer) {
-            // Tell the deserializer to invoke the deserialization pipeline (which may call back to us).
-            this.deserializer.startDeserializeInstance(this, this.persistenceToken);
+            // Clear the deserializer instance variable before we perform the deserialization (since it might want to install a new one).
+            IDeserializer existingDeserializer = this.deserializer;
             this.deserializer = null;
+            // Tell the deserializer to invoke the deserialization pipeline (which may call back to us).
+            existingDeserializer.startDeserializeInstance(this, this.persistenceToken);
         }
     }
 

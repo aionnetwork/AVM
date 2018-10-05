@@ -63,6 +63,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     private boolean isActiveInstanceLoader;
 
     private final NotLoadedDeserializer initialDeserializer;
+    private final PreLoadedDeserializer preLoadedDeserializer;
+    private final IdentityHashMap<org.aion.avm.shadow.java.lang.Object, Integer> objectSizesLoadedForCallee;
 
     public ReentrantGraphProcessor(ConstructorCache constructorCache, ReflectedFieldCache fieldCache, IStorageFeeProcessor feeProcessor, List<Class<?>> classes) {
         this.constructorCache = constructorCache;
@@ -85,6 +87,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         this.loadedObjectInstances = new LinkedList<>();
         this.isActiveInstanceLoader = true;
         this.initialDeserializer = new NotLoadedDeserializer();
+        this.preLoadedDeserializer = new PreLoadedDeserializer();
+        this.objectSizesLoadedForCallee = new IdentityHashMap<>();
     }
 
     /**
@@ -297,42 +301,51 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         // Now that the statics are processed, we can process the queue until it is empty (this will complete the graph).
         while (!calleeObjectsToProcess.isEmpty()) {
             org.aion.avm.shadow.java.lang.Object calleeSpaceToProcess = calleeObjectsToProcess.remove();
-            
-            // This is always a callee-space object but we usually want the caller-space instance.
-            org.aion.avm.shadow.java.lang.Object callerSpaceCounterpart = this.calleeToCallerMap.get(calleeSpaceToProcess);
-            if (null != callerSpaceCounterpart) {
-                // If there is a caller-space object, it MUST already be loaded by the time we get here.
-                RuntimeAssertionError.assertTrue(null == this.deserializerField.get(callerSpaceCounterpart));
-            }
-            
-            // We want to copy "back" to the caller space so serialize the callee and deserialize them into either the caller or callee (if there was no caller).
-            // (the reason to serialize/deserialize the same object is to process the object references in a general way:  try to map back into the caller space).
-            Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper = (calleeField) -> {
-                org.aion.avm.shadow.java.lang.Object caller = null;
-                // We only want to map this back if we are non-null and there actually is a corresponding caller-space object.
-                if ((null != calleeField) && this.calleeToCallerMap.containsKey(calleeField)) {
-                    caller = this.calleeToCallerMap.get(calleeField);
-                } else {
-                    // Otherwise, just return whatever we were given (leave the field unchanged).
-                    caller = calleeField;
-                }
-                return caller;
-            };
-            LoopbackCodec loopback = new LoopbackCodec(this, this, deserializeHelper);
-            // Serialize the callee-space object.
-            calleeSpaceToProcess.serializeSelf(null, loopback);
-            
-            if (null != callerSpaceCounterpart) {
-                // Deserialize into the caller-space object.
-                callerSpaceCounterpart.deserializeSelf(null, loopback);
-            } else {
-                // This means that the callee object is being stitched into the caller graph as a new object.
-                // We want need to update any object references which may point back at older caller objects.
-                calleeSpaceToProcess.deserializeSelf(null, loopback);
-            }
-            // Prove that we didn't miss anything.
-            loopback.verifyDone();
+            writeBackInstanceToCallerSpace(calleeSpaceToProcess);
         }
+        
+        // Write-back anything we loaded for a callee but didn't touch, ourselves.
+        // Verify that we already processed on the instances we have loaded.
+        RuntimeAssertionError.assertTrue(this.loadedObjectInstances.isEmpty());
+        for (org.aion.avm.shadow.java.lang.Object toWrite: this.objectSizesLoadedForCallee.keySet()) {
+            // Note that these aren't in the initial "dry run" since they don't contribute to the billing system - if we are going to commit, write these back for free.
+            writeBackInstanceToCallerSpace(toWrite);
+        }
+        this.objectSizesLoadedForCallee.clear();
+    }
+
+    private void writeBackInstanceToCallerSpace(org.aion.avm.shadow.java.lang.Object calleeSpaceToProcess) {
+        // This is always a callee-space object but we usually want the caller-space instance.
+        org.aion.avm.shadow.java.lang.Object callerSpaceCounterpart = this.calleeToCallerMap.get(calleeSpaceToProcess);
+        // Note that the IDeserializer of the callerSpaceCounterpart is usually null but it might be a "pre-loaded" variant.
+        
+        // We want to copy "back" to the caller space so serialize the callee and deserialize them into either the caller or callee (if there was no caller).
+        // (the reason to serialize/deserialize the same object is to process the object references in a general way:  try to map back into the caller space).
+        Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper = (calleeField) -> {
+            org.aion.avm.shadow.java.lang.Object caller = null;
+            // We only want to map this back if we are non-null and there actually is a corresponding caller-space object.
+            if ((null != calleeField) && this.calleeToCallerMap.containsKey(calleeField)) {
+                caller = this.calleeToCallerMap.get(calleeField);
+            } else {
+                // Otherwise, just return whatever we were given (leave the field unchanged).
+                caller = calleeField;
+            }
+            return caller;
+        };
+        LoopbackCodec loopback = new LoopbackCodec(this, this, deserializeHelper);
+        // Serialize the callee-space object.
+        calleeSpaceToProcess.serializeSelf(null, loopback);
+        
+        if (null != callerSpaceCounterpart) {
+            // Deserialize into the caller-space object.
+            callerSpaceCounterpart.deserializeSelf(null, loopback);
+        } else {
+            // This means that the callee object is being stitched into the caller graph as a new object.
+            // We want need to update any object references which may point back at older caller objects.
+            calleeSpaceToProcess.deserializeSelf(null, loopback);
+        }
+        // Prove that we didn't miss anything.
+        loopback.verifyDone();
     }
 
     /**
@@ -398,6 +411,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         for (org.aion.avm.shadow.java.lang.Object calleeSpaceRoot : this.loadedObjectInstances) {
             mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, calleeSpaceRoot);
         }
+        // Clear this so we can assert we are done with it when finishing.
+        this.loadedObjectInstances.clear();
         
         // Note only is this pass measuring size, but it is also finding the graph of objects to write-back, on commit, so provide that mapping function.
         Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> calleeToCallerRefMappingFunction = (calleeRef) -> mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, calleeRef);
@@ -428,13 +443,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
      * @return The billing-relevant instance size.
      */
     private int populateCalleeSpaceObject(org.aion.avm.shadow.java.lang.Object calleeSpace, org.aion.avm.shadow.java.lang.Object callerSpaceOriginal) {
-        // We assume that the caller object has been fully deserialized.
-        try {
-            RuntimeAssertionError.assertTrue(null == this.deserializerField.get(callerSpaceOriginal));
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            // Reflection errors would happen much earlier.
-            RuntimeAssertionError.unexpected(e);
-        }
+        // Note that the IDeserializer for callerSpaceOriginal is usually null but may actually be a "pre-loaded" deserializer.
         
         // Account for the size of this instance.
         // TODO:  Find a way to capture the size of this instance without serializing twice.
@@ -719,10 +728,65 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             
             // Populate the object with the data from the caller instance.
             int instanceBytes = populateCalleeSpaceObject(instance, callerSpaceOriginal);
-            ReentrantGraphProcessor.this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
             
-            // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
-            ReentrantGraphProcessor.this.loadedObjectInstances.add(instance);
+            // Check to see if we are currently active or if this deserialization was triggered by a callee while we are dormant.
+            if (ReentrantGraphProcessor.this.isActiveInstanceLoader) {
+                // We are on top so we directly loaded this in response to this DApp running.
+                
+                // This means that we need to bill them for it.
+                ReentrantGraphProcessor.this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
+                
+                // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
+                ReentrantGraphProcessor.this.loadedObjectInstances.add(instance);
+            } else {
+                // Someone else is actually loading this and we are a caller of theirs so we have to pretend this didn't happen.
+                
+                // First, record the billing fee we _would_ have charged them (this map is also used for the "free write-back" set).
+                ReentrantGraphProcessor.this.objectSizesLoadedForCallee.put(instance, instanceBytes);
+                
+                // Install our pre-loaded deserializer so we can bill them for this, later.
+                try {
+                    ReentrantGraphProcessor.this.deserializerField.set(instance, ReentrantGraphProcessor.this.preLoadedDeserializer);
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // Failures here would have happened during startup.
+                    throw RuntimeAssertionError.unexpected(e);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * The deserializer installed in an object instance which was fully loaded, but not while this instance loader was active.
+     * This kind of deserializer is special since it knows how to delay the cost of loading, if not yet referenced, as well as
+     * handling the logic of how this should be written-back.
+     * Note that this isn't static since it still depends on the state/capabilities of the outer class instance.
+     */
+    private class PreLoadedDeserializer implements IDeserializer {
+        @Override
+        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
+            // All the objects we are creating to deserialize in the callee space have ReentrantCallerReferenceToken as the persistenceToken.
+            RuntimeAssertionError.assertTrue(persistenceToken instanceof ReentrantCallerReferenceToken);
+            
+            // See if we are the active loader.
+            if (ReentrantGraphProcessor.this.isActiveInstanceLoader) {
+                // We are on top so we can now bill them for this load (we can check the billing instance map which we populated during the load).
+                int instanceBytes = ReentrantGraphProcessor.this.objectSizesLoadedForCallee.remove(instance);
+                ReentrantGraphProcessor.this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
+                
+                // This also needs to be moved to the root set to scan for re-save (the issue-249 case).
+                // It is no longer required in the billing map.
+                ReentrantGraphProcessor.this.loadedObjectInstances.add(instance);
+            } else {
+                // We still aren't active but we already did the load so just re-install the deserializer.
+                // NOTE:  This assumes that the derializer is cleared _before_ calling this, not after.
+                try {
+                    ReentrantGraphProcessor.this.deserializerField.set(instance, this);
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // Failures here would have happened during startup.
+                    throw RuntimeAssertionError.unexpected(e);
+                }
+            }
         }
     }
 }

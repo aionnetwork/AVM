@@ -165,6 +165,9 @@ public class LoadedDApp {
             org.aion.avm.shadow.java.lang.Object instance = instancesToWrite.poll();
             codec.serializeInstance(instance, instanceSink);
         }
+        
+        // Finish the commit.
+        codec.finishCommit();
     }
 
     /**

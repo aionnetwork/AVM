@@ -89,6 +89,37 @@ public class GraphReachabilityIntegrationTestTarget {
     }
     
     /**
+     * Make the reentrant call to create the new instance.
+     */
+    public static void runNewInstance_reentrant() {
+        // Make the call to change it.
+        long value = 0;
+        byte[] data = ABIEncoder.encodeMethodArguments("modifyNewInstance");
+        long energyLimit = 500000;
+        Result result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+        assert result.isSuccess();
+    }
+    
+    /**
+     * Make the reentrant call to runNewInstance_reentrant.
+     */
+    public static void runNewInstance_reentrant2() {
+        // Make the call to change it.
+        long value = 0;
+        byte[] data = ABIEncoder.encodeMethodArguments("runNewInstance_reentrant");
+        long energyLimit = 500000;
+        Result result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+        assert result.isSuccess();
+    }
+    
+    /**
+     * Checks the new instance, on the right, and returns its value.
+     */
+    public static int checkNewInstance() {
+        return rootRight.next.next.next.value;
+    }
+    
+    /**
      * Modify the E value to 5, on the left.
      */
     public static void modify249() {
@@ -101,6 +132,15 @@ public class GraphReachabilityIntegrationTestTarget {
         
         // Hide the change by breaking the connection (the change should still be visible by other paths, but a simple reachability won't find it).
         rootLeft.next.next = null;
+    }
+    
+    /**
+     * Add a link with the value 5 to E, on the left, then sever that connection.
+     */
+    public static void modifyNewInstance() {
+        // Make sure it is its initial value.
+        rootLeft.next.next.next = new GraphReachabilityIntegrationTestTarget(5);
+        rootLeft.next = null;
     }
     
     private static void reentrantCallModify() {

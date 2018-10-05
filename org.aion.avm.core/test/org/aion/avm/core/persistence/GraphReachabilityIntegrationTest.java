@@ -84,6 +84,39 @@ public class GraphReachabilityIntegrationTest {
         callStatic(block, contractAddr, "check249", 5);
     }
 
+    /**
+     * Tests that we can create a new instance, reference it from an existing object, but sever the path to it.
+     * This should write-back the new instance so we should be able to find it, later.
+     */
+    @Test
+    public void testNewObjectWritebackViaUnreachablePath() throws Exception {
+        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Address contractAddr = doInitialDeploymentAndSetup(block);
+        
+        // Run test.
+        callStatic(block, contractAddr, "runNewInstance_reentrant");
+        
+        // Verify result.
+        int value = (Integer) callStatic(block, contractAddr, "checkNewInstance");
+        Assert.assertEquals(5, value);
+    }
+
+    /**
+     * Same as above but adds another level to the call stack to make sure we hit this case in both the graph processors.
+     */
+    @Test
+    public void testNewObjectWritebackViaUnreachablePath2() throws Exception {
+        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Address contractAddr = doInitialDeploymentAndSetup(block);
+        
+        // Run test.
+        callStatic(block, contractAddr, "runNewInstance_reentrant2");
+        
+        // Verify result.
+        int value = (Integer) callStatic(block, contractAddr, "checkNewInstance");
+        Assert.assertEquals(5, value);
+    }
+
 
     private Address doInitialDeploymentAndSetup(Block block) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(GraphReachabilityIntegrationTestTarget.class);

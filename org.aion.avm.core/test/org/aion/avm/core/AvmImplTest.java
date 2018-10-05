@@ -188,8 +188,8 @@ public class AvmImplTest {
                 + (HelperBasedStorageFees.FIXED_READ_COST + (64 * HelperBasedStorageFees.BYTE_READ_COST))
         // -read statics (inner)
                 + (HelperBasedStorageFees.FIXED_READ_COST + (64 * HelperBasedStorageFees.BYTE_READ_COST))
-        // -read instance (outer) "NORMAL" (loaded because the inner call needs it - this is the strange case of our reentrant design)
-                + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_READ_COST))
+        // -read instance (outer) "NORMAL" (free because we are just loading it _for_ the inner case)
+        //        + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_READ_COST))
         // -read instance (inner) "NORMAL"
                 + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_READ_COST))
         // -write statics (inner)
@@ -202,8 +202,8 @@ public class AvmImplTest {
                 + (HelperBasedStorageFees.FIXED_WRITE_COST + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
         // -write instance (outer) "CALL"
                 + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST))
-        // -write instance (outer) "NORMAL"
-                + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+        // -write instance (outer) "NORMAL" (free because we didn't touch it, just loaded it for the inner case)
+        //        + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
                 ;
         long runtimeCost = 4073;
         assertEquals(runtimeCost + tx2.getBasicCost() + costOfBlocks + costOfRuntimeCall + runStorageCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
