@@ -26,11 +26,12 @@ public class DAppExecutor {
                 : ContractEnvironmentState.loadFromGraph(dapp.graphStore);
         
         // Note that we need to store the state of this invocation on the reentrant stack in case there is another call into the same app.
-        // We only put this here so that the call() mechanism can access it to save/reload its ContractEnvironmentState but we don't change it.
+        // This is required so that the call() mechanism can access it to save/reload its ContractEnvironmentState and so that the underlying
+        // instance loader (ReentrantGraphProcessor/ReflectionStructureCodec) can be notified when it becomes active/inactive (since it needs
+        // to know if it is loading an instance
         ReentrantDAppStack.ReentrantState thisState = new ReentrantDAppStack.ReentrantState(dappAddress, dapp, initialState);
         dAppStack.pushState(thisState);
         
-        // TODO:  We might be able to move this setup of IHelper to later in the load once we get rid of the <clinit> (requires energy).
         IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode);
         dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, ctx, ctx.getData(), result));
         HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(helper);
@@ -42,9 +43,11 @@ public class DAppExecutor {
             // We are invoking a reentrant call so we don't want to pull this data from storage, but create in-memory duplicates which we can
             // swap out, pointing to memory-backed instance stubs.
             reentrantGraphData = dapp.replaceClassStaticsWithClones(feeProcessor);
+            thisState.setInstanceLoader(reentrantGraphData);
         } else {
             // This is the first invocation of this DApp so just load the static state from disk.
             directGraphData = dapp.populateClassStaticsFromStorage(feeProcessor);
+            thisState.setInstanceLoader(directGraphData);
         }
 
         // Call the main within the DApp.

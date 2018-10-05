@@ -28,7 +28,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * See issue-167 for more information.
  * TODO:  Investigate possible ways to generalize all field walkers found here and in ReflectionStructureCodec.
  */
-public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerializer, LoopbackCodec.AutomaticDeserializer, IDeserializer {
+public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerializer, LoopbackCodec.AutomaticDeserializer, IDeserializer, ISuspendableInstanceLoader {
     /**
      * We apply the DONE_MARKER to a callee object when we add it to a queue to process for possible write-back to the caller.
      * This is used to mark the object so we don't add it to the queue more than once.
@@ -58,6 +58,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     
     // We scan all the objects we loaded as roots since we don't want to hide changes to them if reachable via other paths (issue-249).
     private final List<org.aion.avm.shadow.java.lang.Object> loadedObjectInstances;
+    
+    // ISuspendableInstanceLoader state.
+    private boolean isActiveInstanceLoader;
 
     public ReentrantGraphProcessor(ConstructorCache constructorCache, ReflectedFieldCache fieldCache, IStorageFeeProcessor feeProcessor, List<Class<?>> classes) {
         this.constructorCache = constructorCache;
@@ -78,6 +81,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             throw RuntimeAssertionError.unexpected(e);
         }
         this.loadedObjectInstances = new LinkedList<>();
+        this.isActiveInstanceLoader = true;
     }
 
     /**
@@ -462,6 +466,18 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         } catch (IllegalArgumentException | IllegalAccessException | ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             RuntimeAssertionError.unexpected(e);
         }
+    }
+
+    @Override
+    public void loaderDidBecomeActive() {
+        RuntimeAssertionError.assertTrue(!this.isActiveInstanceLoader);
+        this.isActiveInstanceLoader = true;
+    }
+
+    @Override
+    public void loaderDidBecomeInactive() {
+        RuntimeAssertionError.assertTrue(this.isActiveInstanceLoader);
+        this.isActiveInstanceLoader = false;
     }
 
 

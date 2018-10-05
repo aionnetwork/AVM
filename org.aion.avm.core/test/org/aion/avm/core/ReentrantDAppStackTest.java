@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.core.persistence.ISuspendableInstanceLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,12 +15,23 @@ public class ReentrantDAppStackTest {
         ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(new byte[] {0x1}, null, null);
         ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(new byte[] {0x2}, null, null);
         ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(new byte[] {0x3}, null, null);
+        FlagInstanceLoader flag1 = new FlagInstanceLoader();
+        FlagInstanceLoader flag2 = new FlagInstanceLoader();
+        FlagInstanceLoader flag3 = new FlagInstanceLoader();
+        state1.setInstanceLoader(flag1);
+        state2.setInstanceLoader(flag2);
+        state3.setInstanceLoader(flag3);
         
         stack.pushState(state1);
         stack.pushState(state2);
         stack.pushState(state3);
+        Assert.assertFalse(flag1.flag);
+        Assert.assertFalse(flag2.flag);
+        Assert.assertTrue(flag3.flag);
         Assert.assertEquals(state3, stack.popState());
+        Assert.assertTrue(flag2.flag);
         Assert.assertEquals(state2, stack.popState());
+        Assert.assertTrue(flag1.flag);
         Assert.assertEquals(state1, stack.popState());
     }
 
@@ -39,6 +51,9 @@ public class ReentrantDAppStackTest {
         ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(new byte[] {0x1}, null, null);
         ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(new byte[] {0x2}, null, null);
         ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(new byte[] {0x3}, null, null);
+        state1.setInstanceLoader(new FlagInstanceLoader());
+        state2.setInstanceLoader(new FlagInstanceLoader());
+        state3.setInstanceLoader(new FlagInstanceLoader());
         
         Assert.assertNull(stack.tryShareState(new byte[] {0x1}));
         
@@ -65,6 +80,10 @@ public class ReentrantDAppStackTest {
         ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(new byte[] {0x2}, null, null);
         ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(new byte[] {0x3}, null, null);
         ReentrantDAppStack.ReentrantState state1_again = new ReentrantDAppStack.ReentrantState(new byte[] {0x1}, null, null);
+        state1.setInstanceLoader(new FlagInstanceLoader());
+        state2.setInstanceLoader(new FlagInstanceLoader());
+        state3.setInstanceLoader(new FlagInstanceLoader());
+        state1_again.setInstanceLoader(new FlagInstanceLoader());
         
         stack.pushState(state1);
         stack.pushState(state2);
@@ -84,5 +103,21 @@ public class ReentrantDAppStackTest {
         
         Assert.assertEquals(state1, stack.popState());
         Assert.assertNull(stack.tryShareState(new byte[] {0x1}));
+    }
+
+
+    private static class FlagInstanceLoader implements ISuspendableInstanceLoader {
+        public boolean flag = true;
+        
+        @Override
+        public void loaderDidBecomeActive() {
+            Assert.assertFalse(this.flag);
+            this.flag = true;
+        }
+        @Override
+        public void loaderDidBecomeInactive() {
+            Assert.assertTrue(this.flag);
+            this.flag = false;
+        }
     }
 }

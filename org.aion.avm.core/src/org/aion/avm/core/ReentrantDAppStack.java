@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Deque;
 
 import org.aion.avm.core.persistence.ContractEnvironmentState;
+import org.aion.avm.core.persistence.ISuspendableInstanceLoader;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -19,11 +20,17 @@ public class ReentrantDAppStack {
 
     /**
      * Pushes the given state onto the stack.  Note that state will temporarily shadow any other states on the stack with the same address.
+     * Note that this has the side-effect of making the instance loader which was previously on top "inactive".
      * 
      * @param state The new state to push.
      */
     public void pushState(ReentrantState state) {
         RuntimeAssertionError.assertTrue(null != state);
+        
+        // Deactivate any existing "active" instance loader.
+        if (!this.stack.isEmpty()) {
+            this.stack.peek().instanceLoader.loaderDidBecomeInactive();
+        }
         this.stack.push(state);
     }
 
@@ -48,19 +55,27 @@ public class ReentrantDAppStack {
 
     /**
      * Pops the top state off the stack and returns it.  Returns null if the stack is empty.
+     * Note that this has the side-effect of making the instance loader which is newly on top "active".
      * 
      * @return The state which was previously on top of the stack (null if empty).
      */
     public ReentrantState popState() {
-        return (this.stack.isEmpty())
+        ReentrantState state = (this.stack.isEmpty())
                 ? null
                 : this.stack.pop();
+        
+        // Activate any instance loader under the running one.
+        if (!this.stack.isEmpty()) {
+            this.stack.peek().instanceLoader.loaderDidBecomeActive();
+        }
+        return state;
     }
 
 
     public static class ReentrantState {
         public final byte[] address;
         public final LoadedDApp dApp;
+        private ISuspendableInstanceLoader instanceLoader;
         private ContractEnvironmentState environment;
         
         public ReentrantState(byte[] address, LoadedDApp dApp, ContractEnvironmentState environment) {
@@ -75,6 +90,11 @@ public class ReentrantDAppStack {
         
         public void updateEnvironment(int nextHashCode) {
             this.environment = new ContractEnvironmentState(nextHashCode);
+        }
+        
+        public void setInstanceLoader(ISuspendableInstanceLoader instanceLoader) {
+            RuntimeAssertionError.assertTrue(null == this.instanceLoader);
+            this.instanceLoader = instanceLoader;
         }
     }
 }

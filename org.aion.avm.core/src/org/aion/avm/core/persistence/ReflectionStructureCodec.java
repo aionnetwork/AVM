@@ -27,7 +27,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * 
  * TODO:  Test the benefit of caching the reflected field access instances for user-defined classes (there is a great deal of re-use).
  */
-public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDeserializer.IAutomatic, SingleInstanceSerializer.IAutomatic {
+public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDeserializer.IAutomatic, SingleInstanceSerializer.IAutomatic, ISuspendableInstanceLoader {
     private static IDeserializer DONE_MARKER = new GraphWalkingMarker();
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
@@ -43,6 +43,9 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     private final Field persistenceTokenField;
     // We scan all the objects we loaded as roots since we don't want to hide changes to them if reachable via other paths (issue-249).
     private final List<org.aion.avm.shadow.java.lang.Object> loadedObjectInstances;
+
+    // ISuspendableInstanceLoader state.
+    private boolean isActiveInstanceLoader;
 
     public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
         this.fieldCache = fieldCache;
@@ -61,6 +64,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
             throw RuntimeAssertionError.unexpected(e);
         }
         this.loadedObjectInstances = new LinkedList<>();
+        this.isActiveInstanceLoader = true;
     }
 
     public void serializeClass(ExtentBasedCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
@@ -330,6 +334,18 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     @Override
     public org.aion.avm.shadow.java.lang.Object decodeStub(INode node) {
         return inflateStubAsInstance(node);
+    }
+
+    @Override
+    public void loaderDidBecomeActive() {
+        RuntimeAssertionError.assertTrue(!this.isActiveInstanceLoader);
+        this.isActiveInstanceLoader = true;
+    }
+
+    @Override
+    public void loaderDidBecomeInactive() {
+        RuntimeAssertionError.assertTrue(this.isActiveInstanceLoader);
+        this.isActiveInstanceLoader = false;
     }
 
     /**
