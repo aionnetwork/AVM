@@ -18,7 +18,6 @@ import java.util.Set;
  *
  * The following bytecode
  *
- * BALOAD   BASTORE
  * CALOAD   CASTORE
  * DALOAD   DASTORE
  * FALOAD   FASTORE
@@ -40,6 +39,8 @@ import java.util.Set;
  *
  * AALOAD
  * AASTORE
+ * BALOAD
+ * BASTORE
  *
  * are handled by {@link org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef}
  *
@@ -75,10 +76,6 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
         switch (opcode) {
             // Static type
-            case Opcodes.BALOAD:
-                m = Method.getMethod("byte get(int)");
-                invokeVirtual(typeBA, m);
-                break;
             case Opcodes.CALOAD:
                 m = Method.getMethod("char get(int)");
                 invokeVirtual(typeCA, m);
@@ -102,10 +99,6 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             case Opcodes.SALOAD:
                 m = Method.getMethod("short get(int)");
                 invokeVirtual(typeSA, m);
-                break;
-            case Opcodes.BASTORE:
-                m = Method.getMethod("void set(int, byte)");
-                invokeVirtual(typeBA, m);
                 break;
             case Opcodes.CASTORE:
                 m = Method.getMethod("void set(int, char)");
