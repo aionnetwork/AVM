@@ -249,6 +249,13 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
     }
 
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
+        int billableSize = serializeAndWriteBackInstance(instance, nextObjectSink);
+        // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
+        // we run out of energy, part-way.
+        this.feeProcessor.writeOneInstanceToStorage(billableSize);
+    }
+
+    private int serializeAndWriteBackInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         try {
             IPersistenceToken persistenceToken = (IPersistenceToken)this.persistenceTokenField.get(instance);
             // Note that, even if this is a new instance, someone would have already assigned a persistence token so this can't be null.
@@ -257,8 +264,8 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
             Extent extent = internalSerializeInstance(instance, nextObjectSink);
             // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
             // we run out of energy, part-way.
-            this.feeProcessor.writeOneInstanceToStorage(extent.getBillableSize());
             ((NodePersistenceToken)persistenceToken).node.saveRegularData(extent);
+            return extent.getBillableSize();
         } catch (IllegalAccessException | IllegalArgumentException e) {
             // If there are any problems with this access, we must have resolved it before getting to this point.
             throw RuntimeAssertionError.unexpected(e);
@@ -404,8 +411,10 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
             
             // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
             Extent extent = node.loadRegularData();
-            ReflectionStructureCodec.this.feeProcessor.readOneInstanceFromStorage(extent.getBillableSize());
             deserializeInstance(instance, extent);
+            
+            int instanceBytes = extent.getBillableSize();
+            ReflectionStructureCodec.this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
             
             // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
             ReflectionStructureCodec.this.loadedObjectInstances.add(instance);

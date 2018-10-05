@@ -425,8 +425,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
      * 
      * @param calleeSpace The object in the callee space which must be written.
      * @param callerSpaceOriginal The original object from the caller space.
+     * @return The billing-relevant instance size.
      */
-    private void populateCalleeSpaceObject(org.aion.avm.shadow.java.lang.Object calleeSpace, org.aion.avm.shadow.java.lang.Object callerSpaceOriginal) {
+    private int populateCalleeSpaceObject(org.aion.avm.shadow.java.lang.Object calleeSpace, org.aion.avm.shadow.java.lang.Object callerSpaceOriginal) {
         // We assume that the caller object has been fully deserialized.
         try {
             RuntimeAssertionError.assertTrue(null == this.deserializerField.get(callerSpaceOriginal));
@@ -438,7 +439,6 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         // Account for the size of this instance.
         // TODO:  Find a way to capture the size of this instance without serializing twice.
         int instanceBytes = measureByteSizeOfInstance(callerSpaceOriginal, (ignored) -> null);
-        this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
         
         // We want to use the same codec logic which exists in all shadow objects (since the shadow and API classes do special things here which we don't want to duplicate).
         // In this case, we want to provide an object deserialization helper which can create a callee-space instance stub.
@@ -451,6 +451,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         calleeSpace.deserializeSelf(null, loopback);
         // Prove that we didn't miss anything.
         loopback.verifyDone();
+        return instanceBytes;
     }
 
     @Override
@@ -716,7 +717,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             // Make sure that it is loaded.
             callerSpaceOriginal.lazyLoad();
             
-            populateCalleeSpaceObject(instance, callerSpaceOriginal);
+            // Populate the object with the data from the caller instance.
+            int instanceBytes = populateCalleeSpaceObject(instance, callerSpaceOriginal);
+            ReentrantGraphProcessor.this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
             
             // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
             ReentrantGraphProcessor.this.loadedObjectInstances.add(instance);
