@@ -154,7 +154,7 @@ public class ReflectionStructureCodecTest {
         StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
         // Note that the deserializer always assumes it is operating on stubs so create the instance and pass it in.
-        graph.setLateComponents(ReflectionStructureCodecTarget.class.getClassLoader(), codec, (n) -> new NodePersistenceToken(n));
+        graph.setLateComponents(ReflectionStructureCodecTarget.class.getClassLoader(), codec.getInitialLoadDeserializer(), (n) -> new NodePersistenceToken(n));
         ReflectionStructureCodecTarget target = new ReflectionStructureCodecTarget();
         codec.deserializeInstance(target, extent);
         
@@ -281,7 +281,7 @@ public class ReflectionStructureCodecTest {
         Extent extent2 = KeyValueExtentCodec.decode(graph, expected2);
         StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
-        graph.setLateComponents(ReflectionStructureCodecTarget.class.getClassLoader(), codec, (n) -> new NodePersistenceToken(n));
+        graph.setLateComponents(ReflectionStructureCodecTarget.class.getClassLoader(), codec.getInitialLoadDeserializer(), (n) -> new NodePersistenceToken(n));
         ReflectionStructureCodecTarget target1 = new ReflectionStructureCodecTarget();
         codec.deserializeInstance(target1, extent1);
         ReflectionStructureCodecTarget target2 = new ReflectionStructureCodecTarget();

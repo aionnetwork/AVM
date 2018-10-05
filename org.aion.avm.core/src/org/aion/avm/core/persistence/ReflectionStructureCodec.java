@@ -27,7 +27,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * 
  * TODO:  Test the benefit of caching the reflected field access instances for user-defined classes (there is a great deal of re-use).
  */
-public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDeserializer.IAutomatic, SingleInstanceSerializer.IAutomatic, ISuspendableInstanceLoader {
+public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAutomatic, SingleInstanceSerializer.IAutomatic, ISuspendableInstanceLoader {
     private static IDeserializer DONE_MARKER = new GraphWalkingMarker();
 
     // NOTE:  This fieldCache is passed in from outside so we can modify it for later use (it is used for multiple instances of this).
@@ -47,6 +47,8 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
     // ISuspendableInstanceLoader state.
     private boolean isActiveInstanceLoader;
 
+    private final NotLoadedDeserializer initialDeserializer;
+
     public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
         this.fieldCache = fieldCache;
         this.populator = populator;
@@ -65,6 +67,7 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         }
         this.loadedObjectInstances = new LinkedList<>();
         this.isActiveInstanceLoader = true;
+        this.initialDeserializer = new NotLoadedDeserializer();
     }
 
     public void serializeClass(ExtentBasedCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
@@ -245,22 +248,6 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         return SerializedInstanceStub.deserializeReferenceAsInstance(oneNode, this.populator);
     }
 
-    @Override
-    public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
-        // The persistenceToken cannot be null since that implies we are deserializing a new object.
-        RuntimeAssertionError.assertTrue(null != persistenceToken);
-        // This MUST be a NodeToken.
-        IRegularNode node = ((NodePersistenceToken)persistenceToken).node;
-        
-        // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
-        Extent extent = node.loadRegularData();
-        this.feeProcessor.readOneInstanceFromStorage(extent.getBillableSize());
-        deserializeInstance(instance, extent);
-        
-        // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
-        this.loadedObjectInstances.add(instance);
-    }
-
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         try {
             IPersistenceToken persistenceToken = (IPersistenceToken)this.persistenceTokenField.get(instance);
@@ -369,6 +356,10 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         }
     }
 
+    public IDeserializer getInitialLoadDeserializer() {
+        return this.initialDeserializer;
+    }
+
 
     /**
      * An interface which must be provided when using the ReflectionStructureCodec to deserialize data.
@@ -396,5 +387,28 @@ public class ReflectionStructureCodec implements IDeserializer, SingleInstanceDe
         void setShort(Field field, org.aion.avm.shadow.java.lang.Object object, short val);
         void setByte(Field field, org.aion.avm.shadow.java.lang.Object object, byte val);
         void setObject(Field field, org.aion.avm.shadow.java.lang.Object object, org.aion.avm.shadow.java.lang.Object val);
+    }
+
+
+    /**
+     * The deserializer installed in a stub which has only been referenced, not yet loaded.
+     * Note that this isn't static since it still depends on the state/capabilities of the outer class instance.
+     */
+    private class NotLoadedDeserializer implements IDeserializer {
+        @Override
+        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
+            // The persistenceToken cannot be null since that implies we are deserializing a new object.
+            RuntimeAssertionError.assertTrue(null != persistenceToken);
+            // This MUST be a NodePersistenceToken.
+            IRegularNode node = ((NodePersistenceToken)persistenceToken).node;
+            
+            // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
+            Extent extent = node.loadRegularData();
+            ReflectionStructureCodec.this.feeProcessor.readOneInstanceFromStorage(extent.getBillableSize());
+            deserializeInstance(instance, extent);
+            
+            // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
+            ReflectionStructureCodec.this.loadedObjectInstances.add(instance);
+        }
     }
 }

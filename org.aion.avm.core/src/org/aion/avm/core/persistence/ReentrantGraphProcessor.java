@@ -28,7 +28,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * See issue-167 for more information.
  * TODO:  Investigate possible ways to generalize all field walkers found here and in ReflectionStructureCodec.
  */
-public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerializer, LoopbackCodec.AutomaticDeserializer, IDeserializer, ISuspendableInstanceLoader {
+public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerializer, LoopbackCodec.AutomaticDeserializer, ISuspendableInstanceLoader {
     /**
      * We apply the DONE_MARKER to a callee object when we add it to a queue to process for possible write-back to the caller.
      * This is used to mark the object so we don't add it to the queue more than once.
@@ -62,6 +62,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     // ISuspendableInstanceLoader state.
     private boolean isActiveInstanceLoader;
 
+    private final NotLoadedDeserializer initialDeserializer;
+
     public ReentrantGraphProcessor(ConstructorCache constructorCache, ReflectedFieldCache fieldCache, IStorageFeeProcessor feeProcessor, List<Class<?>> classes) {
         this.constructorCache = constructorCache;
         this.fieldCache = fieldCache;
@@ -82,6 +84,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         }
         this.loadedObjectInstances = new LinkedList<>();
         this.isActiveInstanceLoader = true;
+        this.initialDeserializer = new NotLoadedDeserializer();
     }
 
     /**
@@ -612,7 +615,8 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 // instanceId, either).
                 try {
                     Constructor<?> constructor = this.constructorCache.getConstructorForClassName(caller.getClass().getName());
-                    callee = (org.aion.avm.shadow.java.lang.Object) constructor.newInstance(this, new ReentrantCallerReferenceToken(caller));
+                    // We start out with the initial deserializer, replacing with preloaded only if we load this while inactive.
+                    callee = (org.aion.avm.shadow.java.lang.Object) constructor.newInstance(this.initialDeserializer, new ReentrantCallerReferenceToken(caller));
                 } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
                     // TODO:  These should probably come through a cache.
                     RuntimeAssertionError.unexpected(e);
@@ -699,21 +703,23 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
 
 
     /**
-     * An implementation of IDeserializer which is not dependent on the content of the calleeToCallerMap, meaning it can be called from within the constructor
-     * This is required to make things like our Number classes work (since they eagerly deserialize).
+     * The deserializer installed in a stub which has only been referenced, not yet loaded.
+     * Note that this isn't static since it still depends on the state/capabilities of the outer class instance.
      */
-    @Override
-    public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
-        // All the objects we are creating to deserialize in the callee space have ReentrantCallerReferenceToken as the persistenceToken.
-        RuntimeAssertionError.assertTrue(persistenceToken instanceof ReentrantCallerReferenceToken);
-        org.aion.avm.shadow.java.lang.Object callerSpaceOriginal = ((ReentrantCallerReferenceToken)persistenceToken).callerSpaceOriginal;
-        
-        // Make sure that it is loaded.
-        callerSpaceOriginal.lazyLoad();
-        
-        populateCalleeSpaceObject(instance, callerSpaceOriginal);
-        
-        // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
-        this.loadedObjectInstances.add(instance);
+    private class NotLoadedDeserializer implements IDeserializer {
+        @Override
+        public void startDeserializeInstance(org.aion.avm.shadow.java.lang.Object instance, IPersistenceToken persistenceToken) {
+            // All the objects we are creating to deserialize in the callee space have ReentrantCallerReferenceToken as the persistenceToken.
+            RuntimeAssertionError.assertTrue(persistenceToken instanceof ReentrantCallerReferenceToken);
+            org.aion.avm.shadow.java.lang.Object callerSpaceOriginal = ((ReentrantCallerReferenceToken)persistenceToken).callerSpaceOriginal;
+            
+            // Make sure that it is loaded.
+            callerSpaceOriginal.lazyLoad();
+            
+            populateCalleeSpaceObject(instance, callerSpaceOriginal);
+            
+            // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
+            ReentrantGraphProcessor.this.loadedObjectInstances.add(instance);
+        }
     }
 }

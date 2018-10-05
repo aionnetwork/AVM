@@ -88,7 +88,7 @@ public class LoadedDApp {
         ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore);
         // Configure the storage graph.
         Function<IRegularNode, IPersistenceToken> tokenBuilder = (regularNode) -> new NodePersistenceToken(regularNode);
-        this.graphStore.setLateComponents(this.loader, codec, tokenBuilder);
+        this.graphStore.setLateComponents(this.loader, codec.getInitialLoadDeserializer(), tokenBuilder);
         
         // Extract the raw data for the class statics.
         Extent staticData = this.graphStore.getRoot();
