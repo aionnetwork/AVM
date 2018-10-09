@@ -377,7 +377,9 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
         while (!instancesToWrite.isEmpty()) {
             org.aion.avm.shadow.java.lang.Object toWrite = instancesToWrite.poll();
             // We don't need the size that this returns since these write-backs are free (another invoke already paid for them).
-            // We also pass in null for the nextObjectSink since this case doesn't need to walk the graph, just write-back anything it read.
+            // TODO:  This instanceSink should probably be null since we shouldn't discover new objects at this point.  However, we currently need
+            // this in order to find new instances which may have been first created in callee frames.  If we can solve that problem more directly,
+            // this instanceSink can probably be removed.
             serializeAndWriteBackInstance(toWrite, instanceSink);
         }
     }
@@ -503,7 +505,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
                 // We are on top so we directly loaded this in response to this DApp running.
                 
                 // This means that we need to bill them for it.
-                ReflectionStructureCodec.this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
+                ReflectionStructureCodec.this.feeProcessor.readOneInstanceFromStorage(instanceBytes);
                 
                 // Save this instance into our root set to scan for re-save, when done (issue-249: fixes hidden changes being skipped).
                 ReflectionStructureCodec.this.loadedObjectInstances.add(instance);
@@ -540,7 +542,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
             if (ReflectionStructureCodec.this.isActiveInstanceLoader) {
                 // We are on top so we can now bill them for this load (we can check the billing instance map which we populated during the load).
                 int instanceBytes = ReflectionStructureCodec.this.objectSizesLoadedForCallee.remove(instance);
-                ReflectionStructureCodec.this.feeProcessor.readOneInstanceFromHeap(instanceBytes);
+                ReflectionStructureCodec.this.feeProcessor.readOneInstanceFromStorage(instanceBytes);
                 
                 // This also needs to be moved to the root set to scan for re-save (the issue-249 case).
                 // It is no longer required in the billing map.
