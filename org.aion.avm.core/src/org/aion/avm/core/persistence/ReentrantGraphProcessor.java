@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.function.Function;
 
+import org.aion.avm.internal.ClassPersistenceToken;
+import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.OutOfEnergyException;
@@ -614,7 +616,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     private org.aion.avm.shadow.java.lang.Object internalGetCalleeStubForCaller(org.aion.avm.shadow.java.lang.Object caller) {
         // Before anything, check to see if this is something we even _want_ to copy from the caller space or if it is immutable.
         org.aion.avm.shadow.java.lang.Object callee = null;
-        if (SerializedInstanceStub.objectUsesReentrantCopy(caller, this.persistenceTokenField)) {
+        if (objectUsesReentrantCopy(caller)) {
             // First, see if we already have a stub for this caller.
             callee = this.callerToCalleeMap.get(caller);
             if (null == callee) {
@@ -645,7 +647,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
 
     private org.aion.avm.shadow.java.lang.Object mapCalleeToCallerAndEnqueueForCommitProcessing(Queue<org.aion.avm.shadow.java.lang.Object> calleeObjectsToProcess, org.aion.avm.shadow.java.lang.Object calleeSpace) {
         org.aion.avm.shadow.java.lang.Object callerSpace = null;
-        if (SerializedInstanceStub.objectUsesReentrantCopy(calleeSpace, this.persistenceTokenField)) {
+        if (objectUsesReentrantCopy(calleeSpace)) {
             // We want to replace this with a reference to caller-space (unless this object is new - has no mapping).
             callerSpace = this.calleeToCallerMap.get(calleeSpace);
             
@@ -709,6 +711,52 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         // Prove that we didn't miss anything.
         loopback.verifyDone();
         return instanceByteSize;
+    }
+
+    /**
+     * Used to determine if reentrant (memory-memory) calls are supposed to create an instance stub of the given object or if both spaces can
+     * refer to it, directly.
+     * This is important for cases like "Class" or constants where there is no real notion of how to make a "duplicate copy".
+     * 
+     * @param instance The object instance to check.
+     * @return True if a copy should be made, false if the instance should be shared.
+     */
+    private boolean objectUsesReentrantCopy(org.aion.avm.shadow.java.lang.Object instance) {
+        boolean shouldCopy = false;
+        if (null == instance) {
+            // Copy null doesn't make sense.
+            shouldCopy = false;
+        } else {
+            IPersistenceToken persistenceToken = safeExtractPersistenceToken(instance);
+            if (persistenceToken instanceof ClassPersistenceToken) {
+                // Classes don't get copied.
+                shouldCopy = false;
+            } else if (persistenceToken instanceof ConstantPersistenceToken) {
+                // Constants don't get copied.
+                shouldCopy = false;
+            } else {
+                // This last case is for all the cases which we _should_ copy:
+                // -null (new object, not yet assigned - normal instance)
+                // -reentrant caller reference token (this was copied, from a parent call, so we should also copy it)
+                // -is a normal instanceId token
+                // Note that we don't expect any other cases here so we can just assert these and return true.
+                RuntimeAssertionError.assertTrue((null == persistenceToken)
+                        || (persistenceToken instanceof ReentrantCallerReferenceToken)
+                        || (persistenceToken instanceof NodePersistenceToken)
+                );
+                shouldCopy = true;
+            }
+        }
+        return shouldCopy;
+    }
+
+    private IPersistenceToken safeExtractPersistenceToken(org.aion.avm.shadow.java.lang.Object instance) {
+        try {
+            return (IPersistenceToken)this.persistenceTokenField.get(instance);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any failure related to this would have happened much earlier.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 
 

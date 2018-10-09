@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
 
+import org.aion.avm.internal.ClassPersistenceToken;
+import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
@@ -167,7 +169,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
 
     private void deflateInstanceAsStub(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object contents, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
         try {
-            boolean isNormalInstance = SerializedInstanceStub.serializeAsReference(encoder, contents, this.graphStore, this.persistenceTokenField);
+            boolean isNormalInstance = serializeAsReference(encoder, contents);
             
             if (isNormalInstance) {
                 // The helper thinks we should enqueue this instance, since it is a normal instance type.
@@ -243,15 +245,11 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
                 } else {
                     // Shape:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
                     // Null:  (int)0.
-                    org.aion.avm.shadow.java.lang.Object instanceToStore = inflateStubAsInstance(decoder.decodeReference());
+                    org.aion.avm.shadow.java.lang.Object instanceToStore = deserializeReferenceAsInstance(decoder.decodeReference());
                     this.populator.setObject(field, object, instanceToStore);
                 }
             }
         } 
-    }
-
-    private org.aion.avm.shadow.java.lang.Object inflateStubAsInstance(INode oneNode) {
-        return SerializedInstanceStub.deserializeReferenceAsInstance(oneNode, this.populator);
     }
 
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
@@ -262,20 +260,15 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
     }
 
     private int serializeAndWriteBackInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
-        try {
-            IPersistenceToken persistenceToken = (IPersistenceToken)this.persistenceTokenField.get(instance);
-            // Note that, even if this is a new instance, someone would have already assigned a persistence token so this can't be null.
-            RuntimeAssertionError.assertTrue(null != persistenceToken);
-            
-            Extent extent = internalSerializeInstance(instance, nextObjectSink);
-            // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
-            // we run out of energy, part-way.
-            ((NodePersistenceToken)persistenceToken).node.saveRegularData(extent);
-            return extent.getBillableSize();
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            // If there are any problems with this access, we must have resolved it before getting to this point.
-            throw RuntimeAssertionError.unexpected(e);
-        }
+        IPersistenceToken persistenceToken = safeExtractPersistenceToken(instance);
+        // Note that, even if this is a new instance, someone would have already assigned a persistence token so this can't be null.
+        RuntimeAssertionError.assertTrue(null != persistenceToken);
+        
+        Extent extent = internalSerializeInstance(instance, nextObjectSink);
+        // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
+        // we run out of energy, part-way.
+        ((NodePersistenceToken)persistenceToken).node.saveRegularData(extent);
+        return extent.getBillableSize();
     }
 
     // Note that this is only public so tests can use it.
@@ -333,7 +326,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
 
     @Override
     public org.aion.avm.shadow.java.lang.Object decodeStub(INode node) {
-        return inflateStubAsInstance(node);
+        return deserializeReferenceAsInstance(node);
     }
 
     @Override
@@ -391,6 +384,71 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
 
     public IDeserializer getInitialLoadDeserializer() {
         return this.initialDeserializer;
+    }
+
+    /**
+     * Serializes a reference to the given object into the given encoder.
+     * 
+     * @param encoder The instance stub will be serialized using this encoder.
+     * @param target The object reference to encode.
+     * @return True if the instance was the type of object which should, itself, be serialized.
+     */
+    private boolean serializeAsReference(ExtentBasedCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object target) {
+        INode referenceToTarget = null;
+        boolean isRegularReference = false;
+        
+        if (null == target) {
+            // Just leave the null.
+            referenceToTarget = null;
+        } else {
+            // Request the token.
+            IPersistenceToken persistenceToken = safeExtractPersistenceToken(target);
+            // Check:
+            // -constant
+            // -class
+            // -regular or null
+            // -null
+            if (persistenceToken instanceof ConstantPersistenceToken) {
+                referenceToTarget = this.graphStore.buildConstantNode(((ConstantPersistenceToken)persistenceToken).stableConstantId);
+            } else if (persistenceToken instanceof ClassPersistenceToken) {
+                referenceToTarget = this.graphStore.buildClassNode(((ClassPersistenceToken)persistenceToken).className);
+            } else if (persistenceToken instanceof NodePersistenceToken) {
+                referenceToTarget = ((NodePersistenceToken)persistenceToken).node;
+                isRegularReference = true;
+            } else if (null == persistenceToken) {
+                // Note that we used to have an assumption that these were lazily assigned to classes so verify we aren't in that case.
+                RuntimeAssertionError.assertTrue(!(target instanceof org.aion.avm.shadow.java.lang.Class));
+                
+                // Create the node and set it.
+                IRegularNode regularNode = this.graphStore.buildNewRegularNode(target.getClass().getName());
+                try {
+                    this.persistenceTokenField.set(target, new NodePersistenceToken(regularNode));
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // Any failure related to this would have happened much earlier.
+                    throw RuntimeAssertionError.unexpected(e);
+                }
+                referenceToTarget = regularNode;
+                isRegularReference = true;
+            } else {
+                RuntimeAssertionError.unreachable("Unknown token type");
+            }
+            RuntimeAssertionError.assertTrue(null != referenceToTarget);
+        }
+        encoder.encodeReference(referenceToTarget);
+        return isRegularReference;
+    }
+
+    private org.aion.avm.shadow.java.lang.Object deserializeReferenceAsInstance(INode oneNode) {
+        return this.populator.instantiateReference(oneNode);
+    }
+
+    private IPersistenceToken safeExtractPersistenceToken(org.aion.avm.shadow.java.lang.Object instance) {
+        try {
+            return (IPersistenceToken)this.persistenceTokenField.get(instance);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // Any failure related to this would have happened much earlier.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 
 
