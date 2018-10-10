@@ -85,9 +85,12 @@ public class LoadedDApp {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore);
+        // We are reading from statics, so we need to remember this for billing purposes.
+        boolean didLoadStatics = true;
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore, didLoadStatics);
         // Configure the storage graph.
-        Function<IRegularNode, IPersistenceToken> tokenBuilder = (regularNode) -> new NodePersistenceToken(regularNode);
+        // (we pass in false for isNewlyWritten since this token building is only invoked for loaded instances, not newly-written ones).
+        Function<IRegularNode, IPersistenceToken> tokenBuilder = (regularNode) -> new NodePersistenceToken(regularNode, false);
         this.graphStore.setLateComponents(this.loader, codec.getInitialLoadDeserializer(), tokenBuilder);
         
         // Extract the raw data for the class statics.
@@ -112,7 +115,9 @@ public class LoadedDApp {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        return new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore);
+        // Initial store, so no statics are being loaded.
+        boolean didLoadStatics = false;
+        return new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore, didLoadStatics);
     }
 
     /**

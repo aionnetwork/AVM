@@ -55,7 +55,10 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
     private final PreLoadedDeserializer preLoadedDeserializer;
     private final IdentityHashMap<org.aion.avm.shadow.java.lang.Object, Integer> objectSizesLoadedForCallee;
 
-    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
+    // This flag is just maintained so we know to apply the billing, on the outside (otherwise, we need to track more state, externally).
+    public final boolean didLoadStatics;
+
+    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore, boolean didLoadStatics) {
         this.fieldCache = fieldCache;
         this.populator = populator;
         this.feeProcessor = feeProcessor;
@@ -76,6 +79,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
         this.initialDeserializer = new NotLoadedDeserializer();
         this.preLoadedDeserializer = new PreLoadedDeserializer();
         this.objectSizesLoadedForCallee = new IdentityHashMap<>();
+        this.didLoadStatics = didLoadStatics;
     }
 
     public void serializeClass(ExtentBasedCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {
@@ -253,21 +257,21 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
     }
 
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
-        int billableSize = serializeAndWriteBackInstance(instance, nextObjectSink);
+        NodePersistenceToken persistenceToken = (NodePersistenceToken) safeExtractPersistenceToken(instance);
+        int billableSize = serializeAndWriteBackInstance(instance, persistenceToken, nextObjectSink);
         // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
         // we run out of energy, part-way.
         this.feeProcessor.writeOneInstanceToStorage(billableSize);
     }
 
-    private int serializeAndWriteBackInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
-        IPersistenceToken persistenceToken = safeExtractPersistenceToken(instance);
+    private int serializeAndWriteBackInstance(org.aion.avm.shadow.java.lang.Object instance, NodePersistenceToken persistenceToken, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         // Note that, even if this is a new instance, someone would have already assigned a persistence token so this can't be null.
         RuntimeAssertionError.assertTrue(null != persistenceToken);
         
         Extent extent = internalSerializeInstance(instance, nextObjectSink);
         // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
         // we run out of energy, part-way.
-        ((NodePersistenceToken)persistenceToken).node.saveRegularData(extent);
+        persistenceToken.node.saveRegularData(extent);
         return extent.getBillableSize();
     }
 
@@ -376,11 +380,12 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
         // Here, we just need to walk the remaining objects we loaded for a callee but never touched, ourselves:  we still need to write them back.
         while (!instancesToWrite.isEmpty()) {
             org.aion.avm.shadow.java.lang.Object toWrite = instancesToWrite.poll();
+            NodePersistenceToken persistenceToken = (NodePersistenceToken) safeExtractPersistenceToken(toWrite);
             // We don't need the size that this returns since these write-backs are free (another invoke already paid for them).
             // TODO:  This instanceSink should probably be null since we shouldn't discover new objects at this point.  However, we currently need
             // this in order to find new instances which may have been first created in callee frames.  If we can solve that problem more directly,
             // this instanceSink can probably be removed.
-            serializeAndWriteBackInstance(toWrite, instanceSink);
+            serializeAndWriteBackInstance(toWrite, persistenceToken, instanceSink);
         }
     }
 
@@ -424,7 +429,9 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
                 // Create the node and set it.
                 IRegularNode regularNode = this.graphStore.buildNewRegularNode(target.getClass().getName());
                 try {
-                    this.persistenceTokenField.set(target, new NodePersistenceToken(regularNode));
+                    // This token was null, meaning a new instance, so this is a newly written token.
+                    boolean isNewlyWritten = true;
+                    this.persistenceTokenField.set(target, new NodePersistenceToken(regularNode, isNewlyWritten));
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     // Any failure related to this would have happened much earlier.
                     throw RuntimeAssertionError.unexpected(e);

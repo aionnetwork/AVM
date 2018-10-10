@@ -134,7 +134,7 @@ public class StorageWalker {
                         processed.add(instanceId);
                         try {
                             Constructor<?> con = constructorCache.getConstructorForClassName(className);
-                            org.aion.avm.shadow.java.lang.Object stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(null, new NodePersistenceToken(node));
+                            org.aion.avm.shadow.java.lang.Object stub = (org.aion.avm.shadow.java.lang.Object)con.newInstance(null, new NodePersistenceToken(node, false));
                             instanceQueue.add(stub);
                         } catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                             // Errors not handled in this tool.
@@ -161,7 +161,9 @@ public class StorageWalker {
         // (note that it requires a fieldCache but we don't attempt to reuse this, in our case).
         ReflectedFieldCache fieldCache = new ReflectedFieldCache();
         NullFeeProcessor feeProcessor = new NullFeeProcessor();
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, feeProcessor, objectGraph);
+        // (didLoadStatics is irrelevant, here, so just pass false)
+        boolean didLoadStatics = false;
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, feeProcessor, objectGraph, didLoadStatics);
         
         // Extract the raw data for the class statics.
         ExtentBasedCodec.Decoder staticDecoder = new ExtentBasedCodec.Decoder(objectGraph.getRoot());
