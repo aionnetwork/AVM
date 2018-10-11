@@ -24,7 +24,6 @@ public class TransactionalKernelTest {
         Assert.assertTrue(Arrays.equals(value, transaction.getStorage(address, key)));
         
         byte[] account1 = Helpers.randomBytes(32);
-        transaction.createAccount(account1);
         transaction.adjustBalance(account1, 50L);
         Assert.assertEquals(50L, transaction.getBalance(account1));
         
@@ -68,7 +67,6 @@ public class TransactionalKernelTest {
     public void testCommitAdjustment() {
         KernelInterface base = new KernelInterfaceImpl();
         byte[] address = Helpers.randomBytes(32);
-        base.createAccount(address);
         base.adjustBalance(address, 1L);
         
         TransactionalKernel transaction = new TransactionalKernel(base);
@@ -77,7 +75,6 @@ public class TransactionalKernelTest {
         Assert.assertEquals(11L, transaction.getBalance(address));
         transaction.adjustBalance(address, -5L);
         byte[] address2 = Helpers.randomBytes(32);
-        transaction.createAccount(address2);
         transaction.adjustBalance(address2, 1L);
         
         // Now, commit and prove it is all written back.
@@ -90,7 +87,6 @@ public class TransactionalKernelTest {
     public void testCommitDelete() {
         KernelInterface base = new KernelInterfaceImpl();
         byte[] address = Helpers.randomBytes(32);
-        base.createAccount(address);
         base.adjustBalance(address, 1L);
         
         TransactionalKernel transaction = new TransactionalKernel(base);
@@ -111,7 +107,6 @@ public class TransactionalKernelTest {
         // This probably can't happen, in reality, but this test at least shows it is possible.
         KernelInterface base = new KernelInterfaceImpl();
         byte[] address = Helpers.randomBytes(32);
-        base.createAccount(address);
         base.adjustBalance(address, 1L);
         
         TransactionalKernel transaction = new TransactionalKernel(base);
@@ -121,7 +116,6 @@ public class TransactionalKernelTest {
         transaction.deleteAccount(address);
         Assert.assertEquals(1L, base.getBalance(address));
         Assert.assertEquals(0L, transaction.getBalance(address));
-        transaction.createAccount(address);
         transaction.adjustBalance(address, 2L);
         Assert.assertEquals(2L, transaction.getBalance(address));
         

@@ -1,10 +1,8 @@
 package org.aion.kernel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -86,18 +84,6 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public void createAccount(byte[] address) {
-        Consumer<KernelInterface> write = (kernel) -> {
-            kernel.createAccount(address);
-        };
-        write.accept(writeCache);
-        writeLog.add(write);
-        this.deletedAccountProjection.remove(new ByteArrayWrapper(address));
-        // Say that we have this cached so we don't go back to any old version in the parent (even though it is unlikely we will create over delete).
-        this.cachedAccountBalances.add(new ByteArrayWrapper(address));
-    }
-
-    @Override
     public void deleteAccount(byte[] address) {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.deleteAccount(address);
@@ -106,18 +92,6 @@ public class TransactionalKernel implements KernelInterface {
         writeLog.add(write);
         this.deletedAccountProjection.add(new ByteArrayWrapper(address));
         this.cachedAccountBalances.remove(new ByteArrayWrapper(address));
-    }
-
-    @Override
-    public boolean isExists(byte[] address) {
-        boolean result = false;
-        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
-            result = this.writeCache.isExists(address);
-            if (!result) {
-                result = this.parent.isExists(address);
-            }
-        }
-        return result;
     }
 
     @Override
@@ -136,10 +110,19 @@ public class TransactionalKernel implements KernelInterface {
     public void adjustBalance(byte[] address, long delta) {
         // This is a read-then-write operation so we need to make sure that there is an entry in our cache, first, before we can apply the mutation.
         if (!this.cachedAccountBalances.contains(new ByteArrayWrapper(address))) {
-            long balance = this.parent.getBalance(address);
-            this.writeCache.adjustBalance(address, balance);
+            // We can only re-cache this if we didn't already delete it.
+            // If it was deleted, we need to fake the lazy creation and start it at zero.
+            if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
+                long balance = this.parent.getBalance(address);
+                this.writeCache.adjustBalance(address, balance);
+            } else {
+                this.writeCache.adjustBalance(address, 0L);
+            }
             this.cachedAccountBalances.add(new ByteArrayWrapper(address));
         }
+        // If this was previously deleted, fake the lazy re-creation.
+        this.deletedAccountProjection.remove(new ByteArrayWrapper(address));
+        
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.adjustBalance(address, delta);
         };

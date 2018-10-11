@@ -1,9 +1,5 @@
 package org.aion.kernel;
 
-import org.aion.avm.core.util.ByteArrayWrapper;
-
-import java.util.Map;
-
 
 /**
  * Interface for accessing kernel features.
@@ -44,26 +40,12 @@ public interface KernelInterface {
     byte[] getStorage(byte[] address, byte[] key);
 
     /**
-     * Creates an account if not exist.
-     *
-     * @param address the account address
-     */
-    void createAccount(byte[] address);
-
-    /**
      * Deletes an account.
+     * This is used to implement the self-destruct functionality.
      *
      * @param address the account address
      */
     void deleteAccount(byte[] address);
-
-    /**
-     * Returns whether an account exists.
-     *
-     * @param address the account address
-     * @return
-     */
-    boolean isExists(byte[] address);
 
     /**
      * Returns the balance of an account.

@@ -1,6 +1,5 @@
 package org.aion.kernel;
 
-import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 import org.aion.data.DirectoryBackedDataStore;
 import org.aion.data.IAccountStore;
@@ -8,7 +7,6 @@ import org.aion.data.IDataStore;
 import org.aion.data.MemoryBackedDataStore;
 
 import java.io.File;
-import java.util.Map;
 
 
 /**
@@ -47,12 +45,6 @@ public class KernelInterfaceImpl implements KernelInterface {
         premined.setBalance(PREMINED_AMOUNT);
     }
 
-    @Override
-    public boolean isExists(byte[] address) {
-        return (null != this.dataStore.openAccount(address));
-    }
-
-    @Override
     public void createAccount(byte[] address) {
         this.dataStore.createAccount(address);
     }
