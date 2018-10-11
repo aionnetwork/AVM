@@ -101,24 +101,6 @@ public interface IBlockchainRuntime {
     // State
     //================
 
-    // TODO: how to expose the underlying storage, to cooperate with our persistence model
-
-    /**
-     * Returns the corresponding value in the storage.
-     *
-     * @param key
-     * @return
-     */
-    ByteArray avm_getStorage(ByteArray key);
-
-    /**
-     * Inserts/updates a key-value pair.
-     *
-     * @param key
-     * @param value
-     */
-    void avm_putStorage(ByteArray key, ByteArray value);
-
     /**
      * Returns the address of an account.
      *

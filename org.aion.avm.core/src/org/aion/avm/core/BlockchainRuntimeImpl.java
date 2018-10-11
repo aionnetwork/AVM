@@ -109,20 +109,6 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public ByteArray avm_getStorage(ByteArray key) {
-        Objects.requireNonNull(key);
-
-        return new ByteArray(this.kernel.getStorage(ctx.getAddress(), key.getUnderlying()));
-    }
-
-    @Override
-    public void avm_putStorage(ByteArray key, ByteArray value) {
-        Objects.requireNonNull(key);
-
-        this.kernel.putStorage(ctx.getAddress(), key.getUnderlying(), value == null ? null : value.getUnderlying());
-    }
-
-    @Override
     public long avm_getBalance(Address address) {
         Objects.requireNonNull(address);
 

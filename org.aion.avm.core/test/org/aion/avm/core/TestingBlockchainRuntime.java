@@ -159,19 +159,6 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
 
     @Override
-    public ByteArray avm_getStorage(ByteArray key) {
-        Objects.requireNonNull(key);
-        byte[] value = kernel.getStorage(address, key.getUnderlying());
-        return value == null ? null : new ByteArray(value);
-    }
-
-    @Override
-    public void avm_putStorage(ByteArray key, ByteArray value) {
-        Objects.requireNonNull(key);
-        kernel.putStorage(address, key.getUnderlying(), value == null ? null : value.getUnderlying());
-    }
-
-    @Override
     public long avm_getBalance(Address address) {
         Objects.requireNonNull(address);
         return kernel.getBalance(address.unwrap());

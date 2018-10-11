@@ -82,16 +82,6 @@ public final class BlockchainRuntime {
     }
 
 
-    public static ByteArray avm_getStorage(ByteArray key) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage);
-        return Helper.blockchainRuntime.avm_getStorage(key);
-    }
-
-    public static void avm_putStorage(ByteArray key, ByteArray value) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_putStorage);
-        Helper.blockchainRuntime.avm_putStorage(key, value);
-    }
-
     public static long avm_getBalance(Address address) {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getBalance);
         return Helper.blockchainRuntime.avm_getBalance(address);
@@ -227,14 +217,6 @@ public final class BlockchainRuntime {
         return avm_getBlockDifficulty().getUnderlying();
     }
 
-
-    public static byte[] getStorage(byte[] key) {
-        return avm_getStorage(new ByteArray(key)).getUnderlying();
-    }
-
-    public static void putStorage(byte[] key, byte[] value) {
-        avm_putStorage(new ByteArray(key), new ByteArray(value));
-    }
 
     public static long getBalance(Address address) {
         return avm_getBalance(address);
