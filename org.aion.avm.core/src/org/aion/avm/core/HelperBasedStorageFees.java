@@ -20,9 +20,18 @@ import org.aion.avm.internal.IHelper;
 public class HelperBasedStorageFees implements IStorageFeeProcessor {
     // (these are only public so that tests can access them)
     public static final long FIXED_READ_COST = 1_000L;
-    public static final long FIXED_WRITE_COST = 10_000L;
+    public static final long SPENT_WRITE_COST = 1_000L;
+    public static final long DEPOSIT_WRITE_COST = 9_000L;
     public static final long BYTE_READ_COST = 1L;
     public static final long BYTE_WRITE_COST = 1L;
+
+    // Per-block write costs are somewhat complex:
+    // -new writes cost SPENT_WRITE_COST + DEPOSIT_WRITE_COST
+    // -update writes cost SPENT_WRITE_COST
+    // -GC frees up cleared objects * DEPOSIT_WRITE_COST
+    public static final long PER_OBJECT_WRITE_NEW = SPENT_WRITE_COST + DEPOSIT_WRITE_COST;
+    public static final long PER_OBJECT_WRITE_UPDATE = SPENT_WRITE_COST;
+    public static final long PER_OBJECT_FREE_REFUND = DEPOSIT_WRITE_COST;
 
     private final IHelper helper;
 
@@ -38,13 +47,13 @@ public class HelperBasedStorageFees implements IStorageFeeProcessor {
 
     @Override
     public void writeFirstStaticDataToStorage(int byteSize) {
-        long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
+        long cost = PER_OBJECT_WRITE_NEW + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }
 
     @Override
     public void writeUpdateStaticDataToStorage(int byteSize) {
-        long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
+        long cost = PER_OBJECT_WRITE_UPDATE + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }
 
@@ -56,13 +65,13 @@ public class HelperBasedStorageFees implements IStorageFeeProcessor {
 
     @Override
     public void writeFirstOneInstanceToStorage(int byteSize) {
-        long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
+        long cost = PER_OBJECT_WRITE_NEW + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }
 
     @Override
     public void writeUpdateOneInstanceToStorage(int byteSize) {
-        long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
+        long cost = PER_OBJECT_WRITE_UPDATE + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }
 
@@ -74,7 +83,7 @@ public class HelperBasedStorageFees implements IStorageFeeProcessor {
 
     @Override
     public void writeUpdateStaticDataToHeap(int byteSize) {
-        long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
+        long cost = PER_OBJECT_WRITE_UPDATE + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }
 
@@ -86,13 +95,13 @@ public class HelperBasedStorageFees implements IStorageFeeProcessor {
 
     @Override
     public void writeFirstOneInstanceToHeap(int byteSize) {
-        long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
+        long cost = PER_OBJECT_WRITE_NEW + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }
 
     @Override
     public void writeUpdateOneInstanceToHeap(int byteSize) {
-        long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
+        long cost = PER_OBJECT_WRITE_UPDATE + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }
 }

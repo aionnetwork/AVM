@@ -166,7 +166,7 @@ public class AvmImplTest {
         long deploymentStorageCost = 200 * txData.length;
         long clinitCost = 188l;
         // Storage:  static 64 bytes (2 references) +  the 2 strings (hash code and string length: "CALL" + "NORMAL").
-        long initialStorageCost = (3 * HelperBasedStorageFees.FIXED_WRITE_COST)
+        long initialStorageCost = (3 * HelperBasedStorageFees.PER_OBJECT_WRITE_NEW)
                 + (64 * HelperBasedStorageFees.BYTE_WRITE_COST)
                 + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST)
                 + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST)
@@ -193,15 +193,15 @@ public class AvmImplTest {
         // -read instance (inner) "NORMAL"
                 + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_READ_COST))
         // -write statics (inner)
-                + (HelperBasedStorageFees.FIXED_WRITE_COST + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
+                + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
         // -write instance (inner) "NORMAL"
-                + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+                + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
         // -read instance (outer) "CALL"
                 + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_READ_COST))
         // -write statics (outer)
-                + (HelperBasedStorageFees.FIXED_WRITE_COST + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
+                + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
         // -write instance (outer) "CALL"
-                + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+                + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST))
         // -write instance (outer) "NORMAL" (free because we didn't touch it, just loaded it for the inner case)
         //        + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
                 ;
