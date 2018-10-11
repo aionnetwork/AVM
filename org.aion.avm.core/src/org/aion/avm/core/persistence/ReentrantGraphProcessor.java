@@ -407,7 +407,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             }
         }
         // Statics are "written" as a single unit.
-        this.feeProcessor.writeStaticDataToHeap(staticByteSize);
+        this.feeProcessor.writeUpdateStaticDataToHeap(staticByteSize);
         
         // Treat any of the instances we loaded as potential roots.
         for (org.aion.avm.shadow.java.lang.Object calleeSpaceRoot : this.loadedObjectInstances) {
@@ -424,9 +424,18 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         while (!calleeObjectsToScan.isEmpty()) {
             org.aion.avm.shadow.java.lang.Object calleeSpaceToScan = calleeObjectsToScan.remove();
             
+            // Determine if this is a new instance or an update.
+            // TODO:  Verify that we are not seeing a "new instance" which was already billed as new in a callee frame.  If this becomes reachable
+            // in this frame, but was billed in the callee frame, we will probably misinterpret it as a new instance, again.
+            boolean isNewInstance = (null == safeExtractPersistenceToken(calleeSpaceToScan));
+            
             int instanceByteSize = measureByteSizeOfInstance(calleeSpaceToScan, calleeToCallerRefMappingFunction);
             // Write each instance, one at a time.
-            this.feeProcessor.writeOneInstanceToHeap(instanceByteSize);
+            if (isNewInstance) {
+                this.feeProcessor.writeFirstOneInstanceToHeap(instanceByteSize);
+            } else {
+                this.feeProcessor.writeUpdateOneInstanceToHeap(instanceByteSize);
+            }
             calleeSpaceObjectsToCopyBack.add(calleeSpaceToScan);
         }
         

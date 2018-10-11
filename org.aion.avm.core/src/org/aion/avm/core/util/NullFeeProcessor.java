@@ -9,11 +9,15 @@ import org.aion.avm.core.persistence.IStorageFeeProcessor;
  */
 public class NullFeeProcessor implements IStorageFeeProcessor {
     @Override
-    public void readStaticDataFromStorage(int length) {
+    public void readStaticDataFromStorage(int byteSize) {
     }
 
     @Override
-    public void writeStaticDataToStorage(int length) {
+    public void writeFirstStaticDataToStorage(int byteSize) {
+    }
+
+    @Override
+    public void writeUpdateStaticDataToStorage(int byteSize) {
     }
 
     @Override
@@ -21,15 +25,19 @@ public class NullFeeProcessor implements IStorageFeeProcessor {
     }
 
     @Override
-    public void writeOneInstanceToStorage(int byteSize) {
+    public void writeFirstOneInstanceToStorage(int byteSize) {
     }
 
     @Override
-    public void readStaticDataFromHeap(int length) {
+    public void writeUpdateOneInstanceToStorage(int byteSize) {
     }
 
     @Override
-    public void writeStaticDataToHeap(int length) {
+    public void readStaticDataFromHeap(int byteSize) {
+    }
+
+    @Override
+    public void writeUpdateStaticDataToHeap(int byteSize) {
     }
 
     @Override
@@ -37,6 +45,10 @@ public class NullFeeProcessor implements IStorageFeeProcessor {
     }
 
     @Override
-    public void writeOneInstanceToHeap(int byteSize) {
+    public void writeFirstOneInstanceToHeap(int byteSize) {
+    }
+
+    @Override
+    public void writeUpdateOneInstanceToHeap(int byteSize) {
     }
 }

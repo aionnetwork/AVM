@@ -261,7 +261,14 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
         int billableSize = serializeAndWriteBackInstance(instance, persistenceToken, nextObjectSink);
         // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
         // we run out of energy, part-way.
-        this.feeProcessor.writeOneInstanceToStorage(billableSize);
+        // Determine if this is a new instance or an update.
+        // TODO:  Verify that we are not seeing a "new instance" which was already billed as new in a callee frame.  If this becomes reachable
+        // in this frame, but was billed in the callee frame, we will probably misinterpret it as a new instance, again.
+        if (persistenceToken.isNewlyWritten) {
+            this.feeProcessor.writeFirstOneInstanceToStorage(billableSize);
+        } else {
+            this.feeProcessor.writeUpdateOneInstanceToStorage(billableSize);
+        }
     }
 
     private int serializeAndWriteBackInstance(org.aion.avm.shadow.java.lang.Object instance, NodePersistenceToken persistenceToken, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {

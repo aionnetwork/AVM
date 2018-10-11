@@ -37,7 +37,13 @@ public class HelperBasedStorageFees implements IStorageFeeProcessor {
     }
 
     @Override
-    public void writeStaticDataToStorage(int byteSize) {
+    public void writeFirstStaticDataToStorage(int byteSize) {
+        long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
+        helper.externalChargeEnergy(cost);
+    }
+
+    @Override
+    public void writeUpdateStaticDataToStorage(int byteSize) {
         long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }
@@ -49,7 +55,13 @@ public class HelperBasedStorageFees implements IStorageFeeProcessor {
     }
 
     @Override
-    public void writeOneInstanceToStorage(int byteSize) {
+    public void writeFirstOneInstanceToStorage(int byteSize) {
+        long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
+        helper.externalChargeEnergy(cost);
+    }
+
+    @Override
+    public void writeUpdateOneInstanceToStorage(int byteSize) {
         long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }
@@ -61,7 +73,7 @@ public class HelperBasedStorageFees implements IStorageFeeProcessor {
     }
 
     @Override
-    public void writeStaticDataToHeap(int byteSize) {
+    public void writeUpdateStaticDataToHeap(int byteSize) {
         long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }
@@ -73,7 +85,13 @@ public class HelperBasedStorageFees implements IStorageFeeProcessor {
     }
 
     @Override
-    public void writeOneInstanceToHeap(int byteSize) {
+    public void writeFirstOneInstanceToHeap(int byteSize) {
+        long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
+        helper.externalChargeEnergy(cost);
+    }
+
+    @Override
+    public void writeUpdateOneInstanceToHeap(int byteSize) {
         long cost = FIXED_WRITE_COST + (BYTE_WRITE_COST * (long)byteSize);
         helper.externalChargeEnergy(cost);
     }

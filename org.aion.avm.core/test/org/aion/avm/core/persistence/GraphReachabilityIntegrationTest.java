@@ -177,8 +177,9 @@ public class GraphReachabilityIntegrationTest {
                     + (3 * 1040L)
                 // (heap) write static
                     + 10161L
-                // (heap) write instances (4)
-                    + (4 * 10040L)
+                // (heap) write instances (4 = 3 + new 1)
+                    + (3 * 10040L)
+                    + 10040L
                 // write static
                     + 10161L
                 // write instance
@@ -233,8 +234,9 @@ public class GraphReachabilityIntegrationTest {
                     + (3 * 1040L)
                 // (heap) write static
                     + 10161L
-                // (heap) write instances (4)
-                    + (4 * 10040L)
+                // (heap) write instances (4 = 3 + new 1)
+                    + (3 * 10040L)
+                    + 10040L
                 // (heap) write static
                     + 10161L
                 // (heap) write instance

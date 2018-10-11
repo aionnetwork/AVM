@@ -273,25 +273,36 @@ public class ReentrantGraphProcessorTest {
         public void readStaticDataFromStorage(int byteSize) {
         }
         @Override
-        public void writeStaticDataToStorage(int byteSize) {
+        public void writeFirstStaticDataToStorage(int byteSize) {
+        }
+        @Override
+        public void writeUpdateStaticDataToStorage(int byteSize) {
         }
         @Override
         public void readOneInstanceFromStorage(int byteSize) {
         }
         @Override
-        public void writeOneInstanceToStorage(int byteSize) {
+        public void writeFirstOneInstanceToStorage(int byteSize) {
+        }
+        @Override
+        public void writeUpdateOneInstanceToStorage(int byteSize) {
         }
         @Override
         public void readStaticDataFromHeap(int byteSize) {
         }
         @Override
-        public void writeStaticDataToHeap(int byteSize) {
+        public void writeUpdateStaticDataToHeap(int byteSize) {
         }
         @Override
         public void readOneInstanceFromHeap(int byteSize) {
         }
         @Override
-        public void writeOneInstanceToHeap(int byteSize) {
+        public void writeFirstOneInstanceToHeap(int byteSize) {
+            // This is the place where we want to trigger a failure (may generalize this in the future).
+            throw new OutOfEnergyException();
+        }
+        @Override
+        public void writeUpdateOneInstanceToHeap(int byteSize) {
             // This is the place where we want to trigger a failure (may generalize this in the future).
             throw new OutOfEnergyException();
         }

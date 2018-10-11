@@ -159,7 +159,11 @@ public class LoadedDApp {
         
         // Save the raw bytes.
         Extent staticData = encoder.toExtent();
-        feeProcessor.writeStaticDataToStorage(staticData.getBillableSize());
+        if (codec.didLoadStatics) {
+            feeProcessor.writeUpdateStaticDataToStorage(staticData.getBillableSize());
+        } else {
+            feeProcessor.writeFirstStaticDataToStorage(staticData.getBillableSize());
+        }
         this.graphStore.setRoot(staticData);
         
         // Do the pass over additional roots.

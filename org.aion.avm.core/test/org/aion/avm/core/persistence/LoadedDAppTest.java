@@ -524,7 +524,11 @@ public class LoadedDAppTest {
             this.count_readStaticDataFromStorage += 1;
         }
         @Override
-        public void writeStaticDataToStorage(int byteSize) {
+        public void writeFirstStaticDataToStorage(int byteSize) {
+            this.count_writeStaticDataToStorage += 1;
+        }
+        @Override
+        public void writeUpdateStaticDataToStorage(int byteSize) {
             this.count_writeStaticDataToStorage += 1;
         }
         @Override
@@ -532,7 +536,11 @@ public class LoadedDAppTest {
             this.count_readOneInstanceFromStorage += 1;
         }
         @Override
-        public void writeOneInstanceToStorage(int byteSize) {
+        public void writeFirstOneInstanceToStorage(int byteSize) {
+            this.count_writeOneInstanceToStorage += 1;
+        }
+        @Override
+        public void writeUpdateOneInstanceToStorage(int byteSize) {
             this.count_writeOneInstanceToStorage += 1;
         }
         @Override
@@ -540,7 +548,7 @@ public class LoadedDAppTest {
             this.count_readStaticDataFromHeap += 1;
         }
         @Override
-        public void writeStaticDataToHeap(int byteSize) {
+        public void writeUpdateStaticDataToHeap(int byteSize) {
             this.count_writeStaticDataToHeap += 1;
         }
         @Override
@@ -548,7 +556,11 @@ public class LoadedDAppTest {
             this.count_readOneInstanceFromHeap += 1;
         }
         @Override
-        public void writeOneInstanceToHeap(int byteSize) {
+        public void writeFirstOneInstanceToHeap(int byteSize) {
+            this.count_writeOneInstanceToHeap += 1;
+        }
+        @Override
+        public void writeUpdateOneInstanceToHeap(int byteSize) {
             this.count_writeOneInstanceToHeap += 1;
         }
     }
