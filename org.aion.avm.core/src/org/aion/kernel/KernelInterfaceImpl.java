@@ -118,12 +118,6 @@ public class KernelInterfaceImpl implements KernelInterface {
         account.setNonce(start + 1);
     }
 
-    @Override
-    public Map<ByteArrayWrapper, byte[]> getStorageEntries(byte[] address) {
-        return this.dataStore.openAccount(address).getStorageEntries();
-    }
-
-
     private IAccountStore lazyCreateAccount(byte[] address) {
         IAccountStore account = this.dataStore.openAccount(address);
         if (null == account) {

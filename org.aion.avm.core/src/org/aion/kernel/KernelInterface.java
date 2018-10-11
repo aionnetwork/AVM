@@ -96,9 +96,4 @@ public interface KernelInterface {
      */
     void incrementNonce(byte[] address);
 
-
-    /**
-     * Returns all the storage entries of an account, for testing purpose only.
-     */
-    Map<ByteArrayWrapper, byte[]> getStorageEntries(byte[] address);
 }

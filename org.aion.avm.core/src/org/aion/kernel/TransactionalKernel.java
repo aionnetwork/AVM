@@ -168,18 +168,4 @@ public class TransactionalKernel implements KernelInterface {
         writeLog.add(write);
     }
 
-    @Override
-    public Map<ByteArrayWrapper, byte[]> getStorageEntries(byte[] address) {
-        Map<ByteArrayWrapper, byte[]> workingCopy = null;
-        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
-            workingCopy = new HashMap<>(this.parent.getStorageEntries(address));
-            Map<ByteArrayWrapper, byte[]> overlay = this.writeCache.getStorageEntries(address);
-            if (null != overlay) {
-                for (Map.Entry<ByteArrayWrapper, byte[]> overlayElement : overlay.entrySet()) {
-                    workingCopy.put(overlayElement.getKey(), overlayElement.getValue());
-                }
-            }
-        }
-        return workingCopy;
-    }
 }
