@@ -265,6 +265,37 @@ public class GraphReachabilityIntegrationTest {
         Assert.assertEquals(5, value);
     }
 
+    /**
+     * Runs the setup routine, a few times, and verifies the expected GC behaviour after each.
+     */
+    @Test
+    public void testVerifyGcCost() throws Exception {
+        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Address contractAddr = doInitialDeploymentAndSetup(block);
+        
+        // GC now should reclaim nothing.
+        TransactionResult gcResult = runGc(block, contractAddr);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, gcResult.getStatusCode());
+        Assert.assertEquals(0L, gcResult.getEnergyUsed());
+        
+        // Run the setup again and GC (should reclaim 5).
+        callStatic(block, contractAddr, getCost_setup249(), "setup249");
+        gcResult = runGc(block, contractAddr);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, gcResult.getStatusCode());
+        Assert.assertEquals(-5 * HelperBasedStorageFees.DEPOSIT_WRITE_COST, gcResult.getEnergyUsed());
+        
+        // GC now should reclaim nothing.
+        gcResult = runGc(block, contractAddr);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, gcResult.getStatusCode());
+        Assert.assertEquals(0L, gcResult.getEnergyUsed());
+        
+        // Run the setup again and GC (should reclaim 5).
+        callStatic(block, contractAddr, getCost_setup249(), "setup249");
+        gcResult = runGc(block, contractAddr);
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, gcResult.getStatusCode());
+        Assert.assertEquals(-5 * HelperBasedStorageFees.DEPOSIT_WRITE_COST, gcResult.getEnergyUsed());
+    }
+
 
     private Address doInitialDeploymentAndSetup(Block block) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(GraphReachabilityIntegrationTestTarget.class);
@@ -293,24 +324,7 @@ public class GraphReachabilityIntegrationTest {
         Assert.assertEquals(miscCharges + storageCharges, createResult.getEnergyUsed());
         
         // Setup test.
-        long expectedMiscCharges = 21640L + 236L + 300L + 100L + 600L + 37234L + 973L + 131L + 131L + 131L + 131L + 131L;
-        long expectedStorageCharges = 0L
-                // read static
-                    + HelperBasedStorageFees.FIXED_READ_COST + 161L
-                // write static
-                    + HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L
-                // instance
-                    + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
-                // instance
-                    + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
-                // instance
-                    + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
-                // instance
-                    + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
-                // instance
-                    + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
-                ;
-        callStatic(block, contractAddr, expectedMiscCharges + expectedStorageCharges, "setup249");
+        callStatic(block, contractAddr, getCost_setup249(), "setup249");
         return contractAddr;
     }
 
@@ -343,5 +357,34 @@ public class GraphReachabilityIntegrationTest {
                     + (5 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
         return miscCharges + storageCharges;
+    }
+
+    private static long getCost_setup249() {
+        long miscCharges = 21640L + 236L + 300L + 100L + 600L + 37234L + 973L + 131L + 131L + 131L + 131L + 131L;
+        long storageCharges = 0L
+                // read static
+                    + HelperBasedStorageFees.FIXED_READ_COST + 161L
+                // write static
+                    + HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L
+                // instance
+                    + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
+                // instance
+                    + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
+                // instance
+                    + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
+                // instance
+                    + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
+                // instance
+                    + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
+                ;
+        return miscCharges + storageCharges;
+    }
+
+    private TransactionResult runGc(Block block, Address contractAddr) {
+        long energyLimit = 1_000_000l;
+        long energyPrice = 1l;
+        Transaction gc = Transaction.garbageCollect(contractAddr.unwrap(), kernel.getNonce(contractAddr.unwrap()), energyLimit, energyPrice);
+        TransactionResult gcResult = avm.run(new TransactionContextImpl(gc, block));
+        return gcResult;
     }
 }

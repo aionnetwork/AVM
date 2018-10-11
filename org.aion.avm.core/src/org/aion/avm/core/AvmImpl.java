@@ -207,10 +207,13 @@ public class AvmImpl implements AvmInternal {
         TransactionResult result = new TransactionResult();
         if (null != dapp) {
             // Run the GC and check this into the hot DApp cache.
-            dapp.graphStore.gc();
+            long instancesFreed = dapp.graphStore.gc();
             this.hotCache.checkin(addressWrapper, dapp);
-            // For now, we always succeed and have no other information.
+            // We want to set this to success and report the energy used as the refund found by the GC.
+            // NOTE:  This is the total value of the refund as splitting that between the DApp and node is a higher-level decision.
+            long storageEnergyRefund = instancesFreed * HelperBasedStorageFees.DEPOSIT_WRITE_COST;
             result.setStatusCode(TransactionResult.Code.SUCCESS);
+            result.setEnergyUsed(-storageEnergyRefund);
         } else {
             // If we failed to find the application, we will currently return this as a generic FAILED_INVALID but we may want a more
             // specific code in the future.

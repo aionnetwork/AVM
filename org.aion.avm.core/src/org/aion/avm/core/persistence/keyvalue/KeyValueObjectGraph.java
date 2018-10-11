@@ -183,7 +183,7 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     }
 
     @Override
-    public void gc() {
+    public long gc() {
         // As a relatively simple proof-of-concept, we will build a copying semi-space collector (scavenger) which uses instanceIdBias
         // to define the "low" and "high" spaces (if we assume less than HIGH_RANGE_BIAS instances are ever in storage at once.
         
@@ -260,9 +260,12 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         for (long i = 1L; i < this.nextInstanceId; ++i) {
             this.store.putStorage(this.address, StorageKeys.forInstance(i + this.instanceIdBias), new byte[0]);
         }
+        // The number of instances freed is just the difference between our next ID incrementor before and after the GC.
+        long instancesFreed = (this.nextInstanceId - nextInstanceId);
         this.nextInstanceId = nextInstanceId;
         this.instanceIdBias = targetBias;
         flushWrites();
+        return instancesFreed;
     }
 
     @Override

@@ -108,6 +108,8 @@ public interface IObjectGraphStore {
      *    F)  DONE - GC has completed
      * 
      * TODO:  In order to support multi-version data stores, this will actually have to be called on something lower-level.
+     * 
+     * @return The number of instances freed by the GC.
      */
-    public void gc();
+    public long gc();
 }

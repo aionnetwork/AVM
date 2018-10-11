@@ -15,7 +15,6 @@ import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -30,7 +29,7 @@ public class BasicPerfTest {
     private final static int THREAD_COUNT = 1;
 
     @Test
-    public void testDeployAndRun() throws Exception {
+    public void testDeployAndRun() throws Throwable {
         TestRunnable[] threads = new TestRunnable[THREAD_COUNT];
         // Setup.
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BasicPerfContract.class
@@ -51,7 +50,7 @@ public class BasicPerfTest {
             threads[i].start();
         }
         for (int i = 0; i < THREAD_COUNT; ++i) {
-            threads[i].join();
+            threads[i].waitForSafeTermination();
         }
         long end = System.nanoTime();
         // Report - note that this doesn't take the thread count into account.
@@ -64,6 +63,7 @@ public class BasicPerfTest {
         private KernelInterface kernel;
         private Avm avm;
         private byte[] contractAddress;
+        private Throwable backgroundThrowable;
         public void deploy(byte[] jar, byte[] arguments) {
             // Deploy.
             this.kernel = new KernelInterfaceImpl();
@@ -75,8 +75,21 @@ public class BasicPerfTest {
             Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             this.contractAddress = result1.getReturnData();
         }
+        public void waitForSafeTermination() throws Throwable {
+            this.join();
+            if (null != this.backgroundThrowable) {
+                throw this.backgroundThrowable;
+            }
+        }
         @Override
         public void run() {
+            try {
+                safeRun();
+            } catch (Throwable t) {
+                this.backgroundThrowable = t;
+            }
+        }
+        private void safeRun() {
             int blockStart = 2;
             for (int i = blockStart; i < (COUNT + blockStart); ++i) {
                 Block block = new Block(new byte[32], i, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
@@ -90,6 +103,8 @@ public class BasicPerfTest {
                     Transaction gcCall = Transaction.garbageCollect(this.contractAddress, kernel.getNonce(this.contractAddress), transaction1EnergyLimit, 1L);
                     TransactionResult gcResult = this.avm.run(new TransactionContextImpl(gcCall, block));
                     Assert.assertEquals(TransactionResult.Code.SUCCESS, gcResult.getStatusCode());
+                    // Note that this GC never actually frees anything, since our workload never orphans objects.
+                    Assert.assertEquals(0, gcResult.getEnergyUsed());
                 }
             }
         }
