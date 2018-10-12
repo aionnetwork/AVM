@@ -473,7 +473,7 @@ public final class ABIDecoder {
                             // match condition - 1) pType matches with the ABI Type specified by the symbol in the argsDescriptor;
                             // 2) pType is one of the wrapped 2D array types.
                             if (Arrays.asList(ABIEncoder.mapABITypes(String.valueOf(argsDescriptor.charAt(charIdx + 2))).identifiers).contains(pType) &&
-                                    pType.startsWith(ARRAY_WRAPPER_PREFIX) && pType.endsWith("2D")) {
+                                    pType.startsWith(ARRAY_WRAPPER_PREFIX + "$$")) {
                                 charIdx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, charIdx) + 1;
                                 charIdx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, charIdx) + 1;
                                 while (charIdx < argsDescriptor.length() && argsDescriptor.charAt(charIdx) == ABIDecoder.JAGGED_D_S) {
@@ -488,7 +488,7 @@ public final class ABIDecoder {
                         // match condition - 1) pType matches with the ABI Type specified by the symbol in the argsDescriptor;
                         // 2) pType is one of the wrapped 1D array types; or, as a special case, the String type.
                         if (Arrays.asList(ABIEncoder.mapABITypes(String.valueOf(argsDescriptor.charAt(charIdx + 1))).identifiers).contains(pType) &&
-                                (pType.startsWith(ARRAY_WRAPPER_PREFIX) && !pType.endsWith("2D") ||
+                                (pType.startsWith(ARRAY_WRAPPER_PREFIX) && !pType.contains("$") ||
                                 pType == PackageConstants.kShadowDotPrefix + "java.lang.String")) {
                             charIdx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, charIdx) + 1;
                             parIdx ++;

@@ -46,15 +46,6 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         CLASS_WRAPPER_MAP.put("[L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
         CLASS_WRAPPER_MAP.put("[L" + PackageConstants.kInternalSlashPrefix + "IObject", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
 
-        CLASS_WRAPPER_MAP.put("[[I", PackageConstants.kArrayWrapperSlashPrefix + "IntArray2D");
-        CLASS_WRAPPER_MAP.put("[[B", PackageConstants.kArrayWrapperSlashPrefix + "ByteArray2D");
-        CLASS_WRAPPER_MAP.put("[[Z", PackageConstants.kArrayWrapperSlashPrefix + "ByteArray2D");
-        CLASS_WRAPPER_MAP.put("[[C", PackageConstants.kArrayWrapperSlashPrefix + "CharArray2D");
-        CLASS_WRAPPER_MAP.put("[[F", PackageConstants.kArrayWrapperSlashPrefix + "FloatArray2D");
-        CLASS_WRAPPER_MAP.put("[[S", PackageConstants.kArrayWrapperSlashPrefix + "ShortArray2D");
-        CLASS_WRAPPER_MAP.put("[[J", PackageConstants.kArrayWrapperSlashPrefix + "LongArray2D");
-        CLASS_WRAPPER_MAP.put("[[D", PackageConstants.kArrayWrapperSlashPrefix + "DoubleArray2D");
-
         // some special-case unifications to IObjectArray.
         INTERFACE_WRAPPER_MAP.put("[L" + PackageConstants.kInternalSlashPrefix + "IObject", PackageConstants.kInternalSlashPrefix + "IObjectArray");
         INTERFACE_WRAPPER_MAP.put("L" + PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", PackageConstants.kInternalSlashPrefix + "IObjectArray");

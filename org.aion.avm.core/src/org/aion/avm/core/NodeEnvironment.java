@@ -7,10 +7,7 @@ import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.ConstantPersistenceToken;
-import org.aion.avm.internal.IHelper;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.internal.*;
 import org.aion.kernel.KernelInterface;
 
 import java.io.IOException;
@@ -63,20 +60,13 @@ public class NodeEnvironment {
                     , org.aion.avm.arraywrapper.ArrayElement.class
                     , org.aion.avm.arraywrapper.BooleanArray.class
                     , org.aion.avm.arraywrapper.ByteArray.class
-                    , org.aion.avm.arraywrapper.ByteArray2D.class
                     , org.aion.avm.arraywrapper.CharArray.class
-                    , org.aion.avm.arraywrapper.CharArray2D.class
                     , org.aion.avm.arraywrapper.DoubleArray.class
-                    , org.aion.avm.arraywrapper.DoubleArray2D.class
                     , org.aion.avm.arraywrapper.FloatArray.class
-                    , org.aion.avm.arraywrapper.FloatArray2D.class
                     , org.aion.avm.arraywrapper.IntArray.class
-                    , org.aion.avm.arraywrapper.IntArray2D.class
                     , org.aion.avm.arraywrapper.LongArray.class
-                    , org.aion.avm.arraywrapper.LongArray2D.class
                     , org.aion.avm.arraywrapper.ObjectArray.class
                     , org.aion.avm.arraywrapper.ShortArray.class
-                    , org.aion.avm.arraywrapper.ShortArray2D.class
             };
 
             this.exceptionwrapperClasses = new Class<?>[] {
@@ -176,6 +166,13 @@ public class NodeEnvironment {
             // This would be a fatal startup error.
             throw RuntimeAssertionError.unexpected(e);
         }
+
+        try {
+            GeneratedClassesFactory.class.getMethod("initializeClassVariable", ClassLoader.class).invoke(null, this.sharedClassLoader);
+        } catch (Throwable e) {
+            throw RuntimeAssertionError.unexpected(e);
+        }
+
         // Create the constant map.
         this.constantMap = Collections.unmodifiableMap(initializeConstantState());
 

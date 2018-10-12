@@ -1,10 +1,7 @@
 package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.*;
-import org.aion.avm.internal.ABICodecException;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IObjectArray;
-import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.*;
 import org.aion.avm.shadow.java.lang.Double;
 import org.aion.avm.shadow.java.lang.Float;
 import org.aion.avm.shadow.java.lang.Integer;
@@ -15,12 +12,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.aion.avm.internal.IHelper;
+
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public final class ABIEncoder {
     public enum ABITypes{
-        avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", PackageConstants.kShadowDotPrefix + "java.lang.Byte", PackageConstants.kArrayWrapperDotPrefix + "ByteArray", PackageConstants.kArrayWrapperDotPrefix + "ByteArray2D", "[B", "[[B"}) {
+        avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", PackageConstants.kShadowDotPrefix + "java.lang.Byte", PackageConstants.kArrayWrapperDotPrefix + "ByteArray", PackageConstants.kArrayWrapperDotPrefix + "$$B", "[B", "[[B"}) {
             @Override
             public byte[] encode(Object data) {
                 return new byte[]{(byte)data};
@@ -66,7 +63,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (byte[]) data[i];
                 }
-                return new ByteArray2D(nativeArray);
+                return (ObjectArray) GeneratedClassesFactory.construct2DByteArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -77,7 +74,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_BOOLEAN ('Z', 1, new String[]{"Z", "boolean", "java.lang.Boolean", PackageConstants.kShadowDotPrefix + "java.lang.Boolean", PackageConstants.kArrayWrapperDotPrefix + "BooleanArray", "[Z", "[[Z"}) {
+        avm_BOOLEAN ('Z', 1, new String[]{"Z", "boolean", "java.lang.Boolean", PackageConstants.kShadowDotPrefix + "java.lang.Boolean", PackageConstants.kArrayWrapperDotPrefix + "BooleanArray", PackageConstants.kArrayWrapperDotPrefix + "$$Z", "[Z", "[[Z"}) {
             @Override
             public byte[] encode(Object data) {
                 return new byte[]{(byte) (((java.lang.Boolean)data) ? 1 : 0)};
@@ -125,14 +122,14 @@ public final class ABIEncoder {
             public ObjectArray construct2DWrappedArray(Object[] data) {
                 // note - still use ByteArray2D for now. We may remove the 2D array classes once we have the code that
                 // allows rt to request objects of generated classes from the AVM core.
-                byte[][] bytes = new byte[data.length][];
+                boolean[][] nativeArray = new boolean[data.length][];
                 for (int i = 0; i < data.length; i++) {
-                    bytes[i] = new byte[((boolean[]) data[i]).length];
+                    nativeArray[i] = new boolean[((boolean[]) data[i]).length];
                     for (int j = 0; j < ((boolean[]) data[i]).length; j++) {
-                        bytes[i][j] = (byte) ((((boolean[])data[i])[j]) ? 1 : 0);
+                        nativeArray[i][j] = ((boolean[])data[i])[j];
                     }
                 }
-                return new ByteArray2D(bytes);
+                return (ObjectArray) GeneratedClassesFactory.construct2DBooleanArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -143,7 +140,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_CHAR    ('C', 0, new String[]{"C", "char", "java.lang.Character", PackageConstants.kShadowDotPrefix + "java.lang.Character", PackageConstants.kArrayWrapperDotPrefix + "CharArray", PackageConstants.kArrayWrapperDotPrefix + "CharArray2D", "[C", "[[C"}) { // variable length
+        avm_CHAR    ('C', 0, new String[]{"C", "char", "java.lang.Character", PackageConstants.kShadowDotPrefix + "java.lang.Character", PackageConstants.kArrayWrapperDotPrefix + "CharArray", PackageConstants.kArrayWrapperDotPrefix + "$$C", "[C", "[[C"}) { // variable length
             @Override
             public byte[] encode(Object data) {
                 return Character.toString((char)data).getBytes();
@@ -191,7 +188,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (char[]) data[i];
                 }
-                return new CharArray2D(nativeArray);
+                return (ObjectArray) GeneratedClassesFactory.construct2DCharArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -202,7 +199,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_SHORT   ('S', 2, new String[]{"S", "short", "java.lang.Short", PackageConstants.kShadowDotPrefix + "java.lang.Short", PackageConstants.kArrayWrapperDotPrefix + "ShortArray", PackageConstants.kArrayWrapperDotPrefix + "ShortArray2D", "[S", "[[S"}) {
+        avm_SHORT   ('S', 2, new String[]{"S", "short", "java.lang.Short", PackageConstants.kShadowDotPrefix + "java.lang.Short", PackageConstants.kArrayWrapperDotPrefix + "ShortArray", PackageConstants.kArrayWrapperDotPrefix + "$$S", "[S", "[[S"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(2).putShort((short)data).array();
@@ -253,7 +250,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (short[]) data[i];
                 }
-                return new ShortArray2D(nativeArray);
+                return (ObjectArray) GeneratedClassesFactory.construct2DShortArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -264,7 +261,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_INT     ('I', 4, new String[]{"I", "int", "java.lang.Integer", PackageConstants.kShadowDotPrefix + "java.lang.Integer", PackageConstants.kArrayWrapperDotPrefix + "IntArray", PackageConstants.kArrayWrapperDotPrefix + "IntArray2D", "[I", "[[I"}) {
+        avm_INT     ('I', 4, new String[]{"I", "int", "java.lang.Integer", PackageConstants.kShadowDotPrefix + "java.lang.Integer", PackageConstants.kArrayWrapperDotPrefix + "IntArray", PackageConstants.kArrayWrapperDotPrefix + "$$I", "[I", "[[I"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(4).putInt((int)data).array();
@@ -315,7 +312,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (int[]) data[i];
                 }
-                return new IntArray2D(nativeArray);
+                return (ObjectArray) GeneratedClassesFactory.construct2DIntArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -326,7 +323,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_LONG    ('L', 8, new String[]{"L", "long", "java.lang.Long", PackageConstants.kShadowDotPrefix + "java.lang.Long", PackageConstants.kArrayWrapperDotPrefix + "LongArray", PackageConstants.kArrayWrapperDotPrefix + "LongArray2D", "[J", "[[J"}) {
+        avm_LONG    ('L', 8, new String[]{"L", "long", "java.lang.Long", PackageConstants.kShadowDotPrefix + "java.lang.Long", PackageConstants.kArrayWrapperDotPrefix + "LongArray", PackageConstants.kArrayWrapperDotPrefix + "$$J", "[J", "[[J"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(8).putLong((long)data).array();
@@ -377,7 +374,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (long[]) data[i];
                 }
-                return new LongArray2D(nativeArray);
+                return (ObjectArray) GeneratedClassesFactory.construct2DLongArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -388,7 +385,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_FLOAT   ('F', 4, new String[]{"F", "float", "java.lang.Float", PackageConstants.kShadowDotPrefix + "PackageConstants.kShadowDotPrefix + \"java.lang.Float", PackageConstants.kArrayWrapperDotPrefix + "FloatArray", PackageConstants.kArrayWrapperDotPrefix + "FloatArray2D", "[F", "[[F"}) {
+        avm_FLOAT   ('F', 4, new String[]{"F", "float", "java.lang.Float", PackageConstants.kShadowDotPrefix + "PackageConstants.kShadowDotPrefix + \"java.lang.Float", PackageConstants.kArrayWrapperDotPrefix + "FloatArray", PackageConstants.kArrayWrapperDotPrefix + "$$F", "[F", "[[F"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(4).putFloat((float)data).array();
@@ -439,7 +436,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (float[]) data[i];
                 }
-                return new FloatArray2D(nativeArray);
+                return (ObjectArray) GeneratedClassesFactory.construct2DFloatArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -450,7 +447,7 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_DOUBLE  ('D', 8, new String[]{"D", "double", "java.lang.Double", PackageConstants.kShadowDotPrefix + "java.lang.Double", PackageConstants.kArrayWrapperDotPrefix + "DoubleArray", PackageConstants.kArrayWrapperDotPrefix + "DoubleArray2D", "[D", "[[D"}) {
+        avm_DOUBLE  ('D', 8, new String[]{"D", "double", "java.lang.Double", PackageConstants.kShadowDotPrefix + "java.lang.Double", PackageConstants.kArrayWrapperDotPrefix + "DoubleArray", PackageConstants.kArrayWrapperDotPrefix + "$$D", "[D", "[[D"}) {
             @Override
             public byte[] encode(Object data) {
                 return ByteBuffer.allocate(8).putDouble((double)data).array();
@@ -501,7 +498,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (double[]) data[i];
                 }
-                return new DoubleArray2D(nativeArray);
+                return (ObjectArray) GeneratedClassesFactory.construct2DDoubleArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -756,47 +753,46 @@ public final class ABIEncoder {
             return null;
         }
         String className = data.getClass().getName();
+        ABITypes type = mapABITypes(className);
 
-        if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "") && className.endsWith("2D")) {
+        if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$$")) {
             // data is a 2D array
-            return encode2DArray((ObjectArray)data, mapABITypes(className));
+            return encode2DArray((ObjectArray)data, type);
+        }
+        else if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix)) {
+            // data is an 1D array
+            return type.encode1DArray(((Array)data).getUnderlyingAsObject());
+        }
+        else if (className.startsWith("[[")) {
+            // data is the native 2D array
+            return encode2DArray(type.construct2DWrappedArray((Object[]) data), type);
+        }
+        else if (className.startsWith("[")) {
+            // data is the native 1D array
+            return type.encode1DArray(data);
         }
         else {
-            ABITypes type = mapABITypes(className);
+            // data should not be an array
+            byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
 
-            if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "")) {
-                // data is an 1D array
-                return type.encode1DArray(((Array)data).getUnderlyingAsObject());
+            if (type == ABITypes.avm_String) {
+                int length = className.startsWith(PackageConstants.kShadowDotPrefix) ?
+                        ((org.aion.avm.shadow.java.lang.String) data).avm_length() :
+                        ((String) data).length();
+                ret[0] = ("[" + type.symbol + length + "]").getBytes();
+            } else {
+                ret[0] = Character.toString(type.symbol).getBytes();
             }
-            else if (className.startsWith("[[")) {
-                return encode2DArray(type.construct2DWrappedArray((Object[]) data), type);
-            }
-            else if (className.startsWith("[")) {
-                return type.encode1DArray(data);
-            }
-            else {
-                // data should not be an array
-                byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
 
-                if (type == ABITypes.avm_String) {
-                    int length = className.startsWith(PackageConstants.kShadowDotPrefix) ?
-                            ((org.aion.avm.shadow.java.lang.String) data).avm_length() :
-                            ((String) data).length();
-                    ret[0] = ("[" + type.symbol + length + "]").getBytes();
-                } else {
-                    ret[0] = Character.toString(type.symbol).getBytes();
-                }
-
-                if (className.startsWith(PackageConstants.kShadowDotPrefix + "java.lang.")) {
-                    ret[1] = type.encodeShadowType(data);
-                } else {
-                    // "java.lang.*" in this case. e.g. java.lang.[Integer|Byte|Boolean|Character|Short|Long|Float|Double]
-                    // This method is also used by ABIDecoder.decodeAndRun(), which can pass in the data returned by
-                    // method.invoke(), and this data can be of one of these "java.lang.*" types.
-                    ret[1] = type.encode(data);
-                }
-                return ret;
+            if (className.startsWith(PackageConstants.kShadowDotPrefix + "java.lang.")) {
+                ret[1] = type.encodeShadowType(data);
+            } else {
+                // "java.lang.*" in this case. e.g. java.lang.[Integer|Byte|Boolean|Character|Short|Long|Float|Double]
+                // This method is also used by ABIDecoder.decodeAndRun(), which can pass in the data returned by
+                // method.invoke(), and this data can be of one of these "java.lang.*" types.
+                ret[1] = type.encode(data);
             }
+            return ret;
         }
     }
 
