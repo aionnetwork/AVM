@@ -12,6 +12,7 @@ import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +33,11 @@ public class AssertionErrorIntegrationTest {
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
         this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     @Test

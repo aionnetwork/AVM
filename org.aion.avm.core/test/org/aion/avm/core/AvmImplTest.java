@@ -78,6 +78,7 @@ public class AvmImplTest {
         assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT - value - tx.getBasicCost() * energyPrice, kernel.getBalance(deployer));
         assertEquals(0, kernel.getNonce(to));
         assertEquals(value, kernel.getBalance(to));
+        avm.shutdown();
     }
 
     @Test
@@ -210,6 +211,7 @@ public class AvmImplTest {
 
         // We assume that the IHelper has been cleaned up by this point.
         assertNull(IHelper.currentContractHelper.get());
+        avm.shutdown();
     }
 
     @Test
@@ -226,6 +228,7 @@ public class AvmImplTest {
         byte[] argData = ABIEncoder.encodeMethodArguments("callSelfForNull");
         Object resultObject = callDApp(kernel, avm, contractAddr, argData);
         assertNull(resultObject);
+        avm.shutdown();
     }
 
     @Test
@@ -254,6 +257,7 @@ public class AvmImplTest {
         assertEquals(zero1 - zero0, zero2 - zero1);
         assertEquals(one1 - one0, one2 - one1);
         assertTrue((one1 - one0) > (zero1 - zero0));
+        avm.shutdown();
     }
 
     /**
@@ -281,6 +285,7 @@ public class AvmImplTest {
         
         // Get near increments from 2 to 3 and returns 3.
         assertEquals(3, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
+        avm.shutdown();
     }
 
     /**
@@ -302,6 +307,7 @@ public class AvmImplTest {
         assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
         assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getFar", shouldFail));
         assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
+        avm.shutdown();
     }
 
     /**
@@ -331,6 +337,7 @@ public class AvmImplTest {
         assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
         assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getFar", shouldFail));
         assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getNear", shouldFail));
+        avm.shutdown();
     }
 
     /**
@@ -356,6 +363,7 @@ public class AvmImplTest {
         
         // This returns false since the value didn't change,
         assertEquals(false, ((Boolean)resultObject).booleanValue());
+        avm.shutdown();
     }
 
     /**
@@ -380,6 +388,7 @@ public class AvmImplTest {
         
         // We don't want to depend on a specific hashcode (appears to be 19) but just the idea that it needs to be non-zero.
         assertTrue(0 != ((Integer)resultObject).intValue());
+        avm.shutdown();
     }
 
     /**
@@ -409,6 +418,7 @@ public class AvmImplTest {
         for (int i = 0; i < input.length; ++i) {
             assertEquals(incrementBy + input[i], spawnerResult[i]);
         }
+        avm.shutdown();
     }
 
     /**
@@ -441,6 +451,7 @@ public class AvmImplTest {
         for (int i = 0; i < input.length; ++i) {
             assertEquals(incrementBy + input[i], incrementorResult[i]);
         }
+        avm.shutdown();
     }
 
     /**
@@ -466,6 +477,7 @@ public class AvmImplTest {
         Transaction tx = Transaction.call(KernelInterfaceImpl.PREMINED_ADDRESS, spawnerAddress.unwrap(), kernel.getNonce(deployer), 0L, spawnerCallData, energyLimit, 1L);
         TransactionResult result2 = avm.run(new TransactionContextImpl(tx, block));
         assertEquals(TransactionResult.Code.FAILED_INVALID, result2.getStatusCode());
+        avm.shutdown();
     }
 
     /**
@@ -497,6 +509,7 @@ public class AvmImplTest {
         assertEquals(3, directory.listFiles().length);
         
         // Restart the AVM.
+        avm.shutdown();
         kernel = new KernelInterfaceImpl(directory);
         avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
         
@@ -524,6 +537,7 @@ public class AvmImplTest {
         }
         assertEquals(2, codeCount);
         assertEquals(3, balanceCount);
+        avm.shutdown();
     }
 
 

@@ -9,6 +9,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.kernel.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,11 +25,14 @@ public class ExceptionWrappingTest {
     private long energyLimit = 6_000_0000;
     private long energyPrice = 1;
 
-    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+    private KernelInterfaceImpl kernel;
+    private Avm avm;
 
     @Before
     public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        
         // Deploy the Dapp
         byte[] testExceptionJar = JarBuilder.buildJarForMainAndClasses(TestExceptionResource.class);
 
@@ -36,6 +40,11 @@ public class ExceptionWrappingTest {
         Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         dappAddr = avm.run(context).getReturnData();
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     /**

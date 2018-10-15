@@ -144,6 +144,7 @@ public class AvmCLI implements UserInterface{
 
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(createContext);
+        avm.shutdown();
 
         reportDeployResult(env, createResult);
     }
@@ -189,6 +190,7 @@ public class AvmCLI implements UserInterface{
         Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), 0L, arguments, energyLimit, 1L);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(callContext);
+        avm.shutdown();
 
         reportCallResult(env, callResult);
     }

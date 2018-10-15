@@ -6,6 +6,8 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.HashUtils;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
@@ -15,16 +17,20 @@ import static org.aion.avm.core.util.Helpers.address;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
-public class BlockchainRuntimeTest {
 
+public class BlockchainRuntimeTest {
     // kernel & vm
-    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+    private KernelInterfaceImpl kernel;
+    private Avm avm;
 
     private byte[] premined = KernelInterfaceImpl.PREMINED_ADDRESS;
     private byte[] dappAddress;
 
-    public BlockchainRuntimeTest() {
+    @Before
+    public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class);
         byte[] arguments = null;
         Transaction tx = Transaction.create(premined, kernel.getNonce(premined), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), 1_000_000L, 1L);
@@ -33,6 +39,11 @@ public class BlockchainRuntimeTest {
 
         dappAddress = txResult.getReturnData();
         assertTrue(txResult.getStatusCode().isSuccess());
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     @Test

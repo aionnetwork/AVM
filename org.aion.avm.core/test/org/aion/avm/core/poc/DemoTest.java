@@ -153,5 +153,6 @@ public class DemoTest {
         txResult = avm.run(txContext);
         assertTrue(txResult.getStatusCode().isSuccess());
         System.out.println(">> balance of receiver: " + TestingHelper.decodeResult(txResult));
+        avm.shutdown();
     }
 }

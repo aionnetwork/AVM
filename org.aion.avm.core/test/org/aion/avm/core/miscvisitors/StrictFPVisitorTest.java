@@ -13,6 +13,8 @@ import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -29,14 +31,17 @@ public class StrictFPVisitorTest {
     // block
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
-    // kernel & vm
-    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
-
     private byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private byte[] dappAddress;
 
-    public StrictFPVisitorTest() {
+    private KernelInterfaceImpl kernel;
+    private Avm avm;
+
+    @Before
+    public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        
         byte[] jar = JarBuilder.buildJarForMainAndClasses(StrictFPVisitorTestResource.class);
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
@@ -45,6 +50,11 @@ public class StrictFPVisitorTest {
 
         dappAddress = txResult.getReturnData();
         assertTrue(null != dappAddress);
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     @Test

@@ -67,5 +67,6 @@ public class StringShadowingTest {
         context = new TransactionContextImpl(tx, block);
         result = avm.run(context);
         Assert.assertEquals("ABC", TestingHelper.decodeResult(result));
+        avm.shutdown();
     }
 }

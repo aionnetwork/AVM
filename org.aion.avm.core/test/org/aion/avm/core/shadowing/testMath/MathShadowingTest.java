@@ -20,11 +20,14 @@ public class MathShadowingTest {
     private long energyLimit = 600_000_00000L;
     private long energyPrice = 1;
 
-    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+    private KernelInterfaceImpl kernel;
+    private Avm avm;
 
     @Before
     public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
 
@@ -33,6 +36,10 @@ public class MathShadowingTest {
         dappAddr = avm.run(context).getReturnData();
     }
 
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
+    }
 
     @Test
     public void testMaxMin() {

@@ -7,6 +7,8 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -18,13 +20,17 @@ public class Blake2bTest {
     private long energyPrice = 1L;
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
-    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
-
     private byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private byte[] dappAddress;
 
-    public Blake2bTest() {
+    private KernelInterfaceImpl kernel;
+    private Avm avm;
+
+    @Before
+    public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        
         byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, Blake2b.class);
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
@@ -34,6 +40,11 @@ public class Blake2bTest {
 
         dappAddress = txResult.getReturnData();
         assertNotNull(dappAddress);
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     @Test

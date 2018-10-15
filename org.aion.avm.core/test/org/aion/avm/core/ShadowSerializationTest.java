@@ -6,11 +6,14 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.Block;
+import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionResult;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -26,14 +29,26 @@ public class ShadowSerializationTest {
     private static final int HASH_JAVA_NIO = 757806641;
     private static final int HASH_API = 496;
 
-
-    byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-    KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
-
     @BeforeClass
     public static void setupClass() {
         block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    }
+
+
+    byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+
+    private KernelInterface kernel;
+    private Avm avm;
+
+    @Before
+    public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
 

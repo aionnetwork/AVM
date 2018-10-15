@@ -26,12 +26,21 @@ public class AvmImpl implements AvmInternal {
 
     private final KernelInterface kernel;
     private final ReentrantDAppStack dAppStack;
-    private final SoftCache<ByteArrayWrapper, LoadedDApp> hotCache;
+
+    // Long-lived state which is book-ended by the startup/shutdown calls.
+    private static AvmImpl currentAvm;  // (only here for testing - makes sure that we properly clean these up between invocations)
+    private SoftCache<ByteArrayWrapper, LoadedDApp> hotCache;
 
     public AvmImpl(KernelInterface kernel) {
         this.kernel = kernel;
         this.dAppStack = new ReentrantDAppStack();
-        // We currently assume that this is being called on a single thread.
+    }
+
+    public void startup() {
+        RuntimeAssertionError.assertTrue(null == AvmImpl.currentAvm);
+        AvmImpl.currentAvm = this;
+        
+        RuntimeAssertionError.assertTrue(null == this.hotCache);
         this.hotCache = new SoftCache<>();
     }
 
@@ -70,6 +79,13 @@ public class AvmImpl implements AvmInternal {
             result.setEnergyUsed(ctx.getEnergyLimit());
         }
         return result;
+    }
+
+    @Override
+    public void shutdown() {
+        RuntimeAssertionError.assertTrue(this == AvmImpl.currentAvm);
+        AvmImpl.currentAvm = null;
+        this.hotCache = null;
     }
 
     @Override

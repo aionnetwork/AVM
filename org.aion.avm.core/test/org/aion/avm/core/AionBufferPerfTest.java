@@ -15,8 +15,8 @@ import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+
 
 public class AionBufferPerfTest {
     private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
@@ -130,6 +130,7 @@ public class AionBufferPerfTest {
         args = ABIEncoder.encodeMethodArguments("callEquals");
         TransactionResult equalsResult = call(kernel, avm, contract, from, args);
         System.out.println(">> equals()            : " + equalsResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
+        avm.shutdown();
 
         System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }

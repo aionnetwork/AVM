@@ -53,6 +53,7 @@ public class ExceptionWrappingIntegrationTest {
         Assert.assertEquals("MESSAGE", new String(loadUser));
         
         suspended.resume();
+        avm.shutdown();
     }
 
     private Object callStatic(Block block, KernelInterface kernel,  Avm avm, Address contractAddr, String methodName) {

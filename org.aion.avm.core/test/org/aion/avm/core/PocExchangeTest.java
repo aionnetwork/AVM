@@ -11,19 +11,30 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+
 public class PocExchangeTest {
+    private KernelInterface kernel;
+    private Avm avm;
     private byte[] testERC20Jar;
     private byte[] testExchangeJar;
 
     @Before
     public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        
         testERC20Jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
         testExchangeJar = JarBuilder.buildJarForMainAndClasses(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ByteArrayHelpers.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
@@ -36,9 +47,6 @@ public class PocExchangeTest {
     private byte[] usr2 = Helpers.randomBytes(Address.LENGTH);
     private byte[] usr3 = Helpers.randomBytes(Address.LENGTH);
 
-
-    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
     class CoinContract{
         private byte[] addr;

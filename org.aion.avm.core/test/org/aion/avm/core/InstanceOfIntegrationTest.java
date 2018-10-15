@@ -11,6 +11,7 @@ import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -25,12 +26,15 @@ public class InstanceOfIntegrationTest {
 
     private static Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private static byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private static KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private static Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+    private static KernelInterfaceImpl kernel;
+    private static Avm avm;
     private static Address dappAddress;
 
     @BeforeClass
-    public static void setup() throws Exception {
+    public static void setupClass() throws Exception {
+        kernel = new KernelInterfaceImpl();
+        avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        
         byte[] jar = JarBuilder.buildJarForMainAndClasses(InstanceOfIntegrationTestTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
@@ -39,6 +43,11 @@ public class InstanceOfIntegrationTest {
         TransactionResult createResult = avm.run(new TransactionContextImpl(create, block));
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         dappAddress = TestingHelper.buildAddress(createResult.getReturnData());
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        avm.shutdown();
     }
 
     @Test

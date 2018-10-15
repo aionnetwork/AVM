@@ -12,6 +12,7 @@ import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class TransformedMethodTest {
     private static Address dappAddress;
 
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(TransformedMethodContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
@@ -40,6 +41,11 @@ public class TransformedMethodTest {
         TransactionResult createResult = avm.run(new TransactionContextImpl(create, block));
         assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         dappAddress = TestingHelper.buildAddress(createResult.getReturnData());
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        avm.shutdown();
     }
 
     @Test

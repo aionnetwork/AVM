@@ -3,13 +3,12 @@ package org.aion.avm.core;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
-import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -25,13 +24,22 @@ public class RevertAndInvalidTest {
     private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
     // kernel & vm
-    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+    private KernelInterfaceImpl kernel;
+    private Avm avm;
 
     private byte[] dappAddress;
 
-    public RevertAndInvalidTest() {
+    @Before
+    public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        
         dappAddress = deploy();
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     private byte[] deploy() {

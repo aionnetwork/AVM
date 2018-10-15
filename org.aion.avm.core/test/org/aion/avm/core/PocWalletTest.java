@@ -11,8 +11,9 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 
 
@@ -28,8 +29,19 @@ public class PocWalletTest {
     private long energyLimit = 10_000_000_000L;
     private long energyPrice = 1;
 
-    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+    private KernelInterface kernel;
+    private Avm avm;
+
+    @Before
+    public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
+    }
 
     private byte[] buildTestWalletJar() {
         return JarBuilder.buildJarForMainAndClasses(Wallet.class

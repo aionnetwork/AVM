@@ -80,6 +80,7 @@ public class BasicPerfTest {
             if (null != this.backgroundThrowable) {
                 throw this.backgroundThrowable;
             }
+            this.avm.shutdown();
         }
         @Override
         public void run() {

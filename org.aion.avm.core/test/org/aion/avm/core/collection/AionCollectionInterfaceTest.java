@@ -61,6 +61,7 @@ public class AionCollectionInterfaceTest {
         args = ABIEncoder.encodeMethodArguments("testList");
         TransactionResult testResult = call(kernel, avm, contract, from, args);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, testResult.getStatusCode());
+        avm.shutdown();
     }
 
     @Test
@@ -75,6 +76,7 @@ public class AionCollectionInterfaceTest {
         args = ABIEncoder.encodeMethodArguments("testSet");
         TransactionResult testResult = call(kernel, avm, contract, from, args);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, testResult.getStatusCode());
+        avm.shutdown();
     }
 
     @Test
@@ -89,6 +91,7 @@ public class AionCollectionInterfaceTest {
         args = ABIEncoder.encodeMethodArguments("testMap");
         TransactionResult testResult = call(kernel, avm, contract, from, args);
         Assert.assertEquals(TransactionResult.Code.SUCCESS, testResult.getStatusCode());
+        avm.shutdown();
     }
 
 }

@@ -10,7 +10,9 @@ import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 
@@ -18,10 +20,20 @@ import org.junit.Test;
  * Tests the hashCode behaviour of the contract code, when invoked within independent transactions.
  */
 public class HashCodeIntegrationTest {
-
     private byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+    private KernelInterfaceImpl kernel;
+    private Avm avm;
+
+    @Before
+    public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
+    }
 
     @Test
     public void testPersistentHashCode() throws Exception {

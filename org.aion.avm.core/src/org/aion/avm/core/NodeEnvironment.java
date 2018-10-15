@@ -259,7 +259,9 @@ public class NodeEnvironment {
      * @return The long-lived AVM instance.
      */
     public Avm buildAvmInstance(KernelInterface kernel) {
-        return new AvmImpl(kernel);
+        AvmImpl avm = new AvmImpl(kernel);
+        avm.startup();
+        return avm;
     }
 
     private static Set<String> loadShadowClasses(ClassLoader loader, Class<?>[] shadowClasses) throws ClassNotFoundException {

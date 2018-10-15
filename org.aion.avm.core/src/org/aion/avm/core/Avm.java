@@ -11,9 +11,16 @@ import org.aion.kernel.TransactionResult;
 public interface Avm {
     /**
      * Executes the given DApp, with the provided runtime.
+     * Throws IllegalStateException if the receiver has already been shutdown.
      *
      * @param context the transaction context
      * @return the result
      */
     TransactionResult run(TransactionContext context);
+
+    /**
+     * Tells the Avm implementation to shut down.  This means that it can assume it will not be called again.
+     * The specifics of what is shut down are implementation-dependent:  threads, caches, other long-lived resources.
+     */
+    public void shutdown();
 }

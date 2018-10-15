@@ -21,11 +21,14 @@ public class ArrayWrappingTest {
     private long energyLimit = 6_000_0000;
     private long energyPrice = 1;
 
-    private KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+    private KernelInterface kernel;
+    private Avm avm;
 
     @Before
     public void setup() {
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        
         byte[] arrayWrappingTestJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
 
         byte[] txData = new CodeAndArguments(arrayWrappingTestJar, null).encodeToBytes();
@@ -33,6 +36,11 @@ public class ArrayWrappingTest {
         Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         dappAddr = avm.run(context).getReturnData();
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
     }
 
     @Test
