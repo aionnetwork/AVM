@@ -30,6 +30,7 @@ public class AvmImpl implements AvmInternal {
     // Long-lived state which is book-ended by the startup/shutdown calls.
     private static AvmImpl currentAvm;  // (only here for testing - makes sure that we properly clean these up between invocations)
     private SoftCache<ByteArrayWrapper, LoadedDApp> hotCache;
+    private HandoffMonitor handoff;
 
     public AvmImpl(KernelInterface kernel) {
         this.kernel = kernel;
@@ -42,10 +43,37 @@ public class AvmImpl implements AvmInternal {
         
         RuntimeAssertionError.assertTrue(null == this.hotCache);
         this.hotCache = new SoftCache<>();
+        Thread thread = new Thread("AVM Execution Thread") {
+            @Override
+            public void run() {
+                try {
+                    // Run as long as we have something to do (null means shutdown).
+                    TransactionResult outgoingResult = null;
+                    TransactionContext incomingTransaction = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult);
+                    while (null != incomingTransaction) {
+                        outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTransaction);
+                        incomingTransaction = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult);
+                    }
+                } catch (Throwable t) {
+                    // Uncaught exception - this is fatal but we need to communicate it to the outside.
+                    AvmImpl.this.handoff.setBackgroundThrowable(t);
+                    // If the throwable makes it all the way to here, we can't handle it.
+                    RuntimeAssertionError.unexpected(t);
+                }
+            }
+        };
+        
+        RuntimeAssertionError.assertTrue(null == this.handoff);
+        this.handoff = new HandoffMonitor(thread);
+        thread.start();
     }
 
     @Override
     public TransactionResult run(TransactionContext ctx) {
+        return this.handoff.sendTransactionAndWaitForResult(ctx);
+    }
+
+    private TransactionResult backgroundProcessTransaction(TransactionContext ctx) {
         // to capture any error during validation
         TransactionResult.Code error = null;
 
@@ -83,6 +111,8 @@ public class AvmImpl implements AvmInternal {
 
     @Override
     public void shutdown() {
+        this.handoff.stopAndWaitForShutdown();
+        this.handoff = null;
         RuntimeAssertionError.assertTrue(this == AvmImpl.currentAvm);
         AvmImpl.currentAvm = null;
         this.hotCache = null;
