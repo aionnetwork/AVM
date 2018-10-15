@@ -5,6 +5,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.HashUtils;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.AionBuffer;
 import org.aion.kernel.*;
 import org.junit.After;
 import org.junit.Before;
@@ -31,9 +32,9 @@ public class BlockchainRuntimeTest {
         this.kernel = new KernelInterfaceImpl();
         this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
         
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class, AionBuffer.class);
         byte[] arguments = null;
-        Transaction tx = Transaction.create(premined, kernel.getNonce(premined), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), 1_000_000L, 1L);
+        Transaction tx = Transaction.create(premined, kernel.getNonce(premined), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
         TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]));
         TransactionResult txResult = avm.run(txContext);
 

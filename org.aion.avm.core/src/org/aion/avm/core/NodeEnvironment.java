@@ -112,16 +112,6 @@ public class NodeEnvironment {
                     , org.aion.avm.shadow.java.math.MathContext.class
                     , org.aion.avm.shadow.java.math.RoundingMode.class
 
-                    , org.aion.avm.shadow.java.nio.Buffer.class
-                    , org.aion.avm.shadow.java.nio.ByteBuffer.class
-                    , org.aion.avm.shadow.java.nio.ByteOrder.class
-                    , org.aion.avm.shadow.java.nio.CharBuffer.class
-                    , org.aion.avm.shadow.java.nio.DoubleBuffer.class
-                    , org.aion.avm.shadow.java.nio.FloatBuffer.class
-                    , org.aion.avm.shadow.java.nio.IntBuffer.class
-                    , org.aion.avm.shadow.java.nio.LongBuffer.class
-                    , org.aion.avm.shadow.java.nio.ShortBuffer.class
-
                     , org.aion.avm.shadow.java.util.Arrays.class
                     , org.aion.avm.shadow.java.util.Collection.class
                     , org.aion.avm.shadow.java.util.Iterator.class
@@ -374,9 +364,6 @@ public class NodeEnvironment {
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Integer.avm_TYPE, -23l);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Long.avm_TYPE, -24l);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Short.avm_TYPE, -25l);
-
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.nio.ByteOrder.avm_BIG_ENDIAN, -26l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.nio.ByteOrder.avm_LITTLE_ENDIAN, -27l);
 
         return constantMap;
     }

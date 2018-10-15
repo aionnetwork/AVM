@@ -4,14 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.CharBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ShortBuffer;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
@@ -22,12 +14,10 @@ import org.aion.avm.api.BlockchainRuntime;
 public class ShadowCoverageTarget {
     private static final JavaLang javaLang;
     private static final JavaMath javaMath;
-    private static final JavaNio javaNio;
     private static final Api api;
     static {
         javaLang = new JavaLang();
         javaMath = new JavaMath();
-        javaNio = new JavaNio();
         api = new Api();
     }
 
@@ -79,29 +69,6 @@ public class ShadowCoverageTarget {
         // Check reentrant commit is observed.
         int remoteNextHash = reentrantMethodWithoutArgs("populate_JavaMath");
         int localNextHash = javaMath.buildHash();
-        return (remoteNextHash == localNextHash);
-    }
-
-    public static int populate_JavaNio() {
-        javaNio.populate();
-        return javaNio.buildHash();
-    }
-
-    public static int getHash_JavaNio() {
-        return javaNio.buildHash();
-    }
-
-    public static boolean verifyReentrantChange_JavaNio() {
-        // Verify reentrant hash before call.
-        int localStartHash = javaNio.buildHash();
-        int remoteStartHash = reentrantMethodWithoutArgs("getHash_JavaNio");
-        if (localStartHash != remoteStartHash) {
-            throw new AssertionError();
-        }
-        
-        // Check reentrant commit is observed.
-        int remoteNextHash = reentrantMethodWithoutArgs("populate_JavaNio");
-        int localNextHash = javaNio.buildHash();
         return (remoteNextHash == localNextHash);
     }
 
@@ -223,46 +190,6 @@ public class ShadowCoverageTarget {
             aBigInteger = new BigInteger("123456789000987654321");
             aMathContext = new MathContext(1);
             aRoundingMode = RoundingMode.UP;
-        }
-    }
-
-
-    private static class JavaNio {
-        public ByteBuffer aByteBuffer;
-        public ByteOrder aByteOrder;
-        public CharBuffer aCharBuffer;
-        public DoubleBuffer aDoubleBuffer;
-        public FloatBuffer aFloatBuffer;
-        public IntBuffer aIntBuffer;
-        public LongBuffer aLongBuffer;
-        public ShortBuffer aShortBuffer;
-        
-        public int buildHash() {
-            return aByteBuffer.hashCode()
-                    + aByteOrder.hashCode()
-                    + aCharBuffer.hashCode()
-                    + aDoubleBuffer.hashCode()
-                    + aFloatBuffer.hashCode()
-                    + aIntBuffer.hashCode()
-                    + aLongBuffer.hashCode()
-                    + aShortBuffer.hashCode()
-                    ;
-        }
-        
-        public void populate() {
-            int capacity = 50;
-            aByteBuffer = ByteBuffer.allocate(capacity);
-            for (int i = 0; i < capacity; ++i) {
-                aByteBuffer.put((byte)i);
-            }
-            aByteBuffer.flip();
-            aByteOrder = aByteBuffer.order();
-            aCharBuffer = aByteBuffer.asCharBuffer().position(1);
-            aDoubleBuffer = aByteBuffer.asDoubleBuffer().position(1);
-            aFloatBuffer = aByteBuffer.asFloatBuffer().position(1);
-            aIntBuffer = aByteBuffer.asIntBuffer().position(1);
-            aLongBuffer = aByteBuffer.asLongBuffer().position(1);
-            aShortBuffer = aByteBuffer.asShortBuffer().position(1);
         }
     }
 

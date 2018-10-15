@@ -24,9 +24,8 @@ public class ShadowSerializationTest {
     private static final long ENERGY_PRICE = 1L;
 
     // Note that these numbers change pretty frequently, based on constants in the test, etc.
-    private static final int HASH_JAVA_LANG = 94290346;
+    private static final int HASH_JAVA_LANG = 94290322;
     private static final int HASH_JAVA_MATH = -602588053;
-    private static final int HASH_JAVA_NIO = 757806641;
     private static final int HASH_API = 496;
 
     @BeforeClass
@@ -138,50 +137,6 @@ public class ShadowSerializationTest {
         
         // Call to verify, again, to detect the bug where reentrant serializing was incorrectly injecting constant stubs.
         verifyReentrantChange(avm, contractAddr, "JavaMath");
-    }
-
-    @Test
-    public void testPersistJavaNio() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
-        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        
-        // deploy
-        Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), 0L, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
-        
-        // Populate initial data.
-        int firstHash = populate(avm, contractAddr, "JavaNio");
-        // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(HASH_JAVA_NIO, firstHash);
-        
-        // Get the state of this data.
-        int hash = getHash(avm, contractAddr, "JavaNio");
-        Assert.assertEquals(firstHash, hash);
-    }
-
-    @Test
-    public void testReentrantJavaNio() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
-        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        
-        // deploy
-        Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), 0L, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result1 = avm.run(new TransactionContextImpl(tx1, block));
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
-        
-        // Populate initial data.
-        int firstHash = populate(avm, contractAddr, "JavaNio");
-        // For now, just do the basic verification based on knowing the number.
-        Assert.assertEquals(HASH_JAVA_NIO, firstHash);
-        
-        // Verify that things are consistent across reentrant modifications.
-        verifyReentrantChange(avm, contractAddr, "JavaNio");
-        
-        // Call to verify, again, to detect the bug where reentrant serializing was incorrectly injecting constant stubs.
-        verifyReentrantChange(avm, contractAddr, "JavaNio");
     }
 
     @Test

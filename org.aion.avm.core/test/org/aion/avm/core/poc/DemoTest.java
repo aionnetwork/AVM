@@ -11,6 +11,7 @@ import org.aion.avm.core.testExchange.ERC20;
 import org.aion.avm.core.testExchange.ERC20Token;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -21,7 +22,6 @@ import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -64,7 +64,7 @@ public class DemoTest {
         System.out.println(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.getReturnData()) + ")");
 
         System.out.println("\n>> Deploy the Multi-sig Wallet Dapp...");
-        jar = JarBuilder.buildJarForMainAndClasses(Main.class, Wallet.class, Bytes32.class, AionList.class, AionSet.class, AionMap.class);
+        jar = JarBuilder.buildJarForMainAndClasses(Main.class, Wallet.class, Bytes32.class, AionList.class, AionSet.class, AionMap.class, AionBuffer.class);
         int confirmationsRequired = 2;
         arguments = ABIEncoder.encodeMethodArguments("", TestingHelper.buildAddress(owner1), TestingHelper.buildAddress(owner2), confirmationsRequired);
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);

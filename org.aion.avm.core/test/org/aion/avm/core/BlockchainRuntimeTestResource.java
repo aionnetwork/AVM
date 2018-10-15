@@ -1,8 +1,8 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.userlib.AionBuffer;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import static org.aion.avm.api.BlockchainRuntime.*;
@@ -10,7 +10,7 @@ import static org.aion.avm.api.BlockchainRuntime.*;
 public class BlockchainRuntimeTestResource {
 
     public static byte[] main() {
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        AionBuffer buffer = AionBuffer.allocate(1024);
         buffer.put(getAddress().unwrap());
         buffer.put(getCaller().unwrap());
         buffer.put(getOrigin().unwrap());
@@ -47,6 +47,6 @@ public class BlockchainRuntimeTestResource {
 
         print("message");
 
-        return Arrays.copyOfRange(buffer.array(), 0, buffer.position());
+        return Arrays.copyOfRange(buffer.array(), 0, buffer.size());
     }
 }

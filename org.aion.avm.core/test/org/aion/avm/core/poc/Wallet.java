@@ -2,10 +2,10 @@ package org.aion.avm.core.poc;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 
-import java.nio.ByteBuffer;
 
 /**
  * Multi-sig wallet demo.
@@ -98,7 +98,7 @@ public class Wallet {
         }
 
         public byte[] getId() {
-            ByteBuffer buffer = ByteBuffer.allocate(Address.LENGTH + Long.BYTES + data.length + Long.BYTES);
+            AionBuffer buffer = AionBuffer.allocate(Address.LENGTH + Long.BYTES + data.length + Long.BYTES);
             buffer.put(to.unwrap());
             buffer.putLong(value);
             buffer.put(data);
