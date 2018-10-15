@@ -259,7 +259,7 @@ public class DAppCreator {
             ImmortalDappModule immortalDapp = ImmortalDappModule.fromImmortalClasses(immortalClasses, transformedDapp.mainClass);
 
             // store transformed dapp
-            byte[] immortalDappJar = immortalDapp.createJar(dappAddress);
+            byte[] immortalDappJar = immortalDapp.createJar(dappAddress, ctx);
             kernel.putCode(dappAddress, immortalDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}

@@ -47,6 +47,8 @@ public class Transaction {
 
     long value;
 
+    long timestamp;
+
     byte[] data;
 
     long energyLimit;
@@ -72,6 +74,10 @@ public class Transaction {
         this.data = data;
         this.energyLimit = energyLimit;
         this.energyPrice = energyPrice;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 
     public Type getType() {
@@ -112,6 +118,10 @@ public class Transaction {
             cost += (b == 0) ? 4 : 64;
         }
         return cost;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     @Override

@@ -30,6 +30,8 @@ public interface TransactionContext {
 
     int getBasicCost();
 
+    long getTransactionTimestamp();
+
     long getBlockTimestamp();
 
     long getBlockNumber();

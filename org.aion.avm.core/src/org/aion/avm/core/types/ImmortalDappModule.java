@@ -2,13 +2,17 @@ package org.aion.avm.core.types;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.attribute.FileTime;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import java.util.zip.ZipEntry;
 import org.aion.avm.core.dappreading.LoadedJar;
+import org.aion.kernel.TransactionContext;
 
 
 /**
@@ -55,17 +59,30 @@ public class ImmortalDappModule {
     /**
      * Create the in-memory JAR containing all the classes in this module.
      */
-    public byte[] createJar(byte[] address) throws IOException {
-        // manifest
+    public byte[] createJar(byte[] address, TransactionContext context) throws IOException {
+        // set jar file timestamps to transaction timestamp.
+        FileTime timestamp = FileTime.fromMillis(context.getTransactionTimestamp());
+
+        // manifest, we explicitly write it so that can can control its timestamps.
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
         manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, this.mainClass);
+
+        ZipEntry manifestEntry = new ZipEntry(JarFile.MANIFEST_NAME);
+        manifestEntry.setLastModifiedTime(timestamp);
+        manifestEntry.setLastAccessTime(timestamp);
+        manifestEntry.setCreationTime(timestamp);
 
         // Create a temporary memory location for this JAR.
         ByteArrayOutputStream tempJarStream = new ByteArrayOutputStream(MAX_JAR_BYTES);
 
         // create the jar file
-        try (JarOutputStream target = new JarOutputStream(tempJarStream, manifest)) {
+        try (JarOutputStream target = new JarOutputStream(tempJarStream)) {
+            // first, write the manifest file
+            target.putNextEntry(manifestEntry);
+            manifest.write(target);
+            target.closeEntry();
+
             // add the classes
             for (String clazz : this.classes.keySet()) {
                 JarEntry entry = new JarEntry(clazz.replace('.', '/') + ".class");

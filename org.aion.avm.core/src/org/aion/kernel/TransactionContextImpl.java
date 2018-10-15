@@ -103,6 +103,9 @@ public class TransactionContextImpl implements TransactionContext {
     }
 
     @Override
+    public long getTransactionTimestamp() { return tx.getTimestamp(); }
+
+    @Override
     public long getBlockTimestamp() {
         return blockTimestamp;
     }
