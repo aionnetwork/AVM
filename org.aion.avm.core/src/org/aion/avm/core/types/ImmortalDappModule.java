@@ -86,6 +86,9 @@ public class ImmortalDappModule {
             // add the classes
             for (String clazz : this.classes.keySet()) {
                 JarEntry entry = new JarEntry(clazz.replace('.', '/') + ".class");
+                entry.setLastModifiedTime(timestamp);
+                entry.setLastAccessTime(timestamp);
+                entry.setCreationTime(timestamp);
                 target.putNextEntry(entry);
                 target.write(this.classes.get(clazz));
                 target.closeEntry();
