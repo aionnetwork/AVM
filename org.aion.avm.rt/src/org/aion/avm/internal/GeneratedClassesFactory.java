@@ -112,4 +112,17 @@ public class GeneratedClassesFactory {
             throw RuntimeAssertionError.unexpected(e);
         }
     }
+
+    public static IObject construct1DStringArray(String[] data) {
+        try {
+            Class<?> wrapperClass = cl.loadClass((PackageConstants.kArrayWrapperSlashPrefix + "$Ljava.lang.String").replace('/', '.'));
+            IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
+            for (int m = 0; m < data.length; m ++) {
+                wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, data[m]);
+            }
+            return ret;
+        } catch (Throwable e) {
+            throw RuntimeAssertionError.unexpected(e);
+        }
+    }
 }

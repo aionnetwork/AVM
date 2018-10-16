@@ -544,7 +544,7 @@ public final class ABIEncoder {
                 return null;
             }
         },
-        avm_String  ('T', 0, new String[]{"T", "java.lang.String", PackageConstants.kShadowDotPrefix + "java.lang.String", "[Ljava.lang.String;", PackageConstants.kArrayWrapperDotPrefix + "$L" + PackageConstants.kShadowDotPrefix + "java.lang.String"}) {
+        avm_String  ('T', 0, new String[]{"T", "java.lang.String", PackageConstants.kShadowDotPrefix + "java.lang.String", "[Ljava.lang.String;", PackageConstants.kArrayWrapperDotPrefix + "$Ljava.lang.String", PackageConstants.kArrayWrapperDotPrefix + "$L" + PackageConstants.kShadowDotPrefix + "java.lang.String"}) {
             @Override
             public byte[] encode(Object data) {
                 return ((String) data).getBytes();
@@ -571,7 +571,7 @@ public final class ABIEncoder {
             }
             @Override
             public ObjectArray construct2DWrappedArray(Object[] data) {
-                return null;
+                return (ObjectArray) GeneratedClassesFactory.construct1DStringArray((String[]) data);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -755,20 +755,21 @@ public final class ABIEncoder {
         String className = data.getClass().getName();
         ABITypes type = mapABITypes(className);
 
-        if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$$")) {
+        if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$$")
+            || className.contentEquals(PackageConstants.kArrayWrapperDotPrefix + "$Ljava.lang.String")) {
             // data is a 2D array
             return encode2DArray((ObjectArray)data, type);
         }
         else if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix)) {
-            // data is an 1D array
+            // data is a 1D array
             return type.encode1DArray(((Array)data).getUnderlyingAsObject());
         }
-        else if (className.startsWith("[[")) {
-            // data is the native 2D array
+        else if (className.startsWith("[[") || className.contentEquals("[Ljava.lang.String;")) {
+            // data is a native 2D array, or a native 1D String array
             return encode2DArray(type.construct2DWrappedArray((Object[]) data), type);
         }
         else if (className.startsWith("[")) {
-            // data is the native 1D array
+            // data is a native 1D array
             return type.encode1DArray(data);
         }
         else {
@@ -807,35 +808,51 @@ public final class ABIEncoder {
         byte[][] ret = new byte[2][]; // [0]: descriptor; [1]: encoded data
 
         Object[] underlying = data.getUnderlying();
-        int totalSize = 0;
 
-        // descriptor bytes
         String argumentDescriptor = "[[" + type.symbol + "]" + String.valueOf(underlying.length) + "]";
-        for (int i = 0; i < underlying.length; i ++) {
-            argumentDescriptor += "(" + String.valueOf(((Array)underlying[i]).length()) + ")";
-            totalSize += ((Array)underlying[i]).length();
-        }
-        ret[0] = argumentDescriptor.getBytes();
+        if (type == ABITypes.avm_String) {
+            // descriptor bytes
+            for (int i = 0; i < underlying.length; i ++) {
+                argumentDescriptor += "(" + String.valueOf(((String)underlying[i]).length()) + ")";
+            }
+            ret[0] = argumentDescriptor.getBytes();
 
-        // encoded data bytes
-        if (type == ABITypes.avm_CHAR) {
+            // encoded data bytes
             String dataS = "";
-            for (Object charArray : underlying) {
-                dataS += String.valueOf(((CharArray)charArray).getUnderlying());
+            for (Object string : underlying) {
+                dataS += string;
             }
             ret[1] = dataS.getBytes();
-        }
-        else {
-            ret[1] = new byte[totalSize * type.bytes];
-            int i = 0;
-            for (Object array : underlying) {
-                for (int idx = 0; idx < ((Array)array).length(); i += type.bytes, idx ++) {
-                    System.arraycopy(type.encode(((Array)array).getAsObject(idx)), 0, ret[1], i, type.bytes);
+
+            return ret;
+        } else {
+            int totalSize = 0;
+            // descriptor bytes
+            for (int i = 0; i < underlying.length; i++) {
+                argumentDescriptor += "(" + String.valueOf(((Array) underlying[i]).length()) + ")";
+                totalSize += ((Array) underlying[i]).length();
+            }
+            ret[0] = argumentDescriptor.getBytes();
+
+            // encoded data bytes
+            if (type == ABITypes.avm_CHAR) {
+                String dataS = "";
+                for (Object charArray : underlying) {
+                    dataS += String.valueOf(((CharArray) charArray).getUnderlying());
+                }
+                ret[1] = dataS.getBytes();
+            } else {
+                ret[1] = new byte[totalSize * type.bytes];
+                int i = 0;
+                for (Object array : underlying) {
+                    for (int idx = 0; idx < ((Array) array).length(); i += type.bytes, idx++) {
+                        System.arraycopy(type.encode(((Array) array).getAsObject(idx)), 0, ret[1], i, type.bytes);
+                    }
                 }
             }
-        }
 
-        return ret;
+            return ret;
+        }
     }
 
     /**

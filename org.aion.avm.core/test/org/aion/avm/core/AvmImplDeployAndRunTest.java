@@ -151,6 +151,15 @@ public class AvmImplDeployAndRunTest {
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals("catdog", TestingHelper.decodeResult(result));
 
+        /*// test another method call, "concatStringArray" with String array arguments and String return data
+        txData = ABIEncoder.encodeMethodArguments("concatStringArray", TestingHelper.construct2DWrappedArray((new String[]{"cat", "dog"}))); // Note - need to cast String[] into Object, to pass it as one argument to the varargs method
+        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(context);
+
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        assertEquals("catdog", TestingHelper.decodeResult(result));*/
+
         // test another method call, "swap" with 2D array arguments and 2D array return data
         txData = ABIEncoder.encodeMethodArguments("swap", TestingHelper.construct2DWrappedArray(chars));
         tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);

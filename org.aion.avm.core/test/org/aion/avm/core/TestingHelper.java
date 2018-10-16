@@ -43,7 +43,10 @@ public class TestingHelper implements IHelper {
         }
         else if (data.getClass().getName() == "[[I") {
             ret = (ObjectArray) GeneratedClassesFactory.construct2DIntArray((int[][]) data);
-        } // add code for other 2D wrapped array when needed.
+        }
+        else if (data.getClass().getName() == "[Ljava.lang.String;") {
+            ret = (ObjectArray) GeneratedClassesFactory.construct1DStringArray((String[]) data);
+        }// add code for other 2D wrapped array when needed.
         helper.remove();
         return ret;
     }

@@ -33,6 +33,10 @@ public class DeployAndRunTest {
         return s1 + s2;
     }
 
+    public String concatStringArray(String[] s) {
+        return s[1] + s[2];
+    }
+
     public char[][] swap(char[][] s) {
         char[][] res = new char[2][2];
         res[0] = s[1];
