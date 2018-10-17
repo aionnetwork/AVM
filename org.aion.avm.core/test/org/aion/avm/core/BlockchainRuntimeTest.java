@@ -8,6 +8,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.kernel.*;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -110,6 +111,33 @@ public class BlockchainRuntimeTest {
         assertTrue(txResult.getStatusCode().isSuccess());
         // We expect it to handle all the exceptions and return the data we initially sent in.
         assertArrayEquals(txData, txResult.getReturnData());
+    }
+
+    @Test
+    public void testInvalidAbiInput() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ABIFailureTestResource.class);
+        byte[] dappAddress = installJarAsDApp(jar);
+        
+        byte[] from = premined;
+        byte[] to = dappAddress;
+        long value = 1;
+        byte[] txData = "not encoded for ABI usage".getBytes();
+        long energyLimit = 2_000_000;
+        long energyPrice = 3;
+
+        byte[] blockPrevHash = Helpers.randomBytes(32);
+        long blockNumber = 4;
+        byte[] blockCoinbase = address(5);
+        long blockTimestamp = 6;
+        byte[] blockData = "block_data".getBytes();
+
+        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
+        Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
+
+        TransactionContext txContext = new TransactionContextImpl(tx, block);
+        TransactionResult txResult = avm.run(txContext);
+        // Note that we are expecting AvmException, which the DAppExecutor handles as FAILED.
+        Assert.assertEquals(TransactionResult.Code.FAILED, txResult.getStatusCode());
     }
 
 
