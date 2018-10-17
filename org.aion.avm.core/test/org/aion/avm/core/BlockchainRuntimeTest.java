@@ -25,21 +25,11 @@ public class BlockchainRuntimeTest {
     private Avm avm;
 
     private byte[] premined = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private byte[] dappAddress;
 
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
         this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
-        
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class, AionBuffer.class);
-        byte[] arguments = null;
-        Transaction tx = Transaction.create(premined, kernel.getNonce(premined), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
-        TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]));
-        TransactionResult txResult = avm.run(txContext);
-
-        dappAddress = txResult.getReturnData();
-        assertTrue(txResult.getStatusCode().isSuccess());
     }
 
     @After
@@ -49,6 +39,9 @@ public class BlockchainRuntimeTest {
 
     @Test
     public void testBlockchainRuntime() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class, AionBuffer.class);
+        byte[] dappAddress = installJarAsDApp(jar);
+        
         byte[] from = premined;
         byte[] to = dappAddress;
         long value = 1;
@@ -89,5 +82,44 @@ public class BlockchainRuntimeTest {
 
         byte[] expected = Arrays.copyOfRange(buffer.array(), 0, buffer.position());
         assertArrayEquals(expected, txResult.getReturnData());
+    }
+
+    @Test
+    public void testIncorrectParameters() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestFailingResource.class);
+        byte[] dappAddress = installJarAsDApp(jar);
+        
+        byte[] from = premined;
+        byte[] to = dappAddress;
+        long value = 1;
+        byte[] txData = "expectFailure".getBytes();
+        long energyLimit = 2_000_000;
+        long energyPrice = 3;
+
+        byte[] blockPrevHash = Helpers.randomBytes(32);
+        long blockNumber = 4;
+        byte[] blockCoinbase = address(5);
+        long blockTimestamp = 6;
+        byte[] blockData = "block_data".getBytes();
+
+        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
+        Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
+
+        TransactionContext txContext = new TransactionContextImpl(tx, block);
+        TransactionResult txResult = avm.run(txContext);
+        assertTrue(txResult.getStatusCode().isSuccess());
+        // We expect it to handle all the exceptions and return the data we initially sent in.
+        assertArrayEquals(txData, txResult.getReturnData());
+    }
+
+
+    private byte[] installJarAsDApp(byte[] jar) {
+        byte[] arguments = null;
+        Transaction tx = Transaction.create(premined, kernel.getNonce(premined), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
+        TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]));
+        TransactionResult txResult = avm.run(txContext);
+        assertTrue(txResult.getStatusCode().isSuccess());
+
+        return txResult.getReturnData();
     }
 }

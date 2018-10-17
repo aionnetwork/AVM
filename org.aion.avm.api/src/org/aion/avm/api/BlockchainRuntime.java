@@ -20,6 +20,7 @@ public final class BlockchainRuntime {
 
     /**
      * Returns the owner's address, whose state is being accessed.
+     * That is, the address of the currently-running DApp.
      *
      * @return an address
      */
@@ -29,6 +30,8 @@ public final class BlockchainRuntime {
 
     /**
      * Returns the callers's address.
+     * Note that the caller and the origin may be the same but differ in cross-calls: the origin is the sender
+     * of the "first" invocation in the chain while the caller is whoever directly called the current DApp.
      *
      * @return an address
      */
@@ -38,6 +41,9 @@ public final class BlockchainRuntime {
 
     /**
      * Returns the originator's address.
+     * Note that the caller and the origin may be the same but differ in cross-calls: the origin is the sender
+     * of the "first" invocation in the chain while the caller is whoever directly called the current DApp.
+     * Also, the origin never has associated code.
      *
      * @return an address
      */
@@ -47,6 +53,7 @@ public final class BlockchainRuntime {
 
     /**
      * Returns the energy limit for this current invocation.
+     * Note that this is the total limit for the entire invocation, not just what is remaining.
      *
      * @return the max consumable energy
      */
@@ -148,8 +155,9 @@ public final class BlockchainRuntime {
      *
      * @param address the account address.
      * @return the account balance, or 0 if the account does not exist
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. NULL address.
      */
-    public static long getBalance(Address address) {
+    public static long getBalance(Address address) throws IllegalArgumentException {
         return 0;
     }
 
@@ -158,8 +166,9 @@ public final class BlockchainRuntime {
      *
      * @param address the account address.
      * @return the code size, or 0 if the account does not exist
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. NULL address.
      */
-    public static int getCodeSize(Address address) {
+    public static int getCodeSize(Address address) throws IllegalArgumentException {
         return 0;
     }
 
@@ -184,7 +193,7 @@ public final class BlockchainRuntime {
      * @param data          the value to pass
      * @param energyLimit   the max energy the invoked dapp can use.
      * @return the invocation result.
-     * @throws IllegalArgumentException when the arguments are invalid, e.g. insufficient balance or null address.
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. insufficient balance or NULL address.
      */
     public static Result call(Address targetAddress, long value, byte[] data, long energyLimit) throws IllegalArgumentException {
         return null;
@@ -197,9 +206,9 @@ public final class BlockchainRuntime {
      * @param data        the data, in the format of <code>size_of_code + code + size_of_data + data</code>
      * @param energyLimit the max energy the invoked dapp can use.
      * @return the invocation result.
-     * @throws IllegalArgumentException when the arguments are invalid, e.g. insufficient balance.
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. insufficient balance or NULL data.
      */
-    public static Result create(long value, byte[] data, long energyLimit) {
+    public static Result create(long value, byte[] data, long energyLimit) throws IllegalArgumentException {
         return null;
     }
 
@@ -207,16 +216,18 @@ public final class BlockchainRuntime {
      * Destroys this dapp and refund all balance to the beneficiary address.
      *
      * @param beneficiary the beneficiary's address
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. NULL address.
      */
-    public static void selfDestruct(Address beneficiary) {
+    public static void selfDestruct(Address beneficiary) throws IllegalArgumentException {
     }
 
     /**
      * Records a log on blockchain.
      *
      * @param data any arbitrary data, non-NULL
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. any are NULL.
      */
-    public static void log(byte[] data) {
+    public static void log(byte[] data) throws IllegalArgumentException {
     }
 
     /**
@@ -224,8 +235,9 @@ public final class BlockchainRuntime {
      *
      * @param topic1 the 1st topic
      * @param data   any arbitrary data, non-NULL
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. any are NULL.
      */
-    public static void log(byte[] topic1, byte[] data) {
+    public static void log(byte[] topic1, byte[] data) throws IllegalArgumentException {
     }
 
     /**
@@ -234,8 +246,9 @@ public final class BlockchainRuntime {
      * @param topic1 the 1st topic
      * @param topic2 the 2nd topic
      * @param data   any arbitrary data, non-NULL
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. any are NULL.
      */
-    public static void log(byte[] topic1, byte[] topic2, byte[] data) {
+    public static void log(byte[] topic1, byte[] topic2, byte[] data) throws IllegalArgumentException {
     }
 
     /**
@@ -245,8 +258,9 @@ public final class BlockchainRuntime {
      * @param topic2 the 2nd topic
      * @param topic3 the 3rd topic
      * @param data   any arbitrary data, non-NULL
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. any are NULL.
      */
-    public static void log(byte[] topic1, byte[] topic2, byte[] topic3, byte[] data) {
+    public static void log(byte[] topic1, byte[] topic2, byte[] topic3, byte[] data) throws IllegalArgumentException {
     }
 
     /**
@@ -257,8 +271,9 @@ public final class BlockchainRuntime {
      * @param topic3 the 3rd topic
      * @param topic4 the 4th topic
      * @param data   any arbitrary data, non-NULL
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. any are NULL.
      */
-    public static void log(byte[] topic1, byte[] topic2, byte[] topic3, byte[] topic4, byte[] data) {
+    public static void log(byte[] topic1, byte[] topic2, byte[] topic3, byte[] topic4, byte[] data) throws IllegalArgumentException {
     }
 
     /**
@@ -266,8 +281,9 @@ public final class BlockchainRuntime {
      *
      * @param data the input data
      * @return the hash digest
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. data is NULL.
      */
-    public static byte[] blake2b(byte[] data) {
+    public static byte[] blake2b(byte[] data) throws IllegalArgumentException {
         return null;
     }
 

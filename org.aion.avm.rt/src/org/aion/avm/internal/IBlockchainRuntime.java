@@ -107,7 +107,7 @@ public interface IBlockchainRuntime {
      * @param address account address
      * @return the balance if the account
      */
-    long avm_getBalance(Address address);
+    long avm_getBalance(Address address) throws IllegalArgumentException;
 
     /**
      * Returns the code size of an account.
@@ -115,7 +115,7 @@ public interface IBlockchainRuntime {
      * @param address account address
      * @return the code size of the account
      */
-    int avm_getCodeSize(Address address);
+    int avm_getCodeSize(Address address) throws IllegalArgumentException;
 
     //================
     // System
@@ -138,31 +138,31 @@ public interface IBlockchainRuntime {
      * @param energyLimit   The energy to send that contract.
      * @return The response of executing the contract.
      */
-    Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit);
+    Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) throws IllegalArgumentException;
 
-    Result avm_create(long value, ByteArray data, long energyLimit);
+    Result avm_create(long value, ByteArray data, long energyLimit) throws IllegalArgumentException;
 
     /**
      * Destructs this Dapp and refund all balance to the beneficiary.
      *
      * @param beneficiary
      */
-    void avm_selfDestruct(Address beneficiary);
+    void avm_selfDestruct(Address beneficiary) throws IllegalArgumentException;
 
     /**
      * Logs information for offline analysis or external listening.
      *
      * @param data arbitrary unstructured data.
      */
-    void avm_log(ByteArray data);
+    void avm_log(ByteArray data) throws IllegalArgumentException;
 
-    void avm_log(ByteArray topic1, ByteArray data);
+    void avm_log(ByteArray topic1, ByteArray data) throws IllegalArgumentException;
 
-    void avm_log(ByteArray topic1, ByteArray topic2, ByteArray data);
+    void avm_log(ByteArray topic1, ByteArray topic2, ByteArray data) throws IllegalArgumentException;
 
-    void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data);
+    void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data) throws IllegalArgumentException;
 
-    void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data);
+    void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data) throws IllegalArgumentException;
 
     /**
      * Computes the Blake2b digest of the given data.
@@ -170,7 +170,7 @@ public interface IBlockchainRuntime {
      * @param data The data to hash.
      * @return The 32-byte digest.
      */
-    ByteArray avm_blake2b(ByteArray data);
+    ByteArray avm_blake2b(ByteArray data) throws IllegalArgumentException;
 
     /**
      * Stop the current execution, rollback any state changes, and refund the remaining energy to caller.

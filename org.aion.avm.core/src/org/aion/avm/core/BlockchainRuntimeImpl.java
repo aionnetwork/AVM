@@ -13,7 +13,6 @@ import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.*;
 
 import java.util.List;
-import java.util.Objects;
 
 
 /**
@@ -110,14 +109,14 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public long avm_getBalance(Address address) {
-        Objects.requireNonNull(address);
+        require(null != address, "Address can't be NULL");
 
         return this.kernel.getBalance(address.unwrap());
     }
 
     @Override
     public int avm_getCodeSize(Address address) {
-        Objects.requireNonNull(address);
+        require(null != address, "Address can't be NULL");
 
         byte[] vc = this.kernel.getCode(address.unwrap());
         return vc == null ? 0 : vc.length;
@@ -179,45 +178,65 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public void avm_selfDestruct(Address beneficiary) {
+        require(null != beneficiary, "Beneficiary can't be NULL");
+
         // TODO: add value transfer here
         this.kernel.deleteAccount(ctx.getAddress());
     }
 
     @Override
     public void avm_log(ByteArray data) {
+        require(null != data, "data can't be NULL");
+
         Log log = new Log(ctx.getAddress(), List.of(), data.getUnderlying());
         result.addLog(log);
     }
 
     @Override
     public void avm_log(ByteArray topic1, ByteArray data) {
+        require(null != topic1, "topic1 can't be NULL");
+        require(null != data, "data can't be NULL");
+
         Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying()), data.getUnderlying());
         result.addLog(log);
     }
 
     @Override
     public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray data) {
+        require(null != topic1, "topic1 can't be NULL");
+        require(null != topic2, "topic2 can't be NULL");
+        require(null != data, "data can't be NULL");
+
         Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying(), topic2.getUnderlying()), data.getUnderlying());
         result.addLog(log);
     }
 
     @Override
     public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray data) {
+        require(null != topic1, "topic1 can't be NULL");
+        require(null != topic2, "topic2 can't be NULL");
+        require(null != topic3, "topic3 can't be NULL");
+        require(null != data, "data can't be NULL");
+
         Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying()), data.getUnderlying());
         result.addLog(log);
     }
 
     @Override
     public void avm_log(ByteArray topic1, ByteArray topic2, ByteArray topic3, ByteArray topic4, ByteArray data) {
+        require(null != topic1, "topic1 can't be NULL");
+        require(null != topic2, "topic2 can't be NULL");
+        require(null != topic3, "topic3 can't be NULL");
+        require(null != topic4, "topic4 can't be NULL");
+        require(null != data, "data can't be NULL");
+
         Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying(), topic4.getUnderlying()), data.getUnderlying());
         result.addLog(log);
     }
 
     @Override
     public ByteArray avm_blake2b(ByteArray data) {
-        if (data == null) {
-            throw new IllegalArgumentException("Input data can't be NULL");
-        }
+        require(null != data, "Input data can't be NULL");
 
         return new ByteArray(HashUtils.blake2b(data.getUnderlying()));
     }
