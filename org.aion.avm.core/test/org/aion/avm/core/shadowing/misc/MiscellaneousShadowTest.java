@@ -72,6 +72,16 @@ public class MiscellaneousShadowTest {
     }
 
     /**
+     * Tests that the " " + " " helper correctly calls the avm_toString(), as opposed to toString().
+     */
+    @Test
+    public void testDirectStringAppend() throws Exception {
+        int valueOfLength = (Integer) this.clazz.getMethod(NamespaceMapper.mapMethodName("checkStringAppend")).invoke(null);
+        // We override the toString to return an empty string and we add 2 spaces to it.
+        Assert.assertEquals(2, valueOfLength);
+    }
+
+    /**
      * Tests that the StringBuilder.append helper correctly calls the avm_toString(), as opposed to toString().
      */
     @Test

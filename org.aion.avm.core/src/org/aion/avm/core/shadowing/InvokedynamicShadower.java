@@ -2,6 +2,7 @@ package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -50,7 +51,7 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
         public void visitInvokeDynamicInsn(String origMethodName, String methodDescriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
             String methodOwner = bootstrapMethodHandle.getOwner();
             if (isStringConcatIndy(methodOwner, origMethodName)) {
-                handleStringConcatIndy(methodDescriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+                handleStringConcatIndy(origMethodName, methodDescriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             } else if (isLambdaIndy(methodOwner)) {
                 handleLambdaIndy(origMethodName, methodDescriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             } else {
@@ -74,11 +75,12 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
             super.visitInvokeDynamicInsn(newMethodName, newMethodDescriptor, newHandle, newBootstrapMethodArgs);
         }
 
-        private void handleStringConcatIndy(String methodDescriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
-            final String newMethodName = "concat";
+        private void handleStringConcatIndy(String origMethodName, String methodDescriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+            // Note that we currently only use the avm_makeConcatWithConstants invoked name.
+            RuntimeAssertionError.assertTrue("avm_makeConcatWithConstants".equals(origMethodName));
             final String newMethodDescriptor = replacer.replaceMethodDescriptor(methodDescriptor);
             final Handle newHandle = newLambdaHandleFrom(bootstrapMethodHandle, false);
-            super.visitInvokeDynamicInsn(newMethodName, newMethodDescriptor, newHandle, bootstrapMethodArguments);
+            super.visitInvokeDynamicInsn(origMethodName, newMethodDescriptor, newHandle, bootstrapMethodArguments);
         }
 
         private Handle newLambdaHandleFrom(Handle origHandle, boolean shadowMethodDescriptor) {

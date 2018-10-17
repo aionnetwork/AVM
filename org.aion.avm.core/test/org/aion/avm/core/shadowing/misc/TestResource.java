@@ -38,6 +38,13 @@ public class TestResource {
         return String.valueOf(new TestResource()).length();
     }
 
+    public static int checkStringAppend() {
+        return (" " + new TestResource() + " ").length();
+    }
+
+    /**
+     * Note that this just like checkStringAppend() but directly uses StringBuilder since the other typically uses invokedynamic.
+     */
     public static int checkStringBuilderAppend() {
         StringBuilder builder = new StringBuilder();
         builder.append(" ");
