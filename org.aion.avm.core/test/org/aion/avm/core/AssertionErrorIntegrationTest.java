@@ -55,7 +55,7 @@ public class AssertionErrorIntegrationTest {
         
         // Do the call.
         String result = callStaticString(dapp, "throwableError");
-        Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.AssertionError: null", result);
+        Assert.assertEquals(null, result);
     }
 
     @Test

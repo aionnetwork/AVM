@@ -60,4 +60,24 @@ public class MiscellaneousShadowTest {
         Assert.assertTrue(objectClass == stringSuper);
         Assert.assertTrue(null == objectSuper);
     }
+
+    /**
+     * Tests that the String.valueOf helper correctly calls the avm_toString(), as opposed to toString().
+     */
+    @Test
+    public void testStringValueOf() throws Exception {
+        int valueOfLength = (Integer) this.clazz.getMethod(NamespaceMapper.mapMethodName("checkValueOf")).invoke(null);
+        // We override the toString to return an empty string.
+        Assert.assertEquals(0, valueOfLength);
+    }
+
+    /**
+     * Tests that the StringBuilder.append helper correctly calls the avm_toString(), as opposed to toString().
+     */
+    @Test
+    public void testStringBuilderAppend() throws Exception {
+        int valueOfLength = (Integer) this.clazz.getMethod(NamespaceMapper.mapMethodName("checkStringBuilderAppend")).invoke(null);
+        // We override the toString to return an empty string and we add 2 spaces to it.
+        Assert.assertEquals(2, valueOfLength);
+    }
 }

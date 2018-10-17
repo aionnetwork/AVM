@@ -365,11 +365,12 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
 
-    //TODO: IOBJECT?
-    public static String avm_valueOf(Object obj) {
+    public static String avm_valueOf(IObject obj) {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.String_avm_valueOf);
-        obj.lazyLoad();
-        return new String(java.lang.String.valueOf(obj));
+        // We don't want to use the java.lang.String version of this since it relies on calling toString(), but we need avm_toString().
+        return (null != obj)
+                ? obj.avm_toString()
+                : new String("null");
     }
 
     public static String avm_valueOf(CharArray a){

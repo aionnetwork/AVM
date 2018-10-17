@@ -33,4 +33,22 @@ public class TestResource {
     public static Class<?> getSuperclass(Class<?> clazz) {
         return clazz.getSuperclass();
     }
+
+    public static int checkValueOf() {
+        return String.valueOf(new TestResource()).length();
+    }
+
+    public static int checkStringBuilderAppend() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(" ");
+        builder.append(new TestResource());
+        builder.append(" ");
+        return builder.toString().length();
+    }
+
+    @Override
+    public String toString() {
+        // Return an empty string (since the default clearly doesn't do that).
+        return "";
+    }
 }

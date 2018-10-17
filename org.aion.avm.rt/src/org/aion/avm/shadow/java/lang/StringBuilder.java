@@ -4,6 +4,7 @@ import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.CodecIdioms;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.IPersistenceToken;
@@ -38,10 +39,10 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
         this.v = new java.lang.StringBuilder(seq.avm_toString().getUnderlying());
     }
 
-    //TODO: IOBJECT?
-    public StringBuilder avm_append(Object obj) {
+    public StringBuilder avm_append(IObject obj) {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append);
-        this.v.append(obj);
+        // Note that we want to convert this to a string, at our level, so we can call avm_toString() - the lower-level will call toString().
+        this.v.append(String.avm_valueOf(obj));
         return this;
     }
 
