@@ -111,7 +111,7 @@ public class AvmCLI implements UserInterface{
         @Parameter(names = {"-a", "--args"}, description = "The requested arguments. " +
                 "User provided arguments have the format of (Type Value)*. " +
                 "The following type are supported " +
-                "-I int, -J long, -S short, -C char, -F float, -D double, -B byte, -Z boolean, -A address. "+
+                "-I int, -J long, -S short, -C char, -F float, -D double, -B byte, -Z boolean, -A address, -T String. "+
                 "For example, option \"-a -I 1 -C c -Z true\" will form arguments of [(int) 1, (char) 'c', (boolean) true].",
                 variableArity = true)
         public List<String> arguments = new ArrayList<>();
@@ -263,6 +263,10 @@ public class AvmCLI implements UserInterface{
                     Helper.clearTestingState();
                     break;
                 }
+                case "-T":
+                    // Read the string directly.
+                    argArray[i / 2] = args[i + 1];
+                    break;
             }
         }
 

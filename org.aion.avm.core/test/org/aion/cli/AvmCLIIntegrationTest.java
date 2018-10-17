@@ -86,6 +86,30 @@ public class AvmCLIIntegrationTest {
         Assert.assertTrue(callEnv.didScrapeString);
     }
 
+    @Test
+    public void callSimpleStackDemo() throws Exception {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        File temp = this.folder.newFile();
+        Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
+        
+        // Create the testing environment to look for the successful deployment.
+        TestEnvironment deployEnv = new TestEnvironment("Result status: SUCCESS");
+        AvmCLI.testingMain(deployEnv, new String[] {"deploy", temp.getAbsolutePath()});
+        Assert.assertTrue(deployEnv.didScrapeString);
+        String dappAddress = deployEnv.capturedAddress;
+        Assert.assertNotNull(dappAddress);
+        
+        // Note that we are running this in-process, so we can't scoop the stdout.  Therefore, we just verify it was correct.
+        // (this is only here until the other command-line is working).
+        TestEnvironment callEnv = new TestEnvironment("Return value : void");
+        AvmCLI.testingMain(callEnv, new String[] {"call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test1"});
+        Assert.assertTrue(callEnv.didScrapeString);
+        AvmCLI.testingMain(callEnv, new String[] {"call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test2"});
+        Assert.assertTrue(callEnv.didScrapeString);
+        AvmCLI.testingMain(callEnv, new String[] {"call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test3"});
+        Assert.assertTrue(callEnv.didScrapeString);
+    }
+
 
     private static class TestEnvironment implements IEnvironment {
         public final String requiredScrape;
