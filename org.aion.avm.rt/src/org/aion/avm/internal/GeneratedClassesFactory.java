@@ -11,7 +11,7 @@ public class GeneratedClassesFactory {
 
     public static IObject construct2DBooleanArray(boolean[][] data) {
         try {
-            Class<?> wrapperClass = cl.loadClass((PackageConstants.kArrayWrapperSlashPrefix + "$$Z").replace('/', '.'));
+            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$Z");
             IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
             for (int m = 0; m < data.length; m ++) {
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new BooleanArray(data[m]));
@@ -24,7 +24,7 @@ public class GeneratedClassesFactory {
 
     public static IObject construct2DByteArray(byte[][] data) {
         try {
-            Class<?> wrapperClass = cl.loadClass((PackageConstants.kArrayWrapperSlashPrefix + "$$B").replace('/', '.'));
+            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$B");
             IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
             for (int m = 0; m < data.length; m ++) {
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new ByteArray(data[m]));
@@ -37,7 +37,7 @@ public class GeneratedClassesFactory {
 
     public static IObject construct2DCharArray(char[][] data) {
         try {
-            Class<?> wrapperClass = cl.loadClass((PackageConstants.kArrayWrapperSlashPrefix + "$$C").replace('/', '.'));
+            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$C");
             IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
             for (int m = 0; m < data.length; m ++) {
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new CharArray(data[m]));
@@ -50,7 +50,7 @@ public class GeneratedClassesFactory {
 
     public static IObject construct2DDoubleArray(double[][] data) {
         try {
-            Class<?> wrapperClass = cl.loadClass((PackageConstants.kArrayWrapperSlashPrefix + "$$D").replace('/', '.'));
+            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$D");
             IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
             for (int m = 0; m < data.length; m ++) {
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new DoubleArray(data[m]));
@@ -63,7 +63,7 @@ public class GeneratedClassesFactory {
 
     public static IObject construct2DFloatArray(float[][] data) {
         try {
-            Class<?> wrapperClass = cl.loadClass((PackageConstants.kArrayWrapperSlashPrefix + "$$F").replace('/', '.'));
+            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$F");
             IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
             for (int m = 0; m < data.length; m ++) {
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new FloatArray(data[m]));
@@ -76,7 +76,7 @@ public class GeneratedClassesFactory {
 
     public static IObject construct2DShortArray(short[][] data) {
         try {
-            Class<?> wrapperClass = cl.loadClass((PackageConstants.kArrayWrapperSlashPrefix + "$$S").replace('/', '.'));
+            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$S");
             IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
             for (int m = 0; m < data.length; m ++) {
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new ShortArray(data[m]));
@@ -89,7 +89,7 @@ public class GeneratedClassesFactory {
 
     public static IObject construct2DIntArray(int[][] data) {
         try {
-            Class<?> wrapperClass = cl.loadClass((PackageConstants.kArrayWrapperSlashPrefix + "$$I").replace('/', '.'));
+            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$I");
             IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
             for (int m = 0; m < data.length; m ++) {
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new IntArray(data[m]));
@@ -102,7 +102,7 @@ public class GeneratedClassesFactory {
 
     public static IObject construct2DLongArray(long[][] data) {
         try {
-            Class<?> wrapperClass = cl.loadClass((PackageConstants.kArrayWrapperSlashPrefix + "$$J").replace('/', '.'));
+            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$J");
             IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
             for (int m = 0; m < data.length; m ++) {
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new LongArray(data[m]));
@@ -115,7 +115,8 @@ public class GeneratedClassesFactory {
 
     public static IObject construct1DStringArray(String[] data) {
         try {
-            Class<?> wrapperClass = cl.loadClass((PackageConstants.kArrayWrapperSlashPrefix + "$Ljava.lang.String").replace('/', '.'));
+            //Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "interface._L" + PackageConstants.kShadowDotPrefix + "java.lang.String");
+            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$Ljava.lang.String");
             IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
             for (int m = 0; m < data.length; m ++) {
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, data[m]);
@@ -124,5 +125,9 @@ public class GeneratedClassesFactory {
         } catch (Throwable e) {
             throw RuntimeAssertionError.unexpected(e);
         }
+    }
+
+    public static IObject convert1DStringArray(IObject data) {
+        return null;
     }
 }

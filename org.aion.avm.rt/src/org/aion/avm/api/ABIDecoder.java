@@ -1,14 +1,7 @@
 package org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.*;
-import org.aion.avm.internal.ABICodecException;
-import org.aion.avm.internal.AvmThrowable;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IObjectArray;
-import org.aion.avm.internal.MethodAccessException;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.internal.UncaughtException;
+import org.aion.avm.internal.*;
 import org.aion.avm.shadow.java.lang.Boolean;
 import org.aion.avm.shadow.java.lang.Byte;
 import org.aion.avm.shadow.java.lang.Float;
@@ -18,7 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import org.aion.avm.internal.IHelper;
+
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public final class ABIDecoder {
@@ -471,9 +464,9 @@ public final class ABIDecoder {
                         if (argsDescriptor.charAt(charIdx + 1) == ABIDecoder.ARRAY_S) {
                             // 2D array
                             // match condition - 1) pType matches with the ABI Type specified by the symbol in the argsDescriptor;
-                            // 2) pType is one of the wrapped 2D array types.
+                            // 2) pType is one of the wrapped 2D array types; or, as a special case, the 1D String array.
                             if (Arrays.asList(ABIEncoder.mapABITypes(String.valueOf(argsDescriptor.charAt(charIdx + 2))).identifiers).contains(pType) &&
-                                    pType.startsWith(ARRAY_WRAPPER_PREFIX + "$$")) {
+                                    (pType.startsWith(ARRAY_WRAPPER_PREFIX + "$$") || (pType.contains("L") && pType.contains("String")))) {
                                 charIdx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, charIdx) + 1;
                                 charIdx = argsDescriptor.indexOf(ABIDecoder.ARRAY_E, charIdx) + 1;
                                 while (charIdx < argsDescriptor.length() && argsDescriptor.charAt(charIdx) == ABIDecoder.JAGGED_D_S) {
@@ -560,6 +553,9 @@ public final class ABIDecoder {
                     break;
                 case "char":
                     argList.set(index, ((org.aion.avm.shadow.java.lang.Character)argList.get(index)).avm_charValue());
+                    break;
+                case PackageConstants.kArrayWrapperDotPrefix + "interface._L" + PackageConstants.kShadowDotPrefix + "java.lang.String":
+                    argList.set(index, GeneratedClassesFactory.convert1DStringArray((IObject) argList.get(index)));
                     break;
                 default:
                     break;
