@@ -22,18 +22,20 @@ class AddressResource {
     private TransactionTask ownedBy;
 
     AddressResource(){
-        this.waitingQueue = new PriorityQueue();
+        this.waitingQueue = new PriorityQueue<>();
         this.isOwned = false;
         this.ownedBy = null;
     }
 
-    void addToWaitingQueue(TransactionTask task){
+    boolean addToWaitingQueue(TransactionTask task){
         if (!waitingQueue.contains(task)) {
             waitingQueue.add(task);
             if (isNextOwner(task) && null != ownedBy && task != ownedBy) {
                 ownedBy.setAbortState();
+                return true;
             }
         }
+        return false;
     }
 
     void removeFromWaitingQueue(TransactionTask task){
@@ -55,14 +57,6 @@ class AddressResource {
     void setOwner(TransactionTask task){
         this.ownedBy = task;
         this.isOwned = null == task;
-    }
-
-    void setOwned(boolean owned) {
-        isOwned = owned;
-    }
-
-    void setOwnedBy(TransactionTask ownedBy) {
-        this.ownedBy = ownedBy;
     }
 
     TransactionTask getNextOwner(){
