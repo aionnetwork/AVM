@@ -3,6 +3,7 @@ module org.aion.avm.core {
     exports org.aion.avm.core.dappreading;
     exports org.aion.avm.core.types;
     exports org.aion.avm.core.util;
+    exports org.aion.avm.core.classloading;
     exports org.aion.kernel;
 
     requires org.aion.avm.rt;
