@@ -69,7 +69,7 @@ public class PocExchangeTest {
         private byte[] initCoin(byte[] jar, byte[] arguments){
             Transaction createTransaction = Transaction.create(minter, kernel.getNonce(minter), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-            TransactionResult createResult = avm.run(createContext);
+            TransactionResult createResult = avm.run(createContext).get();
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
             return createResult.getReturnData();
         }
@@ -112,7 +112,7 @@ public class PocExchangeTest {
         private TransactionResult call(byte[] sender, byte[] args) {
             Transaction callTransaction = Transaction.call(sender, addr, kernel.getNonce(sender), 0, args, energyLimit, 1l);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-            TransactionResult callResult = avm.run(callContext);
+            TransactionResult callResult = avm.run(callContext).get();
             Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
             return callResult;
         }
@@ -131,7 +131,7 @@ public class PocExchangeTest {
         private byte[] initExchange(byte[] jar, byte[] arguments){
             Transaction createTransaction = Transaction.create(owner, kernel.getNonce(owner), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-            TransactionResult createResult = avm.run(createContext);
+            TransactionResult createResult = avm.run(createContext).get();
             Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
             return createResult.getReturnData();
         }
@@ -154,7 +154,7 @@ public class PocExchangeTest {
         private TransactionResult call(byte[] sender, byte[] args) {
             Transaction callTransaction = Transaction.call(sender, addr, kernel.getNonce(sender), 0, args, energyLimit, 1l);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-            TransactionResult callResult = avm.run(callContext);
+            TransactionResult callResult = avm.run(callContext).get();
             Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
             return callResult;
         }

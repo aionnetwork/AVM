@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.kernel.SimpleFuture;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionResult;
 
@@ -29,9 +30,9 @@ public class HandoffMonitor {
      * Called to send a new transaction to the internal thread and block until it returns a result.
      * 
      * @param newTransaction The new transaction to pass in.
-     * @return The result of newTransaction.
+     * @return The result of newTransaction as an asynchronous future.
      */
-    public synchronized TransactionResult sendTransactionAndWaitForResult(TransactionContext newTransaction) {
+    public synchronized SimpleFuture<TransactionResult> sendTransactionAsynchronously(TransactionContext newTransaction) {
         // We lock-step these, so there can't already be a transaction in the hand-off.
         RuntimeAssertionError.assertTrue(null == this.incomingTransaction);
         RuntimeAssertionError.assertTrue(null == this.outgoingResult);
@@ -44,6 +45,11 @@ public class HandoffMonitor {
         this.incomingTransaction = newTransaction;
         this.notifyAll();
         
+        // Return the future result, which will do the waiting for us.
+        return new ResultWaitFuture();
+    }
+
+    public synchronized TransactionResult blockingConsumeResult() {
         // Wait until we have the result or something went wrong.
         while ((null == this.outgoingResult) && (null == this.backgroundThrowable)) {
             // Throw an exception, if there is one.
@@ -88,9 +94,6 @@ public class HandoffMonitor {
                 RuntimeAssertionError.unexpected(e);
             }
         }
-        
-        // By the point, even if we were told to terminate, the foreground must have consumed its previous result.
-        RuntimeAssertionError.assertTrue(null == this.outgoingResult);
         
         // Return the next transaction (might be null if we were told to shut down).
         TransactionContext nextTransaction = this.incomingTransaction;
@@ -153,6 +156,19 @@ public class HandoffMonitor {
                 // This can't happen since we only store those 2.
                 RuntimeAssertionError.unexpected(t);
             }
+        }
+    }
+
+
+    private class ResultWaitFuture implements SimpleFuture<TransactionResult> {
+        // We will cache the result.
+        private TransactionResult cachedResult;
+        @Override
+        public TransactionResult get() {
+            if (null == this.cachedResult) {
+                this.cachedResult = HandoffMonitor.this.blockingConsumeResult();
+            }
+            return this.cachedResult;
         }
     }
 }

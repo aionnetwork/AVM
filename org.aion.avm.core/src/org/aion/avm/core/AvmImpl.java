@@ -12,6 +12,7 @@ import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.KernelInterface;
+import org.aion.kernel.SimpleFuture;
 import org.aion.kernel.TransactionResult;
 import org.aion.kernel.TransactionalKernel;
 import org.slf4j.Logger;
@@ -69,8 +70,8 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public TransactionResult run(TransactionContext ctx) {
-        return this.handoff.sendTransactionAndWaitForResult(ctx);
+    public SimpleFuture<TransactionResult> run(TransactionContext ctx) {
+        return this.handoff.sendTransactionAsynchronously(ctx);
     }
 
     private TransactionResult backgroundProcessTransaction(TransactionContext ctx) {

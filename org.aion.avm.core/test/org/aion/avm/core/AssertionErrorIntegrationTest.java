@@ -3,7 +3,6 @@ package org.aion.avm.core;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.PackageConstants;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -128,7 +127,7 @@ public class AssertionErrorIntegrationTest {
         
         // Deploy.
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS), 0L, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult createResult = this.avm.run(new TransactionContextImpl(create, BLOCK));
+        TransactionResult createResult = this.avm.run(new TransactionContextImpl(create, BLOCK)).get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         return TestingHelper.buildAddress(createResult.getReturnData());
     }
@@ -136,7 +135,7 @@ public class AssertionErrorIntegrationTest {
     private String callStaticString(Address dapp, String methodName, Object... arguments) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, arguments);
         Transaction call = Transaction.call(KernelInterfaceImpl.PREMINED_ADDRESS, dapp.unwrap(), this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS), 0L, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result = this.avm.run(new TransactionContextImpl(call, BLOCK));
+        TransactionResult result = this.avm.run(new TransactionContextImpl(call, BLOCK)).get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         byte[] utf8 = (byte[])TestingHelper.decodeResult(result);
         return (null != utf8)

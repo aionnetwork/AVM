@@ -34,7 +34,7 @@ public class AionBufferPerfTest {
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), 0L, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-        TransactionResult createResult = avm.run(createContext);
+        TransactionResult createResult = avm.run(createContext).get();
 
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         return createResult;
@@ -43,7 +43,7 @@ public class AionBufferPerfTest {
     private TransactionResult call(KernelInterface kernel, Avm avm, byte[] contract, byte[] sender, byte[] args) {
         Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), 0L, args, energyLimit, 1L);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-        TransactionResult callResult = avm.run(callContext);
+        TransactionResult callResult = avm.run(callContext).get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
         return callResult;
     }

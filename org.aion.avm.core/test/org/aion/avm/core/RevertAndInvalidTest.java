@@ -47,7 +47,7 @@ public class RevertAndInvalidTest {
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext);
+        TransactionResult txResult = avm.run(txContext).get();
 
         return txResult.getReturnData();
     }
@@ -56,7 +56,7 @@ public class RevertAndInvalidTest {
     public void testRevert() {
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0, new byte[]{1}, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext);
+        TransactionResult txResult = avm.run(txContext).get();
 
         assertEquals(TransactionResult.Code.FAILED_REVERT, txResult.getStatusCode());
         assertNull(txResult.getReturnData());
@@ -69,7 +69,7 @@ public class RevertAndInvalidTest {
     public void testInvalid() {
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0, new byte[]{2}, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext);
+        TransactionResult txResult = avm.run(txContext).get();
 
         assertEquals(TransactionResult.Code.FAILED_INVALID, txResult.getStatusCode());
         assertNull(txResult.getReturnData());

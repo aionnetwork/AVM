@@ -45,7 +45,7 @@ public class HashCodeIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), 0L, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(new TransactionContextImpl(create, block));
+        TransactionResult createResult = avm.run(new TransactionContextImpl(create, block)).get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         Assert.assertEquals(-2100857470, createResult.getStorageRootHash());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
@@ -64,7 +64,7 @@ public class HashCodeIntegrationTest {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
         Transaction call = Transaction.call(deployer, contractAddr.unwrap(), kernel.getNonce(deployer), 0, argData, energyLimit, 1l);
-        TransactionResult result = avm.run(new TransactionContextImpl(call, block));
+        TransactionResult result = avm.run(new TransactionContextImpl(call, block)).get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.
         Assert.assertEquals(257970589, result.getStorageRootHash());

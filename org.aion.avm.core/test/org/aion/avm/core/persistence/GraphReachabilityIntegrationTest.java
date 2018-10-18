@@ -319,7 +319,7 @@ public class GraphReachabilityIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), 0L, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(new TransactionContextImpl(create, block));
+        TransactionResult createResult = avm.run(new TransactionContextImpl(create, block)).get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
         
@@ -346,7 +346,7 @@ public class GraphReachabilityIntegrationTest {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
         Transaction call = Transaction.call(deployer, contractAddr.unwrap(), kernel.getNonce(deployer), 0, argData, energyLimit, 1l);
-        TransactionResult result = avm.run(new TransactionContextImpl(call, block));
+        TransactionResult result = avm.run(new TransactionContextImpl(call, block)).get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         Assert.assertEquals(expectedCost, result.getEnergyUsed());
         return TestingHelper.decodeResult(result);
@@ -398,7 +398,7 @@ public class GraphReachabilityIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction gc = Transaction.garbageCollect(contractAddr.unwrap(), kernel.getNonce(contractAddr.unwrap()), energyLimit, energyPrice);
-        TransactionResult gcResult = avm.run(new TransactionContextImpl(gc, block));
+        TransactionResult gcResult = avm.run(new TransactionContextImpl(gc, block)).get();
         return gcResult;
     }
 }

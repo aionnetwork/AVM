@@ -38,7 +38,7 @@ public class TransformedMethodTest {
 
         // Deploy.
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), 0L, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult createResult = avm.run(new TransactionContextImpl(create, block));
+        TransactionResult createResult = avm.run(new TransactionContextImpl(create, block)).get();
         assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         dappAddress = TestingHelper.buildAddress(createResult.getReturnData());
     }
@@ -52,7 +52,7 @@ public class TransformedMethodTest {
     public void testCallNothing() {
         byte[] argData = ABIEncoder.encodeMethodArguments("nothing");
         Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), 0L, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result = avm.run(new TransactionContextImpl(call, block));
+        TransactionResult result = avm.run(new TransactionContextImpl(call, block)).get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
     }
 
@@ -382,7 +382,7 @@ public class TransformedMethodTest {
 
     private TransactionResult runTransaction(byte[] argData) {
         Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), 0L, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result = avm.run(new TransactionContextImpl(call, block));
+        TransactionResult result = avm.run(new TransactionContextImpl(call, block)).get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return result;
     }

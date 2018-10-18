@@ -60,7 +60,7 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext);
+        TransactionResult txResult = avm.run(txContext).get();
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(to);
@@ -107,7 +107,7 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext);
+        TransactionResult txResult = avm.run(txContext).get();
         assertTrue(txResult.getStatusCode().isSuccess());
         // We expect it to handle all the exceptions and return the data we initially sent in.
         assertArrayEquals(txData, txResult.getReturnData());
@@ -135,7 +135,7 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext);
+        TransactionResult txResult = avm.run(txContext).get();
         // Note that we are expecting AvmException, which the DAppExecutor handles as FAILED.
         Assert.assertEquals(TransactionResult.Code.FAILED, txResult.getStatusCode());
     }
@@ -145,7 +145,7 @@ public class BlockchainRuntimeTest {
         byte[] arguments = null;
         Transaction tx = Transaction.create(premined, kernel.getNonce(premined), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
         TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]));
-        TransactionResult txResult = avm.run(txContext);
+        TransactionResult txResult = avm.run(txContext).get();
         assertTrue(txResult.getStatusCode().isSuccess());
 
         return txResult.getReturnData();

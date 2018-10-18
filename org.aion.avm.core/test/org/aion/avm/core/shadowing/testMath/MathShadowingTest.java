@@ -33,7 +33,7 @@ public class MathShadowingTest {
 
         Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        dappAddr = avm.run(context).getReturnData();
+        dappAddr = avm.run(context).get().getReturnData();
     }
 
     @After
@@ -46,7 +46,7 @@ public class MathShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testMaxMin");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(context);
+        TransactionResult result = avm.run(context).get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
@@ -59,7 +59,7 @@ public class MathShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testMathContext");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(context);
+        TransactionResult result = avm.run(context).get();
 
         Assert.assertEquals(5, TestingHelper.decodeResult(result));
     }

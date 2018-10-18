@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.kernel.SimpleFuture;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionResult;
 
@@ -11,12 +12,13 @@ import org.aion.kernel.TransactionResult;
 public interface Avm {
     /**
      * Executes the given DApp, with the provided runtime.
+     * Note that the execution is asynchronous relative to the caller and returned via Future.
      * Throws IllegalStateException if the receiver has already been shutdown.
      *
      * @param context the transaction context
-     * @return the result
+     * @return The result as an asynchronous future.
      */
-    TransactionResult run(TransactionContext context);
+    SimpleFuture<TransactionResult> run(TransactionContext context) throws IllegalStateException;
 
     /**
      * Tells the Avm implementation to shut down.  This means that it can assume it will not be called again.

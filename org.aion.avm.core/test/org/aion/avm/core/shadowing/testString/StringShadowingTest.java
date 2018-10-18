@@ -28,44 +28,44 @@ public class StringShadowingTest {
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        byte[] dappAddr = avm.run(context).getReturnData();
+        byte[] dappAddr = avm.run(context).get().getReturnData();
 
         // call transactions and validate the results
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnInt");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(context);
+        TransactionResult result = avm.run(context).get();
         Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, (int[]) TestingHelper.decodeResult(result)));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnBoolean");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        result = avm.run(context);
+        result = avm.run(context).get();
         //Assert.assertTrue(java.util.Arrays.equals(new byte[]{1, 0, 1, 0, 1, 0, 0}, (byte[]) TestingHelper.decodeResult(result)));
         Assert.assertTrue(java.util.Arrays.equals(new boolean[]{true, false, true, false, true, false, false}, (boolean[]) TestingHelper.decodeResult(result)));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnChar");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        result = avm.run(context);
+        result = avm.run(context).get();
         Assert.assertEquals('a', TestingHelper.decodeResult(result));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnBytes");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        result = avm.run(context);
+        result = avm.run(context).get();
         Assert.assertTrue(java.util.Arrays.equals(new byte[]{'a', 'b', 'c'}, (byte[]) TestingHelper.decodeResult(result)));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnLowerCase");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        result = avm.run(context);
+        result = avm.run(context).get();
         Assert.assertEquals("abc", TestingHelper.decodeResult(result));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnUpperCase");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        result = avm.run(context);
+        result = avm.run(context).get();
         Assert.assertEquals("ABC", TestingHelper.decodeResult(result));
         avm.shutdown();
     }
