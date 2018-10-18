@@ -2,14 +2,10 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.api.Result;
-import org.aion.avm.internal.IBlockchainRuntime;
+import org.aion.avm.internal.*;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.HashUtils;
-import org.aion.avm.internal.IHelper;
-import org.aion.avm.internal.InvalidException;
-import org.aion.avm.internal.RevertException;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.*;
 
 import java.util.List;
@@ -135,6 +131,10 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
 
+        if (ctx.getInternalCallDepth() == 10) {
+            throw new CallDepthLimitExceededException("Internal call depth cannot be more than 10");
+        }
+
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL,
                 ctx.getAddress(),
@@ -155,6 +155,10 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(value <= kernel.getBalance(ctx.getAddress()), "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
+
+        if (ctx.getInternalCallDepth() == 10) {
+            throw new CallDepthLimitExceededException("Internal call depth cannot be more than 10");
+        }
 
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CREATE,

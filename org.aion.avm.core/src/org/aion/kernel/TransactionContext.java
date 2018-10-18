@@ -43,4 +43,6 @@ public interface TransactionContext {
     byte[] getBlockPreviousHash();
 
     BigInteger getBlockDifficulty();
+
+    int getInternalCallDepth();
 }

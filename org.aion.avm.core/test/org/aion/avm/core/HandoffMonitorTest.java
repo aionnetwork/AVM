@@ -136,5 +136,9 @@ public class HandoffMonitorTest {
         public BigInteger getBlockDifficulty() {
             throw new AssertionError("No calls expected");
         }
+        @Override
+        public int getInternalCallDepth() {
+            throw new AssertionError("No calls expected");
+        }
     }
 }

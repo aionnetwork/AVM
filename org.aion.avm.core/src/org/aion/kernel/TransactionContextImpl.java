@@ -10,6 +10,7 @@ public class TransactionContextImpl implements TransactionContext {
 
     private Transaction tx;
     private byte[] origin;
+    private int internalCallDepth;
 
     private long blockNumber;
     private long blockTimestamp;
@@ -21,6 +22,7 @@ public class TransactionContextImpl implements TransactionContext {
     public TransactionContextImpl(Transaction tx, Block block) {
         this.tx = tx;
         this.origin = tx.getFrom();
+        this.internalCallDepth = 1;
 
         this.blockNumber = block.getNumber();
         this.blockTimestamp = block.getTimestamp();
@@ -33,6 +35,7 @@ public class TransactionContextImpl implements TransactionContext {
     public TransactionContextImpl(TransactionContext parent, Transaction tx) {
         this.tx = tx;
         this.origin = parent.getOrigin();
+        this.internalCallDepth = parent.getInternalCallDepth() + 1;
 
         this.blockNumber = parent.getBlockNumber();
         this.blockTimestamp = parent.getBlockTimestamp();
@@ -133,5 +136,10 @@ public class TransactionContextImpl implements TransactionContext {
     @Override
     public BigInteger getBlockDifficulty() {
         return blockDifficulty;
+    }
+
+    @Override
+    public int getInternalCallDepth() {
+        return internalCallDepth;
     }
 }
