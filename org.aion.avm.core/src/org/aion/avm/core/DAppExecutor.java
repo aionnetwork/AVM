@@ -36,22 +36,24 @@ public class DAppExecutor {
         dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, ctx, ctx.getData(), result));
         HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(helper);
 
-        // Now that we can load classes for the contract, load and populate all their classes.
         ReentrantGraphProcessor reentrantGraphData = null;
         ReflectionStructureCodec directGraphData = null;
-        if (null != stateToResume) {
-            // We are invoking a reentrant call so we don't want to pull this data from storage, but create in-memory duplicates which we can
-            // swap out, pointing to memory-backed instance stubs.
-            reentrantGraphData = dapp.replaceClassStaticsWithClones(feeProcessor);
-            thisState.setInstanceLoader(reentrantGraphData);
-        } else {
-            // This is the first invocation of this DApp so just load the static state from disk.
-            directGraphData = dapp.populateClassStaticsFromStorage(feeProcessor);
-            thisState.setInstanceLoader(directGraphData);
-        }
 
         // Call the main within the DApp.
         try {
+
+            // Now that we can load classes for the contract, load and populate all their classes.
+            if (null != stateToResume) {
+                // We are invoking a reentrant call so we don't want to pull this data from storage, but create in-memory duplicates which we can
+                // swap out, pointing to memory-backed instance stubs.
+                reentrantGraphData = dapp.replaceClassStaticsWithClones(feeProcessor);
+                thisState.setInstanceLoader(reentrantGraphData);
+            } else {
+                // This is the first invocation of this DApp so just load the static state from disk.
+                directGraphData = dapp.populateClassStaticsFromStorage(feeProcessor);
+                thisState.setInstanceLoader(directGraphData);
+            }
+
             byte[] ret = dapp.callMain();
 
             // Save back the state before we return.
