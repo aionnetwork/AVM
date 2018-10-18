@@ -554,9 +554,6 @@ public final class ABIDecoder {
                 case "char":
                     argList.set(index, ((org.aion.avm.shadow.java.lang.Character)argList.get(index)).avm_charValue());
                     break;
-                case PackageConstants.kArrayWrapperDotPrefix + "interface._L" + PackageConstants.kShadowDotPrefix + "java.lang.String":
-                    argList.set(index, GeneratedClassesFactory.convert1DStringArray((IObject) argList.get(index)));
-                    break;
                 default:
                     break;
             }

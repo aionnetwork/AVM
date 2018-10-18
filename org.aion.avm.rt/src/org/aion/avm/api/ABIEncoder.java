@@ -581,11 +581,14 @@ public final class ABIEncoder {
             }
             @Override
             public ObjectArray construct2DWrappedArray(Object[] data) {
-                String[] nativeArray = new String[data.length];
+                // this method actually constructs a 1D wrapped String array, which means,
+                // 1) the type of it is "org.aion.avm.arraywrapper.$Lorg.aion.avm.shadow.java.lang.String";
+                // 2) the type of each element is "org.aion.avm.shadow.java.lang.String"
+                org.aion.avm.shadow.java.lang.String[] shadowArray = new org.aion.avm.shadow.java.lang.String[data.length];
                 for (int i = 0; i < data.length; i++) {
-                    nativeArray[i] = (String) data[i];
+                    shadowArray[i] = new org.aion.avm.shadow.java.lang.String((String) data[i]);
                 }
-                return (ObjectArray) GeneratedClassesFactory.construct1DStringArray(nativeArray);
+                return (ObjectArray) GeneratedClassesFactory.construct1DStringArray(shadowArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -774,8 +777,9 @@ public final class ABIEncoder {
         ABITypes type = mapABITypes(className);
 
         if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$$")
-            || className.contentEquals(PackageConstants.kArrayWrapperDotPrefix + "$Ljava.lang.String")) {
-            // data is a 2D array
+            || className.contentEquals(PackageConstants.kArrayWrapperDotPrefix + "$Ljava.lang.String")
+            || className.contentEquals(PackageConstants.kArrayWrapperDotPrefix + "$L" + PackageConstants.kShadowDotPrefix + "java.lang.String")) {
+            // data is a 2D array, or a 1D String array
             return encode2DArray((ObjectArray)data, type);
         }
         else if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix)) {
@@ -831,7 +835,7 @@ public final class ABIEncoder {
         if (type == ABITypes.avm_String) {
             // descriptor bytes
             for (int i = 0; i < underlying.length; i ++) {
-                argumentDescriptor += "(" + String.valueOf(((String)underlying[i]).length()) + ")";
+                argumentDescriptor += "(" + String.valueOf(((org.aion.avm.shadow.java.lang.String)underlying[i]).getUnderlying().length()) + ")";
             }
             ret[0] = argumentDescriptor.getBytes();
 

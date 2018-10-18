@@ -113,10 +113,9 @@ public class GeneratedClassesFactory {
         }
     }
 
-    public static IObject construct1DStringArray(String[] data) {
+    public static IObject construct1DStringArray(org.aion.avm.shadow.java.lang.String[] data) {
         try {
-            //Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "interface._L" + PackageConstants.kShadowDotPrefix + "java.lang.String");
-            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$Ljava.lang.String");
+            Class<?> wrapperClass = cl.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$L" + PackageConstants.kShadowDotPrefix + "java.lang.String");
             IObject ret = (IObject) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
             for (int m = 0; m < data.length; m ++) {
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, data[m]);
@@ -125,9 +124,5 @@ public class GeneratedClassesFactory {
         } catch (Throwable e) {
             throw RuntimeAssertionError.unexpected(e);
         }
-    }
-
-    public static IObject convert1DStringArray(IObject data) {
-        return null;
     }
 }

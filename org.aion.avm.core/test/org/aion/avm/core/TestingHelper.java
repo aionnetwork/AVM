@@ -43,10 +43,21 @@ public class TestingHelper implements IHelper {
         }
         else if (data.getClass().getName() == "[[I") {
             ret = (ObjectArray) GeneratedClassesFactory.construct2DIntArray((int[][]) data);
-        }
-        else if (data.getClass().getName() == "[Ljava.lang.String;") {
-            ret = (ObjectArray) GeneratedClassesFactory.construct1DStringArray((String[]) data);
         }// add code for other 2D wrapped array when needed.
+        helper.remove();
+        return ret;
+    }
+
+    public static ObjectArray construct1DWrappedStringArray(Object data) {
+        TestingHelper helper = new TestingHelper();
+        ObjectArray ret = null;
+        if (data.getClass().getName() == "[Ljava.lang.String;") {
+            org.aion.avm.shadow.java.lang.String[] shadowArray = new org.aion.avm.shadow.java.lang.String[((String[])data).length];
+            for (int i = 0; i < ((String[])data).length; i++) {
+                shadowArray[i] = new org.aion.avm.shadow.java.lang.String(((String[]) data)[i]);
+            }
+            ret = (ObjectArray) GeneratedClassesFactory.construct1DStringArray(shadowArray);
+        }
         helper.remove();
         return ret;
     }
