@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.api.Result;
 
 
 /**
@@ -193,18 +194,24 @@ public class ReentrantCrossCallResource {
             long value = 0;
             byte[] data = ABIEncoder.encodeMethodArguments("recursiveChangeNested", ourState.hashCode(), iterationsToCall - 1);
             long energyLimit = 2_000_000L;
-            byte[] result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
-            int responseHash = ((Integer)ABIDecoder.decodeOneObject(result)).intValue();
-            
-            // Verify that we see this hash for the nestedInstance.
-            if (responseHash != nestedInstance.hashCode()) {
-                BlockchainRuntime.println("response hash mismatch");
-                throw new AssertionError();
+            Result txResult = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+            byte[] result = txResult.getReturnData();
+            if (txResult.isSuccess()) {
+                int responseHash = ((Integer) ABIDecoder.decodeOneObject(result)).intValue();
+
+                // Verify that we see this hash for the nestedInstance.
+                if (responseHash != nestedInstance.hashCode()) {
+                  BlockchainRuntime.println("response hash mismatch");
+                  throw new AssertionError();
+                }
+                // Verify the data in the nestedInstance.
+                if ((iterationsToCall - 1) != nestedInstance.data) {
+                  BlockchainRuntime.println("response data mismatch");
+                  throw new AssertionError();
+                }
             }
-            // Verify the data in the nestedInstance.
-            if ((iterationsToCall - 1) != nestedInstance.data) {
-                BlockchainRuntime.println("response data mismatch");
-                throw new AssertionError();
+            else {
+                throw new IllegalStateException("Call depth limit is exceeded");
             }
             
             // Re-install our instance.

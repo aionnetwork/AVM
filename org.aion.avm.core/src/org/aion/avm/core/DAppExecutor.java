@@ -89,6 +89,13 @@ public class DAppExecutor {
             result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_STACK);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
+        } catch (CallDepthLimitExceededException e) {
+            if (null != reentrantGraphData) {
+                reentrantGraphData.revertToStoredFields();
+            }
+            result.setStatusCode(TransactionResult.Code.FAILED_CALL_DEPTH_LIMIT_EXCEEDED);
+            result.setEnergyUsed(ctx.getEnergyLimit());
+
         } catch (RevertException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();

@@ -245,7 +245,11 @@ public class LoadedDApp {
 
         } catch (InvocationTargetException e) {
             // handle the real exception
-            handleUncaughtException(e.getTargetException());
+            if (e.getTargetException() instanceof UncaughtException) {
+                handleUncaughtException(e.getTargetException().getCause());
+            } else {
+                handleUncaughtException(e.getTargetException());
+            }
         }
 
         return null;
@@ -293,7 +297,7 @@ public class LoadedDApp {
 
             // thrown by users
         } else if (cause instanceof org.aion.avm.exceptionwrapper.java.lang.Throwable) {
-            throw new UncaughtException(cause.getCause());
+            throw new UncaughtException(cause);
 
         } else {
             RuntimeAssertionError.unexpected(cause);

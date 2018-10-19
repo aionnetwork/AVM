@@ -59,6 +59,11 @@ public class TransactionResult {
         FAILED_OUT_OF_STACK(CodeType.FAILED),
 
         /**
+         * Transaction failed due to exceeding the internal call depth limit.
+         */
+        FAILED_CALL_DEPTH_LIMIT_EXCEEDED(CodeType.FAILED),
+
+        /**
          * Transaction failed due to a REVERT operation.
          */
         FAILED_REVERT(CodeType.FAILED),

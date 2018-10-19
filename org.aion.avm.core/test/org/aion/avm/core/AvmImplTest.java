@@ -389,6 +389,30 @@ public class AvmImplTest {
         
         // We don't want to depend on a specific hashcode (appears to be 19) but just the idea that it needs to be non-zero.
         assertTrue(0 != ((Integer)resultObject).intValue());
+
+        avm.shutdown();
+    }
+
+    /**
+    * Tests that the internal call depth limit is in effect; aka, "CallDepthLimitExceededException"
+    * is thrown once the limit is reached.
+    */
+    @Test
+    public void testCallDepthLimit() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+
+        // deploy
+        Address contractAddr = createDApp(kernel, avm, txData);
+
+        // Verify the internal call depth limit is in effect.
+        byte[] callData = ABIEncoder.encodeMethodArguments("recursiveChangeNested", 0, 10);
+        Transaction tx = Transaction.call(deployer, contractAddr.unwrap(), kernel.getNonce(deployer), 0L, callData, 20_000_000l, 1L);
+        TransactionResult result2 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
+        assertEquals(TransactionResult.Code.FAILED_EXCEPTION, result2.getStatusCode());
+
         avm.shutdown();
     }
 
