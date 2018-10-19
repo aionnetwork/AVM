@@ -13,6 +13,7 @@ import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
+import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
 import org.junit.Assert;
@@ -35,7 +36,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, 0L, 0L, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(new TransactionContextImpl(create, block)).get();
+        TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
         
@@ -61,7 +62,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
         Transaction call = Transaction.call(from, contractAddr.unwrap(), kernel.getNonce(from), 0, argData, energyLimit, 1l);
-        TransactionResult result = avm.run(new TransactionContextImpl(call, block)).get();
+        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return TestingHelper.decodeResult(result);
     }

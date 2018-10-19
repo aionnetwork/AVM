@@ -143,7 +143,7 @@ public class AvmCLI implements UserInterface{
         Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), 0, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
 
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-        TransactionResult createResult = avm.run(createContext).get();
+        TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
         avm.shutdown();
 
         reportDeployResult(env, createResult);
@@ -189,7 +189,7 @@ public class AvmCLI implements UserInterface{
 
         Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), 0L, arguments, energyLimit, 1L);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-        TransactionResult callResult = avm.run(callContext).get();
+        TransactionResult callResult = avm.run(new TransactionContext[] {callContext})[0].get();
         avm.shutdown();
 
         reportCallResult(env, callResult);

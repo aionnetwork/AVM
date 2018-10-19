@@ -36,7 +36,7 @@ public class SystemShadowingTest {
 
         Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        dappAddr = avm.run(context).get().getReturnData();
+        dappAddr = avm.run(new TransactionContext[] {context})[0].get().getReturnData();
     }
 
     @After
@@ -50,7 +50,7 @@ public class SystemShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testArrayCopy");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(context).get();
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }

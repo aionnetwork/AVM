@@ -7,6 +7,7 @@ import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
+import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
 import org.aion.avm.api.ABIEncoder;
@@ -129,7 +130,7 @@ public class SubclassPersistenceIntegrationTest {
         
         // Deploy.
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS), 0L, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult createResult = this.avm.run(new TransactionContextImpl(create, BLOCK)).get();
+        TransactionResult createResult = this.avm.run(new TransactionContext[] {new TransactionContextImpl(create, BLOCK)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         return TestingHelper.buildAddress(createResult.getReturnData());
     }
@@ -137,7 +138,7 @@ public class SubclassPersistenceIntegrationTest {
     private int callStaticReturnInteger(Address dapp, String methodName) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
         Transaction call = Transaction.call(KernelInterfaceImpl.PREMINED_ADDRESS, dapp.unwrap(), this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS), 0, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result = this.avm.run(new TransactionContextImpl(call, BLOCK)).get();
+        TransactionResult result = this.avm.run(new TransactionContext[] {new TransactionContextImpl(call, BLOCK)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
     }
@@ -148,7 +149,7 @@ public class SubclassPersistenceIntegrationTest {
         
         // Deploy.
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS), 0L, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult createResult = this.avm.run(new TransactionContextImpl(create, BLOCK)).get();
+        TransactionResult createResult = this.avm.run(new TransactionContext[] {new TransactionContextImpl(create, BLOCK)})[0].get();
         Assert.assertEquals(TransactionResult.Code.FAILED_REJECTED, createResult.getStatusCode());
     }
 }

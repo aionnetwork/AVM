@@ -45,7 +45,7 @@ public class AvmFailureTest {
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext).get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         dappAddress = txResult.getReturnData();
         assertTrue(null != dappAddress);
@@ -61,7 +61,7 @@ public class AvmFailureTest {
         byte[] data = ABIEncoder.encodeMethodArguments("reentrantCall", 5);
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext).get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         assertEquals(TransactionResult.Code.FAILED_REVERT, txResult.getStatusCode());
         assertEquals(5, txResult.getInternalTransactions().size());
@@ -77,7 +77,7 @@ public class AvmFailureTest {
         byte[] data = ABIEncoder.encodeMethodArguments("testOutOfEnergy");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext).get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         assertEquals(TransactionResult.Code.FAILED_OUT_OF_ENERGY, txResult.getStatusCode());
     }
@@ -87,7 +87,7 @@ public class AvmFailureTest {
         byte[] data = ABIEncoder.encodeMethodArguments("testOutOfStack");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext).get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         assertEquals(TransactionResult.Code.FAILED_OUT_OF_STACK, txResult.getStatusCode());
     }
@@ -97,7 +97,7 @@ public class AvmFailureTest {
         byte[] data = ABIEncoder.encodeMethodArguments("testRevert");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext).get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         assertEquals(TransactionResult.Code.FAILED_REVERT, txResult.getStatusCode());
         assertNotEquals(energyLimit, txResult.getEnergyUsed());
@@ -108,7 +108,7 @@ public class AvmFailureTest {
         byte[] data = ABIEncoder.encodeMethodArguments("testInvalid");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext).get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         assertEquals(TransactionResult.Code.FAILED_INVALID, txResult.getStatusCode());
         assertEquals(energyLimit, txResult.getEnergyUsed());
@@ -119,7 +119,7 @@ public class AvmFailureTest {
         byte[] data = ABIEncoder.encodeMethodArguments("testUncaughtException");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0L, data, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(txContext).get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         assertEquals(TransactionResult.Code.FAILED_EXCEPTION, txResult.getStatusCode());
         assertTrue(txResult.getUncaughtException() instanceof RuntimeException);

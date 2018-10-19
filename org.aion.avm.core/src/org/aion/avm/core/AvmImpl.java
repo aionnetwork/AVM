@@ -70,8 +70,8 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public SimpleFuture<TransactionResult> run(TransactionContext ctx) {
-        return this.handoff.sendTransactionAsynchronously(ctx);
+    public SimpleFuture<TransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException {
+        return this.handoff.sendTransactionsAsynchronously(transactions);
     }
 
     private TransactionResult backgroundProcessTransaction(TransactionContext ctx) {

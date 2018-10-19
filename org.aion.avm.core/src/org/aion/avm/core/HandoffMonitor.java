@@ -17,9 +17,10 @@ import org.aion.kernel.TransactionResult;
  */
 public class HandoffMonitor {
     private Thread internalThread;
-    private TransactionContext incomingTransaction;
-    private TransactionResult outgoingResult;
+    private TransactionContext[] incomingTransactions;
+    private TransactionResult[] outgoingResults;
     private Throwable backgroundThrowable;
+    private int nextTransactionIndex;
 
     public HandoffMonitor(Thread thread) {
         this.internalThread = thread;
@@ -27,31 +28,38 @@ public class HandoffMonitor {
 
     /**
      * Called by the external thread.
-     * Called to send a new transaction to the internal thread and block until it returns a result.
+     * Called to send new transactions to the internal thread.
      * 
-     * @param newTransaction The new transaction to pass in.
-     * @return The result of newTransaction as an asynchronous future.
+     * @param newTransactions The new transactions to pass in.
+     * @return The result of newTransactions as a corresponding array of asynchronous futures.
      */
-    public synchronized SimpleFuture<TransactionResult> sendTransactionAsynchronously(TransactionContext newTransaction) {
+    public synchronized SimpleFuture<TransactionResult>[] sendTransactionsAsynchronously(TransactionContext[] transactions) {
         // We lock-step these, so there can't already be a transaction in the hand-off.
-        RuntimeAssertionError.assertTrue(null == this.incomingTransaction);
-        RuntimeAssertionError.assertTrue(null == this.outgoingResult);
+        RuntimeAssertionError.assertTrue(null == this.incomingTransactions);
+        RuntimeAssertionError.assertTrue(null == this.outgoingResults);
+        RuntimeAssertionError.assertTrue(transactions.length > 0);
         // Also, we can't have already been shut down.
         if (null == this.internalThread) {
             throw new IllegalStateException("Thread already stopped");
         }
         
         // Set the new transaction and wake up the background thread.
-        this.incomingTransaction = newTransaction;
+        this.incomingTransactions = transactions;
+        this.nextTransactionIndex = 0;
+        this.outgoingResults = new TransactionResult[transactions.length];
         this.notifyAll();
         
         // Return the future result, which will do the waiting for us.
-        return new ResultWaitFuture();
+        ResultWaitFuture[] results = new ResultWaitFuture[transactions.length];
+        for (int i = 0; i < results.length; ++i ) {
+            results[i] = new ResultWaitFuture(i);
+        }
+        return results;
     }
 
-    public synchronized TransactionResult blockingConsumeResult() {
+    public synchronized TransactionResult blockingConsumeResult(int index) {
         // Wait until we have the result or something went wrong.
-        while ((null == this.outgoingResult) && (null == this.backgroundThrowable)) {
+        while ((null == this.outgoingResults[index]) && (null == this.backgroundThrowable)) {
             // Throw an exception, if there is one.
             handleThrowable();
             // Otherwise, wait until state changes.
@@ -64,8 +72,14 @@ public class HandoffMonitor {
         }
         
         // Consume the result and return it.
-        TransactionResult result = this.outgoingResult;
-        this.outgoingResult = null;
+        TransactionResult result = this.outgoingResults[index];
+        this.outgoingResults[index] = null;
+        // If this is the last one in the list, drop it.
+        // TODO:  Remove this once we have a more sophisticated handoff mechanism (probably within the parallel executor - we currently
+        // know that we execute the list in-order).
+        if ((index + 1) == this.outgoingResults.length) {
+            this.outgoingResults = null;
+        }
         return result;
     }
 
@@ -78,15 +92,16 @@ public class HandoffMonitor {
      * @return The next transaction to run or null if we should shut down.
      */
     public synchronized TransactionContext blockingPollForTransaction(TransactionResult previousResult) {
-        // We are lock-step with the foreground so nothing can be still waiting for the foreground to consume.
-        RuntimeAssertionError.assertTrue(null == this.outgoingResult);
+        // We may have been given these transactions as a list but we hand them out to the caller individually.
         
-        // Set the result (may be null) and notify the foreground.
-        this.outgoingResult = previousResult;
+        // First, write-back any results that we have and notify anyone listening for that, on the front.
+        if (null != previousResult) {
+            this.outgoingResults[this.nextTransactionIndex - 1] = previousResult;
+        }
         this.notifyAll();
         
-        // Wait until we have been given the next transaction or told to terminate.
-        while ((null != this.internalThread) && (null == this.incomingTransaction)) {
+        // This means that we only actually block when the incoming transactions are null (we make it null when we consume the last element and it becomes non-null when new data enqueued).
+        while ((null != this.internalThread) && (null == this.incomingTransactions)) {
             try {
                 this.wait();
             } catch (InterruptedException e) {
@@ -95,9 +110,19 @@ public class HandoffMonitor {
             }
         }
         
-        // Return the next transaction (might be null if we were told to shut down).
-        TransactionContext nextTransaction = this.incomingTransaction;
-        this.incomingTransaction = null;
+        // Unless this was a shutdown request, get the next transaction.
+        TransactionContext nextTransaction = null;
+        if (null != this.internalThread) {
+            // Make sure that we don't already have a response for the transaction we want to hand out.
+            RuntimeAssertionError.assertTrue(null == this.outgoingResults[this.nextTransactionIndex]);
+            nextTransaction = this.incomingTransactions[this.nextTransactionIndex];
+            this.nextTransactionIndex += 1;
+            
+            // Clear this if this is the last one.
+            if (this.nextTransactionIndex == this.incomingTransactions.length) {
+                this.incomingTransactions = null;
+            }
+        }
         return nextTransaction;
     }
 
@@ -161,12 +186,16 @@ public class HandoffMonitor {
 
 
     private class ResultWaitFuture implements SimpleFuture<TransactionResult> {
+        private final int index;
         // We will cache the result.
         private TransactionResult cachedResult;
+        public ResultWaitFuture(int index) {
+            this.index = index;
+        }
         @Override
         public TransactionResult get() {
             if (null == this.cachedResult) {
-                this.cachedResult = HandoffMonitor.this.blockingConsumeResult();
+                this.cachedResult = HandoffMonitor.this.blockingConsumeResult(this.index);
             }
             return this.cachedResult;
         }
