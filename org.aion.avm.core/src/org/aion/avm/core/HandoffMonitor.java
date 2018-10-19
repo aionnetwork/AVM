@@ -4,6 +4,11 @@ import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.SimpleFuture;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionResult;
+import org.aion.parallel.TransactionTask;
+
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 
 
 /**
@@ -16,36 +21,42 @@ import org.aion.kernel.TransactionResult;
  * would result in undefined behaviour.
  */
 public class HandoffMonitor {
-    private Thread internalThread;
-    private TransactionContext[] incomingTransactions;
+    private Set<Thread> internalThreads;
+    //private TransactionContext[] incomingTransactions;
+
+    private Queue<TransactionTask> taskQueue;
+
     private TransactionResult[] outgoingResults;
     private Throwable backgroundThrowable;
-    private int nextTransactionIndex;
+    //private int nextTransactionIndex;
 
-    public HandoffMonitor(Thread thread) {
-        this.internalThread = thread;
+    public HandoffMonitor(Set<Thread> threadSet) {
+        this.internalThreads = threadSet;
+        this.taskQueue = new LinkedList<>();
     }
 
     /**
      * Called by the external thread.
      * Called to send new transactions to the internal thread.
      * 
-     * @param newTransactions The new transactions to pass in.
+     * @param transactions The new transactions to pass in.
      * @return The result of newTransactions as a corresponding array of asynchronous futures.
      */
     public synchronized SimpleFuture<TransactionResult>[] sendTransactionsAsynchronously(TransactionContext[] transactions) {
         // We lock-step these, so there can't already be a transaction in the hand-off.
-        RuntimeAssertionError.assertTrue(null == this.incomingTransactions);
+        RuntimeAssertionError.assertTrue(this.taskQueue.isEmpty());
         RuntimeAssertionError.assertTrue(null == this.outgoingResults);
         RuntimeAssertionError.assertTrue(transactions.length > 0);
         // Also, we can't have already been shut down.
-        if (null == this.internalThread) {
+        if (null == this.internalThreads) {
             throw new IllegalStateException("Thread already stopped");
         }
         
         // Set the new transaction and wake up the background thread.
-        this.incomingTransactions = transactions;
-        this.nextTransactionIndex = 0;
+        for (int i = 0; i < transactions.length; i++){
+            this.taskQueue.add(new TransactionTask(transactions[i], i));
+        }
+
         this.outgoingResults = new TransactionResult[transactions.length];
         this.notifyAll();
         
@@ -91,17 +102,17 @@ public class HandoffMonitor {
      * @param previousResult The result of the previous transaction returned by this call.
      * @return The next transaction to run or null if we should shut down.
      */
-    public synchronized TransactionContext blockingPollForTransaction(TransactionResult previousResult) {
+    public synchronized TransactionTask blockingPollForTransaction(TransactionResult previousResult, TransactionTask previousTask) {
         // We may have been given these transactions as a list but we hand them out to the caller individually.
         
         // First, write-back any results that we have and notify anyone listening for that, on the front.
         if (null != previousResult) {
-            this.outgoingResults[this.nextTransactionIndex - 1] = previousResult;
+            this.outgoingResults[previousTask.getIndex()] = previousResult;
         }
         this.notifyAll();
         
         // This means that we only actually block when the incoming transactions are null (we make it null when we consume the last element and it becomes non-null when new data enqueued).
-        while ((null != this.internalThread) && (null == this.incomingTransactions)) {
+        while ((null != this.internalThreads) && (this.taskQueue.isEmpty())) {
             try {
                 this.wait();
             } catch (InterruptedException e) {
@@ -111,19 +122,14 @@ public class HandoffMonitor {
         }
         
         // Unless this was a shutdown request, get the next transaction.
-        TransactionContext nextTransaction = null;
-        if (null != this.internalThread) {
+        TransactionTask nextTask = null;
+        if (null != this.internalThreads) {
             // Make sure that we don't already have a response for the transaction we want to hand out.
-            RuntimeAssertionError.assertTrue(null == this.outgoingResults[this.nextTransactionIndex]);
-            nextTransaction = this.incomingTransactions[this.nextTransactionIndex];
-            this.nextTransactionIndex += 1;
-            
-            // Clear this if this is the last one.
-            if (this.nextTransactionIndex == this.incomingTransactions.length) {
-                this.incomingTransactions = null;
-            }
+            RuntimeAssertionError.assertTrue(null == this.outgoingResults[this.taskQueue.peek().getIndex()]);
+
+            nextTask = this.taskQueue.poll();
         }
-        return nextTransaction;
+        return nextTask;
     }
 
     /**
@@ -140,22 +146,34 @@ public class HandoffMonitor {
 
     /**
      * Called by the external thread.
+     * Requests all the internal executor threads start.
+     */
+    public synchronized void startExecutorThreads(){
+        for (Thread t: this.internalThreads){
+            t.start();
+        }
+    }
+
+    /**
+     * Called by the external thread.
      * Requests that the internal thread stop.  Only returns once the internal thread has terminated.
      */
     public void stopAndWaitForShutdown() {
         // (called by the foreground thread)
         // Stop the thread and wait for it to join.
-        Thread backgroundThread = null;
+        Set<Thread> backgroundThreads = null;
         synchronized (this) {
-            backgroundThread = this.internalThread;
-            this.internalThread = null;
+            backgroundThreads = this.internalThreads;
+            this.internalThreads = null;
             this.notifyAll();
         }
         
         // Join on the thread and throw any exceptions left over.
         // (note that we can't join under monitor since the thread needs the monitor to exit).
         try {
-            backgroundThread.join();
+            for (Thread t : backgroundThreads){
+                t.join();
+            }
         } catch (InterruptedException e) {
             // We don't use interruption.
             RuntimeAssertionError.unexpected(e);

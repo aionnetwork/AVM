@@ -5,6 +5,7 @@ module org.aion.avm.core {
     exports org.aion.avm.core.util;
     exports org.aion.avm.core.classloading;
     exports org.aion.kernel;
+    exports org.aion.parallel;
 
     requires org.aion.avm.rt;
     requires org.aion.avm.userlib;

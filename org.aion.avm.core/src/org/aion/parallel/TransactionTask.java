@@ -1,6 +1,8 @@
 package org.aion.parallel;
 
 import org.aion.avm.internal.IHelper;
+import org.aion.kernel.*;
+
 
 /**
  * A TransactionTask represent a complete transaction chain started from an external transaction.
@@ -8,13 +10,19 @@ import org.aion.avm.internal.IHelper;
  */
 public class TransactionTask implements Comparable<TransactionTask>{
 
-    private Thread thread;
+    private TransactionContext entryTransactionCtx;
     private volatile boolean abortState;
     private IHelper helper;
     private int index;
 
-    public TransactionTask(int index, Thread thread){
-        this.thread = thread;
+    public TransactionTask(TransactionContext ctx, int index){
+        this.entryTransactionCtx = ctx;
+        this.abortState = false;
+        this.helper = null;
+        this.index = index;
+    }
+
+    public TransactionTask(int index, Thread t){
         this.abortState = false;
         this.helper = null;
         this.index = index;
@@ -61,12 +69,12 @@ public class TransactionTask implements Comparable<TransactionTask>{
     }
 
     /**
-     * Get the thread who is executing the task.
+     * Get the entry (external) transaction context of the current task.
      *
-     * @return The executor thread of the task.
+     * @return The entry (external) transaction context of the task.
      */
-    public Thread getThread() {
-        return thread;
+    public TransactionContext getEntryTransactionCtx() {
+        return entryTransactionCtx;
     }
 
     /**

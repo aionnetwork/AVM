@@ -1,20 +1,19 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.TransactionContext;
+import org.aion.kernel.*;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.KernelInterface;
-import org.aion.kernel.SimpleFuture;
-import org.aion.kernel.TransactionResult;
-import org.aion.kernel.TransactionalKernel;
+import org.aion.parallel.TransactionTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,10 +49,10 @@ public class AvmImpl implements AvmInternal {
                 try {
                     // Run as long as we have something to do (null means shutdown).
                     TransactionResult outgoingResult = null;
-                    TransactionContext incomingTransaction = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult);
-                    while (null != incomingTransaction) {
-                        outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTransaction);
-                        incomingTransaction = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult);
+                    TransactionTask incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(null, null);
+                    while (null != incomingTask) {
+                        outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask.getEntryTransactionCtx());
+                        incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
                     }
                 } catch (Throwable t) {
                     // Uncaught exception - this is fatal but we need to communicate it to the outside.
@@ -63,10 +62,13 @@ public class AvmImpl implements AvmInternal {
                 }
             }
         };
-        
+
+        Set<Thread> executorThreads = new HashSet<>();
+        executorThreads.add(thread);
+
         RuntimeAssertionError.assertTrue(null == this.handoff);
-        this.handoff = new HandoffMonitor(thread);
-        thread.start();
+        this.handoff = new HandoffMonitor(executorThreads);
+        this.handoff.startExecutorThreads();
     }
 
     @Override
