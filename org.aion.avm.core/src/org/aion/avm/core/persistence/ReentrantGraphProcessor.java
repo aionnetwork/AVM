@@ -8,6 +8,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.aion.avm.internal.ClassPersistenceToken;
@@ -399,7 +400,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                         org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)field.get(null);
                         // See if there is a caller version.
                         // NOTE:  We use mapCalleeToCallerAndEnqueueForCommitProcessing since the dry run is where we build the object graph.
-                        mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, callee);
+                        selectiveEnqueueCalleeSpaceForCommitProcessing(calleeObjectsToScan, callee);
                         // Use the fixed-size reference accounting.
                         staticByteSize += ByteSizes.REFERENCE;
                     }
@@ -411,13 +412,13 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         
         // Treat any of the instances we loaded as potential roots.
         for (org.aion.avm.shadow.java.lang.Object calleeSpaceRoot : this.loadedObjectInstances) {
-            mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, calleeSpaceRoot);
+            selectiveEnqueueCalleeSpaceForCommitProcessing(calleeObjectsToScan, calleeSpaceRoot);
         }
         // Clear this so we can assert we are done with it when finishing.
         this.loadedObjectInstances.clear();
         
         // Note only is this pass measuring size, but it is also finding the graph of objects to write-back, on commit, so provide that mapping function.
-        Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> calleeToCallerRefMappingFunction = (calleeRef) -> mapCalleeToCallerAndEnqueueForCommitProcessing(calleeObjectsToScan, calleeRef);
+        Consumer<org.aion.avm.shadow.java.lang.Object> calleeSpaceInstanceProcessor = (calleeRef) -> selectiveEnqueueCalleeSpaceForCommitProcessing(calleeObjectsToScan, calleeRef);
         
         // We have accounted for the statics and found the initial roots so follow those roots to account for all reachable instances.
         Queue<org.aion.avm.shadow.java.lang.Object> calleeSpaceObjectsToCopyBack = new LinkedList<>();
@@ -427,9 +428,15 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             // Determine if this is a new instance or an update.
             // TODO:  Verify that we are not seeing a "new instance" which was already billed as new in a callee frame.  If this becomes reachable
             // in this frame, but was billed in the callee frame, we will probably misinterpret it as a new instance, again.
-            boolean isNewInstance = (null == safeExtractPersistenceToken(calleeSpaceToScan));
+            // The only way to solve this problem is likely to communicate these new instances (and potentially their serialized form) back to the
+            // caller so it knows to avoid billing them as new instances if the reentrant call commits (note that knowing whether or not this
+            // already-billed new instance requires an updated write-back will depend on communicating the serialized state, too).
             
-            int instanceByteSize = measureByteSizeOfInstance(calleeSpaceToScan, calleeToCallerRefMappingFunction);
+            // Anything we found in this queue MUST be a ReentrantCallerReferenceToken (modified) or null (new).
+            ReentrantCallerReferenceToken objectToken = (ReentrantCallerReferenceToken) safeExtractPersistenceToken(calleeSpaceToScan);
+            boolean isNewInstance = (null == objectToken);
+            
+            int instanceByteSize = measureByteSizeOfInstance(calleeSpaceToScan, calleeSpaceInstanceProcessor);
             // Write each instance, one at a time.
             if (isNewInstance) {
                 this.feeProcessor.writeFirstOneInstanceToHeap(instanceByteSize);
@@ -458,7 +465,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         
         // Account for the size of this instance.
         // TODO:  Find a way to capture the size of this instance without serializing twice.
-        int instanceBytes = measureByteSizeOfInstance(callerSpaceOriginal, (ignored) -> null);
+        int instanceBytes = measureByteSizeOfInstance(callerSpaceOriginal, (ignored) -> {});
         
         // We want to use the same codec logic which exists in all shadow objects (since the shadow and API classes do special things here which we don't want to duplicate).
         // In this case, we want to provide an object deserialization helper which can create a callee-space instance stub.
@@ -654,12 +661,15 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         return callee;
     }
 
-    private org.aion.avm.shadow.java.lang.Object mapCalleeToCallerAndEnqueueForCommitProcessing(Queue<org.aion.avm.shadow.java.lang.Object> calleeObjectsToProcess, org.aion.avm.shadow.java.lang.Object calleeSpace) {
-        org.aion.avm.shadow.java.lang.Object callerSpace = null;
+    /**
+     * Called when scanning object references in the callee space (typically for instance size measurement, etc).
+     * Enqueues the given calleeSpace object for commit processing so long as it is a copied type (not constant/class) and hasn't already been enqueued for processing.
+     * 
+     * @param calleeObjectsToProcess The consumer of objects the function decides to enqueue for commit processing.
+     * @param calleeSpace The callee-space object reference to check.
+     */
+    private void selectiveEnqueueCalleeSpaceForCommitProcessing(Queue<org.aion.avm.shadow.java.lang.Object> calleeObjectsToProcess, org.aion.avm.shadow.java.lang.Object calleeSpace) {
         if (objectUsesReentrantCopy(calleeSpace)) {
-            // We want to replace this with a reference to caller-space (unless this object is new - has no mapping).
-            callerSpace = this.calleeToCallerMap.get(calleeSpace);
-            
             // NOTE:  We can't store the DONE_MARKER in any caller-space objects since they might have a real deserializer.
             // This means that we need to actually enqueue the callee-space object and, during processing, determine if we need to
             // actually operate on the corresponding caller (essentially determinine which copy is in the output graph).
@@ -674,10 +684,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 RuntimeAssertionError.unexpected(e);
             }
         }
-        return callerSpace;
     }
 
-    private int measureByteSizeOfInstance(org.aion.avm.shadow.java.lang.Object instance, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> calleeToCallerRefMappingFunction) {
+    private int measureByteSizeOfInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> calleeSpaceInstanceProcessor) {
         // We will use the loopback codec to serialize the object into a list we can operate on, directly, to infer size and interpret stubs.
         LoopbackCodec loopback = new LoopbackCodec(this, null, null);
         // Serialize the callee-space object.
@@ -712,7 +721,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 RuntimeAssertionError.assertTrue((null == elt) || (elt instanceof org.aion.avm.shadow.java.lang.Object));
                 // We need to apply the function we were given to this reference.
                 org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)elt;
-                calleeToCallerRefMappingFunction.apply(callee);
+                calleeSpaceInstanceProcessor.accept(callee);
                 // Use the fixed-size reference accounting.
                 instanceByteSize += ByteSizes.REFERENCE;
             }

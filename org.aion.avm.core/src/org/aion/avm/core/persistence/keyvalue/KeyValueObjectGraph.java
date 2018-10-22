@@ -111,6 +111,7 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         return KeyValueExtentCodec.decode(this, rootBytes);
     }
 
+    @Override
     public void setRoot(Extent root) {
         byte[] rootBytes = KeyValueExtentCodec.encode(root);
         RuntimeAssertionError.assertTrue(null != rootBytes);
