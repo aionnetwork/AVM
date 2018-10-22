@@ -13,6 +13,7 @@ import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ public class AvmImpl implements AvmInternal {
     private static AvmImpl currentAvm;  // (only here for testing - makes sure that we properly clean these up between invocations)
     private SoftCache<ByteArrayWrapper, LoadedDApp> hotCache;
     private HandoffMonitor handoff;
+    private AddressResourceMonitor resourceMonitor;
 
     public AvmImpl(KernelInterface kernel) {
         this.kernel = kernel;
@@ -52,7 +54,7 @@ public class AvmImpl implements AvmInternal {
                 TransactionResult outgoingResult = null;
                 TransactionTask incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(null, null);
                 while (null != incomingTask) {
-                    outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask.getEntryTransactionCtx());
+                    outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask);
                     incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
                 }
             } catch (Throwable t) {
@@ -72,6 +74,9 @@ public class AvmImpl implements AvmInternal {
         RuntimeAssertionError.assertTrue(null == this.hotCache);
         this.hotCache = new SoftCache<>();
 
+        RuntimeAssertionError.assertTrue(null == this.resourceMonitor);
+        this.resourceMonitor = new AddressResourceMonitor();
+
         Set<Thread> executorThreads = new HashSet<>();
         for (int i = 0; i < NUM_EXECUTORS; i++){
             executorThreads.add(new AvmExecutorThread("AVM Execution Thread " + i));
@@ -87,9 +92,13 @@ public class AvmImpl implements AvmInternal {
         return this.handoff.sendTransactionsAsynchronously(transactions);
     }
 
-    private TransactionResult backgroundProcessTransaction(TransactionContext ctx) {
+    private TransactionResult backgroundProcessTransaction(TransactionTask task) {
         // to capture any error during validation
         TransactionResult.Code error = null;
+
+        RuntimeAssertionError.assertTrue(task != null);
+        TransactionContext ctx = task.getExternalTransactionCtx();
+        RuntimeAssertionError.assertTrue(ctx != null);
 
         // value/energyPrice/energyLimit sanity check
         if (ctx.getValue() < 0 || ctx.getEneryPrice() <= 0 || ctx.getEnergyLimit() < ctx.getBasicCost()) {
@@ -98,9 +107,12 @@ public class AvmImpl implements AvmInternal {
             error = TransactionResult.Code.REJECTED;
         }
 
+        // All IO will be performed on an per task transactional kernel so we can abort the whole task in one go
+        TransactionalKernel taskTransactionalKernel = new TransactionalKernel(this.kernel);
+
         // nonce check
         byte[] sender = ctx.getCaller();
-        if (kernel.getNonce(sender) != ctx.getNonce()) {
+        if (taskTransactionalKernel.getNonce(sender) != ctx.getNonce()) {
             error = TransactionResult.Code.REJECTED_INVALID_NONCE;
         }
 
@@ -110,16 +122,30 @@ public class AvmImpl implements AvmInternal {
             if (ctx.isGarbageCollectionRequest()) {
                 // The GC case operates directly on the top-level KernelInterface.
                 // (remember that the "sender" is who we are updating).
-                result = runGc(sender);
+                result = runGc(taskTransactionalKernel, sender);
             } else {
                 // The CREATE/CALL case is handled via the common external invoke path.
-                result = runExternalInvoke(ctx);
+                result = runExternalInvoke(taskTransactionalKernel, ctx);
             }
         } else {
             result = new TransactionResult();
             result.setStatusCode(error);
             result.setEnergyUsed(ctx.getEnergyLimit());
         }
+
+        // Deduct energy for rejected transaction
+        if (result.getStatusCode() == TransactionResult.Code.REJECTED
+                || result.getStatusCode() == TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE
+                || result.getStatusCode() == TransactionResult.Code.REJECTED_INVALID_NONCE
+                || ctx.isGarbageCollectionRequest())
+        {
+            taskTransactionalKernel.adjustBalance(sender, result.getEnergyUsed() * ctx.getEneryPrice());
+        }
+
+        // TODO: Implementation
+        // Task transactional kernel commits are serialized through address resource monitor
+        this.resourceMonitor.commitKernelForTask(task, taskTransactionalKernel);
+
         return result;
     }
 
@@ -138,14 +164,14 @@ public class AvmImpl implements AvmInternal {
     }
 
 
-    private TransactionResult runExternalInvoke(TransactionContext ctx) {
+    private TransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionContext ctx) {
         // to capture any error during validation
         TransactionResult.Code error = null;
 
         // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
         byte[] sender = ctx.getCaller();
-        long senderBalance = kernel.getBalance(sender);
+        long senderBalance = parentKernel.getBalance(sender);
         if (BigInteger.valueOf(ctx.getValue()).add(BigInteger.valueOf(ctx.getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getEneryPrice())))
                 .compareTo(BigInteger.valueOf(senderBalance)) > 0) {
             error = TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
@@ -164,15 +190,15 @@ public class AvmImpl implements AvmInternal {
          */
 
         // withhold the total energy cost
-        this.kernel.adjustBalance(ctx.getCaller(), -(ctx.getEnergyLimit() * ctx.getEneryPrice()));
+        parentKernel.adjustBalance(ctx.getCaller(), -(ctx.getEnergyLimit() * ctx.getEneryPrice()));
 
         // Run the common logic with the parent kernel as the top-level one.
-        TransactionResult result = commonInvoke(kernel, ctx);
+        TransactionResult result = commonInvoke(parentKernel, ctx);
 
         // refund the remaining energy
         long remainingEnergy = ctx.getEnergyLimit() - result.getEnergyUsed();
         if (remainingEnergy > 0) {
-            this.kernel.adjustBalance(ctx.getCaller(), remainingEnergy * ctx.getEneryPrice());
+            parentKernel.adjustBalance(ctx.getCaller(), remainingEnergy * ctx.getEneryPrice());
         }
 
         return result;
@@ -251,14 +277,14 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private TransactionResult runGc(byte[] dappAddress) {
+    private TransactionResult runGc(KernelInterface parentKernel, byte[] dappAddress) {
         ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress);
         
         LoadedDApp dapp = this.hotCache.checkout(addressWrapper);
         if (null == dapp) {
             // If we didn't find it there, just load it.
             try {
-                dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(this.kernel, dappAddress));
+                dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(parentKernel, dappAddress));
             } catch (IOException e) {
                 unexpected(e); // the jar was created by AVM; IOException is unexpected
             }
@@ -278,6 +304,7 @@ public class AvmImpl implements AvmInternal {
             // If we failed to find the application, we will currently return this as a generic FAILED_INVALID but we may want a more
             // specific code in the future.
             result.setStatusCode(TransactionResult.Code.FAILED_INVALID);
+            result.setEnergyUsed(0);
         }
         return result;
     }

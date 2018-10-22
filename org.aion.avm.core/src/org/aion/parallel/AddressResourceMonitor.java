@@ -1,6 +1,7 @@
 package org.aion.parallel;
 
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.kernel.TransactionalKernel;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -122,6 +123,25 @@ public class AddressResourceMonitor {
             resource.setOwner(null);
         }
         if (DEBUG) System.out.println("Release " + task.getIndex() + " " + resource.toString());
+    }
+
+    /**
+     * Try commit the result transactional kernel of the given task.
+     * The commit will be serialized as the index of the task.
+     *
+     * The executor thread of the task will block until
+     *      It is the task's turn to commit result
+     *      OR
+     *      The task need to abort to yield a address resource
+     *
+     * @param task The requesting task.
+     * @param kernel The transactional kernel of the task.
+     *
+     * @return True if commit is successful. False if task need to abort.
+     */
+    public boolean commitKernelForTask(TransactionTask task, TransactionalKernel kernel){
+        kernel.commit();
+        return true;
     }
 
     private AddressResource getResource(AddressWrapper addr){

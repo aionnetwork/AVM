@@ -10,13 +10,13 @@ import org.aion.kernel.*;
  */
 public class TransactionTask implements Comparable<TransactionTask>{
 
-    private TransactionContext entryTransactionCtx;
+    private TransactionContext externalTransactionContext;
     private volatile boolean abortState;
     private IHelper helper;
     private int index;
 
     public TransactionTask(TransactionContext ctx, int index){
-        this.entryTransactionCtx = ctx;
+        this.externalTransactionContext = ctx;
         this.abortState = false;
         this.helper = null;
         this.index = index;
@@ -73,8 +73,8 @@ public class TransactionTask implements Comparable<TransactionTask>{
      *
      * @return The entry (external) transaction context of the task.
      */
-    public TransactionContext getEntryTransactionCtx() {
-        return entryTransactionCtx;
+    public TransactionContext getExternalTransactionCtx() {
+        return externalTransactionContext;
     }
 
     /**
