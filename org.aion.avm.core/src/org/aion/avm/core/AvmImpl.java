@@ -24,6 +24,8 @@ public class AvmImpl implements AvmInternal {
 
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
 
+    private static final int NUM_EXECUTORS = 1;
+
     private final KernelInterface kernel;
     private final ReentrantDAppStack dAppStack;
 
@@ -37,34 +39,43 @@ public class AvmImpl implements AvmInternal {
         this.dAppStack = new ReentrantDAppStack();
     }
 
+    private class AvmExecutorThread extends Thread{
+
+        AvmExecutorThread(String name){
+            super(name);
+        }
+
+        @Override
+        public void run() {
+            try {
+                // Run as long as we have something to do (null means shutdown).
+                TransactionResult outgoingResult = null;
+                TransactionTask incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(null, null);
+                while (null != incomingTask) {
+                    outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask.getEntryTransactionCtx());
+                    incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
+                }
+            } catch (Throwable t) {
+                // Uncaught exception - this is fatal but we need to communicate it to the outside.
+                AvmImpl.this.handoff.setBackgroundThrowable(t);
+                // If the throwable makes it all the way to here, we can't handle it.
+                RuntimeAssertionError.unexpected(t);
+            }
+        }
+
+    }
+
     public void startup() {
         RuntimeAssertionError.assertTrue(null == AvmImpl.currentAvm);
         AvmImpl.currentAvm = this;
         
         RuntimeAssertionError.assertTrue(null == this.hotCache);
         this.hotCache = new SoftCache<>();
-        Thread thread = new Thread("AVM Execution Thread") {
-            @Override
-            public void run() {
-                try {
-                    // Run as long as we have something to do (null means shutdown).
-                    TransactionResult outgoingResult = null;
-                    TransactionTask incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(null, null);
-                    while (null != incomingTask) {
-                        outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask.getEntryTransactionCtx());
-                        incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
-                    }
-                } catch (Throwable t) {
-                    // Uncaught exception - this is fatal but we need to communicate it to the outside.
-                    AvmImpl.this.handoff.setBackgroundThrowable(t);
-                    // If the throwable makes it all the way to here, we can't handle it.
-                    RuntimeAssertionError.unexpected(t);
-                }
-            }
-        };
 
         Set<Thread> executorThreads = new HashSet<>();
-        executorThreads.add(thread);
+        for (int i = 0; i < NUM_EXECUTORS; i++){
+            executorThreads.add(new AvmExecutorThread("AVM Execution Thread " + i));
+        }
 
         RuntimeAssertionError.assertTrue(null == this.handoff);
         this.handoff = new HandoffMonitor(executorThreads);
