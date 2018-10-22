@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 public class AvmCLI {
     static Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
-    public static void deploy(IEnvironment env, String storagePath, String jarPath, byte[] sender, long energyLimit) {
+    public static TransactionContext setupOneDeploy(IEnvironment env, String storagePath, String jarPath, byte[] sender, long energyLimit) {
 
         reportDeployRequest(env, storagePath, jarPath, sender);
 
@@ -33,7 +33,6 @@ public class AvmCLI {
         File storageFile = new File(storagePath);
 
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
         Path path = Paths.get(jarPath);
         byte[] jar;
@@ -45,11 +44,7 @@ public class AvmCLI {
 
         Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), 0, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
 
-        TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-        TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
-        avm.shutdown();
-
-        reportDeployResult(env, createResult);
+        return new TransactionContextImpl(createTransaction, block);
     }
 
     public static void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, byte[] sender) {
@@ -71,7 +66,7 @@ public class AvmCLI {
         env.logLine("Energy cost  : " + createResult.getEnergyUsed());
     }
 
-    public static void call(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, Object[] args, long energyLimit) {
+    public static TransactionContext setupOneCall(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, Object[] args, long energyLimit, long nonceBias) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
         if (contract.length != Address.LENGTH){
@@ -87,14 +82,11 @@ public class AvmCLI {
         File storageFile = new File(storagePath);
 
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
 
-        Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), 0L, arguments, energyLimit, 1L);
-        TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-        TransactionResult callResult = avm.run(new TransactionContext[] {callContext})[0].get();
-        avm.shutdown();
-
-        reportCallResult(env, callResult);
+        // TODO:  Remove this bias when/if we change this to no longer send all transactions from the same account.
+        long biasedNonce = kernel.getNonce(sender) + nonceBias;
+        Transaction callTransaction = Transaction.call(sender, contract, biasedNonce, 0L, arguments, energyLimit, 1L);
+        return new TransactionContextImpl(callTransaction, block);
     }
 
     private static void reportCallRequest(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, Object[] args){
@@ -211,15 +203,14 @@ public class AvmCLI {
             // (we want the underlying storage engine to remain very passive so it should always expect that the directory was created for it).
             verifyStorageExists(env, invocation.storagePath);
             
-            for (ArgumentParser.Command command : invocation.commands) {
+            // See if this is a non-batching case or if we are just going to roll these into an AVM invocation.
+            if (null != invocation.nonBatchingAction) {
+                ArgumentParser.Command command = invocation.commands.get(0);
                 switch (command.action) {
                 case CALL:
-                    Object[] callArgs = new Object[command.args.size()];
-                    command.args.toArray(callArgs);
-                    call(env, invocation.storagePath, Helpers.hexStringToBytes(command.contractAddress), Helpers.hexStringToBytes(command.senderAddress), command.method, callArgs, command.energyLimit);
-                    break;
                 case DEPLOY:
-                    deploy(env, invocation.storagePath, command.jarPath, Helpers.hexStringToBytes(command.senderAddress), command.energyLimit);
+                    // This should be in the batching path.
+                    RuntimeAssertionError.unreachable("This should be in the batching path");
                     break;
                 case EXPLORE:
                     exploreStorage(env, invocation.storagePath, Helpers.hexStringToBytes(command.contractAddress));
@@ -229,6 +220,60 @@ public class AvmCLI {
                     break;
                 default:
                     throw new AssertionError("Unknown option");
+                }
+            } else {
+                // Setup the transactions.
+                TransactionContext[] transactions = new TransactionContext[invocation.commands.size()];
+                for (int i = 0; i < invocation.commands.size(); ++i) {
+                    ArgumentParser.Command command = invocation.commands.get(i);
+                    switch (command.action) {
+                    case CALL:
+                        Object[] callArgs = new Object[command.args.size()];
+                        command.args.toArray(callArgs);
+                        transactions[i] = setupOneCall(env, invocation.storagePath, Helpers.hexStringToBytes(command.contractAddress), Helpers.hexStringToBytes(command.senderAddress), command.method, callArgs, command.energyLimit, i);
+                        break;
+                    case DEPLOY:
+                        transactions[i] = setupOneDeploy(env, invocation.storagePath, command.jarPath, Helpers.hexStringToBytes(command.senderAddress), command.energyLimit);
+                        break;
+                    case EXPLORE:
+                    case OPEN:
+                        // This should be in the non-batching path.
+                        RuntimeAssertionError.unreachable("This should be in the batching path");
+                        break;
+                    default:
+                        throw new AssertionError("Unknown option");
+                    }
+                }
+                
+                // Run them in a single batch.
+                File storageFile = new File(invocation.storagePath);
+                KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
+                Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+                SimpleFuture<TransactionResult>[] futures = avm.run(transactions);
+                TransactionResult[] results = new TransactionResult[futures.length];
+                for (int i = 0; i < futures.length; ++i) {
+                    results[i] = futures[i].get();
+                }
+                avm.shutdown();
+                
+                // Finish up with reporting.
+                for (int i = 0; i < invocation.commands.size(); ++i) {
+                    ArgumentParser.Command command = invocation.commands.get(i);
+                    switch (command.action) {
+                    case CALL:
+                        reportCallResult(env, results[i]);
+                        break;
+                    case DEPLOY:
+                        reportDeployResult(env, results[i]);
+                        break;
+                    case EXPLORE:
+                    case OPEN:
+                        // This should be in the non-batching path.
+                        RuntimeAssertionError.unreachable("This should be in the batching path");
+                        break;
+                    default:
+                        throw new AssertionError("Unknown option");
+                    }
                 }
             }
         } else {
