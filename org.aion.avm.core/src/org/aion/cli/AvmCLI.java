@@ -7,6 +7,7 @@ import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.StorageWalker;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.*;
 
 import java.io.ByteArrayOutputStream;
@@ -200,28 +201,35 @@ public class AvmCLI {
     private static void internalMain(IEnvironment env, String[] args) {
         ArgumentParser.Invocation invocation = ArgumentParser.parseArgs(args);
         if (null == invocation.errorString) {
+            // There must be at least one command or there should have been a parse error (usually just defaulting to usage).
+            RuntimeAssertionError.assertTrue(invocation.commands.size() > 0);
+            // This logging line is largely just for test verification so it might be removed in the future.
+            env.logLine("Running block with " + invocation.commands.size() + " transactions");
+            
             // Do the thing.
             // Before we run any command, make sure that the specified storage directory exists.
             // (we want the underlying storage engine to remain very passive so it should always expect that the directory was created for it).
             verifyStorageExists(env, invocation.storagePath);
             
-            switch (invocation.command.action) {
-            case CALL:
-                Object[] callArgs = new Object[invocation.command.args.size()];
-                invocation.command.args.toArray(callArgs);
-                call(env, invocation.storagePath, Helpers.hexStringToBytes(invocation.command.contractAddress), Helpers.hexStringToBytes(invocation.command.senderAddress), invocation.command.method, callArgs, invocation.command.energyLimit);
-                break;
-            case DEPLOY:
-                deploy(env, invocation.storagePath, invocation.command.jarPath, Helpers.hexStringToBytes(invocation.command.senderAddress), invocation.command.energyLimit);
-                break;
-            case EXPLORE:
-                exploreStorage(env, invocation.storagePath, Helpers.hexStringToBytes(invocation.command.contractAddress));
-                break;
-            case OPEN:
-                openAccount(env, invocation.storagePath, Helpers.hexStringToBytes(invocation.command.contractAddress));
-                break;
-            default:
-                throw new AssertionError("Unknown option");
+            for (ArgumentParser.Command command : invocation.commands) {
+                switch (command.action) {
+                case CALL:
+                    Object[] callArgs = new Object[command.args.size()];
+                    command.args.toArray(callArgs);
+                    call(env, invocation.storagePath, Helpers.hexStringToBytes(command.contractAddress), Helpers.hexStringToBytes(command.senderAddress), command.method, callArgs, command.energyLimit);
+                    break;
+                case DEPLOY:
+                    deploy(env, invocation.storagePath, command.jarPath, Helpers.hexStringToBytes(command.senderAddress), command.energyLimit);
+                    break;
+                case EXPLORE:
+                    exploreStorage(env, invocation.storagePath, Helpers.hexStringToBytes(command.contractAddress));
+                    break;
+                case OPEN:
+                    openAccount(env, invocation.storagePath, Helpers.hexStringToBytes(command.contractAddress));
+                    break;
+                default:
+                    throw new AssertionError("Unknown option");
+                }
             }
         } else {
             env.fail(invocation.errorString);

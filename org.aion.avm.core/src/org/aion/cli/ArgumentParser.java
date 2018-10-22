@@ -94,10 +94,10 @@ public class ArgumentParser {
      */
     private static enum TopArg {
         STORAGE(matches("-st", "--storage"), true, (self, path) -> {ArgumentParser.root.storagePath = path; return null;}),
-        OPEN(matches("open"), false, (self, ignored) -> {appendNewCommand(Action.OPEN); self.runOnNested(); return null;}, InnerArg.ADDRESS),
-        DEPLOY(matches("deploy"), true, (self, jar) -> {appendNewCommand(Action.DEPLOY).jarPath = jar; self.runOnNested(); return null;}, InnerArg.SENDER),
-        CALL(matches("call"), true, (self, contract) -> {appendNewCommand(Action.CALL).contractAddress = contract; self.runOnNested(); return null;}, InnerArg.SENDER, InnerArg.ENERGY_LIMIT, InnerArg.METHOD, InnerArg.ARGS),
-        EXPLORE(matches("explore"), true, (self, contract) -> {appendNewCommand(Action.EXPLORE).contractAddress = contract; self.runOnNested(); return null;}),
+        OPEN(matches("open"), false, (self, ignored) -> {appendNewCommand(Action.OPEN, false); self.runOnNested(); return null;}, InnerArg.ADDRESS),
+        DEPLOY(matches("deploy"), true, (self, jar) -> {appendNewCommand(Action.DEPLOY, true).jarPath = jar; self.runOnNested(); return null;}, InnerArg.SENDER),
+        CALL(matches("call"), true, (self, contract) -> {appendNewCommand(Action.CALL, true).contractAddress = contract; self.runOnNested(); return null;}, InnerArg.SENDER, InnerArg.ENERGY_LIMIT, InnerArg.METHOD, InnerArg.ARGS),
+        EXPLORE(matches("explore"), true, (self, contract) -> {appendNewCommand(Action.EXPLORE, false).contractAddress = contract; self.runOnNested(); return null;}),
         ;
         
         private final List<String> matches;
@@ -171,7 +171,8 @@ public class ArgumentParser {
     public static class Invocation {
         public String errorString = usageString();
         public String storagePath = DEFAULT_STORAGE;
-        public Command command;
+        public List<Command> commands = new ArrayList<>();
+        public Action nonBatchingAction = null;
     }
 
     // These variables represent the state of the parser, as it runs.  They have no meaning outside of a parsing operation.
@@ -231,11 +232,21 @@ public class ArgumentParser {
         ArgumentParser.nextIndexToParse -= 1;
     }
 
-    private static Command appendNewCommand(Action action) {
+    private static Command appendNewCommand(Action action, boolean canBeBatched) {
+        // "canBeBatched" exists since some of the things we parse as commands cannot be batched (only CALL and DEPLOY can be batched since only they invoke AVM).
+        if (!canBeBatched && !ArgumentParser.root.commands.isEmpty()) {
+            throw new IllegalArgumentException(action.name() + " cannot be in a batch of commands");
+        }
+        if ((null != ArgumentParser.root.nonBatchingAction) && !ArgumentParser.root.commands.isEmpty()) {
+            throw new IllegalArgumentException(ArgumentParser.root.nonBatchingAction.name() + " cannot be in a batch of commands");
+        }
+        if (!canBeBatched) {
+            ArgumentParser.root.nonBatchingAction = action;
+        }
         ArgumentParser.root.errorString = null;
         ArgumentParser.currentCommand = new Command();
         ArgumentParser.currentCommand.action = action;
-        ArgumentParser.root.command = ArgumentParser.currentCommand;
+        ArgumentParser.root.commands.add(ArgumentParser.currentCommand);
         return ArgumentParser.currentCommand;
     }
 

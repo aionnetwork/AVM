@@ -41,7 +41,7 @@ public class AvmCLIIntegrationTest {
         String[] args = new String[]{"call", "0xFFFF", "--method", "method", "--args", "-A", "0x1122334455667788112233445566778811223344556677881122334455667788"};
         ArgumentParser.Invocation invocation = ArgumentParser.parseArgs(args);
         // Verify that the argument is an Address.
-        Assert.assertTrue(invocation.command.args.get(0) instanceof Address);
+        Assert.assertTrue(invocation.commands.get(0).args.get(0) instanceof Address);
     }
 
     @Test
@@ -126,6 +126,71 @@ public class AvmCLIIntegrationTest {
             message = e.getMessage();
         }
         Assert.assertEquals("Unknown argument: bogus_arg", message);
+    }
+
+    @Test
+    public void multiSimpleStackDemo() throws Exception {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        File temp = this.folder.newFile();
+        Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
+        
+        // Create the testing environment to look for the successful deployment.
+        TestEnvironment deployEnv = new TestEnvironment("Running block with 1 transactions");
+        AvmCLI.testingMain(deployEnv, new String[] {
+                "deploy", temp.getAbsolutePath(),
+        });
+        Assert.assertTrue(deployEnv.didScrapeString);
+        String dappAddress = deployEnv.capturedAddress;
+        Assert.assertNotNull(dappAddress);
+        
+        // Note that we are running this in-process, so we can't scoop the stdout.  Therefore, we just verify it was correct.
+        // (this is only here until the other command-line is working).
+        TestEnvironment callEnv = new TestEnvironment("Running block with 2 transactions");
+        AvmCLI.testingMain(callEnv, new String[] {
+                "call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test1_1",
+                "call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test1_2",
+        });
+        Assert.assertTrue(callEnv.didScrapeString);
+        callEnv = new TestEnvironment("Running block with 1 transactions");
+        AvmCLI.testingMain(callEnv, new String[] {
+                "call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test2_1",
+        });
+        Assert.assertTrue(callEnv.didScrapeString);
+        callEnv = new TestEnvironment("Running block with 3 transactions");
+        AvmCLI.testingMain(callEnv, new String[] {
+                "call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test3_1",
+                "call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test3_2",
+                "call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test3_3",
+        });
+        Assert.assertTrue(callEnv.didScrapeString);
+    }
+
+    @Test
+    public void parseFailOnInvalidBatch() {
+        String[] args = new String[] {
+                "call", "0xFFFF", "--method", "addNewTuple", "--args", "-T", "test1_1",
+                "explore", "0xFFFF",
+        };
+        // Make sure that we see the complaint about the use of batching on explore.
+        String message = null;
+        try {
+            ArgumentParser.parseArgs(args);
+        } catch (IllegalArgumentException e) {
+            message = e.getMessage();
+        }
+        Assert.assertEquals("EXPLORE cannot be in a batch of commands", message);
+        args = new String[] {
+                "open", "--address", "0xFFFF",
+                "call", "0xFFFF", "--method", "addNewTuple", "--args", "-T", "test1_1",
+        };
+        // Make sure that we see the complaint about the use of batching on open.
+        message = null;
+        try {
+            ArgumentParser.parseArgs(args);
+        } catch (IllegalArgumentException e) {
+            message = e.getMessage();
+        }
+        Assert.assertEquals("OPEN cannot be in a batch of commands", message);
     }
 
 
