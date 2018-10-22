@@ -1,19 +1,13 @@
 package org.aion.cli;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
-import com.beust.jcommander.Parameters;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.StorageWalker;
-import org.aion.avm.internal.Helper;
 import org.aion.kernel.*;
-import com.beust.jcommander.Parameter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -22,104 +16,12 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-public class AvmCLI implements UserInterface{
-    static String DEFAULT_STORAGE = "./storage";
 
-    static String DEFAULT_SENDER_STRING = Helpers.bytesToHexString(KernelInterfaceImpl.PREMINED_ADDRESS);
-
-    static long DEFAULT_ENERGY_LIMIT = 100_000_000L;
-
+public class AvmCLI {
     static Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
 
-    private JCommander jc;
-
-    private CLIFlag flag;
-    private CommandOpen open;
-    private CommandDeploy deploy;
-    private CommandCall call;
-    private CommandExplore explore;
-
-    private AvmCLI(){
-        flag = new CLIFlag();
-        open = new CommandOpen();
-        deploy = new CommandDeploy();
-        call = new CommandCall();
-        explore = new CommandExplore();
-        jc = JCommander.newBuilder()
-                .addObject(flag)
-                .addCommand("open", open)
-                .addCommand("deploy", deploy)
-                .addCommand("call", call)
-                .addCommand("explore", explore)
-                .build();
-
-        jc.setProgramName("AvmCLI");
-    }
-
-    public class CLIFlag {
-
-        @Parameter(names = {"-st", "--storage"}, description = "Specify the storage directory")
-        private String storage = DEFAULT_STORAGE;
-
-        @Parameter(names = {"-h", "--help"}, description = "Show usage of AVMCLI")
-        private boolean usage = false;
-    }
-
-
-    @Parameters(commandDescription = "Open new account")
-    public class CommandOpen{
-
-        @Parameter(names = {"-a","--address"}, description = "The address to open")
-        private String address = "Random generated address";
-    }
-
-    @Parameters(commandDescription = "Deploy Dapp")
-    public class CommandDeploy{
-
-        @Parameter(description = "DappJar", required = true)
-        private String contract = null;
-
-        @Parameter(names = { "-sd" ,"--sender"}, description = "The sender of the request")
-        private String sender = DEFAULT_SENDER_STRING;
-    }
-
-    @Parameters(commandDescription = "Explore storage")
-    public class CommandExplore{
-        @Parameter(description = "DappAddress", required = true)
-        private String contract = null;
-    }
-
-    @Parameters(commandDescription = "Call Dapp")
-    public class CommandCall{
-
-        @Parameter(description = "DappAddress", required = true)
-        private String contract = null;
-
-        @Parameter(names = {"-sd", "--sender"}, description = "The sender of the request")
-        private String sender = DEFAULT_SENDER_STRING;
-
-        @Parameter(names = {"-e", "--energy-limit"}, description = "The energy limit of the request")
-        private long energyLimit = DEFAULT_ENERGY_LIMIT;
-
-        @Parameter(names = {"-m", "--method"}, description = "The requested method")
-        private String methodName = "";
-
-        @Parameter(names = {"-a", "--args"}, description = "The requested arguments. " +
-                "User provided arguments have the format of (Type Value)*. " +
-                "The following type are supported " +
-                "-I int, -J long, -S short, -C char, -F float, -D double, -B byte, -Z boolean, -A address, -T String. "+
-                "For example, option \"-a -I 1 -C c -Z true\" will form arguments of [(int) 1, (char) 'c', (boolean) true].",
-                variableArity = true)
-        public List<String> arguments = new ArrayList<>();
-
-    }
-
-    @Override
-    public void deploy(IEnvironment env, String storagePath, String jarPath, byte[] sender, long energyLimit) {
+    public static void deploy(IEnvironment env, String storagePath, String jarPath, byte[] sender, long energyLimit) {
 
         reportDeployRequest(env, storagePath, jarPath, sender);
 
@@ -149,7 +51,7 @@ public class AvmCLI implements UserInterface{
         reportDeployResult(env, createResult);
     }
 
-    public void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, byte[] sender) {
+    public static void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, byte[] sender) {
         lineSeparator(env);
         env.logLine("DApp deployment request");
         env.logLine("Storage      : " + storagePath);
@@ -157,7 +59,7 @@ public class AvmCLI implements UserInterface{
         env.logLine("Sender       : " + Helpers.bytesToHexString(sender));
     }
 
-    public void reportDeployResult(IEnvironment env, TransactionResult createResult){
+    public static void reportDeployResult(IEnvironment env, TransactionResult createResult){
         String dappAddress = Helpers.bytesToHexString(createResult.getReturnData());
         env.noteRelevantAddress(dappAddress);
         
@@ -168,8 +70,7 @@ public class AvmCLI implements UserInterface{
         env.logLine("Energy cost  : " + createResult.getEnergyUsed());
     }
 
-    @Override
-    public void call(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, String[] args, long energyLimit) {
+    public static void call(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, Object[] args, long energyLimit) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
         if (contract.length != Address.LENGTH){
@@ -180,7 +81,7 @@ public class AvmCLI implements UserInterface{
             throw env.fail("call : Invalid sender address");
         }
 
-        byte[] arguments = ABIEncoder.encodeMethodArguments(method, parseArgs(args));
+        byte[] arguments = ABIEncoder.encodeMethodArguments(method, args);
 
         File storageFile = new File(storagePath);
 
@@ -195,7 +96,7 @@ public class AvmCLI implements UserInterface{
         reportCallResult(env, callResult);
     }
 
-    private void reportCallRequest(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, String[] args){
+    private static void reportCallRequest(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, Object[] args){
         lineSeparator(env);
         env.logLine("DApp call request");
         env.logLine("Storage      : " + storagePath);
@@ -204,11 +105,11 @@ public class AvmCLI implements UserInterface{
         env.logLine("Method       : " + method);
         env.logLine("Arguments    : ");
         for (int i = 0; i < args.length; i += 2){
-            env.logLine("             : " + args[i] + " " + args[i + 1]);
+            env.logLine("             : " + args[i]);
         }
     }
 
-    private void reportCallResult(IEnvironment env, TransactionResult callResult){
+    private static void reportCallResult(IEnvironment env, TransactionResult callResult){
         lineSeparator(env);
         env.logLine("DApp call result");
         env.logLine("Result status: " + callResult.getStatusCode().name());
@@ -220,65 +121,11 @@ public class AvmCLI implements UserInterface{
         }
     }
 
-    // open for testing
-    public static Object[] parseArgs(String[] args){
-
-        Object[] argArray = new Object[args.length / 2];
-
-        for (int i = 0; i < args.length; i += 2){
-            switch (args[i]){
-                case "-I":
-                    argArray[i / 2] = Integer.valueOf(args[i + 1]);
-                    break;
-                case "-S":
-                    argArray[i / 2] = Short.valueOf(args[i + 1]);
-                    break;
-                case "-L":
-                    argArray[i / 2] = Long.valueOf(args[i + 1]);
-                    break;
-                case "-F":
-                    argArray[i / 2] = Float.valueOf(args[i + 1]);
-                    break;
-                case "-D":
-                    argArray[i / 2] = Double.valueOf(args[i + 1]);
-                    break;
-                case "-C":
-                    argArray[i / 2] = Character.valueOf(args[i + 1].charAt(0));
-                    break;
-                case "-B":
-                    argArray[i / 2] = Helpers.hexStringToBytes(args[i + 1])[0];
-                    break;
-                case "-Z":
-                    argArray[i / 2] = Boolean.valueOf(args[i + 1]);
-                    break;
-                case "-A": {
-                    // We want to parse an Address but we first need to read the hex to bytes.
-                    if (!args[i + 1].matches("(0x)?[A-Fa-f0-9]{64}")) {
-                        throw new IllegalArgumentException("Invalid address: " + args[i + 1]);
-                    }
-                    // To create an Address instance, we need to temporarily install a Helper (for base class instantiation).
-                    AvmClassLoader avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
-                    new Helper(avmClassLoader, 1_000_000L, 1);
-                    argArray[i / 2] = new Address(Helpers.hexStringToBytes(args[i + 1]));
-                    Helper.clearTestingState();
-                    break;
-                }
-                case "-T":
-                    // Read the string directly.
-                    argArray[i / 2] = args[i + 1];
-                    break;
-            }
-        }
-
-        return argArray;
-    }
-
-    private void lineSeparator(IEnvironment env){
+    private static void lineSeparator(IEnvironment env){
         env.logLine("*******************************************************************************************");
     }
 
-    @Override
-    public void openAccount(IEnvironment env, String storagePath, byte[] toOpen){
+    public static void openAccount(IEnvironment env, String storagePath, byte[] toOpen){
         lineSeparator(env);
 
         if (toOpen.length != Address.LENGTH){
@@ -296,8 +143,7 @@ public class AvmCLI implements UserInterface{
         env.logLine("Account Balance : " + kernel.getBalance(toOpen));
     }
 
-    @Override
-    public void exploreStorage(IEnvironment env, String storagePath, byte[] dappAddress) {
+    public static void exploreStorage(IEnvironment env, String storagePath, byte[] dappAddress) {
         // Create the PrintStream abstraction that walkAllStaticsForDapp expects.
         // (ideally, we would incrementally filter this but that could be a later improvement - current Dapps are very small).
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -352,49 +198,33 @@ public class AvmCLI implements UserInterface{
     }
 
     private static void internalMain(IEnvironment env, String[] args) {
-        // We handle all the parsing and dispatch through a special instance of ourselves (although this should probably be split into a few concerns).
-        AvmCLI instance = new AvmCLI();
-        try {
-            instance.jc.parse(args);
-        }catch (ParameterException e){
-            callUsage(env, instance);
-            throw env.fail(e.getMessage());
-        }
-
-        if (instance.flag.usage){
-            callUsage(env, instance);
-        }
-
-        String parserCommand = instance.jc.getParsedCommand();
-        if (null != parserCommand) {
+        ArgumentParser.Invocation invocation = ArgumentParser.parseArgs(args);
+        if (null == invocation.errorString) {
+            // Do the thing.
             // Before we run any command, make sure that the specified storage directory exists.
             // (we want the underlying storage engine to remain very passive so it should always expect that the directory was created for it).
-            verifyStorageExists(env, instance.flag.storage);
+            verifyStorageExists(env, invocation.storagePath);
             
-            if (parserCommand.equals("open")) {
-                if (instance.open.address.equals("Random generated address")) {
-                    instance.openAccount(env, instance.flag.storage, Helpers.randomBytes(Address.LENGTH));
-                } else {
-                    instance.openAccount(env, instance.flag.storage, Helpers.hexStringToBytes(instance.open.address));
-                }
-            }
-
-            if (parserCommand.equals("deploy")) {
-                instance.deploy(env, instance.flag.storage, instance.deploy.contract, Helpers.hexStringToBytes(instance.deploy.sender), instance.call.energyLimit);
-            }
-
-            if (parserCommand.equals("call")) {
-                instance.call(env, instance.flag.storage, Helpers.hexStringToBytes(instance.call.contract),
-                        Helpers.hexStringToBytes(instance.call.sender), instance.call.methodName,
-                        instance.call.arguments.toArray(new String[0]), instance.call.energyLimit);
-            }
-
-            if (parserCommand.equals("explore")) {
-                instance.exploreStorage(env, instance.flag.storage, Helpers.hexStringToBytes(instance.explore.contract));
+            switch (invocation.command.action) {
+            case CALL:
+                Object[] callArgs = new Object[invocation.command.args.size()];
+                invocation.command.args.toArray(callArgs);
+                call(env, invocation.storagePath, Helpers.hexStringToBytes(invocation.command.contractAddress), Helpers.hexStringToBytes(invocation.command.senderAddress), invocation.command.method, callArgs, invocation.command.energyLimit);
+                break;
+            case DEPLOY:
+                deploy(env, invocation.storagePath, invocation.command.jarPath, Helpers.hexStringToBytes(invocation.command.senderAddress), invocation.command.energyLimit);
+                break;
+            case EXPLORE:
+                exploreStorage(env, invocation.storagePath, Helpers.hexStringToBytes(invocation.command.contractAddress));
+                break;
+            case OPEN:
+                openAccount(env, invocation.storagePath, Helpers.hexStringToBytes(invocation.command.contractAddress));
+                break;
+            default:
+                throw new AssertionError("Unknown option");
             }
         } else {
-            // If we specify nothing, print the usage.
-            callUsage(env, instance);
+            env.fail(invocation.errorString);
         }
     }
 
@@ -408,11 +238,5 @@ public class AvmCLI implements UserInterface{
                 throw env.fail("Failed to create storage root: \"" + storageRoot + "\"");
             }
         }
-    }
-
-    private static void callUsage(IEnvironment env, AvmCLI instance) {
-        StringBuilder builder = new StringBuilder();
-        instance.jc.usage(builder);
-        env.logLine(builder.toString());
     }
 }

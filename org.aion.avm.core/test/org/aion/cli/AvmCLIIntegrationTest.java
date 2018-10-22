@@ -11,8 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static org.junit.Assert.assertTrue;
-
 
 public class AvmCLIIntegrationTest {
     @Rule
@@ -21,22 +19,29 @@ public class AvmCLIIntegrationTest {
     @Test
     public void usage() {
         TestEnvironment env = new TestEnvironment("Usage: AvmCLI [options] [command] [command options]");
-        AvmCLI.testingMain(env, new String[0]);
-        Assert.assertTrue(env.didScrapeString);
-        Assert.assertNull(env.capturedAddress);
+        // We expect this to count as a failure so extract the string.
+        String errorMessage = null;
+        try {
+            AvmCLI.testingMain(env, new String[0]);
+        } catch (RuntimeException e) {
+            errorMessage = e.getMessage();
+        }
+        Assert.assertEquals("Usage: AvmCLI [options] [command] [command options]", errorMessage);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddressArgumentInvalid() {
-        String[] args = new String[]{"-A", "0x112233"};
-        AvmCLI.parseArgs(args);
+        String[] args = new String[]{"call", "0xFFFF", "--method", "method", "--args", "-A", "0x112233"};
+        // We should fail on the next line.
+        ArgumentParser.parseArgs(args);
     }
 
     @Test
     public void testAddressArgument() {
-        String[] args = new String[]{"-A", "0x1122334455667788112233445566778811223344556677881122334455667788"};
-        Object[] objects = AvmCLI.parseArgs(args);
-        assertTrue(objects[0] instanceof Address);
+        String[] args = new String[]{"call", "0xFFFF", "--method", "method", "--args", "-A", "0x1122334455667788112233445566778811223344556677881122334455667788"};
+        ArgumentParser.Invocation invocation = ArgumentParser.parseArgs(args);
+        // Verify that the argument is an Address.
+        Assert.assertTrue(invocation.command.args.get(0) instanceof Address);
     }
 
     @Test
@@ -108,6 +113,19 @@ public class AvmCLIIntegrationTest {
         Assert.assertTrue(callEnv.didScrapeString);
         AvmCLI.testingMain(callEnv, new String[] {"call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test3"});
         Assert.assertTrue(callEnv.didScrapeString);
+    }
+
+    @Test
+    public void parseFailOnExtraArgs() {
+        String[] args = new String[]{"call", "0xFFFF", "--method", "method", "--args", "-A", "0x1122334455667788112233445566778811223344556677881122334455667788", "bogus_arg"};
+        // Make sure that we see the complaint about the unknown arg.
+        String message = null;
+        try {
+            ArgumentParser.parseArgs(args);
+        } catch (IllegalArgumentException e) {
+            message = e.getMessage();
+        }
+        Assert.assertEquals("Unknown argument: bogus_arg", message);
     }
 
 
