@@ -84,6 +84,7 @@ public class Helper implements IHelper {
         // loader and discard after the call completes.
         lateLoader = null;
         forceExitState = null;
+        abortState = false;
         
         // We also want to clear the thread local pointer.
         IHelper.currentContractHelper.remove();
