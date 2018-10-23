@@ -1,5 +1,6 @@
 package org.aion.data;
 
+import java.math.BigInteger;
 import java.util.Map;
 
 import org.aion.avm.core.util.ByteArrayWrapper;
@@ -22,12 +23,12 @@ public interface IAccountStore {
     /**
      * @return The account balance.
      */
-    public long getBalance();
+    public BigInteger getBalance();
 
     /**
      * @param balance The new account balance.
      */
-    public void setBalance(long balance);
+    public void setBalance(BigInteger balance);
 
     /**
      * @return The account nonce.

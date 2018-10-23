@@ -241,7 +241,7 @@ public class HandoffMonitorTest {
             throw new AssertionError("No calls expected");
         }
         @Override
-        public long getValue() {
+        public BigInteger getValue() {
             throw new AssertionError("No calls expected");
         }
         @Override

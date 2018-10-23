@@ -1,5 +1,6 @@
 package org.aion.avm.core.types;
 
+import java.math.BigInteger;
 import org.aion.kernel.Transaction;
 
 /**
@@ -9,7 +10,7 @@ public class InternalTransaction extends Transaction {
 
     private boolean rejected ;
 
-    public InternalTransaction(Type type, byte[] from, byte[] to, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
+    public InternalTransaction(Type type, byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         super(type, from, to, nonce, value, data, energyLimit, energyPrice);
     }
 

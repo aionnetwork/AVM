@@ -1,5 +1,6 @@
 package org.aion.avm.core.testCall;
 
+import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 
@@ -21,7 +22,7 @@ public class Caller {
         }
 
         Address address = genAddress(1);
-        long value = 2;
+        BigInteger value = BigInteger.TWO;
         byte[] data = "hello".getBytes();
         long energyLimit = 10000;
 

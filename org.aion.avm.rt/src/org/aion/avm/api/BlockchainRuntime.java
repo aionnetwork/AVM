@@ -40,7 +40,7 @@ public final class BlockchainRuntime {
         return Helper.blockchainRuntime.avm_getEnergyPrice();
     }
 
-    public static long avm_getValue() {
+    public static BigInteger avm_getValue() {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getValue);
         return Helper.blockchainRuntime.avm_getValue();
     }
@@ -82,7 +82,7 @@ public final class BlockchainRuntime {
     }
 
 
-    public static long avm_getBalance(Address address) {
+    public static BigInteger avm_getBalance(Address address) {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getBalance);
         return Helper.blockchainRuntime.avm_getBalance(address);
     }
@@ -98,12 +98,12 @@ public final class BlockchainRuntime {
         return Helper.blockchainRuntime.avm_getRemainingEnergy();
     }
 
-    public static Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+    public static Result avm_call(Address targetAddress, BigInteger value, ByteArray data, long energyLimit) {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_call);
         return Helper.blockchainRuntime.avm_call(targetAddress, value, data, energyLimit);
     }
 
-    public static Result avm_create(long value, ByteArray data, long energyLimit) {
+    public static Result avm_create(BigInteger value, ByteArray data, long energyLimit) {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_create);
         return Helper.blockchainRuntime.avm_create(value, data, energyLimit);
     }
@@ -185,8 +185,8 @@ public final class BlockchainRuntime {
         return avm_getEnergyPrice();
     }
 
-    public static long getValue() {
-        return avm_getValue();
+    public static java.math.BigInteger getValue() {
+        return avm_getValue().getUnderlying();
     }
 
     public static byte[] getData() {
@@ -218,8 +218,8 @@ public final class BlockchainRuntime {
     }
 
 
-    public static long getBalance(Address address) {
-        return avm_getBalance(address);
+    public static java.math.BigInteger getBalance(Address address) {
+        return avm_getBalance(address).getUnderlying();
     }
 
     public static int getCodeSize(Address address) {
@@ -231,12 +231,12 @@ public final class BlockchainRuntime {
         return avm_getRemainingEnergy();
     }
 
-    public static Result call(Address targetAddress, long value, byte[] data, long energyLimit) {
-        return avm_call(targetAddress, value, new ByteArray(data), energyLimit);
+    public static Result call(Address targetAddress, java.math.BigInteger value, byte[] data, long energyLimit) {
+        return avm_call(targetAddress, new BigInteger(value), new ByteArray(data), energyLimit);
     }
 
-    public static Result create(long value, byte[] data, long energyLimit) {
-        return avm_create(value, new ByteArray(data), energyLimit);
+    public static Result create(java.math.BigInteger value, byte[] data, long energyLimit) {
+        return avm_create(new BigInteger(value), new ByteArray(data), energyLimit);
     }
 
     public static void selfDestruct(Address beneficiary) {

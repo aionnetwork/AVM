@@ -6,6 +6,7 @@ import org.aion.avm.internal.*;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.HashUtils;
+import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
 
@@ -64,8 +65,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public long avm_getValue() {
-        return ctx.getValue();
+    public org.aion.avm.shadow.java.math.BigInteger avm_getValue() {
+        return new org.aion.avm.shadow.java.math.BigInteger(ctx.getValue());
     }
 
     @Override
@@ -107,12 +108,12 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public long avm_getBalance(Address address) {
+    public org.aion.avm.shadow.java.math.BigInteger avm_getBalance(Address address) {
         require(null != address, "Address can't be NULL");
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(address.unwrap(), this.task);
-        return this.kernel.getBalance(address.unwrap());
+        return new org.aion.avm.shadow.java.math.BigInteger(this.kernel.getBalance(address.unwrap()));
     }
 
     @Override
@@ -131,10 +132,11 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+    public Result avm_call(Address targetAddress, org.aion.avm.shadow.java.math.BigInteger value, ByteArray data, long energyLimit) {
+        java.math.BigInteger underlyingValue = value.getUnderlying();
         require(targetAddress != null, "Destination can't be NULL");
-        require(value >= 0 , "Value can't be negative");
-        require(value <= kernel.getBalance(ctx.getAddress()), "Insufficient balance");
+        require(underlyingValue.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
+        require(underlyingValue.compareTo(kernel.getBalance(ctx.getAddress())) <= 0, "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
 
@@ -147,7 +149,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 ctx.getAddress(),
                 targetAddress.unwrap(),
                 this.kernel.getNonce(ctx.getAddress()),
-                value,
+                underlyingValue,
                 data.getUnderlying(),
                 restrictEnergyLimit(energyLimit),
                 ctx.getEneryPrice());
@@ -157,9 +159,10 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public Result avm_create(long value, ByteArray data, long energyLimit) {
-        require(value >= 0 , "Value can't be negative");
-        require(value <= kernel.getBalance(ctx.getAddress()), "Insufficient balance");
+    public Result avm_create(org.aion.avm.shadow.java.math.BigInteger value, ByteArray data, long energyLimit) {
+        java.math.BigInteger underlyingValue = value.getUnderlying();
+        require(underlyingValue.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
+        require(underlyingValue.compareTo(kernel.getBalance(ctx.getAddress())) <= 0, "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
 
@@ -172,7 +175,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 ctx.getAddress(),
                 null,
                 this.kernel.getNonce(ctx.getAddress()),
-                value,
+                underlyingValue,
                 data.getUnderlying(),
                 restrictEnergyLimit(energyLimit),
                 ctx.getEneryPrice());
@@ -197,8 +200,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         this.avm.getResourceMonitor().acquire(beneficiary.unwrap(), this.task);
 
         // Value transfer
-        long balanceToTransfer = this.kernel.getBalance(contractAddr);
-        this.kernel.adjustBalance(contractAddr, -balanceToTransfer);
+        java.math.BigInteger balanceToTransfer = this.kernel.getBalance(contractAddr);
+        this.kernel.adjustBalance(contractAddr, balanceToTransfer.negate());
         this.kernel.adjustBalance(beneficiary.unwrap(), balanceToTransfer);
 
         // Delete Account

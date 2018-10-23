@@ -1,5 +1,6 @@
 package org.aion.avm.core.testWallet;
 
+import java.math.BigInteger;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
@@ -134,7 +135,7 @@ public class Wallet {
         if (Daylimit.underLimit(value)) {
             EventLogger.singleTransact(BlockchainRuntime.getCaller(), value, to, data);
             // yes - just execute the call.
-            byte[] response = BlockchainRuntime.call(to, 0, data, value).getReturnData();
+            byte[] response = BlockchainRuntime.call(to, BigInteger.ZERO, data, value).getReturnData();
             if (null == response) {
                 throw new RequireFailedException();
             }
@@ -183,7 +184,7 @@ public class Wallet {
             BytesKey key = BytesKey.from(h);
             if (null != Wallet.transactions.get(key).to) {
                 Transaction transaction = Wallet.transactions.get(key);
-                byte[] response = BlockchainRuntime.call(transaction.to, 0, transaction.data, transaction.value).getReturnData();
+                byte[] response = BlockchainRuntime.call(transaction.to, BigInteger.ZERO, transaction.data, transaction.value).getReturnData();
                 if (null == response) {
                     throw new RequireFailedException();
                 }

@@ -1,5 +1,6 @@
 package org.aion.kernel;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -95,11 +96,11 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public long getBalance(byte[] address) {
-        long result = 0L;
+    public BigInteger getBalance(byte[] address) {
+        BigInteger result = BigInteger.ZERO;
         if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
             result = this.writeCache.getBalance(address);
-            if (0 == result) {
+            if (result.equals(BigInteger.ZERO)) {
                 result = this.parent.getBalance(address);
             }
         }
@@ -107,16 +108,16 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public void adjustBalance(byte[] address, long delta) {
+    public void adjustBalance(byte[] address, BigInteger delta) {
         // This is a read-then-write operation so we need to make sure that there is an entry in our cache, first, before we can apply the mutation.
         if (!this.cachedAccountBalances.contains(new ByteArrayWrapper(address))) {
             // We can only re-cache this if we didn't already delete it.
             // If it was deleted, we need to fake the lazy creation and start it at zero.
             if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
-                long balance = this.parent.getBalance(address);
+                BigInteger balance = this.parent.getBalance(address);
                 this.writeCache.adjustBalance(address, balance);
             } else {
-                this.writeCache.adjustBalance(address, 0L);
+                this.writeCache.adjustBalance(address, BigInteger.ZERO);
             }
             this.cachedAccountBalances.add(new ByteArrayWrapper(address));
         }

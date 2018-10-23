@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import org.aion.avm.api.BlockchainRuntime;
 
 
@@ -19,13 +20,13 @@ public class BlockchainRuntimeTestFailingResource {
             // Expected.
         }
         try {
-            BlockchainRuntime.call(null, 1L, null, 1L);
+            BlockchainRuntime.call(null, BigInteger.ONE, null, 1L);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.create(1L, null, 1L);
+            BlockchainRuntime.create(BigInteger.ONE, null, 1L);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.

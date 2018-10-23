@@ -117,7 +117,7 @@ public class AvmImpl implements AvmInternal {
         RuntimeAssertionError.assertTrue(ctx != null);
 
         // value/energyPrice/energyLimit sanity check
-        if (ctx.getValue() < 0 || ctx.getEneryPrice() <= 0 || ctx.getEnergyLimit() < ctx.getBasicCost()) {
+        if (ctx.getValue().compareTo(BigInteger.ZERO) < 0 || ctx.getEneryPrice() <= 0 || ctx.getEnergyLimit() < ctx.getBasicCost()) {
             // Instead of charging the tx basic cost at the outer level, we moved the billing logic into "run".
             // The min energyLimit check here is to avoid spams
             error = TransactionResult.Code.REJECTED;
@@ -162,7 +162,7 @@ public class AvmImpl implements AvmInternal {
                 || result.getStatusCode() == TransactionResult.Code.REJECTED_INVALID_NONCE
                 || ctx.isGarbageCollectionRequest())
         {
-            taskTransactionalKernel.adjustBalance(sender, result.getEnergyUsed() * ctx.getEneryPrice());
+            taskTransactionalKernel.adjustBalance(sender, BigInteger.valueOf(result.getEnergyUsed() * ctx.getEneryPrice()));
         }
 
         // Task transactional kernel commits are serialized through address resource monitor
@@ -195,9 +195,9 @@ public class AvmImpl implements AvmInternal {
         // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
         byte[] sender = ctx.getCaller();
-        long senderBalance = parentKernel.getBalance(sender);
-        if (BigInteger.valueOf(ctx.getValue()).add(BigInteger.valueOf(ctx.getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getEneryPrice())))
-                .compareTo(BigInteger.valueOf(senderBalance)) > 0) {
+        BigInteger senderBalance = parentKernel.getBalance(sender);
+        if (ctx.getValue().add(BigInteger.valueOf(ctx.getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getEneryPrice())))
+                .compareTo(senderBalance) > 0) {
             error = TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
         }
 
@@ -214,7 +214,7 @@ public class AvmImpl implements AvmInternal {
          */
 
         // withhold the total energy cost
-        parentKernel.adjustBalance(ctx.getCaller(), -(ctx.getEnergyLimit() * ctx.getEneryPrice()));
+        parentKernel.adjustBalance(ctx.getCaller(), BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEneryPrice()).negate());
 
         // Run the common logic with the parent kernel as the top-level one.
         TransactionResult result = commonInvoke(parentKernel, task, ctx);
@@ -222,7 +222,7 @@ public class AvmImpl implements AvmInternal {
         // refund the remaining energy
         long remainingEnergy = ctx.getEnergyLimit() - result.getEnergyUsed();
         if (remainingEnergy > 0) {
-            parentKernel.adjustBalance(ctx.getCaller(), remainingEnergy * ctx.getEneryPrice());
+            parentKernel.adjustBalance(ctx.getCaller(), BigInteger.valueOf(remainingEnergy * ctx.getEneryPrice()));
         }
 
         return result;
@@ -249,7 +249,7 @@ public class AvmImpl implements AvmInternal {
         result.setEnergyUsed(ctx.getBasicCost()); // basic tx cost
 
         // conduct value transfer
-        thisTransactionKernel.adjustBalance(ctx.getCaller(), -ctx.getValue());
+        thisTransactionKernel.adjustBalance(ctx.getCaller(), ctx.getValue().negate());
         thisTransactionKernel.adjustBalance(ctx.getAddress(), ctx.getValue());
 
         // increase nonce

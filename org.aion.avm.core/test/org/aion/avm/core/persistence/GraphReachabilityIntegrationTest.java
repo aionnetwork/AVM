@@ -1,5 +1,6 @@
 package org.aion.avm.core.persistence;
 
+import java.math.BigInteger;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.HelperBasedStorageFees;
 import org.aion.avm.core.NodeEnvironment;
@@ -319,13 +320,14 @@ public class GraphReachabilityIntegrationTest {
         // Deploy.
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), 0L, txData, energyLimit, energyPrice);
+        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
         
         // Check that the deployment cost is what we expected.
-        long miscCharges = 143844L + 36046L + 406200L + 375L + 300L + 1500L + 6L + 53L;
+        // The first three numbers here are: basic cost of tx, processing cost and storage cost
+        long miscCharges = 146472L + 36130L + 414600L + 375L + 300L + 1500L + 6L + 53L;
         long storageCharges = 0L
                 // static
                     + HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 161L
@@ -346,7 +348,7 @@ public class GraphReachabilityIntegrationTest {
     private Object callStatic(Block block, Address contractAddr, long expectedCost, String methodName, Object... args) {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
-        Transaction call = Transaction.call(deployer, contractAddr.unwrap(), kernel.getNonce(deployer), 0, argData, energyLimit, 1l);
+        Transaction call = Transaction.call(deployer, contractAddr.unwrap(), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         Assert.assertEquals(expectedCost, result.getEnergyUsed());

@@ -1,5 +1,6 @@
 package org.aion.avm.core.testExchange;
 
+import java.math.BigInteger;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
@@ -54,7 +55,7 @@ public class Exchange {
 
         byte[] args = ABIEncoder.encodeMethodArguments("allowance", sender, BlockchainRuntime.getAddress());
 
-        byte[] result = BlockchainRuntime.call(coinContract, 0, args, 1000000L).getReturnData();
+        byte[] result = BlockchainRuntime.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
 
         if (((long)ABIDecoder.decodeOneObject(result)) >= amount){
             toProcess = new ExchangeTransaction(coin, sender, to, amount);
@@ -81,7 +82,7 @@ public class Exchange {
 
         byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", toProcess.getFrom(), toProcess.getTo(), toProcess.getAmount());
 
-        byte[] result = BlockchainRuntime.call(coinContract, 0, args, 1000000L).getReturnData();
+        byte[] result = BlockchainRuntime.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
 
         if ((boolean)ABIDecoder.decodeOneObject(result)){
             toProcess = null;

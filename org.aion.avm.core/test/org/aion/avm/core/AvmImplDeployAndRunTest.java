@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -44,7 +45,7 @@ public class AvmImplDeployAndRunTest {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
         byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
-        Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return avm.run(new TransactionContext[] {context})[0].get();
     }
@@ -55,7 +56,7 @@ public class AvmImplDeployAndRunTest {
         byte[] arguments = ABIEncoder.encodeMethodArguments("", 100);
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
-        Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -69,7 +70,7 @@ public class AvmImplDeployAndRunTest {
 
         // call the "run" method
         byte[] txData = ABIEncoder.encodeMethodArguments("run");
-        Transaction tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -78,7 +79,7 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "add" with arguments
         txData = ABIEncoder.encodeMethodArguments("add", 123, 1);
-        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -90,7 +91,7 @@ public class AvmImplDeployAndRunTest {
         byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
         byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
-        Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return avm.run(new TransactionContext[] {context})[0].get();
     }
@@ -102,7 +103,7 @@ public class AvmImplDeployAndRunTest {
 
         // test encode method arguments with "encodeArgs"
         byte[] txData = ABIEncoder.encodeMethodArguments("encodeArgs");
-        Transaction tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -112,7 +113,7 @@ public class AvmImplDeployAndRunTest {
         assertEquals(true, correct);
 
         // test another method call, "addArray" with 1D array arguments
-        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, expected, energyLimit, energyPrice);
+        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), BigInteger.ZERO, expected, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -124,7 +125,7 @@ public class AvmImplDeployAndRunTest {
         a[0] = new int[]{123, 4};
         a[1] = new int[]{1, 2};
         txData = ABIEncoder.encodeMethodArguments("addArray2", TestingHelper.construct2DWrappedArray(a));
-        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -136,7 +137,7 @@ public class AvmImplDeployAndRunTest {
         chars[0] = "cat".toCharArray();
         chars[1] = "dog".toCharArray();
         txData = ABIEncoder.encodeMethodArguments("concatenate", TestingHelper.construct2DWrappedArray(chars));
-        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -145,7 +146,7 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "concatString" with String array arguments and String return data
         txData = ABIEncoder.encodeMethodArguments("concatString", "cat", "dog"); // Note - need to cast String[] into Object, to pass it as one argument to the varargs method
-        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -154,7 +155,7 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "concatStringArray" with String array arguments and String return data
         txData = ABIEncoder.encodeMethodArguments("concatStringArray", TestingHelper.construct1DWrappedStringArray((new String[]{"cat", "dog"}))); // Note - need to cast String[] into Object, to pass it as one argument to the varargs method
-        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -164,7 +165,7 @@ public class AvmImplDeployAndRunTest {
 
         // test another method call, "swap" with 2D array arguments and 2D array return data
         txData = ABIEncoder.encodeMethodArguments("swap", TestingHelper.construct2DWrappedArray(chars));
-        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -174,7 +175,7 @@ public class AvmImplDeployAndRunTest {
 
         // test a method call to "setBar", which does not have a return type (void)
         txData = ABIEncoder.encodeMethodArguments("setBar", 20);
-        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        tx = Transaction.call(from, deployResult.getReturnData(), kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
 

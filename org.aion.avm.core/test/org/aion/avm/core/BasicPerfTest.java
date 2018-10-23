@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -71,7 +72,7 @@ public class BasicPerfTest {
             this.avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
             Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
-            Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
+            Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
             TransactionResult result1 = this.avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
             Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
             this.contractAddress = result1.getReturnData();
@@ -96,7 +97,7 @@ public class BasicPerfTest {
             for (int i = blockStart; i < (COUNT + blockStart); ++i) {
                 Block block = new Block(new byte[32], i, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
                 long transaction1EnergyLimit = 1_000_000_000l;
-                Transaction tx1 = Transaction.call(deployer, this.contractAddress, kernel.getNonce(deployer), 0L, new byte[0], transaction1EnergyLimit, 1L);
+                Transaction tx1 = Transaction.call(deployer, this.contractAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
                 TransactionResult result1 = this.avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
                 Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
                 

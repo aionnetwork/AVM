@@ -30,7 +30,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private byte[] address = Helpers.address(1);
     private byte[] caller = Helpers.address(2);
     private byte[] origin = Helpers.address(2);
-    private long value = 0;
+    private BigInteger value = BigInteger.avm_ZERO;
     private byte[] data = new byte[0];
     private long energyLimit = 1_000_000L;
     private long energyPrice = 1L;
@@ -53,7 +53,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
         this.address = ctx.getAddress();
         this.caller = ctx.getCaller();
         this.origin = ctx.getOrigin();
-        this.value = ctx.getValue();
+        this.value = new BigInteger(ctx.getValue());
         this.data = ctx.getData();
         this.energyLimit = ctx.getEnergyLimit();
         this.energyPrice = ctx.getEneryPrice();
@@ -118,7 +118,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     @Override
-    public long avm_getValue() {
+    public BigInteger avm_getValue() {
         return value;
     }
 
@@ -159,9 +159,9 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
 
     @Override
-    public long avm_getBalance(Address address) {
+    public BigInteger avm_getBalance(Address address) {
         Objects.requireNonNull(address);
-        return kernel.getBalance(address.unwrap());
+        return new BigInteger(kernel.getBalance(address.unwrap()));
     }
 
     @Override
@@ -182,13 +182,13 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     @Override
-    public Result avm_call(Address targetAddress, long value, ByteArray payload, long energyLimit) {
+    public Result avm_call(Address targetAddress, BigInteger value, ByteArray payload, long energyLimit) {
         // We will just bounce back the input, so that the caller can see "something".
         return new Result(true, payload);
     }
 
     @Override
-    public Result avm_create(long value, ByteArray data, long energyLimit) {
+    public Result avm_create(BigInteger value, ByteArray data, long energyLimit) {
         return new Result(true, null);
     }
 

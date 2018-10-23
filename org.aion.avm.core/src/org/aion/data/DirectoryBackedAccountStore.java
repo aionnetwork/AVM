@@ -2,6 +2,7 @@ package org.aion.data;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -35,17 +36,17 @@ public class DirectoryBackedAccountStore implements IAccountStore {
     }
 
     @Override
-    public long getBalance() {
+    public BigInteger getBalance() {
         byte[] data = readFile(FILE_NAME_BALANCE);
         // In the future, we probably want to force these to be written before being read and avoid this null check.
         return (null != data)
-                ? decodeLong(data)
-                : 0L;
+                ? new BigInteger(data)
+                : BigInteger.ZERO;
     }
 
     @Override
-    public void setBalance(long balance) {
-        byte[] data = encodeLong(balance);
+    public void setBalance(BigInteger balance) {
+        byte[] data = balance.toByteArray();
         writeFile(FILE_NAME_BALANCE, data);
     }
 

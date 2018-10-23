@@ -75,8 +75,8 @@ public final class BlockchainRuntime {
      *
      * @return the value in 10^-18 Aion
      */
-    public static long getValue() {
-        return 0;
+    public static BigInteger getValue() {
+        return BigInteger.ZERO;
     }
 
     /**
@@ -157,8 +157,8 @@ public final class BlockchainRuntime {
      * @return the account balance, or 0 if the account does not exist
      * @throws IllegalArgumentException when the arguments are invalid, e.g. NULL address.
      */
-    public static long getBalance(Address address) throws IllegalArgumentException {
-        return 0;
+    public static BigInteger getBalance(Address address) throws IllegalArgumentException {
+        return BigInteger.ZERO;
     }
 
     /**
@@ -195,7 +195,7 @@ public final class BlockchainRuntime {
      * @return the invocation result.
      * @throws IllegalArgumentException when the arguments are invalid, e.g. insufficient balance or NULL address.
      */
-    public static Result call(Address targetAddress, long value, byte[] data, long energyLimit) throws IllegalArgumentException {
+    public static Result call(Address targetAddress, BigInteger value, byte[] data, long energyLimit) throws IllegalArgumentException {
         return null;
     }
 
@@ -208,7 +208,7 @@ public final class BlockchainRuntime {
      * @return the invocation result.
      * @throws IllegalArgumentException when the arguments are invalid, e.g. insufficient balance or NULL data.
      */
-    public static Result create(long value, byte[] data, long energyLimit) throws IllegalArgumentException {
+    public static Result create(BigInteger value, byte[] data, long energyLimit) throws IllegalArgumentException {
         return null;
     }
 

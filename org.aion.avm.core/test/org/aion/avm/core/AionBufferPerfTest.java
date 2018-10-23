@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -32,7 +33,7 @@ public class AionBufferPerfTest {
 
     private TransactionResult deploy(KernelInterface kernel, Avm avm, byte[] testJar){
         byte[] testWalletArguments = new byte[0];
-        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), 0L, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
 
@@ -41,7 +42,7 @@ public class AionBufferPerfTest {
     }
 
     private TransactionResult call(KernelInterface kernel, Avm avm, byte[] contract, byte[] sender, byte[] args) {
-        Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), 0L, args, energyLimit, 1L);
+        Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1L);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(new TransactionContext[] {callContext})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());

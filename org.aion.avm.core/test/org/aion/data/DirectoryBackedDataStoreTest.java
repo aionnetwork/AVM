@@ -1,6 +1,7 @@
 package org.aion.data;
 
 import java.io.File;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -24,13 +25,13 @@ public class DirectoryBackedDataStoreTest {
         
         byte[] address1 = Helpers.randomBytes(32);
         byte[] code1 = Helpers.randomBytes(100);
-        long balance1 = 1L;
+        BigInteger balance1 = BigInteger.ONE;
         long nonce1 = 2L;
         byte[] key1 = Helpers.randomBytes(32);
         byte[] value1 = Helpers.randomBytes(100);
         IAccountStore account1 = store.createAccount(address1);
         account1.setCode(code1);
-        account1.setBalance(1L);
+        account1.setBalance(BigInteger.ONE);
         account1.setNonce(2L);
         account1.setData(key1, value1);
         

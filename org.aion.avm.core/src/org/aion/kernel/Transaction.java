@@ -1,5 +1,6 @@
 package org.aion.kernel;
 
+import java.math.BigInteger;
 import org.aion.avm.core.util.Helpers;
 
 import java.util.Arrays;
@@ -7,18 +8,18 @@ import java.util.Objects;
 
 
 public class Transaction {
-    public static Transaction create(byte[] from, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
+    public static Transaction create(byte[] from, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new Transaction(Type.CREATE, from, null, nonce, value, data, energyLimit, energyPrice);
     }
 
-    public static Transaction call(byte[] from, byte[] to, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
+    public static Transaction call(byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new Transaction(Type.CALL, from, to, nonce, value, data, energyLimit, energyPrice);
     }
 
     public static Transaction garbageCollect(byte[] target, long nonce, long energyLimit, long energyPrice) {
         // This may seem a bit odd but we state that the "target" of the GC is the "sender" address.
         // This is because, on a conceptual level, the GC is "sent to itself" but also allows the nonce check to be consistent.
-        return new Transaction(Type.GARBAGE_COLLECT, target, target, nonce, 0L, new byte[0], energyLimit, energyPrice);
+        return new Transaction(Type.GARBAGE_COLLECT, target, target, nonce, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
     }
 
     public enum Type {
@@ -45,7 +46,7 @@ public class Transaction {
 
     long nonce;
 
-    long value;
+    BigInteger value;
 
     long timestamp;
 
@@ -55,7 +56,7 @@ public class Transaction {
 
     long energyPrice;
 
-    protected Transaction(Type type, byte[] from, byte[] to, long nonce, long value, byte[] data, long energyLimit, long energyPrice) {
+    protected Transaction(Type type, byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         Objects.requireNonNull(type, "The transaction `type` can't be NULL");
         Objects.requireNonNull(from, "The transaction `from` can't be NULL");
         if (type == Type.CREATE) {
@@ -96,7 +97,7 @@ public class Transaction {
         return nonce;
     }
 
-    public long getValue() {
+    public BigInteger getValue() {
         return value;
     }
 

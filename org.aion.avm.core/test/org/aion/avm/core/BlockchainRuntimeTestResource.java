@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.userlib.AionBuffer;
 
@@ -16,7 +17,7 @@ public class BlockchainRuntimeTestResource {
         buffer.put(getOrigin().unwrap());
         buffer.putLong(getEnergyLimit());
         buffer.putLong(getEnergyPrice());
-        buffer.putLong(getValue());
+        buffer.putLong(getValue().longValue());
         buffer.put(getData());
 
         buffer.putLong(getBlockTimestamp());
@@ -27,12 +28,12 @@ public class BlockchainRuntimeTestResource {
         buffer.put(getBlockDifficulty().toByteArray());
 
         buffer.put("value".getBytes());
-        buffer.putLong(getBalance(new Address(new byte[32])));
+        buffer.putLong(getBalance(new Address(new byte[32])).longValue());
         buffer.putLong(getCodeSize(getAddress()));
 
         getRemainingEnergy();
-        call(new Address(new byte[32]), 0, new byte[0], 0);
-        create(0, new byte[0], 0);
+        call(new Address(new byte[32]), BigInteger.ZERO, new byte[0], 0);
+        create(BigInteger.ZERO, new byte[0], 0);
         // selfDestruct(new Address(new byte[32]));
 
         log("data".getBytes());

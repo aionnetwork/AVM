@@ -1,6 +1,8 @@
 package org.aion.kernel;
 
 
+import java.math.BigInteger;
+
 /**
  * Interface for accessing kernel features.
  */
@@ -53,7 +55,7 @@ public interface KernelInterface {
      * @param address the account address
      * @return
      */
-    long getBalance(byte[] address);
+    BigInteger getBalance(byte[] address);
 
     /**
      * Adds/removes the balance of an account.
@@ -61,7 +63,7 @@ public interface KernelInterface {
      * @param address the account address
      * @param delta   the change
      */
-    void adjustBalance(byte[] address, long delta);
+    void adjustBalance(byte[] address, BigInteger delta);
 
     /**
      * Returns the nonce of an account.

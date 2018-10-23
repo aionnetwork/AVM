@@ -1,5 +1,6 @@
 package org.aion.data;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,7 +8,7 @@ import org.aion.avm.core.util.ByteArrayWrapper;
 
 
 public class MemoryBackedAccountStore implements IAccountStore {
-    private long balance = 0;
+    private BigInteger balance = BigInteger.ZERO;
     private long nonce = 0;
     private byte[] code = null;
     private final Map<ByteArrayWrapper, byte[]> storage = new HashMap<>();
@@ -23,12 +24,12 @@ public class MemoryBackedAccountStore implements IAccountStore {
     }
 
     @Override
-    public long getBalance() {
+    public BigInteger getBalance() {
         return this.balance;
     }
 
     @Override
-    public void setBalance(long balance) {
+    public void setBalance(BigInteger balance) {
         this.balance = balance;
     }
 

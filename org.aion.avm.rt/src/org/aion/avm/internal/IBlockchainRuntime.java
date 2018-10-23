@@ -43,7 +43,7 @@ public interface IBlockchainRuntime {
     /**
      * Returns the value being transferred along the transaction.
      */
-    long avm_getValue();
+    BigInteger avm_getValue();
 
     /**
      * Returns the transaction data.
@@ -107,7 +107,7 @@ public interface IBlockchainRuntime {
      * @param address account address
      * @return the balance if the account
      */
-    long avm_getBalance(Address address) throws IllegalArgumentException;
+    BigInteger avm_getBalance(Address address) throws IllegalArgumentException;
 
     /**
      * Returns the code size of an account.
@@ -138,9 +138,9 @@ public interface IBlockchainRuntime {
      * @param energyLimit   The energy to send that contract.
      * @return The response of executing the contract.
      */
-    Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) throws IllegalArgumentException;
+    Result avm_call(Address targetAddress, BigInteger value, ByteArray data, long energyLimit) throws IllegalArgumentException;
 
-    Result avm_create(long value, ByteArray data, long energyLimit) throws IllegalArgumentException;
+    Result avm_create(BigInteger value, ByteArray data, long energyLimit) throws IllegalArgumentException;
 
     /**
      * Destructs this Dapp and refund all balance to the beneficiary.

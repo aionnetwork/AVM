@@ -1,5 +1,6 @@
 package org.aion.kernel;
 
+import java.math.BigInteger;
 import org.aion.avm.core.util.Helpers;
 import org.aion.data.DirectoryBackedDataStore;
 import org.aion.data.IAccountStore;
@@ -17,7 +18,7 @@ import java.io.File;
 public class KernelInterfaceImpl implements KernelInterface {
 
     public static final byte[] PREMINED_ADDRESS = Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378");
-    public static final long PREMINED_AMOUNT = (long) (1L * Math.pow(10, 18));
+    public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(18);
 
     private final IDataStore dataStore;
 
@@ -81,18 +82,18 @@ public class KernelInterfaceImpl implements KernelInterface {
     }
 
     @Override
-    public long getBalance(byte[] address) {
+    public BigInteger getBalance(byte[] address) {
         IAccountStore account = this.dataStore.openAccount(address);
         return (null != account)
                 ? account.getBalance()
-                : 0L;
+                : BigInteger.ZERO;
     }
 
     @Override
-    public void adjustBalance(byte[] address, long delta) {
+    public void adjustBalance(byte[] address, BigInteger delta) {
         IAccountStore account = lazyCreateAccount(address);
-        long start = account.getBalance();
-        account.setBalance(start + delta);
+        BigInteger start = account.getBalance();
+        account.setBalance(start.add(delta));
     }
 
     @Override

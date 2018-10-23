@@ -8,6 +8,7 @@ import org.aion.avm.core.TestingBlockchainRuntime;
 import org.aion.avm.core.SuspendedHelper;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.shadow.java.math.BigInteger;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -29,11 +30,11 @@ public class CallTest {
         SimpleAvm avm = new SimpleAvm(energyLimit, Caller.class);
         avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
             @Override
-            public Result avm_call(Address targetAddress, long value, ByteArray data, long energyLimit) {
+            public Result avm_call(Address targetAddress, BigInteger value, ByteArray data, long energyLimit) {
                 callbackReceived = true;
 
                 assertEquals(new Address(new byte[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}), targetAddress);
-                assertEquals(2, value);
+                assertEquals(BigInteger.avm_TWO, value);
                 assertEquals(new ByteArray("hello".getBytes()), data);
                 assertEquals(10000, energyLimit);
 
@@ -60,7 +61,7 @@ public class CallTest {
         SimpleAvm avm = new SimpleAvm(energyLimit, Caller.class);
         avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
             @Override
-            public Result avm_call(Address a, long v, ByteArray d, long e) {
+            public Result avm_call(Address a, BigInteger v, ByteArray d, long e) {
                 // We want to suspend the outer IHelper for the sub-call (they are supposed to be distinct).
                 SuspendedHelper suspended = new SuspendedHelper();
                 

@@ -1,5 +1,6 @@
 package org.aion.avm.core.testCall;
 
+import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.Result;
 import org.aion.avm.arraywrapper.ByteArray;
@@ -146,13 +147,13 @@ public class ParallelExecution {
             avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
                 // TODO: runtime should be based on the state
                 @Override
-                public Result avm_call(Address targetAddress, long value, ByteArray payload, long energyLimit) {
+                public Result avm_call(Address targetAddress, org.aion.avm.shadow.java.math.BigInteger value, ByteArray payload, long energyLimit) {
                     InternalTransaction internalTx = new InternalTransaction(
                             Transaction.Type.CALL,
                             tx.getTo(),
                             targetAddress.unwrap(),
                             0,
-                            value,
+                            value.getUnderlying(),
                             payload.getUnderlying(),
                             energyLimit,
                             tx.getEnergyPrice());
@@ -196,9 +197,9 @@ public class ParallelExecution {
     //============
 
     public static void simpleCall() {
-        Transaction tx1 = Transaction.call(Helpers.address(1), Helpers.address(2), 0, 0, Helpers.address(3), 1000000, 1);
-        Transaction tx2 = Transaction.call(Helpers.address(3), Helpers.address(4), 0, 0, Helpers.address(1), 1000000, 1);
-        Transaction tx3 = Transaction.call(Helpers.address(3), Helpers.address(5), 0, 0, new byte[0], 1000000, 1);
+        Transaction tx1 = Transaction.call(Helpers.address(1), Helpers.address(2), 0, BigInteger.ZERO, Helpers.address(3), 1000000, 1);
+        Transaction tx2 = Transaction.call(Helpers.address(3), Helpers.address(4), 0, BigInteger.ZERO, Helpers.address(1), 1000000, 1);
+        Transaction tx3 = Transaction.call(Helpers.address(3), Helpers.address(5), 0, BigInteger.ZERO, new byte[0], 1000000, 1);
 
         ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(null), NUM_THREADS);
         exec.execute();
@@ -217,7 +218,7 @@ public class ParallelExecution {
             int to = r.nextInt(numAccounts);
             int callee = r.nextInt(numAccounts);
 
-            Transaction tx = Transaction.call(Helpers.address(from), Helpers.address(to), 0, 0, Helpers.address(callee), 1000000, 1);
+            Transaction tx = Transaction.call(Helpers.address(from), Helpers.address(to), 0, BigInteger.ZERO, Helpers.address(callee), 1000000, 1);
             transactions.add(tx);
         }
 

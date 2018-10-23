@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -45,7 +46,7 @@ public class BlockchainRuntimeTest {
         
         byte[] from = premined;
         byte[] to = dappAddress;
-        long value = 1;
+        BigInteger value = BigInteger.ONE;
         byte[] txData = "tx_data".getBytes();
         long energyLimit = 2_000_000;
         long energyPrice = 3;
@@ -68,7 +69,7 @@ public class BlockchainRuntimeTest {
         buffer.put(from);
         buffer.putLong(energyLimit);
         buffer.putLong(energyPrice);
-        buffer.putLong(value);
+        buffer.putLong(value.longValue());
         buffer.put(txData);
         buffer.putLong(blockTimestamp);
         buffer.putLong(blockNumber);
@@ -77,7 +78,7 @@ public class BlockchainRuntimeTest {
         buffer.put(blockPrevHash);
         buffer.put(block.getDifficulty().toByteArray());
         buffer.put("value".getBytes());
-        buffer.putLong(kernel.getBalance(new byte[32]));
+        buffer.putLong(kernel.getBalance(new byte[32]).longValue());
         buffer.putLong(kernel.getCode(dappAddress).length);
         buffer.put(HashUtils.blake2b("message".getBytes()));
 
@@ -92,7 +93,7 @@ public class BlockchainRuntimeTest {
         
         byte[] from = premined;
         byte[] to = dappAddress;
-        long value = 1;
+        BigInteger value = BigInteger.ONE;
         byte[] txData = "expectFailure".getBytes();
         long energyLimit = 2_000_000;
         long energyPrice = 3;
@@ -120,7 +121,7 @@ public class BlockchainRuntimeTest {
         
         byte[] from = premined;
         byte[] to = dappAddress;
-        long value = 1;
+        BigInteger value = BigInteger.ONE;
         byte[] txData = "not encoded for ABI usage".getBytes();
         long energyLimit = 2_000_000;
         long energyPrice = 3;
@@ -143,7 +144,7 @@ public class BlockchainRuntimeTest {
 
     private byte[] installJarAsDApp(byte[] jar) {
         byte[] arguments = null;
-        Transaction tx = Transaction.create(premined, kernel.getNonce(premined), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
+        Transaction tx = Transaction.create(premined, kernel.getNonce(premined), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
         TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]));
         TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getStatusCode().isSuccess());

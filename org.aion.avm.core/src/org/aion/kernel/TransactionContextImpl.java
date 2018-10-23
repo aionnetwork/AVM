@@ -81,7 +81,7 @@ public class TransactionContextImpl implements TransactionContext {
     }
 
     @Override
-    public long getValue() {
+    public BigInteger getValue() {
         return tx.getValue();
     }
 

@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 
@@ -12,7 +13,7 @@ public class AvmImplTestResource {
 
         if (calldata != null && calldata.length == Address.LENGTH) {
             Address address = new Address(BlockchainRuntime.getData());
-            long value = 0;
+            BigInteger value = BigInteger.ZERO;
             byte[] data = new byte[0];
             long energyLimit = 500000;
 

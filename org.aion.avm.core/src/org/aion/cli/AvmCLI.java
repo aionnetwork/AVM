@@ -1,5 +1,6 @@
 package org.aion.cli;
 
+import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
@@ -42,7 +43,7 @@ public class AvmCLI {
             throw env.fail("deploy : Invalid location of Dapp jar");
         }
 
-        Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), 0, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
+        Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
 
         return new TransactionContextImpl(createTransaction, block);
     }
@@ -85,7 +86,7 @@ public class AvmCLI {
 
         // TODO:  Remove this bias when/if we change this to no longer send all transactions from the same account.
         long biasedNonce = kernel.getNonce(sender) + nonceBias;
-        Transaction callTransaction = Transaction.call(sender, contract, biasedNonce, 0L, arguments, energyLimit, 1L);
+        Transaction callTransaction = Transaction.call(sender, contract, biasedNonce, BigInteger.ZERO, arguments, energyLimit, 1L);
         return new TransactionContextImpl(callTransaction, block);
     }
 
@@ -131,7 +132,7 @@ public class AvmCLI {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
 
         kernel.createAccount(toOpen);
-        kernel.adjustBalance(toOpen, 100000000000L);
+        kernel.adjustBalance(toOpen, BigInteger.valueOf(100000000000L));
 
         env.logLine("Account Balance : " + kernel.getBalance(toOpen));
     }

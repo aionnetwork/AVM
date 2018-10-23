@@ -20,7 +20,7 @@ public interface TransactionContext {
 
     long getNonce();
 
-    long getValue();
+    BigInteger getValue();
 
     byte[] getData();
 

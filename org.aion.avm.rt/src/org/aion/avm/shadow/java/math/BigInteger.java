@@ -304,6 +304,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
 
     public java.math.BigInteger getUnderlying() {
+        lazyLoad();
         return v;
     }
 

@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testWallet.*;
@@ -68,7 +69,7 @@ public class PocWalletTest {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
 
-        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), 0L, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
 
@@ -89,7 +90,7 @@ public class PocWalletTest {
 
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
-        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), 0L, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
@@ -98,7 +99,7 @@ public class PocWalletTest {
         byte[] contractAddress = createResult.getReturnData();
 
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
-        Transaction initTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), 0, initArgs, energyLimit, energyPrice);
+        Transaction initTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
         TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
         TransactionResult initResult = avm.run(new TransactionContext[] {initContext})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
@@ -125,16 +126,16 @@ public class PocWalletTest {
         byte[] to = Helpers.randomBytes(Address.LENGTH);
         byte[] data = Helpers.randomBytes(Address.LENGTH);
         byte[] execArgs = encodeExecute(to, dailyLimit + 1, data);
-        Transaction executeTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), 0, execArgs, energyLimit, energyPrice);
+        Transaction executeTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, execArgs, energyLimit, energyPrice);
         TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
         TransactionResult executeResult = avm.run(new TransactionContext[] {executeContext})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, executeResult.getStatusCode());
         byte[] toConfirm = (byte[]) TestingHelper.decodeResult(executeResult);
 
         // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
-        kernel.adjustBalance(extra1, 1_000_000_000_000L);
+        kernel.adjustBalance(extra1, BigInteger.valueOf(1_000_000_000_000L));
         byte[] confirmArgs = CallEncoder.confirm(toConfirm);
-        Transaction confirmTransaction = Transaction.call(extra1, contractAddress, kernel.getNonce(extra1), 0, confirmArgs, energyLimit, energyPrice);
+        Transaction confirmTransaction = Transaction.call(extra1, contractAddress, kernel.getNonce(extra1), BigInteger.ZERO, confirmArgs, energyLimit, energyPrice);
         TransactionContext confirmContext = new TransactionContextImpl(confirmTransaction, block);
         TransactionResult confirmResult = avm.run(new TransactionContext[] {confirmContext})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, confirmResult.getStatusCode()); // transfer to non-existing accounts
@@ -143,7 +144,7 @@ public class PocWalletTest {
 
     private void runInit(byte[] contractAddress, byte[] extra1, byte[] extra2, int requiredVotes, long dailyLimit) throws Exception {
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
-        Transaction initTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), 0, initArgs, energyLimit, energyPrice);
+        Transaction initTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
         TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
         TransactionResult initResult = avm.run(new TransactionContext[] {initContext})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, initResult.getStatusCode());
@@ -153,7 +154,7 @@ public class PocWalletTest {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
 
-        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), 0L, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());

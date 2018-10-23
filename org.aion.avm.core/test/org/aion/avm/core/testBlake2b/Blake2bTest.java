@@ -1,5 +1,6 @@
 package org.aion.avm.core.testBlake2b;
 
+import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.NodeEnvironment;
@@ -33,7 +34,7 @@ public class Blake2bTest {
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, Blake2b.class);
         byte[] arguments = null;
-        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), 0L, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         System.out.println(txResult);
@@ -52,7 +53,7 @@ public class Blake2bTest {
         Blake2b mac = Blake2b.Mac.newInstance("key".getBytes());
         byte[] hash = mac.digest("input".getBytes());
 
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), 0, new byte[0], energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         System.out.println(txResult);

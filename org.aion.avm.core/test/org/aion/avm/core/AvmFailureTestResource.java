@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
@@ -10,7 +11,7 @@ public class AvmFailureTestResource {
     public static void reentrantCall(int n) {
         if (n > 0) {
             byte[] data = ABIEncoder.encodeMethodArguments("reentrantCall", n - 1);
-            BlockchainRuntime.call(BlockchainRuntime.getAddress(), 0, data, BlockchainRuntime.getEnergyLimit());
+            BlockchainRuntime.call(BlockchainRuntime.getAddress(), BigInteger.ZERO, data, BlockchainRuntime.getEnergyLimit());
             BlockchainRuntime.log(new byte[]{(byte)n});
             BlockchainRuntime.revert();
         }

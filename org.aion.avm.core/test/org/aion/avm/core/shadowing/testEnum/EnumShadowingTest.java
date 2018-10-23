@@ -1,5 +1,6 @@
 package org.aion.avm.core.shadowing.testEnum;
 
+import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
@@ -30,7 +31,7 @@ public class EnumShadowingTest {
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class, TestEnum.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
 
-        Transaction tx = Transaction.create(from, kernel.getNonce(from), 0L, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         dappAddr = avm.run(new TransactionContext[] {context})[0].get().getReturnData();
     }
@@ -43,7 +44,7 @@ public class EnumShadowingTest {
     @Test
     public void testEnumAccess() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testEnumAccess");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -53,7 +54,7 @@ public class EnumShadowingTest {
     @Test
     public void testEnumValues() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testEnumValues");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -63,7 +64,7 @@ public class EnumShadowingTest {
     @Test
     public void testShadowJDKEnum() {
         byte[] txData = ABIEncoder.encodeMethodArguments("testShadowJDKEnum");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), 0, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 

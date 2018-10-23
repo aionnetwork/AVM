@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import static org.junit.Assert.assertEquals;
 
+import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -38,7 +39,7 @@ public class TransformedMethodTest {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         // Deploy.
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), 0L, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         dappAddress = TestingHelper.buildAddress(createResult.getReturnData());
@@ -52,7 +53,7 @@ public class TransformedMethodTest {
     @Test
     public void testCallNothing() {
         byte[] argData = ABIEncoder.encodeMethodArguments("nothing");
-        Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), 0L, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
     }
@@ -382,7 +383,7 @@ public class TransformedMethodTest {
     }
 
     private TransactionResult runTransaction(byte[] argData) {
-        Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), 0L, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return result;

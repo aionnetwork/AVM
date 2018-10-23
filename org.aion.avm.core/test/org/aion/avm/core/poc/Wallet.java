@@ -1,5 +1,6 @@
 package org.aion.avm.core.poc;
 
+import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionBuffer;
@@ -73,7 +74,7 @@ public class Wallet {
             pendingTxs.remove(new Bytes32(id));
 
             // send the transaction
-            BlockchainRuntime.call(pendingTx.to, pendingTx.value, pendingTx.data, pendingTx.energyLimit);
+            BlockchainRuntime.call(pendingTx.to, BigInteger.valueOf(pendingTx.value), pendingTx.data, pendingTx.energyLimit);
         }
 
         return true;

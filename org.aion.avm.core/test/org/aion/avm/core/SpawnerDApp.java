@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
@@ -21,12 +22,12 @@ public class SpawnerDApp {
     }
 
     public static byte[] spawnAndCall(byte[] array) {
-        byte[] contractAddress = BlockchainRuntime.create(0L, CODE_AND_ARGS, 1_000_000L).getReturnData();
-        return BlockchainRuntime.call(new Address(contractAddress), 0L, array, 1_000_000L).getReturnData();
+        byte[] contractAddress = BlockchainRuntime.create(BigInteger.ZERO, CODE_AND_ARGS, 1_000_000L).getReturnData();
+        return BlockchainRuntime.call(new Address(contractAddress), BigInteger.ZERO, array, 1_000_000L).getReturnData();
     }
 
     public static Address spawnOnly(boolean shouldFail) {
-        byte[] contractAddress = BlockchainRuntime.create(0L, CODE_AND_ARGS, 1_000_000L).getReturnData();
+        byte[] contractAddress = BlockchainRuntime.create(BigInteger.ZERO, CODE_AND_ARGS, 1_000_000L).getReturnData();
         if (shouldFail) {
             BlockchainRuntime.invalid();
         }
