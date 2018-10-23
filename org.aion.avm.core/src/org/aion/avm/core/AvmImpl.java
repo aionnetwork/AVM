@@ -89,6 +89,7 @@ public class AvmImpl implements AvmInternal {
 
     @Override
     public SimpleFuture<TransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException {
+        this.resourceMonitor.clear();
         return this.handoff.sendTransactionsAsynchronously(transactions);
     }
 

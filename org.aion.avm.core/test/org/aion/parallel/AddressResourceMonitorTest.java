@@ -28,7 +28,7 @@ public class AddressResourceMonitorTest {
             TransactionTask task = new TransactionTask(0, this);
 
             monitor.acquire(addr1, task);
-            monitor.releaseResourcesForTask(task);
+            monitor.testReleaseResourcesForTask(task);
         }
     }
 
@@ -45,7 +45,7 @@ public class AddressResourceMonitorTest {
             }
 
             System.out.println("Thread 2 Abort");
-            monitor.releaseResourcesForTask(task);
+            monitor.testReleaseResourcesForTask(task);
         }
     }
 
@@ -63,7 +63,7 @@ public class AddressResourceMonitorTest {
             }
 
             System.out.println("Thread 3 Abort");
-            monitor.releaseResourcesForTask(task);
+            monitor.testReleaseResourcesForTask(task);
         }
     }
 
@@ -99,7 +99,7 @@ public class AddressResourceMonitorTest {
             monitor.acquire(addr2, task);
             monitor.acquire(addr3, task);
             monitor.acquire(addr4, task);
-            monitor.releaseResourcesForTask(task);
+            monitor.testReleaseResourcesForTask(task);
         }
     }
 
@@ -116,7 +116,7 @@ public class AddressResourceMonitorTest {
             }
 
             System.out.println("Thread 5 Abort");
-            monitor.releaseResourcesForTask(task);
+            monitor.testReleaseResourcesForTask(task);
         }
     }
 
@@ -133,7 +133,7 @@ public class AddressResourceMonitorTest {
             }
 
             System.out.println("Thread 6 Abort");
-            monitor.releaseResourcesForTask(task);
+            monitor.testReleaseResourcesForTask(task);
         }
     }
 
@@ -169,7 +169,7 @@ public class AddressResourceMonitorTest {
             monitor.acquire(addr2, task);
             monitor.acquire(addr3, task);
             monitor.acquire(addr4, task);
-            monitor.releaseResourcesForTask(task);
+            monitor.testReleaseResourcesForTask(task);
         }
     }
 
@@ -189,7 +189,7 @@ public class AddressResourceMonitorTest {
             }
 
             System.out.println("Thread 8 Abort");
-            monitor.releaseResourcesForTask(task);
+            monitor.testReleaseResourcesForTask(task);
         }
     }
 

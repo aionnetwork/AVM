@@ -35,6 +35,18 @@ public class AddressResourceMonitor {
         this.commitCounter = 0;
     }
 
+    /**
+     * Reset the state of the address resource monitor.
+     * This method will be called for each batch of transaction request.
+     *
+     */
+    public void clear(){
+        synchronized (sync) {
+            this.resources.clear();
+            this.ownerships.clear();
+            this.commitCounter = 0;
+        }
+    }
 
     /**
      * Acquire a resource for given task.
@@ -82,7 +94,7 @@ public class AddressResourceMonitor {
                 try {
                     sync.wait();
                 }catch (InterruptedException e){
-                    RuntimeAssertionError.unreachable("Address Resource Lock received Interruption");
+                    RuntimeAssertionError.unreachable("Waiting executor thread received interruption: ACQUIRE");
                 }
             }
 
@@ -106,28 +118,25 @@ public class AddressResourceMonitor {
      *
      * @param task The requesting task.
      */
-    public void releaseResourcesForTask(TransactionTask task){
-        synchronized (sync) {
-            for (AddressResource resource : ownerships.remove(task)) {
-                this.release(resource, task);
+    private void releaseResourcesForTask(TransactionTask task){
+        RuntimeAssertionError.assertTrue(Thread.holdsLock(sync));
+
+        Set<AddressResource> toRemove = ownerships.remove(task);
+        if (null != toRemove) {
+            for (AddressResource resource : toRemove) {
+                resource.removeFromWaitingQueue(task);
+                if (task == resource.getOwnedBy()) {
+                    resource.setOwner(null);
+                }
+                if (DEBUG) System.out.println("Release " + task.getIndex() + " " + resource.toString());
             }
-
-            // Only wake up others when all resources are released
-            sync.notifyAll();
         }
-    }
-
-    private void release(AddressResource resource, TransactionTask task){
-        resource.removeFromWaitingQueue(task);
-        if (task == resource.getOwnedBy()) {
-            resource.setOwner(null);
-        }
-        if (DEBUG) System.out.println("Release " + task.getIndex() + " " + resource.toString());
     }
 
     /**
      * Try commit the result transactional kernel of the given task.
      * The commit will be serialized as the index of the task.
+     * All resource hold by task will be released after this method return.
      *
      * The executor thread of the task will block until
      *      It is the task's turn to commit result
@@ -140,11 +149,36 @@ public class AddressResourceMonitor {
      * @return True if commit is successful. False if task need to abort.
      */
     public boolean commitKernelForTask(TransactionTask task, TransactionalKernel kernel){
-        kernel.commit();
-        return true;
+        boolean ret = false;
+
+        synchronized (sync){
+
+            while (this.commitCounter != task.getIndex() && !task.inAbortState()){
+                try {
+                    sync.wait();
+                }catch (InterruptedException e){
+                    RuntimeAssertionError.unreachable("Waiting executor thread received interruption: COMMIT");
+                }
+            }
+
+            if (!task.inAbortState()){
+                kernel.commit();
+                this.commitCounter++;
+                ret = true;
+            }
+
+            releaseResourcesForTask(task);
+
+            // Only wake up others when all resources are released
+            sync.notifyAll();
+        }
+
+        return ret;
     }
 
     private AddressResource getResource(AddressWrapper addr){
+        RuntimeAssertionError.assertTrue(Thread.holdsLock(sync));
+
         AddressResource ret = resources.get(addr);
         if (null == ret){
             ret = new AddressResource();
@@ -154,6 +188,8 @@ public class AddressResourceMonitor {
     }
 
     private void recordOwnership(AddressResource res, TransactionTask task){
+        RuntimeAssertionError.assertTrue(Thread.holdsLock(sync));
+
         Set<AddressResource> entry = ownerships.get(task);
         if (null == entry){
             entry = new HashSet<>();
@@ -162,5 +198,11 @@ public class AddressResourceMonitor {
         entry.add(res);
     }
 
+    void testReleaseResourcesForTask(TransactionTask task){
+        synchronized (sync) {
+            releaseResourcesForTask(task);
+            sync.notifyAll();
+        }
+    }
 }
 
