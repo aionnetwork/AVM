@@ -34,6 +34,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.verification.Verifier;
 import org.aion.avm.internal.*;
 import org.aion.kernel.*;
+import org.aion.parallel.TransactionTask;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.slf4j.Logger;
@@ -201,7 +202,7 @@ public class DAppCreator {
         return processedClasses;
     }
 
-    public static void create(KernelInterface kernel, AvmInternal avm, TransactionContext ctx, TransactionResult result) {
+    public static void create(KernelInterface kernel, AvmInternal avm, TransactionTask task, TransactionContext ctx, TransactionResult result) {
         try {
             // read dapp module
             byte[] dappAddress = ctx.getAddress();
@@ -237,12 +238,15 @@ public class DAppCreator {
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
             IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit() - result.getEnergyUsed(), nextHashCode);
+            task.attachHelper(helper);
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
-            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, helper, ctx, codeAndArguments.arguments, result));
+            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, helper, task, ctx,
+                    codeAndArguments.arguments, result));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
-                    + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * rawDapp.bytecodeSize * (1 + rawDapp.numberOfClasses) / 10);
+                    + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * rawDapp.bytecodeSize
+                    * (1 + rawDapp.numberOfClasses) / 10);
 
             // Create the immortal version of the transformed DApp code by stripping the <clinit>.
             Map<String, byte[]> immortalClasses = new HashMap<>();

@@ -7,6 +7,7 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.HashUtils;
 import org.aion.kernel.*;
+import org.aion.parallel.TransactionTask;
 
 import java.util.List;
 
@@ -23,9 +24,10 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private TransactionContext ctx;
     private final byte[] dAppData;
     private TransactionResult result;
+    private TransactionTask task;
 
     public BlockchainRuntimeImpl(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState,
-                                 IHelper helper, TransactionContext ctx, byte[] dAppData, TransactionResult result) {
+                                 IHelper helper, TransactionTask task, TransactionContext ctx, byte[] dAppData, TransactionResult result) {
         this.kernel = kernel;
         this.avm = avm;
         this.reentrantState = reentrantState;
@@ -33,6 +35,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         this.ctx = ctx;
         this.dAppData = dAppData;
         this.result = result;
+        this.task = task;
     }
 
     @Override
@@ -255,6 +258,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         throw new InvalidException();
     }
 
+    // TODO: Create new buffers for print and println, so they can be flushed after parallel transactions
     @Override
     public void avm_print(org.aion.avm.shadow.java.lang.String message) {
         System.out.print(message.toString());
@@ -284,7 +288,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         IHelper.currentContractHelper.remove();
 
         // execute the internal transaction
-        TransactionResult newResult = this.avm.runInternalTransaction(this.kernel, new TransactionContextImpl(this.ctx, internalTx));
+        TransactionResult newResult = this.avm.runInternalTransaction(this.kernel, this.task, new TransactionContextImpl(this.ctx, internalTx));
 
         // merge the results
         result.merge(newResult);

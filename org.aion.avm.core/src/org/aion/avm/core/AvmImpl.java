@@ -25,20 +25,22 @@ public class AvmImpl implements AvmInternal {
 
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
 
+    private static final boolean DEBUG_EXECUTOR = false;
+
     private static final int NUM_EXECUTORS = 1;
 
     private final KernelInterface kernel;
-    private final ReentrantDAppStack dAppStack;
 
     // Long-lived state which is book-ended by the startup/shutdown calls.
     private static AvmImpl currentAvm;  // (only here for testing - makes sure that we properly clean these up between invocations)
     private SoftCache<ByteArrayWrapper, LoadedDApp> hotCache;
     private HandoffMonitor handoff;
+
+    // Short-lived state which is reset for each batch of transaction request.
     private AddressResourceMonitor resourceMonitor;
 
     public AvmImpl(KernelInterface kernel) {
         this.kernel = kernel;
-        this.dAppStack = new ReentrantDAppStack();
     }
 
     private class AvmExecutorThread extends Thread{
@@ -54,7 +56,20 @@ public class AvmImpl implements AvmInternal {
                 TransactionResult outgoingResult = null;
                 TransactionTask incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(null, null);
                 while (null != incomingTask) {
-                    outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask);
+                    do {
+                        if (DEBUG_EXECUTOR) System.out.println(this.getName() + " start  " + incomingTask.getIndex());
+
+                        incomingTask.resetState();
+                        outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask);
+
+                        if (TransactionResult.Code.FAILED_ABORT == outgoingResult.getStatusCode() && DEBUG_EXECUTOR){
+                            System.out.println(this.getName() + " abort  " + incomingTask.getIndex());
+                        }
+
+                    }while (TransactionResult.Code.FAILED_ABORT == outgoingResult.getStatusCode());
+
+                    if (DEBUG_EXECUTOR) System.out.println(this.getName() + " finish " + incomingTask.getIndex() + ", " + outgoingResult.getStatusCode());
+
                     incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
                 }
             } catch (Throwable t) {
@@ -79,7 +94,7 @@ public class AvmImpl implements AvmInternal {
 
         Set<Thread> executorThreads = new HashSet<>();
         for (int i = 0; i < NUM_EXECUTORS; i++){
-            executorThreads.add(new AvmExecutorThread("AVM Execution Thread " + i));
+            executorThreads.add(new AvmExecutorThread("AVM Executor Thread " + i));
         }
 
         RuntimeAssertionError.assertTrue(null == this.handoff);
@@ -126,7 +141,7 @@ public class AvmImpl implements AvmInternal {
                 result = runGc(taskTransactionalKernel, sender);
             } else {
                 // The CREATE/CALL case is handled via the common external invoke path.
-                result = runExternalInvoke(taskTransactionalKernel, ctx);
+                result = runExternalInvoke(taskTransactionalKernel, task, ctx);
             }
         } else {
             result = new TransactionResult();
@@ -134,7 +149,8 @@ public class AvmImpl implements AvmInternal {
             result.setEnergyUsed(ctx.getEnergyLimit());
         }
 
-        // Deduct energy for rejected transaction
+        // Deduct energy for rejected transaction and GC transaction
+        // TODO: unify balance adjustment
         if (result.getStatusCode() == TransactionResult.Code.REJECTED
                 || result.getStatusCode() == TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE
                 || result.getStatusCode() == TransactionResult.Code.REJECTED_INVALID_NONCE
@@ -143,9 +159,10 @@ public class AvmImpl implements AvmInternal {
             taskTransactionalKernel.adjustBalance(sender, result.getEnergyUsed() * ctx.getEneryPrice());
         }
 
-        // TODO: Implementation
         // Task transactional kernel commits are serialized through address resource monitor
-        this.resourceMonitor.commitKernelForTask(task, taskTransactionalKernel);
+        if (!this.resourceMonitor.commitKernelForTask(task, taskTransactionalKernel)){
+            result.setStatusCode(TransactionResult.Code.FAILED_ABORT);
+        }
 
         return result;
     }
@@ -160,12 +177,12 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionContext context) {
-        return commonInvoke(parentKernel, context);
+    public TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, TransactionContext context) {
+        return commonInvoke(parentKernel, task, context);
     }
 
 
-    private TransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionContext ctx) {
+    private TransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, TransactionContext ctx) {
         // to capture any error during validation
         TransactionResult.Code error = null;
 
@@ -194,7 +211,7 @@ public class AvmImpl implements AvmInternal {
         parentKernel.adjustBalance(ctx.getCaller(), -(ctx.getEnergyLimit() * ctx.getEneryPrice()));
 
         // Run the common logic with the parent kernel as the top-level one.
-        TransactionResult result = commonInvoke(parentKernel, ctx);
+        TransactionResult result = commonInvoke(parentKernel, task, ctx);
 
         // refund the remaining energy
         long remainingEnergy = ctx.getEnergyLimit() - result.getEnergyUsed();
@@ -205,7 +222,7 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private TransactionResult commonInvoke(KernelInterface parentKernel, TransactionContext ctx) {
+    private TransactionResult commonInvoke(KernelInterface parentKernel, TransactionTask task, TransactionContext ctx) {
         if (logger.isDebugEnabled()) {
             logger.debug("Transaction: address = {}, caller = {}, value = {}, data = {}, energyLimit = {}",
                     Helpers.bytesToHexString(ctx.getAddress()),
@@ -233,18 +250,18 @@ public class AvmImpl implements AvmInternal {
         thisTransactionKernel.incrementNonce(ctx.getCaller());
 
         if (ctx.isCreate()) {
-            DAppCreator.create(thisTransactionKernel, this, ctx, result);
+            DAppCreator.create(thisTransactionKernel, this, task, ctx, result);
         } else {
             byte[] dappAddress = ctx.getAddress();
             // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
-            ReentrantDAppStack.ReentrantState stateToResume = dAppStack.tryShareState(dappAddress);
+            ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(dappAddress);
 
             LoadedDApp dapp;
             // The reentrant cache is obviously the first priority.
             if (null != stateToResume) {
                 dapp = stateToResume.dApp;
                 // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
-                DAppExecutor.call(thisTransactionKernel, this, this.dAppStack, dapp, stateToResume, ctx, result);
+                DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result);
             } else {
                 // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
                 ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress);
@@ -259,7 +276,7 @@ public class AvmImpl implements AvmInternal {
                 }
                 // Run the call and, if successful, check this into the hot DApp cache.
                 if (null != dapp) {
-                    DAppExecutor.call(thisTransactionKernel, this, this.dAppStack, dapp, stateToResume, ctx, result);
+                    DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result);
                     if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
                         dapp.cleanForCache();
                         this.hotCache.checkin(addressWrapper, dapp);

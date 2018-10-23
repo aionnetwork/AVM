@@ -8,6 +8,7 @@ import org.aion.avm.internal.*;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionResult;
+import org.aion.parallel.TransactionTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,8 @@ public class DAppExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(DAppExecutor.class);
 
-    public static void call(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack dAppStack, LoadedDApp dapp, ReentrantDAppStack.ReentrantState stateToResume,
+    public static void call(KernelInterface kernel, AvmInternal avm, LoadedDApp dapp,
+                            ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
                             TransactionContext ctx, TransactionResult result) {
         byte[] dappAddress = ctx.getAddress();
         // Load the initial state of the environment.
@@ -30,10 +32,11 @@ public class DAppExecutor {
         // instance loader (ReentrantGraphProcessor/ReflectionStructureCodec) can be notified when it becomes active/inactive (since it needs
         // to know if it is loading an instance
         ReentrantDAppStack.ReentrantState thisState = new ReentrantDAppStack.ReentrantState(dappAddress, dapp, initialState);
-        dAppStack.pushState(thisState);
+        task.getReentrantDAppStack().pushState(thisState);
         
         IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode);
-        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, ctx, ctx.getData(), result));
+        task.attachHelper(helper);
+        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, task, ctx, ctx.getData(), result));
         HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(helper);
 
         ReentrantGraphProcessor reentrantGraphData = null;
@@ -123,7 +126,7 @@ public class DAppExecutor {
             }
             result.setStatusCode(TransactionResult.Code.FAILED_EXCEPTION);
             result.setEnergyUsed(ctx.getEnergyLimit());
-
+            //System.out.println(e.getCause());
             result.setUncaughtException(e.getCause());
             logger.debug("Uncaught exception", e.getCause());
         } catch (AvmException e) {
@@ -140,7 +143,7 @@ public class DAppExecutor {
             // Once we are done running this, we want to clear the IHelper.currentContractHelper.
             IHelper.currentContractHelper.remove();
             // This state was only here while we were running, in case someone else needed to change it so now we can pop it.
-            dAppStack.popState();
+            task.getReentrantDAppStack().popState();
         }
     }
 }

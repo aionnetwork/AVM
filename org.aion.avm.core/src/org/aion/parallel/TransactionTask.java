@@ -1,5 +1,6 @@
 package org.aion.parallel;
 
+import org.aion.avm.core.ReentrantDAppStack;
 import org.aion.avm.internal.IHelper;
 import org.aion.kernel.*;
 
@@ -13,13 +14,15 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private TransactionContext externalTransactionContext;
     private volatile boolean abortState;
     private IHelper helper;
+    private ReentrantDAppStack reentrantDAppStack;
     private int index;
 
     public TransactionTask(TransactionContext ctx, int index){
         this.externalTransactionContext = ctx;
+        this.index = index;
         this.abortState = false;
         this.helper = null;
-        this.index = index;
+        this.reentrantDAppStack = new ReentrantDAppStack();
     }
 
     public TransactionTask(int index, Thread t){
@@ -28,12 +31,19 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.index = index;
     }
 
+    public void resetState(){
+        this.abortState = false;
+        this.helper = null;
+        this.reentrantDAppStack = new ReentrantDAppStack();
+    }
+
     /**
      * Attach an {@link IHelper} to the current task.
      * If the task is already in abort state, set the helper abort state as well.
      */
     public void attachHelper(IHelper helper) {
         this.helper = helper;
+        //TODO: potential broken state
         if (this.abortState){
             helper.externalSetAbortState();
         }
@@ -45,6 +55,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
      */
     public void setAbortState() {
         this.abortState = true;
+        //TODO: potential broken state
         if (null != helper){
             helper.externalSetAbortState();
         }
@@ -66,6 +77,15 @@ public class TransactionTask implements Comparable<TransactionTask>{
      */
     public int getIndex() {
         return index;
+    }
+
+    /**
+     * Get the ReentrantDAppStack of the current task.
+     *
+     * @return The ReentrantDAppStack of the task.
+     */
+    public ReentrantDAppStack getReentrantDAppStack() {
+        return reentrantDAppStack;
     }
 
     /**
