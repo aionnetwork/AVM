@@ -56,7 +56,7 @@ class AddressResource {
 
     void setOwner(TransactionTask task){
         this.ownedBy = task;
-        this.isOwned = null == task;
+        this.isOwned = null != task;
     }
 
     TransactionTask getNextOwner(){
