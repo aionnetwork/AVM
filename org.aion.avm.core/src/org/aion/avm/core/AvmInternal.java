@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionResult;
+import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
 
 
@@ -13,11 +14,18 @@ import org.aion.parallel.TransactionTask;
 public interface AvmInternal extends Avm {
     /**
      * Runs a transaction, originating from inside the AVM, itself.
-     *
+     * 
      * @param parentKernel The KernelInterface of the origin of the transaction, in a parent call frame.
-     * @param task         The current transaction task.
-     * @param context      The transaction to run.
+     * @param task The current transaction task.
+     * @param context The transaction to run.
      * @return The result of the transaction.
      */
     TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, TransactionContext context);
+
+    /**
+     * Get the address resource monitor using by the current AVM.
+     *
+     * @return The address resource monitor.
+     */
+    AddressResourceMonitor getResourceMonitor();
 }

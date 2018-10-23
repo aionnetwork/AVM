@@ -27,7 +27,7 @@ public class AvmImpl implements AvmInternal {
 
     private static final boolean DEBUG_EXECUTOR = false;
 
-    private static final int NUM_EXECUTORS = 1;
+    private static final int NUM_EXECUTORS = 4;
 
     private final KernelInterface kernel;
 
@@ -126,8 +126,14 @@ public class AvmImpl implements AvmInternal {
         // All IO will be performed on an per task transactional kernel so we can abort the whole task in one go
         TransactionalKernel taskTransactionalKernel = new TransactionalKernel(this.kernel);
 
-        // nonce check
+        // Acquire both sender and target resources
         byte[] sender = ctx.getCaller();
+        byte[] target = ctx.getAddress();
+
+        this.resourceMonitor.acquire(sender, task);
+        this.resourceMonitor.acquire(target, task);
+
+        // nonce check
         if (taskTransactionalKernel.getNonce(sender) != ctx.getNonce()) {
             error = TransactionResult.Code.REJECTED_INVALID_NONCE;
         }
@@ -325,5 +331,10 @@ public class AvmImpl implements AvmInternal {
             result.setEnergyUsed(0);
         }
         return result;
+    }
+
+    @Override
+    public AddressResourceMonitor getResourceMonitor() {
+        return resourceMonitor;
     }
 }

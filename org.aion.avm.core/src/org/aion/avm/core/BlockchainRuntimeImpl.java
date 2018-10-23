@@ -110,6 +110,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     public long avm_getBalance(Address address) {
         require(null != address, "Address can't be NULL");
 
+        // Acquire resource before reading
+        avm.getResourceMonitor().acquire(address.unwrap(), this.task);
         return this.kernel.getBalance(address.unwrap());
     }
 
@@ -117,6 +119,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     public int avm_getCodeSize(Address address) {
         require(null != address, "Address can't be NULL");
 
+        // Acquire resource before reading
+        avm.getResourceMonitor().acquire(address.unwrap(), this.task);
         byte[] vc = this.kernel.getCode(address.unwrap());
         return vc == null ? 0 : vc.length;
     }
@@ -187,8 +191,19 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     public void avm_selfDestruct(Address beneficiary) {
         require(null != beneficiary, "Beneficiary can't be NULL");
 
-        // TODO: add value transfer here
-        this.kernel.deleteAccount(ctx.getAddress());
+        byte[] contractAddr = ctx.getAddress();
+
+        // Acquire beneficiary address, the address of current contract is already lock at this stage.
+        this.avm.getResourceMonitor().acquire(beneficiary.unwrap(), this.task);
+
+        // Value transfer
+        long balanceToTransfer = this.kernel.getBalance(contractAddr);
+        this.kernel.adjustBalance(contractAddr, -balanceToTransfer);
+        this.kernel.adjustBalance(beneficiary.unwrap(), balanceToTransfer);
+
+        // Delete Account
+        // TODO: is it safe to delete here?
+        this.kernel.deleteAccount(contractAddr);
     }
 
     @Override
@@ -287,14 +302,23 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         RuntimeAssertionError.assertTrue(helper == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.remove();
 
+        TransactionContext internalCTX = new TransactionContextImpl(this.ctx, internalTx);
+
+        // Acquire the target of the internal transaction
+        avm.getResourceMonitor().acquire(internalCTX.getAddress(), task);
+
         // execute the internal transaction
-        TransactionResult newResult = this.avm.runInternalTransaction(this.kernel, this.task, new TransactionContextImpl(this.ctx, internalTx));
+        TransactionResult newResult = this.avm.runInternalTransaction(this.kernel, this.task,
+                internalCTX);
 
         // merge the results
         result.merge(newResult);
 
         // reset the thread-local helper instance
         IHelper.currentContractHelper.set(helper);
+
+        // Reset the current helper of task
+        task.attachHelper(helper);
 
         if (null != this.reentrantState) {
             // Update the next hashcode counter, in case this was a reentrant call and it was changed.
