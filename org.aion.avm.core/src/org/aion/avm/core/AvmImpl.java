@@ -155,15 +155,8 @@ public class AvmImpl implements AvmInternal {
             result.setEnergyUsed(ctx.getEnergyLimit());
         }
 
-        // Deduct energy for rejected transaction and GC transaction
-        // TODO: unify balance adjustment
-        if (result.getStatusCode() == TransactionResult.Code.REJECTED
-                || result.getStatusCode() == TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE
-                || result.getStatusCode() == TransactionResult.Code.REJECTED_INVALID_NONCE
-                || ctx.isGarbageCollectionRequest())
-        {
-            taskTransactionalKernel.adjustBalance(sender, BigInteger.valueOf(result.getEnergyUsed() * ctx.getEneryPrice()));
-        }
+        // Deduct energy for transaction
+        taskTransactionalKernel.adjustBalance(sender, BigInteger.valueOf(result.getEnergyUsed() * ctx.getEneryPrice()).negate());
 
         // Task transactional kernel commits are serialized through address resource monitor
         if (!this.resourceMonitor.commitKernelForTask(task, taskTransactionalKernel)){
@@ -219,11 +212,8 @@ public class AvmImpl implements AvmInternal {
         // Run the common logic with the parent kernel as the top-level one.
         TransactionResult result = commonInvoke(parentKernel, task, ctx);
 
-        // refund the remaining energy
-        long remainingEnergy = ctx.getEnergyLimit() - result.getEnergyUsed();
-        if (remainingEnergy > 0) {
-            parentKernel.adjustBalance(ctx.getCaller(), BigInteger.valueOf(remainingEnergy * ctx.getEneryPrice()));
-        }
+        // Refund the withheld energy
+        parentKernel.adjustBalance(ctx.getCaller(), BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEneryPrice()));
 
         return result;
     }
