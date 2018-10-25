@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.core.persistence.IObjectGraphStore;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 
@@ -272,7 +273,7 @@ public class AvmImpl implements AvmInternal {
                 if (null == dapp) {
                     // If we didn't find it there, just load it.
                     try {
-                        dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, dappAddress));
+                        dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, dappAddress).getCode());
                     } catch (IOException e) {
                         unexpected(e); // the jar was created by AVM; IOException is unexpected
                     }
@@ -300,12 +301,13 @@ public class AvmImpl implements AvmInternal {
 
     private TransactionResult runGc(KernelInterface parentKernel, byte[] dappAddress) {
         ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress);
+        IObjectGraphStore graphStore = new KeyValueObjectGraph(parentKernel, dappAddress);
         
         LoadedDApp dapp = this.hotCache.checkout(addressWrapper);
         if (null == dapp) {
             // If we didn't find it there, just load it.
             try {
-                dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(parentKernel, dappAddress));
+                dapp = DAppLoader.loadFromGraph(graphStore.getCode());
             } catch (IOException e) {
                 unexpected(e); // the jar was created by AVM; IOException is unexpected
             }
@@ -314,7 +316,7 @@ public class AvmImpl implements AvmInternal {
         TransactionResult result = new TransactionResult();
         if (null != dapp) {
             // Run the GC and check this into the hot DApp cache.
-            long instancesFreed = dapp.graphStore.gc();
+            long instancesFreed = graphStore.gc();
             this.hotCache.checkin(addressWrapper, dapp);
             // We want to set this to success and report the energy used as the refund found by the GC.
             // NOTE:  This is the total value of the refund as splitting that between the DApp and node is a higher-level decision.

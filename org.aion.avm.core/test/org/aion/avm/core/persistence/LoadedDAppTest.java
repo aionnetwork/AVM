@@ -59,9 +59,9 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(null, objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName());
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData);
+        LoadedDApp dapp = new LoadedDApp(null, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName());
+        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -135,7 +135,7 @@ public class LoadedDAppTest {
         
         // Populate the classes.
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).populateClassStaticsFromStorage(FEE_PROCESSOR);
+        new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -174,9 +174,9 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(null, objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData);
+        LoadedDApp dapp = new LoadedDApp(null, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
+        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -249,9 +249,9 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName());
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData);
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName());
+        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         // Check the size of the saved static data (should only store local copies of statics, not superclass statics, per class).
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // (note that this is "309" if the superclass static fields are redundantly stored in sub-classes).
@@ -259,7 +259,7 @@ public class LoadedDAppTest {
         
         // Now, clear the class states and reload this.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR);
+        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -316,9 +316,9 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData);
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
+        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -341,7 +341,7 @@ public class LoadedDAppTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR);
+        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
         Assert.assertTrue(org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN == LoadedDAppTarget.s_nine);
     }
 
@@ -356,9 +356,9 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData);
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
+        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -382,7 +382,7 @@ public class LoadedDAppTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR);
+        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
         Assert.assertTrue(originalClassRef == LoadedDAppTarget.s_nine);
     }
 
@@ -396,9 +396,9 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData);
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
+        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
@@ -421,7 +421,7 @@ public class LoadedDAppTest {
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR);
+        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
         Assert.assertTrue(org.aion.avm.shadow.java.lang.Byte.avm_TYPE == LoadedDAppTarget.s_nine);
     }
 
@@ -434,21 +434,21 @@ public class LoadedDAppTest {
         byte[] address = new byte[] {1,2,3};
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), objectGraph, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
+        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
         
         // Set the empty state and write it to disk.
         ReflectionStructureCodecTarget.s_nine = null;
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData);
+        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
+        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         
         // First, the disk variant.
         CallCountingProcessor diskCount = new CallCountingProcessor();
         // Start from disk (we need this so that both versions start from "read initial state").
-        directGraphData = dapp.populateClassStaticsFromStorage(diskCount);
+        directGraphData = dapp.populateClassStaticsFromStorage(diskCount, objectGraph);
         // Populate a basic state.
         ReflectionStructureCodecTarget.s_nine = buildSmallGraph();
         // Save to disk.
-        dapp.saveClassStaticsToStorage(diskCount, directGraphData);
+        dapp.saveClassStaticsToStorage(diskCount, directGraphData, objectGraph);
         
         // Now, the in-memory variant.
         CallCountingProcessor memoryCount = new CallCountingProcessor();

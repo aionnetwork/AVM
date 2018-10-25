@@ -15,6 +15,7 @@ import org.aion.avm.core.miscvisitors.StrictFPVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
+import org.aion.avm.core.persistence.IObjectGraphStore;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
@@ -233,7 +234,8 @@ public class DAppCreator {
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
             // We can now construct the abstraction of the loaded DApp which has the machinery for the rest of the initialization.
-            LoadedDApp dapp = DAppLoader.fromTransformed(transformedDapp, new KeyValueObjectGraph(kernel, dappAddress));
+            IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel,dappAddress);
+            LoadedDApp dapp = DAppLoader.fromTransformed(transformedDapp);
             
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
@@ -275,17 +277,17 @@ public class DAppCreator {
 
             // Save back the state before we return.
             // -first, save out the classes
-            ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(feeProcessor);
-            dapp.saveClassStaticsToStorage(feeProcessor, directGraphData);
+            ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(feeProcessor, graphStore);
+            dapp.saveClassStaticsToStorage(feeProcessor, directGraphData, graphStore);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToGraph(dapp.graphStore, new ContractEnvironmentState(helper.externalGetNextHashCode()));
-            dapp.graphStore.flushWrites();
+            ContractEnvironmentState.saveToGraph(graphStore, new ContractEnvironmentState(helper.externalGetNextHashCode()));
+            graphStore.flushWrites();
 
             // TODO: whether we should return the dapp address is subject to change
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
             result.setReturnData(dappAddress);
-            result.setStorageRootHash(dapp.graphStore.simpleHashCode());
+            result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
             result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());

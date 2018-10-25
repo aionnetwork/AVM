@@ -45,7 +45,6 @@ import org.aion.avm.internal.UncaughtException;
  */
 public class LoadedDApp {
     private final ClassLoader loader;
-    public final IObjectGraphStore graphStore;
     private final List<Class<?>> classes;
     private final String originalMainClassName;
     // Note that this fieldCache is populated by the calls to ReflectionStructureCodec.
@@ -63,12 +62,10 @@ public class LoadedDApp {
      * Creates the LoadedDApp to represent the classes related to DApp at address.
      * 
      * @param loader The class loader to look up shape.
-     * @param graphStore The storage under the DApp.
      * @param classes The list of classes to populate (order must always be the same).
      */
-    public LoadedDApp(ClassLoader loader, IObjectGraphStore graphStore, List<Class<?>> classes, String originalMainClassName) {
+    public LoadedDApp(ClassLoader loader, List<Class<?>> classes, String originalMainClassName) {
         this.loader = loader;
-        this.graphStore = graphStore;
         this.classes = classes;
         this.originalMainClassName = originalMainClassName;
         this.fieldCache = new ReflectedFieldCache();
@@ -78,21 +75,22 @@ public class LoadedDApp {
      * Populates the statics of the DApp classes with the primitives and instance stubs described by the on-disk data.
      * 
      * @param feeProcessor The billing mechanism for storage operations.
+     * @param graphStore The storage under the DApp.
      * @return The codec which should be used when saving the state of the receiver back out (since the codec could
      * have state needed for serialization).
      */
-    public ReflectionStructureCodec populateClassStaticsFromStorage(IStorageFeeProcessor feeProcessor) {
+    public ReflectionStructureCodec populateClassStaticsFromStorage(IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, graphStore);
         // Configure the storage graph.
         // (we pass in false for isNewlyWritten since this token building is only invoked for loaded instances, not newly-written ones).
         Function<IRegularNode, IPersistenceToken> tokenBuilder = (regularNode) -> new NodePersistenceToken(regularNode, false);
-        this.graphStore.setLateComponents(this.loader, codec.getInitialLoadDeserializer(), tokenBuilder);
-        
+        graphStore.setLateComponents(this.loader, codec.getInitialLoadDeserializer(), tokenBuilder);
+
         // Extract the raw data for the class statics and store it on the codec so we can use it later to determine what changed.
-        SerializedRepresentation preCallStaticData = this.graphStore.getRoot();
+        SerializedRepresentation preCallStaticData = graphStore.getRoot();
         codec.setPreCallStaticData(preCallStaticData);
         feeProcessor.readStaticDataFromStorage(preCallStaticData.getBillableSize());
         SerializedRepresentationCodec.Decoder decoder = new SerializedRepresentationCodec.Decoder(preCallStaticData);
@@ -108,13 +106,14 @@ public class LoadedDApp {
      * Creates the codec to be used to save out the initial state of the DApp (only configuration, but no data loaded).
      * 
      * @param feeProcessor The billing mechanism for storage operations.
+     * @param graphStore The storage under the DApp.
      * @return The codec which should be used when saving the initial DApp state.
      */
-    public ReflectionStructureCodec createCodecForInitialStore(IStorageFeeProcessor feeProcessor) {
+    public ReflectionStructureCodec createCodecForInitialStore(IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        return new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore);
+        return new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, graphStore);
     }
 
     /**
@@ -136,8 +135,9 @@ public class LoadedDApp {
      * 
      * @param feeProcessor The billing mechanism for storage operations.
      * @param codec The codec which did the initial state reading (populateClassStaticsFromStorage or createCodecForInitialStore).
+     * @param graphStore The storage under the DApp.
      */
-    public void saveClassStaticsToStorage(IStorageFeeProcessor feeProcessor, ReflectionStructureCodec codec) {
+    public void saveClassStaticsToStorage(IStorageFeeProcessor feeProcessor, ReflectionStructureCodec codec, IObjectGraphStore graphStore) {
         // Build the encoder.
         SerializedRepresentationCodec.Encoder encoder = new SerializedRepresentationCodec.Encoder();
         
@@ -161,11 +161,11 @@ public class LoadedDApp {
             // See if we should do the write-back.
             if (!preCallStaticData.equals(staticData)) {
                 feeProcessor.writeUpdateStaticDataToStorage(staticData.getBillableSize());
-                this.graphStore.setRoot(staticData);
+                graphStore.setRoot(staticData);
             }
         } else {
             feeProcessor.writeFirstStaticDataToStorage(staticData.getBillableSize());
-            this.graphStore.setRoot(staticData);
+            graphStore.setRoot(staticData);
         }
         
         // Do the pass over additional roots.

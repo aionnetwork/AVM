@@ -1,9 +1,11 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.persistence.ContractEnvironmentState;
+import org.aion.avm.core.persistence.IObjectGraphStore;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReentrantGraphProcessor;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
+import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.internal.*;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.KernelInterface;
@@ -21,11 +23,12 @@ public class DAppExecutor {
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
                             TransactionContext ctx, TransactionResult result) {
         byte[] dappAddress = ctx.getAddress();
+        IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel, dappAddress);
         // Load the initial state of the environment.
         // (note that ContractEnvironmentState is immutable, so it is safe to just access the environment from a different invocation).
         ContractEnvironmentState initialState = (null != stateToResume)
                 ? stateToResume.getEnvironment()
-                : ContractEnvironmentState.loadFromGraph(dapp.graphStore);
+                : ContractEnvironmentState.loadFromGraph(graphStore);
         
         // Note that we need to store the state of this invocation on the reentrant stack in case there is another call into the same app.
         // This is required so that the call() mechanism can access it to save/reload its ContractEnvironmentState and so that the underlying
@@ -53,7 +56,7 @@ public class DAppExecutor {
                 thisState.setInstanceLoader(reentrantGraphData);
             } else {
                 // This is the first invocation of this DApp so just load the static state from disk.
-                directGraphData = dapp.populateClassStaticsFromStorage(feeProcessor);
+                directGraphData = dapp.populateClassStaticsFromStorage(feeProcessor, graphStore);
                 thisState.setInstanceLoader(directGraphData);
             }
 
@@ -67,17 +70,17 @@ public class DAppExecutor {
             } else {
                 // We are at the "top" so write this back to disk.
                 // -first, save out the classes
-                dapp.saveClassStaticsToStorage(feeProcessor, directGraphData);
+                dapp.saveClassStaticsToStorage(feeProcessor, directGraphData, graphStore);
                 // -finally, save back the final state of the environment so we restore it on the next invocation.
                 ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(helper.externalGetNextHashCode());
-                ContractEnvironmentState.saveToGraph(dapp.graphStore, updatedEnvironment);
+                ContractEnvironmentState.saveToGraph(graphStore, updatedEnvironment);
             }
-            dapp.graphStore.flushWrites();
+            graphStore.flushWrites();
 
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setReturnData(ret);
             result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
-            result.setStorageRootHash(dapp.graphStore.simpleHashCode());
+            result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();

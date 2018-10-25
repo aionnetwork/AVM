@@ -21,14 +21,11 @@ public class DAppLoader {
     /**
      * Called to load an immortal DApp from the code storage provided by the kernel.
      * 
-     * @param objectGraph The storage abstraction.
+     * @param immortalDappJar The contract jar.
      * @return The DApp instance, or NULL if not exist
      * @throws IOException If there was a failure decoding the code from the kernel.
      */
-    public static LoadedDApp loadFromGraph(IObjectGraphStore objectGraph) throws IOException {
-        // First, we need to load the DApp bytecode.
-        byte[] immortalDappJar = objectGraph.getCode();
-
+    public static LoadedDApp loadFromGraph(byte[] immortalDappJar) throws IOException {
         // normal account or account with no code?
         if (immortalDappJar == null || immortalDappJar.length == 0) {
             return null;
@@ -48,17 +45,16 @@ public class DAppLoader {
         List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
         
         // We now have all the information to describe the LoadedDApp.
-        return new LoadedDApp(classLoader, objectGraph, aphabeticalContractClasses, app.mainClass);
+        return new LoadedDApp(classLoader, aphabeticalContractClasses, app.mainClass);
     }
 
     /**
      * Called to create a temporary DApp from transformed classes, in-memory.
      * 
      * @param app The transformed module.
-     * @param objectGraph The storage abstraction.
      * @return The DApp instance.
      */
-    public static LoadedDApp fromTransformed(TransformedDappModule app, IObjectGraphStore objectGraph) {
+    public static LoadedDApp fromTransformed(TransformedDappModule app) {
         // We now need all the classes which will loaded within the class loader for this DApp (includes Helper and userlib classes we add).
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
         
@@ -70,6 +66,6 @@ public class DAppLoader {
         List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
         
         // We now have all the information to describe the LoadedDApp.
-        return new LoadedDApp(classLoader, objectGraph, aphabeticalContractClasses, app.mainClass);
+        return new LoadedDApp(classLoader, aphabeticalContractClasses, app.mainClass);
     }
 }
