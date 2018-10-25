@@ -2,7 +2,6 @@ package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
@@ -13,8 +12,6 @@ import java.util.function.Consumer;
 import org.aion.avm.internal.ClassPersistenceToken;
 import org.aion.avm.internal.ConstantPersistenceToken;
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -39,9 +36,6 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
     private final IFieldPopulator populator;
     private final IStorageFeeProcessor feeProcessor;
     private final IObjectGraphStore graphStore;
-    // We cache the method entry-point we will use to invoke the load operation on any instance.
-    private final Method deserializeSelf;
-    private final Method serializeSelf;
     // We only hold the deserializerField because we need to check if it is null when traversing the graph for objects to serialize.
     private final Field deserializerField;
     private final Field persistenceTokenField;
@@ -64,13 +58,11 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
         this.feeProcessor = feeProcessor;
         this.graphStore = graphStore;
         try {
-            this.deserializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("deserializeSelf", java.lang.Class.class, IObjectDeserializer.class);
-            this.serializeSelf = org.aion.avm.shadow.java.lang.Object.class.getDeclaredMethod("serializeSelf", java.lang.Class.class, IObjectSerializer.class);
             this.deserializerField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("deserializer");
             this.deserializerField.setAccessible(true);
             this.persistenceTokenField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("persistenceToken");
             this.persistenceTokenField.setAccessible(true);
-        } catch (NoSuchFieldException | SecurityException | NoSuchMethodException e) {
+        } catch (NoSuchFieldException | SecurityException e) {
             // This would be a serious mis-configuration.
             throw RuntimeAssertionError.unexpected(e);
         }
@@ -286,12 +278,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
     public Extent internalSerializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
         SingleInstanceSerializer singleSerializer = new SingleInstanceSerializer(this, encoder, nextObjectSink);
-        try {
-            this.serializeSelf.invoke(instance, null, singleSerializer);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            // If there are any problems with this access, we must have resolved it before getting to this point.
-            throw RuntimeAssertionError.unexpected(e);
-        }
+        instance.serializeSelf(null, singleSerializer);
         return encoder.toExtent();
     }
 
@@ -302,12 +289,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
         
         ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(extent);
         SingleInstanceDeserializer singleDeserializer = new SingleInstanceDeserializer(this, decoder);
-        try {
-            this.deserializeSelf.invoke(instance, null, singleDeserializer);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            // If there are any problems with this access, we must have resolved it before getting to this point.
-            throw RuntimeAssertionError.unexpected(e);
-        }
+        instance.deserializeSelf(null, singleDeserializer);
     }
 
     @Override
