@@ -104,14 +104,17 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         RuntimeAssertionError.assertTrue(this.callerToCalleeMap.isEmpty());
         
         try {
-            internalCaptureAndReplaceStaticState();
+            HeapRepresentation staticRepresentation = internalCaptureAndReplaceStaticState(true);
+            this.feeProcessor.readStaticDataFromHeap(staticRepresentation.getBillableSize());
+            RuntimeAssertionError.assertTrue(null == this.previousStatics);
+            this.previousStatics = staticRepresentation;
         } catch (IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             // Any failures at this point are either failure mis-configuration or serious bugs in our implementation.
             RuntimeAssertionError.unexpected(e);
         }
     }
 
-    private void internalCaptureAndReplaceStaticState() throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    private HeapRepresentation internalCaptureAndReplaceStaticState(boolean shouldUpdateInstances) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
         // We will save out and build new stubs for references in the same pass.
         HeapRepresentationCodec.Encoder encoder = new HeapRepresentationCodec.Encoder();
         // Note that we need to measure the "serialized" size of the statics in order to provide consistent IStorageFeeProcessor billing (treating this as a "read from storage").
@@ -148,7 +151,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                         // This should be a shadow object.
                         org.aion.avm.shadow.java.lang.Object contents = (org.aion.avm.shadow.java.lang.Object)field.get(null);
                         encoder.encodeReference(contents);
-                        if (null != contents) {
+                        if (shouldUpdateInstances && (null != contents)) {
                             // We now want to replace this object with a stub which knows how to deserialize itself from contents.
                             org.aion.avm.shadow.java.lang.Object stub = internalGetCalleeStubForCaller(contents);
                             field.set(null, stub);
@@ -157,10 +160,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 }
             }
         }
-        HeapRepresentation statics = encoder.toHeapRepresentation();
-        this.feeProcessor.readStaticDataFromHeap(statics.getBillableSize());
-        RuntimeAssertionError.assertTrue(null == this.previousStatics);
-        this.previousStatics = statics;
+        return encoder.toHeapRepresentation();
     }
 
     /**
@@ -386,7 +386,15 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             }
         }
         // Statics are "written" as a single unit.
-        this.feeProcessor.writeUpdateStaticDataToHeap(this.previousStatics.getBillableSize());
+        // Check if the static actually changed.
+        HeapRepresentation endStatics = null;
+        try {
+            endStatics = internalCaptureAndReplaceStaticState(false);
+        } catch (IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            // Any failures at this point are either failure mis-configuration or serious bugs in our implementation.
+            RuntimeAssertionError.unexpected(e);
+        }
+        this.feeProcessor.writeUpdateStaticDataToHeap(endStatics.getBillableSize());
         
         // Treat any of the instances we loaded as potential roots.
         for (org.aion.avm.shadow.java.lang.Object calleeSpaceRoot : this.loadedObjectInstances) {
