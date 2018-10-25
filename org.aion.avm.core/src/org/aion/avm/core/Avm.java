@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.kernel.KernelInterface;
 import org.aion.kernel.SimpleFuture;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionResult;
@@ -25,4 +26,11 @@ public interface Avm {
      * The specifics of what is shut down are implementation-dependent:  threads, caches, other long-lived resources.
      */
     public void shutdown();
+
+    /**
+     * Updates the Avm to use the specified kernel.
+     *
+     * @param kernel The new kernel for the Avm to interact with.
+     */
+    public void setKernel(KernelInterface kernel);
 }

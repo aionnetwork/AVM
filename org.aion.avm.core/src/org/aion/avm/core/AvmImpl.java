@@ -29,7 +29,7 @@ public class AvmImpl implements AvmInternal {
 
     private static final int NUM_EXECUTORS = 4;
 
-    private final KernelInterface kernel;
+    private KernelInterface kernel;
 
     // Long-lived state which is book-ended by the startup/shutdown calls.
     private static AvmImpl currentAvm;  // (only here for testing - makes sure that we properly clean these up between invocations)
@@ -166,6 +166,11 @@ public class AvmImpl implements AvmInternal {
         }
 
         return result;
+    }
+
+    @Override
+    public void setKernel(KernelInterface kernel) {
+        this.kernel = kernel;
     }
 
     @Override
