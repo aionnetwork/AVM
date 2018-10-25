@@ -4,17 +4,17 @@ import java.util.Arrays;
 
 
 /**
- * The Extent is the lowest-level representation of object data which still has the logical distinction of data versus objects.
+ * The SerializedRepresentation is the lowest-level representation of object data which still has the logical distinction of data versus objects.
  * This means that it is the ideal interchange format between the graph structure serializer and higher-local object instance serializers.
  * 
  * The hashCode(), equals(Object), and toString() were implemented since these needed to be compared to check if an instance changed and the
  * others seemed simple enough.
  */
-public class Extent {
+public class SerializedRepresentation {
     public final byte[] data;
     public final INode[] references;
 
-    public Extent(byte[] data, INode[] references) {
+    public SerializedRepresentation(byte[] data, INode[] references) {
         this.data = data;
         this.references = references;
     }
@@ -40,10 +40,10 @@ public class Extent {
 
     @Override
     public boolean equals(Object obj) {
-        boolean isEqual = (obj instanceof Extent);
+        boolean isEqual = (obj instanceof SerializedRepresentation);
         
         if (isEqual) {
-            Extent other = (Extent) obj;
+            SerializedRepresentation other = (SerializedRepresentation) obj;
             if (Arrays.equals(this.data, other.data) && (this.references.length == other.references.length)) {
                 int index = 0;
                 while (isEqual && (index < this.references.length)) {
@@ -61,6 +61,6 @@ public class Extent {
 
     @Override
     public String toString() {
-        return "Extent(" + this.references.length + " references, " + this.data.length + " primitive bytes)";
+        return "SerializedRepresentation(" + this.references.length + " references, " + this.data.length + " primitive bytes)";
     }
 }

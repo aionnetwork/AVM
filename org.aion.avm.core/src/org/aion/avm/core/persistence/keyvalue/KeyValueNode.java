@@ -3,7 +3,7 @@ package org.aion.avm.core.persistence.keyvalue;
 import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.core.persistence.ByteSizes;
-import org.aion.avm.core.persistence.Extent;
+import org.aion.avm.core.persistence.SerializedRepresentation;
 import org.aion.avm.core.persistence.IRegularNode;
 
 
@@ -48,14 +48,14 @@ public class KeyValueNode implements IRegularNode {
     }
 
     @Override
-    public Extent loadRegularData() {
+    public SerializedRepresentation loadRegularData() {
         byte[] data = this.parentGraph.loadStorageForInstance(this.instanceId);
-        return KeyValueExtentCodec.decode(this.parentGraph, data);
+        return KeyValueCodec.decode(this.parentGraph, data);
     }
 
     @Override
-    public void saveRegularData(Extent extent) {
-        byte[] data = KeyValueExtentCodec.encode(extent);
+    public void saveRegularData(SerializedRepresentation extent) {
+        byte[] data = KeyValueCodec.encode(extent);
         this.parentGraph.storeDataForInstance(this.instanceId, data);
     }
 }

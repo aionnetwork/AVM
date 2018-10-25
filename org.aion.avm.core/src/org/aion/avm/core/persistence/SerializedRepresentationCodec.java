@@ -5,10 +5,10 @@ import java.util.List;
 
 
 /**
- * Contains the Encoder/Decoder which can encode/decode Extent objects, respectively.
- * That is, they present a high-level encoding/decoding interface onto a serialized form represented as an Extent.
+ * Contains the Encoder/Decoder which can encode/decode SerializedRepresentation objects, respectively.
+ * That is, they present a high-level encoding/decoding interface onto a serialized form represented as a SerializedRepresentation.
  */
-public class ExtentBasedCodec {
+public class SerializedRepresentationCodec {
     public static class Encoder {
         // We encode primitives with a primitive codec and we build the refs using a list.
         private final StreamingPrimitiveCodec.Encoder primitives;
@@ -54,10 +54,10 @@ public class ExtentBasedCodec {
             return this;
         }
         
-        public Extent toExtent() {
+        public SerializedRepresentation toSerializedRepresentation() {
             byte[] data = this.primitives.toBytes();
             INode[] refs = this.references.toArray(new INode[this.references.size()]);
-            return new Extent(data, refs);
+            return new SerializedRepresentation(data, refs);
         }
     }
 
@@ -68,7 +68,7 @@ public class ExtentBasedCodec {
         private final INode[] references;
         private int cursor;
         
-        public Decoder(Extent extent) {
+        public Decoder(SerializedRepresentation extent) {
             this.primitives = new StreamingPrimitiveCodec.Decoder(extent.data);
             this.references = extent.references;
             this.cursor = 0;

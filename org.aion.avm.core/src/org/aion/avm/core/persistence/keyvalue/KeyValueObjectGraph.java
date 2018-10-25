@@ -9,7 +9,7 @@ import java.util.function.Function;
 import org.aion.avm.core.persistence.ClassNode;
 import org.aion.avm.core.persistence.ConstantNode;
 import org.aion.avm.core.persistence.ConstructorCache;
-import org.aion.avm.core.persistence.Extent;
+import org.aion.avm.core.persistence.SerializedRepresentation;
 import org.aion.avm.core.persistence.INode;
 import org.aion.avm.core.persistence.IObjectGraphStore;
 import org.aion.avm.core.persistence.IRegularNode;
@@ -102,18 +102,18 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     }
 
     @Override
-    public Extent getRoot() {
+    public SerializedRepresentation getRoot() {
         // Wipe any stale node state since we are reading the root, again.
         this.idToNodeMap.clear();
         
         byte[] rootBytes = this.store.getStorage(this.address, StorageKeys.CLASS_STATICS);
         RuntimeAssertionError.assertTrue(null != rootBytes);
-        return KeyValueExtentCodec.decode(this, rootBytes);
+        return KeyValueCodec.decode(this, rootBytes);
     }
 
     @Override
-    public void setRoot(Extent root) {
-        byte[] rootBytes = KeyValueExtentCodec.encode(root);
+    public void setRoot(SerializedRepresentation root) {
+        byte[] rootBytes = KeyValueCodec.encode(root);
         RuntimeAssertionError.assertTrue(null != rootBytes);
         this.store.putStorage(this.address, StorageKeys.CLASS_STATICS, rootBytes);
         
@@ -196,13 +196,13 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         Map<Long, Long> instanceIdFixups = new HashMap<>();
         
         // Begin the GC:  set the next scan pointer to 0, read the statics extent (the implicit 0), and start the GC.
-        // NOTE:  The statics don't move, so we update them in place (just a single Extent).
+        // NOTE:  The statics don't move, so we update them in place (just a single SerializedRepresentation).
         long nextScanInstanceId = 0L;
-        byte[] extentSource = StorageKeys.CLASS_STATICS;
-        Extent scanningExtent = getRoot();
-        while (null != scanningExtent) {
+        byte[] currentKey = StorageKeys.CLASS_STATICS;
+        SerializedRepresentation scanningRepresentation = getRoot();
+        while (null != scanningRepresentation) {
             boolean didWrite = false;
-            INode[] refs = scanningExtent.references;
+            INode[] refs = scanningRepresentation.references;
             for (int i = 0; i < refs.length; ++i) {
                 INode ref = refs[i];
                 // Class and constant refs don't change.
@@ -230,18 +230,18 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
                 }
             }
             if (didWrite) {
-                this.store.putStorage(this.address, extentSource, KeyValueExtentCodec.encode(scanningExtent));
+                this.store.putStorage(this.address, currentKey, KeyValueCodec.encode(scanningRepresentation));
             }
             nextScanInstanceId += 1;
             if (nextScanInstanceId < nextInstanceId) {
-                // Load the next Extent and continue the collection.
-                extentSource = StorageKeys.forInstance(nextScanInstanceId + targetBias);
-                byte[] nextNewInstanceToScan = this.store.getStorage(this.address, extentSource);
-                scanningExtent = KeyValueExtentCodec.decode(this, nextNewInstanceToScan);
+                // Load the next SerializedRepresentation and continue the collection.
+                currentKey = StorageKeys.forInstance(nextScanInstanceId + targetBias);
+                byte[] nextNewInstanceToScan = this.store.getStorage(this.address, currentKey);
+                scanningRepresentation = KeyValueCodec.decode(this, nextNewInstanceToScan);
             } else {
                 // We are done so fall out.
-                extentSource = null;
-                scanningExtent = null;
+                currentKey = null;
+                scanningRepresentation = null;
             }
         }
         
@@ -299,7 +299,7 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
 
     public void storeDataForInstance(long instanceId, byte[] data) {
         this.store.putStorage(this.address, StorageKeys.forInstance(instanceId + this.instanceIdBias), data);
-        // NOTE:  Just as a proof of concept, we build the Merkle tree on this raw data (it should actually be the Extent).
+        // NOTE:  Just as a proof of concept, we build the Merkle tree on this raw data (it should actually be the SerializedRepresentation).
         int index = (int)instanceId;
         ensureTreeSize(index);
         // Hash the data into the leaf.

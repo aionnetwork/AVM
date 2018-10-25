@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.core.persistence.ClassNode;
 import org.aion.avm.core.persistence.ConstantNode;
-import org.aion.avm.core.persistence.Extent;
+import org.aion.avm.core.persistence.SerializedRepresentation;
 import org.aion.avm.core.persistence.INode;
 import org.aion.avm.core.persistence.StreamingPrimitiveCodec;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -19,13 +19,13 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * 
  * This is specific to the key-value implementation.
  */
-public class KeyValueExtentCodec {
+public class KeyValueCodec {
     // There are no constants for stub descriptors greater than 0 since that is a string length field.
     private static final int STUB_DESCRIPTOR_NULL = 0;
     private static final int STUB_DESCRIPTOR_CONSTANT = -1;
     private static final int STUB_DESCRIPTOR_CLASS = -2;
 
-    public static byte[] encode(Extent extent) {
+    public static byte[] encode(SerializedRepresentation extent) {
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
         
         // We put the references first since the storage system might be more interested in them, since they make up the graph.
@@ -79,7 +79,7 @@ public class KeyValueExtentCodec {
         return encoder.toBytes();
     }
 
-    public static Extent decode(KeyValueObjectGraph factory, byte[] data) {
+    public static SerializedRepresentation decode(KeyValueObjectGraph factory, byte[] data) {
         StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(data);
         
         int referenceCount = decoder.decodeInt();
@@ -120,6 +120,6 @@ public class KeyValueExtentCodec {
         byte[] primitiveData = new byte[byteCount];
         decoder.decodeBytesInto(primitiveData);
         
-        return new Extent(primitiveData, references);
+        return new SerializedRepresentation(primitiveData, references);
     }
 }

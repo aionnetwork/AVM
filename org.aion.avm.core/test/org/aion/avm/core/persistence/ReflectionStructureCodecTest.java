@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.persistence.keyvalue.KeyValueExtentCodec;
+import org.aion.avm.core.persistence.keyvalue.KeyValueCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
@@ -57,9 +57,9 @@ public class ReflectionStructureCodecTest {
         byte[] address = {1,2,3};
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph, false);
-        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
+        SerializedRepresentationCodec.Encoder encoder = new SerializedRepresentationCodec.Encoder();
         codec.serializeClass(encoder, ReflectionStructureCodecTarget.class, NULL_CONSUMER);
-        byte[] result = KeyValueExtentCodec.encode(encoder.toExtent());
+        byte[] result = KeyValueCodec.encode(encoder.toSerializedRepresentation());
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         byte[] expected = {
                 0x0, 0x0, 0x0, 0x1, // reference list size
@@ -150,7 +150,7 @@ public class ReflectionStructureCodecTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = {1,2,3};
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
-        Extent extent = KeyValueExtentCodec.decode(graph, expected);
+        SerializedRepresentation extent = KeyValueCodec.decode(graph, expected);
         StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, false);
         // Note that the deserializer always assumes it is operating on stubs so create the instance and pass it in.
@@ -187,30 +187,30 @@ public class ReflectionStructureCodecTest {
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, false);
-        Extent rootExtent = codec.internalSerializeInstance(root, NULL_CONSUMER);
-        Extent oneExtent = codec.internalSerializeInstance(one, NULL_CONSUMER);
-        Extent twoExtent = codec.internalSerializeInstance(two, NULL_CONSUMER);
+        SerializedRepresentation rootRepresentation = codec.internalSerializeInstance(root, NULL_CONSUMER);
+        SerializedRepresentation oneRepresentation= codec.internalSerializeInstance(one, NULL_CONSUMER);
+        SerializedRepresentation twoRepresentation = codec.internalSerializeInstance(two, NULL_CONSUMER);
         // Verify that the primitive data for all these differs only in hashcode.
         // Compare the middle segments of these to a zero array.
         byte[] zero = new byte[30];
-        Assert.assertTrue(Arrays.equals(zero, 0, zero.length-1, rootExtent.data, 4, zero.length + 4 -1));
-        Assert.assertTrue(Arrays.equals(zero, 0, zero.length-1, oneExtent.data, 4, zero.length + 4 -1));
-        Assert.assertTrue(Arrays.equals(zero, 0, zero.length-1, twoExtent.data, 4, zero.length + 4 -1));
+        Assert.assertTrue(Arrays.equals(zero, 0, zero.length-1, rootRepresentation.data, 4, zero.length + 4 -1));
+        Assert.assertTrue(Arrays.equals(zero, 0, zero.length-1, oneRepresentation.data, 4, zero.length + 4 -1));
+        Assert.assertTrue(Arrays.equals(zero, 0, zero.length-1, twoRepresentation.data, 4, zero.length + 4 -1));
         // Check each hashcode.
-        Assert.assertEquals(1, readIntAtOffset(rootExtent.data, 0));
-        Assert.assertEquals(2, readIntAtOffset(oneExtent.data, 0));
-        Assert.assertEquals(3, readIntAtOffset(twoExtent.data, 0));
+        Assert.assertEquals(1, readIntAtOffset(rootRepresentation.data, 0));
+        Assert.assertEquals(2, readIntAtOffset(oneRepresentation.data, 0));
+        Assert.assertEquals(3, readIntAtOffset(twoRepresentation.data, 0));
         // Check the instance stubs:  root and one should have 2 and 3, as instanceIds, respectively, since they point to one and two
         // (instances 2 and 3) but two should have a shorter array with zero for the "null" (zero-length type name and no instanceId).
-        byte[] rootBytes = KeyValueExtentCodec.encode(rootExtent);
-        byte[] oneBytes = KeyValueExtentCodec.encode(oneExtent);
-        byte[] twoBytes = KeyValueExtentCodec.encode(twoExtent);
+        byte[] rootBytes = KeyValueCodec.encode(rootRepresentation);
+        byte[] oneBytes = KeyValueCodec.encode(oneRepresentation);
+        byte[] twoBytes = KeyValueCodec.encode(twoRepresentation);
         Assert.assertEquals(114, rootBytes.length);
         Assert.assertEquals(114, oneBytes.length);
         Assert.assertEquals(46, twoBytes.length);
-        Assert.assertEquals(1, rootBytes[rootBytes.length - rootExtent.data.length - 4 - 1]);
-        Assert.assertEquals(2, oneBytes[oneBytes.length - oneExtent.data.length - 4 - 1]);
-        Assert.assertEquals(0, twoBytes[twoBytes.length - twoExtent.data.length - 4 - 1]);
+        Assert.assertEquals(1, rootBytes[rootBytes.length - rootRepresentation.data.length - 4 - 1]);
+        Assert.assertEquals(2, oneBytes[oneBytes.length - oneRepresentation.data.length - 4 - 1]);
+        Assert.assertEquals(0, twoBytes[twoBytes.length - twoRepresentation.data.length - 4 - 1]);
     }
 
     /**
@@ -230,13 +230,13 @@ public class ReflectionStructureCodecTest {
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, false);
-        Extent root1Extent = codec.internalSerializeInstance(root1, NULL_CONSUMER);
-        Extent root2Extent = codec.internalSerializeInstance(root2, NULL_CONSUMER);
+        SerializedRepresentation root1Representation = codec.internalSerializeInstance(root1, NULL_CONSUMER);
+        SerializedRepresentation root2Representation = codec.internalSerializeInstance(root2, NULL_CONSUMER);
         // These are empty and point to the same instance so they should be identical, after the hashcode.
-        Assert.assertTrue(Arrays.equals(root1Extent.data, 4, root1Extent.data.length -4 - 1, root2Extent.data, 4, root2Extent.data.length -4 - 1));
+        Assert.assertTrue(Arrays.equals(root1Representation.data, 4, root1Representation.data.length -4 - 1, root2Representation.data, 4, root2Representation.data.length -4 - 1));
         // Verify that the last byte is this instanceId of "1".
-        byte[] root1Bytes = KeyValueExtentCodec.encode(root1Extent);
-        Assert.assertEquals(1, root1Bytes[root1Bytes.length - root1Extent.data.length - 4 - 1]);
+        byte[] root1Bytes = KeyValueCodec.encode(root1Representation);
+        Assert.assertEquals(1, root1Bytes[root1Bytes.length - root1Representation.data.length - 4 - 1]);
     }
 
     /**
@@ -277,8 +277,8 @@ public class ReflectionStructureCodecTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = {1,2,3};
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
-        Extent extent1 = KeyValueExtentCodec.decode(graph, expected1);
-        Extent extent2 = KeyValueExtentCodec.decode(graph, expected2);
+        SerializedRepresentation extent1 = KeyValueCodec.decode(graph, expected1);
+        SerializedRepresentation extent2 = KeyValueCodec.decode(graph, expected2);
         StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, false);
         graph.setLateComponents(ReflectionStructureCodecTarget.class.getClassLoader(), codec.getInitialLoadDeserializer(), (n) -> new NodePersistenceToken(n, false));
@@ -291,8 +291,8 @@ public class ReflectionStructureCodecTest {
 
 
     private static byte[] serializeSinceInstanceHelper(ReflectionStructureCodec codec, ReflectionStructureCodecTarget instance) {
-        Extent extent = codec.internalSerializeInstance(instance, NULL_CONSUMER);
-        return KeyValueExtentCodec.encode(extent);
+        SerializedRepresentation extent = codec.internalSerializeInstance(instance, NULL_CONSUMER);
+        return KeyValueCodec.encode(extent);
     }
 
     private static int readIntAtOffset(byte[] bytes, int offset) {

@@ -5,13 +5,13 @@ import org.aion.avm.internal.IObjectDeserializer;
 
 /**
  * One of these objects is created for each object instance we are deserializing.
- * It is basically a thin wrapper over ExtentBasedCodec.Decoder.
+ * It is basically a thin wrapper over SerializedRepresentationCodec.Decoder.
  */
 public class SingleInstanceDeserializer implements IObjectDeserializer {
     private final IAutomatic automaticPart;
-    private final ExtentBasedCodec.Decoder decoder;
+    private final SerializedRepresentationCodec.Decoder decoder;
 
-    public SingleInstanceDeserializer(IAutomatic automaticPart, ExtentBasedCodec.Decoder decoder) {
+    public SingleInstanceDeserializer(IAutomatic automaticPart, SerializedRepresentationCodec.Decoder decoder) {
         this.automaticPart = automaticPart;
         this.decoder = decoder;
     }
@@ -66,7 +66,7 @@ public class SingleInstanceDeserializer implements IObjectDeserializer {
          * @param instance The object instance to deserialize.
          * @param firstManualClass This class, and all sub-classes, will manually deserialize their declared fields (if null, the entire object is automatic).
          */
-        void partialAutomaticDeserializeInstance(ExtentBasedCodec.Decoder decoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass);
+        void partialAutomaticDeserializeInstance(SerializedRepresentationCodec.Decoder decoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass);
 
         /**
          * Decodes the next data in the given decoder as though it were an instance stub.  The object returned might be a stub or may be fully-inflated.

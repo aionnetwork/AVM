@@ -13,12 +13,12 @@ public interface IRegularNode extends INode {
      * 
      * @return The extent containing the serialized target instance.
      */
-    Extent loadRegularData();
+    SerializedRepresentation loadRegularData();
 
     /**
      * Saves the actual data describing the instance pointed to by this INode.
      * 
      * @param extent The data containing the serialized target instance.
      */
-    void saveRegularData(Extent extent);
+    void saveRegularData(SerializedRepresentation extent);
 }

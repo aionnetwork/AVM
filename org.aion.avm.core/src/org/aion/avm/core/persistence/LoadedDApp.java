@@ -94,9 +94,9 @@ public class LoadedDApp {
         this.graphStore.setLateComponents(this.loader, codec.getInitialLoadDeserializer(), tokenBuilder);
         
         // Extract the raw data for the class statics.
-        Extent staticData = this.graphStore.getRoot();
+        SerializedRepresentation staticData = this.graphStore.getRoot();
         feeProcessor.readStaticDataFromStorage(staticData.getBillableSize());
-        ExtentBasedCodec.Decoder decoder = new ExtentBasedCodec.Decoder(staticData);
+        SerializedRepresentationCodec.Decoder decoder = new SerializedRepresentationCodec.Decoder(staticData);
         
         // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
         for (Class<?> clazz : this.classes) {
@@ -142,7 +142,7 @@ public class LoadedDApp {
      */
     public void saveClassStaticsToStorage(IStorageFeeProcessor feeProcessor, ReflectionStructureCodec codec) {
         // Build the encoder.
-        ExtentBasedCodec.Encoder encoder = new ExtentBasedCodec.Encoder();
+        SerializedRepresentationCodec.Encoder encoder = new SerializedRepresentationCodec.Encoder();
         
         // Create the queue of instances reachable from here and consumer abstraction.
         Queue<org.aion.avm.shadow.java.lang.Object> instancesToWrite = new LinkedList<>();
@@ -158,7 +158,7 @@ public class LoadedDApp {
         }
         
         // Save the raw bytes.
-        Extent staticData = encoder.toExtent();
+        SerializedRepresentation staticData = encoder.toSerializedRepresentation();
         if (codec.didLoadStatics) {
             feeProcessor.writeUpdateStaticDataToStorage(staticData.getBillableSize());
         } else {

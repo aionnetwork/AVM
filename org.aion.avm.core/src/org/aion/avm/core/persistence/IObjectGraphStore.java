@@ -73,14 +73,14 @@ public interface IObjectGraphStore {
      * 
      * @return The graph root data (null if there isn't any).
      */
-    public Extent getRoot();
+    public SerializedRepresentation getRoot();
 
     /**
      * Updates the on-disk representation of graph root (class statics) data.
      * 
      * @param root The graph root data to store.
      */
-    public void setRoot(Extent root);
+    public void setRoot(SerializedRepresentation root);
 
     /**
      * A proof-of-concept done under issue-246.
@@ -97,7 +97,7 @@ public interface IObjectGraphStore {
      * Requests that the data store perform a deterministic garbage collection of reachable storage.
      * This involves walking all reachable object, from the class statics root, renumbering (compacting) the objects as it progresses.
      * A simplified description of the required GC algorithm:
-     * 1)  Set next available slot to 1, set next scan slot to 1, load root Extent
+     * 1)  Set next available slot to 1, set next scan slot to 1, load root SerializedRepresentation
      * 2)  Walk extent references, in-order
      * 3)  If reference has not been copied?
      *    T)  Copy object to next available slot, increment pointer, add mapping to old->new slot map, update reference
