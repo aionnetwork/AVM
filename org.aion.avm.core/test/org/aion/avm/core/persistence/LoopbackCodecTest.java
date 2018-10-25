@@ -1,12 +1,9 @@
 package org.aion.avm.core.persistence;
 
-import java.util.NoSuchElementException;
-import java.util.Queue;
 import java.util.function.Function;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,13 +36,13 @@ public class LoopbackCodecTest {
         codec.writeInt(3);
         codec.writeLong(4l);
         codec.writeShort((short)5);
+        codec.switchToDecode();
         
         Assert.assertEquals(1, codec.readByte());
         Assert.assertEquals(2, codec.readChar());
         Assert.assertEquals(3, codec.readInt());
         Assert.assertEquals(4, codec.readLong());
         Assert.assertEquals(5, codec.readShort());
-        codec.verifyDone();
     }
 
     /**
@@ -55,34 +52,23 @@ public class LoopbackCodecTest {
     public void incorrectPrimitiveDeserialization() {
         LoopbackCodec codec = new LoopbackCodec(null, null, null);
         codec.writeInt(1);
+        codec.switchToDecode();
         
         // Fails on ClassCastException.
         Assert.assertEquals(1, codec.readLong());
-        codec.verifyDone();
-    }
-
-    /**
-     * Encodes something but doesn't finish decoding it.
-     */
-    @Test (expected = RuntimeAssertionError.class)
-    public void incompleteDeserialization() {
-        LoopbackCodec codec = new LoopbackCodec(null, null, null);
-        codec.writeInt(1);
-        
-        // Fails on RuntimeAssertionError.
-        codec.verifyDone();
     }
 
     /**
      * Tries to decode more than it encoded.
+     * Note that we don't define what the actual error should be so we are just testing what we know the underlying implementation throws.
      */
-    @Test (expected = NoSuchElementException.class)
+    @Test (expected = ArrayIndexOutOfBoundsException.class)
     public void incompleteSerialization() {
         LoopbackCodec codec = new LoopbackCodec(null, null, null);
+        codec.switchToDecode();
         
-        // Fails on NoSuchElementException.
+        // Fails on ArrayIndexOutOfBoundsException.
         Assert.assertEquals(1, codec.readLong());
-        codec.verifyDone();
     }
 
     @Test
@@ -91,9 +77,9 @@ public class LoopbackCodecTest {
         LoopbackCodec codec = new LoopbackCodec(null, deserializer, null);
         org.aion.avm.shadow.java.lang.Object shadow = new org.aion.avm.shadow.java.lang.Object();
         codec.writeStub(shadow);
+        codec.switchToDecode();
         
         Assert.assertEquals(shadow, codec.readStub());
-        codec.verifyDone();
     }
 
     @Test
@@ -104,11 +90,11 @@ public class LoopbackCodecTest {
         codec.writeInt(1);
         codec.writeStub(shadow);
         codec.writeLong(2L);
+        codec.switchToDecode();
         
         Assert.assertEquals(1, codec.readInt());
         Assert.assertEquals(shadow, codec.readStub());
         Assert.assertEquals(2L, codec.readLong());
-        codec.verifyDone();
     }
 
     @Test
@@ -120,14 +106,14 @@ public class LoopbackCodecTest {
         codec.writeStub(shadow);
         codec.writeLong(2L);
         
-        Queue<Object> internals = codec.takeOwnershipOfData();
-        codec.verifyDone();
+        HeapRepresentation representation = codec.takeOwnershipOfData();
         
         // We expect 3 elements:  Integer, shadow.Object, Long.
-        Integer one = (Integer)internals.remove();
-        org.aion.avm.shadow.java.lang.Object two = (org.aion.avm.shadow.java.lang.Object)internals.remove();
-        Long three = (Long)internals.remove();
-        Assert.assertTrue(internals.isEmpty());
+        Integer one = (Integer)representation.primitives[0];
+        org.aion.avm.shadow.java.lang.Object two = representation.references[0];
+        Long three = (Long)representation.primitives[1];
+        Assert.assertEquals(2, representation.primitives.length);
+        Assert.assertEquals(1, representation.references.length);
         
         Assert.assertEquals(1, one.intValue());
         Assert.assertTrue(shadow == two);
@@ -137,7 +123,7 @@ public class LoopbackCodecTest {
 
     private static class IdentityDeserializer implements LoopbackCodec.AutomaticDeserializer {
         @Override
-        public void partiallyAutoDeserialize(Queue<Object> dataQueue, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
+        public void partiallyAutoDeserialize(HeapRepresentationCodec.Decoder decoder, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
             Assert.fail("Not called in this test");
         }
     }

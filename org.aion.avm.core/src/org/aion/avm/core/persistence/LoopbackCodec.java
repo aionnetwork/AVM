@@ -1,12 +1,9 @@
 package org.aion.avm.core.persistence;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.function.Function;
 
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
 
 
 /**
@@ -21,7 +18,8 @@ public class LoopbackCodec implements IObjectSerializer, IObjectDeserializer {
     private final AutomaticSerializer serializer;
     private final AutomaticDeserializer deserializer;
     private final Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper;
-    private Queue<Object> sequence;
+    private HeapRepresentationCodec.Encoder encoder;
+    private HeapRepresentationCodec.Decoder decoder;
 
     /**
      * Creates a loopback codec for memory-memory pseudo-serialization.  While it is possible to reuse these instances, it is generally recommended
@@ -36,108 +34,98 @@ public class LoopbackCodec implements IObjectSerializer, IObjectDeserializer {
         this.serializer = serializer;
         this.deserializer = deserializer;
         this.deserializeHelper = deserializeHelper;
-        this.sequence = new LinkedList<>();
+        this.encoder = new HeapRepresentationCodec.Encoder();
     }
 
-    /**
-     * Extracts the queue of internal "serialized" data.  Has the consequence of reseting the internal state of the receiver.
-     * Most use-cases don't want to call this, washing to leave the data fully-internal.  Some use-cases, however, may want
-     * to interpret the data, directly, and can make use of this (sizing introspection, for example).
-     * WARNING:  Relying on the implementation of the returned data is dangerous since it ties the caller to implementation
-     * details.  Use this method with caution.
-     * 
-     * @return The queue of previously "serialized" data.
-     */
-    public Queue<Object> takeOwnershipOfData() {
-        Queue<Object> extracted = this.sequence;
-        this.sequence = new LinkedList<>();
-        return extracted;
+    public HeapRepresentation takeOwnershipOfData() {
+        HeapRepresentation representation = this.encoder.toHeapRepresentation();
+        this.encoder = null;
+        return representation;
     }
 
-    /**
-     * Throws RuntimeAssertionError if the underlying data queue hasn't been fully drained.  This is just used as a correctness proof.
-     */
-    public void verifyDone() {
-        RuntimeAssertionError.assertTrue(this.sequence.isEmpty());
+    public void switchToDecode() {
+        HeapRepresentation representation = this.encoder.toHeapRepresentation();
+        this.encoder = null;
+        this.decoder = new HeapRepresentationCodec.Decoder(representation);
     }
 
     @Override
     public void beginDeserializingAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
-        this.deserializer.partiallyAutoDeserialize(this.sequence, this.deserializeHelper, instance, firstManualClass);
+        this.deserializer.partiallyAutoDeserialize(this.decoder, this.deserializeHelper, instance, firstManualClass);
     }
 
     @Override
     public byte readByte() {
-        return (Byte)this.sequence.remove();
+        return this.decoder.decodeByte();
     }
 
     @Override
     public short readShort() {
-        return (Short)this.sequence.remove();
+        return this.decoder.decodeShort();
     }
 
     @Override
     public char readChar() {
-        return (Character)this.sequence.remove();
+        return this.decoder.decodeChar();
     }
 
     @Override
     public int readInt() {
-        return (Integer)this.sequence.remove();
+        return this.decoder.decodeInt();
     }
 
     @Override
     public long readLong() {
-        return (Long)this.sequence.remove();
+        return this.decoder.decodeLong();
     }
 
     @Override
     public org.aion.avm.shadow.java.lang.Object readStub() {
-        return (org.aion.avm.shadow.java.lang.Object)this.sequence.remove();
+        return this.decoder.decodeReference();
     }
 
     @Override
     public void beginSerializingAutomatically(org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
-        this.serializer.partiallyAutoSerialize(this.sequence, instance, firstManualClass);
+        this.serializer.partiallyAutoSerialize(this.encoder, instance, firstManualClass);
     }
 
     @Override
     public void writeByte(byte value) {
-        this.sequence.add(value);
+        this.encoder.encodeByte(value);
     }
 
     @Override
     public void writeShort(short value) {
-        this.sequence.add(value);
+        this.encoder.encodeShort(value);
     }
 
     @Override
     public void writeChar(char value) {
-        this.sequence.add(value);
+        this.encoder.encodeChar(value);
     }
 
     @Override
     public void writeInt(int value) {
-        this.sequence.add(value);
+        this.encoder.encodeInt(value);
     }
 
     @Override
     public void writeLong(long value) {
-        this.sequence.add(value);
+        this.encoder.encodeLong(value);
     }
 
     @Override
     public void writeStub(org.aion.avm.shadow.java.lang.Object object) {
-        this.sequence.add(object);
+        this.encoder.encodeReference(object);
     }
 
 
     public static interface AutomaticSerializer {
-        public void partiallyAutoSerialize(Queue<Object> dataQueue, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass);
+        public void partiallyAutoSerialize(HeapRepresentationCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass);
     }
 
 
     public static interface AutomaticDeserializer {
-        public void partiallyAutoDeserialize(Queue<Object> dataQueue, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass);
+        public void partiallyAutoDeserialize(HeapRepresentationCodec.Decoder decoder, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass);
     }
 }

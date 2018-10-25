@@ -338,6 +338,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         LoopbackCodec loopback = new LoopbackCodec(this, this, deserializeHelper);
         // Serialize the callee-space object.
         calleeSpaceToProcess.serializeSelf(null, loopback);
+        loopback.switchToDecode();
         
         if (null != callerSpaceCounterpart) {
             // Deserialize into the caller-space object.
@@ -347,8 +348,6 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             // We want need to update any object references which may point back at older caller objects.
             calleeSpaceToProcess.deserializeSelf(null, loopback);
         }
-        // Prove that we didn't miss anything.
-        loopback.verifyDone();
     }
 
     /**
@@ -474,26 +473,25 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         LoopbackCodec loopback = new LoopbackCodec(this, this, deserializeHelper);
         // Serialize the original.
         callerSpaceOriginal.serializeSelf(null, loopback);
+        loopback.switchToDecode();
         // Deserialize this data into the new instance.
         calleeSpace.deserializeSelf(null, loopback);
-        // Prove that we didn't miss anything.
-        loopback.verifyDone();
         return instanceBytes;
     }
 
     @Override
-    public void partiallyAutoSerialize(Queue<Object> dataQueue, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
+    public void partiallyAutoSerialize(HeapRepresentationCodec.Encoder encoder, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
         try {
-            hierarchyAutoSerialize(dataQueue, instance.getClass(), instance, firstManualClass);
+            hierarchyAutoSerialize(encoder, instance.getClass(), instance, firstManualClass);
         } catch (IllegalArgumentException | IllegalAccessException | ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             RuntimeAssertionError.unexpected(e);
         }
     }
 
     @Override
-    public void partiallyAutoDeserialize(Queue<Object> dataQueue, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
+    public void partiallyAutoDeserialize(HeapRepresentationCodec.Decoder decoder, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, org.aion.avm.shadow.java.lang.Object instance, Class<?> firstManualClass) {
         try {
-            hierarchyAutoDeserialize(dataQueue, deserializeHelper, instance.getClass(), instance, firstManualClass);
+            hierarchyAutoDeserialize(decoder, deserializeHelper, instance.getClass(), instance, firstManualClass);
         } catch (IllegalArgumentException | IllegalAccessException | ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             RuntimeAssertionError.unexpected(e);
         }
@@ -512,7 +510,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     }
 
 
-    private void hierarchyAutoSerialize(Queue<Object> dataQueue, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Class<?> firstManualClass) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    private void hierarchyAutoSerialize(HeapRepresentationCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Class<?> firstManualClass) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
         // This method is recursive since we are looking to find the root where we need to begin:
         // -for Objects this is the shadow Object
         // -for interfaces, it is when we hit null (since they have no super-class but the interface may have statics)
@@ -523,18 +521,18 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             // There are no statics in this class and we have no automatic decoding of any of its instance variables.
         } else if (clazz == firstManualClass) {
             // We CANNOT deserialize this, since it is the first manual class, but the next invocation can, so pass null as the manual class to them.
-            hierarchyAutoSerialize(dataQueue, clazz.getSuperclass(), object, null);
+            hierarchyAutoSerialize(encoder, clazz.getSuperclass(), object, null);
         } else {
             // Call the superclass and serialize this class.
-            hierarchyAutoSerialize(dataQueue, clazz.getSuperclass(), object, firstManualClass);
+            hierarchyAutoSerialize(encoder, clazz.getSuperclass(), object, firstManualClass);
             // If we got null as the first manual class, we can automatically deserialize.
             if (null == firstManualClass) {
-                autoSerializeDeclaredFields(dataQueue, clazz, object);
+                autoSerializeDeclaredFields(encoder, clazz, object);
             }
         }
     }
 
-    private void hierarchyAutoDeserialize(Queue<Object> dataQueue, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Class<?> firstManualClass) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    private void hierarchyAutoDeserialize(HeapRepresentationCodec.Decoder decoder, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object, Class<?> firstManualClass) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
         // This method is recursive since we are looking to find the root where we need to begin:
         // -for Objects this is the shadow Object
         // -for interfaces, it is when we hit null (since they have no super-class but the interface may have statics)
@@ -545,83 +543,83 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             // There are no statics in this class and we have no automatic decoding of any of its instance variables.
         } else if (clazz == firstManualClass) {
             // We CANNOT deserialize this, since it is the first manual class, but the next invocation can, so pass null as the manual class to them.
-            hierarchyAutoDeserialize(dataQueue, deserializeHelper, clazz.getSuperclass(), object, null);
+            hierarchyAutoDeserialize(decoder, deserializeHelper, clazz.getSuperclass(), object, null);
         } else {
             // Call the superclass and serialize this class.
-            hierarchyAutoDeserialize(dataQueue, deserializeHelper, clazz.getSuperclass(), object, firstManualClass);
+            hierarchyAutoDeserialize(decoder, deserializeHelper, clazz.getSuperclass(), object, firstManualClass);
             // If we got null as the first manual class, we can automatically deserialize.
             if (null == firstManualClass) {
-                autoDeserializeDeclaredFields(dataQueue, deserializeHelper, clazz, object);
+                autoDeserializeDeclaredFields(decoder, deserializeHelper, clazz, object);
             }
         }
     }
 
-    private void autoSerializeDeclaredFields(Queue<Object> dataQueue, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    private void autoSerializeDeclaredFields(HeapRepresentationCodec.Encoder encoder, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
         for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
             if (0x0 == (Modifier.STATIC & field.getModifiers())) {
                 Class<?> type = field.getType();
                 if (boolean.class == type) {
                     boolean val = field.getBoolean(object);
-                    dataQueue.add(val);
+                    encoder.encodeByte(val ? (byte)0x1 : (byte)0x0);
                 } else if (byte.class == type) {
                     byte val = field.getByte(object);
-                    dataQueue.add(val);
+                    encoder.encodeByte(val);
                 } else if (short.class == type) {
                     short val = field.getShort(object);
-                    dataQueue.add(val);
+                    encoder.encodeShort(val);
                 } else if (char.class == type) {
                     char val = field.getChar(object);
-                    dataQueue.add(val);
+                    encoder.encodeChar(val);
                 } else if (int.class == type) {
                     int val = field.getInt(object);
-                    dataQueue.add(val);
+                    encoder.encodeInt(val);
                 } else if (float.class == type) {
                     float val = field.getFloat(object);
-                    dataQueue.add(val);
+                    encoder.encodeInt(Float.floatToIntBits(val));
                 } else if (long.class == type) {
                     long val = field.getLong(object);
-                    dataQueue.add(val);
+                    encoder.encodeLong(val);
                 } else if (double.class == type) {
                     double val = field.getDouble(object);
-                    dataQueue.add(val);
+                    encoder.encodeLong(Double.doubleToLongBits(val));
                 } else {
                     org.aion.avm.shadow.java.lang.Object ref = (org.aion.avm.shadow.java.lang.Object) field.get(object);
-                    dataQueue.add(ref);
+                    encoder.encodeReference(ref);
                 }
             }
         } 
     }
 
-    private void autoDeserializeDeclaredFields(Queue<Object> dataQueue, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    private void autoDeserializeDeclaredFields(HeapRepresentationCodec.Decoder decoder, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper, Class<?> clazz, org.aion.avm.shadow.java.lang.Object object) throws IllegalArgumentException, IllegalAccessException, ClassNotFoundException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
         for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
             if (0x0 == (Modifier.STATIC & field.getModifiers())) {
                 Class<?> type = field.getType();
                 if (boolean.class == type) {
-                    boolean val = (Boolean)dataQueue.remove();
+                    boolean val = ((byte)0x1 == decoder.decodeByte());
                     field.setBoolean(object, val);
                 } else if (byte.class == type) {
-                    byte val = (Byte)dataQueue.remove();
+                    byte val = decoder.decodeByte();
                     field.setByte(object, val);
                 } else if (short.class == type) {
-                    short val = (Short)dataQueue.remove();
+                    short val = decoder.decodeShort();
                     field.setShort(object, val);
                 } else if (char.class == type) {
-                    char val = (Character)dataQueue.remove();
+                    char val = decoder.decodeChar();
                     field.setChar(object, val);
                 } else if (int.class == type) {
-                    int val = (Integer)dataQueue.remove();
+                    int val = decoder.decodeInt();
                     field.setInt(object, val);
                 } else if (float.class == type) {
-                    float val = (Float)dataQueue.remove();
+                    float val = Float.intBitsToFloat(decoder.decodeInt());
                     field.setFloat(object, val);
                 } else if (long.class == type) {
-                    long val = (Long)dataQueue.remove();
+                    long val = decoder.decodeLong();
                     field.setLong(object, val);
                 } else if (double.class == type) {
-                    double val = (Double)dataQueue.remove();
+                    double val = Double.longBitsToDouble(decoder.decodeLong());
                     field.setDouble(object, val);
                 } else {
-                    org.aion.avm.shadow.java.lang.Object val = (org.aion.avm.shadow.java.lang.Object) dataQueue.remove();
+                    org.aion.avm.shadow.java.lang.Object val = decoder.decodeReference();
                     org.aion.avm.shadow.java.lang.Object mapped = deserializeHelper.apply(val);
                     field.set(object, mapped);
                 }
@@ -692,13 +690,12 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         // Serialize the callee-space object.
         instance.serializeSelf(null, loopback);
         // Now, take ownership of the captured data and process it.
-        Queue<Object> dataQueue = loopback.takeOwnershipOfData();
+        HeapRepresentation representation = loopback.takeOwnershipOfData();
         
-        // We can process the data in this queue as the size (although this does assume we know how the LoopbackCodec is implemented but it
-        // already shares its queue with use, for automatic serialization, so there is no avoiding that).
+        // TODO: Replace this with another method of computing the instance size, within HeapRepresentation, and accessing object references.
+        Object[] internals = representation.buildInternalsArray();
         int instanceByteSize = 0;
-        while (!dataQueue.isEmpty()) {
-            Object elt = dataQueue.remove();
+        for (Object elt : internals) {
             // Handle all the boxed primitives from LoopbackCodec and our own auto methods.
             if (elt instanceof Boolean) {
                 instanceByteSize += ByteSizes.BOOLEAN;
@@ -726,8 +723,6 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 instanceByteSize += ByteSizes.REFERENCE;
             }
         }
-        // Prove that we didn't miss anything.
-        loopback.verifyDone();
         return instanceByteSize;
     }
 
