@@ -64,9 +64,9 @@ public class GraphReachabilityIntegrationTest {
                 // read instances (3)
                     + (3 * (HelperBasedStorageFees.FIXED_READ_COST + 40L))
                 // write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instances (3)
-                    + (3 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                // write instances (3 - only 2 were actually modified)
+                    + (2 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
         callStatic(block, contractAddr, modify_miscCharges + modify_storageCharges, "modify249");
         
@@ -103,17 +103,18 @@ public class GraphReachabilityIntegrationTest {
                 // (heap) read instances (3)
                     + (3 * (HelperBasedStorageFees.FIXED_READ_COST + 40L))
                 // (heap) write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // (heap) write instances (3)
-                    + (3 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                // (heap) write instances (3 - only 2 modified)
+                    + (2 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 // read instances (3)
                     + (3 * (HelperBasedStorageFees.FIXED_READ_COST + 40L))
                 // write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instances (3)
-                    + (3 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                // write instances (3 - we only see 1 from the callee, here)
+                // TODO: This accounting can be fixed by issue-296.
+                    + (1 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 // write instance
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 17L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 17L)
                 ;
         callStatic(block, contractAddr, run_miscCharges + run_storageCharges, "run249_reentrant_notLoaded");
         
@@ -152,15 +153,16 @@ public class GraphReachabilityIntegrationTest {
                 // (heap) read instances (3)
                     + (3 * (HelperBasedStorageFees.FIXED_READ_COST + 40L))
                 // (heap) write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // (heap) write instances (3)
-                    + (3 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                // (heap) write instances (3 - only 2 modified)
+                    + (2 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 // write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instances (3)
-                    + (3 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                // write instances (3 - we only see 1 from the callee, here)
+                // TODO: This accounting can be fixed by issue-296.
+                    + (1 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 // write instance
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 17L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 17L)
                 ;
         callStatic(block, contractAddr, run_miscCharges + run_storageCharges, "run249_reentrant_loaded");
         
@@ -193,14 +195,15 @@ public class GraphReachabilityIntegrationTest {
                 // (heap) read instances (3)
                     + (3 * (HelperBasedStorageFees.FIXED_READ_COST + 40L))
                 // (heap) write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
                 // (heap) write instances (4 = 3 + new 1)
-                    + (3 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
+                // (note that only 2 existing instances were modified)
+                    + (2 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                     + (HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L)
                 // write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
                 // write instance
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 25L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 25L)
                 ;
         callStatic(block, contractAddr, run_miscCharges + run_storageCharges, "runNewInstance_reentrant");
         
@@ -212,9 +215,9 @@ public class GraphReachabilityIntegrationTest {
                 // read instances (4)
                     + (4 * (HelperBasedStorageFees.FIXED_READ_COST + 40L))
                 // write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
                 // write instances (4)
-                    + (4 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
+                //    + (4 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
         int value = (Integer) callStatic(block, contractAddr, check_miscCharges + check_storageCharges, "checkNewInstance");
         Assert.assertEquals(5, value);
@@ -250,18 +253,19 @@ public class GraphReachabilityIntegrationTest {
                 // (heap) read instances (3)
                     + (3 * (HelperBasedStorageFees.FIXED_READ_COST + 40L))
                 // (heap) write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
                 // (heap) write instances (4 = 3 + new 1)
-                    + (3 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
+                // (note that only 2 existing instances were modified)
+                    + (2 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                     + (HelperBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L)
                 // (heap) write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
                 // (heap) write instance
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 25L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 25L)
                 // write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
                 // write instance
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 32L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 32L)
                 ;
         callStatic(block, contractAddr, run_miscCharges + run_storageCharges, "runNewInstance_reentrant2");
         
@@ -273,9 +277,9 @@ public class GraphReachabilityIntegrationTest {
                 // read instances (4)
                     + (4 * (HelperBasedStorageFees.FIXED_READ_COST + 40L))
                 // write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
                 // write instances (4)
-                    + (4 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
+                //    + (4 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
         int value = (Integer) callStatic(block, contractAddr, check_miscCharges + check_storageCharges, "checkNewInstance");
         Assert.assertEquals(5, value);
@@ -369,9 +373,9 @@ public class GraphReachabilityIntegrationTest {
                 // read instances (5)
                     + (5 * (HelperBasedStorageFees.FIXED_READ_COST + 40L))
                 // write static
-                    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
+                //    + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
                 // write instances (5)
-                    + (5 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
+                //    + (5 * (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
         return miscCharges + storageCharges;
     }

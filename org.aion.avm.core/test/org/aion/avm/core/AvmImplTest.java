@@ -196,15 +196,15 @@ public class AvmImplTest {
         // -read instance (inner) "NORMAL"
                 + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_READ_COST))
         // -write statics (inner)
-                + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
+        //        + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
         // -write instance (inner) "NORMAL"
-                + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+        //        + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
         // -read instance (outer) "CALL"
                 + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_READ_COST))
         // -write statics (outer)
-                + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
+        //        + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
         // -write instance (outer) "CALL"
-                + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+        //        + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST))
         // -write instance (outer) "NORMAL" (free because we didn't touch it, just loaded it for the inner case)
         //        + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
                 ;

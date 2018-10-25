@@ -260,16 +260,26 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
 
     public void serializeInstance(org.aion.avm.shadow.java.lang.Object instance, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectSink) {
         NodePersistenceToken persistenceToken = (NodePersistenceToken) safeExtractPersistenceToken(instance);
-        int billableSize = serializeAndWriteBackInstance(instance, persistenceToken, nextObjectSink);
+        
+        // We need to serialize this instance to an extent to either save it out or realize it didn't change.
+        SerializedRepresentation extent = internalSerializeInstance(instance, nextObjectSink);
+        
         // NOTE:  Writing to storage, inline with the fee calculation, assumes that it is possible to rollback changes to the storage if
         // we run out of energy, part-way.
         // Determine if this is a new instance or an update.
         // TODO:  Verify that we are not seeing a "new instance" which was already billed as new in a callee frame.  If this becomes reachable
         // in this frame, but was billed in the callee frame, we will probably misinterpret it as a new instance, again.
         if (persistenceToken.isNewlyWritten) {
-            this.feeProcessor.writeFirstOneInstanceToStorage(billableSize);
+            // If this is new, we always want to write it.
+            persistenceToken.node.saveRegularData(extent);
+            this.feeProcessor.writeFirstOneInstanceToStorage(extent.getBillableSize());
         } else {
-            this.feeProcessor.writeUpdateOneInstanceToStorage(billableSize);
+            // The instance already existed so check to see if we actually need to write it back.
+            SerializedRepresentation originalExtent = persistenceToken.node.loadRegularData();
+            if (!originalExtent.equals(extent)) {
+                persistenceToken.node.saveRegularData(extent);
+                this.feeProcessor.writeUpdateOneInstanceToStorage(extent.getBillableSize());
+            }
         }
     }
 

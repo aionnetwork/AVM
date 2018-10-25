@@ -158,11 +158,15 @@ public class LoadedDApp {
         SerializedRepresentation staticData = encoder.toSerializedRepresentation();
         SerializedRepresentation preCallStaticData = codec.getPreCallStaticData();
         if (null != preCallStaticData) {
-            feeProcessor.writeUpdateStaticDataToStorage(staticData.getBillableSize());
+            // See if we should do the write-back.
+            if (!preCallStaticData.equals(staticData)) {
+                feeProcessor.writeUpdateStaticDataToStorage(staticData.getBillableSize());
+                this.graphStore.setRoot(staticData);
+            }
         } else {
             feeProcessor.writeFirstStaticDataToStorage(staticData.getBillableSize());
+            this.graphStore.setRoot(staticData);
         }
-        this.graphStore.setRoot(staticData);
         
         // Do the pass over additional roots.
         codec.reserializeAdditionalRoots(instanceSink);

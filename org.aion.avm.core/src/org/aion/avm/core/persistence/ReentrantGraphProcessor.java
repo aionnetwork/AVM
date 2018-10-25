@@ -394,7 +394,9 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             // Any failures at this point are either failure mis-configuration or serious bugs in our implementation.
             RuntimeAssertionError.unexpected(e);
         }
-        this.feeProcessor.writeUpdateStaticDataToHeap(endStatics.getBillableSize());
+        if (!doRepresentationsMatch(this.previousStatics, endStatics)) {
+            this.feeProcessor.writeUpdateStaticDataToHeap(endStatics.getBillableSize());
+        }
         
         // Treat any of the instances we loaded as potential roots.
         for (org.aion.avm.shadow.java.lang.Object calleeSpaceRoot : this.loadedObjectInstances) {
@@ -427,7 +429,10 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             if (isNewInstance) {
                 this.feeProcessor.writeFirstOneInstanceToHeap(instanceByteSize);
             } else {
-                this.feeProcessor.writeUpdateOneInstanceToHeap(instanceByteSize);
+                // This is an existing instance so we want to see if we actually want to write-back or not.
+                if (didObjectChange(objectToken.callerSpaceOriginal, calleeSpaceToScan)) {
+                    this.feeProcessor.writeUpdateOneInstanceToHeap(instanceByteSize);
+                }
             }
             calleeSpaceObjectsToCopyBack.add(calleeSpaceToScan);
         }
@@ -437,6 +442,70 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
             this.deserializerField.set(calleeSpaceToClear, null);
         }
         return calleeSpaceObjectsToCopyBack;
+    }
+
+    private boolean didObjectChange(org.aion.avm.shadow.java.lang.Object callerSpaceOriginal, org.aion.avm.shadow.java.lang.Object calleeSpaceCopy) {
+        // Serialize both of these with a loopback so we can compare each element.
+        LoopbackCodec callerLoopback = new LoopbackCodec(this, null, null);
+        callerSpaceOriginal.serializeSelf(null, callerLoopback);
+        HeapRepresentation callerData = callerLoopback.takeOwnershipOfData();
+        LoopbackCodec calleeLoopback = new LoopbackCodec(this, null, null);
+        calleeSpaceCopy.serializeSelf(null, calleeLoopback);
+        HeapRepresentation calleeData = calleeLoopback.takeOwnershipOfData();
+        
+        // If the queues don't match, the instance changed.
+        return !doRepresentationsMatch(callerData, calleeData);
+    }
+
+    private boolean doRepresentationsMatch(HeapRepresentation callerRepresentation, HeapRepresentation calleeRepresentation) {
+        // For now, we still need to walk the internals of these.
+        Object[] callerData = callerRepresentation.buildInternalsArray();
+        Object[] calleeData = calleeRepresentation.buildInternalsArray();
+        
+        // These MUST be the same size since they are the same types.
+        RuntimeAssertionError.assertTrue(callerData.length == calleeData.length);
+        
+        // Walk the lists together and compare corresponding elements:
+        // -primitives compared directly as primitives.
+        // -references are instance-compared AFTER the callee-space references are mapped back to the caller-space (any non-null instance which can't map is obviously a change).
+        boolean queuesDoMatch = true;
+        int index = 0;
+        while (queuesDoMatch && (index < callerData.length)) {
+            Object callerElt = callerData[index];
+            Object calleeElt = calleeData[index];
+            
+            // Handle all the boxed primitives from LoopbackCodec and our own auto methods.
+            if (callerElt instanceof Boolean) {
+                queuesDoMatch = (((Boolean)callerElt).booleanValue() == ((Boolean)calleeElt).booleanValue());
+            } else if (callerElt instanceof Byte) {
+                queuesDoMatch = (((Byte)callerElt).byteValue() == ((Byte)calleeElt).byteValue());
+            } else if (callerElt instanceof Short) {
+                queuesDoMatch = (((Short)callerElt).shortValue() == ((Short)calleeElt).shortValue());
+            } else if (callerElt instanceof Character) {
+                queuesDoMatch = (((Character)callerElt).charValue() == ((Character)calleeElt).charValue());
+            } else if (callerElt instanceof Integer) {
+                queuesDoMatch = (((Integer)callerElt).intValue() == ((Integer)calleeElt).intValue());
+            } else if (callerElt instanceof Float) {
+                queuesDoMatch = (((Float)callerElt).floatValue() == ((Float)calleeElt).floatValue());
+            } else if (callerElt instanceof Long) {
+                queuesDoMatch = (((Long)callerElt).longValue() == ((Long)calleeElt).longValue());
+            } else if (callerElt instanceof Double) {
+                queuesDoMatch = (((Double)callerElt).doubleValue() == ((Double)calleeElt).doubleValue());
+            } else {
+                // Note that this might not be a type that gets copied so just check the direct match, first.
+                if (callerElt != calleeElt) {
+                    // There is a difference so try the mapping and, as long as the mapping didn't fail, compare again.
+                    org.aion.avm.shadow.java.lang.Object callerSpaceRef = this.calleeToCallerMap.get(calleeElt);
+                    // This only matches if the updated reference matches and we didn't fail (can't convert a non-null to null and match).
+                    queuesDoMatch = ((null != callerSpaceRef) && (callerElt == callerSpaceRef));
+                } else {
+                    // Still match.
+                    queuesDoMatch = true;
+                }
+            }
+            index += 1;
+        }
+        return queuesDoMatch;
     }
 
     /**
