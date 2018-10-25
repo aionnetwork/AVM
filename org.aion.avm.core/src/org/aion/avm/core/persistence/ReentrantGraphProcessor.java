@@ -56,8 +56,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     private final Field deserializerField;
     private final Field persistenceTokenField;
     
-    // (mostly non-final just to prove that the state machine is being used correctly).
-    private Queue<Object> previousStatics;
+    private HeapRepresentation previousStatics;
     
     // We scan all the objects we loaded as roots since we don't want to hide changes to them if reachable via other paths (issue-249).
     private final List<org.aion.avm.shadow.java.lang.Object> loadedObjectInstances;
@@ -114,7 +113,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
 
     private void internalCaptureAndReplaceStaticState() throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException {
         // We will save out and build new stubs for references in the same pass.
-        Queue<Object> inOrderData = new LinkedList<>();
+        HeapRepresentationCodec.Encoder encoder = new HeapRepresentationCodec.Encoder();
         // Note that we need to measure the "serialized" size of the statics in order to provide consistent IStorageFeeProcessor billing (treating this as a "read from storage").
         int byteSize = 0;
         for (Class<?> clazz : this.classes) {
@@ -124,40 +123,40 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                     Class<?> type = field.getType();
                     if (boolean.class == type) {
                         boolean val = field.getBoolean(null);
-                        inOrderData.add(val);
+                        encoder.encodeByte(val ? (byte)0x1 : (byte)0x0);
                         byteSize += ByteSizes.BOOLEAN;
                     } else if (byte.class == type) {
                         byte val = field.getByte(null);
-                        inOrderData.add(val);
+                        encoder.encodeByte(val);
                         byteSize += ByteSizes.BYTE;
                     } else if (short.class == type) {
                         short val = field.getShort(null);
-                        inOrderData.add(val);
+                        encoder.encodeShort(val);
                         byteSize += ByteSizes.SHORT;
                     } else if (char.class == type) {
                         char val = field.getChar(null);
-                        inOrderData.add(val);
+                        encoder.encodeChar(val);
                         byteSize += ByteSizes.CHAR;
                     } else if (int.class == type) {
                         int val = field.getInt(null);
-                        inOrderData.add(val);
+                        encoder.encodeInt(val);
                         byteSize += ByteSizes.INT;
                     } else if (float.class == type) {
                         float val = field.getFloat(null);
-                        inOrderData.add(val);
+                        encoder.encodeInt(Float.floatToIntBits(val));
                         byteSize += ByteSizes.FLOAT;
                     } else if (long.class == type) {
                         long val = field.getLong(null);
-                        inOrderData.add(val);
+                        encoder.encodeLong(val);
                         byteSize += ByteSizes.LONG;
                     } else if (double.class == type) {
                         double val = field.getDouble(null);
-                        inOrderData.add(val);
+                        encoder.encodeLong(Double.doubleToLongBits(val));
                         byteSize += ByteSizes.DOUBLE;
                     } else {
                         // This should be a shadow object.
                         org.aion.avm.shadow.java.lang.Object contents = (org.aion.avm.shadow.java.lang.Object)field.get(null);
-                        inOrderData.add(contents);
+                        encoder.encodeReference(contents);
                         if (null != contents) {
                             // We now want to replace this object with a stub which knows how to deserialize itself from contents.
                             org.aion.avm.shadow.java.lang.Object stub = internalGetCalleeStubForCaller(contents);
@@ -171,7 +170,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         }
         this.feeProcessor.readStaticDataFromHeap(byteSize);
         RuntimeAssertionError.assertTrue(null == this.previousStatics);
-        this.previousStatics = inOrderData;
+        this.previousStatics = encoder.toHeapRepresentation();
     }
 
     /**
@@ -190,6 +189,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     private void internalRevertToStoredFields() throws IllegalArgumentException, IllegalAccessException {
         // This is the simple case:  walk the previous statics and over-write them with the versions we stored, originally.
         RuntimeAssertionError.assertTrue(null != this.previousStatics);
+        HeapRepresentationCodec.Decoder decoder = new HeapRepresentationCodec.Decoder(this.previousStatics);
         
         for (Class<?> clazz : this.classes) {
             for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
@@ -197,32 +197,32 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                 if (Modifier.STATIC == (Modifier.STATIC & field.getModifiers())) {
                     Class<?> type = field.getType();
                     if (boolean.class == type) {
-                        boolean val = (Boolean)this.previousStatics.remove();
+                        boolean val = ((byte)0x1 == decoder.decodeByte());
                         field.setBoolean(null, val);
                     } else if (byte.class == type) {
-                        byte val = (Byte)this.previousStatics.remove();
+                        byte val = decoder.decodeByte();
                         field.setByte(null, val);
                     } else if (short.class == type) {
-                        short val = (Short)this.previousStatics.remove();
+                        short val = decoder.decodeShort();
                         field.setShort(null, val);
                     } else if (char.class == type) {
-                        char val = (Character)this.previousStatics.remove();
+                        char val = decoder.decodeChar();
                         field.setChar(null, val);
                     } else if (int.class == type) {
-                        int val = (Integer)this.previousStatics.remove();
+                        int val = decoder.decodeInt();
                         field.setInt(null, val);
                     } else if (float.class == type) {
-                        float val = (Float)this.previousStatics.remove();
+                        float val = Float.intBitsToFloat(decoder.decodeInt());
                         field.setFloat(null, val);
                     } else if (long.class == type) {
-                        long val = (Long)this.previousStatics.remove();
+                        long val = decoder.decodeLong();
                         field.setLong(null, val);
                     } else if (double.class == type) {
-                        double val = (Double)this.previousStatics.remove();
+                        double val = Double.longBitsToDouble(decoder.decodeLong());
                         field.setDouble(null, val);
                     } else {
                         // This should be a shadow object.
-                        org.aion.avm.shadow.java.lang.Object val = (org.aion.avm.shadow.java.lang.Object)this.previousStatics.remove();
+                        org.aion.avm.shadow.java.lang.Object val = decoder.decodeReference();
                         field.set(null, val);
                     }
                 }
