@@ -107,6 +107,7 @@ public class LoopbackCodecTest {
         codec.writeLong(2L);
         
         HeapRepresentation representation = codec.takeOwnershipOfData();
+        Assert.assertEquals(ByteSizes.INT + ByteSizes.REFERENCE + ByteSizes.LONG, representation.getBillableSize());
         
         // We expect 3 elements:  Integer, shadow.Object, Long.
         Integer one = (Integer)representation.primitives[0];

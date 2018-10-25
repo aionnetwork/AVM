@@ -9,16 +9,22 @@ package org.aion.avm.core.persistence;
 public class HeapRepresentation {
     public final Object[] primitives;
     public final org.aion.avm.shadow.java.lang.Object[] references;
+    private final int billableSize;
 
-    public HeapRepresentation(Object[] primitives, org.aion.avm.shadow.java.lang.Object[] references) {
+    public HeapRepresentation(Object[] primitives, org.aion.avm.shadow.java.lang.Object[] references, int billableSize) {
         this.primitives = primitives;
         this.references = references;
+        this.billableSize = billableSize;
+    }
+
+    public int getBillableSize() {
+        return this.billableSize;
     }
 
     @Override
     public int hashCode() {
         // We might want something more interesting, in the future, but we don't heavily rely on this (need to decide what elements of nested data can be used).
-        int hash = 0;
+        int hash = this.billableSize;
         hash ^= this.primitives.length;
         hash ^= this.references.length;
         return hash;

@@ -115,7 +115,6 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         // We will save out and build new stubs for references in the same pass.
         HeapRepresentationCodec.Encoder encoder = new HeapRepresentationCodec.Encoder();
         // Note that we need to measure the "serialized" size of the statics in order to provide consistent IStorageFeeProcessor billing (treating this as a "read from storage").
-        int byteSize = 0;
         for (Class<?> clazz : this.classes) {
             for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
                 // We are only capturing class statics.
@@ -124,35 +123,27 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                     if (boolean.class == type) {
                         boolean val = field.getBoolean(null);
                         encoder.encodeByte(val ? (byte)0x1 : (byte)0x0);
-                        byteSize += ByteSizes.BOOLEAN;
                     } else if (byte.class == type) {
                         byte val = field.getByte(null);
                         encoder.encodeByte(val);
-                        byteSize += ByteSizes.BYTE;
                     } else if (short.class == type) {
                         short val = field.getShort(null);
                         encoder.encodeShort(val);
-                        byteSize += ByteSizes.SHORT;
                     } else if (char.class == type) {
                         char val = field.getChar(null);
                         encoder.encodeChar(val);
-                        byteSize += ByteSizes.CHAR;
                     } else if (int.class == type) {
                         int val = field.getInt(null);
                         encoder.encodeInt(val);
-                        byteSize += ByteSizes.INT;
                     } else if (float.class == type) {
                         float val = field.getFloat(null);
                         encoder.encodeInt(Float.floatToIntBits(val));
-                        byteSize += ByteSizes.FLOAT;
                     } else if (long.class == type) {
                         long val = field.getLong(null);
                         encoder.encodeLong(val);
-                        byteSize += ByteSizes.LONG;
                     } else if (double.class == type) {
                         double val = field.getDouble(null);
                         encoder.encodeLong(Double.doubleToLongBits(val));
-                        byteSize += ByteSizes.DOUBLE;
                     } else {
                         // This should be a shadow object.
                         org.aion.avm.shadow.java.lang.Object contents = (org.aion.avm.shadow.java.lang.Object)field.get(null);
@@ -162,15 +153,14 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
                             org.aion.avm.shadow.java.lang.Object stub = internalGetCalleeStubForCaller(contents);
                             field.set(null, stub);
                         }
-                        // Use the fixed-size reference accounting.
-                        byteSize += ByteSizes.REFERENCE;
                     }
                 }
             }
         }
-        this.feeProcessor.readStaticDataFromHeap(byteSize);
+        HeapRepresentation statics = encoder.toHeapRepresentation();
+        this.feeProcessor.readStaticDataFromHeap(statics.getBillableSize());
         RuntimeAssertionError.assertTrue(null == this.previousStatics);
-        this.previousStatics = encoder.toHeapRepresentation();
+        this.previousStatics = statics;
     }
 
     /**
@@ -371,43 +361,32 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         RuntimeAssertionError.assertTrue(null != this.previousStatics);
         Queue<org.aion.avm.shadow.java.lang.Object> calleeObjectsToScan = new LinkedList<>();
         
-        // Note that we need to measure the "serialized" size of the statics, as a write on commit, in order to provide consistent IStorageFeeProcessor billing (treating this as a "write to storage").
-        int staticByteSize = 0;
+        // Just walk through the reference fields of the statics to find objects for commit processing.
         for (Class<?> clazz : this.classes) {
             for (Field field : this.fieldCache.getDeclaredFieldsForClass(clazz)) {
                 // We are only capturing class statics.
                 if (Modifier.STATIC == (Modifier.STATIC & field.getModifiers())) {
                     Class<?> type = field.getType();
                     if (boolean.class == type) {
-                        staticByteSize += ByteSizes.BOOLEAN;
                     } else if (byte.class == type) {
-                        staticByteSize += ByteSizes.BYTE;
                     } else if (short.class == type) {
-                        staticByteSize += ByteSizes.SHORT;
                     } else if (char.class == type) {
-                        staticByteSize += ByteSizes.CHAR;
                     } else if (int.class == type) {
-                        staticByteSize += ByteSizes.INT;
                     } else if (float.class == type) {
-                        staticByteSize += ByteSizes.FLOAT;
                     } else if (long.class == type) {
-                        staticByteSize += ByteSizes.LONG;
                     } else if (double.class == type) {
-                        staticByteSize += ByteSizes.DOUBLE;
                     } else {
                         // Load the field (it will be either a new object or the callee-space object which we need to replace with its caller-space).
                         org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)field.get(null);
                         // See if there is a caller version.
                         // NOTE:  We use mapCalleeToCallerAndEnqueueForCommitProcessing since the dry run is where we build the object graph.
                         selectiveEnqueueCalleeSpaceForCommitProcessing(calleeObjectsToScan, callee);
-                        // Use the fixed-size reference accounting.
-                        staticByteSize += ByteSizes.REFERENCE;
                     }
                 }
             }
         }
         // Statics are "written" as a single unit.
-        this.feeProcessor.writeUpdateStaticDataToHeap(staticByteSize);
+        this.feeProcessor.writeUpdateStaticDataToHeap(this.previousStatics.getBillableSize());
         
         // Treat any of the instances we loaded as potential roots.
         for (org.aion.avm.shadow.java.lang.Object calleeSpaceRoot : this.loadedObjectInstances) {
@@ -692,38 +671,26 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
         // Now, take ownership of the captured data and process it.
         HeapRepresentation representation = loopback.takeOwnershipOfData();
         
-        // TODO: Replace this with another method of computing the instance size, within HeapRepresentation, and accessing object references.
+        // TODO: Replace this with another method of accessing object references.
         Object[] internals = representation.buildInternalsArray();
-        int instanceByteSize = 0;
         for (Object elt : internals) {
-            // Handle all the boxed primitives from LoopbackCodec and our own auto methods.
             if (elt instanceof Boolean) {
-                instanceByteSize += ByteSizes.BOOLEAN;
             } else if (elt instanceof Byte) {
-                instanceByteSize += ByteSizes.BYTE;
             } else if (elt instanceof Short) {
-                instanceByteSize += ByteSizes.SHORT;
             } else if (elt instanceof Character) {
-                instanceByteSize += ByteSizes.CHAR;
             } else if (elt instanceof Integer) {
-                instanceByteSize += ByteSizes.INT;
             } else if (elt instanceof Float) {
-                instanceByteSize += ByteSizes.FLOAT;
             } else if (elt instanceof Long) {
-                instanceByteSize += ByteSizes.LONG;
             } else if (elt instanceof Double) {
-                instanceByteSize += ByteSizes.DOUBLE;
             } else {
                 // This better be a shadow object.
                 RuntimeAssertionError.assertTrue((null == elt) || (elt instanceof org.aion.avm.shadow.java.lang.Object));
                 // We need to apply the function we were given to this reference.
                 org.aion.avm.shadow.java.lang.Object callee = (org.aion.avm.shadow.java.lang.Object)elt;
                 calleeSpaceInstanceProcessor.accept(callee);
-                // Use the fixed-size reference accounting.
-                instanceByteSize += ByteSizes.REFERENCE;
             }
         }
-        return instanceByteSize;
+        return representation.getBillableSize();
     }
 
     /**

@@ -13,6 +13,7 @@ public class HeapRepresentationCodec {
     public static class Encoder {
         private final List<Object> primitives;
         private final List<org.aion.avm.shadow.java.lang.Object> references;
+        private int billableSizeCounter;
         
         public Encoder() {
             this.primitives = new ArrayList<>();
@@ -21,38 +22,44 @@ public class HeapRepresentationCodec {
         
         public Encoder encodeByte(byte input) {
             this.primitives.add(Byte.valueOf(input));
+            this.billableSizeCounter += ByteSizes.BYTE;
             return this;
         }
         
         public Encoder encodeShort(short input) {
             this.primitives.add(Short.valueOf(input));
+            this.billableSizeCounter += ByteSizes.SHORT;
             return this;
         }
         
         public Encoder encodeChar(char input) {
             this.primitives.add(Character.valueOf(input));
+            this.billableSizeCounter += ByteSizes.CHAR;
             return this;
         }
         
         public Encoder encodeInt(int input) {
             this.primitives.add(Integer.valueOf(input));
+            this.billableSizeCounter += ByteSizes.INT;
             return this;
         }
         
         public Encoder encodeLong(long input) {
             this.primitives.add(Long.valueOf(input));
+            this.billableSizeCounter += ByteSizes.LONG;
             return this;
         }
         
         public Encoder encodeReference(org.aion.avm.shadow.java.lang.Object reference) {
             this.references.add(reference);
+            this.billableSizeCounter += ByteSizes.REFERENCE;
             return this;
         }
         
         public HeapRepresentation toHeapRepresentation() {
             Object[] primitiveArray = this.primitives.toArray(new Object[this.primitives.size()]);
             org.aion.avm.shadow.java.lang.Object[] referenceArray = this.references.toArray(new org.aion.avm.shadow.java.lang.Object[this.references.size()]);
-            return new HeapRepresentation(primitiveArray, referenceArray);
+            return new HeapRepresentation(primitiveArray, referenceArray, this.billableSizeCounter);
         }
     }
 
