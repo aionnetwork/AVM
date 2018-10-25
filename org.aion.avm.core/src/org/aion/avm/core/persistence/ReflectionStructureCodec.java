@@ -49,10 +49,10 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
     private final PreLoadedDeserializer preLoadedDeserializer;
     private final IdentityHashMap<org.aion.avm.shadow.java.lang.Object, Integer> objectSizesLoadedForCallee;
 
-    // This flag is just maintained so we know to apply the billing, on the outside (otherwise, we need to track more state, externally).
-    public final boolean didLoadStatics;
+    // We allow the external LoadedDApp to save the state of pre-call statics in this instance (since it can't have state associated with a single invocation).
+    private SerializedRepresentation preCallStaticData;
 
-    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore, boolean didLoadStatics) {
+    public ReflectionStructureCodec(ReflectedFieldCache fieldCache, IFieldPopulator populator, IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
         this.fieldCache = fieldCache;
         this.populator = populator;
         this.feeProcessor = feeProcessor;
@@ -71,7 +71,17 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
         this.initialDeserializer = new NotLoadedDeserializer();
         this.preLoadedDeserializer = new PreLoadedDeserializer();
         this.objectSizesLoadedForCallee = new IdentityHashMap<>();
-        this.didLoadStatics = didLoadStatics;
+    }
+
+    public void setPreCallStaticData(SerializedRepresentation preCallStaticData) {
+        // This shouldn't be set twice.
+        RuntimeAssertionError.assertTrue(null == this.preCallStaticData);
+        this.preCallStaticData = preCallStaticData;
+    }
+
+    public SerializedRepresentation getPreCallStaticData() {
+        // Note that this might be null, if this was a create call and, therefore, had no pre-call statics.
+        return this.preCallStaticData;
     }
 
     public void serializeClass(SerializedRepresentationCodec.Encoder encoder, Class<?> clazz, Consumer<org.aion.avm.shadow.java.lang.Object> nextObjectQueue) {

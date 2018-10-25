@@ -161,9 +161,7 @@ public class StorageWalker {
         // (note that it requires a fieldCache but we don't attempt to reuse this, in our case).
         ReflectedFieldCache fieldCache = new ReflectedFieldCache();
         NullFeeProcessor feeProcessor = new NullFeeProcessor();
-        // (didLoadStatics is irrelevant, here, so just pass false)
-        boolean didLoadStatics = false;
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, feeProcessor, objectGraph, didLoadStatics);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(fieldCache, populator, feeProcessor, objectGraph);
         
         // Extract the raw data for the class statics.
         SerializedRepresentationCodec.Decoder staticDecoder = new SerializedRepresentationCodec.Decoder(objectGraph.getRoot());

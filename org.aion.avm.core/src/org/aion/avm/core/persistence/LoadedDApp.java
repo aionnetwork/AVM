@@ -85,18 +85,17 @@ public class LoadedDApp {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        // We are reading from statics, so we need to remember this for billing purposes.
-        boolean didLoadStatics = true;
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore, didLoadStatics);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore);
         // Configure the storage graph.
         // (we pass in false for isNewlyWritten since this token building is only invoked for loaded instances, not newly-written ones).
         Function<IRegularNode, IPersistenceToken> tokenBuilder = (regularNode) -> new NodePersistenceToken(regularNode, false);
         this.graphStore.setLateComponents(this.loader, codec.getInitialLoadDeserializer(), tokenBuilder);
         
-        // Extract the raw data for the class statics.
-        SerializedRepresentation staticData = this.graphStore.getRoot();
-        feeProcessor.readStaticDataFromStorage(staticData.getBillableSize());
-        SerializedRepresentationCodec.Decoder decoder = new SerializedRepresentationCodec.Decoder(staticData);
+        // Extract the raw data for the class statics and store it on the codec so we can use it later to determine what changed.
+        SerializedRepresentation preCallStaticData = this.graphStore.getRoot();
+        codec.setPreCallStaticData(preCallStaticData);
+        feeProcessor.readStaticDataFromStorage(preCallStaticData.getBillableSize());
+        SerializedRepresentationCodec.Decoder decoder = new SerializedRepresentationCodec.Decoder(preCallStaticData);
         
         // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
         for (Class<?> clazz : this.classes) {
@@ -115,9 +114,7 @@ public class LoadedDApp {
         // We will create the field populator to build objects with the correct canonicalizing caches.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         // Create the codec which will make up the long-lived deserialization approach, within the system.
-        // Initial store, so no statics are being loaded.
-        boolean didLoadStatics = false;
-        return new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore, didLoadStatics);
+        return new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, this.graphStore);
     }
 
     /**
@@ -159,7 +156,8 @@ public class LoadedDApp {
         
         // Save the raw bytes.
         SerializedRepresentation staticData = encoder.toSerializedRepresentation();
-        if (codec.didLoadStatics) {
+        SerializedRepresentation preCallStaticData = codec.getPreCallStaticData();
+        if (null != preCallStaticData) {
             feeProcessor.writeUpdateStaticDataToStorage(staticData.getBillableSize());
         } else {
             feeProcessor.writeFirstStaticDataToStorage(staticData.getBillableSize());

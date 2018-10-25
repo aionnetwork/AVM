@@ -56,7 +56,7 @@ public class ReflectionStructureCodecTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = {1,2,3};
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph, false);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph);
         SerializedRepresentationCodec.Encoder encoder = new SerializedRepresentationCodec.Encoder();
         codec.serializeClass(encoder, ReflectionStructureCodecTarget.class, NULL_CONSUMER);
         byte[] result = KeyValueCodec.encode(encoder.toSerializedRepresentation());
@@ -101,7 +101,7 @@ public class ReflectionStructureCodecTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = {1,2,3};
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph, false);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph);
         byte[] result = serializeSinceInstanceHelper(codec, target);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
         // This is the same as what we got for the class except that this also has a hashcode.
@@ -152,7 +152,7 @@ public class ReflectionStructureCodecTest {
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         SerializedRepresentation extent = KeyValueCodec.decode(graph, expected);
         StandardFieldPopulator populator = new StandardFieldPopulator();
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, false);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
         // Note that the deserializer always assumes it is operating on stubs so create the instance and pass it in.
         graph.setLateComponents(ReflectionStructureCodecTarget.class.getClassLoader(), codec.getInitialLoadDeserializer(), (n) -> new NodePersistenceToken(n, false));
         ReflectionStructureCodecTarget target = new ReflectionStructureCodecTarget();
@@ -186,7 +186,7 @@ public class ReflectionStructureCodecTest {
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         StandardFieldPopulator populator = new StandardFieldPopulator();
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, false);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
         SerializedRepresentation rootRepresentation = codec.internalSerializeInstance(root, NULL_CONSUMER);
         SerializedRepresentation oneRepresentation= codec.internalSerializeInstance(one, NULL_CONSUMER);
         SerializedRepresentation twoRepresentation = codec.internalSerializeInstance(two, NULL_CONSUMER);
@@ -229,7 +229,7 @@ public class ReflectionStructureCodecTest {
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         StandardFieldPopulator populator = new StandardFieldPopulator();
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, false);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
         SerializedRepresentation root1Representation = codec.internalSerializeInstance(root1, NULL_CONSUMER);
         SerializedRepresentation root2Representation = codec.internalSerializeInstance(root2, NULL_CONSUMER);
         // These are empty and point to the same instance so they should be identical, after the hashcode.
@@ -280,7 +280,7 @@ public class ReflectionStructureCodecTest {
         SerializedRepresentation extent1 = KeyValueCodec.decode(graph, expected1);
         SerializedRepresentation extent2 = KeyValueCodec.decode(graph, expected2);
         StandardFieldPopulator populator = new StandardFieldPopulator();
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph, false);
+        ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
         graph.setLateComponents(ReflectionStructureCodecTarget.class.getClassLoader(), codec.getInitialLoadDeserializer(), (n) -> new NodePersistenceToken(n, false));
         ReflectionStructureCodecTarget target1 = new ReflectionStructureCodecTarget();
         codec.deserializeInstance(target1, extent1);
