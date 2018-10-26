@@ -56,6 +56,8 @@ public class AvmImpl implements AvmInternal {
                 TransactionResult outgoingResult = null;
                 TransactionTask incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(null, null);
                 while (null != incomingTask) {
+                    int abortCounter = 0;
+
                     do {
                         if (DEBUG_EXECUTOR) System.out.println(this.getName() + " start  " + incomingTask.getIndex());
 
@@ -63,12 +65,12 @@ public class AvmImpl implements AvmInternal {
                         outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask);
 
                         if (TransactionResult.Code.FAILED_ABORT == outgoingResult.getStatusCode() && DEBUG_EXECUTOR){
-                            System.out.println(this.getName() + " abort  " + incomingTask.getIndex());
+                            System.out.println(this.getName() + " abort  " + incomingTask.getIndex() + " counter " + (++abortCounter));
                         }
 
                     }while (TransactionResult.Code.FAILED_ABORT == outgoingResult.getStatusCode());
 
-                    if (DEBUG_EXECUTOR) System.out.println(this.getName() + " finish " + incomingTask.getIndex() + ", " + outgoingResult.getStatusCode());
+                    if (DEBUG_EXECUTOR) System.out.println(this.getName() + " finish " + incomingTask.getIndex() + " " + outgoingResult.getStatusCode());
 
                     incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
                 }
