@@ -57,7 +57,6 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
             Object... constants) throws NoSuchMethodException, IllegalAccessException {
         // Note that we currently only use the avm_makeConcatWithConstants invoked name.
         RuntimeAssertionError.assertTrue("avm_makeConcatWithConstants".equals(invokedName));
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringConcatFactory_avm_makeConcatWithConstants);
         final MethodType concatMethodType = MethodType.methodType(
                 String.class, // NOTE! First arg is return value
                 java.lang.String.class,

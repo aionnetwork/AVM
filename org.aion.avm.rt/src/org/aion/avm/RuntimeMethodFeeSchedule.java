@@ -124,8 +124,6 @@ public class RuntimeMethodFeeSchedule {
     public static final long ByteOrder_avm_toString = RT_METHOD_FEE_LEVEL_2; // totalCost - 382; // byte code cost - 282; invoked methods cost - 100;
     public static final long ByteOrder_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 131;
 
-    public static final long LambdaMetafactory_avm_metafactory = RT_METHOD_FEE_LEVEL_3; // totalCost - 646; // byte code cost - 146; invoked methods cost - 500;
-
     public static final long ABIDecoder_avm_decodeAndRunWithClass = 37234; // totalCost - 37234; //maximum cost of multiple blocks; // byte code cost - 520; invoked methods cost - 36714;
     public static final long ABIDecoder_avm_decodeAndRunWithObject = 37112; // totalCost - 37112; //maximum cost of multiple blocks; // byte code cost - 460; invoked methods cost - 36652;
     public static final long ABIDecoder_avm_decodeMethodName = RT_METHOD_FEE_LEVEL_4; // totalCost - 1161; // byte code cost - 336; invoked methods cost - 825;
@@ -407,8 +405,6 @@ public class RuntimeMethodFeeSchedule {
     public static final long BlockchainRuntime_avm_invalid = RT_METHOD_FEE_LEVEL_1; // totalCost - 116;
     public static final long BlockchainRuntime_avm_print = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
     public static final long BlockchainRuntime_avm_println = RT_METHOD_FEE_LEVEL_3; // totalCost - 696; // byte code cost - 122; invoked methods cost - 574;
-
-    public static final long StringConcatFactory_avm_makeConcatWithConstants = RT_METHOD_FEE_LEVEL_4; // totalCost - 1499; // byte code cost - 799; invoked methods cost - 700;
 
     public static final long ShortArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 462; // byte code cost - 362; invoked methods cost - 100;
     public static final long ShortArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;
