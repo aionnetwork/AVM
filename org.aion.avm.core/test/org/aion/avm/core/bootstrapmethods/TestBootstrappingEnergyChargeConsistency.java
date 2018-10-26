@@ -17,6 +17,7 @@ import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
+import org.aion.kernel.TransactionResult.Code;
 import org.junit.Test;
 
 /**
@@ -41,6 +42,11 @@ public class TestBootstrappingEnergyChargeConsistency {
         TransactionResult result2 = runContract(avm, block, deployer, contractAddress, nonce + 2);
         TransactionResult result3 = runContract(avm, block, deployer, contractAddress, nonce + 3);
         avm.shutdown();
+
+        // Ensure the calls were all successful.
+        assertEquals(Code.SUCCESS, result1.getStatusCode());
+        assertEquals(Code.SUCCESS, result2.getStatusCode());
+        assertEquals(Code.SUCCESS, result3.getStatusCode());
 
         // Compare the energy charges.
         long energy1 = result1.getEnergyUsed();
