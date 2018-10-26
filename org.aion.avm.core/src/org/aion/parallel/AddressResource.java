@@ -62,5 +62,14 @@ class AddressResource {
     TransactionTask getNextOwner(){
         return this.waitingQueue.peek();
     }
+
+    @Override
+    public String toString() {
+        String ret = super.toString().split("@")[1];
+        while (ret.length() < 8){
+            ret = ret + " ";
+        }
+        return ret;
+    }
 }
 

@@ -72,19 +72,15 @@ public class AddressResourceMonitor {
                 sync.notifyAll();
             }
 
-            if (DEBUG) {
-                int holder = -1;
-                if (resource.getOwnedBy() != null) {
-                    holder = resource.getOwnedBy().getIndex();
-                }
-                int nextOwner = -1;
-                if (resource.getNextOwner() != null) {
-                    nextOwner = resource.getNextOwner().getIndex();
-                }
+            long startTime = 0;
+            long endTime = 0;
 
-                System.out.println("Asking " + task.getIndex() + " " + resource.toString() + " hold by " + holder +
-                        " nextOwner " + nextOwner + " isNextOwner " + resource.isNextOwner(task) + " locked " +
-                        resource.isOwned() + " Abort state " + task.inAbortState());
+            if (DEBUG) {
+                int holder = null != resource.getOwnedBy() ? resource.getOwnedBy().getIndex() : -1;
+                int nextOwner = null != resource.getNextOwner() ? resource.getNextOwner().getIndex() : -1;
+                System.out.println("Request " + task.getIndex() + " " + resource.toString() + " hold by " + holder +
+                        " nextOwner " + nextOwner + " locked " + resource.isOwned() + " inAbortState " + task.inAbortState());
+                startTime = System.nanoTime();
             }
 
             // Resource res is granted to task iff
@@ -99,11 +95,19 @@ public class AddressResourceMonitor {
             }
 
             if (!task.inAbortState()) {
-                if (DEBUG) System.out.println("Acquire " + task.getIndex() + " " + resource.toString());
+                if (DEBUG) {
+                    endTime = System.nanoTime();
+                    System.out.println("Acquire " + task.getIndex() + " " + resource.toString()
+                            + " waitingTime " + (endTime - startTime)/1000 + " \u00B5s");
+                }
                 resource.setOwner(task);
                 recordOwnership(resource, task);
             }else{
-                if (DEBUG) System.out.println("Abort " + task.getIndex() + " " + resource.toString());
+                if (DEBUG) {
+                    endTime = System.nanoTime();
+                    System.out.println("Abort   " + task.getIndex() + " " + resource.toString()
+                            + " waitingTime " + (endTime - startTime)/1000 + " \u00B5s");
+                }
             }
 
             if (DEBUG) System.out.flush();
@@ -128,7 +132,10 @@ public class AddressResourceMonitor {
                 if (task == resource.getOwnedBy()) {
                     resource.setOwner(null);
                 }
-                if (DEBUG) System.out.println("Release " + task.getIndex() + " " + resource.toString());
+                if (DEBUG) {
+                    int nextOwner = null != resource.getNextOwner() ? resource.getNextOwner().getIndex() : -1;
+                    System.out.println("Release " + task.getIndex() + " " + resource.toString() + " nextOwner " + nextOwner);
+                }
             }
         }
     }
