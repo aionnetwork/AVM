@@ -18,13 +18,4 @@ public class ConstantNode implements INode {
     public Object getObjectInstance() {
         return NodeEnvironment.singleton.getConstantMap().get(this.constantId);
     }
-
-    @Override
-    public int getBillableReferenceSize() {
-        // Encode the constant stub constant as an int.
-        int constantSize = ByteSizes.INT;
-        // Then encode the instanceId as a long.
-        int instanceIdSize = ByteSizes.LONG;
-        return constantSize + instanceIdSize;
-    }
 }

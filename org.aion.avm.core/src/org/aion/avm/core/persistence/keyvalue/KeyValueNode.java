@@ -1,8 +1,5 @@
 package org.aion.avm.core.persistence.keyvalue;
 
-import java.nio.charset.StandardCharsets;
-
-import org.aion.avm.core.persistence.ByteSizes;
 import org.aion.avm.core.persistence.SerializedRepresentation;
 import org.aion.avm.core.persistence.IRegularNode;
 
@@ -37,14 +34,6 @@ public class KeyValueNode implements IRegularNode {
             this.resolvedObject = this.parentGraph.createInstanceStubForNode(this.instanceClassName, this);
         }
         return this.resolvedObject;
-    }
-
-    @Override
-    public int getBillableReferenceSize() {
-        byte[] utf8Name = this.instanceClassName.getBytes(StandardCharsets.UTF_8);
-        
-        // Serialize as the type name length, byte, and the the instanceId.
-        return ByteSizes.INT + utf8Name.length + ByteSizes.LONG;
     }
 
     @Override
