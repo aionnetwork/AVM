@@ -181,4 +181,28 @@ public class AvmImplDeployAndRunTest {
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
     }
+
+    @Test
+    public void testBalanceTransfer() {
+        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT, kernel.getBalance(from));
+
+        // account1 get 10000
+        byte[] account1 = Helpers.randomBytes(Address.LENGTH);
+        Transaction tx = Transaction.balanceTransfer(from, account1, kernel.getNonce(from), BigInteger.valueOf(100000L), energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        assertEquals(BigInteger.valueOf(100000L), kernel.getBalance(account1));
+
+        // account1 transfers 1000 to account2
+        byte[] account2 = Helpers.randomBytes(Address.LENGTH);
+        tx = Transaction.balanceTransfer(account1, account2, kernel.getNonce(account1), BigInteger.valueOf(1000L), energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(new TransactionContext[] {context})[0].get();
+
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        assertEquals(BigInteger.valueOf(100000L - 1000L - energyPrice * 21000L), kernel.getBalance(account1));
+        assertEquals(BigInteger.valueOf(1000L), kernel.getBalance(account2));
+    }
 }

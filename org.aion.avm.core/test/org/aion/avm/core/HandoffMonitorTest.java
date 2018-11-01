@@ -221,6 +221,10 @@ public class HandoffMonitorTest {
             throw new AssertionError("No calls expected");
         }
         @Override
+        public boolean isBalanceTransfer() {
+            throw new AssertionError("No calls expected");
+        }
+        @Override
         public boolean isGarbageCollectionRequest() {
             throw new AssertionError("No calls expected");
         }

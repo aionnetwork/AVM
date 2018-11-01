@@ -8,12 +8,18 @@ import java.util.Objects;
 
 
 public class Transaction {
+    public static final int BASIC_COST = 21_000;
+
     public static Transaction create(byte[] from, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new Transaction(Type.CREATE, from, null, nonce, value, data, energyLimit, energyPrice);
     }
 
     public static Transaction call(byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new Transaction(Type.CALL, from, to, nonce, value, data, energyLimit, energyPrice);
+    }
+
+    public static Transaction balanceTransfer(byte[] from, byte[] to, long nonce, BigInteger value, long energyPrice) {
+        return new Transaction(Type.BALANCE_TRANSFER, from, to, nonce, value, new byte[0], BASIC_COST, energyPrice);
     }
 
     public static Transaction garbageCollect(byte[] target, long nonce, long energyLimit, long energyPrice) {
@@ -31,6 +37,10 @@ public class Transaction {
          * The CALL is used when sending an invocation to an existing DApp.
          */
         CALL,
+        /**
+         * The BALANCE_TRANSFER is used when ONLY a balance transfer is requested, without a DApp call or deployment.
+         */
+        BALANCE_TRANSFER,
         /**
          * The GARBAGE_COLLECT is a special transaction which asks that the target DApp's storage be deterministically collected.
          * Note that this is the only transaction type which will result in a negative TransactionResult.energyUsed.
@@ -114,7 +124,7 @@ public class Transaction {
     }
 
     public int getBasicCost() {
-        int cost = 21_000;
+        int cost = BASIC_COST;
         for (byte b : getData()) {
             cost += (b == 0) ? 4 : 64;
         }

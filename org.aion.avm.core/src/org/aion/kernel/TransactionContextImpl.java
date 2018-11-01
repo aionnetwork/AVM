@@ -51,6 +51,11 @@ public class TransactionContextImpl implements TransactionContext {
     }
 
     @Override
+    public boolean isBalanceTransfer() {
+        return tx.getType() == Transaction.Type.BALANCE_TRANSFER;
+    }
+
+    @Override
     public boolean isGarbageCollectionRequest() {
         return tx.getType() == Transaction.Type.GARBAGE_COLLECT;
     }

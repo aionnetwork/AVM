@@ -10,6 +10,8 @@ public interface TransactionContext {
 
     boolean isCreate();
 
+    boolean isBalanceTransfer();
+
     boolean isGarbageCollectionRequest();
 
     byte[] getAddress();
