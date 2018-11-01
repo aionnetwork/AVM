@@ -42,6 +42,16 @@ public class TransactionalKernel implements KernelInterface {
         }
     }
 
+    /**
+     * Causes the changes enqueued in the receiver to be written back to the target kernel.
+     * This method should only be used by AION kernel for database write back.
+     */
+    public void commitTo(KernelInterface target) {
+        for (Consumer<KernelInterface> mutation : this.writeLog) {
+            mutation.accept(target);
+        }
+    }
+
     @Override
     public void putCode(byte[] address, byte[] code) {
         Consumer<KernelInterface> write = (kernel) -> {
