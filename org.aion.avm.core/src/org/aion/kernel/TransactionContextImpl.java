@@ -64,7 +64,9 @@ public class TransactionContextImpl implements TransactionContext {
     public byte[] getAddress() {
         if (isCreate()) {
             ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(tx.getFrom()).putLong(tx.getNonce());
-            return HashUtils.sha256(buffer.array());
+            byte[] hash = HashUtils.sha256(buffer.array());
+            hash[0] = 0x0f;
+            return hash;
         } else {
             return tx.getTo();
         }
