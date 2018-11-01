@@ -166,6 +166,10 @@ public class AvmImpl implements AvmInternal {
             result.setStatusCode(TransactionResult.Code.FAILED_ABORT);
         }
 
+        if (TransactionResult.Code.FAILED_ABORT != result.getStatusCode()){
+            result.setExternalTransactionalKernel(taskTransactionalKernel);
+        }
+
         return result;
     }
 
