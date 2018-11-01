@@ -9,6 +9,22 @@ import java.math.BigInteger;
 public interface KernelInterface {
 
     /**
+     * Creates an account with the specified address.
+     *
+     * @param address The account to create.
+     */
+    void createAccount(byte[] address);
+
+    /**
+     * Returns true if, and only if, the specified address has account state. That is, it has a
+     * positive nonce or balance or contains contract code.
+     *
+     * @param address The address whose existence is to be decided.
+     * @return True if the account exists.
+     */
+    boolean hasAccountState(byte[] address);
+
+    /**
      * Sets the code of an account.
      *
      * @param address the account address

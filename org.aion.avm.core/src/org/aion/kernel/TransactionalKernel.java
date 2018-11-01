@@ -53,6 +53,30 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
+    public void createAccount(byte[] address) {
+        Consumer<KernelInterface> write = (kernel) -> {
+            kernel.createAccount(address);
+        };
+        write.accept(writeCache);
+        writeLog.add(write);
+        this.deletedAccountProjection.remove(new ByteArrayWrapper(address));
+        // Say that we have this cached so we don't go back to any old version in the parent (even though it is unlikely we will create over delete).
+        this.cachedAccountBalances.add(new ByteArrayWrapper(address));
+    }
+
+    @Override
+    public boolean hasAccountState(byte[] address) {
+        boolean result = false;
+        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
+            result = this.writeCache.hasAccountState(address);
+            if (!result) {
+                result = this.parent.hasAccountState(address);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public void putCode(byte[] address, byte[] code) {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.putCode(address, code);

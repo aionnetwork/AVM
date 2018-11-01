@@ -25,6 +25,7 @@ public class TransactionalKernelTest {
         Assert.assertTrue(Arrays.equals(value, transaction.getStorage(address, key)));
         
         byte[] account1 = Helpers.randomBytes(32);
+        transaction.createAccount(account1);
         transaction.adjustBalance(account1, BigInteger.valueOf(50L));
         Assert.assertEquals(BigInteger.valueOf(50L), transaction.getBalance(account1));
         
@@ -68,6 +69,7 @@ public class TransactionalKernelTest {
     public void testCommitAdjustment() {
         KernelInterface base = new KernelInterfaceImpl();
         byte[] address = Helpers.randomBytes(32);
+        base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
         
         TransactionalKernel transaction = new TransactionalKernel(base);
@@ -88,6 +90,7 @@ public class TransactionalKernelTest {
     public void testCommitDelete() {
         KernelInterface base = new KernelInterfaceImpl();
         byte[] address = Helpers.randomBytes(32);
+        base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
         
         TransactionalKernel transaction = new TransactionalKernel(base);
@@ -108,6 +111,7 @@ public class TransactionalKernelTest {
         // This probably can't happen, in reality, but this test at least shows it is possible.
         KernelInterface base = new KernelInterfaceImpl();
         byte[] address = Helpers.randomBytes(32);
+        base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
         
         TransactionalKernel transaction = new TransactionalKernel(base);

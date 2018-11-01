@@ -1,6 +1,9 @@
 package org.aion.kernel;
 
 import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.Set;
+import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 import org.aion.data.DirectoryBackedDataStore;
 import org.aion.data.IAccountStore;
@@ -46,8 +49,14 @@ public class KernelInterfaceImpl implements KernelInterface {
         premined.setBalance(PREMINED_AMOUNT);
     }
 
+    @Override
     public void createAccount(byte[] address) {
         this.dataStore.createAccount(address);
+    }
+
+    @Override
+    public boolean hasAccountState(byte[] address) {
+        return this.dataStore.openAccount(address) != null;
     }
 
     @Override
