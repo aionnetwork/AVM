@@ -205,4 +205,37 @@ public class AvmImplDeployAndRunTest {
         assertEquals(BigInteger.valueOf(100000L - 1000L - energyPrice * 21000L), kernel.getBalance(account1));
         assertEquals(BigInteger.valueOf(1000L), kernel.getBalance(account2));
     }
+
+    @Test
+    public void testCreateAndCallWithBalanceTransfer() {
+        // deploy the Dapp with 100000 value transfer
+        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
+        byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
+
+        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.valueOf(100000L), txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult deployResult = avm.run(new TransactionContext[] {context})[0].get();
+
+        assertEquals(TransactionResult.Code.SUCCESS, deployResult.getStatusCode());
+        assertEquals(BigInteger.valueOf(100000L), kernel.getBalance(deployResult.getReturnData()));
+
+        // account1 get 300000
+        byte[] account1 = Helpers.randomBytes(Address.LENGTH);
+        tx = Transaction.balanceTransfer(from, account1, kernel.getNonce(from), BigInteger.valueOf(300000L), energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        assertEquals(BigInteger.valueOf(300000L), kernel.getBalance(account1));
+
+        // account1 to call the Dapp and transfer 50000 to it
+        txData = ABIEncoder.encodeMethodArguments("encodeArgs");
+        tx = Transaction.call(account1, deployResult.getReturnData(), kernel.getNonce(account1), BigInteger.valueOf(50000L), txData, 200000L, energyPrice);
+        context = new TransactionContextImpl(tx, block);
+        result = avm.run(new TransactionContext[] {context})[0].get();
+
+        assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        assertEquals(BigInteger.valueOf(150000L), kernel.getBalance(deployResult.getReturnData()));
+        assertEquals(BigInteger.valueOf(300000L - 50000L - result.getEnergyUsed()), kernel.getBalance(account1));
+    }
 }
