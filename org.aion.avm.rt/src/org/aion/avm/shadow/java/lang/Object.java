@@ -6,6 +6,7 @@ import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 /**
@@ -33,6 +34,13 @@ public class Object extends java.lang.Object implements IObject {
     public Object(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         this.persistenceToken = persistenceToken;
         this.deserializer = deserializer;
+    }
+
+    public void updateHashCodeForConstant(int hashCode) {
+        // Note that this can only be called for constants and their hash codes are initialized by a special IHelper, under NodeEnvironment, which gives them
+        // this MIN_VALUE hash code so we can detect this case.
+        RuntimeAssertionError.assertTrue(java.lang.Integer.MIN_VALUE == this.hashCode);
+        this.hashCode = hashCode;
     }
 
     @Override

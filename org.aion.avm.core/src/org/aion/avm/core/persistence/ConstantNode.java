@@ -6,16 +6,17 @@ import org.aion.avm.shadow.java.lang.Object;
 
 /**
  * The data required to describe a constant reference, in the serialization layer.
+ * Constants are identified by their specified identity hash codes.
  */
 public class ConstantNode implements INode {
-    public final long constantId;
+    public final int constantHashCode;
 
-    public ConstantNode(long constantId) {
-        this.constantId = constantId;
+    public ConstantNode(int constantHashCode) {
+        this.constantHashCode = constantHashCode;
     }
 
     @Override
     public Object getObjectInstance() {
-        return NodeEnvironment.singleton.getConstantMap().get(this.constantId);
+        return NodeEnvironment.singleton.getConstantMap().get(this.constantHashCode);
     }
 }

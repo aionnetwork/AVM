@@ -147,7 +147,7 @@ public class StorageWalker {
                     result = new org.aion.avm.shadow.java.lang.String("class(" + shortenClassName(node.className) + ")");
                 } else if (rawNode instanceof ConstantNode) {
                     ConstantNode node = (ConstantNode) rawNode;
-                    result = new org.aion.avm.shadow.java.lang.String("constant(" + node.constantId + ")");
+                    result = new org.aion.avm.shadow.java.lang.String("constant(" + node.constantHashCode + ")");
                 } else {
                     // This better be null.
                     RuntimeAssertionError.assertTrue(null == rawNode);

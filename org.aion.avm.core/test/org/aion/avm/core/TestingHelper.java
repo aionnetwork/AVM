@@ -78,9 +78,13 @@ public class TestingHelper implements IHelper {
 
 
     private final boolean isBootstrapOnly;
+    private final int constantHashCode;
 
     private TestingHelper(boolean isBootstrapOnly) {
         this.isBootstrapOnly = isBootstrapOnly;
+        // If this is a helper created for bootstrap purposes, use the "placeholder hash code" we rely on for constants.
+        // Otherwise, use something else so we know we aren't accidentally being used for constant init.
+        this.constantHashCode = isBootstrapOnly ? Integer.MIN_VALUE : -1;
         install();
     }
 
@@ -115,8 +119,7 @@ public class TestingHelper implements IHelper {
 
     @Override
     public int externalGetNextHashCode() {
-        // This is called pretty often when decoding data, etc, from outside the test so we want to just return anything.
-        return 1;
+        return this.constantHashCode;
     }
 
     @Override

@@ -51,8 +51,15 @@ public class KeyValueCodec {
                 if (node instanceof ConstantNode) {
                     // Write the descriptor.
                     encoder.encodeInt(STUB_DESCRIPTOR_CONSTANT);
-                    // Write the constant index.
-                    encoder.encodeLong(((ConstantNode)node).constantId);
+                    // Internally to AVM, the constant is identified by a canonical hash code.
+                    int constantHashCode = ((ConstantNode)node).constantHashCode;
+                    // We expect this to be a small, positive integer.
+                    RuntimeAssertionError.assertTrue(constantHashCode > 0);
+                    // (update this number if we add more constants - just made to catch simple errors).
+                    RuntimeAssertionError.assertTrue(constantHashCode < 100); 
+                    // On disk, however, we want to store this as a negative long.
+                    long constantIndex = - (long)constantHashCode;
+                    encoder.encodeLong(constantIndex);
                 } else if (node instanceof ClassNode) {
                     // Write the descriptor.
                     encoder.encodeInt(STUB_DESCRIPTOR_CLASS);
@@ -94,7 +101,11 @@ public class KeyValueCodec {
                 }
                 case STUB_DESCRIPTOR_CONSTANT: {
                     long constantId = decoder.decodeLong();
-                    references[i] = factory.buildConstantNode(constantId);
+                    // This should be negative and small.
+                    RuntimeAssertionError.assertTrue(constantId < 0);
+                    // (change this when we add more constants).
+                    RuntimeAssertionError.assertTrue(constantId > -100);
+                    references[i] = factory.buildConstantNode((int) -constantId);
                     break;
                 }
                 case STUB_DESCRIPTOR_CLASS: {

@@ -36,10 +36,10 @@ public interface IObjectGraphStore {
     /**
      * Builds a node referencing a constant.
      * 
-     * @param constantId The ID of the constant (must be negative).
+     * @param constantHashCode The special identity hash code assigned to the constant (see NodeEnvironment).
      * @return The INode instance representing this constant reference in storage.
      */
-    public INode buildConstantNode(long constantId);
+    public INode buildConstantNode(int constantHashCode);
 
     /**
      * Builds a node referencing a class.

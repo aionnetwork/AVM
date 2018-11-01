@@ -425,7 +425,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
             // -regular or null
             // -null
             if (persistenceToken instanceof ConstantPersistenceToken) {
-                referenceToTarget = this.graphStore.buildConstantNode(((ConstantPersistenceToken)persistenceToken).stableConstantId);
+                referenceToTarget = this.graphStore.buildConstantNode(((ConstantPersistenceToken)persistenceToken).identityHashCode);
             } else if (persistenceToken instanceof ClassPersistenceToken) {
                 referenceToTarget = this.graphStore.buildClassNode(((ClassPersistenceToken)persistenceToken).className);
             } else if (persistenceToken instanceof NodePersistenceToken) {

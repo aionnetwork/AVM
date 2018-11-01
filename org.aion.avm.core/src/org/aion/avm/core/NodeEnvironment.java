@@ -29,7 +29,9 @@ public class NodeEnvironment {
     public static final NodeEnvironment singleton = new NodeEnvironment();
 
     private final AvmSharedClassLoader sharedClassLoader;
-    private final Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap;
+    // Note that the constant map is a map of constant hashcodes to constant instances.  This is just provided so that reference deserialization
+    // mechanisms can map from this primitive identity into the actual instances.
+    private final Map<Integer, org.aion.avm.shadow.java.lang.Object> constantMap;
 
     private Class<?>[] apiClasses;
     private Class<?>[] shadowClasses;
@@ -233,10 +235,9 @@ public class NodeEnvironment {
     }
 
     /**
-     * Returns the constant object map.
-     * @return
+     * @return The map of constants (specified constant identity hash codes to constant instances).
      */
-    public Map<Long, org.aion.avm.shadow.java.lang.Object> getConstantMap() {
+    public Map<Integer, org.aion.avm.shadow.java.lang.Object> getConstantMap() {
         return this.constantMap;
     }
 
@@ -280,8 +281,9 @@ public class NodeEnvironment {
 
             @Override
             public int externalGetNextHashCode() {
-                // We will just return 1 for all identity hash codes, for now.
-                return 1;
+                // Only constants should end up being allocated under this so set them to the constant hash code we will over-write with their
+                // specification values, after.
+                return Integer.MIN_VALUE;
             }
 
             @Override
@@ -332,45 +334,46 @@ public class NodeEnvironment {
         return classNames;
     }
 
-    private Map<Long, org.aion.avm.shadow.java.lang.Object> initializeConstantState() {
-        Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap = new HashMap<>();
+    private Map<Integer, org.aion.avm.shadow.java.lang.Object> initializeConstantState() {
+        Map<Integer, org.aion.avm.shadow.java.lang.Object> constantMap = new HashMap<>();
 
-        // Assign the special "negative instanceId" values which we use for shadow JDK constants (public static objects and enum instances).
+        // Note that these constants are defined, in the specification, to have these identity hash codes (all but RoundingMode override this but it matters for the persistence hash).
         // NOTE:  This list needs to be manually updated and we specify it as a list since these values CANNOT change, once assigned (these represent the serialized symbolic references from contracts).
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TRUE, -1l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_FALSE, -2l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_ZERO, -3l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_ONE, -4l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_TEN, -5l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_UNLIMITED, -6l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL32, -7l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL64, -8l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL128, -89l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UP, -10l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_DOWN, -11l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_CEILING, -12l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_FLOOR, -13l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_UP, -14l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_DOWN, -15l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN, -16l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UNNECESSARY, -17l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TRUE, 1);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_FALSE, 2);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_ZERO, 3);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_ONE, 4);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_TEN, 5);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_UNLIMITED, 6);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL32, 7);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL64, 8);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL128, 9);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UP, 10);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_DOWN, 11);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_CEILING, 12);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_FLOOR, 13);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_UP, 14);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_DOWN, 15);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN, 16);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UNNECESSARY, 17);
 
         // Note that (as explained in issue-146), we need to treat our primitive "TYPE" pseudo-classes as constants, not like normal Class references.
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TYPE, -18l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Byte.avm_TYPE, -19l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Character.avm_TYPE, -20l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Double.avm_TYPE, -21l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Float.avm_TYPE, -22l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Integer.avm_TYPE, -23l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Long.avm_TYPE, -24l);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Short.avm_TYPE, -25l);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TYPE, 18);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Byte.avm_TYPE, 19);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Character.avm_TYPE, 20);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Double.avm_TYPE, 21);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Float.avm_TYPE, 22);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Integer.avm_TYPE, 23);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Long.avm_TYPE, 24);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Short.avm_TYPE, 25);
 
         return constantMap;
     }
 
-    private void setConstantInstanceId(Map<Long, org.aion.avm.shadow.java.lang.Object> constantMap, org.aion.avm.shadow.java.lang.Object object, long instanceId) {
-        object.persistenceToken = new ConstantPersistenceToken(instanceId);
-        constantMap.put(instanceId, object);
+    private void setConstantInstanceId(Map<Integer, org.aion.avm.shadow.java.lang.Object> constantMap, org.aion.avm.shadow.java.lang.Object object, int identityHashCode) {
+        object.persistenceToken = new ConstantPersistenceToken(identityHashCode);
+        object.updateHashCodeForConstant(identityHashCode);
+        constantMap.put(identityHashCode, object);
     }
 
     /**

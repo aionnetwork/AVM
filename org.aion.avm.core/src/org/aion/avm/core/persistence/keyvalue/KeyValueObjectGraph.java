@@ -147,10 +147,12 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     }
 
     @Override
-    public INode buildConstantNode(long constantId) {
-        // This is just to point out that constantIds are always negative.
-        RuntimeAssertionError.assertTrue(constantId < 0);
-        return new ConstantNode(constantId);
+    public INode buildConstantNode(int constantHashCode) {
+        // We expect this to be a small, positive integer.
+        RuntimeAssertionError.assertTrue(constantHashCode > 0);
+        // (update this number if we add more constants - just made to catch simple errors).
+        RuntimeAssertionError.assertTrue(constantHashCode < 100);
+        return new ConstantNode(constantHashCode);
     }
 
     @Override
