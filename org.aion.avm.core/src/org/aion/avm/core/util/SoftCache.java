@@ -2,6 +2,7 @@ package org.aion.avm.core.util;
 
 import java.lang.ref.SoftReference;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -33,5 +34,13 @@ public class SoftCache<K, V> {
         // We don't expect collisions in this cache - that would imply that consumers disagree about cache state.
         // (in the future, we probably want to change this).
         RuntimeAssertionError.assertTrue(null == previous);
+    }
+
+    public void removeKeyIf(Predicate<K> condition){
+        this.underlyingMap.keySet().removeIf(condition);
+    }
+
+    public void removeValueIf(Predicate<SoftReference<V>> condition){
+        this.underlyingMap.values().removeIf(condition);
     }
 }

@@ -5,9 +5,11 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
@@ -107,7 +109,15 @@ public class AvmImpl implements AvmInternal {
 
     @Override
     public SimpleFuture<TransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException {
+        // Clear the states of resources
         this.resourceMonitor.clear();
+
+        // Clear the hot cache
+        if (transactions.length > 0) {
+            long currentBlockNum = transactions[0].getBlockNumber();
+            validateCodeCache(currentBlockNum);
+        }
+
         return this.handoff.sendTransactionsAsynchronously(transactions);
     }
 
@@ -147,7 +157,7 @@ public class AvmImpl implements AvmInternal {
             if (ctx.isGarbageCollectionRequest()) {
                 // The GC case operates directly on the top-level KernelInterface.
                 // (remember that the "sender" is who we are updating).
-                result = runGc(taskTransactionalKernel, sender);
+                result = runGc(taskTransactionalKernel, sender, ctx);
             } else {
                 // The CREATE/CALL case is handled via the common external invoke path.
                 result = runExternalInvoke(taskTransactionalKernel, task, ctx);
@@ -279,6 +289,12 @@ public class AvmImpl implements AvmInternal {
                         // If we didn't find it there, just load it.
                         try {
                             dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, dappAddress).getCode());
+
+                            // If the dapp is freshly loaded, we set the block num
+                            if (null != dapp){
+                                dapp.setLoadedBlockNum(ctx.getBlockNumber());
+                            }
+
                         } catch (IOException e) {
                             unexpected(e); // the jar was created by AVM; IOException is unexpected
                         }
@@ -306,7 +322,9 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private TransactionResult runGc(KernelInterface parentKernel, byte[] dappAddress) {
+    private TransactionResult runGc(KernelInterface parentKernel, byte[] dappAddress, TransactionContext ctx) {
+        RuntimeAssertionError.assertTrue(ctx.isGarbageCollectionRequest());
+
         ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress);
         IObjectGraphStore graphStore = new KeyValueObjectGraph(parentKernel, dappAddress);
         
@@ -315,6 +333,12 @@ public class AvmImpl implements AvmInternal {
             // If we didn't find it there, just load it.
             try {
                 dapp = DAppLoader.loadFromGraph(graphStore.getCode());
+
+                // If the dapp is freshly loaded, we set the block num
+                if (null != dapp){
+                    dapp.setLoadedBlockNum(ctx.getBlockNumber());
+                }
+
             } catch (IOException e) {
                 unexpected(e); // the jar was created by AVM; IOException is unexpected
             }
@@ -342,5 +366,10 @@ public class AvmImpl implements AvmInternal {
     @Override
     public AddressResourceMonitor getResourceMonitor() {
         return resourceMonitor;
+    }
+
+    private void validateCodeCache(long blockNum){
+        Predicate<SoftReference<LoadedDApp>> condition = (v) -> null != v.get() && v.get().getLoadedBlockNum() >= blockNum;
+        this.hotCache.removeValueIf(condition);
     }
 }

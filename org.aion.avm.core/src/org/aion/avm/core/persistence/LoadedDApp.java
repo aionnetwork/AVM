@@ -57,6 +57,7 @@ public class LoadedDApp {
     private Field helperBlockchainRuntimeField;
     private Method mainMethod;
     private Method helperClearTestingStateMethod;
+    private long loadedBlockNum;
 
     /**
      * Creates the LoadedDApp to represent the classes related to DApp at address.
@@ -400,5 +401,13 @@ public class LoadedDApp {
             String output = path + "/" + clazz.getName() + ".class";
             Helpers.writeBytesToFile(bytecode, output);
         }
+    }
+
+    public void setLoadedBlockNum(long loadedBlockNum) {
+        this.loadedBlockNum = loadedBlockNum;
+    }
+
+    public long getLoadedBlockNum() {
+        return loadedBlockNum;
     }
 }
