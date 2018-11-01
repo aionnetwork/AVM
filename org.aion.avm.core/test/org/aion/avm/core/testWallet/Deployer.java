@@ -7,7 +7,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -50,14 +49,7 @@ public class Deployer {
      * Pulled out so it can be called from JUnit.
      */
     public static void callableInvokeDirect() throws Throwable {
-        IHelper.currentContractHelper.set(new TestingHelper() {
-            @Override
-            public void externalBootstrapOnly() {
-                // Ideally this wouldn't be called but we aren't currently worrying about it for this launcher (as we are moving away from it, anyway).
-            }
-        });
-        invokeDirect();
-        IHelper.currentContractHelper.remove();
+        TestingHelper.runUnderBoostrapHelper(() -> invokeDirect());
     }
 
     /**
@@ -68,7 +60,7 @@ public class Deployer {
     }
 
 
-    private static void invokeDirect() throws Throwable {
+    private static void invokeDirect() {
         // Note that this loggingRuntime is just to give us a consistent interface for reading the eventCounts.
         Map<String, Integer> eventCounts = new HashMap<>();
         TestingBlockchainRuntime loggingRuntime = new TestingBlockchainRuntime().withEventCounter(eventCounts);

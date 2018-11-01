@@ -18,7 +18,7 @@ import org.aion.kernel.TransactionResult;
  */
 public class TestingHelper implements IHelper {
     public static Address buildAddress(byte[] raw) {
-        TestingHelper helper = new TestingHelper();
+        TestingHelper helper = new TestingHelper(false);
         Address data = new Address(raw);
         helper.remove();
         return data;
@@ -29,14 +29,14 @@ public class TestingHelper implements IHelper {
     public static Object decodeResultRaw(byte[] returnData) {
         Object data = null;
         if (null != returnData) {
-            TestingHelper helper = new TestingHelper();
+            TestingHelper helper = new TestingHelper(false);
             data = ABIDecoder.decodeOneObject(returnData);
             helper.remove();
         }
         return data;
     }
     public static ObjectArray construct2DWrappedArray(Object data) {
-        TestingHelper helper = new TestingHelper();
+        TestingHelper helper = new TestingHelper(false);
         ObjectArray ret = null;
         if (data.getClass().getName() == "[[C") {
             ret = (ObjectArray) GeneratedClassesFactory.construct2DCharArray((char[][]) data);
@@ -49,7 +49,7 @@ public class TestingHelper implements IHelper {
     }
 
     public static ObjectArray construct1DWrappedStringArray(Object data) {
-        TestingHelper helper = new TestingHelper();
+        TestingHelper helper = new TestingHelper(false);
         ObjectArray ret = null;
         if (data.getClass().getName() == "[Ljava.lang.String;") {
             org.aion.avm.shadow.java.lang.String[] shadowArray = new org.aion.avm.shadow.java.lang.String[((String[])data).length];
@@ -62,7 +62,25 @@ public class TestingHelper implements IHelper {
         return ret;
     }
 
-    public TestingHelper() {
+    /**
+     * A special entry-point used only the test wallet when running the constract, inline.  This allows the helper to be setup for constant initialization.
+     * 
+     * @param invocation The invocation to run under the helper.
+     */
+    public static void runUnderBoostrapHelper(Runnable invocation) {
+        TestingHelper helper = new TestingHelper(true);
+        try {
+            invocation.run();
+        } finally {
+            helper.remove();
+        }
+    }
+
+
+    private final boolean isBootstrapOnly;
+
+    private TestingHelper(boolean isBootstrapOnly) {
+        this.isBootstrapOnly = isBootstrapOnly;
         install();
     }
 
@@ -113,7 +131,9 @@ public class TestingHelper implements IHelper {
 
     @Override
     public void externalBootstrapOnly() {
-        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+        if (!this.isBootstrapOnly) {
+            throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+        }
     }
 
     @Override
