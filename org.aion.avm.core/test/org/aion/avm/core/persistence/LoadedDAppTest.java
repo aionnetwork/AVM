@@ -325,7 +325,7 @@ public class LoadedDAppTest {
                 // LoadedDAppTarget
                 0x0, 0x0, 0x0, 0x1, // reference list size
                 (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, //s_nine (-1 since this is a constant)
-                (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xf0,  //s_nine (constant instanceId is negative)
+                (byte)0x0, (byte)0x0, (byte)0x0, (byte)0x10, //s_nine (constant hash code)
                 
                 0x0, 0x0, 0x0, 0x1e, // primitive size
                 0x0, //s_one
@@ -405,7 +405,7 @@ public class LoadedDAppTest {
                 // LoadedDAppTarget
                 0x0, 0x0, 0x0, 0x1, // reference list size
                 (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, //s_nine (-1 since this is a constant)
-                (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xed,  //s_nine (constant instanceId is negative)
+                (byte)0x0, (byte)0x0, (byte)0x0, (byte)0x13, //s_nine (constant hash code)
                 
                 0x0, 0x0, 0x0, 0x1e, // primitive size
                 0x0, //s_one

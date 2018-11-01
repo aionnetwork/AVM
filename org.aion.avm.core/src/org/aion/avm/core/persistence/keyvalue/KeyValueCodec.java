@@ -35,7 +35,7 @@ public class KeyValueCodec {
             
             // See issue-147 for more information regarding this interpretation:
             // - null: (int)0.
-            // - -1: (int)-1, (long) instanceId (of constant - negative).
+            // - -1: (int)-1, (int) constant hash code.
             // - -2: (int)-2, (int) buffer length, (n) UTF-8 class name buffer
             // - >0:  (int) buffer length, (n) UTF-8 buffer, (long) instanceId.
             // Reason for order of evaluation:
@@ -57,9 +57,8 @@ public class KeyValueCodec {
                     RuntimeAssertionError.assertTrue(constantHashCode > 0);
                     // (update this number if we add more constants - just made to catch simple errors).
                     RuntimeAssertionError.assertTrue(constantHashCode < 100); 
-                    // On disk, however, we want to store this as a negative long.
-                    long constantIndex = - (long)constantHashCode;
-                    encoder.encodeLong(constantIndex);
+                    // We can store this directly as an int, on disk.
+                    encoder.encodeInt(constantHashCode);
                 } else if (node instanceof ClassNode) {
                     // Write the descriptor.
                     encoder.encodeInt(STUB_DESCRIPTOR_CLASS);
@@ -100,12 +99,14 @@ public class KeyValueCodec {
                     break;
                 }
                 case STUB_DESCRIPTOR_CONSTANT: {
-                    long constantId = decoder.decodeLong();
-                    // This should be negative and small.
-                    RuntimeAssertionError.assertTrue(constantId < 0);
-                    // (change this when we add more constants).
-                    RuntimeAssertionError.assertTrue(constantId > -100);
-                    references[i] = factory.buildConstantNode((int) -constantId);
+                    // Internally to AVM, the constant is identified by a canonical hash code.
+                    // (this is stored directly as an int).
+                    int constantHashCode = decoder.decodeInt();
+                    // We expect this to be a small, positive integer.
+                    RuntimeAssertionError.assertTrue(constantHashCode > 0);
+                    // (update this number if we add more constants - just made to catch simple errors).
+                    RuntimeAssertionError.assertTrue(constantHashCode < 100); 
+                    references[i] = factory.buildConstantNode(constantHashCode);
                     break;
                 }
                 case STUB_DESCRIPTOR_CLASS: {
