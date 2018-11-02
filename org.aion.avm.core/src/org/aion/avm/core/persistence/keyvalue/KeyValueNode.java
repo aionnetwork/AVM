@@ -68,8 +68,7 @@ public class KeyValueNode implements IRegularNode {
         if (this.isLoadedFromStorage) {
             RuntimeAssertionError.assertTrue(null != this.originalRepresentation);
         }
-        byte[] data = KeyValueCodec.encode(extent);
-        this.parentGraph.storeDataForInstance(this.instanceId, data);
+        this.parentGraph.storeDataForInstance(this.instanceId, this.originalRepresentation, extent);
         this.hasBeenSaved = true;
     }
 }

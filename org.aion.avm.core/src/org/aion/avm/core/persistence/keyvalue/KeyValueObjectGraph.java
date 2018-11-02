@@ -106,9 +106,7 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         // Wipe any stale node state since we are reading the root, again.
         this.idToNodeMap.clear();
         
-        byte[] rootBytes = this.store.getStorage(this.address, StorageKeys.CLASS_STATICS);
-        RuntimeAssertionError.assertTrue(null != rootBytes);
-        return KeyValueCodec.decode(this, rootBytes);
+        return loadRootOnly();
     }
 
     @Override
@@ -120,7 +118,7 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         // Update index-0, in the Merkle tree.
         ensureTreeSize(0);
         // Hash the data into the leaf.
-        this.merkleTree[0][0] = Arrays.hashCode(rootBytes);
+        this.merkleTree[0][0] = getConsensusHashForRepresentation(root);
         this.dirtyLeaves[0] = true;
     }
 
@@ -203,7 +201,8 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         // NOTE:  The statics don't move, so we update them in place (just a single SerializedRepresentation).
         long nextScanInstanceId = 0L;
         byte[] currentKey = StorageKeys.CLASS_STATICS;
-        SerializedRepresentation scanningRepresentation = getRoot();
+        this.idToNodeMap.clear();
+        SerializedRepresentation scanningRepresentation = loadRootOnly();
         while (null != scanningRepresentation) {
             boolean didWrite = false;
             INode[] refs = scanningRepresentation.references;
@@ -259,7 +258,9 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
             ensureTreeSize(index);
             // Hash the data into the leaf.
             byte[] data = this.store.getStorage(this.address, StorageKeys.forInstance(i + targetBias));
-            this.merkleTree[0][index] = Arrays.hashCode(data);
+            // The consensus hash is higher-level than the serialized form so we need to decode this in order to hash it.
+            SerializedRepresentation representationToHash = KeyValueCodec.decode(this, data);
+            this.merkleTree[0][index] = getConsensusHashForRepresentation(representationToHash);
             this.dirtyLeaves[index] = true;
         }
         
@@ -303,13 +304,14 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         return this.store.getStorage(this.address, StorageKeys.forInstance(instanceId + this.instanceIdBias));
     }
 
-    public void storeDataForInstance(long instanceId, byte[] data) {
+    public void storeDataForInstance(long instanceId, SerializedRepresentation original, SerializedRepresentation updated) {
+        byte[] data = KeyValueCodec.encode(updated);
         this.store.putStorage(this.address, StorageKeys.forInstance(instanceId + this.instanceIdBias), data);
         // NOTE:  Just as a proof of concept, we build the Merkle tree on this raw data (it should actually be the SerializedRepresentation).
         int index = (int)instanceId;
         ensureTreeSize(index);
         // Hash the data into the leaf.
-        this.merkleTree[0][index] = Arrays.hashCode(data);
+        this.merkleTree[0][index] = getConsensusHashForRepresentation(updated);
         this.dirtyLeaves[index] = true;
     }
 
@@ -348,7 +350,12 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
                 boolean shouldRecalculate = (leafLevelDirty[2*i] || leafLevelDirty[2*i + 1]);
                 if (shouldRecalculate) {
                     int[] leafHashes = this.merkleTree[branchLevel - 1];
-                    this.merkleTree[branchLevel][i] = (leafHashes[2*i] ^ leafHashes[2*i + 1]);
+                    // Hash the children of each node to create the node hash.
+                    byte[] combined = new byte[2 * Integer.BYTES];
+                    writeIntToBuffer(combined, 0, leafHashes[2 * i]);
+                    writeIntToBuffer(combined, 0, leafHashes[(2 * i) + 1]);
+                    // TODO:  Replace this with a real cryptographic function.
+                    this.merkleTree[branchLevel][i] = Arrays.hashCode(combined);
                 }
                 branchLevelDirty[i] = shouldRecalculate;
             }
@@ -363,5 +370,35 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         return (this.merkleTree.length > 0)
                 ? this.merkleTree[this.merkleTree.length - 1][0]
                 : 0;
+    }
+
+    private int getConsensusHashForRepresentation(SerializedRepresentation representation) {
+        // Serialize this to a byte array.
+        byte[] dataToHash = new byte[representation.references.length * Integer.BYTES + representation.data.length];
+        int index = 0;
+        for (INode ref : representation.references) {
+            int hash = (null != ref)
+                    ? ref.getIdentityHashCode()
+                    : 0;
+            writeIntToBuffer(dataToHash, index, hash);
+            index += Integer.BYTES;
+        }
+        System.arraycopy(representation.data, 0, dataToHash, index, representation.data.length);
+        
+        // TODO:  Replace this with a real cryptographic function.
+        return Arrays.hashCode(dataToHash);
+    }
+
+    private SerializedRepresentation loadRootOnly() {
+        byte[] rootBytes = this.store.getStorage(this.address, StorageKeys.CLASS_STATICS);
+        RuntimeAssertionError.assertTrue(null != rootBytes);
+        return KeyValueCodec.decode(this, rootBytes);
+    }
+
+    private void writeIntToBuffer(byte[] buffer, int offset, int toEncode) {
+        buffer[offset] = (byte)(0xff & (toEncode >> 24));
+        buffer[offset + 1] = (byte)(0xff & (toEncode >> 16));
+        buffer[offset + 2] = (byte)(0xff & (toEncode >> 8));
+        buffer[offset + 3] = (byte)(0xff & toEncode);
     }
 }
