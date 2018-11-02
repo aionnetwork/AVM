@@ -28,10 +28,11 @@ public interface IObjectGraphStore {
     /**
      * Builds a node referencing a regular object.
      * 
+     * @param identityHashCode The identity hash code of the target object.
      * @param typeName The name of the object's type (class name).
      * @return The IRegularNode instance representing the instance in storage.
      */
-    public IRegularNode buildNewRegularNode(String typeName);
+    public IRegularNode buildNewRegularNode(int identityHashCode, String typeName);
 
     /**
      * Builds a node referencing a constant.

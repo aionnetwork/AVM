@@ -75,6 +75,7 @@ public class KeyValueCodec {
                     encoder.encodeInt(utf8Name.length);
                     encoder.encodeBytes(utf8Name);
                     encoder.encodeLong(regularNode.getInstanceId());
+                    encoder.encodeInt(regularNode.getIdentityHashCode());
                 }
             }
         }
@@ -122,7 +123,8 @@ public class KeyValueCodec {
                     decoder.decodeBytesInto(utf8Name);
                     String instanceClassName = new String(utf8Name, StandardCharsets.UTF_8);
                     long instanceId = decoder.decodeLong();
-                    references[i] = factory.buildExistingRegularNode(instanceClassName, instanceId);
+                    int identityHashCode = decoder.decodeInt();
+                    references[i] = factory.buildExistingRegularNode(identityHashCode, instanceClassName, instanceId);
                     break;
                 }
             }

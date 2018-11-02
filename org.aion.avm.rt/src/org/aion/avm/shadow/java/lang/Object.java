@@ -43,6 +43,15 @@ public class Object extends java.lang.Object implements IObject {
         this.hashCode = hashCode;
     }
 
+    /**
+     * This exists purely for serialization of INode instances for the delta hash.
+     * 
+     * @return The identity hash of the instance.
+     */
+    public int getIdentityHashCode() {
+        return this.hashCode;
+    }
+
     @Override
     public Class<?> avm_getClass() {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_getClass);

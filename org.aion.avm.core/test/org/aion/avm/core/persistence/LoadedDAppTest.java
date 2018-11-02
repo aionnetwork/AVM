@@ -1,5 +1,6 @@
 package org.aion.avm.core.persistence;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.aion.avm.core.NodeEnvironment;
@@ -186,6 +187,7 @@ public class LoadedDAppTest {
                 0x0, 0x0, 0x0, 0x3c, //s_nine (class name length)
                 0x6f, 0x72, 0x67, 0x2e, 0x61, 0x69, 0x6f, 0x6e, 0x2e, 0x61, 0x76, 0x6d, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x63, 0x65, 0x2e, 0x52, 0x65, 0x66, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x75, 0x72, 0x65, 0x43, 0x6f, 0x64, 0x65, 0x63, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, //s_nine (class name UTF8)
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, //s_nine (instanceId)
+                0x0, 0x0, 0x0, 0x1, //s_nine (identity hash)
                 
                 0x0, 0x0, 0x0, 0x1e, // primitive size
                 0x1, //s_one
@@ -254,8 +256,13 @@ public class LoadedDAppTest {
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         // Check the size of the saved static data (should only store local copies of statics, not superclass statics, per class).
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
-        // (note that this is "309" if the superclass static fields are redundantly stored in sub-classes).
-        Assert.assertEquals(207 + 8, result.length);
+        // Target size:  1 ref + primitives.
+        int primitiveSize = 1 + Byte.BYTES + Short.BYTES + Character.BYTES + Integer.BYTES + Float.BYTES + Long.BYTES + Double.BYTES;
+        // Ref encoding:  type name length, type name bytes, instance ID, identity hash.
+        int targetRefSize = 4 + ReflectionStructureCodecTarget.class.getName().getBytes(StandardCharsets.UTF_8).length + 8 + 4;
+        int targetSubRefSize = 4 + ReflectionStructureCodecTargetSub.class.getName().getBytes(StandardCharsets.UTF_8).length + 8 + 4;
+        // We also add 2*4 since there are two (size) fields (number of refers, number of primitive bytes)
+        Assert.assertEquals((2 * primitiveSize) + targetRefSize + targetSubRefSize + (2 * 4), result.length);
         
         // Now, clear the class states and reload this.
         clearStaticState();

@@ -19,4 +19,10 @@ public class ConstantNode implements INode {
     public Object getObjectInstance() {
         return NodeEnvironment.singleton.getConstantMap().get(this.constantHashCode);
     }
+
+    @Override
+    public int getIdentityHashCode() {
+        // The hash code is a first class identifier of a constant so we can return it, directly.
+        return this.constantHashCode;
+    }
 }

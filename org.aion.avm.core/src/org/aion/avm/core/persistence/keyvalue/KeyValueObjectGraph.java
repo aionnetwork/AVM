@@ -125,7 +125,7 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     }
 
     @Override
-    public IRegularNode buildNewRegularNode(String typeName) {
+    public IRegularNode buildNewRegularNode(int identityHashCode, String typeName) {
         // Consume the next ID (make sure it doesn't overflow our limit).
         long instanceId = this.nextInstanceId;
         this.nextInstanceId += 1;
@@ -133,16 +133,16 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         
         // Create the new node and add it to the map.
         boolean isLoadedFromStorage = false;
-        KeyValueNode node = new KeyValueNode(this, typeName, instanceId, isLoadedFromStorage);
+        KeyValueNode node = new KeyValueNode(this, identityHashCode, typeName, instanceId, isLoadedFromStorage);
         this.idToNodeMap.put(instanceId, node);
         return node;
     }
 
-    public IRegularNode buildExistingRegularNode(String typeName, long instanceId) {
+    public IRegularNode buildExistingRegularNode(int identityHashCode, String typeName, long instanceId) {
         KeyValueNode node = this.idToNodeMap.get(instanceId);
         if (null == node) {
             boolean isLoadedFromStorage = true;
-            node = new KeyValueNode(this, typeName, instanceId, isLoadedFromStorage);
+            node = new KeyValueNode(this, identityHashCode, typeName, instanceId, isLoadedFromStorage);
             this.idToNodeMap.put(instanceId, node);
         }
         return node;
@@ -230,7 +230,7 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
                     if (oldTargetInstanceId != newTargetInstanceId) {
                         // All nodes seen by the GC are from storage.
                         boolean isLoadedFromStorage = true;
-                        refs[i] = new KeyValueNode(this, node.getInstanceClassName(), newTargetInstanceId, isLoadedFromStorage);
+                        refs[i] = new KeyValueNode(this, node.getIdentityHashCode(), node.getInstanceClassName(), newTargetInstanceId, isLoadedFromStorage);
                         didWrite = true;
                     }
                 }

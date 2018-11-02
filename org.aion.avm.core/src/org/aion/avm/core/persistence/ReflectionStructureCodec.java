@@ -436,7 +436,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
                 RuntimeAssertionError.assertTrue(!(target instanceof org.aion.avm.shadow.java.lang.Class));
                 
                 // Create the node and set it.
-                IRegularNode regularNode = this.graphStore.buildNewRegularNode(target.getClass().getName());
+                IRegularNode regularNode = this.graphStore.buildNewRegularNode(target.getIdentityHashCode(), target.getClass().getName());
                 try {
                     // This token was null, meaning a new instance, so this is a newly written token.
                     boolean isNewlyWritten = true;

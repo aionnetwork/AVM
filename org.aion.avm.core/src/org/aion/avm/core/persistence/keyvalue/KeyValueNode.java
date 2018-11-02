@@ -10,6 +10,7 @@ import org.aion.avm.core.persistence.IRegularNode;
  */
 public class KeyValueNode implements IRegularNode {
     private final KeyValueObjectGraph parentGraph;
+    private final int identityHashCode;
     private final String instanceClassName;
     private final long instanceId;
     private final boolean isLoadedFromStorage;
@@ -21,8 +22,9 @@ public class KeyValueNode implements IRegularNode {
     private boolean hasBeenSaved;
 
     // parentGraph is passed in since there is a great deal of context which lives there (these two classes are unavoidably tightly coupled).
-    public KeyValueNode(KeyValueObjectGraph parentGraph, String instanceClassName, long instanceId, boolean isLoadedFromStorage) {
+    public KeyValueNode(KeyValueObjectGraph parentGraph, int identityHashCode, String instanceClassName, long instanceId, boolean isLoadedFromStorage) {
         this.parentGraph = parentGraph;
+        this.identityHashCode = identityHashCode;
         this.instanceClassName = instanceClassName;
         this.instanceId = instanceId;
         this.isLoadedFromStorage = isLoadedFromStorage;
@@ -42,6 +44,11 @@ public class KeyValueNode implements IRegularNode {
             this.resolvedObject = this.parentGraph.createInstanceStubForNode(this.instanceClassName, this);
         }
         return this.resolvedObject;
+    }
+
+    @Override
+    public int getIdentityHashCode() {
+        return this.identityHashCode;
     }
 
     @Override

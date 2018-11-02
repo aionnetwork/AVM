@@ -25,4 +25,10 @@ public class ClassNode implements INode {
             throw RuntimeAssertionError.unexpected(e);
         }
     }
+
+    @Override
+    public int getIdentityHashCode() {
+        // The hash code of a class is just the hashcode of its name as a string.
+        return this.className.hashCode();
+    }
 }

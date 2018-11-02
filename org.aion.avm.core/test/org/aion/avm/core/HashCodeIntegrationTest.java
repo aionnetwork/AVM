@@ -69,7 +69,7 @@ public class HashCodeIntegrationTest {
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.
-        Assert.assertEquals(257970589, result.getStorageRootHash());
+        Assert.assertEquals(-2043572848, result.getStorageRootHash());
         return TestingHelper.decodeResult(result);
     }
 }
