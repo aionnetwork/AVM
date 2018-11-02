@@ -132,7 +132,8 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         RuntimeAssertionError.assertTrue(this.nextInstanceId < (this.instanceIdBias + HIGH_RANGE_BIAS));
         
         // Create the new node and add it to the map.
-        KeyValueNode node = new KeyValueNode(this, typeName, instanceId);
+        boolean isLoadedFromStorage = false;
+        KeyValueNode node = new KeyValueNode(this, typeName, instanceId, isLoadedFromStorage);
         this.idToNodeMap.put(instanceId, node);
         return node;
     }
@@ -140,7 +141,8 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     public IRegularNode buildExistingRegularNode(String typeName, long instanceId) {
         KeyValueNode node = this.idToNodeMap.get(instanceId);
         if (null == node) {
-            node = new KeyValueNode(this, typeName, instanceId);
+            boolean isLoadedFromStorage = true;
+            node = new KeyValueNode(this, typeName, instanceId, isLoadedFromStorage);
             this.idToNodeMap.put(instanceId, node);
         }
         return node;
@@ -226,7 +228,9 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
                     }
                     // Fixup the reference.
                     if (oldTargetInstanceId != newTargetInstanceId) {
-                        refs[i] = new KeyValueNode(this, node.getInstanceClassName(), newTargetInstanceId);
+                        // All nodes seen by the GC are from storage.
+                        boolean isLoadedFromStorage = true;
+                        refs[i] = new KeyValueNode(this, node.getInstanceClassName(), newTargetInstanceId, isLoadedFromStorage);
                         didWrite = true;
                     }
                 }

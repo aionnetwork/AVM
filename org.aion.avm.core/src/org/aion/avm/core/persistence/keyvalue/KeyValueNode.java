@@ -1,6 +1,7 @@
 package org.aion.avm.core.persistence.keyvalue;
 
 import org.aion.avm.core.persistence.SerializedRepresentation;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.core.persistence.IRegularNode;
 
 
@@ -11,13 +12,20 @@ public class KeyValueNode implements IRegularNode {
     private final KeyValueObjectGraph parentGraph;
     private final String instanceClassName;
     private final long instanceId;
+    private final boolean isLoadedFromStorage;
     private org.aion.avm.shadow.java.lang.Object resolvedObject;
+    // We store the original representation, in cases where we loaded from storage, for later diff comparison and delta hash computation.
+    // (this is lazily discovered, on load)
+    private SerializedRepresentation originalRepresentation;
+    // We want to make sure that each instance is only saved once (since our delta hash depends on that) so we can only save an instance once.
+    private boolean hasBeenSaved;
 
     // parentGraph is passed in since there is a great deal of context which lives there (these two classes are unavoidably tightly coupled).
-    public KeyValueNode(KeyValueObjectGraph parentGraph, String instanceClassName, long instanceId) {
+    public KeyValueNode(KeyValueObjectGraph parentGraph, String instanceClassName, long instanceId, boolean isLoadedFromStorage) {
         this.parentGraph = parentGraph;
         this.instanceClassName = instanceClassName;
         this.instanceId = instanceId;
+        this.isLoadedFromStorage = isLoadedFromStorage;
     }
 
     public String getInstanceClassName() {
@@ -37,14 +45,24 @@ public class KeyValueNode implements IRegularNode {
     }
 
     @Override
-    public SerializedRepresentation loadRegularData() {
-        byte[] data = this.parentGraph.loadStorageForInstance(this.instanceId);
-        return KeyValueCodec.decode(this.parentGraph, data);
+    public SerializedRepresentation loadOriginalData() {
+        if ((null == this.originalRepresentation) && this.isLoadedFromStorage) {
+            byte[] data = this.parentGraph.loadStorageForInstance(this.instanceId);
+            this.originalRepresentation = KeyValueCodec.decode(this.parentGraph, data);
+        }
+        return this.originalRepresentation;
     }
 
     @Override
     public void saveRegularData(SerializedRepresentation extent) {
+        // Given that we now cache the load, a store here would be unreadable.
+        RuntimeAssertionError.assertTrue(!this.hasBeenSaved);
+        // Nobody should be able to save an update to an on-disk node without first loading it.
+        if (this.isLoadedFromStorage) {
+            RuntimeAssertionError.assertTrue(null != this.originalRepresentation);
+        }
         byte[] data = KeyValueCodec.encode(extent);
         this.parentGraph.storeDataForInstance(this.instanceId, data);
+        this.hasBeenSaved = true;
     }
 }

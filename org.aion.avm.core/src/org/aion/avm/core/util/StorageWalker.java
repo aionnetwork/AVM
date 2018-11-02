@@ -189,7 +189,7 @@ public class StorageWalker {
             // -we decode all user-defined objects.
             boolean isCommonUserDefinedCase = (!className.startsWith(PackageConstants.kShadowDotPrefix) && !className.startsWith(PackageConstants.kArrayWrapperDotPrefix));
             // We are going to process this instance so load its data and create its decoder.
-            SerializedRepresentationCodec.Decoder instanceDecoder = new SerializedRepresentationCodec.Decoder(persistenceToken.loadRegularData());
+            SerializedRepresentationCodec.Decoder instanceDecoder = new SerializedRepresentationCodec.Decoder(persistenceToken.loadOriginalData());
             
             if (isStringCase || isObjectArrayCase || isCommonUserDefinedCase) {
                 // We need to special-case the hashCode (normally handled by the shadow Object implementation).
@@ -218,7 +218,7 @@ public class StorageWalker {
             } else {
                 // We might do something with this type, in the future, but not right now.
                 // Just write the references.
-                SerializedRepresentation extent = persistenceToken.loadRegularData();
+                SerializedRepresentation extent = persistenceToken.loadOriginalData();
                 
                 output.println("\t(opaque) refs: " + extent.references.length + "[");
                 for (int i = 0; i < extent.references.length; ++i) {

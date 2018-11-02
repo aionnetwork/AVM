@@ -275,7 +275,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
             this.feeProcessor.writeFirstOneInstanceToStorage(extent.getBillableSize());
         } else {
             // The instance already existed so check to see if we actually need to write it back.
-            SerializedRepresentation originalExtent = persistenceToken.node.loadRegularData();
+            SerializedRepresentation originalExtent = persistenceToken.node.loadOriginalData();
             if (!originalExtent.equals(extent)) {
                 persistenceToken.node.saveRegularData(extent);
                 this.feeProcessor.writeUpdateOneInstanceToStorage(extent.getBillableSize());
@@ -512,7 +512,7 @@ public class ReflectionStructureCodec implements SingleInstanceDeserializer.IAut
             IRegularNode node = ((NodePersistenceToken)persistenceToken).node;
             
             // This is called from the shadow Object "lazyLoad()".  We just want to load the data for this instance and then create the deserializer to pass back to them.
-            SerializedRepresentation extent = node.loadRegularData();
+            SerializedRepresentation extent = node.loadOriginalData();
             deserializeInstance(instance, extent);
             
             int instanceBytes = extent.getBillableSize();
