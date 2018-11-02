@@ -1,6 +1,7 @@
 package org.aion.kernel;
 
 
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.HashUtils;
 import java.math.BigInteger;
 
@@ -65,7 +66,7 @@ public class TransactionContextImpl implements TransactionContext {
         if (isCreate()) {
             ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(tx.getFrom()).putLong(tx.getNonce());
             byte[] hash = HashUtils.sha256(buffer.array());
-            hash[0] = 0x0f;
+            hash[0] = NodeEnvironment.CONTRACT_PREFIX;
             return hash;
         } else {
             return tx.getTo();
