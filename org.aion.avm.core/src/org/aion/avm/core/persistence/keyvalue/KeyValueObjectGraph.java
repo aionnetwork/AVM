@@ -25,6 +25,9 @@ import org.aion.kernel.KernelInterface;
  */
 public class KeyValueObjectGraph implements IObjectGraphStore {
     private static final long HIGH_RANGE_BIAS = 1_000_000_000L;
+    // We are transitioning to the delta hash but we want to preserve the Merkle tree, temporarily, while we discuss the trade-offs.
+    // (public for tests to depend on).
+    public static final boolean USE_DELTA_HASH = true;
 
     private final Map<Long, KeyValueNode> idToNodeMap;
     private final KernelInterface store;
@@ -33,6 +36,10 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     // Tells us which half of the semi-space we are in:  0L or HIGH_RANGE_BIAS.
     // Note that this instanceId is used for segmented addressing, but is not stored in the stored data.
     private long instanceIdBias;
+    // TODO:  Replace this with a properly-sized hash (or tuple of different hashes).
+    private int deltaHash;
+    // We store the initial root we read for the delta hash computation.
+    private SerializedRepresentation initialRootRepresentation;
     private int[][] merkleTree;
     private boolean[] dirtyLeaves;
 
@@ -52,31 +59,39 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
             this.nextInstanceId = decoder.decodeLong();
             this.instanceIdBias = decoder.decodeLong();
             
-            // Read the Merkle tree:  start with the number of levels (we are just using a binary tree).
-            // If we proceed with this approach, we should find a way to store this where we don't need to load/store the entire thing on each call.
-            int levelCount = decoder.decodeInt();
-            this.merkleTree = new int[levelCount][];
-            int leafLevelSize = 0;
-            for (int i = 0; i < levelCount; ++i) {
-                // Read the size of this level.
-                int size = decoder.decodeInt();
-                this.merkleTree[i] = new int[size];
-                
-                // Read every element.
-                for (int j = 0; j < size; ++j) {
-                    this.merkleTree[i][j] = decoder.decodeInt();
+            if (USE_DELTA_HASH) {
+                this.deltaHash = decoder.decodeInt();
+            } else {
+                // Read the Merkle tree:  start with the number of levels (we are just using a binary tree).
+                // If we proceed with this approach, we should find a way to store this where we don't need to load/store the entire thing on each call.
+                int levelCount = decoder.decodeInt();
+                this.merkleTree = new int[levelCount][];
+                int leafLevelSize = 0;
+                for (int i = 0; i < levelCount; ++i) {
+                    // Read the size of this level.
+                    int size = decoder.decodeInt();
+                    this.merkleTree[i] = new int[size];
+                    
+                    // Read every element.
+                    for (int j = 0; j < size; ++j) {
+                        this.merkleTree[i][j] = decoder.decodeInt();
+                    }
+                    if (0 == i) {
+                        leafLevelSize = size;
+                    }
                 }
-                if (0 == i) {
-                    leafLevelSize = size;
-                }
+                this.dirtyLeaves = new boolean[leafLevelSize];
             }
-            this.dirtyLeaves = new boolean[leafLevelSize];
         } else {
             // This must be new.
             this.nextInstanceId = 1L;
             this.instanceIdBias = 0L;
-            this.merkleTree = new int[0][];
-            this.dirtyLeaves = new boolean[0];
+            if (USE_DELTA_HASH) {
+                this.deltaHash = 0;
+            } else {
+                this.merkleTree = new int[0][];
+                this.dirtyLeaves = new boolean[0];
+            }
         }
     }
 
@@ -106,7 +121,8 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         // Wipe any stale node state since we are reading the root, again.
         this.idToNodeMap.clear();
         
-        return loadRootOnly();
+        this.initialRootRepresentation = loadRootOnly();
+        return this.initialRootRepresentation;
     }
 
     @Override
@@ -115,11 +131,18 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         RuntimeAssertionError.assertTrue(null != rootBytes);
         this.store.putStorage(this.address, StorageKeys.CLASS_STATICS, rootBytes);
         
-        // Update index-0, in the Merkle tree.
-        ensureTreeSize(0);
-        // Hash the data into the leaf.
-        this.merkleTree[0][0] = getConsensusHashForRepresentation(root);
-        this.dirtyLeaves[0] = true;
+        if (USE_DELTA_HASH) {
+            if (null != this.initialRootRepresentation) {
+                this.deltaHash ^= getConsensusHashForRepresentation(this.initialRootRepresentation);
+            }
+            this.deltaHash ^= getConsensusHashForRepresentation(root);
+        } else {
+            // Update index-0, in the Merkle tree.
+            ensureTreeSize(0);
+            // Hash the data into the leaf.
+            this.merkleTree[0][0] = getConsensusHashForRepresentation(root);
+            this.dirtyLeaves[0] = true;
+        }
     }
 
     @Override
@@ -162,18 +185,24 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
 
     @Override
     public void flushWrites() {
-        lazyComputeHash();
+        if (!USE_DELTA_HASH) {
+            lazyComputeHash();
+        }
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
         encoder.encodeLong(this.nextInstanceId);
         encoder.encodeLong(this.instanceIdBias);
         
-        // Number of levels.
-        encoder.encodeInt(this.merkleTree.length);
-        // Each level.
-        for (int[] level : this.merkleTree) {
-            encoder.encodeInt(level.length);
-            for (int elt : level) {
-                encoder.encodeInt(elt);
+        if (USE_DELTA_HASH) {
+            encoder.encodeInt(this.deltaHash);
+        } else {
+            // Number of levels.
+            encoder.encodeInt(this.merkleTree.length);
+            // Each level.
+            for (int[] level : this.merkleTree) {
+                encoder.encodeInt(level.length);
+                for (int elt : level) {
+                    encoder.encodeInt(elt);
+                }
             }
         }
         byte[] rawData = encoder.toBytes();
@@ -182,7 +211,9 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
 
     @Override
     public int simpleHashCode() {
-        return lazyComputeHash();
+        return USE_DELTA_HASH
+                ? this.deltaHash
+                : lazyComputeHash();
     }
 
     @Override
@@ -201,9 +232,16 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         // NOTE:  The statics don't move, so we update them in place (just a single SerializedRepresentation).
         long nextScanInstanceId = 0L;
         byte[] currentKey = StorageKeys.CLASS_STATICS;
+        if (USE_DELTA_HASH) {
+            // Reset the delta hash since we will recompute the entire thing with reachable data, only.
+            this.deltaHash = 0;
+        }
         this.idToNodeMap.clear();
         SerializedRepresentation scanningRepresentation = loadRootOnly();
         while (null != scanningRepresentation) {
+            if (USE_DELTA_HASH) {
+                this.deltaHash ^= getConsensusHashForRepresentation(scanningRepresentation);
+            }
             boolean didWrite = false;
             INode[] refs = scanningRepresentation.references;
             for (int i = 0; i < refs.length; ++i) {
@@ -250,18 +288,20 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
             }
         }
         
-        // Rebuild the Merkle tree.
-        this.merkleTree = new int[0][];
-        this.dirtyLeaves = new boolean[0];
-        for (long i = 1L; i < nextInstanceId; ++i) {
-            int index = (int)i - 1;
-            ensureTreeSize(index);
-            // Hash the data into the leaf.
-            byte[] data = this.store.getStorage(this.address, StorageKeys.forInstance(i + targetBias));
-            // The consensus hash is higher-level than the serialized form so we need to decode this in order to hash it.
-            SerializedRepresentation representationToHash = KeyValueCodec.decode(this, data);
-            this.merkleTree[0][index] = getConsensusHashForRepresentation(representationToHash);
-            this.dirtyLeaves[index] = true;
+        if (!USE_DELTA_HASH) {
+            // Rebuild the Merkle tree.
+            this.merkleTree = new int[0][];
+            this.dirtyLeaves = new boolean[0];
+            for (long i = 1L; i < nextInstanceId; ++i) {
+                int index = (int)i - 1;
+                ensureTreeSize(index);
+                // Hash the data into the leaf.
+                byte[] data = this.store.getStorage(this.address, StorageKeys.forInstance(i + targetBias));
+                // The consensus hash is higher-level than the serialized form so we need to decode this in order to hash it.
+                SerializedRepresentation representationToHash = KeyValueCodec.decode(this, data);
+                this.merkleTree[0][index] = getConsensusHashForRepresentation(representationToHash);
+                this.dirtyLeaves[index] = true;
+            }
         }
         
         // Save the internal state
@@ -307,15 +347,26 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     public void storeDataForInstance(long instanceId, SerializedRepresentation original, SerializedRepresentation updated) {
         byte[] data = KeyValueCodec.encode(updated);
         this.store.putStorage(this.address, StorageKeys.forInstance(instanceId + this.instanceIdBias), data);
-        // NOTE:  Just as a proof of concept, we build the Merkle tree on this raw data (it should actually be the SerializedRepresentation).
-        int index = (int)instanceId;
-        ensureTreeSize(index);
-        // Hash the data into the leaf.
-        this.merkleTree[0][index] = getConsensusHashForRepresentation(updated);
-        this.dirtyLeaves[index] = true;
+        
+        if (USE_DELTA_HASH) {
+            if (null != original) {
+                this.deltaHash ^= getConsensusHashForRepresentation(original);
+            }
+            this.deltaHash ^= getConsensusHashForRepresentation(updated);
+        } else {
+            // NOTE:  Just as a proof of concept, we build the Merkle tree on this raw data (it should actually be the SerializedRepresentation).
+            int index = (int)instanceId;
+            ensureTreeSize(index);
+            // Hash the data into the leaf.
+            this.merkleTree[0][index] = getConsensusHashForRepresentation(updated);
+            this.dirtyLeaves[index] = true;
+        }
     }
 
     private void ensureTreeSize(int index) {
+        // This should only be called when using the Merkle hash.
+        RuntimeAssertionError.assertTrue(!USE_DELTA_HASH);
+        
         if (index >= this.dirtyLeaves.length) {
             // Grow the tree.
             int[][] newTree = new int[this.merkleTree.length + 1][];
@@ -341,6 +392,9 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     }
 
     private int lazyComputeHash() {
+        // This should only be called when using the Merkle hash.
+        RuntimeAssertionError.assertTrue(!USE_DELTA_HASH);
+        
         // Recalculate the dirty leaves and push this up the tree.
         int branchLevel = 1;
         boolean[] leafLevelDirty = this.dirtyLeaves;

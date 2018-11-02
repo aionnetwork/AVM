@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.Block;
@@ -49,7 +50,12 @@ public class HashCodeIntegrationTest {
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
-        Assert.assertEquals(923521, createResult.getStorageRootHash());
+        if (KeyValueObjectGraph.USE_DELTA_HASH) {
+            // Empty statics:  0xe1781 -> [0, 0, 0, 0]
+            Assert.assertEquals(0xe1781, createResult.getStorageRootHash());
+        } else {
+            Assert.assertEquals(923521, createResult.getStorageRootHash());
+        }
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
         
         // Store an object.
@@ -69,7 +75,13 @@ public class HashCodeIntegrationTest {
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.
-        Assert.assertEquals(-1723350948, result.getStorageRootHash());
+        if (KeyValueObjectGraph.USE_DELTA_HASH) {
+            // The hash is 0 because the statics are empty, save for the reference to an empty Object, thus meaning that both have the same representation:
+            // The statics contain just the identity hash of the target and the target consists only of the identity hash so they cancel out.
+            Assert.assertEquals(0x0, result.getStorageRootHash());
+        } else {
+            Assert.assertEquals(-1723350948, result.getStorageRootHash());
+        }
         return TestingHelper.decodeResult(result);
     }
 }
