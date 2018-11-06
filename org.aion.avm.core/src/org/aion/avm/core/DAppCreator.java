@@ -110,14 +110,21 @@ public class DAppCreator {
      * Replaces the <code>java.base</code> package with the shadow implementation.
      * Note that this is public since some unit tests call it, directly.
      *
-     * @param classes The class of DApp (names specified in .-style)
+     * @param inputClasses The class of DApp (names specified in .-style)
      * @param preRenameClassHierarchy The pre-rename hierarchy of user-defined classes in the DApp (/-style).
      * @return the transformed classes and any generated classes (names specified in .-style)
      */
-    public static Map<String, byte[]> transformClasses(Map<String, byte[]> classes, Forest<String, ClassInfo> preRenameClassHierarchy) {
+    public static Map<String, byte[]> transformClasses(Map<String, byte[]> inputClasses, Forest<String, ClassInfo> preRenameClassHierarchy) {
         // Before anything, pass the list of classes through the verifier.
         // (this will throw UncaughtException, on verification failure).
-        Verifier.verifyUntrustedClasses(classes);
+        Verifier.verifyUntrustedClasses(inputClasses);
+        
+        // Note:  preRenameUserDefinedClasses includes ONLY classes while preRenameUserClassAndInterfaceSet includes classes AND interfaces.
+        Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
+        ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy);
+        
+        // We need to run our rejection filter and static rename pass.
+        Map<String, byte[]> safeClasses = rejectionAndRenameInputClasses(inputClasses, preRenameUserDefinedClasses, parentClassResolver);
         
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
@@ -132,16 +139,10 @@ public class DAppCreator {
             String superClassDotName = Helpers.internalNameToFulllyQualifiedName(superClassSlashName);
             dynamicHierarchyBuilder.addClass(classDotName, superClassDotName, false, bytecode);
         };
-        // Note:  preRenameUserDefinedClasses includes ONLY classes while preRenameUserClassAndInterfaceSet includes classes AND interfaces.
-        Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
-        Set<String> preRenameUserClassAndInterfaceSet = classes.keySet();
-        PreRenameClassAccessRules preRenameClassAccessRules = new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserClassAndInterfaceSet);
-        NamespaceMapper namespaceMapper = new NamespaceMapper(preRenameClassAccessRules);
-        ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy);
         Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy);
 
-        Map<String, byte[]> mappedClasses = new HashMap<>();
-        for (String name : classes.keySet()) {
+        Map<String, byte[]> transformedClasses = new HashMap<>();
+        for (String name : safeClasses.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
             RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
 
@@ -150,9 +151,7 @@ public class DAppCreator {
             // cause the BlockBuildingMethodVisitor to build lots of small blocks instead of a few big ones (each block incurs a Helper
             // static call, which is somewhat expensive - this is how we bill for energy).
             int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
-            byte[] bytecode = new ClassToolchain.Builder(classes.get(name), parsingOptions)
-                    .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper))
-                    .addNextVisitor(new UserClassMappingVisitor(namespaceMapper))
+            byte[] bytecode = new ClassToolchain.Builder(safeClasses.get(name), parsingOptions)
                     .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
@@ -170,8 +169,7 @@ public class DAppCreator {
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
                     .runAndGetBytecode();
-            String mappedName = PackageConstants.kUserDotPrefix + name;
-            mappedClasses.put(mappedName, bytecode);
+            transformedClasses.put(name, bytecode);
         }
 
         /*
@@ -190,9 +188,9 @@ public class DAppCreator {
             }
         });
         String javaLangObjectSlashName = PackageConstants.kShadowSlashPrefix + "java/lang/Object";
-        for (String name : mappedClasses.keySet()) {
+        for (String name : transformedClasses.keySet()) {
             int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
-            byte[] bytecode = new ClassToolchain.Builder(mappedClasses.get(name), parsingOptions)
+            byte[] bytecode = new ClassToolchain.Builder(transformedClasses.get(name), parsingOptions)
                     .addNextVisitor(new InterfaceFieldMappingVisitor(consumer, userInterfaceSlashNames, javaLangObjectSlashName))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
                     .build()
@@ -332,5 +330,30 @@ public class DAppCreator {
             // Once we are done running this, we want to clear the IHelper.currentContractHelper.
             IHelper.currentContractHelper.remove();
         }
+    }
+
+
+    private static Map<String, byte[]> rejectionAndRenameInputClasses(Map<String, byte[]> inputClasses, Set<String> preRenameUserDefinedClasses, ParentPointers parentClassResolver) {
+        Map<String, byte[]> safeClasses = new HashMap<>();
+        Set<String> preRenameUserClassAndInterfaceSet = inputClasses.keySet();
+        PreRenameClassAccessRules preRenameClassAccessRules = new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserClassAndInterfaceSet);
+        NamespaceMapper namespaceMapper = new NamespaceMapper(preRenameClassAccessRules);
+        
+        for (String name : inputClasses.keySet()) {
+            // Note that transformClasses requires that the input class names by the .-style names.
+            RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
+            
+            int parsingOptions = ClassReader.SKIP_DEBUG;
+            byte[] bytecode = new ClassToolchain.Builder(inputClasses.get(name), parsingOptions)
+                    .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper))
+                    .addNextVisitor(new UserClassMappingVisitor(namespaceMapper))
+                    // (note that we need to pass a bogus HierarchyTreeBuilder into the class writer - can be empty, but not null)
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, new HierarchyTreeBuilder()))
+                    .build()
+                    .runAndGetBytecode();
+            String mappedName = PackageConstants.kUserDotPrefix + name;
+            safeClasses.put(mappedName, bytecode);
+        }
+        return safeClasses;
     }
 }
