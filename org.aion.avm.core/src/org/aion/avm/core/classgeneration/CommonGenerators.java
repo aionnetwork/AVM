@@ -26,6 +26,7 @@ public class CommonGenerators {
     // There doesn't appear to be any way to enumerate these classes in the existing class loader (even though they are part of java.lang)
     // so we will list the names of all the classes we need and assemble them that way.
     // We should at least be able to use the original Throwable's classloader to look up the subclasses (again, since they are in java.lang).
+    // Note:  "java.lang.VirtualMachineError" and children are deliberately absent from this since user code can never see them.
     public static final String[] kExceptionClassNames = new String[] {
             "java.lang.Error",
             "java.lang.AssertionError",
@@ -45,11 +46,6 @@ public class CommonGenerators {
             "java.lang.UnsatisfiedLinkError",
             "java.lang.VerifyError",
             "java.lang.ThreadDeath",
-            "java.lang.VirtualMachineError",
-            "java.lang.InternalError",
-            "java.lang.OutOfMemoryError",
-            "java.lang.StackOverflowError",
-            "java.lang.UnknownError",
             "java.lang.Exception",
             "java.lang.CloneNotSupportedException",
             "java.lang.InterruptedException",
