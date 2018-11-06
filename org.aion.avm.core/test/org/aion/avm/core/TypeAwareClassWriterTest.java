@@ -30,21 +30,21 @@ public class TypeAwareClassWriterTest {
     @Test
     public void testWrappers_generated() throws Exception {
         TestClass clazz = new TestClass(new HierarchyTreeBuilder());
-        String common = clazz.testing_getCommonSuperClass(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/OutOfMemoryError", PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/Error");
+        String common = clazz.testing_getCommonSuperClass(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/AssertionError", PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/Error");
         Assert.assertEquals(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/Error", common);
     }
 
     @Test
     public void testWrappers_generatedAndreal() throws Exception {
         TestClass clazz = new TestClass(new HierarchyTreeBuilder());
-        String common = clazz.testing_getCommonSuperClass(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/OutOfMemoryError", "java/lang/OutOfMemoryError");
+        String common = clazz.testing_getCommonSuperClass(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/AssertionError", "java/lang/AssertionError");
         Assert.assertEquals("java/lang/Throwable", common);
     }
 
     @Test
     public void testShadows_both() throws Exception {
         TestClass clazz = new TestClass(new HierarchyTreeBuilder());
-        String common = clazz.testing_getCommonSuperClass(PackageConstants.kShadowSlashPrefix + "java/lang/OutOfMemoryError", PackageConstants.kShadowSlashPrefix + "java/lang/TypeNotPresentException");
+        String common = clazz.testing_getCommonSuperClass(PackageConstants.kShadowSlashPrefix + "java/lang/AssertionError", PackageConstants.kShadowSlashPrefix + "java/lang/TypeNotPresentException");
         Assert.assertEquals(PackageConstants.kShadowSlashPrefix + "java/lang/Throwable", common);
     }
 
