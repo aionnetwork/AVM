@@ -16,6 +16,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private IHelper helper;
     private ReentrantDAppStack reentrantDAppStack;
     private int index;
+    private KernelInterface taskKernel;
 
     public TransactionTask(TransactionContext ctx, int index){
         this.externalTransactionContext = ctx;
@@ -95,6 +96,22 @@ public class TransactionTask implements Comparable<TransactionTask>{
      */
     public TransactionContext getExternalTransactionCtx() {
         return externalTransactionContext;
+    }
+
+    /**
+     * Set the per task transactional kernel of the current task.
+     */
+    public void setTaskKernel(KernelInterface taskKernel) {
+        this.taskKernel = taskKernel;
+    }
+
+    /**
+     * Get the per task transactional kernel of the current task.
+     *
+     * @return The task transactional kernel of the task.
+     */
+    public KernelInterface getTaskKernel() {
+        return taskKernel;
     }
 
     /**

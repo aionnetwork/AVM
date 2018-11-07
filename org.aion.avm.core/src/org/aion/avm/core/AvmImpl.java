@@ -138,6 +138,7 @@ public class AvmImpl implements AvmInternal {
 
         // All IO will be performed on an per task transactional kernel so we can abort the whole task in one go
         TransactionalKernel taskTransactionalKernel = new TransactionalKernel(this.kernel);
+        task.setTaskKernel(taskTransactionalKernel);
 
         // Acquire both sender and target resources
         byte[] sender = ctx.getCaller();
@@ -202,7 +203,6 @@ public class AvmImpl implements AvmInternal {
         return commonInvoke(parentKernel, task, context);
     }
 
-
     private TransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, TransactionContext ctx) {
         // to capture any error during validation
         TransactionResult.Code error = null;
@@ -264,8 +264,9 @@ public class AvmImpl implements AvmInternal {
         thisTransactionKernel.adjustBalance(ctx.getCaller(), ctx.getValue().negate());
         thisTransactionKernel.adjustBalance(ctx.getAddress(), ctx.getValue());
 
-        // increase nonce
-        thisTransactionKernel.incrementNonce(ctx.getCaller());
+        // At this stage, transaction can no longer be rejected.
+        // The nonce increment will be done regardless of the transaction result.
+        task.getTaskKernel().incrementNonce(ctx.getCaller());
 
         if (!ctx.isBalanceTransfer()) { // do nothing for balance transfers
             if (ctx.isCreate()) { // create
