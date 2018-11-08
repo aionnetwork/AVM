@@ -8,6 +8,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;

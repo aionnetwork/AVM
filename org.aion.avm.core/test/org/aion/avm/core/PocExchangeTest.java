@@ -8,6 +8,7 @@ import org.aion.avm.core.testExchange.*;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;

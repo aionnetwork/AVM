@@ -6,6 +6,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testWallet.*;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.shadow.java.lang.Class;
 import org.aion.avm.userlib.AionList;

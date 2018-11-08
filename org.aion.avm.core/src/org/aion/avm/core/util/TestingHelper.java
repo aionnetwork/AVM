@@ -1,4 +1,4 @@
-package org.aion.avm.core;
+package org.aion.avm.core.util;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;

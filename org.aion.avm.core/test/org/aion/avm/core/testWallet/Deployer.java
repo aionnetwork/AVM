@@ -6,6 +6,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.userlib.AionList;

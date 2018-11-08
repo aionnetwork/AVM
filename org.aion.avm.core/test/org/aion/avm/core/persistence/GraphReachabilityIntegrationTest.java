@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.HelperBasedStorageFees;
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.TestingHelper;
+import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
