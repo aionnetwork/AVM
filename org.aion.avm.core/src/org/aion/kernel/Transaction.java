@@ -87,6 +87,8 @@ public class Transaction {
         this.data = data;
         this.energyLimit = energyLimit;
         this.energyPrice = energyPrice;
+        //TODO: Make sure this constructor is only used for testing purpose. Kernel should always pass AVM the transaction hash.
+        this.transactionHash = Helpers.randomBytes(32);
     }
 
     protected Transaction(Type type, byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice, byte[] transactionHash) {
@@ -172,6 +174,7 @@ public class Transaction {
                 ", value=" + value +
                 ", data=" + Helpers.bytesToHexString(data) +
                 ", energyLimit=" + energyLimit +
+                ", transactionHash" + Helpers.bytesToHexString(transactionHash) +
                 '}';
     }
 }

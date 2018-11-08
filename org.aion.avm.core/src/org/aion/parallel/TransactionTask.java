@@ -1,7 +1,9 @@
 package org.aion.parallel;
 
 import org.aion.avm.core.ReentrantDAppStack;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.*;
 
 
@@ -17,6 +19,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private ReentrantDAppStack reentrantDAppStack;
     private int index;
     private KernelInterface taskKernel;
+    private StringBuffer outBuffer;
 
     public TransactionTask(TransactionContext ctx, int index){
         this.externalTransactionContext = ctx;
@@ -24,6 +27,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.abortState = false;
         this.helper = null;
         this.reentrantDAppStack = new ReentrantDAppStack();
+        this.outBuffer = new StringBuffer();
     }
 
     public TransactionTask(int index, Thread t){
@@ -36,6 +40,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.abortState = false;
         this.helper = null;
         this.reentrantDAppStack = new ReentrantDAppStack();
+        this.outBuffer = new StringBuffer();
     }
 
     /**
@@ -102,6 +107,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
      * Set the per task transactional kernel of the current task.
      */
     public void setTaskKernel(KernelInterface taskKernel) {
+        RuntimeAssertionError.assertTrue(taskKernel instanceof TransactionalKernel);
         this.taskKernel = taskKernel;
     }
 
@@ -112,6 +118,22 @@ public class TransactionTask implements Comparable<TransactionTask>{
      */
     public KernelInterface getTaskKernel() {
         return taskKernel;
+    }
+
+    public void outputPrint(String toPrint){
+        this.outBuffer.append(toPrint);
+    }
+
+    public void outputPrintln(String toPrint){
+        this.outBuffer.append(toPrint + "\n");
+    }
+
+    void outputFlush(){
+        if (this.outBuffer.length() > 0) {
+            System.out.println("Output from transaction " + Helpers.bytesToHexString(externalTransactionContext.getTransactionHash()));
+            System.out.println(this.outBuffer);
+            System.out.flush();
+        }
     }
 
     /**

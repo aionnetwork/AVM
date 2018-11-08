@@ -275,15 +275,14 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         throw new InvalidException();
     }
 
-    // TODO: Create new buffers for print and println, so they can be flushed after parallel transactions
     @Override
     public void avm_print(org.aion.avm.shadow.java.lang.String message) {
-        System.out.print(message.toString());
+        task.outputPrint(message.toString());
     }
 
     @Override
     public void avm_println(org.aion.avm.shadow.java.lang.String message) {
-        System.out.println(message.toString());
+        task.outputPrintln(message.toString());
     }
 
     private long restrictEnergyLimit(long energyLimit) {

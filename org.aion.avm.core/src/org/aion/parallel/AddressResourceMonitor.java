@@ -141,7 +141,7 @@ public class AddressResourceMonitor {
     }
 
     /**
-     * Try commit the result transactional kernel of the given task.
+     * Try commit the task transactional kernel of the given task.
      * The commit will be serialized as the index of the task.
      * All resource hold by task will be released after this method return.
      *
@@ -151,11 +151,10 @@ public class AddressResourceMonitor {
      *      The task need to abort to yield a address resource
      *
      * @param task The requesting task.
-     * @param kernel The transactional kernel of the task.
      *
      * @return True if commit is successful. False if task need to abort.
      */
-    public boolean commitKernelForTask(TransactionTask task, TransactionalKernel kernel){
+    public boolean commitKernelForTask(TransactionTask task){
         boolean ret = false;
 
         synchronized (sync){
@@ -169,7 +168,8 @@ public class AddressResourceMonitor {
             }
 
             if (!task.inAbortState()){
-                kernel.commit();
+                ((TransactionalKernel) task.getTaskKernel()).commit();
+                task.outputFlush();
                 this.commitCounter++;
                 ret = true;
             }
