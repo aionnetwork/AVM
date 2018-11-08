@@ -12,7 +12,6 @@ public class TransactionContextImpl implements TransactionContext {
     private Transaction tx;
     private byte[] origin;
     private int internalCallDepth;
-
     private long blockNumber;
     private long blockTimestamp;
     private long blockEnergyLimit;
@@ -106,6 +105,11 @@ public class TransactionContextImpl implements TransactionContext {
     @Override
     public long getEneryPrice() {
         return tx.getEnergyPrice();
+    }
+
+    @Override
+    public byte[] getTransactionHash() {
+        return tx.getTransactionHash();
     }
 
     @Override

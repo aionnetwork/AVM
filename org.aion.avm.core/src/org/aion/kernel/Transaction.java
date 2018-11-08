@@ -66,6 +66,8 @@ public class Transaction {
 
     long energyPrice;
 
+    byte[] transactionHash;
+
     protected Transaction(Type type, byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         Objects.requireNonNull(type, "The transaction `type` can't be NULL");
         Objects.requireNonNull(from, "The transaction `from` can't be NULL");
@@ -85,6 +87,28 @@ public class Transaction {
         this.data = data;
         this.energyLimit = energyLimit;
         this.energyPrice = energyPrice;
+    }
+
+    protected Transaction(Type type, byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice, byte[] transactionHash) {
+        Objects.requireNonNull(type, "The transaction `type` can't be NULL");
+        Objects.requireNonNull(from, "The transaction `from` can't be NULL");
+        if (type == Type.CREATE) {
+            if (to != null) {
+                throw new IllegalArgumentException("The transaction `to` has to be NULL for CREATE");
+            }
+        } else {
+            Objects.requireNonNull(to, "The transaction `to`  can't be NULL for non-CREATE");
+        }
+
+        this.type = type;
+        this.from = from;
+        this.to = to;
+        this.nonce = nonce;
+        this.value = value;
+        this.data = data;
+        this.energyLimit = energyLimit;
+        this.energyPrice = energyPrice;
+        this.transactionHash = transactionHash;
     }
 
     public long getTimestamp() {
@@ -121,6 +145,10 @@ public class Transaction {
 
     public long getEnergyPrice() {
         return energyPrice;
+    }
+
+    public byte[] getTransactionHash() {
+        return transactionHash;
     }
 
     public int getBasicCost() {

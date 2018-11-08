@@ -30,6 +30,8 @@ public interface TransactionContext {
 
     long getEneryPrice();
 
+    byte[] getTransactionHash();
+
     int getBasicCost();
 
     long getTransactionTimestamp();

@@ -261,6 +261,10 @@ public class HandoffMonitorTest {
             throw new AssertionError("No calls expected");
         }
         @Override
+        public byte[] getTransactionHash(){
+            throw new AssertionError("No calls expected");
+        }
+        @Override
         public int getBasicCost() {
             throw new AssertionError("No calls expected");
         }
