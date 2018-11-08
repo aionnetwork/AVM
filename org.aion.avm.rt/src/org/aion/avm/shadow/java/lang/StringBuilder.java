@@ -13,6 +13,8 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 /**
  * TODO:  Ensure that none of the interface we have provided exposes underlying implementation details (slack buffer space, etc), since we would
  * otherwise need to take that into account with our serialization strategy.
+ * NOTE:  We may want to develop a policy around when an avm_ method can call another avm_ method since this can result in redundant billing
+ * which needs to be part fo the specification.
  */
 public class StringBuilder extends Object implements CharSequence, Appendable{
     static {
@@ -47,38 +49,70 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public StringBuilder avm_append(String str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * str.avm_length());
-        this.v.append(str.getUnderlying());
+        int lengthForBilling = (null != str)
+                ? str.avm_length()
+                : 0;
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
+        java.lang.String underlying = (null != str)
+                ? str.getUnderlying()
+                : null;
+        this.v.append(underlying);
         return this;
     }
 
     public StringBuilder avm_append(StringBuffer sb) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * sb.avm_length());
-        this.v.append(sb.getUnderlying());
+        int lengthForBilling = (null != sb)
+                ? sb.avm_length()
+                : 0;
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
+        java.lang.StringBuffer underlying = (null != sb)
+                ? sb.getUnderlying()
+                : null;
+        this.v.append(underlying);
         return this;
     }
 
     public StringBuilder avm_append(CharArray str) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * str.length());
-        this.v.append(str.getUnderlying());
+        int lengthForBilling = (null != str)
+                ? str.length()
+                : 0;
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
+        char[] underlying = (null != str)
+                ? str.getUnderlying()
+                : null;
+        // Note that this actually will throw NPE if given null.
+        this.v.append(underlying);
         return this;
     }
 
     public StringBuilder avm_append(CharArray str, int offset, int len) {
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * len);
-        this.v.append(str.getUnderlying(), offset, len);
+        char[] underlying = (null != str)
+                ? str.getUnderlying()
+                : null;
+        // Note that this actually will throw NPE if given null.
+        this.v.append(underlying, offset, len);
         return this;
     }
 
     public StringBuilder avm_append(CharSequence s){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_5 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * s.avm_length());
-        this.v.append(s.avm_toString());
+        int lengthForBilling = (null != s)
+                ? s.avm_length()
+                : 0;
+        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_5 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
+        java.lang.String asString = (null != s)
+                ? s.avm_toString().getUnderlying()
+                : null;
+        this.v.append(asString);
         return this;
     }
 
     public StringBuilder avm_append(CharSequence s, int start, int end){
         IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append_6 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(end - start, 0));
-        this.v.append(s.avm_toString().getUnderlying(), start, end);
+        java.lang.String asString = (null != s)
+                ? s.avm_toString().getUnderlying()
+                : null;
+        this.v.append(asString, start, end);
         return this;
     }
 

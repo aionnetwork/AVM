@@ -53,6 +53,29 @@ public class TestResource {
         return builder.toString().length();
     }
 
+    /**
+     * At one point, we didn't have correct null handling in all the StringBuilder.append methods.
+     */
+    public static int checkNullStringBuilderAppend() {
+        StringBuilder builder = new StringBuilder();
+        builder.append((Object)null);
+        builder.append((String)null);
+        builder.append((StringBuffer)null);
+        try {
+            builder.append((char[])null);
+        } catch (NullPointerException e) {
+            // This is actually expected, for this case.
+        }
+        try {
+            builder.append((char[])null, 0, 1);
+        } catch (NullPointerException e) {
+            // This is actually expected, for this case.
+        }
+        builder.append((CharSequence)null);
+        builder.append((CharSequence)null, 0, 1);
+        return builder.toString().length();
+    }
+
     @Override
     public String toString() {
         // Return an empty string (since the default clearly doesn't do that).

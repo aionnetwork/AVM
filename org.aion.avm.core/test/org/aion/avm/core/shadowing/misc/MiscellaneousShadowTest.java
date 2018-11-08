@@ -90,4 +90,14 @@ public class MiscellaneousShadowTest {
         // We override the toString to return an empty string and we add 2 spaces to it.
         Assert.assertEquals(2, valueOfLength);
     }
+
+    /**
+     * Tests that the StringBuilder.append helper correctly handles null arguments.
+     */
+    @Test
+    public void testNullStringBuilderAppend() throws Exception {
+        int valueOfLength = (Integer) this.clazz.getMethod(NamespaceMapper.mapMethodName("checkNullStringBuilderAppend")).invoke(null);
+        // We wrote 7 nulls, and only 2 caused NPE.  Of those 5 writes, 4 were "null" but 1 was "n".
+        Assert.assertEquals(17, valueOfLength);
+    }
 }
