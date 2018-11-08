@@ -15,10 +15,11 @@ import org.objectweb.asm.Opcodes;
 public class ConstantVisitorTest {
     @Test
     public void testLoadStringConstant() throws Exception {
+        String testClassName = "TestClass";
         ClassWriter writer = new ClassWriter(0);
         ConstantVisitor visitor = new ConstantVisitor(TestHelpers.CLASS_NAME);
         visitor.setDelegate(writer);
-        visitor.visit(Opcodes.V10, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, "TestClass", null, "java/lang/Object", null);
+        visitor.visit(Opcodes.V10, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, testClassName, null, "java/lang/Object", null);
         
         // Write the <clinit>.
         MethodVisitor methodVisitor = visitor.visitMethod(Opcodes.ACC_STATIC, "<clinit>", "()V", null, null);
@@ -35,8 +36,11 @@ public class ConstantVisitorTest {
         
         byte[] bytecode = writer.toByteArray();
         // Get the class and make sure there are no issues.  Note that this would fail in our old implementation (duplicate <clinit>).
-        Class<?> clazz = SingleLoader.loadClass("TestClass", bytecode);
+        Assert.assertEquals(0, TestHelpers.wrapAsStringCounter);
+        Class<?> clazz = SingleLoader.loadClass(testClassName, bytecode);
         Assert.assertNotNull(clazz);
+        // Prove that the <clinit> _did_ actually run.
+        Assert.assertEquals(1, TestHelpers.wrapAsStringCounter);
     }
 
 
@@ -45,8 +49,10 @@ public class ConstantVisitorTest {
      */
     public static class TestHelpers {
         public static final String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(TestHelpers.class.getName());
+        public static int wrapAsStringCounter;
         
         public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+            TestHelpers.wrapAsStringCounter += 1;
             // We don't do anything with this so even null works.
             return null;
         }
