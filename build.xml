@@ -69,6 +69,7 @@
                  version="true"
                  use="true"
                  windowtitle="AVM Blockchain API">
+            <arg value = "-html5"/>
             <fileset dir="org.aion.avm.api/src">
                 <include name="**/*.java"/>
                 <exclude name="**/module-info.java"/>
