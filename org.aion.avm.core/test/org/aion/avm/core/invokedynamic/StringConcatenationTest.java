@@ -109,7 +109,7 @@ public class StringConcatenationTest {
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, className))))
                 .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME))
+                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, PackageConstants.kShadowSlashPrefix))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         new ParentPointers(Collections.singleton(className), classHierarchy),

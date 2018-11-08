@@ -170,7 +170,7 @@ public class CommonGenerators {
             PreRenameClassAccessRules emptyUserRuleRuleSet = new PreRenameClassAccessRules(Collections.emptySet(), Collections.emptySet());
             byte[] bytecode = new ClassToolchain.Builder(cnt, ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(emptyUserRuleRuleSet)))
-                    .addNextVisitor(new ClassShadowing(PackageConstants.kInternalSlashPrefix + "Helper"))
+                    .addNextVisitor(new ClassShadowing(PackageConstants.kInternalSlashPrefix + "Helper", PackageConstants.kShadowSlashPrefix))
                     .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                     .build()
                     .runAndGetBytecode();

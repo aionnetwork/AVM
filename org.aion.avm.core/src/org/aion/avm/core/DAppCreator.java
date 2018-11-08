@@ -155,7 +155,7 @@ public class DAppCreator {
                     .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
                     .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
-                    .addNextVisitor(new ClassShadowing(HELPER_CLASS))
+                    .addNextVisitor(new ClassShadowing(HELPER_CLASS, PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, parentClassResolver, generatedClassesSink))
                     .addNextVisitor(new AutomaticGraphVisitor())

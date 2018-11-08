@@ -4,7 +4,6 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.*;
 
@@ -30,10 +29,6 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
         this.runtimeClassName = runtimeClassName;
         this.classWhiteList = new ClassWhiteList();
         this.postRenameJavaLangObject = shadowPackage + JAVA_LANG_OBJECT;
-    }
-
-    public ClassShadowing(String runtimeClassName) {
-        this(runtimeClassName, PackageConstants.kShadowSlashPrefix);
     }
 
     @Override

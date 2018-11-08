@@ -60,7 +60,7 @@ public class ClassShadowingTest {
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className)))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
-                        .addNextVisitor(new ClassShadowing(runtimeClassName))
+                        .addNextVisitor(new ClassShadowing(runtimeClassName, PackageConstants.kShadowSlashPrefix))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
@@ -104,7 +104,7 @@ public class ClassShadowingTest {
                 new ClassToolchain.Builder(inputBytes, 0) /* DO NOT SKIP ANYTHING */
                         .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className)))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
-                        .addNextVisitor(new ClassShadowing(runtimeClassName))
+                        .addNextVisitor(new ClassShadowing(runtimeClassName, PackageConstants.kShadowSlashPrefix))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
@@ -143,7 +143,7 @@ public class ClassShadowingTest {
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className, innerClassName)))
                         .addNextVisitor(new ConstantVisitor(runtimeClassName))
-                        .addNextVisitor(new ClassShadowing(runtimeClassName))
+                        .addNextVisitor(new ClassShadowing(runtimeClassName, PackageConstants.kShadowSlashPrefix))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
