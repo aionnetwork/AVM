@@ -28,7 +28,7 @@ public interface TransactionContext {
 
     long getEnergyLimit();
 
-    long getEneryPrice();
+    long getEnergyPrice();
 
     byte[] getTransactionHash();
 

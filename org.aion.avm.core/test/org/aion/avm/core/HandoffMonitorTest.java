@@ -257,7 +257,7 @@ public class HandoffMonitorTest {
             throw new AssertionError("No calls expected");
         }
         @Override
-        public long getEneryPrice() {
+        public long getEnergyPrice() {
             throw new AssertionError("No calls expected");
         }
         @Override

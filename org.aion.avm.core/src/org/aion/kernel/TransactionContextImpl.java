@@ -103,7 +103,7 @@ public class TransactionContextImpl implements TransactionContext {
     }
 
     @Override
-    public long getEneryPrice() {
+    public long getEnergyPrice() {
         return tx.getEnergyPrice();
     }
 

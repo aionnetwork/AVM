@@ -6,7 +6,6 @@ import org.aion.avm.internal.*;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.HashUtils;
-import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
 
@@ -61,7 +60,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public long avm_getEnergyPrice() {
-        return ctx.getEneryPrice();
+        return ctx.getEnergyPrice();
     }
 
     @Override
@@ -152,7 +151,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 underlyingValue,
                 data.getUnderlying(),
                 restrictEnergyLimit(energyLimit),
-                ctx.getEneryPrice());
+                ctx.getEnergyPrice());
         
         // Call the common run helper.
         return runInternalCall(internalTx);
@@ -178,7 +177,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 underlyingValue,
                 data.getUnderlying(),
                 restrictEnergyLimit(energyLimit),
-                ctx.getEneryPrice());
+                ctx.getEnergyPrice());
         
         // Call the common run helper.
         return runInternalCall(internalTx);

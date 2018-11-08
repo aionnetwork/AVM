@@ -130,7 +130,7 @@ public class AvmImpl implements AvmInternal {
         RuntimeAssertionError.assertTrue(ctx != null);
 
         // value/energyPrice/energyLimit sanity check
-        if (ctx.getValue().compareTo(BigInteger.ZERO) < 0 || ctx.getEneryPrice() <= 0 || ctx.getEnergyLimit() < ctx.getBasicCost()) {
+        if (ctx.getValue().compareTo(BigInteger.ZERO) < 0 || ctx.getEnergyPrice() <= 0 || ctx.getEnergyLimit() < ctx.getBasicCost()) {
             // Instead of charging the tx basic cost at the outer level, we moved the billing logic into "run".
             // The min energyLimit check here is to avoid spams
             error = TransactionResult.Code.REJECTED;
@@ -170,7 +170,7 @@ public class AvmImpl implements AvmInternal {
         }
 
         // Deduct energy for transaction
-        taskTransactionalKernel.adjustBalance(sender, BigInteger.valueOf(result.getEnergyUsed() * ctx.getEneryPrice()).negate());
+        taskTransactionalKernel.adjustBalance(sender, BigInteger.valueOf(result.getEnergyUsed() * ctx.getEnergyPrice()).negate());
 
         // Task transactional kernel commits are serialized through address resource monitor
         if (!this.resourceMonitor.commitKernelForTask(task, taskTransactionalKernel)){
@@ -211,7 +211,7 @@ public class AvmImpl implements AvmInternal {
         // balance check
         byte[] sender = ctx.getCaller();
         BigInteger senderBalance = parentKernel.getBalance(sender);
-        if (ctx.getValue().add(BigInteger.valueOf(ctx.getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getEneryPrice())))
+        if (ctx.getValue().add(BigInteger.valueOf(ctx.getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getEnergyPrice())))
                 .compareTo(senderBalance) > 0) {
             error = TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
         }
@@ -229,13 +229,13 @@ public class AvmImpl implements AvmInternal {
          */
 
         // withhold the total energy cost
-        parentKernel.adjustBalance(ctx.getCaller(), BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEneryPrice()).negate());
+        parentKernel.adjustBalance(ctx.getCaller(), BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEnergyPrice()).negate());
 
         // Run the common logic with the parent kernel as the top-level one.
         TransactionResult result = commonInvoke(parentKernel, task, ctx);
 
         // Refund the withheld energy
-        parentKernel.adjustBalance(ctx.getCaller(), BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEneryPrice()));
+        parentKernel.adjustBalance(ctx.getCaller(), BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEnergyPrice()));
 
         return result;
     }

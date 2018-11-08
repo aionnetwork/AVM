@@ -56,7 +56,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
         this.value = new BigInteger(ctx.getValue());
         this.data = ctx.getData();
         this.energyLimit = ctx.getEnergyLimit();
-        this.energyPrice = ctx.getEneryPrice();
+        this.energyPrice = ctx.getEnergyPrice();
         this.blockNumber = ctx.getBlockNumber();
         this.blockTimstamp = ctx.getBlockTimestamp();
         this.blockDifficulty = ctx.getBlockDifficulty();
