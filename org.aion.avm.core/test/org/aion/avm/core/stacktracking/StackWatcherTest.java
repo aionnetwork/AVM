@@ -89,18 +89,17 @@ public class StackWatcherTest {
     }
 
     @Test
-    public void testStackOverflowConsistency() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
+    public void testStackOverflowConsistency() throws Exception {
         StackWatcher sw = new StackWatcher();
         sw.setPolicy(StackWatcher.POLICY_SIZE);
         sw.setMaxStackDepth(600);
         sw.setMaxStackSize(20000);
         Helpers.attachStackWatcher(classLoader, sw);
+        clazz.getDeclaredField("EXTERNAL_STACK_WATCHER").set(null, sw);
 
         Object obj;
         Method method;
         Field counter;
-        Object ret;
-        Boolean expectedError;
         Object prev = -1;
         Object cur = -1;
 
@@ -111,7 +110,7 @@ public class StackWatcherTest {
             method = clazz.getMethod("testStackOverflowConsistency");
             counter = clazz.getDeclaredField("upCounter");
             try{
-                ret = method.invoke(obj);
+                method.invoke(obj);
             }catch(InvocationTargetException e){
                 Assert.assertTrue(e.getCause() instanceof OutOfStackException);
                 cur = counter.get(obj);
@@ -133,7 +132,7 @@ public class StackWatcherTest {
             method = clazz.getMethod("testStackOverflowConsistency");
             counter = clazz.getDeclaredField("upCounter");
             try{
-                ret = method.invoke(obj);
+                method.invoke(obj);
             }catch(InvocationTargetException e){
                 Assert.assertTrue(e.getCause() instanceof OutOfStackException);
                 cur = counter.get(obj);
@@ -147,12 +146,13 @@ public class StackWatcherTest {
     }
 
     @Test
-    public void testStackTrackingConsistency() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testStackTrackingConsistency() throws Exception {
         StackWatcher sw = new StackWatcher();
         sw.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
         sw.setMaxStackDepth(200);
         sw.setMaxStackSize(20000);
         Helpers.attachStackWatcher(classLoader, sw);
+        clazz.getDeclaredField("EXTERNAL_STACK_WATCHER").set(null, sw);
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testStackTrackingConsistency");
@@ -162,12 +162,13 @@ public class StackWatcherTest {
     }
 
     @Test
-    public void testLocalTryCatch() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testLocalTryCatch() throws Exception {
         StackWatcher sw = new StackWatcher();
         sw.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
         sw.setMaxStackDepth(200);
         sw.setMaxStackSize(20000);
         Helpers.attachStackWatcher(classLoader, sw);
+        clazz.getDeclaredField("EXTERNAL_STACK_WATCHER").set(null, sw);
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testLocalTryCatch");
@@ -177,12 +178,13 @@ public class StackWatcherTest {
     }
 
     @Test
-    public void testRemoteTryCatch() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void testRemoteTryCatch() throws Exception {
         StackWatcher sw = new StackWatcher();
         sw.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
         sw.setMaxStackDepth(200);
         sw.setMaxStackSize(20000);
         Helpers.attachStackWatcher(classLoader, sw);
+        clazz.getDeclaredField("EXTERNAL_STACK_WATCHER").set(null, sw);
 
         Object obj = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod("testRemoteTryCatch");

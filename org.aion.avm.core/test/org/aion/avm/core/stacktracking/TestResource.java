@@ -1,9 +1,11 @@
 package org.aion.avm.core.stacktracking;
 
-import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.StackWatcher;
 
+
 public class TestResource {
+    // We can't directly rely on the "Helpers" class name since a different name is used in the instrumentation.
+    public static StackWatcher EXTERNAL_STACK_WATCHER;
 
     public int depth = 0;
     public int upCounter = 0;
@@ -48,18 +50,18 @@ public class TestResource {
     }
 
     public boolean testStackTrackingConsistency(){
-        int d1 = Helper.stackWatcher.getCurStackDepth();
-        int s1 = Helper.stackWatcher.getCurStackSize();
+        int d1 = EXTERNAL_STACK_WATCHER.getCurStackDepth();
+        int s1 = EXTERNAL_STACK_WATCHER.getCurStackSize();
         countDown(20);
-        int d2 = Helper.stackWatcher.getCurStackDepth();
-        int s2 = Helper.stackWatcher.getCurStackSize();
+        int d2 = EXTERNAL_STACK_WATCHER.getCurStackDepth();
+        int s2 = EXTERNAL_STACK_WATCHER.getCurStackSize();
         return (d1 == d2) && (s1 == s2);
     }
 
 
     public boolean testLocalTryCatch(){
-        int d1 = Helper.stackWatcher.getCurStackDepth();
-        int s1 = Helper.stackWatcher.getCurStackSize();
+        int d1 = EXTERNAL_STACK_WATCHER.getCurStackDepth();
+        int s1 = EXTERNAL_STACK_WATCHER.getCurStackSize();
         boolean b1 = false;
         boolean b2 = false;
 
@@ -70,15 +72,15 @@ public class TestResource {
         try{
             throwCDE();
         }catch (Exception e){
-            int d2 = Helper.stackWatcher.getCurStackDepth();
-            int s2 = Helper.stackWatcher.getCurStackSize();
+            int d2 = EXTERNAL_STACK_WATCHER.getCurStackDepth();
+            int s2 = EXTERNAL_STACK_WATCHER.getCurStackSize();
             // System.out.println("catch");
             // System.out.println(d2);
             // System.out.println(s2);
             b1 = (d1 == d2) && (s1 == s2);
         }finally{
-            int d3 = Helper.stackWatcher.getCurStackDepth();
-            int s3 = Helper.stackWatcher.getCurStackSize();
+            int d3 = EXTERNAL_STACK_WATCHER.getCurStackDepth();
+            int s3 = EXTERNAL_STACK_WATCHER.getCurStackSize();
             // System.out.println("finally");
             // System.out.println(d3);
             // System.out.println(s3);
@@ -88,8 +90,8 @@ public class TestResource {
     }
 
     public boolean testRemoteTryCatch(){
-        int d1 = Helper.stackWatcher.getCurStackDepth();
-        int s1 = Helper.stackWatcher.getCurStackSize();
+        int d1 = EXTERNAL_STACK_WATCHER.getCurStackDepth();
+        int s1 = EXTERNAL_STACK_WATCHER.getCurStackSize();
         boolean b1 = false;
         boolean b2 = false;
 
@@ -100,8 +102,8 @@ public class TestResource {
         try {
             countDownWithException(20);
         }catch (Exception e){
-            int d2 = Helper.stackWatcher.getCurStackDepth();
-            int s2 = Helper.stackWatcher.getCurStackSize();
+            int d2 = EXTERNAL_STACK_WATCHER.getCurStackDepth();
+            int s2 = EXTERNAL_STACK_WATCHER.getCurStackSize();
 
             // System.out.println("catch");
             // System.out.println(d2);
@@ -109,8 +111,8 @@ public class TestResource {
 
             b1 = (d1 == d2) && (s1 == s2);
         }finally{
-            int d3 = Helper.stackWatcher.getCurStackDepth();
-            int s3 = Helper.stackWatcher.getCurStackSize();
+            int d3 = EXTERNAL_STACK_WATCHER.getCurStackDepth();
+            int s3 = EXTERNAL_STACK_WATCHER.getCurStackSize();
 
             // System.out.println("finally");
             // System.out.println(d3);
