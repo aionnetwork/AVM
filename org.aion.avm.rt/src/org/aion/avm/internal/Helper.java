@@ -3,10 +3,10 @@ package org.aion.avm.internal;
 import java.lang.reflect.Field;
 import java.util.IdentityHashMap;
 
+import org.aion.avm.api.BlockchainRuntime;
+
 
 public class Helper implements IHelper {
-
-    public static IBlockchainRuntime blockchainRuntime;
     public static StackWatcher stackWatcher;
 
     private static long energyLeft;
@@ -337,9 +337,9 @@ public class Helper implements IHelper {
     }
     @Override
     public int captureSnapshotAndNextHashCode() {
-        this.snapshot_blockchainRuntime = Helper.blockchainRuntime;
+        this.snapshot_blockchainRuntime = BlockchainRuntime.blockchainRuntime;
         this.snapshot_stackWatcher = Helper.stackWatcher;
-        Helper.blockchainRuntime = null;
+        BlockchainRuntime.blockchainRuntime = null;
         Helper.stackWatcher = null;
         this.snapshot_energyLeft = Helper.energyLeft;
         this.snapshot_lateLoader = Helper.lateLoader;
@@ -350,7 +350,7 @@ public class Helper implements IHelper {
     }
     @Override
     public void applySnapshotAndNextHashCode(int nextHashCode) {
-        Helper.blockchainRuntime = this.snapshot_blockchainRuntime;
+        BlockchainRuntime.blockchainRuntime = this.snapshot_blockchainRuntime;
         Helper.stackWatcher = this.snapshot_stackWatcher;
         Helper.energyLeft = this.snapshot_energyLeft;
         Helper.lateLoader = this.snapshot_lateLoader;

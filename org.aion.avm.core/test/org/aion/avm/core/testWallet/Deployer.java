@@ -1,13 +1,13 @@
 package org.aion.avm.core.testWallet;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.*;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
-import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -73,22 +73,22 @@ public class Deployer {
         int requiredVotes = 2;
         long dailyLimit = 5000;
         // Init the Wallet.
-        DirectProxy.init((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);},
+        DirectProxy.init((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);},
                 extra1, extra2, requiredVotes, dailyLimit);
 
         // First of all, just prove that we can send them some energy.
         Address paymentFrom = buildAddress(4);
         long paymendValue = 5;
-        DirectProxy.payable((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(paymentFrom.unwrap()).withData(input).withEventCounter(eventCounts);},
+        DirectProxy.payable((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(paymentFrom.unwrap()).withData(input).withEventCounter(eventCounts);},
                 paymentFrom, paymendValue);
         RuntimeAssertionError.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kDeposit));
 
         // Try to add an owner - we need to call this twice to see the event output: sender and extra1.
         Address newOwner = buildAddress(5);
-        boolean didAdd = DirectProxy.addOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);}, newOwner);
+        boolean didAdd = DirectProxy.addOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);}, newOwner);
         RuntimeAssertionError.assertTrue(!didAdd);
         RuntimeAssertionError.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerAdded));
-        didAdd = DirectProxy.addOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra1.unwrap()).withData(input).withEventCounter(eventCounts);}, newOwner);
+        didAdd = DirectProxy.addOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra1.unwrap()).withData(input).withEventCounter(eventCounts);}, newOwner);
         RuntimeAssertionError.assertTrue(didAdd);
         RuntimeAssertionError.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerAdded));
 
@@ -96,62 +96,62 @@ public class Deployer {
         Address transactionTo = buildAddress(6);
         long transactionSize = dailyLimit - 1;
         RuntimeAssertionError.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
-        DirectProxy.execute((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);},
+        DirectProxy.execute((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);},
                 transactionTo, transactionSize, new byte[] {1});
         RuntimeAssertionError.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
 
         // Now, send another transaction, observe that it requires multisig confirmation, and confirm it with our new owner.
         Address confirmTransactionTo = buildAddress(7);
         RuntimeAssertionError.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kConfirmationNeeded));
-        byte[] toConfirm = DirectProxy.execute((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);},
+        byte[] toConfirm = DirectProxy.execute((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);},
                 confirmTransactionTo, transactionSize, new byte[] {1});
         RuntimeAssertionError.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kSingleTransact));
         RuntimeAssertionError.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kConfirmationNeeded));
-        boolean didConfirm = DirectProxy.confirm((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(newOwner.unwrap()).withData(input).withEventCounter(eventCounts);},
+        boolean didConfirm = DirectProxy.confirm((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(newOwner.unwrap()).withData(input).withEventCounter(eventCounts);},
                 toConfirm);
         RuntimeAssertionError.assertTrue(didConfirm);
         RuntimeAssertionError.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kMultiTransact));
 
         // Change the count of required confirmations.
-        boolean didChange = DirectProxy.changeRequirement((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);}, 3);
+        boolean didChange = DirectProxy.changeRequirement((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);}, 3);
         RuntimeAssertionError.assertTrue(!didChange);
         RuntimeAssertionError.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kRequirementChanged));
-        didChange = DirectProxy.changeRequirement((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra1.unwrap()).withData(input).withEventCounter(eventCounts);}, 3);
+        didChange = DirectProxy.changeRequirement((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra1.unwrap()).withData(input).withEventCounter(eventCounts);}, 3);
         RuntimeAssertionError.assertTrue(didChange);
         RuntimeAssertionError.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kRequirementChanged));
 
         // Change the owner.
         Address lateOwner = buildAddress(8);
-        RuntimeAssertionError.assertTrue(sender.equals(DirectProxy.getOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(lateOwner.unwrap()).withData(input).withEventCounter(eventCounts);},
+        RuntimeAssertionError.assertTrue(sender.equals(DirectProxy.getOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(lateOwner.unwrap()).withData(input).withEventCounter(eventCounts);},
                 0)));
-        didChange = DirectProxy.changeOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);}, sender, lateOwner);
+        didChange = DirectProxy.changeOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(sender.unwrap()).withData(input).withEventCounter(eventCounts);}, sender, lateOwner);
         RuntimeAssertionError.assertTrue(!didChange);
-        didChange = DirectProxy.changeOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra1.unwrap()).withData(input).withEventCounter(eventCounts);}, sender, lateOwner);
+        didChange = DirectProxy.changeOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra1.unwrap()).withData(input).withEventCounter(eventCounts);}, sender, lateOwner);
         RuntimeAssertionError.assertTrue(!didChange);
         RuntimeAssertionError.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerChanged));
-        didChange = DirectProxy.changeOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra2.unwrap()).withData(input).withEventCounter(eventCounts);}, sender, lateOwner);
+        didChange = DirectProxy.changeOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra2.unwrap()).withData(input).withEventCounter(eventCounts);}, sender, lateOwner);
         RuntimeAssertionError.assertTrue(didChange);
         RuntimeAssertionError.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerChanged));
 
         // Try to remove an owner, but have someone revoke that so that it can't happen.
-        boolean didRemove = DirectProxy.removeOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(lateOwner.unwrap()).withData(input).withEventCounter(eventCounts);}, extra1);
+        boolean didRemove = DirectProxy.removeOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(lateOwner.unwrap()).withData(input).withEventCounter(eventCounts);}, extra1);
         RuntimeAssertionError.assertTrue(!didRemove);
-        didRemove = DirectProxy.removeOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra2.unwrap()).withData(input).withEventCounter(eventCounts);}, extra1);
+        didRemove = DirectProxy.removeOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra2.unwrap()).withData(input).withEventCounter(eventCounts);}, extra1);
         RuntimeAssertionError.assertTrue(!didRemove);
         RuntimeAssertionError.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kRevoke));
-        DirectProxy.revoke((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(lateOwner.unwrap()).withData(input).withEventCounter(eventCounts);},
+        DirectProxy.revoke((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(lateOwner.unwrap()).withData(input).withEventCounter(eventCounts);},
                 CallEncoder.removeOwner(extra1)
         );
         RuntimeAssertionError.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kRevoke));
         // This fails since one of the owners revoked.
-        didRemove = DirectProxy.removeOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra1.unwrap()).withData(input).withEventCounter(eventCounts);}, extra1);
+        didRemove = DirectProxy.removeOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra1.unwrap()).withData(input).withEventCounter(eventCounts);}, extra1);
         RuntimeAssertionError.assertTrue(!didRemove);
         RuntimeAssertionError.assertTrue(0 == loggingRuntime.getEventCount(EventLogger.kOwnerRemoved));
         // But this succeeds when they re-agree.
-        didRemove = DirectProxy.removeOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(lateOwner.unwrap()).withData(input).withEventCounter(eventCounts);}, extra1);
+        didRemove = DirectProxy.removeOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(lateOwner.unwrap()).withData(input).withEventCounter(eventCounts);}, extra1);
         RuntimeAssertionError.assertTrue(didRemove);
         RuntimeAssertionError.assertTrue(1 == loggingRuntime.getEventCount(EventLogger.kOwnerRemoved));
-        RuntimeAssertionError.assertTrue(extra2.equals(DirectProxy.getOwner((input) -> {Helper.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra1.unwrap()).withData(input).withEventCounter(eventCounts);},
+        RuntimeAssertionError.assertTrue(extra2.equals(DirectProxy.getOwner((input) -> {BlockchainRuntime.blockchainRuntime = new TestingBlockchainRuntime().withCaller(extra1.unwrap()).withData(input).withEventCounter(eventCounts);},
                 0)));
 
         // We should have seen 13 confirmations over the course of the test run.

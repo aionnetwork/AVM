@@ -205,7 +205,7 @@ public class Helpers {
     }
 
     /**
-     * Attaches a BlockchainRuntime instance to the Helper class (per contract) so DApp can
+     * Attaches a BlockchainRuntime instance to the BlockchainRuntime class (per contract) so DApp can
      * access blockchain related methods.
      *
      * @param contractLoader
@@ -213,8 +213,8 @@ public class Helpers {
      */
     public static void attachBlockchainRuntime(AvmClassLoader contractLoader, IBlockchainRuntime rt) {
         try {
-            String helperClassName = Helper.class.getName();
-            Class<?> helperClass = contractLoader.loadClass(helperClassName);
+            String runtimeClassName = BlockchainRuntime.class.getName();
+            Class<?> helperClass = contractLoader.loadClass(runtimeClassName);
             helperClass.getField("blockchainRuntime").set(null, rt);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.

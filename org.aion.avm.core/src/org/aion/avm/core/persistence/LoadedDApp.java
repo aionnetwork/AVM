@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IBlockchainRuntime;
+import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
@@ -52,9 +53,10 @@ public class LoadedDApp {
 
     // Other caches of specific pieces of data which are lazily built.
     private Class<?> helperClass;
+    private Class<?> blockchainRuntimeClass;
     private Class<?> mainClass;
     private Constructor<?> helperConstructor;
-    private Field helperBlockchainRuntimeField;
+    private Field runtimeBlockchainRuntimeField;
     private Method mainMethod;
     private Method helperClearTestingStateMethod;
     private long loadedBlockNum;
@@ -214,7 +216,7 @@ public class LoadedDApp {
      */
     public void attachBlockchainRuntime(IBlockchainRuntime runtime) {
         try {
-            getHelperBlochchainRuntimeField().set(null, runtime);
+            getBlochchainRuntimeField().set(null, runtime);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);
@@ -337,6 +339,17 @@ public class LoadedDApp {
         return helperClass;
     }
 
+    private Class<?> loadBlockchainRuntimeClass() throws ClassNotFoundException {
+        Class<?> runtimeClass = this.blockchainRuntimeClass;
+        if (null == runtimeClass) {
+            String runtimeClassName = BlockchainRuntime.class.getName();
+            runtimeClass = this.loader.loadClass(runtimeClassName);
+            RuntimeAssertionError.assertTrue(runtimeClass.getClassLoader() == this.loader);
+            this.blockchainRuntimeClass = runtimeClass;
+        }
+        return runtimeClass;
+    }
+
     private Class<?> loadMainClass() throws ClassNotFoundException {
         Class<?> mainClass = this.mainClass;
         if (null == mainClass) {
@@ -358,14 +371,14 @@ public class LoadedDApp {
         return helperConstructor;
     }
 
-    private Field getHelperBlochchainRuntimeField() throws ClassNotFoundException, NoSuchFieldException, SecurityException  {
-        Field helperBlockchainRuntimeField = this.helperBlockchainRuntimeField;
-        if (null == helperBlockchainRuntimeField) {
-            Class<?> helperClass = loadHelperClass();
-            helperBlockchainRuntimeField = helperClass.getField("blockchainRuntime");
-            this.helperBlockchainRuntimeField = helperBlockchainRuntimeField;
+    private Field getBlochchainRuntimeField() throws ClassNotFoundException, NoSuchFieldException, SecurityException  {
+        Field runtimeBlockchainRuntimeField = this.runtimeBlockchainRuntimeField;
+        if (null == runtimeBlockchainRuntimeField) {
+            Class<?> runtimeClass = loadBlockchainRuntimeClass();
+            runtimeBlockchainRuntimeField = runtimeClass.getField("blockchainRuntime");
+            this.runtimeBlockchainRuntimeField = runtimeBlockchainRuntimeField;
         }
-        return helperBlockchainRuntimeField;
+        return runtimeBlockchainRuntimeField;
     }
 
     private Method getMainMethod() throws ClassNotFoundException, NoSuchMethodException, SecurityException {
