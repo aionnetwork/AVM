@@ -10,14 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 public class ClassMetering extends ClassToolchain.ToolChainClassVisitor {
-    private final String runtimeClassName;
     private Map<String, Integer> objectSizes;
     private final BytecodeFeeScheduler bytecodeFeeScheduler;
 
-    public ClassMetering(String runtimeClassName, Map<String, Integer> objectSizes) {
+    public ClassMetering(Map<String, Integer> objectSizes) {
         super(Opcodes.ASM6);
 
-        this.runtimeClassName = runtimeClassName;
         this.objectSizes = objectSizes;
         
         // Note that we construct the fee scheduler, internally.
@@ -52,7 +50,7 @@ public class ClassMetering extends ClassToolchain.ToolChainClassVisitor {
                 }
 
                 // We can now build the arraywrapper over the real visitor, and accept it in order to add the instrumentation.
-                BlockInstrumentationVisitor instrumentingVisitor = new BlockInstrumentationVisitor(ClassMetering.this.runtimeClassName, realVisitor, blocks);
+                BlockInstrumentationVisitor instrumentingVisitor = new BlockInstrumentationVisitor(realVisitor, blocks);
                 this.accept(instrumentingVisitor);
             }
         };

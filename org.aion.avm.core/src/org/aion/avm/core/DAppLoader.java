@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.persistence.IObjectGraphStore;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.types.TransformedDappModule;
@@ -35,7 +34,7 @@ public class DAppLoader {
         ImmortalDappModule app = ImmortalDappModule.readFromJar(immortalDappJar);
         
         // We now need all the classes which will loaded within the class loader for this DApp (includes Helper and userlib classes we add).
-        Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
+        Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes, Helpers.loadDefaultHelperBytecode());
         
         // Construct the per-contract class loader.
         AvmClassLoader classLoader = NodeEnvironment.singleton.createInvocationClassLoader(allClasses);
@@ -56,7 +55,7 @@ public class DAppLoader {
      */
     public static LoadedDApp fromTransformed(TransformedDappModule app) {
         // We now need all the classes which will loaded within the class loader for this DApp (includes Helper and userlib classes we add).
-        Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
+        Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes, Helpers.loadDefaultHelperBytecode());
         
         // Construct the per-contract class loader.
         AvmClassLoader classLoader = NodeEnvironment.singleton.createInvocationClassLoader(allClasses);

@@ -40,10 +40,9 @@ import static org.junit.Assert.*;
  * @author Roman Katerinenko
  */
 public class InvokedynamicTransformationTest {
-    private static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
-
     @After
     public void teardown() {
+        // NOTE:  We should use the actual instance we created but we only want to clear the thread local. 
         Helper.clearTestingState();
     }
 
@@ -67,8 +66,8 @@ public class InvokedynamicTransformationTest {
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className), shadowPackage)))
-                .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
+                .addNextVisitor(new ConstantVisitor())
+                .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         new ParentPointers(Collections.singleton(className), classHierarchy),
@@ -95,8 +94,8 @@ public class InvokedynamicTransformationTest {
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, classDotName), shadowPackage)))
-                .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
+                .addNextVisitor(new ConstantVisitor())
+                .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         new ParentPointers(Collections.singleton(classDotName), classHierarchy),
@@ -137,12 +136,12 @@ public class InvokedynamicTransformationTest {
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper))
                 .addNextVisitor(new UserClassMappingVisitor(mapper))
-                .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
-                .addNextVisitor(new ClassMetering(HELPER_CLASS_NAME, DAppCreator.computeAllPostRenameObjectSizes(classHierarchy)))
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, shadowPackage))
+                .addNextVisitor(new ConstantVisitor())
+                .addNextVisitor(new ClassMetering(DAppCreator.computeAllPostRenameObjectSizes(classHierarchy)))
+                .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addNextVisitor(new StackWatcherClassAdapter())
-                .addNextVisitor(new ExceptionWrapping(HELPER_CLASS_NAME, parentPointers, generatedClassConsumer))
+                .addNextVisitor(new ExceptionWrapping(parentPointers, generatedClassConsumer))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers, dynamicHierarchyBuilder))
                 .build()
                 .runAndGetBytecode();
@@ -157,10 +156,8 @@ public class InvokedynamicTransformationTest {
 
     private Object callInstanceTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
         String mappedClassName = PackageConstants.kUserDotPrefix + className;
-        AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(Map.of(mappedClassName, bytecode));
-        new Helper(dappLoader, 1_000_000L, 1);
+        final Class<?> klass = loadClassInAvmLoader(bytecode, mappedClassName);
 
-        final Class<?> klass = dappLoader.loadClass(mappedClassName);
         final Constructor<?> constructor = klass.getDeclaredConstructor();
         final Object instance = constructor.newInstance();
         final Method method = klass.getDeclaredMethod(methodName);
@@ -170,11 +167,19 @@ public class InvokedynamicTransformationTest {
 
     private Object callStaticTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
         String mappedClassName = PackageConstants.kUserDotPrefix + className;
-        AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(Map.of(mappedClassName, bytecode));
-        new Helper(dappLoader, 1_000_000L, 1);
-        final Class<?> klass = dappLoader.loadClass(mappedClassName);
+        final Class<?> klass = loadClassInAvmLoader(bytecode, mappedClassName);
+        
         final Method method = klass.getMethod(methodName, IObject.class);
         LambdaMetafactory.avm_metafactoryWasCalled = false;
         return method.invoke(null, new org.aion.avm.shadow.java.lang.Object());
+    }
+
+
+    private Class<?> loadClassInAvmLoader(byte[] bytecode, String mappedClassName) throws Exception {
+        Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(Map.of(mappedClassName, bytecode), Helpers.loadDefaultHelperBytecode());
+        AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
+        // Instantiate the helper.
+        dappLoader.loadClass(Helper.RUNTIME_HELPER_NAME).getConstructor(ClassLoader.class, long.class, int.class).newInstance(dappLoader, 1_000_000L, 1);
+        return dappLoader.loadClass(mappedClassName);
     }
 }

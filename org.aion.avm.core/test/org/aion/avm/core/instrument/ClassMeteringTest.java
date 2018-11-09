@@ -25,7 +25,7 @@ public class ClassMeteringTest {
     // We keep this here just because a lot of cases want to use this sort of "do no instrumentation" cost builder for testing other rewrites.
     private final Function<byte[], byte[]> commonCostBuilder = (inputBytes) ->
             new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                    .addNextVisitor(new ClassMetering(TestEnergy.CLASS_NAME, null))
+                    .addNextVisitor(new ClassMetering(null))
                     .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                     .build()
                     .runAndGetBytecode();
@@ -43,7 +43,9 @@ public class ClassMeteringTest {
         byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, this.commonCostBuilder.apply(raw));
-        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
+        byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
         this.clazz = loader.loadClass(className);
         
         // We only need to install a IBlockchainRuntime which can afford our energy.
@@ -114,17 +116,17 @@ public class ClassMeteringTest {
      * NOTE:  This class is used for the "testWrittenBlockPrefix()" test.
      */
     public static class TestEnergy {
-        public static String CLASS_NAME = TestEnergy.class.getName().replaceAll("\\.", "/");
         public static long totalCost;
         public static int totalCharges;
         public static int totalArrayElements;
         public static int totalArrayInstances;
+    }
 
+    public static class HelperStub {
+        public static String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
         public static void chargeEnergy(long cost) {
             TestEnergy.totalCost += cost;
             TestEnergy.totalCharges += 1;
-            Helper.chargeEnergy(cost);
         }
-
     }
 }

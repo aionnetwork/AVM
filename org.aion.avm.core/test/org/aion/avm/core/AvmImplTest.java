@@ -117,7 +117,7 @@ public class AvmImplTest {
     @Test
     public void testPersistentEnergyLimit() {
         // Set up the runtime.
-        Map<String, byte[]> contractClasses = Helpers.mapIncludingHelperBytecode(Collections.emptyMap());
+        Map<String, byte[]> contractClasses = Helpers.mapIncludingHelperBytecode(Collections.emptyMap(), Helpers.loadDefaultHelperBytecode());
         IHelper helper = Helpers.instantiateHelper(NodeEnvironment.singleton.createInvocationClassLoader(contractClasses), 5L, 1);
 
         // Prove that we can charge 0 without issue.

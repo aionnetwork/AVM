@@ -4,6 +4,7 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ParentPointers;
 import org.aion.avm.core.classgeneration.StubGenerator;
 import org.aion.avm.core.types.GeneratedClassConsumer;
+import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Label;
@@ -15,13 +16,11 @@ import java.util.Set;
 
 
 public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
-    private final String runtimeClassName;
     private final ParentPointers pointers;
     private final GeneratedClassConsumer generatedClassesSink;
 
-    public ExceptionWrapping(String runtimeClassName, ParentPointers parentClassResolver, GeneratedClassConsumer generatedClassesSink) {
+    public ExceptionWrapping(ParentPointers parentClassResolver, GeneratedClassConsumer generatedClassesSink) {
         super(Opcodes.ASM6);
-        this.runtimeClassName = runtimeClassName;
         this.pointers = parentClassResolver;
         this.generatedClassesSink = generatedClassesSink;
     }
@@ -109,7 +108,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     String methodDescriptor = "(Ljava/lang/Throwable;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object;";
 
                     // The call-out will actually return the base object class in our environment so we need to cast.
-                    super.visitMethodInsn(Opcodes.INVOKESTATIC, ExceptionWrapping.this.runtimeClassName, methodName, methodDescriptor, false);
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, methodName, methodDescriptor, false);
 
                     // The cast will give us exactly what the previous path thought was the common class of any multi-catch options.
                     // (without this, the verifier will complain about the operand stack containing the wrong type when used).
@@ -160,7 +159,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     String methodDescriptor = "(L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object;)Ljava/lang/Throwable;";
 
                     // The call-out will actually return the base object class in our environment so we need to cast.
-                    super.visitMethodInsn(Opcodes.INVOKESTATIC, ExceptionWrapping.this.runtimeClassName, methodName, methodDescriptor, false);
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, methodName, methodDescriptor, false);
                 }
                 super.visitInsn(opcode);
             }

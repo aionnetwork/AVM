@@ -45,7 +45,7 @@ public class SimpleAvm {
 
         // transform classes
         Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(preTransformedClassBytecode, classHierarchy);
-        Map<String, byte[]> finalContractClasses = Helpers.mapIncludingHelperBytecode(transformedClasses);
+        Map<String, byte[]> finalContractClasses = Helpers.mapIncludingHelperBytecode(transformedClasses, Helpers.loadDefaultHelperBytecode());
         this.loader = NodeEnvironment.singleton.createInvocationClassLoader(finalContractClasses);
         this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());
 

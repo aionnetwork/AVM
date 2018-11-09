@@ -9,6 +9,7 @@ import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
@@ -27,10 +28,9 @@ import static org.aion.avm.core.util.Helpers.loadRequiredResourceAsBytes;
 import static org.junit.Assert.assertFalse;
 
 public class StringConcatenationTest {
-    private static String HELPER_CLASS_NAME = PackageConstants.kInternalSlashPrefix + "Helper";
-
     @After
     public void teardown() {
+        // NOTE:  We should use the actual instance we created but we only want to clear the thread local. 
         Helper.clearTestingState();
     }
 
@@ -89,15 +89,16 @@ public class StringConcatenationTest {
                 .toArray(Class[]::new);
     }
 
-    private static Class<?> transformClass(Class<?> clazz) throws ClassNotFoundException {
+    private static Class<?> transformClass(Class<?> clazz) throws Exception {
         final var className = clazz.getName();
         final byte[] origBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         java.lang.String mappedClassName = PackageConstants.kUserDotPrefix + className;
-        AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(Map.of(mappedClassName, transformedBytecode));
-        new Helper(dappLoader, 1_000_000L, 1);
-
+        Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(Map.of(mappedClassName, transformedBytecode), Helpers.loadDefaultHelperBytecode());
+        AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
+        // Instantiate the helper.
+        dappLoader.loadClass(Helper.RUNTIME_HELPER_NAME).getConstructor(ClassLoader.class, long.class, int.class).newInstance(dappLoader, 1_000_000L, 1);
         return dappLoader.loadClass(mappedClassName);
     }
 
@@ -108,8 +109,8 @@ public class StringConcatenationTest {
         final var shadowPackage = PackageConstants.kShadowSlashPrefix;
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, className))))
-                .addNextVisitor(new ConstantVisitor(HELPER_CLASS_NAME))
-                .addNextVisitor(new ClassShadowing(HELPER_CLASS_NAME, PackageConstants.kShadowSlashPrefix))
+                .addNextVisitor(new ConstantVisitor())
+                .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
                         new ParentPointers(Collections.singleton(className), classHierarchy),

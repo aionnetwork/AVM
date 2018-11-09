@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -37,13 +38,11 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
 
     private final Map<String, String> staticFieldNamesToConstantValues;
     private final Map<String, String> synthesizedStaticFieldNamesByValue;
-    private final String runtimeClassName;
     private String thisClassName;
     private MethodNode cachedClinit;
 
-    public ConstantVisitor(String runtimeClassName) {
+    public ConstantVisitor() {
         super(Opcodes.ASM6);
-        this.runtimeClassName = runtimeClassName;
         this.staticFieldNamesToConstantValues = new HashMap<>();
         this.synthesizedStaticFieldNamesByValue = new HashMap<>();
     }
@@ -91,7 +90,7 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
                     // class constants
                     // TODO: should we load the original class or the shadow class?
                     super.visitLdcInsn(value);
-                    super.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, wrapClassMethodName, wrapClassMethodDescriptor, false);
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, wrapClassMethodName, wrapClassMethodDescriptor, false);
                 } else if (value instanceof String) {
                     // Note that String constants are now synthesized as static fields.
                     String staticFieldForConstant = generateStaticFieldNameForConstant((String)value);
@@ -126,7 +125,7 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
                 clinitVisitor.visitLdcInsn(elt.getKey());
 
                 // wrap as shadow string
-                clinitVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, wrapStringMethodName, wrapStringMethodDescriptor, false);
+                clinitVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, wrapStringMethodName, wrapStringMethodDescriptor, false);
 
                 // set the field
                 clinitVisitor.visitFieldInsn(Opcodes.PUTSTATIC, this.thisClassName, elt.getValue(), postRenameStringDescriptor);
@@ -138,7 +137,7 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
                 clinitVisitor.visitLdcInsn(elt.getValue());
 
                 // wrap as shadow string
-                clinitVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, runtimeClassName, wrapStringMethodName, wrapStringMethodDescriptor, false);
+                clinitVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, wrapStringMethodName, wrapStringMethodDescriptor, false);
 
                 // set the field
                 clinitVisitor.visitFieldInsn(Opcodes.PUTSTATIC, this.thisClassName, elt.getKey(), postRenameStringDescriptor);

@@ -18,14 +18,6 @@ import java.util.function.Function;
 
 
 public class StringConstantVisitorTest {
-    private static String runtimeClassName;
-
-    @BeforeClass
-    public static void setupClass() {
-        runtimeClassName = PackageConstants.kInternalSlashPrefix + "Helper";
-    }
-
-
     private Class<?> clazz;
     private Class<?> clazzNoStatic;
 
@@ -44,23 +36,26 @@ public class StringConstantVisitorTest {
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(classAccessRules)))
-                        .addNextVisitor(new ConstantVisitor(runtimeClassName))
+                        .addNextVisitor(new ConstantVisitor())
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(PackageConstants.kUserDotPrefix + targetTestName, transformer.apply(targetTestBytes));
         classes.put(PackageConstants.kUserDotPrefix + targetNoStaticName, transformer.apply(targetNoStaticBytes));
-        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
 
+        Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
         // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, 1_000_000L, 1);
+        loader.loadClass(Helper.RUNTIME_HELPER_NAME).getConstructor(ClassLoader.class, long.class, int.class).newInstance(loader, 1_000_000L, 1);
+        
         this.clazz = loader.loadUserClassByOriginalName(targetTestName);
         this.clazzNoStatic = loader.loadUserClassByOriginalName(targetNoStaticName);
     }
 
     @After
     public void clearTestingState() {
+        // NOTE:  We should use the actual instance we created but we only want to clear the thread local.
         Helper.clearTestingState();
     }
 

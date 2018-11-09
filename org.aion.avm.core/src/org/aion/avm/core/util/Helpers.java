@@ -2,12 +2,16 @@ package org.aion.avm.core.util;
 
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.internal.IBlockchainRuntime;
+import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.miscvisitors.ClassRenameVisitor;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.internal.StackWatcher;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 
 import java.io.*;
 import java.security.SecureRandom;
@@ -161,9 +165,6 @@ public class Helpers {
         return internalName.replaceAll("/", ".");
     }
 
-    private static String helperClassName = Helper.class.getName();
-    private static byte[] helperBytes = Helpers.loadRequiredResourceAsBytes(helperClassName.replaceAll("\\.", "/") + ".class");
-
     private static String blockchainRuntimeClassName = BlockchainRuntime.class.getName();
     private static byte[] blockchainRuntimeBytes = Helpers.loadRequiredResourceAsBytes(blockchainRuntimeClassName.replaceAll("\\.", "/") + ".class");
 
@@ -172,14 +173,28 @@ public class Helpers {
      * Typically, this is used right before "instantiateHelper()", below (this creates/adds the class it loads).
      *
      * @param inputMap The initial map of class names to bytecodes.
+     * @param helperBytes The bytecode of the Helper class (will be internally renamed to the appropriate name).
      * @return The inputMap with the Helper bytecode added.
      */
-    public static Map<String, byte[]> mapIncludingHelperBytecode(Map<String, byte[]> inputMap) {
+    public static Map<String, byte[]> mapIncludingHelperBytecode(Map<String, byte[]> inputMap, byte[] helperBytes) {
+        // First, rename the helper class to the runtime helper name.
+        byte[] renamedBytes = new ClassToolchain.Builder(helperBytes, ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG)
+                        .addNextVisitor(new ClassRenameVisitor(Helper.RUNTIME_HELPER_NAME))
+                        .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                        .build()
+                        .runAndGetBytecode();
+        
+        // Now, construct the map.
         Map<String, byte[]> modifiedMap = new HashMap<>(inputMap);
-        modifiedMap.put(helperClassName, helperBytes);
+        modifiedMap.put(Helper.RUNTIME_HELPER_NAME, renamedBytes);
         modifiedMap.put(blockchainRuntimeClassName, blockchainRuntimeBytes);
-
         return modifiedMap;
+    }
+
+    public static byte[] loadDefaultHelperBytecode() {
+        String helperName = Helper.class.getName();
+        String helperResourcePath = Helpers.fulllyQualifiedNameToInternalName(helperName) + ".class";
+        return Helpers.loadRequiredResourceAsBytes(helperResourcePath);
     }
 
     /**
@@ -194,8 +209,7 @@ public class Helpers {
     public static IHelper instantiateHelper(AvmClassLoader contractLoader, long energyLimit, int nextHashCode) {
         IHelper helper = null;
         try {
-            String helperClassName = Helper.class.getName();
-            Class<?> helperClass = contractLoader.loadClass(helperClassName);
+            Class<?> helperClass = contractLoader.loadClass(Helper.RUNTIME_HELPER_NAME);
             helper = (IHelper) helperClass.getConstructor(ClassLoader.class, long.class, int.class).newInstance(contractLoader, energyLimit, nextHashCode);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
@@ -225,8 +239,7 @@ public class Helpers {
     // for testing purpose
     public static void attachStackWatcher(AvmClassLoader contractLoader, StackWatcher stackWatcher) {
         try {
-            String helperClassName = Helper.class.getName();
-            Class<?> helperClass = contractLoader.loadClass(helperClassName);
+            Class<?> helperClass = contractLoader.loadClass(Helper.RUNTIME_HELPER_NAME);
             helperClass.getField("stackWatcher").set(null, stackWatcher);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.

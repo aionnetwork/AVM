@@ -211,7 +211,7 @@ public class HashCodeTest {
         // Load the testing class and the Helper.
         String targetClassName = HashCodeTestTarget.class.getName();
         byte[] transformedTarget = getTransformedTestClass(targetClassName);
-        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(PackageConstants.kUserDotPrefix + targetClassName, transformedTarget));
+        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(PackageConstants.kUserDotPrefix + targetClassName, transformedTarget), Helpers.loadDefaultHelperBytecode());
 
         // Now, we will create 2 class loaders with the same classes:  these will be contract-level loaders.
         AvmClassLoader loader1 = NodeEnvironment.singleton.createInvocationClassLoader(classes);

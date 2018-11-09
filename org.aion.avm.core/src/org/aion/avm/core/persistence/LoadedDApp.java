@@ -331,7 +331,7 @@ public class LoadedDApp {
     private Class<?> loadHelperClass() throws ClassNotFoundException {
         Class<?> helperClass = this.helperClass;
         if (null == helperClass) {
-            String helperClassName = Helper.class.getName();
+            String helperClassName = Helper.RUNTIME_HELPER_NAME;
             helperClass = this.loader.loadClass(helperClassName);
             RuntimeAssertionError.assertTrue(helperClass.getClassLoader() == this.loader);
             this.helperClass = helperClass;

@@ -45,10 +45,7 @@ import java.util.*;
 
 
 public class DAppCreator {
-
     private static final Logger logger = LoggerFactory.getLogger(DAppExecutor.class);
-
-    private static final String HELPER_CLASS = PackageConstants.kInternalSlashPrefix + "Helper";
 
     /**
      * Validates all classes, including but not limited to:
@@ -152,12 +149,12 @@ public class DAppCreator {
             // static call, which is somewhat expensive - this is how we bill for energy).
             int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
             byte[] bytecode = new ClassToolchain.Builder(safeClasses.get(name), parsingOptions)
-                    .addNextVisitor(new ConstantVisitor(HELPER_CLASS))
-                    .addNextVisitor(new ClassMetering(HELPER_CLASS, postRenameObjectSizes))
+                    .addNextVisitor(new ConstantVisitor())
+                    .addNextVisitor(new ClassMetering(postRenameObjectSizes))
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
-                    .addNextVisitor(new ClassShadowing(HELPER_CLASS, PackageConstants.kShadowSlashPrefix))
+                    .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new StackWatcherClassAdapter())
-                    .addNextVisitor(new ExceptionWrapping(HELPER_CLASS, parentClassResolver, generatedClassesSink))
+                    .addNextVisitor(new ExceptionWrapping(parentClassResolver, generatedClassesSink))
                     .addNextVisitor(new AutomaticGraphVisitor())
                     .addNextVisitor(new StrictFPVisitor())
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))

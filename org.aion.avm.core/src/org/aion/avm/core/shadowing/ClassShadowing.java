@@ -3,6 +3,7 @@ package org.aion.avm.core.shadowing;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.*;
@@ -18,15 +19,13 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
     private static final String JAVA_LANG_OBJECT = "java/lang/Object";
 
-    private final String runtimeClassName;
     private final ClassWhiteList classWhiteList;
     private final IObjectReplacer replacer;
     private final String postRenameJavaLangObject;
 
-    public ClassShadowing(String runtimeClassName, String shadowPackage) {
+    public ClassShadowing(String shadowPackage) {
         super(Opcodes.ASM6);
         this.replacer = new IObjectReplacer(shadowPackage);
-        this.runtimeClassName = runtimeClassName;
         this.classWhiteList = new ClassWhiteList();
         this.postRenameJavaLangObject = shadowPackage + JAVA_LANG_OBJECT;
     }
@@ -84,7 +83,7 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
 
                 // Note that it is possible we will see calls from other phases in the chain and we don't want to re-write them
                 // (often, they _are_ the bridging code).
-                if ((Opcodes.INVOKESTATIC == opcode) && runtimeClassName.equals(owner)) {
+                if ((Opcodes.INVOKESTATIC == opcode) && Helper.RUNTIME_HELPER_NAME.equals(owner)) {
                     super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
                 } else {
                     // Due to our use of the IObject interface at the root of the shadow type hierarchy (issue-80), we may need to replace this invokevirtual

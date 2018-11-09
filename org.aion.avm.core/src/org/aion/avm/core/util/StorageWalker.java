@@ -61,7 +61,7 @@ public class StorageWalker {
     public static void walkAllStaticsForDapp(PrintStream output, KernelInterface kernel, byte[] dappAddress) throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         byte[] immortalDappJar = kernel.getCode(dappAddress);
         ImmortalDappModule app = ImmortalDappModule.readFromJar(immortalDappJar);
-        Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes);
+        Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader classLoader = NodeEnvironment.singleton.createInvocationClassLoader(allClasses);
         List<Class<?>> alphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
         

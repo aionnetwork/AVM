@@ -24,7 +24,7 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
 
     //JAVA asm Type for later use.
     private Type typeInt = Type.getType(int.class);
-    private Type typeHelper = Type.getType(Helper.class);
+    private Type typeHelper = Type.getType("L" + Helper.RUNTIME_HELPER_NAME + ";");
 
     public StackWatcherMethodAdapter(final GeneratorAdapter mv,
             final int access, final String name, final String desc)

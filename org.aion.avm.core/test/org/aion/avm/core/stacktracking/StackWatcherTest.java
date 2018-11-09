@@ -41,7 +41,8 @@ public class StackWatcherTest {
         };
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, transformer.apply(raw));
-        classLoader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
+        classLoader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
         clazz = classLoader.loadClass(className);
     }
 
@@ -105,7 +106,7 @@ public class StackWatcherTest {
 
         for (int i = 0; i < 50; i++){
             sw.reset();
-            Helper.clearTestingState();
+            classLoader.loadClass(Helper.RUNTIME_HELPER_NAME).getDeclaredMethod("clearTestingState").invoke(null);
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
             counter = clazz.getDeclaredField("upCounter");
@@ -127,7 +128,7 @@ public class StackWatcherTest {
         sw.setPolicy(StackWatcher.POLICY_DEPTH);
         for (int i = 0; i < 50; i++){
             sw.reset();
-            Helper.clearTestingState();
+            classLoader.loadClass(Helper.RUNTIME_HELPER_NAME).getDeclaredMethod("clearTestingState").invoke(null);
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
             counter = clazz.getDeclaredField("upCounter");

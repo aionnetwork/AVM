@@ -23,7 +23,7 @@ import org.junit.Test;
 public class StubGeneratorTest {
     @Before
     public void setup()throws ClassNotFoundException{
-        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.emptyMap());
+        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.emptyMap(), Helpers.loadDefaultHelperBytecode());
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         Helpers.instantiateHelper(loader, 1_000_000L, 1);
     }

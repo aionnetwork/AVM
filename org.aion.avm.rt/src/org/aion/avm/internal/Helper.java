@@ -7,6 +7,8 @@ import org.aion.avm.api.BlockchainRuntime;
 
 
 public class Helper implements IHelper {
+    public static final String RUNTIME_HELPER_NAME = "H";
+
     public static StackWatcher stackWatcher;
 
     private static long energyLeft;

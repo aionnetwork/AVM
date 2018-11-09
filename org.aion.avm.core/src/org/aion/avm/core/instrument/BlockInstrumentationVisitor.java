@@ -2,6 +2,7 @@ package org.aion.avm.core.instrument;
 
 import java.util.List;
 
+import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -27,14 +28,12 @@ import org.objectweb.asm.Opcodes;
  * Note that this was adapted from the ClassRewriter.MethodInstrumentationVisitor.
  */
 public class BlockInstrumentationVisitor extends MethodVisitor {
-    private final String runtimeClassName;
     private final List<BasicBlock> blocks;
     private boolean scanningToNewBlockStart;
     private int nextBlockIndexToWrite;
 
-    public BlockInstrumentationVisitor(String runtimeClassName, MethodVisitor target, List<BasicBlock> blocks) {
+    public BlockInstrumentationVisitor(MethodVisitor target, List<BasicBlock> blocks) {
         super(Opcodes.ASM6, target);
-        this.runtimeClassName = runtimeClassName;
         this.blocks = blocks;
     }
 
@@ -148,7 +147,7 @@ public class BlockInstrumentationVisitor extends MethodVisitor {
             if (currentBlock.getEnergyCost() > 0) {
                 // Inject the bytecodes.
                 super.visitLdcInsn(Long.valueOf(currentBlock.getEnergyCost()));
-                super.visitMethodInsn(Opcodes.INVOKESTATIC, this.runtimeClassName, "chargeEnergy", "(J)V", false);
+                super.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, "chargeEnergy", "(J)V", false);
             }
             // Reset the state machine for the next block.
             this.scanningToNewBlockStart = false;

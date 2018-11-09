@@ -15,7 +15,6 @@ import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -28,13 +27,6 @@ import java.util.function.Function;
 
 
 public class ClassShadowingTest {
-    private static String runtimeClassName;
-
-    @BeforeClass
-    public static void setupClass() {
-        runtimeClassName = Helpers.fulllyQualifiedNameToInternalName(Testing.class.getName());
-    }
-
     @After
     public void clearTestingState() {
         Testing.countWrappedStrings = 0;
@@ -59,14 +51,16 @@ public class ClassShadowingTest {
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className)))
-                        .addNextVisitor(new ConstantVisitor(runtimeClassName))
-                        .addNextVisitor(new ClassShadowing(runtimeClassName, PackageConstants.kShadowSlashPrefix))
+                        .addNextVisitor(new ConstantVisitor())
+                        .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(PackageConstants.kUserDotPrefix + className, transformer.apply(bytecode));
-        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
+        byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);
@@ -103,8 +97,8 @@ public class ClassShadowingTest {
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, 0) /* DO NOT SKIP ANYTHING */
                         .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className)))
-                        .addNextVisitor(new ConstantVisitor(runtimeClassName))
-                        .addNextVisitor(new ClassShadowing(runtimeClassName, PackageConstants.kShadowSlashPrefix))
+                        .addNextVisitor(new ConstantVisitor())
+                        .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
@@ -112,7 +106,9 @@ public class ClassShadowingTest {
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(mappedClassName, transformer.apply(bytecode));
 
-        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
+        byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);
@@ -142,8 +138,8 @@ public class ClassShadowingTest {
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className, innerClassName)))
-                        .addNextVisitor(new ConstantVisitor(runtimeClassName))
-                        .addNextVisitor(new ClassShadowing(runtimeClassName, PackageConstants.kShadowSlashPrefix))
+                        .addNextVisitor(new ConstantVisitor())
+                        .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
@@ -152,7 +148,9 @@ public class ClassShadowingTest {
         classes.put(PackageConstants.kUserDotPrefix + className, transformed);
         classes.put(PackageConstants.kUserDotPrefix + innerClassName, transformer.apply(innerBytecode));
 
-        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
+        byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);
@@ -223,14 +221,19 @@ public class ClassShadowingTest {
     public static class Testing {
         public static int countWrappedClasses;
         public static int countWrappedStrings;
+    }
+
+
+    public static class HelperStub {
+        public static String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
 
         public static <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
-            countWrappedClasses += 1;
+            Testing.countWrappedClasses += 1;
             return Helper.wrapAsClass(input);
         }
 
         public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
-            countWrappedStrings += 1;
+            Testing.countWrappedStrings += 1;
             return Helper.wrapAsString(input);
         }
     }

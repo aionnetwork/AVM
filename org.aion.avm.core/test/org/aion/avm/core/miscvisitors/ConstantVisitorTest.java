@@ -1,5 +1,9 @@
 package org.aion.avm.core.miscvisitors;
 
+import java.util.Map;
+
+import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.Assert;
@@ -17,7 +21,7 @@ public class ConstantVisitorTest {
     public void testLoadStringConstant() throws Exception {
         String testClassName = "TestClass";
         ClassWriter writer = new ClassWriter(0);
-        ConstantVisitor visitor = new ConstantVisitor(TestHelpers.CLASS_NAME);
+        ConstantVisitor visitor = new ConstantVisitor();
         visitor.setDelegate(writer);
         visitor.visit(Opcodes.V10, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, testClassName, null, "java/lang/Object", null);
         
@@ -36,21 +40,26 @@ public class ConstantVisitorTest {
         
         byte[] bytecode = writer.toByteArray();
         // Get the class and make sure there are no issues.  Note that this would fail in our old implementation (duplicate <clinit>).
+        byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(Map.of(testClassName, bytecode), stubBytecode);
+        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
         Assert.assertEquals(0, TestHelpers.wrapAsStringCounter);
-        Class<?> clazz = SingleLoader.loadClass(testClassName, bytecode);
+        Class<?> clazz = Class.forName(testClassName, true, loader);
         Assert.assertNotNull(clazz);
         // Prove that the <clinit> _did_ actually run.
         Assert.assertEquals(1, TestHelpers.wrapAsStringCounter);
     }
 
 
+    public static class TestHelpers {
+        public static int wrapAsStringCounter;
+    }
+
     /**
      * Note that this is just because the ConstantVisitor injects helper calls which need to go somewhere.
      */
-    public static class TestHelpers {
-        public static final String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(TestHelpers.class.getName());
-        public static int wrapAsStringCounter;
-        
+    public static class HelperStub {
+        public static final String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
         public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
             TestHelpers.wrapAsStringCounter += 1;
             // We don't do anything with this so even null works.
