@@ -67,7 +67,7 @@ public class AvmParallelTest {
             f.get();
         }
 
-        expected1 = expected1.subtract(BigInteger.valueOf(100_000 * 5)).subtract(BigInteger.valueOf(t1.getBasicCost() * 5));
+        expected1 = expected1.subtract(BigInteger.valueOf(100_000 * 5));
         expected2 = BigInteger.valueOf(100_000 * 5);
 
         Assert.assertEquals(expected1, kernel.getBalance(usr1));
@@ -87,9 +87,6 @@ public class AvmParallelTest {
         for (SimpleFuture<TransactionResult> f : results){
             f.get();
         }
-
-        expected1 = expected1.subtract(BigInteger.valueOf(t0.getBasicCost() * iteration));
-        expected2 = expected2.subtract(BigInteger.valueOf(t1.getBasicCost() * iteration));
 
         Assert.assertEquals(expected1, kernel.getBalance(usr1));
         Assert.assertEquals(expected2, kernel.getBalance(usr2));
