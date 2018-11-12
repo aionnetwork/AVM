@@ -410,9 +410,6 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
         if (ENERGY_METERING) {
             // energy charge
-            methodVisitor.visitFieldInsn(GETSTATIC, "org/aion/avm/internal/IHelper", "currentContractHelper", "Ljava/lang/ThreadLocal;");
-            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/ThreadLocal", "get", "()Ljava/lang/Object;", false);
-            methodVisitor.visitTypeInsn(CHECKCAST, "org/aion/avm/internal/IHelper");
             methodVisitor.visitLdcInsn(RuntimeMethodFeeSchedule.ObjectArray_avm_clone);
             methodVisitor.visitLdcInsn(RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR);
             methodVisitor.visitVarInsn(ALOAD, 0);
@@ -420,7 +417,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             methodVisitor.visitInsn(I2L);
             methodVisitor.visitInsn(LMUL);
             methodVisitor.visitInsn(LADD);
-            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "org/aion/avm/internal/IHelper", "externalChargeEnergy", "(J)V", true);
+            methodVisitor.visitMethodInsn(INVOKESTATIC, SHADOW_ARRAY, "chargeEnergy", "(J)V", false);
         }
 
         // lazyLoad

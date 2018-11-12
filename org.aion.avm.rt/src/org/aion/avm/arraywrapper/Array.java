@@ -28,6 +28,12 @@ public abstract class Array extends Object implements Cloneable, IArray {
 
     public abstract IObject avm_clone();
 
+    /**
+     * Note that this helper exists primarily so it can be called by generated/instrumented code.
+     * Since the array code is not generally in the same class loader of the DApp, it can't call the runtime class, directly.
+     * 
+     * @param cost The energy cost to charge the current DApp.
+     */
     static protected void chargeEnergy(long cost){
         IHelper.currentContractHelper.get().externalChargeEnergy(cost);
     }
