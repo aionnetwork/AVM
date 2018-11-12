@@ -1,9 +1,16 @@
 package org.aion.avm.shadow.java.lang.invoke;
 
-import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.shadow.java.lang.Integer;
+import org.aion.avm.shadow.java.lang.Short;
 import org.aion.avm.shadow.java.lang.String;
+import org.aion.avm.shadow.java.lang.Long;
+import org.aion.avm.shadow.java.lang.Double;
+import org.aion.avm.shadow.java.lang.Float;
+import org.aion.avm.shadow.java.lang.Character;
+import org.aion.avm.shadow.java.lang.Byte;
+import org.aion.avm.shadow.java.lang.Boolean;
 
 import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MethodHandle;
@@ -11,9 +18,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
 
-/**
- * @author Roman Katerinenko
- */
 public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Object {
     private static final char RECIPE_DYNAMIC_ARGUMENT_FLAG = '\u0001';
     private static final char RECIPE_STATIC_ARGUMENT_FLAG = '\u0002';
@@ -32,16 +36,56 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
         for (int idx = 0; idx < recipe.length(); idx++) {
             char ch = recipe.charAt(idx);
             if (ch == RECIPE_DYNAMIC_ARGUMENT_FLAG) {
-                org.aion.avm.shadow.java.lang.Object arg = (org.aion.avm.shadow.java.lang.Object)dynamicArgs[dynamicArgsIdx++];
+                org.aion.avm.shadow.java.lang.Object arg = mapBoxedType(dynamicArgs[dynamicArgsIdx++]);
                 builder.avm_append(arg);
             } else if (ch == RECIPE_STATIC_ARGUMENT_FLAG) {
-                org.aion.avm.shadow.java.lang.Object arg = (org.aion.avm.shadow.java.lang.Object)staticArgs[staticArgsIdx++];
+                org.aion.avm.shadow.java.lang.Object arg = mapBoxedType(staticArgs[staticArgsIdx++]);
                 builder.avm_append(arg);
             } else {
                 builder.avm_append(ch);
             }
         }
         return new String(builder.avm_toString());
+    }
+
+    private static org.aion.avm.shadow.java.lang.Object mapBoxedType(Object obj){
+        org.aion.avm.shadow.java.lang.Object ret = null;
+        if (null == obj){
+            ret = null;
+        }else if (obj instanceof org.aion.avm.shadow.java.lang.Object){
+            ret = (org.aion.avm.shadow.java.lang.Object)obj;
+        }else {
+            java.lang.String name = obj.getClass().getSimpleName();
+            switch (name) {
+                case "Short":
+                    ret = new Short(((java.lang.Short)obj));
+                    break;
+                case "Integer":
+                    ret = new Integer(((java.lang.Integer)obj));
+                    break;
+                case "Long":
+                    ret = new Long(((java.lang.Long)obj));
+                    break;
+                case "Float":
+                    ret = new Float(((java.lang.Float)obj));
+                    break;
+                case "Double":
+                    ret = new Double(((java.lang.Double)obj));
+                    break;
+                case "Boolean":
+                    ret = new Boolean(((java.lang.Boolean)obj));
+                    break;
+                case "Byte":
+                    ret = new Byte(((java.lang.Byte)obj));
+                    break;
+                case "Character":
+                    ret = new Character(((java.lang.Character)obj));
+                    break;
+                default:
+                    RuntimeAssertionError.unreachable("String concat receives unexpected type " + name);
+            }
+        }
+        return ret;
     }
 
     /**
@@ -57,6 +101,7 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
             Object... constants) throws NoSuchMethodException, IllegalAccessException {
         // Note that we currently only use the avm_makeConcatWithConstants invoked name.
         RuntimeAssertionError.assertTrue("avm_makeConcatWithConstants".equals(invokedName));
+        //System.out.println(recipe);
         final MethodType concatMethodType = MethodType.methodType(
                 String.class, // NOTE! First arg is return value
                 java.lang.String.class,

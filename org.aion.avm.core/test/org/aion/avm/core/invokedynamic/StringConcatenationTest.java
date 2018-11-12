@@ -75,6 +75,13 @@ public class StringConcatenationTest {
         Assert.assertEquals("yabcx12.8", actual);
     }
 
+    @Test
+    public void given_allPrimitives_then_shouldBeConcatenated() throws Exception {
+        final var clazz = transformClass(IndyConcatenationTestResource.class);
+        final var actual = callMethod(clazz, "avm_concatWithPrimtives");
+        Assert.assertEquals("0121.10.0atrue3", actual);
+    }
+
     private static String callMethod(Class<?> clazz,
                                      String methodName, org.aion.avm.shadow.java.lang.String... stringArgs) throws Exception {
         final var instance = clazz.getDeclaredConstructor().newInstance();
