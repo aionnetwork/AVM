@@ -5,6 +5,7 @@ import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ClassRenameVisitor;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
@@ -14,6 +15,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -240,7 +242,11 @@ public class Helpers {
     public static void attachStackWatcher(AvmClassLoader contractLoader, StackWatcher stackWatcher) {
         try {
             Class<?> helperClass = contractLoader.loadClass(Helper.RUNTIME_HELPER_NAME);
-            helperClass.getField("stackWatcher").set(null, stackWatcher);
+            // TODO:  This testing mechanism eventually needs to be removed but, for now, we will interpret this as a call to create the Helper instance and set the watcher in it.
+            helperClass.getConstructor(ClassLoader.class, long.class, int.class).newInstance(contractLoader, 1_000_000L, 1);
+            Field targetField = helperClass.getDeclaredField("target");
+            targetField.setAccessible(true);
+            contractLoader.loadClass(CommonInstrumentation.class.getName()).getField("stackWatcher").set(targetField.get(null), stackWatcher);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);
