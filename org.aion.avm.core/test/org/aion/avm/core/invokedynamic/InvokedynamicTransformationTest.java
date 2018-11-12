@@ -120,7 +120,6 @@ public class InvokedynamicTransformationTest {
                 .addClass(className, "java.lang.Object", false, origBytecode)
                 .asMutableForest();
         final var shadowPackage = PackageConstants.kShadowSlashPrefix;
-        Helper.setEnergy(1_000_000L);
         final Map<String, byte[]> processedClasses = new HashMap<>();
         // WARNING:  This dynamicHierarchyBuilder is both mutable and shared by TypeAwareClassWriter instances.
         final HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();

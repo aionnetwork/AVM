@@ -107,6 +107,7 @@ public class StackWatcherTest {
         for (int i = 0; i < 50; i++){
             sw.reset();
             classLoader.loadClass(Helper.RUNTIME_HELPER_NAME).getDeclaredMethod("clearTestingState").invoke(null);
+            Helpers.attachStackWatcher(classLoader, sw);
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
             counter = clazz.getDeclaredField("upCounter");
@@ -129,6 +130,7 @@ public class StackWatcherTest {
         for (int i = 0; i < 50; i++){
             sw.reset();
             classLoader.loadClass(Helper.RUNTIME_HELPER_NAME).getDeclaredMethod("clearTestingState").invoke(null);
+            Helpers.attachStackWatcher(classLoader, sw);
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
             counter = clazz.getDeclaredField("upCounter");
