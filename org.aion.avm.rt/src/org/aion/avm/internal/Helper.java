@@ -56,11 +56,6 @@ public class Helper implements IHelper {
         return target.energyLeft();
     }
 
-    // Note that setEnergy is just for internal test purpose.
-    public static void setEnergy(long e) {
-        target.setEnergy(e);
-    }
-
     public static int getNextHashCode() {
         return target.getNextHashCode();
     }
@@ -148,10 +143,6 @@ public class Helper implements IHelper {
         BlockchainRuntime.blockchainRuntime = this.snapshot_blockchainRuntime;
         this.snapshot_blockchainRuntime = null;
         target.forceNextHashCode(nextHashCode);
-    }
-    @Override
-    public void externalSetEnergy(long energy){
-        Helper.setEnergy(energy);
     }
     @Override
     public void externalBootstrapOnly() {

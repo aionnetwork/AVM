@@ -6,10 +6,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.aion.avm.internal.IHelper;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -18,7 +16,6 @@ import org.junit.Test;
 public class ArrayTypeTest {
     private SimpleAvm avm;
     private Class<?> clazz;
-    private IHelper helper;
     private ArrayTypeContract contract;
 
     @Before
@@ -31,9 +28,7 @@ public class ArrayTypeTest {
             ArrayTypeContract.SuperClass.class,
             ArrayTypeContract.SubClass.class
         );
-        helper = avm.getHelper();
         clazz = avm.getClassLoader().loadUserClassByOriginalName(ArrayTypeContract.class.getName());
-        helper.externalSetEnergy(1000000000000L);
         contract = new ArrayTypeContract();
     }
 

@@ -14,7 +14,6 @@ public interface IInstrumentation {
     Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg);
     void chargeEnergy(long cost) throws OutOfEnergyException;
     long energyLeft();
-    void setEnergy(long e);
     int getNextHashCode();
     void setAbortState();
     

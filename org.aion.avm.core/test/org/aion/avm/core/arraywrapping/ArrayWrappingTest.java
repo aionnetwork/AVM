@@ -274,27 +274,15 @@ public class ArrayWrappingTest {
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
 
-//    @Test
-//    public void testArrayEnergy() {
-//
-//        Object obj = clazz.getConstructor().newInstance();
-//        Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("testArrayEnergy"));
-//
-//        helper.externalSetEnergy(10000000);
-//        try{
-//            method.invoke(obj);
-//        }catch(InvocationTargetException e){
-//            Assert.assertFalse(e.getCause() instanceof OutOfEnergyException);
-//        }
-//
-//        helper.externalSetEnergy(1000);
-//        try{
-//            method.invoke(obj);
-//        }catch(InvocationTargetException e){
-//            Assert.assertTrue(e.getCause() instanceof OutOfEnergyException);
-//        }
-//        helper.externalSetEnergy(10000000000L);
-//    }
+    @Test
+    public void testArrayEnergy() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayEnergy");
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+
+        Assert.assertEquals(true, TestingHelper.decodeResult(result));
+    }
 
     @Test
     public void testInterfaceArray() {

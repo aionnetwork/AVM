@@ -193,11 +193,6 @@ public class PocWalletTest {
             }
 
             @Override
-            public void externalSetEnergy(long energy) {
-                Assert.fail("Not in test");
-            }
-
-            @Override
             public long externalGetEnergyRemaining() {
                 Assert.fail("Not in test");
                 return 0;

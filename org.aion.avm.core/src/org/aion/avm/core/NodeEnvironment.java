@@ -268,11 +268,6 @@ public class NodeEnvironment {
             }
 
             @Override
-            public void externalSetEnergy(long energy) {
-                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
-            }
-
-            @Override
             public long externalGetEnergyRemaining() {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }

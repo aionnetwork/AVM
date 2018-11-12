@@ -103,11 +103,6 @@ public class TestingHelper implements IHelper {
     }
 
     @Override
-    public void externalSetEnergy(long energy) {
-        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
-    }
-
-    @Override
     public long externalGetEnergyRemaining() {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }

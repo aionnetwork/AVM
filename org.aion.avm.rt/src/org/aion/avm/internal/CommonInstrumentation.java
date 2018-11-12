@@ -209,11 +209,6 @@ public class CommonInstrumentation implements IInstrumentation {
     }
 
     @Override
-    public void setEnergy(long e) {
-        energyLeft = e;
-    }
-
-    @Override
     public int getNextHashCode() {
         // NOTE:  In the case of a Class object, this value is swapped out, temporarily.
         return nextHashCode++;
