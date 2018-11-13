@@ -203,7 +203,7 @@ public class AvmImplDeployAndRunTest {
         result = avm.run(new TransactionContext[] {context})[0].get();
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
-        assertEquals(BigInteger.valueOf(100000L - 1000L), kernel.getBalance(account1));
+        assertEquals(BigInteger.valueOf(100000L - 1000L - energyPrice * 21000L), kernel.getBalance(account1));
         assertEquals(BigInteger.valueOf(1000L), kernel.getBalance(account2));
     }
 
@@ -237,6 +237,6 @@ public class AvmImplDeployAndRunTest {
 
         assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         assertEquals(BigInteger.valueOf(150000L), kernel.getBalance(deployResult.getReturnData()));
-        assertEquals(BigInteger.valueOf(300000L - 50000L), kernel.getBalance(account1));
+        assertEquals(BigInteger.valueOf(300000L - 50000L - result.getEnergyUsed()), kernel.getBalance(account1));
     }
 }

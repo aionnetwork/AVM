@@ -78,7 +78,7 @@ public class AvmImplTest {
 
         // verify state change
         assertEquals(1, kernel.getNonce(from));
-        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT.subtract(value), kernel.getBalance(deployer));
+        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT.subtract(value).subtract(BigInteger.valueOf(tx.getBasicCost() * energyPrice)), kernel.getBalance(deployer));
         assertEquals(0, kernel.getNonce(to));
         assertEquals(value, kernel.getBalance(to));
         avm.shutdown();

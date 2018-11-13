@@ -169,6 +169,9 @@ public class AvmImpl implements AvmInternal {
             result.setEnergyUsed(ctx.getEnergyLimit());
         }
 
+        // Deduct energy for transaction
+        taskTransactionalKernel.adjustBalance(sender, BigInteger.valueOf(result.getEnergyUsed() * ctx.getEnergyPrice()).negate());
+
         // Task transactional kernel commits are serialized through address resource monitor
         if (!this.resourceMonitor.commitKernelForTask(task, result.getStatusCode().isRejected())){
             result.setStatusCode(TransactionResult.Code.FAILED_ABORT);
