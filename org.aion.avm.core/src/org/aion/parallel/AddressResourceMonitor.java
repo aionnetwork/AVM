@@ -151,10 +151,11 @@ public class AddressResourceMonitor {
      *      The task need to abort to yield a address resource
      *
      * @param task The requesting task.
+     * @param isRejected True only if the transaction relating to this task was rejected.
      *
      * @return True if commit is successful. False if task need to abort.
      */
-    public boolean commitKernelForTask(TransactionTask task){
+    public boolean commitKernelForTask(TransactionTask task, boolean isRejected){
         boolean ret = false;
 
         synchronized (sync){
@@ -168,8 +169,10 @@ public class AddressResourceMonitor {
             }
 
             if (!task.inAbortState()){
-                ((TransactionalKernel) task.getTaskKernel()).commit();
-                task.outputFlush();
+                if (!isRejected) {
+                    ((TransactionalKernel) task.getTaskKernel()).commit();
+                    task.outputFlush();
+                }
                 this.commitCounter++;
                 ret = true;
             }

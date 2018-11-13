@@ -170,7 +170,7 @@ public class AvmImpl implements AvmInternal {
         }
 
         // Task transactional kernel commits are serialized through address resource monitor
-        if (!this.resourceMonitor.commitKernelForTask(task)){
+        if (!this.resourceMonitor.commitKernelForTask(task, result.getStatusCode().isRejected())){
             result.setStatusCode(TransactionResult.Code.FAILED_ABORT);
         }
 
