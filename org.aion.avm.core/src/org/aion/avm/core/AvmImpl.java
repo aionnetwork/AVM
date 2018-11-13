@@ -237,6 +237,9 @@ public class AvmImpl implements AvmInternal {
         // Refund the withheld energy
         parentKernel.adjustBalance(ctx.getCaller(), BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEnergyPrice()));
 
+        // Transfer fees to miner
+        parentKernel.adjustBalance(ctx.getBlockCoinbase(), BigInteger.valueOf(result.getEnergyUsed() * ctx.getEnergyPrice()));
+
         return result;
     }
 

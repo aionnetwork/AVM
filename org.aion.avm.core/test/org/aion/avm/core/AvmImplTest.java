@@ -525,15 +525,15 @@ public class AvmImplTest {
         // We always start out with the PREMINE account, but that should be the only one.
         assertEquals(1, directory.listFiles().length);
         
-        // CREATE the spawner (meaning another account).
+        // CREATE the spawner (meaning another account). Expect 3 accounts because: deployer, contract, coinbase
         Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
-        assertEquals(2, directory.listFiles().length);
+        assertEquals(3, directory.listFiles().length);
         
-        // CALL to create and invoke the incrementor.
+        // CALL to create and invoke the incrementor. Expect 4 accounts because: deployer, contract1, contract2, coinbase
         boolean shouldFail = false;
         byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
         Address incrementorAddress = (Address) callDApp(kernel, avm, spawnerAddress, spawnerCallData);
-        assertEquals(3, directory.listFiles().length);
+        assertEquals(4, directory.listFiles().length);
         
         // Restart the AVM.
         avm.shutdown();
@@ -550,7 +550,7 @@ public class AvmImplTest {
             assertEquals(incrementBy + input[i], incrementorResult[i]);
         }
         
-        // Check the state of the directory we are using to back this (3 accounts, 2 with code and one with only a balance).
+        // Check the state of the directory we are using to back this (4 accounts, 2 with code and 2 with only a balance).
         int codeCount = 0;
         int balanceCount = 0;
         for (File top : directory.listFiles()) {
@@ -563,7 +563,7 @@ public class AvmImplTest {
             }
         }
         assertEquals(2, codeCount);
-        assertEquals(3, balanceCount);
+        assertEquals(4, balanceCount);
         avm.shutdown();
     }
 
