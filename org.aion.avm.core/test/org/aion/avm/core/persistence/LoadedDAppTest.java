@@ -20,11 +20,14 @@ public class LoadedDAppTest {
     // We don't verify fees at this time so just use the "null" utility processor.
     private static NullFeeProcessor FEE_PROCESSOR = new NullFeeProcessor();
 
+    private ClassLoader loader;
+
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
+        this.loader = LoadedDAppTest.class.getClassLoader();
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
         // Clear statics, since our tests interact with them.
         clearStaticState();
@@ -60,7 +63,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(null, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName());
+        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName());
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -136,7 +139,7 @@ public class LoadedDAppTest {
         
         // Populate the classes.
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
+        new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName()).populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -175,7 +178,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(null, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
+        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -251,7 +254,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName());
+        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName());
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         // Check the size of the saved static data (should only store local copies of statics, not superclass statics, per class).
@@ -323,7 +326,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
+        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -363,7 +366,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
+        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -403,7 +406,7 @@ public class LoadedDAppTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         byte[] address = new byte[] {1,2,3};
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
+        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName());
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
@@ -441,7 +444,7 @@ public class LoadedDAppTest {
         byte[] address = new byte[] {1,2,3};
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(LoadedDAppTest.class.getClassLoader(), Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
+        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName());
         
         // Set the empty state and write it to disk.
         ReflectionStructureCodecTarget.s_nine = null;
