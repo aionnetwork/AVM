@@ -203,7 +203,7 @@ public final class ABIDecoder {
                 ret = method.invoke(obj, convertArguments(method, methodCaller.arguments));
             }
         } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new MethodAccessException();
+            throw new MethodAccessException(e);
 
         } catch (InvocationTargetException e) {
             Throwable cause = e.getTargetException();

@@ -244,7 +244,7 @@ public class LoadedDApp {
         try {
             Method method = getMainMethod();
             if (!Modifier.isStatic(method.getModifiers())) {
-                throw new MethodAccessException();
+                throw new MethodAccessException("main method not static");
             }
 
             ByteArray rawResult = (ByteArray) method.invoke(null);
@@ -256,7 +256,7 @@ public class LoadedDApp {
             RuntimeAssertionError.unexpected(e);
 
         } catch (NoSuchMethodException | IllegalAccessException e) {
-            throw new MethodAccessException();
+            throw new MethodAccessException(e);
 
         } catch (InvocationTargetException e) {
             // handle the real exception

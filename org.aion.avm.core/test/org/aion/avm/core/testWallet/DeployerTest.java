@@ -1,6 +1,5 @@
 package org.aion.avm.core.testWallet;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 
