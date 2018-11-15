@@ -2,10 +2,14 @@ package org.aion.avm.core.persistence;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IHelper;
@@ -20,14 +24,15 @@ public class LoadedDAppTest {
     // We don't verify fees at this time so just use the "null" utility processor.
     private static NullFeeProcessor FEE_PROCESSOR = new NullFeeProcessor();
 
-    private ClassLoader loader;
+    private AvmClassLoader loader;
 
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
-        this.loader = LoadedDAppTest.class.getClassLoader();
+        Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(Collections.emptyMap(), Helpers.loadDefaultHelperBytecode());
+        this.loader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
         // Clear statics, since our tests interact with them.
         clearStaticState();

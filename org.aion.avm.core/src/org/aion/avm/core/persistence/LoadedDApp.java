@@ -72,6 +72,17 @@ public class LoadedDApp {
         this.classes = classes;
         this.originalMainClassName = originalMainClassName;
         this.fieldCache = new ReflectedFieldCache();
+        
+        // We also know that we need the runtimeSetup, meaning we also need the helperClass.
+        try {
+            String helperClassName = Helper.RUNTIME_HELPER_NAME;
+            this.helperClass = this.loader.loadClass(helperClassName);
+            RuntimeAssertionError.assertTrue(helperClass.getClassLoader() == this.loader);
+            this.helperConstructor = this.helperClass.getConstructor(ClassLoader.class, long.class, int.class);
+        } catch (IllegalArgumentException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
+            // We require that this be instantiated in this way.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 
     /**
@@ -197,8 +208,7 @@ public class LoadedDApp {
     public IHelper instantiateHelperInApp(long energyLimit, int nextHashCode) {
         IHelper helper = null;
         try {
-            Constructor<?> helperConstructor = getHelperConstructor();
-            helper = (IHelper) helperConstructor.newInstance(this.loader, energyLimit, nextHashCode);
+            helper = (IHelper) this.helperConstructor.newInstance(this.loader, energyLimit, nextHashCode);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);
@@ -328,17 +338,6 @@ public class LoadedDApp {
     }
 
 
-    private Class<?> loadHelperClass() throws ClassNotFoundException {
-        Class<?> helperClass = this.helperClass;
-        if (null == helperClass) {
-            String helperClassName = Helper.RUNTIME_HELPER_NAME;
-            helperClass = this.loader.loadClass(helperClassName);
-            RuntimeAssertionError.assertTrue(helperClass.getClassLoader() == this.loader);
-            this.helperClass = helperClass;
-        }
-        return helperClass;
-    }
-
     private Class<?> loadBlockchainRuntimeClass() throws ClassNotFoundException {
         Class<?> runtimeClass = this.blockchainRuntimeClass;
         if (null == runtimeClass) {
@@ -359,16 +358,6 @@ public class LoadedDApp {
             this.mainClass = mainClass;
         }
         return mainClass;
-    }
-
-    private Constructor<?> getHelperConstructor() throws ClassNotFoundException, NoSuchMethodException {
-        Constructor<?> helperConstructor = this.helperConstructor;
-        if (null == helperConstructor) {
-            Class<?> helperClass = loadHelperClass();
-            helperConstructor = helperClass.getConstructor(ClassLoader.class, long.class, int.class);
-            this.helperConstructor = helperConstructor;
-        }
-        return helperConstructor;
     }
 
     private Field getBlochchainRuntimeField() throws ClassNotFoundException, NoSuchFieldException, SecurityException  {
@@ -394,8 +383,7 @@ public class LoadedDApp {
     private Method getHelperClearTestingStateMethod() throws ClassNotFoundException, NoSuchMethodException, SecurityException {
         Method helperClearTestingStateMethod = this.helperClearTestingStateMethod;
         if (null == helperClearTestingStateMethod) {
-            Class<?> clazz = loadHelperClass();
-            helperClearTestingStateMethod = clazz.getMethod("clearTestingState");
+            helperClearTestingStateMethod = this.helperClass.getMethod("clearTestingState");
             this.helperClearTestingStateMethod = helperClearTestingStateMethod;
         }
         return helperClearTestingStateMethod;
