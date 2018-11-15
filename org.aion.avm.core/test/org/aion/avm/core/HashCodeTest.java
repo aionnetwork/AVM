@@ -296,57 +296,6 @@ public class HashCodeTest {
     }
 
     /**
-     * Tests that we can load one DApp, execute some code in it, then suspend its state by creating another IHelper, then return, later.
-     */
-    @Test
-    public void testHelperStaticReuse() throws Exception {
-        // Get the method we will be using.
-        AvmClassLoader classLoader = this.avm.getClassLoader();
-        Method getOneHashCode = this.clazz.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
-        IHelper originalHelper = this.avm.getHelper();
-        
-        // Run a standard call.
-        int originalFirstHashCode = (Integer)getOneHashCode.invoke(null);
-        Assert.assertEquals(3, originalFirstHashCode);
-        
-        // Create another helper and use it for a standard call.
-        int originalNextHashCode = originalHelper.captureSnapshotAndNextHashCode();
-        SuspendedHelper suspendedOriginal = new SuspendedHelper();
-        
-        IHelper anotherHelper = Helpers.instantiateHelper(classLoader, 1_000_000L, 1);
-        int anotherFirstHashCode = (Integer)getOneHashCode.invoke(null);
-        Assert.assertEquals(1, anotherFirstHashCode);
-        
-        // Create yet another helper, this time without enough energy to run the call.
-        int anotherNextHashCode = anotherHelper.captureSnapshotAndNextHashCode();
-        SuspendedHelper suspendedAnother = new SuspendedHelper();
-        
-        Helpers.instantiateHelper(classLoader, 1L, 1);
-        try {
-            getOneHashCode.invoke(null);
-            // This above call was supposed to fail.
-            Assert.fail();
-        } catch (InvocationTargetException e) {
-            Assert.assertTrue(e.getCause() instanceof OutOfEnergyException);
-        }
-        IHelper.currentContractHelper.remove();
-        
-        // Now, switch back to the second, to observe the expected second hashCode.
-        suspendedAnother.resume();
-        anotherHelper.applySnapshotAndNextHashCode(anotherNextHashCode);
-        int anotherSecondHashCode = (Integer)getOneHashCode.invoke(null);
-        Assert.assertEquals(2, anotherSecondHashCode);
-        IHelper.currentContractHelper.remove();
-        
-        // Now, switch back to the first, to observe the same "second hashCode", meaning the states have remained distinct.
-        suspendedOriginal.resume();
-        originalHelper.applySnapshotAndNextHashCode(originalNextHashCode);
-        int originalSecondHashCode = (Integer)getOneHashCode.invoke(null);
-        Assert.assertEquals(4, originalSecondHashCode);
-        Assert.assertEquals((anotherSecondHashCode - anotherFirstHashCode), (originalSecondHashCode - originalFirstHashCode));
-    }
-
-    /**
      * Tests that the box types have hashCode()s deterministically based on their underlying values.
      */
     @Test
