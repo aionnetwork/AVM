@@ -4,8 +4,6 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,14 +45,6 @@ public class ClassMeteringTest {
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
         this.clazz = loader.loadClass(className);
-        
-        // We only need to install a IBlockchainRuntime which can afford our energy.
-        new Helper(loader, 1_000_000L, 1);
-    }
-
-    @After
-    public void teardown() throws Exception {
-        Helper.clearTestingState();
     }
 
     /**
