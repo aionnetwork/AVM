@@ -259,66 +259,88 @@ public class NodeEnvironment {
     }
 
     private static Set<String> loadShadowClasses(ClassLoader loader, Class<?>[] shadowClasses) throws ClassNotFoundException {
-        HelperInstrumentation instrumentation = new HelperInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
-        // Create the fake IHelper.
-        IHelper.currentContractHelper.set(new IHelper() {
+        // Create the fake IInstrumentation.
+        IInstrumentation instrumentation = new IInstrumentation() {
             @Override
-            public void externalChargeEnergy(long cost) {
+            public void chargeEnergy(long cost) throws OutOfEnergyException {
                 // Shadow enum class will create array wrapper with <clinit>
                 // Ignore the charge energy request in this case
             }
-
             @Override
-            public long externalGetEnergyRemaining() {
+            public long energyLeft() {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
-
             @Override
-            public org.aion.avm.shadow.java.lang.Class<?> externalWrapAsClass(Class<?> input) {
+            public <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
-
             @Override
-            public int externalGetNextHashCodeAndIncrement() {
+            public int getNextHashCodeAndIncrement() {
                 // Only constants should end up being allocated under this so set them to the constant hash code we will over-write with their
                 // specification values, after.
                 return Integer.MIN_VALUE;
             }
-
             @Override
-            public int externalPeekNextHashCode() {
-                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
-            }
-
-            @Override
-            public int captureSnapshotAndNextHashCode() {
-                // We currently only use this for saving state prior to a reentrant call, which we don't expect during bootstrap.
-                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
-            }
-
-            @Override
-            public void applySnapshotAndNextHashCode(int nextHashCode) {
-                // We currently only use this for restoring state after a reentrant call, which we don't expect during bootstrap.
-                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
-            }
-
-            @Override
-            public void externalBootstrapOnly() {
+            public void bootstrapOnly() {
                 // This is ok since we are the bootstrapping helper.
             }
-
             @Override
-            public void externalSetAbortState() {
+            public void setAbortState() {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
-        });
+            @Override
+            public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t) {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg) {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public int getCurStackSize() {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public int getCurStackDepth() {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public void enterMethod(int frameSize) {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public void exitMethod(int frameSize) {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public void enterCatchBlock(int depth, int size) {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public int peekNextHashCode() {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public void forceNextHashCode(int nextHashCode) {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
+            public void exitCurrentFrame() {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+        };
 
         // Load all the classes - even just mentioning these might cause them to be loaded, even before the Class.forName().
+        InstrumentationHelpers.attachThread(instrumentation);
         Set<String> loadedClassNames = loadAndInitializeClasses(loader, shadowClasses);
-
-        // Clean-up.
-        IHelper.currentContractHelper.remove();
         InstrumentationHelpers.detachThread(instrumentation);
 
         return loadedClassNames;

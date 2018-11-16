@@ -15,7 +15,7 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
-import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.parallel.AddressResourceMonitor;
@@ -57,7 +57,7 @@ public class AvmImpl implements AvmInternal {
         @Override
         public void run() {
             // TODO:  This should actually come from a factory passed in to the AVM (or otherwise from somewhere top-level).
-            HelperInstrumentation instrumentation = new HelperInstrumentation();
+            CommonInstrumentation instrumentation = new CommonInstrumentation();
             InstrumentationHelpers.attachThread(instrumentation);
             try {
                 // Run as long as we have something to do (null means shutdown).
@@ -69,13 +69,22 @@ public class AvmImpl implements AvmInternal {
                     do {
                         if (DEBUG_EXECUTOR) System.out.println(this.getName() + " start  " + incomingTask.getIndex());
 
+                        // TODO:  Determine if we can coalesce the IInstrumentation and TransactionTask to avoid this attach/detach.
                         incomingTask.resetState();
+                        incomingTask.attachInstrumentationForThread();
                         outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask);
+                        incomingTask.detachInstrumentationForThread();
 
-                        if (TransactionResult.Code.FAILED_ABORT == outgoingResult.getStatusCode() && DEBUG_EXECUTOR){
-                            System.out.println(this.getName() + " abort  " + incomingTask.getIndex() + " counter " + (++abortCounter));
+                        if (TransactionResult.Code.FAILED_ABORT == outgoingResult.getStatusCode()) {
+                            // If this was an abort, we want to clear the abort state on the instrumentation for this thread, since
+                            // this is the point where that is "handled".
+                            // Note that this is safe to do here since the instrumentation isn't exposed to any other threads.
+                            instrumentation.clearAbortState();
+                            
+                            if (DEBUG_EXECUTOR){
+                                System.out.println(this.getName() + " abort  " + incomingTask.getIndex() + " counter " + (++abortCounter));
+                            }
                         }
-
                     }while (TransactionResult.Code.FAILED_ABORT == outgoingResult.getStatusCode());
 
                     if (DEBUG_EXECUTOR) System.out.println(this.getName() + " finish " + incomingTask.getIndex() + " " + outgoingResult.getStatusCode());

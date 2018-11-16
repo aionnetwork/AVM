@@ -11,9 +11,9 @@ import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.NullFeeProcessor;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.After;
@@ -28,6 +28,7 @@ public class LoadedDAppTest {
 
     private IInstrumentation instrumentation;
     private AvmClassLoader loader;
+    private IRuntimeSetup runtimeSetup;
 
     @Before
     public void setup() {
@@ -37,16 +38,18 @@ public class LoadedDAppTest {
         Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(Collections.emptyMap(), Helpers.loadDefaultHelperBytecode());
         this.loader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
         
-        this.instrumentation = new HelperInstrumentation();
+        this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
-        new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
+        this.runtimeSetup = Helpers.getSetupForLoader(this.loader);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, this.loader, 1_000_000L, 1);
+        
         // Clear statics, since our tests interact with them.
         clearStaticState();
     }
 
     @After
     public void tearDown() {
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(this.runtimeSetup);
         InstrumentationHelpers.detachThread(this.instrumentation);
     }
 

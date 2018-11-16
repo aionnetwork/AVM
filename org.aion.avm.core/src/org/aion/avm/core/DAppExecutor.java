@@ -38,9 +38,8 @@ public class DAppExecutor {
         task.getReentrantDAppStack().pushState(thisState);
         
         IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
-        IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode);
-        task.attachHelper(helper);
-        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, task, ctx, ctx.getData(), result));
+        InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode);
+        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, task, ctx, ctx.getData(), result, dapp.runtimeSetup));
         HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(threadInstrumentation);
 
         ReentrantGraphProcessor reentrantGraphData = null;
@@ -67,13 +66,13 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 // Write this back into the resumed state.
                 reentrantGraphData.commitGraphToStoredFieldsAndRestore();
-                stateToResume.updateEnvironment(threadInstrumentation.peekNextHashCode());
+                stateToResume.updateEnvironment(threadInstrumentation.getNextHashCodeAndIncrement());
             } else {
                 // We are at the "top" so write this back to disk.
                 // -first, save out the classes
                 dapp.saveClassStaticsToStorage(feeProcessor, directGraphData, graphStore);
                 // -finally, save back the final state of the environment so we restore it on the next invocation.
-                ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(threadInstrumentation.peekNextHashCode());
+                ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(threadInstrumentation.getNextHashCodeAndIncrement());
                 ContractEnvironmentState.saveToGraph(graphStore, updatedEnvironment);
             }
             graphStore.flushWrites();
@@ -143,8 +142,8 @@ public class DAppExecutor {
             e.printStackTrace();
             System.exit(-1);
         } finally {
-            // Once we are done running this, we want to clear the IHelper.currentContractHelper.
-            IHelper.currentContractHelper.remove();
+            // Once we are done running this, no matter how it ended, we want to detach our thread from the DApp.
+            InstrumentationHelpers.popExistingStackFrame(dapp.runtimeSetup);
             // This state was only here while we were running, in case someone else needed to change it so now we can pop it.
             task.getReentrantDAppStack().popState();
         }

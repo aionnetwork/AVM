@@ -10,8 +10,9 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.KernelInterfaceImpl;
 
@@ -259,11 +260,12 @@ public class ArgumentParser {
         }
         // To create an Address instance, we need to temporarily install a Helper (for base class instantiation).
         AvmClassLoader avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
-        HelperInstrumentation commonInstrumentation = new HelperInstrumentation();
+        CommonInstrumentation commonInstrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(commonInstrumentation);
-        new Helper(avmClassLoader, 1_000_000L, 1);
+        IRuntimeSetup runtime = new Helper();
+        InstrumentationHelpers.pushNewStackFrame(runtime, avmClassLoader, 1_000_000L, 1);
         Address address = new Address(Helpers.hexStringToBytes(arg));
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(runtime);
         InstrumentationHelpers.detachThread(commonInstrumentation);
         return address;
     }

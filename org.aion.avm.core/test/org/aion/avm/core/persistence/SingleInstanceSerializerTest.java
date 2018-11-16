@@ -12,9 +12,10 @@ import org.aion.avm.arraywrapper.LongArray;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.arraywrapper.ShortArray;
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.junit.After;
 import org.junit.Assert;
@@ -39,20 +40,22 @@ public class SingleInstanceSerializerTest {
     private static final Consumer<org.aion.avm.shadow.java.lang.Object> NULL_OBJECT_SINK = (object) -> {};
 
     private IInstrumentation instrumentation;
+    private IRuntimeSetup runtimeSetup;
 
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
-        this.instrumentation = new HelperInstrumentation();
+        this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
-        new Helper(SingleInstanceSerializerTest.class.getClassLoader(), 1_000_000L, 1);
+        this.runtimeSetup = new Helper();
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, SingleInstanceSerializerTest.class.getClassLoader(), 1_000_000L, 1);
     }
 
     @After
     public void tearDown() {
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(this.runtimeSetup);
         InstrumentationHelpers.detachThread(this.instrumentation);
     }
 

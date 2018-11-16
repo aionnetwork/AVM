@@ -1,6 +1,5 @@
 package org.aion.avm.core.persistence;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -18,8 +17,8 @@ import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.MethodAccessException;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
@@ -45,20 +44,19 @@ import org.aion.avm.internal.UncaughtException;
  * such that it is fully usable.  Attempting to eagerly interact with it before then might not be safe.
  */
 public class LoadedDApp {
-    private final ClassLoader loader;
+    public final ClassLoader loader;
     private final List<Class<?>> classes;
     private final String originalMainClassName;
     // Note that this fieldCache is populated by the calls to ReflectionStructureCodec.
     private final ReflectedFieldCache fieldCache;
 
     // Other caches of specific pieces of data which are lazily built.
-    private Class<?> helperClass;
+    private final Class<?> helperClass;
+    public final IRuntimeSetup runtimeSetup;
     private Class<?> blockchainRuntimeClass;
     private Class<?> mainClass;
-    private Constructor<?> helperConstructor;
     private Field runtimeBlockchainRuntimeField;
     private Method mainMethod;
-    private Method helperClearTestingStateMethod;
     private long loadedBlockNum;
 
     /**
@@ -78,8 +76,8 @@ public class LoadedDApp {
             String helperClassName = Helper.RUNTIME_HELPER_NAME;
             this.helperClass = this.loader.loadClass(helperClassName);
             RuntimeAssertionError.assertTrue(helperClass.getClassLoader() == this.loader);
-            this.helperConstructor = this.helperClass.getConstructor(ClassLoader.class, long.class, int.class);
-        } catch (IllegalArgumentException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
+            this.runtimeSetup = (IRuntimeSetup) helperClass.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
             // We require that this be instantiated in this way.
             throw RuntimeAssertionError.unexpected(e);
         }
@@ -196,27 +194,6 @@ public class LoadedDApp {
     }
 
     /**
-     * Loads and instantiates the IHelper instance to access the "Helper" statics within the given contractLoader.
-     * This assumes that the bytecode for "Helper" is directly accessible within the DApp's classloader.
-     * NOTE:  The current implementation is mostly cloned from Helpers.instantiateHelper() but we will inline/cache more of this,
-     * over time, and that older implementation is only used by tests (which may be ported to use this).
-     *
-     * @param energyLimit The energy limit for this invocation.
-     * @param nextHashCode The hashcode of the next object to be allocated (since this increments, across invocations).
-     * @return The instance which will trampoline into the "Helper" statics called by the instrumented code within this contract.
-     */
-    public IHelper instantiateHelperInApp(long energyLimit, int nextHashCode) {
-        IHelper helper = null;
-        try {
-            helper = (IHelper) this.helperConstructor.newInstance(this.loader, energyLimit, nextHashCode);
-        } catch (Throwable t) {
-            // Errors at this point imply something wrong with the installation so fail.
-            throw RuntimeAssertionError.unexpected(t);
-        }
-        return helper;
-    }
-
-    /**
      * Attaches a BlockchainRuntime instance to the Helper class (per contract) so DApp can
      * access blockchain related methods.
      * NOTE:  The current implementation is mostly cloned from Helpers.attachBlockchainRuntime() but we will inline/cache more of this,
@@ -323,17 +300,6 @@ public class LoadedDApp {
      * Called before the DApp is about to be put into a cache.  This is so it can put itself into a "resumable" state.
      */
     public void cleanForCache() {
-        // First, clear the state of the IHelper.
-        try {
-            Method helperClearTestingStateMethod = getHelperClearTestingStateMethod();
-            helperClearTestingStateMethod.invoke(null);
-        } catch (Throwable t) {
-            // Errors at this point imply something wrong with the installation so fail.
-            throw RuntimeAssertionError.unexpected(t);
-        }
-        
-        // Second, null out all the instances referenced by the DApp's class statics (since we over-write them on load, anyway, this is a waste).
-        // (note that we know the fieldCache must already contain this information since we were just asked to serialize, before this).
         StaticClearer.nullAllStaticFields(this.classes, this.fieldCache);
     }
 
@@ -378,15 +344,6 @@ public class LoadedDApp {
             this.mainMethod = mainMethod;
         }
         return mainMethod;
-    }
-
-    private Method getHelperClearTestingStateMethod() throws ClassNotFoundException, NoSuchMethodException, SecurityException {
-        Method helperClearTestingStateMethod = this.helperClearTestingStateMethod;
-        if (null == helperClearTestingStateMethod) {
-            helperClearTestingStateMethod = this.helperClass.getMethod("clearTestingState");
-            this.helperClearTestingStateMethod = helperClearTestingStateMethod;
-        }
-        return helperClearTestingStateMethod;
     }
 
     /**

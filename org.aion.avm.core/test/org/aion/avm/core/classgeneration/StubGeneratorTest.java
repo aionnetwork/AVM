@@ -11,31 +11,17 @@ import org.aion.avm.core.dappreading.ClassLoadingResult;
 import org.aion.avm.core.dappreading.DAppClassLoader;
 import org.aion.avm.core.dappreading.DAppLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.HelperInstrumentation;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.CommonInstrumentation;
+import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.PackageConstants;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 
 public class StubGeneratorTest {
-    @Before
-    public void setup()throws ClassNotFoundException{
-        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.emptyMap(), Helpers.loadDefaultHelperBytecode());
-        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
-        Helpers.instantiateHelper(loader, 1_000_000L, 1);
-    }
-
-    @After
-    public void tearDown() {
-        IHelper.currentContractHelper.remove();
-    }
-
     @Test
     public void testBasics() throws Exception {
         String slashName = "my/test/ClassName";
@@ -132,8 +118,10 @@ public class StubGeneratorTest {
         Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getName());
         Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getName());
         
-        IInstrumentation instrumentation = new HelperInstrumentation();
+        IRuntimeSetup runtimeSetup = new Helper();
+        IInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, loader, 5L, 1);
         
         // Create an instance and prove that we can interact with it.
         Constructor<?> con = aioobe.getConstructor(org.aion.avm.shadow.java.lang.String.class);
@@ -143,6 +131,7 @@ public class StubGeneratorTest {
         // Ask for the toString (our internal version) since we know what that should look like.
         Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.ArrayIndexOutOfBoundsException: one", shadow.toString());
         
+        InstrumentationHelpers.popExistingStackFrame(runtimeSetup);
         InstrumentationHelpers.detachThread(instrumentation);
     }
 
@@ -226,8 +215,10 @@ public class StubGeneratorTest {
         Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.Object", object.getName());
         Assert.assertEquals(handWritten, object.getClassLoader());
         
-        IInstrumentation instrumentation = new HelperInstrumentation();
+        IRuntimeSetup runtimeSetup = new Helper();
+        IInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, generated, 5L, 1);
         
         // Create an instance and prove that we can interact with it.
         Constructor<?> con = notFound.getConstructor(org.aion.avm.shadow.java.lang.String.class, org.aion.avm.shadow.java.lang.Throwable.class);
@@ -242,6 +233,7 @@ public class StubGeneratorTest {
         Object result = getException.invoke(shadow);
         Assert.assertTrue(result == cause);
         
+        InstrumentationHelpers.popExistingStackFrame(runtimeSetup);
         InstrumentationHelpers.detachThread(instrumentation);
     }
 

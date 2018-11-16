@@ -3,10 +3,12 @@ package org.aion.avm.core.stacktracking;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.persistence.SingleInstanceSerializerTest;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.OutOfStackException;
 import org.aion.avm.internal.StackWatcher;
@@ -29,6 +31,7 @@ public class StackWatcherTest {
     private static AvmClassLoader classLoader;
     private Class<?> clazz;
     private IInstrumentation instrumentation;
+    private IRuntimeSetup runtimeSetup;
 
     @Before
     // We only need to load the instrumented class once.
@@ -49,13 +52,15 @@ public class StackWatcherTest {
         classLoader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
         clazz = classLoader.loadClass(className);
         
-        this.instrumentation = new HelperInstrumentation();
+        this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
+        this.runtimeSetup = Helpers.getSetupForLoader(classLoader);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, SingleInstanceSerializerTest.class.getClassLoader(), 1_000_000L, 1);
     }
 
     @After
     public void clearTestingState() {
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(this.runtimeSetup);
         InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
@@ -114,7 +119,8 @@ public class StackWatcherTest {
 
         for (int i = 0; i < 50; i++){
             sw.reset();
-            classLoader.loadClass(Helper.RUNTIME_HELPER_NAME).getDeclaredMethod("clearTestingState").invoke(null);
+            IRuntimeSetup frame = new Helper();
+            InstrumentationHelpers.pushNewStackFrame(frame, classLoader, 1_000_000L, 1);
             Helpers.attachStackWatcher(classLoader, sw);
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
@@ -130,6 +136,7 @@ public class StackWatcherTest {
                     prev = cur;
                 }
             }
+            InstrumentationHelpers.popExistingStackFrame(frame);
         }
 
         prev = -1;
@@ -137,7 +144,8 @@ public class StackWatcherTest {
         sw.setPolicy(StackWatcher.POLICY_DEPTH);
         for (int i = 0; i < 50; i++){
             sw.reset();
-            classLoader.loadClass(Helper.RUNTIME_HELPER_NAME).getDeclaredMethod("clearTestingState").invoke(null);
+            IRuntimeSetup frame = new Helper();
+            InstrumentationHelpers.pushNewStackFrame(frame, classLoader, 1_000_000L, 1);
             Helpers.attachStackWatcher(classLoader, sw);
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
@@ -153,6 +161,7 @@ public class StackWatcherTest {
                     prev = cur;
                 }
             }
+            InstrumentationHelpers.popExistingStackFrame(frame);
         }
     }
 

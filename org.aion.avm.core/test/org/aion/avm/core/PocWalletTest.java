@@ -7,10 +7,12 @@ import org.aion.avm.core.testWallet.*;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
-import org.aion.avm.internal.HelperInstrumentation;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
+import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.shadow.java.lang.Class;
+import org.aion.avm.shadow.java.lang.Object;
+import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -187,62 +189,97 @@ public class PocWalletTest {
     }
 
     private static Address createAddressInFakeContract(byte[] bytes) {
-        HelperInstrumentation instrumentation = new HelperInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
         // Create a fake runtime for encoding the arguments (since these are shadow objects - they can only be instantiated within the context of a contract).
-        IHelper.currentContractHelper.set(new IHelper() {
+        IInstrumentation instrumentation = new IInstrumentation() {
             @Override
-            public void externalChargeEnergy(long cost) {
+            public void chargeEnergy(long cost) throws OutOfEnergyException {
                 // free!!!
             }
-
             @Override
-            public long externalGetEnergyRemaining() {
+            public long energyLeft() {
                 Assert.fail("Not in test");
                 return 0;
             }
 
             @Override
-            public Class<?> externalWrapAsClass(java.lang.Class<?> input) {
+            public <T> Class<T> wrapAsClass(java.lang.Class<T> input) {
                 Assert.fail("Not in test");
                 return null;
             }
 
             @Override
-            public int externalGetNextHashCodeAndIncrement() {
+            public int getNextHashCodeAndIncrement() {
                 // Will be called.
                 return 1;
             }
 
             @Override
-            public int externalPeekNextHashCode() {
+            public void bootstrapOnly() {
+                Assert.fail("Not in test");
+            }
+
+            @Override
+            public void setAbortState() {
+                Assert.fail("Not in test");
+            }
+
+            @Override
+            public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
+                Assert.fail("Not in test");
+            }
+            @Override
+            public void exitCurrentFrame() {
+                Assert.fail("Not in test");
+            }
+            @Override
+            public String wrapAsString(java.lang.String input) {
+                Assert.fail("Not in test");
+                return null;
+            }
+            @Override
+            public Object unwrapThrowable(Throwable t) {
+                Assert.fail("Not in test");
+                return null;
+            }
+            @Override
+            public Throwable wrapAsThrowable(Object arg) {
+                Assert.fail("Not in test");
+                return null;
+            }
+            @Override
+            public int getCurStackSize() {
                 Assert.fail("Not in test");
                 return 0;
             }
-
             @Override
-            public int captureSnapshotAndNextHashCode() {
+            public int getCurStackDepth() {
                 Assert.fail("Not in test");
                 return 0;
             }
-
             @Override
-            public void applySnapshotAndNextHashCode(int nextHashCode) {
+            public void enterMethod(int frameSize) {
                 Assert.fail("Not in test");
             }
-
             @Override
-            public void externalBootstrapOnly() {
+            public void exitMethod(int frameSize) {
                 Assert.fail("Not in test");
             }
-
             @Override
-            public void externalSetAbortState() {
+            public void enterCatchBlock(int depth, int size) {
                 Assert.fail("Not in test");
             }
-        });
+            @Override
+            public int peekNextHashCode() {
+                Assert.fail("Not in test");
+                return 0;
+            }
+            @Override
+            public void forceNextHashCode(int nextHashCode) {
+                Assert.fail("Not in test");
+            }
+        };
+        InstrumentationHelpers.attachThread(instrumentation);
         Address instance = new Address(bytes);
-        IHelper.currentContractHelper.remove();
         InstrumentationHelpers.detachThread(instrumentation);
         return instance;
     }

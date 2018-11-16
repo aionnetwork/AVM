@@ -4,9 +4,9 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.*;
@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 public class StringConstantVisitorTest {
     private IInstrumentation instrumentation;
+    private IRuntimeSetup runtimeSetup;
     private Class<?> clazz;
     private Class<?> clazzNoStatic;
 
@@ -51,10 +52,10 @@ public class StringConstantVisitorTest {
         Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
         
-        this.instrumentation = new HelperInstrumentation();
+        this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
-        // We don't really need the runtime but we do need the intern map initialized.
-        loader.loadClass(Helper.RUNTIME_HELPER_NAME).getConstructor(ClassLoader.class, long.class, int.class).newInstance(loader, 1_000_000L, 1);
+        this.runtimeSetup = Helpers.getSetupForLoader(loader);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, loader, 1_000_000L, 1);
         
         this.clazz = loader.loadUserClassByOriginalName(targetTestName);
         this.clazzNoStatic = loader.loadUserClassByOriginalName(targetNoStaticName);
@@ -62,8 +63,7 @@ public class StringConstantVisitorTest {
 
     @After
     public void clearTestingState() {
-        // NOTE:  We should use the actual instance we created but we only want to clear the thread local.
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(this.runtimeSetup);
         InstrumentationHelpers.detachThread(this.instrumentation);
     }
 

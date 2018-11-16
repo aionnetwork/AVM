@@ -2,68 +2,69 @@ package org.aion.avm.internal;
 
 import java.lang.reflect.Field;
 import java.util.IdentityHashMap;
+import java.util.Stack;
 
 
 public class CommonInstrumentation implements IInstrumentation {
-    public StackWatcher stackWatcher;
+    // Single-frame states (the currentFrame cannot also be in the callerFrame - this is just an optimization since the currentFrame access
+    // is the common case and is in the critical path - may actually be worth fully-inlining these variables, at some point).
+    private FrameState currentFrame;
+    private final Stack<FrameState> callerFrames;
 
-    private long energyLeft;
-    private ClassLoader lateLoader;
-    private int nextHashCode;
+    // State which applies to the entire stack.
     private boolean abortState;
+    private final Field persistenceTokenField;
 
-
-    /**
-     * Note that we need to consider instance equality for strings and classes:
-     * -String instance quality isn't normally important but some cases, such as constant identifiers, are sometimes expected to be instance-equal.
-     *  In our implementation, we are only going to preserve this for the <clinit> methods of the contract classes and, other than that, actively
-     *  avoid any observable instance equality beyond instance preservation in the object graph (no relying on the same Class instance giving the
-     *  same String instance back on successive calls, for example).
-     * -Class instance equality is generally more important since classes don't otherwise have a clear definition of "equality"
-     * Therefore, we will only create a map for interning strings if we suspect that this is the first call (a 1 nextHashCode - we may make this
-     * explicit, in the future) but we will always create the map for interning classes.
-     * The persistence layer also knows that classes are encoded differently so it will correctly resolve instance through this interning map.
-     */
-    private IdentityHashMap<String, org.aion.avm.shadow.java.lang.String> internedStringWrappers;
-    private IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers;
-
-    private Field persistenceTokenField;
-
-    // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
-    private AvmThrowable forceExitState;
-
-    public CommonInstrumentation(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
-        RuntimeAssertionError.assertTrue(null != contractLoader);
-        this.lateLoader = contractLoader;
-
-        this.energyLeft = energyLeft;
-        this.nextHashCode = nextHashCode;
-
-        //TODO: inherit abortState from parent?
+    public CommonInstrumentation() {
+        this.callerFrames = new Stack<>();
         this.abortState = false;
-        
-        // Reset our interning state.
-        // Note that we want to fail on any attempt to use the interned string map which isn't the initial call (since <clinit> needs it but any
-        // other attempt to use it is an error).
-        if (1 == nextHashCode) {
-            this.internedStringWrappers = new IdentityHashMap<String, org.aion.avm.shadow.java.lang.String>();
-        }
-        this.internedClassWrappers = new IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>>();
-
-        // setting up a default stack watcher.
-        this.stackWatcher = new StackWatcher();
-        this.stackWatcher.setPolicy(StackWatcher.POLICY_SIZE);
-        this.stackWatcher.setMaxStackDepth(512);
-        this.stackWatcher.setMaxStackSize(16 * 1024);
 
         // We need to look up the persistenceTokenField so we can install the special token for classes.
         try {
             this.persistenceTokenField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("persistenceToken");
         } catch (NoSuchFieldException | SecurityException e) {
             // Clearly a fatal error.
-            RuntimeAssertionError.unexpected(e);
+            throw RuntimeAssertionError.unexpected(e);
         }
         this.persistenceTokenField.setAccessible(true);
+    }
+
+    public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
+        RuntimeAssertionError.assertTrue(null != contractLoader);
+        FrameState newFrame = new FrameState();
+        newFrame.lateLoader = contractLoader;
+
+        newFrame.energyLeft = energyLeft;
+        newFrame.nextHashCode = nextHashCode;
+
+        // Reset our interning state.
+        // Note that we want to fail on any attempt to use the interned string map which isn't the initial call (since <clinit> needs it but any
+        // other attempt to use it is an error).
+        if (1 == nextHashCode) {
+            newFrame.internedStringWrappers = new IdentityHashMap<String, org.aion.avm.shadow.java.lang.String>();
+        }
+        newFrame.internedClassWrappers = new IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>>();
+
+        // setting up a default stack watcher.
+        newFrame.stackWatcher = new StackWatcher();
+        newFrame.stackWatcher.setPolicy(StackWatcher.POLICY_SIZE);
+        newFrame.stackWatcher.setMaxStackDepth(512);
+        newFrame.stackWatcher.setMaxStackSize(16 * 1024);
+        
+        // Install the frame.
+        if (null != this.currentFrame) {
+            this.callerFrames.push(this.currentFrame);
+        }
+        this.currentFrame = newFrame;
+    }
+
+    public void exitCurrentFrame() {
+        // Remove the frame, potentially falling back to the caller.
+        FrameState returningFrame = null;
+        if (!this.callerFrames.isEmpty()) {
+            returningFrame = this.callerFrames.pop();
+        }
+        this.currentFrame = returningFrame;
     }
 
     @SuppressWarnings("unchecked")
@@ -71,20 +72,20 @@ public class CommonInstrumentation implements IInstrumentation {
     public <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
         org.aion.avm.shadow.java.lang.Class<T> wrapper = null;
         if (null != input) {
-            wrapper = (org.aion.avm.shadow.java.lang.Class<T>) internedClassWrappers.get(input);
+            wrapper = (org.aion.avm.shadow.java.lang.Class<T>) this.currentFrame.internedClassWrappers.get(input);
             if (null == wrapper) {
                 /**
-                 * NOTE:  We need to treat Class objects as though they are allocated "outside" of the contract space.  We could use a special IHelper
+                 * NOTE:  We need to treat Class objects as though they are allocated "outside" of the contract space.  We could use a special IInstrumentation
                  * instance for that case but that seems a little heavy-weight for what is currently only observable as a change in the hashcode.
-                 * In the future, we may want to formalize this using a mechanism like that (potentially even the bootstrap IHelper) but, to keep this
+                 * In the future, we may want to formalize this using a mechanism like that (potentially even the bootstrap IInstrumentation) but, to keep this
                  * simple, we will just swap out the "nextHashCode" and restore it, after allocation.  Similarly, to avoid the Class being observed
                  * as being in any specific allocation order, we will formally apply a hashcode based on its name as its "identity hash".
                  */
-                int normalHashCode = nextHashCode;
-                nextHashCode = input.getName().hashCode();
+                int normalHashCode = this.currentFrame.nextHashCode;
+                this.currentFrame.nextHashCode = input.getName().hashCode();
                 wrapper = new org.aion.avm.shadow.java.lang.Class<T>(input);
                 // Restore the normal hashcode counter.
-                nextHashCode = normalHashCode;
+                this.currentFrame.nextHashCode = normalHashCode;
                 // We treat classes much like constants, so add the IPersistenceToken for classes so that the persistence model knows how to ignore this.
                 try {
                     persistenceTokenField.set(wrapper, new ClassPersistenceToken(input.getName()));
@@ -93,7 +94,7 @@ public class CommonInstrumentation implements IInstrumentation {
                     RuntimeAssertionError.unexpected(e);
                 }
                 
-                internedClassWrappers.put(input, wrapper);
+                this.currentFrame.internedClassWrappers.put(input, wrapper);
             }
         }
         return wrapper;
@@ -103,10 +104,10 @@ public class CommonInstrumentation implements IInstrumentation {
     public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
         org.aion.avm.shadow.java.lang.String wrapper = null;
         if (null != input) {
-            wrapper = internedStringWrappers.get(input);
+            wrapper = this.currentFrame.internedStringWrappers.get(input);
             if (null == wrapper) {
                 wrapper = new org.aion.avm.shadow.java.lang.String(input);
-                internedStringWrappers.put(input, wrapper);
+                this.currentFrame.internedStringWrappers.put(input, wrapper);
             }
         }
         return wrapper;
@@ -127,7 +128,7 @@ public class CommonInstrumentation implements IInstrumentation {
                     // -create our fatal exception
                     JvmError error = new JvmError((VirtualMachineError)t);
                     // -store it in forceExitState
-                    forceExitState = error;
+                    this.currentFrame.forceExitState = error;
                     // -throw it
                     throw error;
                 }
@@ -170,7 +171,7 @@ public class CommonInstrumentation implements IInstrumentation {
                     ? PackageConstants.kShadowDotPrefix.length()
                     : PackageConstants.kUserDotPrefix.length();
             String wrapperClassName = PackageConstants.kExceptionWrapperDotPrefix + objectClass.substring(lengthToCut);
-            Class<?> wrapperClass = lateLoader.loadClass(wrapperClassName);
+            Class<?> wrapperClass = this.currentFrame.lateLoader.loadClass(wrapperClassName);
             result = (Throwable)wrapperClass.getConstructor(Object.class).newInstance(arg);
         } catch (Throwable err) {
             // Unrecoverable internal error.
@@ -182,103 +183,105 @@ public class CommonInstrumentation implements IInstrumentation {
     @Override
     public void chargeEnergy(long cost) throws OutOfEnergyException {
         // This is called at the beginning of a block so see if we are being asked to exit.
-        if (null != forceExitState) {
-            throw forceExitState;
+        if (null != this.currentFrame.forceExitState) {
+            throw this.currentFrame.forceExitState;
         }
         
         // Bill for the block.
-        energyLeft -= cost;
-        if (energyLeft < 0) {
+        this.currentFrame.energyLeft -= cost;
+        if (this.currentFrame.energyLeft < 0) {
             // Note that this is a reason to force the exit so set this.
             OutOfEnergyException error = new OutOfEnergyException();
-            forceExitState = error;
+            this.currentFrame.forceExitState = error;
             throw error;
         }
 
         // Check if we are in abort state.
         if (abortState){
             EarlyAbortException error = new EarlyAbortException();
-            forceExitState = error;
+            this.currentFrame.forceExitState = error;
             throw error;
         }
     }
 
     @Override
     public long energyLeft() {
-        return energyLeft;
+        return this.currentFrame.energyLeft;
     }
 
     @Override
     public int getNextHashCodeAndIncrement() {
         // NOTE:  In the case of a Class object, this value is swapped out, temporarily.
-        return nextHashCode++;
+        return this.currentFrame.nextHashCode++;
     }
 
     @Override
     public void setAbortState() {
         abortState = true;
     }
-
+    public void clearAbortState() {
+        abortState = false;
+    }
 
     @Override
     public int getCurStackSize() {
-        return stackWatcher.getCurStackSize();
+        return this.currentFrame.stackWatcher.getCurStackSize();
     }
 
     @Override
     public int getCurStackDepth() {
-        return stackWatcher.getCurStackDepth();
+        return this.currentFrame.stackWatcher.getCurStackDepth();
     }
 
     @Override
     public void enterMethod(int frameSize) {
         // may be redundant with class metering
-        if (null != forceExitState) {
-            throw forceExitState;
+        if (null != this.currentFrame.forceExitState) {
+            throw this.currentFrame.forceExitState;
         }
 
         try {
-            stackWatcher.enterMethod(frameSize);
+            this.currentFrame.stackWatcher.enterMethod(frameSize);
         } catch (OutOfStackException ex) {
-            forceExitState = ex;
+            this.currentFrame.forceExitState = ex;
         }
     }
 
     @Override
     public void exitMethod(int frameSize) {
         // may be redundant with class metering
-        if (null != forceExitState) {
-            throw forceExitState;
+        if (null != this.currentFrame.forceExitState) {
+            throw this.currentFrame.forceExitState;
         }
 
         try {
-            stackWatcher.exitMethod(frameSize);
+            this.currentFrame.stackWatcher.exitMethod(frameSize);
         } catch (OutOfStackException ex) {
-            forceExitState = ex;
+            this.currentFrame.forceExitState = ex;
         }
     }
 
     @Override
     public void enterCatchBlock(int depth, int size) {
         // may be redundant with class metering
-        if (null != forceExitState) {
-            throw forceExitState;
+        if (null != this.currentFrame.forceExitState) {
+            throw this.currentFrame.forceExitState;
         }
 
         try {
-            stackWatcher.enterCatchBlock(depth, size);
+            this.currentFrame.stackWatcher.enterCatchBlock(depth, size);
         } catch (OutOfStackException ex) {
-            forceExitState = ex;
+            this.currentFrame.forceExitState = ex;
         }
     }
 
     @Override
     public int peekNextHashCode() {
-        return this.nextHashCode;
+        return this.currentFrame.nextHashCode;
     }
     @Override
     public void forceNextHashCode(int nextHashCode) {
-        this.nextHashCode = nextHashCode;
+        this.currentFrame.nextHashCode = nextHashCode;
     }
 
     @Override
@@ -302,7 +305,39 @@ public class CommonInstrumentation implements IInstrumentation {
         
         // Then, use reflection to find the appropriate wrapper.
         String throwableName = t.getClass().getName();
-        Class<?> shadowClass = lateLoader.loadClass(PackageConstants.kShadowDotPrefix + throwableName);
+        Class<?> shadowClass = this.currentFrame.lateLoader.loadClass(PackageConstants.kShadowDotPrefix + throwableName);
         return (org.aion.avm.shadow.java.lang.Throwable)shadowClass.getConstructor(org.aion.avm.shadow.java.lang.String.class, org.aion.avm.shadow.java.lang.Throwable.class).newInstance(message, cause);
+    }
+
+
+    /**
+     * The CommonInstrumentation contains the logic to operate on state and the state which is shared for the entire stack of DApp
+     * invocations running in a single thread.
+     * This class contains the state specific to a single frame of this invocation path (that is, a single DApp invocation).
+     * NOTE:  public ONLY for tests.
+     */
+    public static class FrameState {
+        public StackWatcher stackWatcher;
+
+        private ClassLoader lateLoader;
+        private long energyLeft;
+        private int nextHashCode;
+
+        /**
+         * Note that we need to consider instance equality for strings and classes:
+         * -String instance quality isn't normally important but some cases, such as constant identifiers, are sometimes expected to be instance-equal.
+         *  In our implementation, we are only going to preserve this for the <clinit> methods of the contract classes and, other than that, actively
+         *  avoid any observable instance equality beyond instance preservation in the object graph (no relying on the same Class instance giving the
+         *  same String instance back on successive calls, for example).
+         * -Class instance equality is generally more important since classes don't otherwise have a clear definition of "equality"
+         * Therefore, we will only create a map for interning strings if we suspect that this is the first call (a 1 nextHashCode - we may make this
+         * explicit, in the future) but we will always create the map for interning classes.
+         * The persistence layer also knows that classes are encoded differently so it will correctly resolve instance through this interning map.
+         */
+        private IdentityHashMap<String, org.aion.avm.shadow.java.lang.String> internedStringWrappers;
+        private IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers;
+
+        // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
+        private AvmThrowable forceExitState;
     }
 }

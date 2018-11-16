@@ -20,10 +20,10 @@ import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
@@ -43,19 +43,22 @@ import static org.junit.Assert.*;
 
 public class InvokedynamicTransformationTest {
     private IInstrumentation instrumentation;
+    // Note that not all tests use this.
+    private IRuntimeSetup runtimeSetup;
 
     @Before
     public void setup() {
         // Make sure that we bootstrap the NodeEnvironment before we install the instrumentation and attach the thread.
         Assert.assertNotNull(NodeEnvironment.singleton);
-        this.instrumentation = new HelperInstrumentation();
+        this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
     }
 
     @After
     public void teardown() {
-        // NOTE:  We should use the actual instance we created but we only want to clear the thread local. 
-        Helper.clearTestingState();
+        if (null != this.runtimeSetup) {
+            InstrumentationHelpers.popExistingStackFrame(this.runtimeSetup);
+        }
         InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
@@ -190,8 +193,11 @@ public class InvokedynamicTransformationTest {
     private Class<?> loadClassInAvmLoader(byte[] bytecode, String mappedClassName) throws Exception {
         Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(Map.of(mappedClassName, bytecode), Helpers.loadDefaultHelperBytecode());
         AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
-        // Instantiate the helper.
-        dappLoader.loadClass(Helper.RUNTIME_HELPER_NAME).getConstructor(ClassLoader.class, long.class, int.class).newInstance(dappLoader, 1_000_000L, 1);
+        // Here, we will construct the runtime setup and push the new stack frame (we check if this is set to pop the frame, later - kind of hackish but
+        // avoids a lot of plumbing for a couple unit tests).
+        Assert.assertNull(this.runtimeSetup);
+        this.runtimeSetup = Helpers.getSetupForLoader(dappLoader);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, dappLoader, 1_000_000L, 1);
         return dappLoader.loadClass(mappedClassName);
     }
 }

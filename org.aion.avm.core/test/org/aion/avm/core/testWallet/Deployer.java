@@ -8,7 +8,8 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
-import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.CommonInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.userlib.AionList;
@@ -35,7 +36,7 @@ import java.util.function.Supplier;
 public class Deployer {
     public static void main(String[] args) throws Throwable {
         // This is eventually just a test harness to invoke the decode() but, for now, it will actually invoke the calls, directly.
-        // In order to instantiate Address objects, we need to install the IHelper.
+        // In order to instantiate Address objects, we need to install the IInstrumentation.
         System.out.println("--- DIRECT ---");
         callableInvokeDirect();
         System.out.println("--- DONE (DIRECT) ---");
@@ -183,9 +184,10 @@ public class Deployer {
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(transformedClasses);
 
         // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
-        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
-        Helpers.instantiateHelper(loader, 6_000_000L, 1);
+        IRuntimeSetup runtimeSetup = Helpers.getSetupForLoader(loader);
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, loader, 6_000_000L, 1);
         // Note that this single externalRuntime instance doesn't really make sense - it is only useful in the cases where we aren't using
         // it for invocation context, just environment (energy counter, event logging, etc).
         TestingBlockchainRuntime externalRuntime = new TestingBlockchainRuntime().withEventCounter(eventCounts);
@@ -290,6 +292,7 @@ public class Deployer {
         // We should have seen 13 confirmations over the course of the test run.
         RuntimeAssertionError.assertTrue(13 == externalRuntime.getEventCount(EventLogger.kConfirmation));
         
+        InstrumentationHelpers.popExistingStackFrame(runtimeSetup);
         InstrumentationHelpers.detachThread(instrumentation);
     }
 

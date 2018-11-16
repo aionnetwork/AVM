@@ -7,8 +7,8 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.HelperInstrumentation;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.CommonInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
@@ -204,9 +204,8 @@ public class HashCodeTest {
      */
     @Test
     public void testTwoIsolatedContracts() throws Exception {
-        // For this test, we want to suspend the normal helper created in the setup().
         SuspendedHelper suspended = new SuspendedHelper();
-        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
         
         // Note that we eagerly load 2 constant strings, so bump this up by 2.
@@ -222,7 +221,8 @@ public class HashCodeTest {
         AvmClassLoader loader2 = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         
         // First, run some tests in helper1.
-        IHelper helper1 = Helpers.instantiateHelper(loader1, 1_000_000L, 1);
+        IRuntimeSetup setup1 = Helpers.getSetupForLoader(loader1);
+        InstrumentationHelpers.pushNewStackFrame(setup1, loader1, 1_000_000L, 1);
         Class<?> clazz1 = loader1.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode1 = clazz1.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
         Object result = getOneHashCode1.invoke(null);
@@ -230,19 +230,17 @@ public class HashCodeTest {
         result = getOneHashCode1.invoke(null);
         Assert.assertEquals(usedHashCount + 2, ((Integer)result).intValue());
         Assert.assertEquals(usedHashCount + 3, instrumentation.peekNextHashCode());
-        IHelper.currentContractHelper.remove();
+        InstrumentationHelpers.popExistingStackFrame(setup1);
         
         // Now, create the helper2, show that it is independent, and run a test in that.
-        IHelper helper2 = Helpers.instantiateHelper(loader2, 1_000_000L, 1);
+        IRuntimeSetup setup2 = Helpers.getSetupForLoader(loader2);
+        InstrumentationHelpers.pushNewStackFrame(setup2, loader2, 1_000_000L, 1);
         Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode2 = clazz2.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
         Assert.assertEquals(1, instrumentation.peekNextHashCode());
         result = getOneHashCode2.invoke(null);
         Assert.assertEquals(usedHashCount + 1, ((Integer)result).intValue());
-        IHelper.currentContractHelper.remove();
-        
-        // Make sure that helper1 wasn't changed by this.
-        Assert.assertEquals(usedHashCount + 3, helper1.externalPeekNextHashCode());
+        InstrumentationHelpers.popExistingStackFrame(setup2);
         
         InstrumentationHelpers.detachThread(instrumentation);
         suspended.resume();

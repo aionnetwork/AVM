@@ -3,14 +3,17 @@ package org.aion.avm.core;
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.internal.AvmThrowable;
-import org.aion.avm.internal.HelperInstrumentation;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.CommonInstrumentation;
+import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyException;
@@ -115,11 +118,14 @@ public class AvmImplTest {
      */
     @Test
     public void testPersistentEnergyLimit() {
-        // Set up the runtime.
+        // Set up the runtime (note that we need to initialize the NodeEnvironment before we attach to the thread)..
         Map<String, byte[]> contractClasses = Helpers.mapIncludingHelperBytecode(Collections.emptyMap(), Helpers.loadDefaultHelperBytecode());
-        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        AvmClassLoader avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(contractClasses);
+        
+        IRuntimeSetup runtimeSetup = new Helper();
+        IInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
-        IHelper helper = Helpers.instantiateHelper(NodeEnvironment.singleton.createInvocationClassLoader(contractClasses), 5L, 1);
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, avmClassLoader, 5L, 1);
 
         // Prove that we can charge 0 without issue.
         instrumentation.chargeEnergy(0);
@@ -143,8 +149,6 @@ public class AvmImplTest {
             assertEquals(error, e);
         }
         assertEquals(2, catchCount);
-        // Remove this helper as cleanup.
-        IHelper.currentContractHelper.remove();
         InstrumentationHelpers.detachThread(instrumentation);
     }
 

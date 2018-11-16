@@ -4,22 +4,21 @@ import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.GeneratedClassesFactory;
-import org.aion.avm.internal.HelperInstrumentation;
-import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
+import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.Class;
 import org.aion.kernel.TransactionResult;
 
 
 /**
- * Implements the IHelper interface for tests which need to create runtime objects or otherwise interact with the parts of the system
- * which assume that there is an IHelper installed.
- * It automatically installs itself as the helper and provides utilities to install and remove itself from IHelper.currentContractHelper.
+ * Implements the IInstrumentation interface for tests which need to create runtime objects or otherwise interact with the parts of the system
+ * which assume that there is an IInstrumentation installed.
+ * It automatically installs itself as the helper and provides utilities to install and remove itself from IInstrumentation.currentContractHelper.
  * Additionally, it provides some common static helpers for common cases of its use.
  */
-public class TestingHelper implements IHelper {
+public class TestingHelper implements IInstrumentation {
     public static Address buildAddress(byte[] raw) {
         TestingHelper helper = new TestingHelper(false);
         Address data = new Address(raw);
@@ -82,72 +81,99 @@ public class TestingHelper implements IHelper {
 
     private final boolean isBootstrapOnly;
     private final int constantHashCode;
-    private final IInstrumentation instrumentation;
 
     private TestingHelper(boolean isBootstrapOnly) {
         this.isBootstrapOnly = isBootstrapOnly;
         // If this is a helper created for bootstrap purposes, use the "placeholder hash code" we rely on for constants.
         // Otherwise, use something else so we know we aren't accidentally being used for constant init.
         this.constantHashCode = isBootstrapOnly ? Integer.MIN_VALUE : -1;
-        this.instrumentation = new HelperInstrumentation();
         install();
     }
 
     private void install() {
-        InstrumentationHelpers.attachThread(this.instrumentation);
-        RuntimeAssertionError.assertTrue(null == IHelper.currentContractHelper.get());
-        IHelper.currentContractHelper.set(this);
+        InstrumentationHelpers.attachThread(this);
     }
     private void remove() {
-        RuntimeAssertionError.assertTrue(this == IHelper.currentContractHelper.get());
-        IHelper.currentContractHelper.remove();
-        InstrumentationHelpers.detachThread(this.instrumentation);
+        InstrumentationHelpers.detachThread(this);
     }
 
     @Override
-    public void externalChargeEnergy(long cost) {
+    public void chargeEnergy(long cost) throws OutOfEnergyException {
         // Free!
     }
 
     @Override
-    public long externalGetEnergyRemaining() {
+    public long energyLeft() {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 
     @Override
-    public Class<?> externalWrapAsClass(java.lang.Class<?> input) {
+    public <T> Class<T> wrapAsClass(java.lang.Class<T> input) {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 
     @Override
-    public int externalGetNextHashCodeAndIncrement() {
+    public int getNextHashCodeAndIncrement() {
         return this.constantHashCode;
     }
 
     @Override
-    public int externalPeekNextHashCode() {
-        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
-    }
-
-    @Override
-    public int captureSnapshotAndNextHashCode() {
-        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
-    }
-
-    @Override
-    public void applySnapshotAndNextHashCode(int nextHashCode) {
-        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
-    }
-
-    @Override
-    public void externalBootstrapOnly() {
+    public void bootstrapOnly() {
         if (!this.isBootstrapOnly) {
             throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
         }
     }
 
     @Override
-    public void externalSetAbortState() {
+    public void setAbortState() {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public void exitCurrentFrame() {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t) {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg) {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public int getCurStackSize() {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public int getCurStackDepth() {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public void enterMethod(int frameSize) {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public void exitMethod(int frameSize) {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public void enterCatchBlock(int depth, int size) {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public int peekNextHashCode() {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
+    public void forceNextHashCode(int nextHashCode) {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 }

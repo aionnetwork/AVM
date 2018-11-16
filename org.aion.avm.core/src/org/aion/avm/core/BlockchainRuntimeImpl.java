@@ -20,22 +20,21 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private final AvmInternal avm;
     private final ReentrantDAppStack.ReentrantState reentrantState;
 
-    private IHelper helper;
     private TransactionContext ctx;
     private final byte[] dAppData;
     private TransactionResult result;
     private TransactionTask task;
+    private final IRuntimeSetup thisDAppSetup;
 
-    public BlockchainRuntimeImpl(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState,
-                                 IHelper helper, TransactionTask task, TransactionContext ctx, byte[] dAppData, TransactionResult result) {
+    public BlockchainRuntimeImpl(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, TransactionContext ctx, byte[] dAppData, TransactionResult result, IRuntimeSetup thisDAppSetup) {
         this.kernel = kernel;
         this.avm = avm;
         this.reentrantState = reentrantState;
-        this.helper = helper;
         this.ctx = ctx;
         this.dAppData = dAppData;
         this.result = result;
         this.task = task;
+        this.thisDAppSetup = thisDAppSetup;
     }
 
     @Override
@@ -297,12 +296,12 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         IInstrumentation currentThreadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
         if (null != this.reentrantState) {
-            // Save our current state into the reentrant container (since this call might be reentrant).
-            this.reentrantState.updateEnvironment(helper.captureSnapshotAndNextHashCode());
+            // Note that we want to save out the current nextHashCode.
+            int nextHashCode = currentThreadInstrumentation.peekNextHashCode();
+            this.reentrantState.updateEnvironment(nextHashCode);
         }
-        // Clear the thread-local helper (since we need to reset it after the call and this should be balanced).
-        RuntimeAssertionError.assertTrue(helper == IHelper.currentContractHelper.get());
-        IHelper.currentContractHelper.remove();
+        // Temporarily detach from the DApp we were in.
+        InstrumentationHelpers.temporarilyExitFrame(this.thisDAppSetup);
 
         TransactionContext internalCTX = new TransactionContextImpl(this.ctx, internalTx);
 
@@ -316,15 +315,11 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // merge the results
         result.merge(newResult);
 
-        // reset the thread-local helper instance
-        IHelper.currentContractHelper.set(helper);
-
-        // Reset the current helper of task
-        task.attachHelper(helper);
-
+        // Re-attach.
+        InstrumentationHelpers.returnToExecutingFrame(this.thisDAppSetup);
         if (null != this.reentrantState) {
             // Update the next hashcode counter, in case this was a reentrant call and it was changed.
-            helper.applySnapshotAndNextHashCode(this.reentrantState.getEnvironment().nextHashCode);
+            currentThreadInstrumentation.forceNextHashCode(this.reentrantState.getEnvironment().nextHashCode);
         }
 
         // charge energy consumed

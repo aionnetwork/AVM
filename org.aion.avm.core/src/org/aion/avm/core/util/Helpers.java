@@ -2,12 +2,12 @@ package org.aion.avm.core.util;
 
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.internal.IBlockchainRuntime;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ClassRenameVisitor;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.internal.StackWatcher;
@@ -16,6 +16,7 @@ import org.objectweb.asm.ClassWriter;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -200,27 +201,6 @@ public class Helpers {
     }
 
     /**
-     * Loads and instantiates the IHelper instance to access the "Helper" statics within the given contractLoader.
-     * This "Helper" bytecode is typically added to the classloader using the "mapIncludingHelperBytecode", above.
-     *
-     * @param contractLoader The loader which will load all the code running within the contract.
-     * @param energyLimit The energy limit
-     * @param nextHashCode The hashcode of the next object to be allocated (since this increments, across invocations)
-     * @return The instance which will trampoline into the "Helper" statics called by the instrumented code within this contract.
-     */
-    public static IHelper instantiateHelper(AvmClassLoader contractLoader, long energyLimit, int nextHashCode) {
-        IHelper helper = null;
-        try {
-            Class<?> helperClass = contractLoader.loadClass(Helper.RUNTIME_HELPER_NAME);
-            helper = (IHelper) helperClass.getConstructor(ClassLoader.class, long.class, int.class).newInstance(contractLoader, energyLimit, nextHashCode);
-        } catch (Throwable t) {
-            // Errors at this point imply something wrong with the installation so fail.
-            throw RuntimeAssertionError.unexpected(t);
-        }
-        return helper;
-    }
-
-    /**
      * Attaches a BlockchainRuntime instance to the BlockchainRuntime class (per contract) so DApp can
      * access blockchain related methods.
      *
@@ -242,11 +222,13 @@ public class Helpers {
     public static void attachStackWatcher(AvmClassLoader contractLoader, StackWatcher stackWatcher) {
         try {
             Class<?> helperClass = contractLoader.loadClass(Helper.RUNTIME_HELPER_NAME);
-            // TODO:  This testing mechanism eventually needs to be removed but, for now, we will interpret this as a call to create the Helper instance and set the watcher in it.
-            helperClass.getConstructor(ClassLoader.class, long.class, int.class).newInstance(contractLoader, 1_000_000L, 1);
             Field targetField = helperClass.getDeclaredField("target");
             targetField.setAccessible(true);
-            contractLoader.loadClass(CommonInstrumentation.class.getName()).getField("stackWatcher").set(targetField.get(null), stackWatcher);
+            Field currentFrameField = contractLoader.loadClass(CommonInstrumentation.class.getName()).getDeclaredField("currentFrame");
+            currentFrameField.setAccessible(true);
+            Field stackWatcherField = contractLoader.loadClass(CommonInstrumentation.FrameState.class.getName()).getDeclaredField("stackWatcher");
+            stackWatcherField.setAccessible(true);
+            stackWatcherField.set(currentFrameField.get(targetField.get(null)), stackWatcher);
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);
@@ -301,5 +283,24 @@ public class Helpers {
             }
         }
         return classList;
+    }
+
+    /**
+     * Instantiates the static instrumentation callout class ("H") within a given classloader, returning the new instance for attach/detach
+     * within the static helper.
+     * 
+     * @param loader The class loader to search for the "H" class.
+     * @return The instance which can be used to attach/detach the instrumentation helper class to an implementation.
+     */
+    public static IRuntimeSetup getSetupForLoader(ClassLoader loader) {
+        try {
+            String helperClassName = Helper.RUNTIME_HELPER_NAME;
+            Class<?> clazz = loader.loadClass(helperClassName);
+            RuntimeAssertionError.assertTrue(clazz.getClassLoader() == loader);
+            return (IRuntimeSetup) clazz.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
+            // We require that this be instantiated in this way.
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 }

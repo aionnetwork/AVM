@@ -1,13 +1,13 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.types.ClassInfo;
-import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.IHelper;
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 public class SimpleAvm {
     private final AvmClassLoader loader;
-    private final IHelper helper;
+    private final IRuntimeSetup runtimeSetup;
     private final IInstrumentation instrumentation;
     private final Set<String> transformedClassNames;
 
@@ -53,10 +53,11 @@ public class SimpleAvm {
         this.loader = NodeEnvironment.singleton.createInvocationClassLoader(finalContractClasses);
         this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());
 
-        this.instrumentation = new HelperInstrumentation();
+        // Create the instrumentation, attach this thread, and push a faked-up frame.
+        this.runtimeSetup = Helpers.getSetupForLoader(this.loader);
+        this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
-        // set up helper
-        helper = Helpers.instantiateHelper(loader, energyLimit, 1);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, this.loader, energyLimit, 1);
     }
 
     public void attachBlockchainRuntime(IBlockchainRuntime rt) {
@@ -67,8 +68,8 @@ public class SimpleAvm {
         return loader;
     }
 
-    public IHelper getHelper() {
-        return helper;
+    public IRuntimeSetup getRuntimeSetup() {
+        return this.runtimeSetup;
     }
 
     public IInstrumentation getInstrumentation() {
@@ -80,8 +81,7 @@ public class SimpleAvm {
     }
 
     public void shutdown() {
-        RuntimeAssertionError.assertTrue(this.helper == IHelper.currentContractHelper.get());
-        IHelper.currentContractHelper.remove();
+        InstrumentationHelpers.popExistingStackFrame(this.runtimeSetup);
         InstrumentationHelpers.detachThread(this.instrumentation);
     }
 }

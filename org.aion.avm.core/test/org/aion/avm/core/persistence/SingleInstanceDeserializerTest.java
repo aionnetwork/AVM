@@ -11,10 +11,9 @@ import org.aion.avm.arraywrapper.LongArray;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.arraywrapper.ShortArray;
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,13 +36,6 @@ public class SingleInstanceDeserializerTest {
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
-        
-        new Helper(SingleInstanceDeserializerTest.class.getClassLoader(), 1_000_000L, 1);
-    }
-
-    @After
-    public void tearDown() {
-        Helper.clearTestingState();
     }
 
     @Test
@@ -161,8 +153,10 @@ public class SingleInstanceDeserializerTest {
     @Test
     public void deserializeShadowString() {
         // This test needs to instantiate a shadow object, meaning it needs a stack frame.
-        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
+        Helper runtimeSetup = new Helper();
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, SingleInstanceDeserializerTest.class.getClassLoader(), 1_000_000L, 1);
         
         byte[] expected = {
                 0x0, 0x0, 0x0, 0x1, //hashcode
@@ -178,6 +172,8 @@ public class SingleInstanceDeserializerTest {
         bytes.deserializeSelf(null, target);
         Assert.assertEquals("TEST", bytes.getUnderlying());
         
+        // Clear the frame.
+        InstrumentationHelpers.popExistingStackFrame(runtimeSetup);
         InstrumentationHelpers.detachThread(instrumentation);
     }
 

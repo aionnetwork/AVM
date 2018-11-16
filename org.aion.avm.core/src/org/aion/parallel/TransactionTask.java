@@ -2,7 +2,7 @@ package org.aion.parallel;
 
 import org.aion.avm.core.ReentrantDAppStack;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.*;
 
@@ -15,7 +15,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
 
     private TransactionContext externalTransactionContext;
     private volatile boolean abortState;
-    private IHelper helper;
+    private IInstrumentation threadOwningTask;
     private ReentrantDAppStack reentrantDAppStack;
     private int index;
     private KernelInterface taskKernel;
@@ -25,34 +25,41 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.externalTransactionContext = ctx;
         this.index = index;
         this.abortState = false;
-        this.helper = null;
+        this.threadOwningTask = null;
         this.reentrantDAppStack = new ReentrantDAppStack();
         this.outBuffer = new StringBuffer();
     }
 
     public TransactionTask(int index, Thread t){
         this.abortState = false;
-        this.helper = null;
+        this.threadOwningTask = null;
         this.index = index;
     }
 
     public void resetState(){
         this.abortState = false;
-        this.helper = null;
+        this.threadOwningTask = null;
         this.reentrantDAppStack = new ReentrantDAppStack();
         this.outBuffer = new StringBuffer();
     }
 
     /**
-     * Attach an {@link IHelper} to the current task.
+     * Attach an {@link IInstrumentation} to the current task.
      * If the task is already in abort state, set the helper abort state as well.
      */
-    public void attachHelper(IHelper helper) {
-        this.helper = helper;
+    public void attachInstrumentationForThread() {
+        RuntimeAssertionError.assertTrue(null == this.threadOwningTask);
+        this.threadOwningTask = IInstrumentation.attachedThreadInstrumentation.get();
+        RuntimeAssertionError.assertTrue(null != this.threadOwningTask);
         //TODO: potential broken state
         if (this.abortState){
-            helper.externalSetAbortState();
+            threadOwningTask.setAbortState();
         }
+    }
+
+    public void detachInstrumentationForThread() {
+        RuntimeAssertionError.assertTrue(IInstrumentation.attachedThreadInstrumentation.get() == this.threadOwningTask);
+        this.threadOwningTask = null;
     }
 
     /**
@@ -62,8 +69,8 @@ public class TransactionTask implements Comparable<TransactionTask>{
     public void setAbortState() {
         this.abortState = true;
         //TODO: potential broken state
-        if (null != helper){
-            helper.externalSetAbortState();
+        if (null != this.threadOwningTask){
+            this.threadOwningTask.setAbortState();
         }
     }
 
@@ -161,5 +168,4 @@ public class TransactionTask implements Comparable<TransactionTask>{
         }
         return isEqual;
     }
-
 }

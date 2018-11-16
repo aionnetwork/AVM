@@ -29,8 +29,9 @@ import org.aion.avm.core.persistence.ReflectedFieldCache;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueNode;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -70,12 +71,13 @@ public class StorageWalker {
         // We need to install a fake Helper since we create artificial shadow String objects to communicate some information back.
         // (We are using ReflectionStructureCodec.IFieldPopulator to store human-readable reference descriptions into fields).
         final AvmClassLoader avmClassLoader = NodeEnvironment.singleton.createInvocationClassLoader(Collections.emptyMap());
-        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
-        new Helper(avmClassLoader, 1_000_000L, 1);
+        IRuntimeSetup runtime = new Helper();
+        InstrumentationHelpers.pushNewStackFrame(runtime, avmClassLoader, 1_000_000L, 1);
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, dappAddress);
         doReadEntireStorage(output, classLoader, objectGraph, alphabeticalContractClasses);
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(runtime);
         InstrumentationHelpers.detachThread(instrumentation);
     }
 

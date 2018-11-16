@@ -199,6 +199,8 @@ public class DAppCreator {
     }
 
     public static void create(KernelInterface kernel, AvmInternal avm, TransactionTask task, TransactionContext ctx, TransactionResult result) {
+        // Expose the DApp outside the try so we can detach from it, when we exit.
+        LoadedDApp dapp = null;
         try {
             // read dapp module
             byte[] dappAddress = ctx.getAddress();
@@ -230,14 +232,13 @@ public class DAppCreator {
 
             // We can now construct the abstraction of the loaded DApp which has the machinery for the rest of the initialization.
             IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel,dappAddress);
-            LoadedDApp dapp = DAppLoader.fromTransformed(transformedDapp);
+            dapp = DAppLoader.fromTransformed(transformedDapp);
             
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
-            IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit() - result.getEnergyUsed(), nextHashCode);
-            task.attachHelper(helper);
+            InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getEnergyLimit() - result.getEnergyUsed(), nextHashCode);
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
-            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, helper, task, ctx, codeAndArguments.arguments, result));
+            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, task, ctx, codeAndArguments.arguments, result, dapp.runtimeSetup));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
@@ -324,8 +325,10 @@ public class DAppCreator {
             t.printStackTrace();
             System.exit(1);
         } finally {
-            // Once we are done running this, we want to clear the IHelper.currentContractHelper.
-            IHelper.currentContractHelper.remove();
+            // Once we are done running this, no matter how it ended, we want to detach our thread from the DApp.
+            if (null != dapp) {
+                InstrumentationHelpers.popExistingStackFrame(dapp.runtimeSetup);
+            }
         }
     }
 

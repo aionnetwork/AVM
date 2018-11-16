@@ -10,9 +10,9 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
@@ -34,19 +34,22 @@ import static org.junit.Assert.assertFalse;
 
 public class StringConcatenationTest {
     private IInstrumentation instrumentation;
+    // Note that not all tests use this.
+    private IRuntimeSetup runtimeSetup;
 
     @Before
     public void setup() {
         // Make sure that we bootstrap the NodeEnvironment before we install the instrumentation and attach the thread.
         Assert.assertNotNull(NodeEnvironment.singleton);
-        this.instrumentation = new HelperInstrumentation();
+        this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
     }
 
     @After
     public void teardown() {
-        // NOTE:  We should use the actual instance we created but we only want to clear the thread local. 
-        Helper.clearTestingState();
+        if (null != this.runtimeSetup) {
+            InstrumentationHelpers.popExistingStackFrame(this.runtimeSetup);
+        }
         InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
@@ -112,7 +115,7 @@ public class StringConcatenationTest {
                 .toArray(Class[]::new);
     }
 
-    private static Class<?> transformClass(Class<?> clazz) throws Exception {
+    private Class<?> transformClass(Class<?> clazz) throws Exception {
         final var className = clazz.getName();
         final byte[] origBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
@@ -120,8 +123,9 @@ public class StringConcatenationTest {
         java.lang.String mappedClassName = PackageConstants.kUserDotPrefix + className;
         Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(Map.of(mappedClassName, transformedBytecode), Helpers.loadDefaultHelperBytecode());
         AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
-        // Instantiate the helper.
-        dappLoader.loadClass(Helper.RUNTIME_HELPER_NAME).getConstructor(ClassLoader.class, long.class, int.class).newInstance(dappLoader, 1_000_000L, 1);
+        
+        this.runtimeSetup = Helpers.getSetupForLoader(dappLoader);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, dappLoader, 1_000_000L, 1);
         return dappLoader.loadClass(mappedClassName);
     }
 

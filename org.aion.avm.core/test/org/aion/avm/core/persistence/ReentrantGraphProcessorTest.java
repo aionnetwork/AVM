@@ -4,9 +4,10 @@ import java.util.Collections;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.NullFeeProcessor;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.junit.After;
@@ -25,20 +26,22 @@ public class ReentrantGraphProcessorTest {
     private static ConstructorCache CONSTRUCTOR_CACHE = new ConstructorCache(ReflectionStructureCodecTarget.class.getClassLoader());
 
     private IInstrumentation instrumentation;
+    private IRuntimeSetup runtimeSetup;
 
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
-        this.instrumentation = new HelperInstrumentation();
+        this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
-        new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
+        this.runtimeSetup = new Helper();
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
     }
 
     @After
     public void tearDown() {
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(this.runtimeSetup);
         InstrumentationHelpers.detachThread(this.instrumentation);
     }
 

@@ -9,10 +9,12 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
@@ -64,10 +66,10 @@ public class ClassShadowingTest {
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
-        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
-        // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, 1_000_000L, 1);
+        IRuntimeSetup runtime = Helpers.getSetupForLoader(loader);
+        InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1);
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
         Object obj = clazz.getConstructor().newInstance();
 
@@ -89,7 +91,7 @@ public class ClassShadowingTest {
         Assert.assertEquals(1, Testing.countWrappedStrings);
         Assert.assertEquals(1, Testing.countWrappedClasses);
 
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(runtime);
         InstrumentationHelpers.detachThread(instrumentation);
     }
 
@@ -115,10 +117,10 @@ public class ClassShadowingTest {
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
-        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
-        // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, 1_000_000L, 1);
+        IRuntimeSetup runtime = Helpers.getSetupForLoader(loader);
+        InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1);
 
         Class<?> clazz = loader.loadClass(mappedClassName);
         Object obj = clazz.getConstructor().newInstance();
@@ -131,7 +133,7 @@ public class ClassShadowingTest {
         Object ret2 = method2.invoke(obj);
         Assert.assertEquals(Integer.valueOf(3), ret2);
 
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(runtime);
         InstrumentationHelpers.detachThread(instrumentation);
     }
 
@@ -160,10 +162,10 @@ public class ClassShadowingTest {
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
-        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
-        // We don't really need the runtime but we do need the intern map initialized.
-        new Helper(loader, 1_000_000L, 1);
+        IRuntimeSetup runtime = Helpers.getSetupForLoader(loader);
+        InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1);
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
 
         Method method = clazz.getMethod(NamespaceMapper.mapMethodName("getStringForNull"));
@@ -171,7 +173,7 @@ public class ClassShadowingTest {
         // Note that we can't yet override methods in our contracts so the toString returns false, from Object.
         Assert.assertEquals(null, ret);
 
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(runtime);
         InstrumentationHelpers.detachThread(instrumentation);
     }
 
@@ -235,8 +237,11 @@ public class ClassShadowingTest {
     }
 
 
-    public static class HelperStub {
+    // TODO:  Remove this class once we are completely cut-over to the IInstrumentation instances.
+    public static class HelperStub implements IRuntimeSetup {
         public static String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
+        // We are just wrapping the Helper so we need this for attach/detach.
+        private final IRuntimeSetup realHelper = new Helper();
 
         public static <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
             Testing.countWrappedClasses += 1;
@@ -246,6 +251,16 @@ public class ClassShadowingTest {
         public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
             Testing.countWrappedStrings += 1;
             return Helper.wrapAsString(input);
+        }
+
+        @Override
+        public void attach(IInstrumentation instrumentation) {
+            this.realHelper.attach(instrumentation);
+        }
+
+        @Override
+        public void detach(IInstrumentation instrumentation) {
+            this.realHelper.detach(instrumentation);
         }
     }
 

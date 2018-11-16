@@ -4,9 +4,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.junit.After;
 import org.junit.Assert;
@@ -16,20 +17,22 @@ import org.junit.Test;
 
 public class StaticClearerTest {
     private IInstrumentation instrumentation;
+    private IRuntimeSetup runtimeSetup;
 
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
-        this.instrumentation = new HelperInstrumentation();
+        this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
-        new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
+        this.runtimeSetup = new Helper();
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, SingleInstanceSerializerTest.class.getClassLoader(), 1_000_000L, 1);
     }
 
     @After
     public void tearDown() {
-        Helper.clearTestingState();
+        InstrumentationHelpers.popExistingStackFrame(this.runtimeSetup);
         InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
