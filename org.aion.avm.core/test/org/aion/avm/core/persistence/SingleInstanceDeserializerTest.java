@@ -12,6 +12,8 @@ import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.arraywrapper.ShortArray;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -158,6 +160,10 @@ public class SingleInstanceDeserializerTest {
 
     @Test
     public void deserializeShadowString() {
+        // This test needs to instantiate a shadow object, meaning it needs a stack frame.
+        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
+        
         byte[] expected = {
                 0x0, 0x0, 0x0, 0x1, //hashcode
                 0x0, 0x0, 0x0, 0x4, //UTF-8 length
@@ -171,6 +177,8 @@ public class SingleInstanceDeserializerTest {
         org.aion.avm.shadow.java.lang.String bytes = new org.aion.avm.shadow.java.lang.String((String)null);
         bytes.deserializeSelf(null, target);
         Assert.assertEquals("TEST", bytes.getUnderlying());
+        
+        InstrumentationHelpers.detachThread(instrumentation);
     }
 
     @Test

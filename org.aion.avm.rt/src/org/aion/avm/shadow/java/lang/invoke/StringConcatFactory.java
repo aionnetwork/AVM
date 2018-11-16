@@ -1,6 +1,6 @@
 package org.aion.avm.shadow.java.lang.invoke;
 
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.Integer;
 import org.aion.avm.shadow.java.lang.Short;
@@ -24,7 +24,7 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
 
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     public static String concat(java.lang.String recipe, Object[] staticArgs, Object[] dynamicArgs) {

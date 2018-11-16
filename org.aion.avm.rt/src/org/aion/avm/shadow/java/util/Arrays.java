@@ -1,7 +1,7 @@
 package org.aion.avm.shadow.java.util;
 
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.shadow.java.lang.Object;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
@@ -10,13 +10,13 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 public class Arrays extends Object {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     private Arrays() {}
 
     public static int avm_hashCode(ByteArray a) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_hashCode + ((a == null) ? 0 : a.length()));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_hashCode + ((a == null) ? 0 : a.length()));
         if (a == null) {
             return 0;
         } else {
@@ -25,7 +25,7 @@ public class Arrays extends Object {
     }
 
     public static boolean avm_equals(ByteArray a, ByteArray a2) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_equals + ((a == null || a2 == null) ? 0 : Math.min(a.length(), a2.length())));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_equals + ((a == null || a2 == null) ? 0 : Math.min(a.length(), a2.length())));
         if (a == a2) {
             return true;
         }
@@ -38,12 +38,12 @@ public class Arrays extends Object {
     }
 
     public static ByteArray avm_copyOfRange(ByteArray a, int start, int end) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_copyOfRange + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * Math.max(end - start, 0));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_copyOfRange + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * Math.max(end - start, 0));
         return new ByteArray(java.util.Arrays.copyOfRange(a.getUnderlying(), start, end));
     }
 
     public static void avm_fill(ByteArray a, int fromIndex, int toIndex, byte val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_fill + Math.max(toIndex - fromIndex, 0));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Arrays_avm_fill + Math.max(toIndex - fromIndex, 0));
         java.util.Arrays.fill(a.getUnderlying(), fromIndex, toIndex, val);
     }
 }

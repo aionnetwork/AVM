@@ -8,6 +8,9 @@ package org.aion.avm.internal;
  * within Helper.
  */
 public interface IInstrumentation {
+    // The instrumentation instance associated with the given thread and also installed into the Helper of the currently-running DApp.
+    public static final ThreadLocal<IInstrumentation> attachedThreadInstrumentation = new ThreadLocal<>();
+
     <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input);
     org.aion.avm.shadow.java.lang.String wrapAsString(String input);
     org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t);

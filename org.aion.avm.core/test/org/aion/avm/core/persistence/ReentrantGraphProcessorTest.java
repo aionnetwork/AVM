@@ -5,6 +5,9 @@ import java.util.Collections;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.junit.After;
 import org.junit.Assert;
@@ -21,17 +24,22 @@ public class ReentrantGraphProcessorTest {
     private static NullFeeProcessor FEE_PROCESSOR = new NullFeeProcessor();
     private static ConstructorCache CONSTRUCTOR_CACHE = new ConstructorCache(ReflectionStructureCodecTarget.class.getClassLoader());
 
+    private IInstrumentation instrumentation;
+
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
+        this.instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(this.instrumentation);
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
     }
 
     @After
     public void tearDown() {
         Helper.clearTestingState();
+        InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
     /**

@@ -8,6 +8,8 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
+import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -181,6 +183,8 @@ public class Deployer {
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(transformedClasses);
 
         // (note that setting a single runtime instance for this group of invocations doesn't really make sense - it just provides the energy counter).
+        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
         Helpers.instantiateHelper(loader, 6_000_000L, 1);
         // Note that this single externalRuntime instance doesn't really make sense - it is only useful in the cases where we aren't using
         // it for invocation context, just environment (energy counter, event logging, etc).
@@ -285,6 +289,8 @@ public class Deployer {
         
         // We should have seen 13 confirmations over the course of the test run.
         RuntimeAssertionError.assertTrue(13 == externalRuntime.getEventCount(EventLogger.kConfirmation));
+        
+        InstrumentationHelpers.detachThread(instrumentation);
     }
 
     private static Address buildAddress(int fillByte) {

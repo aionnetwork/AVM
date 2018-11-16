@@ -1,7 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
@@ -15,7 +15,7 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 public class Object extends java.lang.Object implements IObject {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     private int hashCode;
@@ -26,8 +26,7 @@ public class Object extends java.lang.Object implements IObject {
     private IDeserializer deserializer;
 
     public Object() {
-        // We want to "consume" this next hash code so allow the implementation to increment its internal state to the next.
-        this.hashCode = IHelper.currentContractHelper.get().externalGetNextHashCodeAndIncrement();
+        this.hashCode = IInstrumentation.attachedThreadInstrumentation.get().getNextHashCodeAndIncrement();
         this.persistenceToken = null;
     }
 
@@ -38,7 +37,7 @@ public class Object extends java.lang.Object implements IObject {
     }
 
     public void updateHashCodeForConstant(int hashCode) {
-        // Note that this can only be called for constants and their hash codes are initialized by a special IHelper, under NodeEnvironment, which gives them
+        // Note that this can only be called for constants and their hash codes are initialized by a special IInstrumentation, under NodeEnvironment, which gives them
         // this MIN_VALUE hash code so we can detect this case.
         RuntimeAssertionError.assertTrue(java.lang.Integer.MIN_VALUE == this.hashCode);
         this.hashCode = hashCode;
@@ -55,57 +54,57 @@ public class Object extends java.lang.Object implements IObject {
 
     @Override
     public Class<?> avm_getClass() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_getClass);
-        return IHelper.currentContractHelper.get().externalWrapAsClass(this.getClass());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_getClass);
+        return IInstrumentation.attachedThreadInstrumentation.get().wrapAsClass(this.getClass());
     }
 
     @Override
     public int avm_hashCode() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_hashCode);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_hashCode);
         lazyLoad();
         return this.hashCode;
     }
 
     @Override
     public boolean avm_equals(IObject obj) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_equals);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_equals);
         // By default, we are only instance-equal.
         return (this == obj);
     }
 
     protected IObject avm_clone() throws CloneNotSupportedException {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_clone);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_clone);
         throw new CloneNotSupportedException();
     }
 
     @Override
     public String avm_toString() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_toString);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_toString);
         return null;
     }
 
     public final void avm_notify() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_notify);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_notify);
     }
 
     public final void avm_notifyAll() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_notifyAll);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_notifyAll);
     }
 
     public final void avm_wait() throws InterruptedException {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait);
     }
 
     public final void avm_wait​(long timeout) throws InterruptedException {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait_1);
     }
 
     public final void avm_wait​(long timeout, int nanos) throws InterruptedException {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait_2);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait_2);
     }
 
     protected void avm_finalize() throws java.lang.Throwable {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Object_avm_finalize);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_finalize);
     }
 
     @Override

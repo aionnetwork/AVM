@@ -1,7 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.Array;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
@@ -9,7 +9,7 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 public final class System extends Object{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     private System() {
@@ -19,7 +19,7 @@ public final class System extends Object{
                                      IObject dest, int destPos,
                                      int length)
     {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.System_avm_arraycopy + length);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.System_avm_arraycopy + length);
         if (!((src instanceof Array) && (dest instanceof Array))){
             throw new ArrayStoreException();
         }else{

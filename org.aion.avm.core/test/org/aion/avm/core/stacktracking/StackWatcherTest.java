@@ -5,6 +5,9 @@ import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.OutOfStackException;
 import org.aion.avm.internal.StackWatcher;
 import org.junit.After;
@@ -25,6 +28,7 @@ import java.util.function.Function;
 public class StackWatcherTest {
     private static AvmClassLoader classLoader;
     private Class<?> clazz;
+    private IInstrumentation instrumentation;
 
     @Before
     // We only need to load the instrumented class once.
@@ -44,11 +48,15 @@ public class StackWatcherTest {
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
         classLoader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
         clazz = classLoader.loadClass(className);
+        
+        this.instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(this.instrumentation);
     }
 
     @After
     public void clearTestingState() {
         Helper.clearTestingState();
+        InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
     @Test

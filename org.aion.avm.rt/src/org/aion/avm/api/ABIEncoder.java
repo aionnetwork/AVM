@@ -689,12 +689,12 @@ public final class ABIEncoder {
      * Runtime-facing implementation.
      */
     public static ByteArray avm_encodeMethodArguments(org.aion.avm.shadow.java.lang.String methodName, IObjectArray arguments)  {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIEncoder_avm_encodeMethodArguments);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIEncoder_avm_encodeMethodArguments);
         return new ByteArray(encodeMethodArguments(methodName.toString(), ((ObjectArray) arguments).getUnderlying()));
     }
 
     public static ByteArray avm_encodeOneObject(IObject data) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIEncoder_avm_encodeOneObject);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIEncoder_avm_encodeOneObject);
         return new ByteArray(encodeOneObject(data));
     }
 

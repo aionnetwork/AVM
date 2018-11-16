@@ -1,11 +1,14 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.types.ClassInfo;
+import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.util.Collections;
@@ -18,6 +21,7 @@ import java.util.stream.Stream;
 public class SimpleAvm {
     private final AvmClassLoader loader;
     private final IHelper helper;
+    private final IInstrumentation instrumentation;
     private final Set<String> transformedClassNames;
 
     public SimpleAvm(long energyLimit, Class<?>... classes) {
@@ -49,6 +53,8 @@ public class SimpleAvm {
         this.loader = NodeEnvironment.singleton.createInvocationClassLoader(finalContractClasses);
         this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());
 
+        this.instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(this.instrumentation);
         // set up helper
         helper = Helpers.instantiateHelper(loader, energyLimit, 1);
     }
@@ -65,6 +71,10 @@ public class SimpleAvm {
         return helper;
     }
 
+    public IInstrumentation getInstrumentation() {
+        return this.instrumentation;
+    }
+
     public Set<String> getTransformedClassNames() {
         return this.transformedClassNames;
     }
@@ -72,5 +82,6 @@ public class SimpleAvm {
     public void shutdown() {
         RuntimeAssertionError.assertTrue(this.helper == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.remove();
+        InstrumentationHelpers.detachThread(this.instrumentation);
     }
 }

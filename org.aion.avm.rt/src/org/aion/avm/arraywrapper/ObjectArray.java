@@ -49,7 +49,7 @@ public class ObjectArray extends Array implements IObjectArray {
 
     @Override
     public IObject avm_clone() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ObjectArray_avm_clone + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ObjectArray_avm_clone + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length());
         lazyLoad();
         return new ObjectArray(Arrays.copyOf(underlying, underlying.length));
     }
@@ -65,12 +65,12 @@ public class ObjectArray extends Array implements IObjectArray {
     //========================================================
 
     public ObjectArray(int c) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ObjectArray_avm_constructor);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ObjectArray_avm_constructor);
         this.underlying = new Object[c];
     }
 
     public ObjectArray(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ObjectArray_avm_constructor_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ObjectArray_avm_constructor_1);
     };
 
     public ObjectArray(Object[] underlying) {

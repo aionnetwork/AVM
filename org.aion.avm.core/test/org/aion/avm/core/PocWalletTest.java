@@ -7,7 +7,9 @@ import org.aion.avm.core.testWallet.*;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
+import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.shadow.java.lang.Class;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -185,6 +187,8 @@ public class PocWalletTest {
     }
 
     private static Address createAddressInFakeContract(byte[] bytes) {
+        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
         // Create a fake runtime for encoding the arguments (since these are shadow objects - they can only be instantiated within the context of a contract).
         IHelper.currentContractHelper.set(new IHelper() {
             @Override
@@ -239,6 +243,7 @@ public class PocWalletTest {
         });
         Address instance = new Address(bytes);
         IHelper.currentContractHelper.remove();
+        InstrumentationHelpers.detachThread(instrumentation);
         return instance;
     }
 }

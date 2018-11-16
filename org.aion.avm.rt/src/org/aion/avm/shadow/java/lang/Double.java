@@ -1,7 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
@@ -10,11 +10,11 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 public class Double extends Number implements Comparable<Double>{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     public Double(double d){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_constructor);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_constructor);
         this.v = d;
     }
 
@@ -42,102 +42,102 @@ public class Double extends Number implements Comparable<Double>{
 
     public static String avm_toHexString(double a)
     {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_toHexString);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_toHexString);
         return new String(java.lang.Double.toHexString(a));
     }
 
     public static String avm_toString(double a)
     {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_toString);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_toString);
         return new String(java.lang.Double.toString(a));
     }
 
     public static Double avm_valueOf(String a)
     {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_valueOf);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_valueOf);
         return new Double(avm_parseDouble(a));
     }
 
     public static Double avm_valueOf(double origValue) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_valueOf_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_valueOf_1);
         return new Double(origValue);
     }
 
     public static double avm_parseDouble(String a)
     {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_parseDouble);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_parseDouble);
         return java.lang.Double.parseDouble(a.getUnderlying());
     }
 
     public static boolean avm_isNaN(double v)
     {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isNaN);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isNaN);
         return (v != v);
     }
 
     public static boolean avm_isInfinite(double v) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isInfinite);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isInfinite);
         return (v == avm_POSITIVE_INFINITY) || (v == avm_NEGATIVE_INFINITY);
     }
 
     public static boolean avm_isFinite(double d) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isFinite);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isFinite);
         return Math.avm_abs(d) <= Double.avm_MAX_VALUE;
     }
 
     public boolean avm_isNaN() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isNaN_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isNaN_1);
         return avm_isNaN(v);
     }
 
     public boolean avm_isInfinite() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isInfinite_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isInfinite_1);
         return avm_isInfinite(v);
     }
 
     public String avm_toString()
     {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_toString_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_toString_1);
         return avm_toString(v);
     }
 
     public byte avm_byteValue() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_byteValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_byteValue);
         return (byte) v;
     }
 
     public short avm_shortValue() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_shortValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_shortValue);
         return (short) v;
     }
 
     public int avm_intValue() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_intValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_intValue);
         return (int) v;
     }
 
     public long avm_longValue() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_longValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_longValue);
         return (long) v;
     }
 
     public float avm_floatValue() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_floatValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_floatValue);
         return (float) v;
     }
 
     public double avm_doubleValue() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_doubleValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_doubleValue);
         return v;
     }
 
     public int avm_hashCode() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_hashCode);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_hashCode);
         return Double.avm_hashCode(v);
     }
 
     public static int avm_hashCode(double value) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_hashCode_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_hashCode_1);
         return java.lang.Double.hashCode(value);
     }
 
@@ -148,42 +148,42 @@ public class Double extends Number implements Comparable<Double>{
     }
 
     public static long avm_doubleToLongBits(double value) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_doubleToLongBits);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_doubleToLongBits);
         return java.lang.Double.doubleToLongBits(value);
     }
 
     public static long avm_doubleToRawLongBits(double value){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_doubleToRawLongBits);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_doubleToRawLongBits);
         return java.lang.Double.doubleToRawLongBits(value);
     }
 
     public static double avm_longBitsToDouble(long bits){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_longBitsToDouble);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_longBitsToDouble);
         return java.lang.Double.longBitsToDouble(bits);
     }
 
     public int avm_compareTo(Double anotherDouble) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_compareTo);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_compareTo);
         return avm_compare(v, anotherDouble.v);
     }
 
     public static int avm_compare(double d1, double d2){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_compare);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_compare);
         return java.lang.Double.compare(d1, d2);
     }
 
     public static double avm_sum(double a, double b) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_sum);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_sum);
         return a + b;
     }
 
     public static double avm_max(double a, double b) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_max);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_max);
         return Math.avm_max(a, b);
     }
 
     public static double avm_min(double a, double b) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Double_avm_min);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_min);
         return Math.avm_min(a, b);
     }
 

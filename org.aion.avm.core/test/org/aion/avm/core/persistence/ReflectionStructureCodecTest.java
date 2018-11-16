@@ -9,6 +9,9 @@ import org.aion.avm.core.persistence.keyvalue.KeyValueCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.After;
 import org.junit.Assert;
@@ -24,18 +27,23 @@ public class ReflectionStructureCodecTest {
     // We don't verify fees at this time so just use the "null" utility processor.
     private static NullFeeProcessor FEE_PROCESSOR = new NullFeeProcessor();
 
+    private IInstrumentation instrumentation;
+
 
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
+        this.instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(this.instrumentation);
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
     }
 
     @After
     public void tearDown() {
         Helper.clearTestingState();
+        InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
     /**

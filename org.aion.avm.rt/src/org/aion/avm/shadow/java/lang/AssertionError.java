@@ -1,7 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IPersistenceToken;
 
@@ -13,7 +13,7 @@ import org.aion.avm.internal.IPersistenceToken;
 public class AssertionError extends Error {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     public AssertionError() {

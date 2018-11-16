@@ -37,10 +37,11 @@ public class DAppExecutor {
         ReentrantDAppStack.ReentrantState thisState = new ReentrantDAppStack.ReentrantState(dappAddress, dapp, initialState);
         task.getReentrantDAppStack().pushState(thisState);
         
+        IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
         IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode);
         task.attachHelper(helper);
         dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, helper, task, ctx, ctx.getData(), result));
-        HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(helper);
+        HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(threadInstrumentation);
 
         ReentrantGraphProcessor reentrantGraphData = null;
         ReflectionStructureCodec directGraphData = null;
@@ -66,20 +67,20 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 // Write this back into the resumed state.
                 reentrantGraphData.commitGraphToStoredFieldsAndRestore();
-                stateToResume.updateEnvironment(helper.externalPeekNextHashCode());
+                stateToResume.updateEnvironment(threadInstrumentation.peekNextHashCode());
             } else {
                 // We are at the "top" so write this back to disk.
                 // -first, save out the classes
                 dapp.saveClassStaticsToStorage(feeProcessor, directGraphData, graphStore);
                 // -finally, save back the final state of the environment so we restore it on the next invocation.
-                ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(helper.externalPeekNextHashCode());
+                ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(threadInstrumentation.peekNextHashCode());
                 ContractEnvironmentState.saveToGraph(graphStore, updatedEnvironment);
             }
             graphStore.flushWrites();
 
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setReturnData(ret);
-            result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
+            result.setEnergyUsed(ctx.getEnergyLimit() - threadInstrumentation.energyLeft());
             result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
             if (null != reentrantGraphData) {
@@ -107,7 +108,7 @@ public class DAppExecutor {
                 reentrantGraphData.revertToStoredFields();
             }
             result.setStatusCode(TransactionResult.Code.FAILED_REVERT);
-            result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
+            result.setEnergyUsed(ctx.getEnergyLimit() - threadInstrumentation.energyLeft());
 
         } catch (InvalidException e) {
             if (null != reentrantGraphData) {
@@ -129,7 +130,6 @@ public class DAppExecutor {
             }
             result.setStatusCode(TransactionResult.Code.FAILED_EXCEPTION);
             result.setEnergyUsed(ctx.getEnergyLimit());
-            //System.out.println(e.getCause());
             result.setUncaughtException(e.getCause());
             logger.debug("Uncaught exception", e.getCause());
         } catch (AvmException e) {

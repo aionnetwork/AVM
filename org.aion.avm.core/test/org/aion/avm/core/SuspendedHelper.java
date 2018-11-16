@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
@@ -10,13 +11,20 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * This contains the state of that IHelper so the tests aren't directly accessing the thread local.
  */
 public class SuspendedHelper {
-    private final IHelper suspended;
+    private final IHelper suspendedHelper;
+    // Note that we also hold on to the IInstrumentation (as we are transitioning to this).
+    private final IInstrumentation suspendedInstrumentation;
+
     public SuspendedHelper() {
-        this.suspended = IHelper.currentContractHelper.get();
+        this.suspendedHelper = IHelper.currentContractHelper.get();
         IHelper.currentContractHelper.remove();
+        this.suspendedInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
+        IInstrumentation.attachedThreadInstrumentation.remove();
     }
     public void resume() {
+        RuntimeAssertionError.assertTrue(null == IInstrumentation.attachedThreadInstrumentation.get());
+        IInstrumentation.attachedThreadInstrumentation.set(this.suspendedInstrumentation);
         RuntimeAssertionError.assertTrue(null == IHelper.currentContractHelper.get());
-        IHelper.currentContractHelper.set(this.suspended);
+        IHelper.currentContractHelper.set(this.suspendedHelper);
     }
 }

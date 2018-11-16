@@ -1,6 +1,6 @@
 package org.aion.avm.core.persistence;
 
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.Object;
 
@@ -19,7 +19,7 @@ public class ClassNode implements INode {
     public Object getObjectInstance() {
         try {
             Class<?> jdkClass = Class.forName(this.className);
-            return IHelper.currentContractHelper.get().externalWrapAsClass(jdkClass);
+            return IInstrumentation.attachedThreadInstrumentation.get().wrapAsClass(jdkClass);
         } catch (ClassNotFoundException e) {
             // If this happens, how did we save it in the first place?
             throw RuntimeAssertionError.unexpected(e);

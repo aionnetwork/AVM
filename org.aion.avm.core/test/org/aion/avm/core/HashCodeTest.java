@@ -7,7 +7,9 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
@@ -204,6 +206,8 @@ public class HashCodeTest {
     public void testTwoIsolatedContracts() throws Exception {
         // For this test, we want to suspend the normal helper created in the setup().
         SuspendedHelper suspended = new SuspendedHelper();
+        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
         
         // Note that we eagerly load 2 constant strings, so bump this up by 2.
         int usedHashCount = 2;
@@ -225,14 +229,14 @@ public class HashCodeTest {
         Assert.assertEquals(usedHashCount + 1, ((Integer)result).intValue());
         result = getOneHashCode1.invoke(null);
         Assert.assertEquals(usedHashCount + 2, ((Integer)result).intValue());
-        Assert.assertEquals(usedHashCount + 3, helper1.externalPeekNextHashCode());
+        Assert.assertEquals(usedHashCount + 3, instrumentation.peekNextHashCode());
         IHelper.currentContractHelper.remove();
         
         // Now, create the helper2, show that it is independent, and run a test in that.
         IHelper helper2 = Helpers.instantiateHelper(loader2, 1_000_000L, 1);
         Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode2 = clazz2.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
-        Assert.assertEquals(1, helper2.externalPeekNextHashCode());
+        Assert.assertEquals(1, instrumentation.peekNextHashCode());
         result = getOneHashCode2.invoke(null);
         Assert.assertEquals(usedHashCount + 1, ((Integer)result).intValue());
         IHelper.currentContractHelper.remove();
@@ -240,6 +244,7 @@ public class HashCodeTest {
         // Make sure that helper1 wasn't changed by this.
         Assert.assertEquals(usedHashCount + 3, helper1.externalPeekNextHashCode());
         
+        InstrumentationHelpers.detachThread(instrumentation);
         suspended.resume();
     }
 

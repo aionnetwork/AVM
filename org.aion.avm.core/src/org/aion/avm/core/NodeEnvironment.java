@@ -259,6 +259,8 @@ public class NodeEnvironment {
     }
 
     private static Set<String> loadShadowClasses(ClassLoader loader, Class<?>[] shadowClasses) throws ClassNotFoundException {
+        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
         // Create the fake IHelper.
         IHelper.currentContractHelper.set(new IHelper() {
             @Override
@@ -317,6 +319,7 @@ public class NodeEnvironment {
 
         // Clean-up.
         IHelper.currentContractHelper.remove();
+        InstrumentationHelpers.detachThread(instrumentation);
 
         return loadedClassNames;
     }

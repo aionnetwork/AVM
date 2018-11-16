@@ -127,7 +127,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public long avm_getRemainingEnergy() {
-        return helper.externalGetEnergyRemaining();
+        return IInstrumentation.attachedThreadInstrumentation.get().energyLeft();
     }
 
     @Override
@@ -286,7 +286,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     private long restrictEnergyLimit(long energyLimit) {
-        long remainingEnergy = helper.externalGetEnergyRemaining();
+        long remainingEnergy = IInstrumentation.attachedThreadInstrumentation.get().energyLeft();
         long maxAllowed = remainingEnergy - (remainingEnergy >> 6);
         return Math.min(maxAllowed, energyLimit);
     }
@@ -295,6 +295,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // add the internal transaction to result
         result.addInternalTransaction(internalTx);
 
+        IInstrumentation currentThreadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
         if (null != this.reentrantState) {
             // Save our current state into the reentrant container (since this call might be reentrant).
             this.reentrantState.updateEnvironment(helper.captureSnapshotAndNextHashCode());
@@ -327,7 +328,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         }
 
         // charge energy consumed
-        helper.externalChargeEnergy(newResult.getEnergyUsed());
+        currentThreadInstrumentation.chargeEnergy(newResult.getEnergyUsed());
 
         return new Result(newResult.getStatusCode().isSuccess(),
                 newResult.getReturnData() == null ? null : new ByteArray(newResult.getReturnData()));

@@ -4,7 +4,10 @@ import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.GeneratedClassesFactory;
+import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.Class;
 import org.aion.kernel.TransactionResult;
@@ -79,22 +82,26 @@ public class TestingHelper implements IHelper {
 
     private final boolean isBootstrapOnly;
     private final int constantHashCode;
+    private final IInstrumentation instrumentation;
 
     private TestingHelper(boolean isBootstrapOnly) {
         this.isBootstrapOnly = isBootstrapOnly;
         // If this is a helper created for bootstrap purposes, use the "placeholder hash code" we rely on for constants.
         // Otherwise, use something else so we know we aren't accidentally being used for constant init.
         this.constantHashCode = isBootstrapOnly ? Integer.MIN_VALUE : -1;
+        this.instrumentation = new HelperInstrumentation();
         install();
     }
 
     private void install() {
+        InstrumentationHelpers.attachThread(this.instrumentation);
         RuntimeAssertionError.assertTrue(null == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.set(this);
     }
     private void remove() {
         RuntimeAssertionError.assertTrue(this == IHelper.currentContractHelper.get());
         IHelper.currentContractHelper.remove();
+        InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
     @Override

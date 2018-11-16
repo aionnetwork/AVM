@@ -94,7 +94,7 @@ public final class ABIDecoder {
      * @return the encoded return data from the method call.
      */
     public static ByteArray avm_decodeAndRunWithClass(org.aion.avm.shadow.java.lang.Class<?> clazz, ByteArray txData) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithClass);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithClass);
         byte[] result = decodeAndRun(clazz.getRealClass(), txData.getUnderlying(), true);
         return (null != result)
                 ? new ByteArray(result)
@@ -108,7 +108,7 @@ public final class ABIDecoder {
      * @return the encoded return data from the method call.
      */
     public static ByteArray avm_decodeAndRunWithObject(IObject obj, ByteArray txData) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithObject);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithObject);
         byte[] result = decodeAndRun(obj, txData.getUnderlying(), false);
         return (null != result)
                 ? new ByteArray(result)
@@ -121,7 +121,7 @@ public final class ABIDecoder {
      * @return the decoded method name.
      */
     public static org.aion.avm.shadow.java.lang.String avm_decodeMethodName(ByteArray txData) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeMethodName);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeMethodName);
         return new org.aion.avm.shadow.java.lang.String(decodeMethodName(txData.getUnderlying()));
     }
 
@@ -131,7 +131,7 @@ public final class ABIDecoder {
      * @return an object array that contains all of the arguments.
      */
     public static IObjectArray avm_decodeArguments(ByteArray txData) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeArguments);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeArguments);
         Object[] result = decodeArguments(txData.getUnderlying());
         return (null != result)
                 ? new ObjectArray(result)
@@ -144,7 +144,7 @@ public final class ABIDecoder {
      * @return the decoded object.
      */
     public static IObject avm_decodeOneObject(ByteArray txData){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeOneObject);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeOneObject);
         Descriptor descriptor = readOneDescriptor(txData.getUnderlying(), 0);
         return decodeOneObjectWithDescriptor(txData.getUnderlying(), descriptor.encodedBytes, descriptor).iObject;
     }

@@ -9,7 +9,9 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.internal.AvmThrowable;
+import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.kernel.Block;
@@ -40,9 +42,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 
-/**
- * @author Roman Katerinenko
- */
 public class AvmImplTest {
     private static byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private static Block block;
@@ -118,24 +117,26 @@ public class AvmImplTest {
     public void testPersistentEnergyLimit() {
         // Set up the runtime.
         Map<String, byte[]> contractClasses = Helpers.mapIncludingHelperBytecode(Collections.emptyMap(), Helpers.loadDefaultHelperBytecode());
+        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
         IHelper helper = Helpers.instantiateHelper(NodeEnvironment.singleton.createInvocationClassLoader(contractClasses), 5L, 1);
 
         // Prove that we can charge 0 without issue.
-        helper.externalChargeEnergy(0);
-        assertEquals(5, helper.externalGetEnergyRemaining());
+        instrumentation.chargeEnergy(0);
+        assertEquals(5, instrumentation.energyLeft());
 
         // Run the test.
         int catchCount = 0;
         OutOfEnergyException error = null;
         try {
-            helper.externalChargeEnergy(10);
+            instrumentation.chargeEnergy(10);
         } catch (OutOfEnergyException e) {
             catchCount += 1;
             error = e;
         }
         // We didn't reset the state so this should still fail.
         try {
-            helper.externalChargeEnergy(0);
+            instrumentation.chargeEnergy(0);
         } catch (OutOfEnergyException e) {
             catchCount += 1;
             // And have the same exception.
@@ -144,6 +145,7 @@ public class AvmImplTest {
         assertEquals(2, catchCount);
         // Remove this helper as cleanup.
         IHelper.currentContractHelper.remove();
+        InstrumentationHelpers.detachThread(instrumentation);
     }
 
     @Test
@@ -212,8 +214,6 @@ public class AvmImplTest {
         long runtimeCost = 4073;
         assertEquals(runtimeCost + tx2.getBasicCost() + costOfBlocks + costOfRuntimeCall + runStorageCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 
-        // We assume that the IHelper has been cleaned up by this point.
-        assertNull(IHelper.currentContractHelper.get());
         avm.shutdown();
     }
 

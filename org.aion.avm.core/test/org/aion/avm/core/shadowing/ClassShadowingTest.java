@@ -10,8 +10,10 @@ import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
@@ -62,6 +64,8 @@ public class ClassShadowingTest {
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
+        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
@@ -86,6 +90,7 @@ public class ClassShadowingTest {
         Assert.assertEquals(1, Testing.countWrappedClasses);
 
         Helper.clearTestingState();
+        InstrumentationHelpers.detachThread(instrumentation);
     }
 
     @Test
@@ -110,6 +115,8 @@ public class ClassShadowingTest {
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
+        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);
 
@@ -125,6 +132,7 @@ public class ClassShadowingTest {
         Assert.assertEquals(Integer.valueOf(3), ret2);
 
         Helper.clearTestingState();
+        InstrumentationHelpers.detachThread(instrumentation);
     }
 
     @Test
@@ -152,6 +160,8 @@ public class ClassShadowingTest {
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
+        HelperInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
         // We don't really need the runtime but we do need the intern map initialized.
         new Helper(loader, 1_000_000L, 1);
         Class<?> clazz = loader.loadUserClassByOriginalName(className);
@@ -162,6 +172,7 @@ public class ClassShadowingTest {
         Assert.assertEquals(null, ret);
 
         Helper.clearTestingState();
+        InstrumentationHelpers.detachThread(instrumentation);
     }
 
     @Test

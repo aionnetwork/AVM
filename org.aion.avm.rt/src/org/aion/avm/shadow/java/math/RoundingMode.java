@@ -2,7 +2,7 @@ package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObjectArray;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Enum;
@@ -16,7 +16,7 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 public class RoundingMode extends Enum<RoundingMode>{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     public static final RoundingMode avm_UP;
@@ -48,17 +48,17 @@ public class RoundingMode extends Enum<RoundingMode>{
     }
 
     public static IObjectArray avm_values(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_values);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_values);
         return (ObjectArray) avm_$VALUES.clone();
     }
 
     public static RoundingMode avm_valueOf(String request){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_valueOf);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_valueOf);
         return (RoundingMode) Enum.avm_valueOf(new Class<>(RoundingMode.class), request);
     }
 
     public static RoundingMode avm_valueOf(int idx){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_valueOf_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_valueOf_1);
         if (idx > 7 || idx < 0){
             throw new IllegalArgumentException("argument out of range");
         }else{

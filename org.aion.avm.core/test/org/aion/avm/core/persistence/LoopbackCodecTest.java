@@ -4,6 +4,9 @@ import java.util.function.Function;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,18 +14,23 @@ import org.junit.Test;
 
 
 public class LoopbackCodecTest {
+    private IInstrumentation instrumentation;
+
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
         // Setup a helper since a few of these tests need to operate on shadow objects (mostly just since that is all the codec operates on).
+        this.instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(this.instrumentation);
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
     }
 
     @After
     public void tearDown() {
         Helper.clearTestingState();
+        InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
     /**

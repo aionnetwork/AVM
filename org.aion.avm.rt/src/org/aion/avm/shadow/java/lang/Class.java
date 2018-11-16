@@ -1,7 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 
 import java.lang.reflect.Field;
@@ -13,23 +13,23 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 public class Class<T> extends Object {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     public String avm_getName() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_getName);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Class_avm_getName);
         // Note that we actively try not to give the same instance of the name wrapper back (since the user could see implementation details of our
         // contract life-cycle or the underlying JVM/ClassLoader.
         return new org.aion.avm.shadow.java.lang.String(v.getName());
     }
 
     public String avm_toString() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_toString);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Class_avm_toString);
         return null;
     }
 
     public IObject avm_cast(IObject obj) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_cast);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Class_avm_cast);
         return (IObject)this.v.cast(obj);
     }
 
@@ -37,17 +37,17 @@ public class Class<T> extends Object {
 
     @SuppressWarnings("unchecked")
     public Class<T> avm_getSuperclass() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_getSuperclass);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Class_avm_getSuperclass);
         // Note that we need to return null if the underlying is the shadow object root.
         Class<T> toReturn = null;
         if (org.aion.avm.shadow.java.lang.Object.class != this.v) {
-            toReturn = (Class<T>) IHelper.currentContractHelper.get().externalWrapAsClass(this.v.getSuperclass());
+            toReturn = (Class<T>) IInstrumentation.attachedThreadInstrumentation.get().wrapAsClass(this.v.getSuperclass());
         }
         return toReturn;
     }
 
     public boolean avm_desiredAssertionStatus() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_desiredAssertionStatus);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Class_avm_desiredAssertionStatus);
         // Note that we currently handle assertions as always-enabled.
         // Internally, these will result in throwing AssertionError which, unless caught by the user's code, results in a FAILED_EXCEPTION status.
         // See issue-72 for more details on our thought process and future interpretations of this we may want to entertain.
@@ -106,7 +106,7 @@ public class Class<T> extends Object {
     //========================================================
 
     public Class(java.lang.Class<T> v) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Class_avm_constructor);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Class_avm_constructor);
         this.v = v;
     }
 

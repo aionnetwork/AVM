@@ -12,7 +12,10 @@ import org.aion.avm.core.dappreading.DAppClassLoader;
 import org.aion.avm.core.dappreading.DAppLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.HelperInstrumentation;
 import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
@@ -129,6 +132,9 @@ public class StubGeneratorTest {
         Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getName());
         Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getName());
         
+        IInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
+        
         // Create an instance and prove that we can interact with it.
         Constructor<?> con = aioobe.getConstructor(org.aion.avm.shadow.java.lang.String.class);
         org.aion.avm.shadow.java.lang.String contents = new org.aion.avm.shadow.java.lang.String("one");
@@ -136,6 +142,8 @@ public class StubGeneratorTest {
         org.aion.avm.shadow.java.lang.Throwable shadow = (org.aion.avm.shadow.java.lang.Throwable)instance;
         // Ask for the toString (our internal version) since we know what that should look like.
         Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.ArrayIndexOutOfBoundsException: one", shadow.toString());
+        
+        InstrumentationHelpers.detachThread(instrumentation);
     }
 
     /**
@@ -218,6 +226,8 @@ public class StubGeneratorTest {
         Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.Object", object.getName());
         Assert.assertEquals(handWritten, object.getClassLoader());
         
+        IInstrumentation instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(instrumentation);
         
         // Create an instance and prove that we can interact with it.
         Constructor<?> con = notFound.getConstructor(org.aion.avm.shadow.java.lang.String.class, org.aion.avm.shadow.java.lang.Throwable.class);
@@ -231,6 +241,8 @@ public class StubGeneratorTest {
         Method getException = notFound.getMethod(NamespaceMapper.mapMethodName("getException"));
         Object result = getException.invoke(shadow);
         Assert.assertTrue(result == cause);
+        
+        InstrumentationHelpers.detachThread(instrumentation);
     }
 
 

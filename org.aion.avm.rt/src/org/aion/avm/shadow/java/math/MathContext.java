@@ -1,7 +1,7 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
@@ -14,7 +14,7 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 public final class MathContext extends Object {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     public static final MathContext avm_UNLIMITED =
@@ -30,33 +30,33 @@ public final class MathContext extends Object {
             new MathContext(34, RoundingMode.avm_HALF_EVEN);
 
     public MathContext(int setPrecision) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_constructor);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_constructor);
         v = new java.math.MathContext(setPrecision);
     }
 
     public MathContext(int setPrecision,
                        RoundingMode setRoundingMode) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_constructor_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_constructor_1);
         v = new java.math.MathContext(setPrecision, setRoundingMode.getUnderlying());
     }
 
     public MathContext(String val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_constructor_2);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_constructor_2);
         v = new java.math.MathContext(val.getUnderlying());
     }
 
     public int avm_getPrecision() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_getPrecision);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_getPrecision);
         return this.v.getPrecision();
     }
 
     public RoundingMode avm_getRoundingMode() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_getRoundingMode);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_getRoundingMode);
         return RoundingMode.avm_valueOf(new String(this.v.getRoundingMode().name()));
     }
 
     public boolean avm_equals(IObject x){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_equals);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_equals);
         MathContext mc;
         if (!(x instanceof MathContext))
             return false;
@@ -65,13 +65,13 @@ public final class MathContext extends Object {
     }
 
     public int avm_hashCode() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_hashCode);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_hashCode);
         RoundingMode roundingMode = RoundingMode.avm_valueOf(new String(this.v.getRoundingMode().name()));
         return this.v.getPrecision() + roundingMode.hashCode() * 59;
     }
 
     public String avm_toString() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_toString);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_toString);
         return new String(v.toString());
     }
 

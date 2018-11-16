@@ -11,9 +11,13 @@ import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -27,11 +31,23 @@ import static org.aion.avm.core.invokedynamic.InvokedynamicUtils.buildSingletonA
 import static org.aion.avm.core.util.Helpers.loadRequiredResourceAsBytes;
 import static org.junit.Assert.assertFalse;
 
+
 public class StringConcatenationTest {
+    private IInstrumentation instrumentation;
+
+    @Before
+    public void setup() {
+        // Make sure that we bootstrap the NodeEnvironment before we install the instrumentation and attach the thread.
+        Assert.assertNotNull(NodeEnvironment.singleton);
+        this.instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(this.instrumentation);
+    }
+
     @After
     public void teardown() {
         // NOTE:  We should use the actual instance we created but we only want to clear the thread local. 
         Helper.clearTestingState();
+        InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
     @Test

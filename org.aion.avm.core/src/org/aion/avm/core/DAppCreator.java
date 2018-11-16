@@ -237,11 +237,11 @@ public class DAppCreator {
             IHelper helper = dapp.instantiateHelperInApp(ctx.getEnergyLimit() - result.getEnergyUsed(), nextHashCode);
             task.attachHelper(helper);
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
-            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, helper, task, ctx,
-                    codeAndArguments.arguments, result));
+            dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, helper, task, ctx, codeAndArguments.arguments, result));
 
             // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
+            IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
+            threadInstrumentation.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
                     + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * rawDapp.bytecodeSize
                     * (1 + rawDapp.numberOfClasses) / 10);
 
@@ -264,8 +264,8 @@ public class DAppCreator {
             kernel.putCode(dappAddress, immortalDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            helper.externalChargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * ctx.getData().length);
-            HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(helper);
+            threadInstrumentation.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * ctx.getData().length);
+            HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(threadInstrumentation);
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).
             dapp.forceInitializeAllClasses();
@@ -275,12 +275,12 @@ public class DAppCreator {
             ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(feeProcessor, graphStore);
             dapp.saveClassStaticsToStorage(feeProcessor, directGraphData, graphStore);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToGraph(graphStore, new ContractEnvironmentState(helper.externalPeekNextHashCode()));
+            ContractEnvironmentState.saveToGraph(graphStore, new ContractEnvironmentState(threadInstrumentation.peekNextHashCode()));
             graphStore.flushWrites();
 
             // TODO: whether we should return the dapp address is subject to change
             result.setStatusCode(TransactionResult.Code.SUCCESS);
-            result.setEnergyUsed(ctx.getEnergyLimit() - helper.externalGetEnergyRemaining());
+            result.setEnergyUsed(ctx.getEnergyLimit() - threadInstrumentation.energyLeft());
             result.setReturnData(dappAddress);
             result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {

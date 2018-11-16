@@ -7,7 +7,7 @@ import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Object;
 import org.aion.avm.shadow.java.lang.String;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 /**
@@ -30,7 +30,7 @@ public class Address extends Object {
      * @param raw The raw bytes representing the address.
      */
     public Address(ByteArray raw) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Address_avm_constructor);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_constructor);
         if (raw == null || raw.length() != avm_LENGTH) {
             throw new IllegalArgumentException();
         }
@@ -44,13 +44,13 @@ public class Address extends Object {
      * @return The raw bytes underneath the address.
      */
     public ByteArray avm_unwrap() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Address_avm_unwrap);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_unwrap);
         return this.underlying;
     }
 
     @Override
     public int avm_hashCode() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Address_avm_hashCode);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_hashCode);
         // Just a really basic implementation.
         int code = 0;
         for (byte elt : this.underlying.getUnderlying()) {
@@ -61,7 +61,7 @@ public class Address extends Object {
 
     @Override
     public boolean avm_equals(IObject obj) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Address_avm_equals);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_equals);
         lazyLoad();
 
         boolean isEqual = this == obj;
@@ -82,7 +82,7 @@ public class Address extends Object {
 
     @Override
     public String avm_toString() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Address_avm_toString);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_toString);
         return toHexString(this.underlying.getUnderlying());
     }
 

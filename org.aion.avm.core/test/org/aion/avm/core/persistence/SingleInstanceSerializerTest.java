@@ -13,6 +13,9 @@ import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.arraywrapper.ShortArray;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.Helper;
+import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,17 +38,22 @@ public class SingleInstanceSerializerTest {
         }};
     private static final Consumer<org.aion.avm.shadow.java.lang.Object> NULL_OBJECT_SINK = (object) -> {};
 
+    private IInstrumentation instrumentation;
+
     @Before
     public void setup() {
         // Force the initialization of the NodeEnvironment singleton.
         Assert.assertNotNull(NodeEnvironment.singleton);
         
+        this.instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(this.instrumentation);
         new Helper(SingleInstanceSerializerTest.class.getClassLoader(), 1_000_000L, 1);
     }
 
     @After
     public void tearDown() {
         Helper.clearTestingState();
+        InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
     @Test

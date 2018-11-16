@@ -1,7 +1,7 @@
 package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Cloneable;
@@ -35,6 +35,6 @@ public abstract class Array extends Object implements Cloneable, IArray {
      * @param cost The energy cost to charge the current DApp.
      */
     static protected void chargeEnergy(long cost){
-        IHelper.currentContractHelper.get().externalChargeEnergy(cost);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(cost);
     }
 }

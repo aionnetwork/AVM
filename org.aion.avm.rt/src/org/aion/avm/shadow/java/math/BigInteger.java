@@ -3,7 +3,7 @@ package org.aion.avm.shadow.java.math;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.CodecIdioms;
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
@@ -17,11 +17,11 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 public class BigInteger extends Number implements Comparable<BigInteger> {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     public BigInteger(ByteArray val, int off, int len) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor);
         v = new java.math.BigInteger(val.getUnderlying(), off, len);
     }
 
@@ -30,7 +30,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
 
     public BigInteger(int signum, ByteArray magnitude, int off, int len){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor_2);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor_2);
         v = new java.math.BigInteger(signum, magnitude.getUnderlying(), off, len);
     }
 
@@ -39,7 +39,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
 
     public BigInteger(String val, int radix) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor_4);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor_4);
         v = new java.math.BigInteger(val.getUnderlying(), radix);
     }
 
@@ -48,12 +48,12 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
 
     public BigInteger avm_nextProbablePrime(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_nextProbablePrime);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_nextProbablePrime);
         return new BigInteger(this.v.nextProbablePrime());
     }
 
     public static BigInteger avm_valueOf(long val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_valueOf);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_valueOf);
         return new BigInteger(java.math.BigInteger.valueOf(val));
     }
 
@@ -66,152 +66,152 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     public static final BigInteger avm_TEN = new BigInteger(java.math.BigInteger.TEN);
 
     public BigInteger avm_add(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_add);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_add);
         return new BigInteger(v.add(val.v));
     }
 
     public BigInteger avm_subtract(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_subtract);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_subtract);
         return new BigInteger(v.subtract(val.v));
     }
 
     public BigInteger avm_multiply(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_multiply);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_multiply);
         return new BigInteger(v.multiply(val.v));
     }
 
     public BigInteger avm_divide(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_divide);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_divide);
         return new BigInteger(v.divide(val.v));
     }
 
     public BigInteger avm_remainder(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_remainder);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_remainder);
         return new BigInteger(v.remainder(val.v));
     }
 
     public BigInteger avm_pow(int exponent) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_pow);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_pow);
         return new BigInteger(v.pow(exponent));
     }
 
     public BigInteger avm_sqrt() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_sqrt);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_sqrt);
         return new BigInteger(v.sqrt());
     }
 
     public BigInteger avm_gcd(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_gcd);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_gcd);
         return new BigInteger(v.gcd(val.v));
     }
 
     public BigInteger avm_abs() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_abs);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_abs);
         return new BigInteger(v.abs());
     }
 
     public BigInteger avm_negate() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_negate);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_negate);
         return new BigInteger(v.negate());
     }
 
     public int avm_signum() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_signum);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_signum);
         return v.signum();
     }
 
     public BigInteger avm_mod(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_mod);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_mod);
         return new BigInteger(v.mod(val.v));
     }
 
     public BigInteger avm_modPow(BigInteger exponent, BigInteger m) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_modPow);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_modPow);
         return new BigInteger(v.modPow(exponent.v, m.v));
     }
 
     public BigInteger avm_modInverse(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_modInverse);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_modInverse);
         return new BigInteger(v.modInverse(val.v));
     }
 
     public BigInteger avm_shiftLeft(int n) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_shiftLeft);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_shiftLeft);
         return new BigInteger(v.shiftLeft(n));
     }
 
     public BigInteger avm_shiftRight(int n) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_shiftRight);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_shiftRight);
         return new BigInteger(v.shiftRight(n));
     }
 
     public BigInteger avm_and(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_and);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_and);
         return new BigInteger(v.and(val.v));
     }
 
     public BigInteger avm_or(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_or);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_or);
         return new BigInteger(v.or(val.v));
     }
 
     public BigInteger avm_xor(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_xor);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_xor);
         return new BigInteger(v.xor(val.v));
     }
 
     public BigInteger avm_not() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_not);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_not);
         return new BigInteger(v.not());
     }
 
     public BigInteger avm_andNot(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_andNot);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_andNot);
         return new BigInteger(v.andNot(val.v));
     }
 
     public boolean avm_testBit(int n) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_testBit);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_testBit);
         return v.testBit(n);
     }
 
     public BigInteger avm_setBit(int n) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_setBit);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_setBit);
         return new BigInteger(v.setBit(n));
     }
 
     public BigInteger avm_clearBit(int n) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_clearBit);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_clearBit);
         return new BigInteger(v.clearBit(n));
     }
 
     public BigInteger avm_flipBit(int n) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_flipBit);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_flipBit);
         return new BigInteger(v.flipBit(n));
     }
 
     public int avm_getLowestSetBit() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_getLowestSetBit);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_getLowestSetBit);
         return v.getLowestSetBit();
     }
 
     public int avm_bitLength() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_bitLength);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_bitLength);
         return v.bitLength();
     }
 
     public int avm_bitCount() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_bitCount);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_bitCount);
         return v.bitLength();
     }
 
     public int avm_compareTo(BigInteger val) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_compareTo);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_compareTo);
         return v.compareTo(val.v);
     }
 
     public boolean avm_equals(IObject x) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_equals);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_equals);
         if (x == this)
             return true;
 
@@ -223,72 +223,72 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
 
     public BigInteger avm_min(BigInteger val){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_min);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_min);
         return new BigInteger(v.min(val.v));
     }
 
     public BigInteger avm_max(BigInteger val){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_max);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_max);
         return new BigInteger(v.max(val.v));
     }
 
     public int avm_hashCode() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_hashCode);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_hashCode);
         return v.hashCode();
     }
 
     public String avm_toString(int radix){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_toString);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_toString);
         return new String(v.toString(radix));
     }
 
     public String avm_toString(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_toString_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_toString_1);
         return new String(v.toString());
     }
 
     public ByteArray avm_toByteArray() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_toByteArray);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_toByteArray);
         return new ByteArray(v.toByteArray());
     }
 
     public int avm_intValue(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_intValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_intValue);
         return v.intValue();
     }
 
     public long avm_longValue(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_longValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_longValue);
         return v.longValue();
     }
 
     public float avm_floatValue(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_floatValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_floatValue);
         return v.floatValue();
     }
 
     public double avm_doubleValue(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_doubleValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_doubleValue);
         return v.doubleValue();
     }
 
     public long avm_longValueExact(){
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_longValueExact);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_longValueExact);
         return v.longValueExact();
     }
 
     public int avm_intValueExact() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_intValueExact);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_intValueExact);
         return v.intValueExact();
     }
 
     public short avm_shortValueExact() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_shortValueExact);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_shortValueExact);
         return v.shortValueExact();
     }
 
     public byte avm_byteValueExact() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_byteValueExact);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_byteValueExact);
         return v.byteValueExact();
     }
 
@@ -299,7 +299,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     private java.math.BigInteger v;
 
     public BigInteger(java.math.BigInteger u) {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor_6);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor_6);
         v = u;
     }
 

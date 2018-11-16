@@ -12,7 +12,9 @@ import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.After;
 import org.junit.Assert;
@@ -24,6 +26,7 @@ public class LoadedDAppTest {
     // We don't verify fees at this time so just use the "null" utility processor.
     private static NullFeeProcessor FEE_PROCESSOR = new NullFeeProcessor();
 
+    private IInstrumentation instrumentation;
     private AvmClassLoader loader;
 
     @Before
@@ -33,6 +36,9 @@ public class LoadedDAppTest {
         
         Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(Collections.emptyMap(), Helpers.loadDefaultHelperBytecode());
         this.loader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
+        
+        this.instrumentation = new HelperInstrumentation();
+        InstrumentationHelpers.attachThread(this.instrumentation);
         new Helper(ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
         // Clear statics, since our tests interact with them.
         clearStaticState();
@@ -41,6 +47,7 @@ public class LoadedDAppTest {
     @After
     public void tearDown() {
         Helper.clearTestingState();
+        InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
     /**
@@ -365,7 +372,7 @@ public class LoadedDAppTest {
      */
     @Test
     public void serializeDeserializeReferenceToClass() {
-        org.aion.avm.shadow.java.lang.Class<?> originalClassRef = IHelper.currentContractHelper.get().externalWrapAsClass(String.class);
+        org.aion.avm.shadow.java.lang.Class<?> originalClassRef = IInstrumentation.attachedThreadInstrumentation.get().wrapAsClass(String.class);
         LoadedDAppTarget.s_nine = originalClassRef;
         
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();

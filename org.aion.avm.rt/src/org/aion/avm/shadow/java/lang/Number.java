@@ -1,14 +1,14 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IHelper;
+import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public abstract class Number extends Object {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
-        IHelper.currentContractHelper.get().externalBootstrapOnly();
+        IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
     public Number(IDeserializer deserializer, IPersistenceToken persistenceToken) {
@@ -27,12 +27,12 @@ public abstract class Number extends Object {
     public abstract double avm_doubleValue();
 
     public byte avm_byteValue() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Number_avm_byteValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Number_avm_byteValue);
         return (byte)avm_intValue();
     }
 
     public short avm_shortValue() {
-        IHelper.currentContractHelper.get().externalChargeEnergy(RuntimeMethodFeeSchedule.Number_avm_shortValue);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Number_avm_shortValue);
         return (short)avm_intValue();
     }
 }

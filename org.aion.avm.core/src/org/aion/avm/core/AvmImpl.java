@@ -15,6 +15,8 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
+import org.aion.avm.internal.HelperInstrumentation;
+import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
@@ -54,6 +56,9 @@ public class AvmImpl implements AvmInternal {
 
         @Override
         public void run() {
+            // TODO:  This should actually come from a factory passed in to the AVM (or otherwise from somewhere top-level).
+            HelperInstrumentation instrumentation = new HelperInstrumentation();
+            InstrumentationHelpers.attachThread(instrumentation);
             try {
                 // Run as long as we have something to do (null means shutdown).
                 TransactionResult outgoingResult = null;
@@ -82,6 +87,8 @@ public class AvmImpl implements AvmInternal {
                 AvmImpl.this.handoff.setBackgroundThrowable(t);
                 // If the throwable makes it all the way to here, we can't handle it.
                 RuntimeAssertionError.unexpected(t);
+            } finally {
+                InstrumentationHelpers.detachThread(instrumentation);
             }
         }
 
