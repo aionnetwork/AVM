@@ -205,9 +205,15 @@ public class PocWalletTest {
             }
 
             @Override
-            public int externalGetNextHashCode() {
+            public int externalGetNextHashCodeAndIncrement() {
                 // Will be called.
                 return 1;
+            }
+
+            @Override
+            public int externalPeekNextHashCode() {
+                Assert.fail("Not in test");
+                return 0;
             }
 
             @Override

@@ -278,10 +278,15 @@ public class NodeEnvironment {
             }
 
             @Override
-            public int externalGetNextHashCode() {
+            public int externalGetNextHashCodeAndIncrement() {
                 // Only constants should end up being allocated under this so set them to the constant hash code we will over-write with their
                 // specification values, after.
                 return Integer.MIN_VALUE;
+            }
+
+            @Override
+            public int externalPeekNextHashCode() {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
 
             @Override

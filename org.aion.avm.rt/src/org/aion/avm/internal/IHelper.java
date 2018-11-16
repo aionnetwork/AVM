@@ -25,7 +25,18 @@ public interface IHelper {
 
     public org.aion.avm.shadow.java.lang.Class<?> externalWrapAsClass(Class<?> input);
 
-    public int externalGetNextHashCode();
+    /**
+     * Used to get the next hash code and then increment it.
+     * @return The next hash code, prior to the increment.
+     */
+    public int externalGetNextHashCodeAndIncrement();
+
+    /**
+     * Allows read-only access to the next hash code (this will NOT increment it).
+     * 
+     * @return The next hash code.
+     */
+    public int externalPeekNextHashCode();
 
     public void externalSetAbortState();
 

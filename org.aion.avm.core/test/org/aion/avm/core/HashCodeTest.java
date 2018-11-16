@@ -225,17 +225,20 @@ public class HashCodeTest {
         Assert.assertEquals(usedHashCount + 1, ((Integer)result).intValue());
         result = getOneHashCode1.invoke(null);
         Assert.assertEquals(usedHashCount + 2, ((Integer)result).intValue());
-        Assert.assertEquals(usedHashCount + 3, helper1.externalGetNextHashCode());
+        Assert.assertEquals(usedHashCount + 3, helper1.externalPeekNextHashCode());
         IHelper.currentContractHelper.remove();
         
         // Now, create the helper2, show that it is independent, and run a test in that.
         IHelper helper2 = Helpers.instantiateHelper(loader2, 1_000_000L, 1);
         Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName);
         Method getOneHashCode2 = clazz2.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
-        Assert.assertEquals(1, helper2.externalGetNextHashCode());
+        Assert.assertEquals(1, helper2.externalPeekNextHashCode());
         result = getOneHashCode2.invoke(null);
-        Assert.assertEquals(usedHashCount + 2, ((Integer)result).intValue());
+        Assert.assertEquals(usedHashCount + 1, ((Integer)result).intValue());
         IHelper.currentContractHelper.remove();
+        
+        // Make sure that helper1 wasn't changed by this.
+        Assert.assertEquals(usedHashCount + 3, helper1.externalPeekNextHashCode());
         
         suspended.resume();
     }

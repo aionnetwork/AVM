@@ -26,7 +26,8 @@ public class Object extends java.lang.Object implements IObject {
     private IDeserializer deserializer;
 
     public Object() {
-        this.hashCode = IHelper.currentContractHelper.get().externalGetNextHashCode();
+        // We want to "consume" this next hash code so allow the implementation to increment its internal state to the next.
+        this.hashCode = IHelper.currentContractHelper.get().externalGetNextHashCodeAndIncrement();
         this.persistenceToken = null;
     }
 

@@ -66,13 +66,13 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 // Write this back into the resumed state.
                 reentrantGraphData.commitGraphToStoredFieldsAndRestore();
-                stateToResume.updateEnvironment(helper.externalGetNextHashCode());
+                stateToResume.updateEnvironment(helper.externalPeekNextHashCode());
             } else {
                 // We are at the "top" so write this back to disk.
                 // -first, save out the classes
                 dapp.saveClassStaticsToStorage(feeProcessor, directGraphData, graphStore);
                 // -finally, save back the final state of the environment so we restore it on the next invocation.
-                ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(helper.externalGetNextHashCode());
+                ContractEnvironmentState updatedEnvironment = new ContractEnvironmentState(helper.externalPeekNextHashCode());
                 ContractEnvironmentState.saveToGraph(graphStore, updatedEnvironment);
             }
             graphStore.flushWrites();

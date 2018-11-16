@@ -275,7 +275,7 @@ public class DAppCreator {
             ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(feeProcessor, graphStore);
             dapp.saveClassStaticsToStorage(feeProcessor, directGraphData, graphStore);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToGraph(graphStore, new ContractEnvironmentState(helper.externalGetNextHashCode()));
+            ContractEnvironmentState.saveToGraph(graphStore, new ContractEnvironmentState(helper.externalPeekNextHashCode()));
             graphStore.flushWrites();
 
             // TODO: whether we should return the dapp address is subject to change

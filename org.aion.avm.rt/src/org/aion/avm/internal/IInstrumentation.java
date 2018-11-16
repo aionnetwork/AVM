@@ -14,7 +14,12 @@ public interface IInstrumentation {
     Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg);
     void chargeEnergy(long cost) throws OutOfEnergyException;
     long energyLeft();
-    int getNextHashCode();
+
+    /**
+     * Used to get the next hash code and then increment it.
+     * @return The next hash code, prior to the increment.
+     */
+    int getNextHashCodeAndIncrement();
     void setAbortState();
     
     int getCurStackSize();
@@ -23,5 +28,19 @@ public interface IInstrumentation {
     void exitMethod(int frameSize);
     void enterCatchBlock(int depth, int size);
     
+    // Used to read/write hashcode value around internal calls (since we only update the next hash code if the callee succeeded).
+    /**
+     * Allows read-only access to the next hash code (this will NOT increment it).
+     * 
+     * @return The next hash code.
+     */
+    int peekNextHashCode();
+
+    /**
+     * Sets the next hash code to the given value.  This is used to update the hash code in a caller frame if a callee succeeds.
+     * @param nextHashCode The hash code to use for the next object allocated.
+     */
     void forceNextHashCode(int nextHashCode);
+    
+    void bootstrapOnly();
 }

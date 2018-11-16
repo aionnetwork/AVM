@@ -209,7 +209,7 @@ public class CommonInstrumentation implements IInstrumentation {
     }
 
     @Override
-    public int getNextHashCode() {
+    public int getNextHashCodeAndIncrement() {
         // NOTE:  In the case of a Class object, this value is swapped out, temporarily.
         return nextHashCode++;
     }
@@ -273,8 +273,17 @@ public class CommonInstrumentation implements IInstrumentation {
     }
 
     @Override
+    public int peekNextHashCode() {
+        return this.nextHashCode;
+    }
+    @Override
     public void forceNextHashCode(int nextHashCode) {
         this.nextHashCode = nextHashCode;
+    }
+
+    @Override
+    public void bootstrapOnly() {
+        throw RuntimeAssertionError.unreachable("NOT a bootstrap IInstrumentation");
     }
 
 

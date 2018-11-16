@@ -56,8 +56,12 @@ public class Helper implements IHelper {
         return target.energyLeft();
     }
 
-    public static int getNextHashCode() {
-        return target.getNextHashCode();
+    public static int getNextHashCodeAndIncrement() {
+        return target.getNextHashCodeAndIncrement();
+    }
+
+    public static int peekNextHashCode() {
+        return target.peekNextHashCode();
     }
 
     public void externalSetAbortState() {
@@ -121,8 +125,12 @@ public class Helper implements IHelper {
         return Helper.wrapAsClass(input);
     }
     @Override
-    public int externalGetNextHashCode() {
-        return Helper.getNextHashCode();
+    public int externalGetNextHashCodeAndIncrement() {
+        return Helper.getNextHashCodeAndIncrement();
+    }
+    @Override
+    public int externalPeekNextHashCode() {
+        return Helper.peekNextHashCode();
     }
     @Override
     public int captureSnapshotAndNextHashCode() {
@@ -132,7 +140,7 @@ public class Helper implements IHelper {
         BlockchainRuntime.blockchainRuntime = null;
         this.snapshot = target;
         target = null;
-        return this.snapshot.getNextHashCode();
+        return this.snapshot.peekNextHashCode();
     }
     @Override
     public void applySnapshotAndNextHashCode(int nextHashCode) {

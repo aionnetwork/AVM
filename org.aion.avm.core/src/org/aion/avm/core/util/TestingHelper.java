@@ -113,8 +113,13 @@ public class TestingHelper implements IHelper {
     }
 
     @Override
-    public int externalGetNextHashCode() {
+    public int externalGetNextHashCodeAndIncrement() {
         return this.constantHashCode;
+    }
+
+    @Override
+    public int externalPeekNextHashCode() {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
 
     @Override
