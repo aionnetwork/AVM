@@ -16,19 +16,6 @@ public class Helper implements IRuntimeSetup {
     private static IInstrumentation target;
 
 
-    public static void attachToCallingThread() {
-        RuntimeAssertionError.assertTrue(null == target);
-        IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
-        RuntimeAssertionError.assertTrue(null != threadInstrumentation);
-        target = threadInstrumentation;
-    }
-    public static void detachCallingThread() {
-        IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
-        RuntimeAssertionError.assertTrue(null != threadInstrumentation);
-        RuntimeAssertionError.assertTrue(threadInstrumentation == target);
-        target = null;
-    }
-
     public static <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
         return target.wrapAsClass(input);
     }
@@ -56,22 +43,6 @@ public class Helper implements IRuntimeSetup {
         target.chargeEnergy(cost);
     }
 
-    public static long energyLeft() {
-        return target.energyLeft();
-    }
-
-    public static int getNextHashCodeAndIncrement() {
-        return target.getNextHashCodeAndIncrement();
-    }
-
-    public static int peekNextHashCode() {
-        return target.peekNextHashCode();
-    }
-
-    public void externalSetAbortState() {
-        target.setAbortState();
-    }
-
     public static int getCurStackSize(){
         return target.getCurStackSize();
     }
@@ -91,6 +62,7 @@ public class Helper implements IRuntimeSetup {
     public static void enterCatchBlock(int depth, int size) {
         target.enterCatchBlock(depth, size);
     }
+
     @Override
     public void attach(IInstrumentation instrumentation) {
         RuntimeAssertionError.assertTrue(null == target);
