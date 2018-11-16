@@ -24,9 +24,6 @@ import org.junit.Test;
 public class ExceptionWrappingIntegrationTest {
     @Test
     public void testExceptionPersistence() throws Exception {
-        // This test doesn't use the common IHelper from setup() so uninstall it.
-        SuspendedHelper suspended = new SuspendedHelper();
-        
         Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
@@ -54,7 +51,6 @@ public class ExceptionWrappingIntegrationTest {
         byte[] loadUser = (byte[])callStatic(block, kernel, avm, contractAddr, "loadUser");
         Assert.assertEquals("MESSAGE", new String(loadUser));
         
-        suspended.resume();
         avm.shutdown();
     }
 
