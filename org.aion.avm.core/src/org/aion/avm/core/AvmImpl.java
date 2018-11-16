@@ -371,7 +371,7 @@ public class AvmImpl implements AvmInternal {
             this.hotCache.checkin(addressWrapper, dapp);
             // We want to set this to success and report the energy used as the refund found by the GC.
             // NOTE:  This is the total value of the refund as splitting that between the DApp and node is a higher-level decision.
-            long storageEnergyRefund = instancesFreed * HelperBasedStorageFees.DEPOSIT_WRITE_COST;
+            long storageEnergyRefund = instancesFreed * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST;
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setEnergyUsed(-storageEnergyRefund);
         } else {

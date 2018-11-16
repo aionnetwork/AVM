@@ -266,7 +266,7 @@ public class DAppCreator {
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             threadInstrumentation.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * ctx.getData().length);
-            HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(threadInstrumentation);
+            InstrumentationBasedStorageFees feeProcessor = new InstrumentationBasedStorageFees(threadInstrumentation);
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).
             dapp.forceInitializeAllClasses();

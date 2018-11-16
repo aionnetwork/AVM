@@ -5,7 +5,7 @@ import org.aion.avm.api.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.TestingBlockchainRuntime;
-import org.aion.avm.core.SuspendedHelper;
+import org.aion.avm.core.SuspendedInstrumentation;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.shadow.java.math.BigInteger;
@@ -62,8 +62,8 @@ public class CallTest {
         avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
             @Override
             public Result avm_call(Address a, BigInteger v, ByteArray d, long e) {
-                // We want to suspend the outer IHelper for the sub-call (they are supposed to be distinct).
-                SuspendedHelper suspended = new SuspendedHelper();
+                // We want to suspend the outer IInstrumentation for the sub-call (they are supposed to be distinct).
+                SuspendedInstrumentation suspended = new SuspendedInstrumentation();
                 
                 callbackReceived = true;
 

@@ -176,10 +176,10 @@ public class AvmImplTest {
         long deploymentStorageCost = 200 * txData.length;
         long clinitCost = 188l;
         // Storage:  static 64 bytes (2 references) +  the 2 strings (hash code and string length: "CALL" + "NORMAL").
-        long initialStorageCost = (3 * HelperBasedStorageFees.PER_OBJECT_WRITE_NEW)
-                + (64 * HelperBasedStorageFees.BYTE_WRITE_COST)
-                + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST)
-                + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST)
+        long initialStorageCost = (3 * InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW)
+                + (64 * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
+                + (byteSizeOfSerializedString("CALL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
+                + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
                 ;
         assertEquals(tx1.getBasicCost() + deploymentProcessCost + deploymentStorageCost + clinitCost + initialStorageCost, result1.getEnergyUsed());
 
@@ -195,25 +195,25 @@ public class AvmImplTest {
         // All persistence load/store cost (note that this is a reentrant call):
         long runStorageCost = 0L
         // -read statics (outer)
-                + (HelperBasedStorageFees.FIXED_READ_COST + (64 * HelperBasedStorageFees.BYTE_READ_COST))
+                + (InstrumentationBasedStorageFees.FIXED_READ_COST + (64 * InstrumentationBasedStorageFees.BYTE_READ_COST))
         // -read statics (inner)
-                + (HelperBasedStorageFees.FIXED_READ_COST + (64 * HelperBasedStorageFees.BYTE_READ_COST))
+                + (InstrumentationBasedStorageFees.FIXED_READ_COST + (64 * InstrumentationBasedStorageFees.BYTE_READ_COST))
         // -read instance (outer) "NORMAL" (free because we are just loading it _for_ the inner case)
-        //        + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_READ_COST))
+        //        + (InstrumentationBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_READ_COST))
         // -read instance (inner) "NORMAL"
-                + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_READ_COST))
+                + (InstrumentationBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_READ_COST))
         // -write statics (inner)
-        //        + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
+        //        + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
         // -write instance (inner) "NORMAL"
-        //        + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+        //        + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
         // -read instance (outer) "CALL"
-                + (HelperBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_READ_COST))
+                + (InstrumentationBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("CALL") * InstrumentationBasedStorageFees.BYTE_READ_COST))
         // -write statics (outer)
-        //        + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * HelperBasedStorageFees.BYTE_WRITE_COST))
+        //        + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
         // -write instance (outer) "CALL"
-        //        + (HelperBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("CALL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+        //        + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("CALL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
         // -write instance (outer) "NORMAL" (free because we didn't touch it, just loaded it for the inner case)
-        //        + (HelperBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * HelperBasedStorageFees.BYTE_WRITE_COST))
+        //        + (InstrumentationBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
                 ;
         long runtimeCost = 4073;
         assertEquals(runtimeCost + tx2.getBasicCost() + costOfBlocks + costOfRuntimeCall + runStorageCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.

@@ -204,7 +204,7 @@ public class HashCodeTest {
      */
     @Test
     public void testTwoIsolatedContracts() throws Exception {
-        SuspendedHelper suspended = new SuspendedHelper();
+        SuspendedInstrumentation suspended = new SuspendedInstrumentation();
         CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
         

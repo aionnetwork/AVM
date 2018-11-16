@@ -40,7 +40,7 @@ public class DAppExecutor {
         IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
         InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode);
         dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, task, ctx, ctx.getData(), result, dapp.runtimeSetup));
-        HelperBasedStorageFees feeProcessor = new HelperBasedStorageFees(threadInstrumentation);
+        InstrumentationBasedStorageFees feeProcessor = new InstrumentationBasedStorageFees(threadInstrumentation);
 
         ReentrantGraphProcessor reentrantGraphData = null;
         ReflectionStructureCodec directGraphData = null;

@@ -17,7 +17,7 @@ import org.aion.avm.internal.IInstrumentation;
  * -this means that a sub-call can actually cause its caller to run out of energy
  *  -forcing the caller to fault in the object bills their IInstrumentation, not one currently running
  */
-public class HelperBasedStorageFees implements IStorageFeeProcessor {
+public class InstrumentationBasedStorageFees implements IStorageFeeProcessor {
     // (these are only public so that tests can access them)
     public static final long FIXED_READ_COST = 1_000L;
     public static final long SPENT_WRITE_COST = 1_000L;
@@ -35,7 +35,7 @@ public class HelperBasedStorageFees implements IStorageFeeProcessor {
 
     private final IInstrumentation threadInstrumentation;
 
-    public HelperBasedStorageFees(IInstrumentation threadInstrumentation) {
+    public InstrumentationBasedStorageFees(IInstrumentation threadInstrumentation) {
         this.threadInstrumentation = threadInstrumentation;
     }
 

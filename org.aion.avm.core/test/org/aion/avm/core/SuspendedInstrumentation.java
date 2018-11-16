@@ -9,9 +9,9 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * A common pattern is to need to suspend an IInstrumentation instance installed by a common component in order to run a more specific test/call.
  * This contains the state of that IInstrumentation so the tests aren't directly accessing the thread local.
  */
-public class SuspendedHelper {
+public class SuspendedInstrumentation {
     private final IInstrumentation suspendedInstrumentation;
-    public SuspendedHelper() {
+    public SuspendedInstrumentation() {
         this.suspendedInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
         IInstrumentation.attachedThreadInstrumentation.remove();
     }
