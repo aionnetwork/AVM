@@ -10,14 +10,13 @@ import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.CommonInstrumentation;
-import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
+import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.PackageConstants;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -31,12 +30,6 @@ import java.util.function.Function;
 
 
 public class ClassShadowingTest {
-    @After
-    public void clearTestingState() {
-        Testing.countWrappedStrings = 0;
-        Testing.countWrappedClasses = 0;
-    }
-
     @Test
     public void testNewObject() throws Exception {
         SimpleAvm avm = new SimpleAvm(1_000_000L, TestObjectCreation.class);
@@ -62,11 +55,10 @@ public class ClassShadowingTest {
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(PackageConstants.kUserDotPrefix + className, transformer.apply(bytecode));
-        byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
-        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
-        CommonInstrumentation instrumentation = new CommonInstrumentation();
+        TestingInstrumentation instrumentation = new TestingInstrumentation(new CommonInstrumentation());
         InstrumentationHelpers.attachThread(instrumentation);
         IRuntimeSetup runtime = Helpers.getSetupForLoader(loader);
         InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1);
@@ -78,8 +70,8 @@ public class ClassShadowingTest {
         Assert.assertEquals(10, ret);
 
         // Note that all string constants are wrapped in <clinit>, so we should see that, but classes are lazily wrapped so that is still 0.
-        Assert.assertEquals(1, Testing.countWrappedStrings);
-        Assert.assertEquals(0, Testing.countWrappedClasses);
+        Assert.assertEquals(1, instrumentation.countWrappedStrings);
+        Assert.assertEquals(0, instrumentation.countWrappedClasses);
 
         // We can rely on our test-facing toString methods to look into what we got back.
         Object wrappedClass = clazz.getMethod(NamespaceMapper.mapMethodName("returnClass")).invoke(obj);
@@ -88,8 +80,8 @@ public class ClassShadowingTest {
         Assert.assertEquals("hello", wrappedString.toString());
 
         // Verify that we see wrapped instances.
-        Assert.assertEquals(1, Testing.countWrappedStrings);
-        Assert.assertEquals(1, Testing.countWrappedClasses);
+        Assert.assertEquals(1, instrumentation.countWrappedStrings);
+        Assert.assertEquals(1, instrumentation.countWrappedClasses);
 
         InstrumentationHelpers.popExistingStackFrame(runtime);
         InstrumentationHelpers.detachThread(instrumentation);
@@ -113,8 +105,7 @@ public class ClassShadowingTest {
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(mappedClassName, transformer.apply(bytecode));
 
-        byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
-        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
         CommonInstrumentation instrumentation = new CommonInstrumentation();
@@ -124,10 +115,6 @@ public class ClassShadowingTest {
 
         Class<?> clazz = loader.loadClass(mappedClassName);
         Object obj = clazz.getConstructor().newInstance();
-
-        //Method method = clazz.getMethod(UserClassMappingVisitor.mapMethodName("getStatic");
-        //Object ret = method.invoke(obj);
-        //Assert.assertTrue(loadedClasses.contains(PackageConstants.kShadowJavaLangDotPrefix + "Byte"));
 
         Method method2 = clazz.getMethod(NamespaceMapper.mapMethodName("localVariable"));
         Object ret2 = method2.invoke(obj);
@@ -158,8 +145,7 @@ public class ClassShadowingTest {
         classes.put(PackageConstants.kUserDotPrefix + className, transformed);
         classes.put(PackageConstants.kUserDotPrefix + innerClassName, transformer.apply(innerBytecode));
 
-        byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
-        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
         CommonInstrumentation instrumentation = new CommonInstrumentation();
@@ -231,43 +217,95 @@ public class ClassShadowingTest {
     }
 
 
-    public static class Testing {
-        public static int countWrappedClasses;
-        public static int countWrappedStrings;
-    }
-
-
-    // TODO:  Remove this class once we are completely cut-over to the IInstrumentation instances.
-    public static class HelperStub implements IRuntimeSetup {
-        public static String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
-        // We are just wrapping the Helper so we need this for attach/detach.
-        private final IRuntimeSetup realHelper = new Helper();
-
-        public static <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
-            Testing.countWrappedClasses += 1;
-            return Helper.wrapAsClass(input);
-        }
-
-        public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
-            Testing.countWrappedStrings += 1;
-            return Helper.wrapAsString(input);
-        }
-
-        @Override
-        public void attach(IInstrumentation instrumentation) {
-            this.realHelper.attach(instrumentation);
-        }
-
-        @Override
-        public void detach(IInstrumentation instrumentation) {
-            this.realHelper.detach(instrumentation);
-        }
-    }
-
     private NamespaceMapper createTestingMapper(String... userDotNameClasses) {
         // WARNING:  We are providing the class set as both the "classes only" and "classes plus interfaces" sets.
         // This works for this test but, in general, is not correct.
         Set<String> userClassDotNameSet = Set.of(userDotNameClasses);
         return new NamespaceMapper(new PreRenameClassAccessRules(userClassDotNameSet, userClassDotNameSet));
+    }
+
+
+    public static class TestingInstrumentation implements IInstrumentation {
+        private final IInstrumentation realImplementation;
+        public int countWrappedClasses;
+        public int countWrappedStrings;
+        
+        public TestingInstrumentation(IInstrumentation realImplementation) {
+            this.realImplementation = realImplementation;
+        }
+        @Override
+        public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
+            this.realImplementation.enterNewFrame(contractLoader, energyLeft, nextHashCode);
+        }
+        @Override
+        public void exitCurrentFrame() {
+            this.realImplementation.exitCurrentFrame();
+        }
+        @Override
+        public <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
+            this.countWrappedClasses += 1;
+            return this.realImplementation.wrapAsClass(input);
+        }
+        @Override
+        public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+            this.countWrappedStrings += 1;
+            return this.realImplementation.wrapAsString(input);
+        }
+        @Override
+        public org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable input) {
+            return this.realImplementation.unwrapThrowable(input);
+        }
+        @Override
+        public Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object input) {
+            return this.realImplementation.wrapAsThrowable(input);
+        }
+        @Override
+        public void chargeEnergy(long cost) throws OutOfEnergyException {
+            this.realImplementation.chargeEnergy(cost);
+        }
+        @Override
+        public long energyLeft() {
+            return this.realImplementation.energyLeft();
+        }
+        @Override
+        public int getNextHashCodeAndIncrement() {
+            return this.realImplementation.getNextHashCodeAndIncrement();
+        }
+        @Override
+        public void setAbortState() {
+            this.realImplementation.setAbortState();
+        }
+        @Override
+        public int getCurStackSize() {
+            return this.realImplementation.getCurStackSize();
+        }
+        @Override
+        public int getCurStackDepth() {
+            return this.realImplementation.getCurStackDepth();
+        }
+        @Override
+        public void enterMethod(int frameSize) {
+            this.realImplementation.enterMethod(frameSize);
+        }
+        @Override
+        public void exitMethod(int frameSize) {
+            this.realImplementation.exitMethod(frameSize);
+        }
+        @Override
+        public void enterCatchBlock(int depth, int size) {
+            this.realImplementation.enterCatchBlock(depth, size);
+        }
+        @Override
+        public int peekNextHashCode() {
+            return this.realImplementation.peekNextHashCode();
+        }
+        @Override
+        public void forceNextHashCode(int nextHashCode) {
+            this.realImplementation.forceNextHashCode(nextHashCode);
+        }
+        @Override
+        public void bootstrapOnly() {
+            this.realImplementation.bootstrapOnly();
+        }
     }
 }
