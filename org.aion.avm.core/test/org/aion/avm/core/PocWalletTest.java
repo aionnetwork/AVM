@@ -222,6 +222,10 @@ public class PocWalletTest {
             public void setAbortState() {
                 Assert.fail("Not in test");
             }
+            @Override
+            public void clearAbortState() {
+                Assert.fail("Not in test");
+            }
 
             @Override
             public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {

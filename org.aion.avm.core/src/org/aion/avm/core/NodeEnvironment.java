@@ -289,6 +289,10 @@ public class NodeEnvironment {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
+            public void clearAbortState() {
+                throw RuntimeAssertionError.unreachable("Nobody should be calling this");
+            }
+            @Override
             public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }

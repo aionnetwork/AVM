@@ -276,6 +276,10 @@ public class ClassShadowingTest {
             this.realImplementation.setAbortState();
         }
         @Override
+        public void clearAbortState() {
+            this.realImplementation.clearAbortState();
+        }
+        @Override
         public int getCurStackSize() {
             return this.realImplementation.getCurStackSize();
         }

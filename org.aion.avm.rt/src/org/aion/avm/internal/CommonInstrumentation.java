@@ -219,6 +219,8 @@ public class CommonInstrumentation implements IInstrumentation {
     public void setAbortState() {
         abortState = true;
     }
+
+    @Override
     public void clearAbortState() {
         abortState = false;
     }

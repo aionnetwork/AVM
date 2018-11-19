@@ -27,6 +27,7 @@ public interface IInstrumentation {
      */
     int getNextHashCodeAndIncrement();
     void setAbortState();
+    public void clearAbortState();
     
     int getCurStackSize();
     int getCurStackDepth();

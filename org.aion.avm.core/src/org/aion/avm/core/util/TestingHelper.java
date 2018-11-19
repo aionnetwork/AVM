@@ -129,6 +129,10 @@ public class TestingHelper implements IInstrumentation {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
     @Override
+    public void clearAbortState() {
+        throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
+    }
+    @Override
     public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
