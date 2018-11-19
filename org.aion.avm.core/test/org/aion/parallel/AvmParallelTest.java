@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -31,7 +31,7 @@ public class AvmParallelTest {
     @Test
     public void basicConcurrencyTest(){
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         byte[] usr1 = Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111");
         BigInteger expected1 = BigInteger.ZERO;
@@ -101,7 +101,7 @@ public class AvmParallelTest {
     public void cyclicWaitTest(){
 
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         byte[] usr1 = Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111");
         byte[] usr2 = Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222");
@@ -129,7 +129,7 @@ public class AvmParallelTest {
         byte[] code = JarBuilder.buildJarForMainAndClasses(TestContract.class);
 
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
 
         byte[] usr1 = Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111");

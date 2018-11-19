@@ -2,8 +2,8 @@ package org.aion.avm.core.persistence;
 
 import java.math.BigInteger;
 import org.aion.avm.core.Avm;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.InstrumentationBasedStorageFees;
-import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -36,7 +36,7 @@ public class GraphReachabilityIntegrationTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
     }
 
     @After

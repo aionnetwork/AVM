@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.CoinController;
@@ -43,7 +43,7 @@ public class DemoTest {
     @Test
     public void testWallet() {
         KernelInterface kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
         kernel.adjustBalance(pepeMinter, BigInteger.valueOf(1_000_000_000L));
         kernel.adjustBalance(deployer, BigInteger.valueOf(1_000_000_000L));
         kernel.adjustBalance(owner1, BigInteger.valueOf(1_000_000_000L));

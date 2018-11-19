@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -249,7 +250,7 @@ public class AvmCLI {
                 // Run them in a single batch.
                 File storageFile = new File(invocation.storagePath);
                 KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
-                Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+                Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
                 SimpleFuture<TransactionResult>[] futures = avm.run(transactions);
                 TransactionResult[] results = new TransactionResult[futures.length];
                 for (int i = 0; i < futures.length; ++i) {

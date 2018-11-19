@@ -69,7 +69,7 @@ public class BasicPerfTest {
         public void deploy(byte[] jar, byte[] arguments) {
             // Deploy.
             this.kernel = new KernelInterfaceImpl();
-            this.avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+            this.avm = CommonAvmFactory.buildAvmInstance(kernel);
             Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
             Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);

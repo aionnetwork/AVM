@@ -55,7 +55,7 @@ public class AionBufferPerfTest {
         System.out.println(">> Energy measurements for AionBuffer\n>>");
         byte[] args;
         KernelInterface kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         TransactionResult deployRes = deploy(kernel, avm, buildBufferPerfJar());
         byte[] contract = deployRes.getReturnData();

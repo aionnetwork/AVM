@@ -15,7 +15,8 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
-import org.aion.avm.internal.CommonInstrumentation;
+import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IInstrumentationFactory;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.parallel.AddressResourceMonitor;
@@ -34,6 +35,7 @@ public class AvmImpl implements AvmInternal {
 
     private static final int NUM_EXECUTORS = 4;
 
+    private final IInstrumentationFactory instrumentationFactory;
     private KernelInterface kernel;
 
     // Long-lived state which is book-ended by the startup/shutdown calls.
@@ -44,7 +46,8 @@ public class AvmImpl implements AvmInternal {
     // Short-lived state which is reset for each batch of transaction request.
     private AddressResourceMonitor resourceMonitor;
 
-    public AvmImpl(KernelInterface kernel) {
+    public AvmImpl(IInstrumentationFactory instrumentationFactory, KernelInterface kernel) {
+        this.instrumentationFactory = instrumentationFactory;
         this.kernel = kernel;
     }
 
@@ -56,8 +59,7 @@ public class AvmImpl implements AvmInternal {
 
         @Override
         public void run() {
-            // TODO:  This should actually come from a factory passed in to the AVM (or otherwise from somewhere top-level).
-            CommonInstrumentation instrumentation = new CommonInstrumentation();
+            IInstrumentation instrumentation = AvmImpl.this.instrumentationFactory.createInstrumentation();
             InstrumentationHelpers.attachThread(instrumentation);
             try {
                 // Run as long as we have something to do (null means shutdown).
@@ -98,6 +100,7 @@ public class AvmImpl implements AvmInternal {
                 RuntimeAssertionError.unexpected(t);
             } finally {
                 InstrumentationHelpers.detachThread(instrumentation);
+                AvmImpl.this.instrumentationFactory.destroyInstrumentation(instrumentation);
             }
         }
 

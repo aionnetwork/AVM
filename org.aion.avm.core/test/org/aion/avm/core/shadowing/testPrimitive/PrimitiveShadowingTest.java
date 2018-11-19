@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -26,7 +26,7 @@ public class PrimitiveShadowingTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
         
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();

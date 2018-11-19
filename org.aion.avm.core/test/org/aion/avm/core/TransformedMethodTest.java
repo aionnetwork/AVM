@@ -31,7 +31,7 @@ public class TransformedMethodTest {
     private static Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
     private static byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private static KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private static Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+    private static Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
     private static Address dappAddress;
 
     @BeforeClass

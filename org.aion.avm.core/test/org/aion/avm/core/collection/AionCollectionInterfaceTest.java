@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -54,7 +54,7 @@ public class AionCollectionInterfaceTest {
     public void testList() {
         byte[] args;
         KernelInterface kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         TransactionResult deployRes = deploy(kernel, avm, buildJar());
         byte[] contract = deployRes.getReturnData();
@@ -69,7 +69,7 @@ public class AionCollectionInterfaceTest {
     public void testSet() {
         byte[] args;
         KernelInterface kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         TransactionResult deployRes = deploy(kernel, avm, buildJar());
         byte[] contract = deployRes.getReturnData();
@@ -84,7 +84,7 @@ public class AionCollectionInterfaceTest {
     public void testMap() {
         byte[] args;
         KernelInterface kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         TransactionResult deployRes = deploy(kernel, avm, buildJar());
         byte[] contract = deployRes.getReturnData();

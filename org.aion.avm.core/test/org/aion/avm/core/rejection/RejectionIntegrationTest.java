@@ -4,7 +4,7 @@ import java.math.BigInteger;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -32,7 +32,7 @@ public class RejectionIntegrationTest {
     @BeforeClass
     public static void setupClass() {
         kernel = new KernelInterfaceImpl();
-        avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        avm = CommonAvmFactory.buildAvmInstance(kernel);
     }
 
     @AfterClass

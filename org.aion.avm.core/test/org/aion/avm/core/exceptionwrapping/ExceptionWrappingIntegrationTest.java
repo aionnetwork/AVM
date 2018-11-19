@@ -4,8 +4,7 @@ import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.SuspendedInstrumentation;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -28,7 +27,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
         
         // Deploy.
         long energyLimit = 1_000_000l;

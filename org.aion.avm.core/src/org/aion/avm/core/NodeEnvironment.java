@@ -249,11 +249,12 @@ public class NodeEnvironment {
      * NOTE:  This is only in the NodeEnvironment since it is a long-lived singleton but this method has no strong connection to it so it
      * could be moved in the future.
      *
+     * @param instrumentationFactory The factory to build IInstrumentation instances for the AVM's threads.
      * @param kernel The kernel interface exposed by the consumer.
      * @return The long-lived AVM instance.
      */
-    public Avm buildAvmInstance(KernelInterface kernel) {
-        AvmImpl avm = new AvmImpl(kernel);
+    public Avm buildAvmInstance(IInstrumentationFactory instrumentationFactory, KernelInterface kernel) {
+        AvmImpl avm = new AvmImpl(instrumentationFactory, kernel);
         avm.startup();
         return avm;
     }

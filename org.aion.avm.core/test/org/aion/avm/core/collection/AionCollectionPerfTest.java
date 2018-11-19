@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -77,7 +77,7 @@ public class AionCollectionPerfTest {
         System.out.println(">> Energy measurement for AionList");
         byte[] args;
         KernelInterface kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         TransactionResult deployRes = deploy(kernel, avm, buildListPerfJar());
         byte[] contract = deployRes.getReturnData();
@@ -112,7 +112,7 @@ public class AionCollectionPerfTest {
         System.out.println(">> Energy measurement for AionSet");
         byte[] args;
         KernelInterface kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         TransactionResult deployRes = deploy(kernel, avm, buildSetPerfJar());
         byte[] contract = deployRes.getReturnData();
@@ -163,7 +163,7 @@ public class AionCollectionPerfTest {
         System.out.println(">> Energy measurement for AionMap");
         byte[] args;
         KernelInterface kernel = new KernelInterfaceImpl();
-        Avm avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         TransactionResult deployRes = deploy(kernel, avm, buildMapPerfJar());
         byte[] contract = deployRes.getReturnData();

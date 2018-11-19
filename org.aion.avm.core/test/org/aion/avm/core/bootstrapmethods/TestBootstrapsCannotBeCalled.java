@@ -5,7 +5,7 @@ import static junit.framework.TestCase.assertTrue;
 import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -29,7 +29,7 @@ public class TestBootstrapsCannotBeCalled {
     @Before
     public void setup() {
         kernel = new KernelInterfaceImpl();
-        avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        avm = CommonAvmFactory.buildAvmInstance(kernel);
         block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
         deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     }

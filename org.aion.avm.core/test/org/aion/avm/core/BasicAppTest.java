@@ -46,7 +46,7 @@ public class BasicAppTest {
         byte[] txData = new CodeAndArguments(basicAppTestJar, null).encodeToBytes();
 
         this.kernel = new KernelInterfaceImpl();
-        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
         Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         dappAddr = avm.run(new TransactionContext[] {context})[0].get().getReturnData();

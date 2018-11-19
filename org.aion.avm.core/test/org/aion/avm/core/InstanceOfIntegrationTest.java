@@ -36,7 +36,7 @@ public class InstanceOfIntegrationTest {
     @BeforeClass
     public static void setupClass() throws Exception {
         kernel = new KernelInterfaceImpl();
-        avm = NodeEnvironment.singleton.buildAvmInstance(kernel);
+        avm = CommonAvmFactory.buildAvmInstance(kernel);
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(InstanceOfIntegrationTestTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();

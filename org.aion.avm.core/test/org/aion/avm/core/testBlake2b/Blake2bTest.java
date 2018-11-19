@@ -3,7 +3,7 @@ package org.aion.avm.core.testBlake2b;
 import java.math.BigInteger;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
-import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -30,7 +30,7 @@ public class Blake2bTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, Blake2b.class);
         byte[] arguments = null;

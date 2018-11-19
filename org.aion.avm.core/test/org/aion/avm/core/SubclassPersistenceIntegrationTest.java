@@ -35,7 +35,7 @@ public class SubclassPersistenceIntegrationTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = NodeEnvironment.singleton.buildAvmInstance(this.kernel);
+        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
     }
 
     @After
