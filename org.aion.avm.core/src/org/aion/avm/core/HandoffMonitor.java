@@ -71,8 +71,6 @@ public class HandoffMonitor {
     public synchronized TransactionResult blockingConsumeResult(int index) {
         // Wait until we have the result or something went wrong.
         while ((null == this.outgoingResults[index]) && (null == this.backgroundThrowable)) {
-            // Throw an exception, if there is one.
-            handleThrowable();
             // Otherwise, wait until state changes.
             try {
                 this.wait();
@@ -81,6 +79,9 @@ public class HandoffMonitor {
                 RuntimeAssertionError.unexpected(e);
             }
         }
+        
+        // Throw an exception, if there is one.
+        handleThrowable();
         
         // Consume the result and return it.
         TransactionResult result = this.outgoingResults[index];

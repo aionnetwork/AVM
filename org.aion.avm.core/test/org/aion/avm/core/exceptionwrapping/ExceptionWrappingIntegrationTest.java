@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
+import org.aion.avm.core.AvmFailedException;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.MockFailureInstrumentationFactory;
 import org.aion.avm.core.NodeEnvironment;
@@ -98,6 +99,44 @@ public class ExceptionWrappingIntegrationTest {
         Assert.assertEquals(TransactionResult.Code.FAILED_EXCEPTION, callStaticStatus(block, kernel, avm, contractAddr, "storeSystem"));
         
         avm.shutdown();
+    }
+
+    @Test
+    public void testOutOfMemoryError() throws Exception {
+        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(AttackExceptionHandlingTarget.class);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        KernelInterface kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(100, () -> {throw new OutOfMemoryError();}), kernel);
+        
+        // Deploy.
+        long energyLimit = 1_000_000l;
+        long energyPrice = 1l;
+        Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, 0L, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+        
+        // The next call will spin in a loop, thus triggering our failure.
+        // (we expect this failure to happen when we try to get() the response from the future).
+        boolean didFail = false;
+        try {
+            callStaticStatus(block, kernel, avm, contractAddr, "");
+        } catch (AvmFailedException e) {
+            // Expected.
+            didFail = true;
+        }
+        Assert.assertTrue(didFail);
+        
+        // The shutdown will actually perform the shutdown but will throw the exception, afterward (since it wants to ensure that it was observed).
+        didFail = false;
+        try {
+            avm.shutdown();
+        } catch (AvmFailedException e) {
+            // Expected.
+            didFail = true;
+        }
+        Assert.assertTrue(didFail);
     }
 
 

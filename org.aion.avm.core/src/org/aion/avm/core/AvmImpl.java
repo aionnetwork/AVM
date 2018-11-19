@@ -18,6 +18,7 @@ import org.aion.avm.core.util.SoftCache;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IInstrumentationFactory;
 import org.aion.avm.internal.InstrumentationHelpers;
+import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
@@ -45,6 +46,9 @@ public class AvmImpl implements AvmInternal {
 
     // Short-lived state which is reset for each batch of transaction request.
     private AddressResourceMonitor resourceMonitor;
+
+    // Used in the case of a fatal JvmError in the background threads.  A shutdown() is the only option from this point.
+    private AvmFailedException backgroundFatalError;
 
     public AvmImpl(IInstrumentationFactory instrumentationFactory, KernelInterface kernel) {
         this.instrumentationFactory = instrumentationFactory;
@@ -93,7 +97,15 @@ public class AvmImpl implements AvmInternal {
 
                     incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
                 }
+            } catch (JvmError e) {
+                // This is a fatal error the AVM cannot generally happen so request an asynchronous shutdown.
+                // We set the backgroundException without lock since any concurrently-written exception instance is equally valid.
+                AvmFailedException backgroundFatalError = new AvmFailedException(e.getCause());
+                AvmImpl.this.backgroundFatalError = backgroundFatalError;
+                AvmImpl.this.handoff.setBackgroundThrowable(backgroundFatalError);
             } catch (Throwable t) {
+                // Note that this case is primarily only relevant for unit tests or other new development which could cause internal exceptions.
+                // Without this hand-off to the foreground thread, these exceptions would cause silent failures.
                 // Uncaught exception - this is fatal but we need to communicate it to the outside.
                 AvmImpl.this.handoff.setBackgroundThrowable(t);
                 // If the throwable makes it all the way to here, we can't handle it.
@@ -128,6 +140,9 @@ public class AvmImpl implements AvmInternal {
 
     @Override
     public SimpleFuture<TransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException {
+        if (null != this.backgroundFatalError) {
+            throw this.backgroundFatalError;
+        }
         // Clear the states of resources
         this.resourceMonitor.clear();
 
@@ -205,6 +220,9 @@ public class AvmImpl implements AvmInternal {
 
     @Override
     public void setKernel(KernelInterface kernel) {
+        if (null != this.backgroundFatalError) {
+            throw this.backgroundFatalError;
+        }
         this.kernel = kernel;
     }
 
@@ -215,10 +233,18 @@ public class AvmImpl implements AvmInternal {
         RuntimeAssertionError.assertTrue(this == AvmImpl.currentAvm);
         AvmImpl.currentAvm = null;
         this.hotCache = null;
+        
+        // Note that we don't want to hide the background exception, if one happened, but we do want to complete the shutdown, so we do this at the end.
+        if (null != this.backgroundFatalError) {
+            throw this.backgroundFatalError;
+        }
     }
 
     @Override
     public TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, TransactionContext context) {
+        if (null != this.backgroundFatalError) {
+            throw this.backgroundFatalError;
+        }
         return commonInvoke(parentKernel, task, context);
     }
 
@@ -388,6 +414,9 @@ public class AvmImpl implements AvmInternal {
 
     @Override
     public AddressResourceMonitor getResourceMonitor() {
+        if (null != this.backgroundFatalError) {
+            throw this.backgroundFatalError;
+        }
         return resourceMonitor;
     }
 

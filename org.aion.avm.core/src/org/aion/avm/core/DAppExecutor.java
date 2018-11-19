@@ -138,6 +138,10 @@ public class DAppExecutor {
             }
             result.setStatusCode(TransactionResult.Code.FAILED);
             result.setEnergyUsed(ctx.getEnergyLimit());
+        } catch (JvmError e) {
+            // These are cases which we know we can't handle and have decided to handle by safely stopping the AVM instance so
+            // re-throw this as the AvmImpl top-level loop will commute it into an asynchronous shutdown.
+            throw e;
         } catch (Throwable e) {
             e.printStackTrace();
             System.exit(-1);
