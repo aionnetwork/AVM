@@ -9,6 +9,7 @@ import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.miscvisitors.ClinitStrippingVisitor;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
 import org.aion.avm.core.miscvisitors.InterfaceFieldMappingVisitor;
+import org.aion.avm.core.miscvisitors.LoopingExceptionStrippingVisitor;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.StrictFPVisitor;
@@ -349,6 +350,7 @@ public class DAppCreator {
             int parsingOptions = ClassReader.SKIP_DEBUG;
             byte[] bytecode = new ClassToolchain.Builder(inputClasses.get(name), parsingOptions)
                     .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper))
+                    .addNextVisitor(new LoopingExceptionStrippingVisitor())
                     .addNextVisitor(new UserClassMappingVisitor(namespaceMapper))
                     // (note that we need to pass a bogus HierarchyTreeBuilder into the class writer - can be empty, but not null)
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, new HierarchyTreeBuilder()))
