@@ -14,13 +14,13 @@ public class AttackExceptionHandlingTarget {
         byte[] input = BlockchainRuntime.getData();
         byte[] result = new byte[1];
         try {
-            // We want to synthetically add some bulk to this method to force the bizarre finally pattern seen in issue-314.
-            // The overlapping finally range isn't added for all finally blocks but adding extra logic here seems to make it happen.
+            // See if we should invoke ourselves.
             if (input.length > 0) {
-                runLoopForever();
-                // These 2 variables seem to be required, in order to observe issue-314.
-                BigInteger value = null;
-                byte[] data = null;
+                // Yes, call ourselves with an empty array.
+                BigInteger value = BigInteger.ZERO;
+                byte[] data = new byte[0];
+                long energyLimit = 500_000L;
+                BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
             } else {
                 // No, just run the loop, ourselves.
                 runLoopForever();

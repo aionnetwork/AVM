@@ -228,13 +228,23 @@ public class AvmImpl implements AvmInternal {
 
     @Override
     public void shutdown() {
-        this.handoff.stopAndWaitForShutdown();
+        RuntimeException failureDuringShutdown = null;
+        try {
+            this.handoff.stopAndWaitForShutdown();
+        } catch (RuntimeException t) {
+            // Note that this is usually the same instance as backgroundFatalError can fail for other reasons.  Catch this, complete
+            // the shutdown, then re-throw it.
+            failureDuringShutdown = t;
+        }
         this.handoff = null;
         RuntimeAssertionError.assertTrue(this == AvmImpl.currentAvm);
         AvmImpl.currentAvm = null;
         this.hotCache = null;
         
         // Note that we don't want to hide the background exception, if one happened, but we do want to complete the shutdown, so we do this at the end.
+        if (null != failureDuringShutdown) {
+            throw failureDuringShutdown;
+        }
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }

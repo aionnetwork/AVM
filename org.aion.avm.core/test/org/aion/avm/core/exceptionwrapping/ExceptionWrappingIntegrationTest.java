@@ -121,6 +121,44 @@ public class ExceptionWrappingIntegrationTest {
         // (we expect this failure to happen when we try to get() the response from the future).
         boolean didFail = false;
         try {
+            callStaticStatus(block, kernel, avm, contractAddr, null);
+        } catch (AvmFailedException e) {
+            // Expected.
+            didFail = true;
+        }
+        Assert.assertTrue(didFail);
+        
+        // The shutdown will actually perform the shutdown but will throw the exception, afterward (since it wants to ensure that it was observed).
+        didFail = false;
+        try {
+            avm.shutdown();
+        } catch (AvmFailedException e) {
+            // Expected.
+            didFail = true;
+        }
+        Assert.assertTrue(didFail);
+    }
+
+    @Test
+    public void testOutOfMemoryErrorReentrant() throws Exception {
+        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(AttackExceptionHandlingTarget.class);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        KernelInterface kernel = new KernelInterfaceImpl();
+        Avm avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(200, () -> {throw new OutOfMemoryError();}), kernel);
+        
+        // Deploy.
+        long energyLimit = 1_000_000l;
+        long energyPrice = 1l;
+        Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, 0L, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+        
+        // The next call will spin in a loop, thus triggering our failure.
+        // (we expect this failure to happen when we try to get() the response from the future).
+        boolean didFail = false;
+        try {
             callStaticStatus(block, kernel, avm, contractAddr, "");
         } catch (AvmFailedException e) {
             // Expected.
@@ -154,7 +192,9 @@ public class ExceptionWrappingIntegrationTest {
     private TransactionResult commonCallStatic(Block block, KernelInterface kernel, Avm avm, Address contractAddr, String methodName) {
         byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
-        byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
+        byte[] argData = (null != methodName)
+                ? ABIEncoder.encodeMethodArguments(methodName)
+                : new byte[0];
         Transaction call = Transaction.call(from, contractAddr.unwrap(), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
         return avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
     }

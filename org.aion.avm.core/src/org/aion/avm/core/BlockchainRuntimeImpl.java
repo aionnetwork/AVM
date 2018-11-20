@@ -309,14 +309,17 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         avm.getResourceMonitor().acquire(internalCTX.getAddress(), task);
 
         // execute the internal transaction
-        TransactionResult newResult = this.avm.runInternalTransaction(this.kernel, this.task,
-                internalCTX);
-
-        // merge the results
-        result.merge(newResult);
-
-        // Re-attach.
-        InstrumentationHelpers.returnToExecutingFrame(this.thisDAppSetup);
+        TransactionResult newResult = null;
+        try {
+            newResult = this.avm.runInternalTransaction(this.kernel, this.task, internalCTX);
+            
+            // merge the results
+            result.merge(newResult);
+        } finally {
+            // Re-attach.
+            InstrumentationHelpers.returnToExecutingFrame(this.thisDAppSetup);
+        }
+        
         if (null != this.reentrantState) {
             // Update the next hashcode counter, in case this was a reentrant call and it was changed.
             currentThreadInstrumentation.forceNextHashCode(this.reentrantState.getEnvironment().nextHashCode);
