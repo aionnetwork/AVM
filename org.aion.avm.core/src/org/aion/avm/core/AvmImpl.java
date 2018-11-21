@@ -336,7 +336,8 @@ public class AvmImpl implements AvmInternal {
 
                 LoadedDApp dapp;
                 // The reentrant cache is obviously the first priority.
-                if (null != stateToResume) {
+                // (note that we also want to check the kernel we were given to make sure that this DApp hasn't been deleted since we put it in the cache.
+                if ((null != stateToResume) && (null != thisTransactionKernel.getCode(dappAddress))) {
                     dapp = stateToResume.dApp;
                     // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
                     DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result);

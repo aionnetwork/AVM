@@ -194,7 +194,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         byte[] contractAddr = ctx.getAddress();
 
-        // Acquire beneficiary address, the address of current contract is already lock at this stage.
+        // Acquire beneficiary address, the address of current contract is already locked at this stage.
         this.avm.getResourceMonitor().acquire(beneficiary.unwrap(), this.task);
 
         // Value transfer
@@ -203,7 +203,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         this.kernel.adjustBalance(beneficiary.unwrap(), balanceToTransfer);
 
         // Delete Account
-        // TODO: is it safe to delete here?
+        // Note that the account being deleted means it will still run but no DApp which sees this delete
+        // (the current one and any callers, or any later transactions, assuming this commits) will be able
+        // to invoke it (the code will be missing).
         this.kernel.deleteAccount(contractAddr);
     }
 

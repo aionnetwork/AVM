@@ -108,12 +108,11 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public byte[] getStorage(byte[] address, byte[] key) {
-        byte[] result = null;
-        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
-            result = this.writeCache.getStorage(address, key);
-            if (null == result) {
-                result = this.parent.getStorage(address, key);
-            }
+        // We issue these requests from the given address, only, so it is safe for us to decide that we permit reads after deletes.
+        // The direct reason why this happens is that DApps which are already running are permitted to continue running but may need to lazyLoad.
+        byte[] result = this.writeCache.getStorage(address, key);
+        if (null == result) {
+            result = this.parent.getStorage(address, key);
         }
         return result;
     }
