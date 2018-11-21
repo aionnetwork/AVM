@@ -55,6 +55,8 @@ public class KeyValueNode implements IRegularNode {
     public SerializedRepresentation loadOriginalData() {
         if ((null == this.originalRepresentation) && this.isLoadedFromStorage) {
             byte[] data = this.parentGraph.loadStorageForInstance(this.instanceId);
+            // We don't expect to fail to find this (why did we think it was here in the first place?).
+            RuntimeAssertionError.assertTrue(null != data);
             this.originalRepresentation = KeyValueCodec.decode(this.parentGraph, data);
         }
         return this.originalRepresentation;

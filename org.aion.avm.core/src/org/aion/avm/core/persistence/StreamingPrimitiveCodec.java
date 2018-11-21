@@ -2,6 +2,8 @@ package org.aion.avm.core.persistence;
 
 import java.io.ByteArrayOutputStream;
 
+import org.aion.avm.internal.RuntimeAssertionError;
+
 
 /**
  * Responsible for the low-level reading/writing of primitive data from/into byte streams or arrays.
@@ -81,6 +83,8 @@ public class StreamingPrimitiveCodec {
         private int cursor;
         
         public Decoder(byte[] bytesToDecode) {
+            // Someone should have realized that something was missing before they got here.
+            RuntimeAssertionError.assertTrue(null != bytesToDecode);
             this.decoding = bytesToDecode;
             this.cursor = 0;
         }
