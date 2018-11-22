@@ -10,6 +10,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.StorageWalker;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.cli.ArgumentParser.Action;
 import org.aion.kernel.*;
 
 import java.io.ByteArrayOutputStream;
@@ -165,7 +166,7 @@ public class AvmCLI {
         internalMain(env, args);
     }
 
-    static public void main(String[] args){
+    static public void main(String[] args) {
         IEnvironment env = new IEnvironment() {
             @Override
             public RuntimeException fail(String message) {
@@ -194,11 +195,15 @@ public class AvmCLI {
 
     private static void internalMain(IEnvironment env, String[] args) {
         ArgumentParser.Invocation invocation = ArgumentParser.parseArgs(args);
+
         if (null == invocation.errorString) {
             // There must be at least one command or there should have been a parse error (usually just defaulting to usage).
             RuntimeAssertionError.assertTrue(invocation.commands.size() > 0);
-            // This logging line is largely just for test verification so it might be removed in the future.
-            env.logLine("Running block with " + invocation.commands.size() + " transactions");
+
+            if (!invocation.commands.get(0).action.equals(Action.BYTES) && !invocation.commands.get(0).action.equals(Action.ENCODE_CALL)) {
+                // This logging line is largely just for test verification so it might be removed in the future.
+                env.logLine("Running block with " + invocation.commands.size() + " transactions");
+            }
             
             // Do the thing.
             // Before we run any command, make sure that the specified storage directory exists.
@@ -219,6 +224,22 @@ public class AvmCLI {
                     break;
                 case OPEN:
                     openAccount(env, invocation.storagePath, Helpers.hexStringToBytes(command.contractAddress));
+                    break;
+                case BYTES:
+                    try {
+                        Path path = Paths.get(command.jarPath);
+                        byte[] jar = Files.readAllBytes(path);
+                        System.out.println(Helpers.bytesToHexString(
+                            new CodeAndArguments(jar, new byte[0]).encodeToBytes()));
+                    } catch (IOException e) {
+                        System.out.println(e.toString());
+                        System.exit(1);
+                    }
+                    break;
+                case ENCODE_CALL:
+                    Object[] callArgs = new Object[command.args.size()];
+                    command.args.toArray(callArgs);
+                    System.out.println(Helpers.bytesToHexString(ABIEncoder.encodeMethodArguments(command.method, callArgs)));
                     break;
                 default:
                     throw new AssertionError("Unknown option");

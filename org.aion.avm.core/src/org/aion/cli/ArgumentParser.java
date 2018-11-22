@@ -101,6 +101,8 @@ public class ArgumentParser {
         DEPLOY(matches("deploy"), true, (self, jar) -> {appendNewCommand(Action.DEPLOY, true).jarPath = jar; self.runOnNested(); return null;}, InnerArg.SENDER),
         CALL(matches("call"), true, (self, contract) -> {appendNewCommand(Action.CALL, true).contractAddress = contract; self.runOnNested(); return null;}, InnerArg.SENDER, InnerArg.ENERGY_LIMIT, InnerArg.METHOD, InnerArg.ARGS),
         EXPLORE(matches("explore"), true, (self, contract) -> {appendNewCommand(Action.EXPLORE, false).contractAddress = contract; self.runOnNested(); return null;}),
+        BYTES(matches("bytes"), true, (self, jar) -> {appendNewCommand(Action.BYTES, false).jarPath = jar; self.runOnNested(); return null;}),
+        ENCODE_CALL(matches("encode-call"), true, (self, contract) -> {appendNewCommand(Action.ENCODE_CALL, false).contractAddress = contract; self.runOnNested(); return null;}, InnerArg.METHOD, InnerArg.ARGS)
         ;
         
         private final List<String> matches;
@@ -150,6 +152,8 @@ public class ArgumentParser {
         DEPLOY,
         CALL,
         EXPLORE,
+        BYTES,
+        ENCODE_CALL
         ;
     }
 
