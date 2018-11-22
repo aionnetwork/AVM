@@ -122,7 +122,7 @@ public class AvmClassLoader extends ClassLoader {
         }
 
         if (null == result) {
-            throw new ClassNotFoundException();
+            throw new ClassNotFoundException(name);
         }
         return result;
     }
