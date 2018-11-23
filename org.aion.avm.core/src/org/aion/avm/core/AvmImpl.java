@@ -171,9 +171,15 @@ public class AvmImpl implements AvmInternal {
         if ((ctx.getValue().compareTo(BigInteger.ZERO) < 0) || (ctx.getEnergyPrice() <= 0)) {
             error = TransactionResult.Code.REJECTED;
         }
-
-        if (!taskTransactionalKernel.isValidEnergyLimit(ctx.getEnergyLimit())) {
-            error = TransactionResult.Code.REJECTED;
+        
+        if (ctx.isCreate()) {
+            if (!taskTransactionalKernel.isValidEnergyLimitForCreate(ctx.getEnergyLimit())) {
+                error = TransactionResult.Code.REJECTED;
+            }
+        } else {
+            if (!taskTransactionalKernel.isValidEnergyLimitForNonCreate(ctx.getEnergyLimit())) {
+                error = TransactionResult.Code.REJECTED;
+            }
         }
 
         // Acquire both sender and target resources

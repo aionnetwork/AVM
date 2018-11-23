@@ -196,7 +196,12 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public boolean isValidEnergyLimit(long energyLimit) {
+    public boolean isValidEnergyLimitForCreate(long energyLimit) {
+        return energyLimit > 0;
+    }
+
+    @Override
+    public boolean isValidEnergyLimitForNonCreate(long energyLimit) {
         return energyLimit > 0;
     }
 

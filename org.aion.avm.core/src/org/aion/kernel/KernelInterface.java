@@ -117,7 +117,8 @@ public interface KernelInterface {
     boolean accountBalanceIsAtLeast(byte[] address, BigInteger amount);
 
     /**
-     * Returns {@code true} if, and only if, the specified energy limit is a valid quantity.
+     * Returns {@code true} if, and only if, the specified energy limit is a valid quantity for a
+     * contract creation transaction.
      *
      * This is a kernel-level concept, and the correct energy rules will be injected into the vm by
      * the kernel-side implementation of this interface.
@@ -128,6 +129,21 @@ public interface KernelInterface {
      * @param energyLimit The energy limit to validate.
      * @return True if the energy limit is a valid quantity.
      */
-    boolean isValidEnergyLimit(long energyLimit);
+    boolean isValidEnergyLimitForCreate(long energyLimit);
+
+    /**
+     * Returns {@code true} if, and only if, the specified energy limit is a valid quantity for a
+     * transaction that is not for contract creation.
+     *
+     * This is a kernel-level concept, and the correct energy rules will be injected into the vm by
+     * the kernel-side implementation of this interface.
+     *
+     * This check should only be performed in exactly ONE place, immediately before an external
+     * transaction is actually run.
+     *
+     * @param energyLimit The energy limit to validate.
+     * @return True if the energy limit is a valid quantity.
+     */
+    boolean isValidEnergyLimitForNonCreate(long energyLimit);
 
 }
