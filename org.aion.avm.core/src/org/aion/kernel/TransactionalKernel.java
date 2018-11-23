@@ -185,4 +185,19 @@ public class TransactionalKernel implements KernelInterface {
         writeLog.add(write);
     }
 
+    @Override
+    public boolean accountNonceEquals(byte[] address, long nonce) {
+        return nonce == this.getNonce(address);
+    }
+
+    @Override
+    public boolean accountBalanceIsAtLeast(byte[] address, BigInteger amount) {
+        return this.getBalance(address).compareTo(amount) >= 0;
+    }
+
+    @Override
+    public boolean isValidEnergyLimit(long energyLimit) {
+        return energyLimit > 0;
+    }
+
 }

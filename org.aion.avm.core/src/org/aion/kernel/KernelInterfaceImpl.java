@@ -1,9 +1,6 @@
 package org.aion.kernel;
 
 import java.math.BigInteger;
-import java.util.HashSet;
-import java.util.Set;
-import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 import org.aion.data.DirectoryBackedDataStore;
 import org.aion.data.IAccountStore;
@@ -118,6 +115,21 @@ public class KernelInterfaceImpl implements KernelInterface {
         IAccountStore account = lazyCreateAccount(address);
         long start = account.getNonce();
         account.setNonce(start + 1);
+    }
+
+    @Override
+    public boolean accountNonceEquals(byte[] address, long nonce) {
+        return nonce == this.getNonce(address);
+    }
+
+    @Override
+    public boolean accountBalanceIsAtLeast(byte[] address, BigInteger amount) {
+        return this.getBalance(address).compareTo(amount) >= 0;
+    }
+
+    @Override
+    public boolean isValidEnergyLimit(long energyLimit) {
+        return energyLimit > 0;
     }
 
     private IAccountStore lazyCreateAccount(byte[] address) {

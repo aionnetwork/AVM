@@ -163,16 +163,18 @@ public class AvmImpl implements AvmInternal {
         TransactionContext ctx = task.getExternalTransactionCtx();
         RuntimeAssertionError.assertTrue(ctx != null);
 
-        // value/energyPrice/energyLimit sanity check
-        if (ctx.getValue().compareTo(BigInteger.ZERO) < 0 || ctx.getEnergyPrice() <= 0 || ctx.getEnergyLimit() < ctx.getBasicCost()) {
-            // Instead of charging the tx basic cost at the outer level, we moved the billing logic into "run".
-            // The min energyLimit check here is to avoid spams
-            error = TransactionResult.Code.REJECTED;
-        }
-
         // All IO will be performed on an per task transactional kernel so we can abort the whole task in one go
         TransactionalKernel taskTransactionalKernel = new TransactionalKernel(this.kernel);
         task.setTaskKernel(taskTransactionalKernel);
+
+        // value/energyPrice/energyLimit sanity check
+        if ((ctx.getValue().compareTo(BigInteger.ZERO) < 0) || (ctx.getEnergyPrice() <= 0)) {
+            error = TransactionResult.Code.REJECTED;
+        }
+
+        if (!taskTransactionalKernel.isValidEnergyLimit(ctx.getEnergyLimit())) {
+            error = TransactionResult.Code.REJECTED;
+        }
 
         // Acquire both sender and target resources
         byte[] sender = ctx.getCaller();
@@ -182,7 +184,7 @@ public class AvmImpl implements AvmInternal {
         this.resourceMonitor.acquire(target, task);
 
         // nonce check
-        if (taskTransactionalKernel.getNonce(sender) != ctx.getNonce()) {
+        if (!taskTransactionalKernel.accountNonceEquals(sender, ctx.getNonce())) {
             error = TransactionResult.Code.REJECTED_INVALID_NONCE;
         }
 
@@ -266,9 +268,9 @@ public class AvmImpl implements AvmInternal {
         // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
         byte[] sender = ctx.getCaller();
-        BigInteger senderBalance = parentKernel.getBalance(sender);
-        if (ctx.getValue().add(BigInteger.valueOf(ctx.getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getEnergyPrice())))
-                .compareTo(senderBalance) > 0) {
+
+        BigInteger transactionCost = BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEnergyPrice()).add(ctx.getValue());
+        if (!parentKernel.accountBalanceIsAtLeast(sender, transactionCost)) {
             error = TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
         }
 

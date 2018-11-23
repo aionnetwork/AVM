@@ -96,4 +96,38 @@ public interface KernelInterface {
      */
     void incrementNonce(byte[] address);
 
+    /**
+     * Returns {@code true} if, and only if, the specified address has a nonce equal to the provided
+     * nonce.
+     *
+     * @param address The address whose nonce is to be compared.
+     * @param nonce The nonce to compare against the account's nonce.
+     * @return True if the nonce of the address equals the given nonce.
+     */
+    boolean accountNonceEquals(byte[] address, long nonce);
+
+    /**
+     * Returns {@code true} if, and only if, the specified address has funds that are greater than
+     * or equal to the provided amount.
+     *
+     * @param address The address whose balance is to be compared.
+     * @param amount The amount to compare against the account's balance.
+     * @return True if the balance of the account is {@code >=} amount.
+     */
+    boolean accountBalanceIsAtLeast(byte[] address, BigInteger amount);
+
+    /**
+     * Returns {@code true} if, and only if, the specified energy limit is a valid quantity.
+     *
+     * This is a kernel-level concept, and the correct energy rules will be injected into the vm by
+     * the kernel-side implementation of this interface.
+     *
+     * This check should only be performed in exactly ONE place, immediately before an external
+     * transaction is actually run.
+     *
+     * @param energyLimit The energy limit to validate.
+     * @return True if the energy limit is a valid quantity.
+     */
+    boolean isValidEnergyLimit(long energyLimit);
+
 }
