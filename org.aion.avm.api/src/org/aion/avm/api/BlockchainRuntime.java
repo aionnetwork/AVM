@@ -288,6 +288,28 @@ public final class BlockchainRuntime {
     }
 
     /**
+     * Calculates the sha256 digest of the input data.
+     *
+     * @param data the input data
+     * @return the hash digest
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. data is NULL.
+     */
+    public static byte[] sha256(byte[] data) throws IllegalArgumentException {
+        return null;
+    }
+
+    /**
+     * Calculates the keccak256 digest of the input data.
+     *
+     * @param data the input data
+     * @return the hash digest
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. data is NULL.
+     */
+    public static byte[] keccak256(byte[] data) throws IllegalArgumentException {
+        return null;
+    }
+
+    /**
      * Stop the current execution and roll back all state changes.
      * <p>
      * the remaining energy will be refunded.

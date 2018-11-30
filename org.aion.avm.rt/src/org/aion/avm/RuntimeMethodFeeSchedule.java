@@ -401,6 +401,8 @@ public class RuntimeMethodFeeSchedule {
     public static final long BlockchainRuntime_avm_log_3 = RT_METHOD_FEE_LEVEL_1; // totalCost - 140;
     public static final long BlockchainRuntime_avm_log_4 = RT_METHOD_FEE_LEVEL_1; // totalCost - 146;
     public static final long BlockchainRuntime_avm_blake2b = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
+    public static final long BlockchainRuntime_avm_sha256 = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
+    public static final long BlockchainRuntime_avm_keccak256 = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
     public static final long BlockchainRuntime_avm_revert = RT_METHOD_FEE_LEVEL_1; // totalCost - 116;
     public static final long BlockchainRuntime_avm_invalid = RT_METHOD_FEE_LEVEL_1; // totalCost - 116;
     public static final long BlockchainRuntime_avm_print = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;

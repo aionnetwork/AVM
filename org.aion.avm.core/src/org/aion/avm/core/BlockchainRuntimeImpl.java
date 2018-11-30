@@ -267,6 +267,20 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
+    public ByteArray avm_sha256(ByteArray data){
+        require(null != data, "Input data can't be NULL");
+
+        return new ByteArray(HashUtils.sha256(data.getUnderlying()));
+    }
+
+    @Override
+    public ByteArray avm_keccak256(ByteArray data){
+        require(null != data, "Input data can't be NULL");
+
+        return new ByteArray(HashUtils.keccak256(data.getUnderlying()));
+    }
+
+    @Override
     public void avm_revert() {
         throw new RevertException();
     }

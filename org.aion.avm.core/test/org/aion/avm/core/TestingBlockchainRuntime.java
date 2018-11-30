@@ -224,6 +224,18 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     @Override
+    public ByteArray avm_sha256(ByteArray data) {
+        Objects.requireNonNull(data);
+        return new ByteArray(HashUtils.sha256(data.getUnderlying()));
+    }
+
+    @Override
+    public ByteArray avm_keccak256(ByteArray data) {
+        Objects.requireNonNull(data);
+        return new ByteArray(HashUtils.keccak256(data.getUnderlying()));
+    }
+
+    @Override
     public void avm_revert() {
         throw new RevertException();
     }

@@ -145,6 +145,16 @@ public final class BlockchainRuntime {
         return blockchainRuntime.avm_blake2b(data);
     }
 
+    public static ByteArray avm_sha256(ByteArray data) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_sha256);
+        return blockchainRuntime.avm_sha256(data);
+    }
+
+    public static ByteArray avm_keccak256(ByteArray data){
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_keccak256);
+        return blockchainRuntime.avm_keccak256(data);
+    }
+
     public static void avm_revert() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_revert);
         blockchainRuntime.avm_revert();
@@ -267,6 +277,14 @@ public final class BlockchainRuntime {
 
     public static byte[] blake2b(byte[] data) {
         return avm_blake2b(new ByteArray(data)).getUnderlying();
+    }
+
+    public static byte[] sha256(byte[] data) {
+        return avm_sha256(new ByteArray(data)).getUnderlying();
+    }
+
+    public static byte[] keccak256(byte[] data) {
+        return avm_keccak256(new ByteArray(data)).getUnderlying();
     }
 
     public static void revert() {

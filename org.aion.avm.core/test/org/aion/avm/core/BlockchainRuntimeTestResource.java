@@ -42,7 +42,9 @@ public class BlockchainRuntimeTestResource {
         log("topic1".getBytes(), "topic2".getBytes(), "topic3".getBytes(), "data".getBytes());
         log("topic1".getBytes(), "topic2".getBytes(), "topic3".getBytes(), "topic4".getBytes(), "data".getBytes());
 
-        buffer.put(blake2b("message".getBytes()));
+        buffer.put(blake2b("blake2b-message".getBytes()));
+        buffer.put(sha256("sha256-message".getBytes()));
+        buffer.put(keccak256("keccak256-message".getBytes()));
 
         println("message");
 

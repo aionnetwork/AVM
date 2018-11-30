@@ -1,10 +1,20 @@
 package org.aion.avm.core.util;
 
+import org.spongycastle.crypto.digests.KeccakDigest;
+import org.aion.avm.core.util.hash.Blake2b;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+
 public class HashUtils {
 
+    /**
+     * Computes the sha256 hash of the given input.
+     *
+     * @param msg Data for hashing
+     * @return Hash
+     */
     public static byte[] sha256(byte[] msg) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -16,10 +26,31 @@ public class HashUtils {
         }
     }
 
+    /**
+     * Computes the blake2b-256 hash of the given input.
+     *
+     * @param msg Data for hashing
+     * @return Hash
+     */
     public static byte[] blake2b(byte[] msg) {
+        Blake2b digest = Blake2b.Digest.newInstance(32);
+        digest.update(msg);
+        return digest.digest();
+    }
 
-        // TODO: implement blake2b
+    /**
+     * Computes the keccak-256 hash of the given input.
+     *
+     * @param msg Data for hashing
+     * @return Hash
+     */
+    public static byte[] keccak256(byte[] msg) {
+        KeccakDigest digest = new KeccakDigest(256);
 
-        return sha256(msg);
+        digest.update(msg, 0, msg.length);
+
+        byte[] hash = new byte[32];
+        digest.doFinal(hash, 0);
+        return hash;
     }
 }

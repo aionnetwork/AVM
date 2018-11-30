@@ -173,6 +173,22 @@ public interface IBlockchainRuntime {
     ByteArray avm_blake2b(ByteArray data) throws IllegalArgumentException;
 
     /**
+     * Computes the sha256 digest of the given data.
+     *
+     * @param data The data to hash.
+     * @return The 32-byte digest.
+     */
+    ByteArray avm_sha256(ByteArray data);
+
+    /**
+     * Computes the keccak256 digest of the given data.
+     *
+     * @param data The data to hash.
+     * @return The 32-byte digest.
+     */
+    ByteArray avm_keccak256(ByteArray data);
+
+    /**
      * Stop the current execution, rollback any state changes, and refund the remaining energy to caller.
      */
     void avm_revert();

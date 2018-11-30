@@ -80,7 +80,9 @@ public class BlockchainRuntimeTest {
         buffer.put("value".getBytes());
         buffer.putLong(kernel.getBalance(new byte[32]).longValue());
         buffer.putLong(kernel.getCode(dappAddress).length);
-        buffer.put(HashUtils.blake2b("message".getBytes()));
+        buffer.put(HashUtils.blake2b("blake2b-message".getBytes()));
+        buffer.put(HashUtils.sha256("sha256-message".getBytes()));
+        buffer.put(HashUtils.keccak256("keccak256-message".getBytes()));
 
         byte[] expected = Arrays.copyOfRange(buffer.array(), 0, buffer.position());
         assertArrayEquals(expected, txResult.getReturnData());
