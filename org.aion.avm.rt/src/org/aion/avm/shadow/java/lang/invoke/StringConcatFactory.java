@@ -1,6 +1,7 @@
 package org.aion.avm.shadow.java.lang.invoke;
 
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.InvokeDynamicChecks;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.Integer;
 import org.aion.avm.shadow.java.lang.Short;
@@ -27,7 +28,7 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
-    public static String concat(java.lang.String recipe, Object[] staticArgs, Object[] dynamicArgs) {
+    public static String avm_concat(java.lang.String recipe, Object[] staticArgs, Object[] dynamicArgs) {
         // Note that we want to use a shadow StringBuilder since it correctly calls avm_toString() as opposed to toString().
         // (note that this will allocate a new object, at the level of the DApp, but only in the same way the non-invokedynamic approach would).
         final org.aion.avm.shadow.java.lang.StringBuilder builder = new org.aion.avm.shadow.java.lang.StringBuilder();
@@ -99,16 +100,17 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
             MethodType concatType,
             java.lang.String recipe,
             Object... constants) throws NoSuchMethodException, IllegalAccessException {
+        InvokeDynamicChecks.checkOwner(owner);
         // Note that we currently only use the avm_makeConcatWithConstants invoked name.
         RuntimeAssertionError.assertTrue("avm_makeConcatWithConstants".equals(invokedName));
-        //System.out.println(recipe);
+        
         final MethodType concatMethodType = MethodType.methodType(
                 String.class, // NOTE! First arg is return value
                 java.lang.String.class,
                 Object[].class,
                 Object[].class);
         final MethodHandle concatMethodHandle = owner
-                .findStatic(StringConcatFactory.class, "concat", concatMethodType)
+                .findStatic(StringConcatFactory.class, "avm_concat", concatMethodType)
                 .bindTo(recipe)
                 .bindTo(constants)
                 .asVarargsCollector(Object[].class)
