@@ -57,7 +57,7 @@
         <copy file="docs/README.md" todir="${dir.global.workspace}/dist"></copy>
         <copy file="docs/USER_GUIDE.md" todir="${dir.global.workspace}/dist"></copy>
 
-        <copy file="LICENSE" todir="${dir.global.workspace}/dist"></copy>
+        <copy file="LICENSE.txt" todir="${dir.global.workspace}/dist"></copy>
 
         <copy file="scripts/compile.sh" todir="${dir.global.workspace}/dist"></copy>
         <chmod perm="755" file="${dir.global.workspace}/dist/compile.sh"></chmod>
