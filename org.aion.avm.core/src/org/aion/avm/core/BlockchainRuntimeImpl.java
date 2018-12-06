@@ -222,7 +222,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != topic1, "topic1 can't be NULL");
         require(null != data, "data can't be NULL");
 
-        Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying()), data.getUnderlying());
+        Log log = new Log(ctx.getAddress(), List.of(HashUtils.sha256(topic1.getUnderlying())), data.getUnderlying());
         result.addLog(log);
     }
 
@@ -232,7 +232,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != topic2, "topic2 can't be NULL");
         require(null != data, "data can't be NULL");
 
-        Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying(), topic2.getUnderlying()), data.getUnderlying());
+        Log log = new Log(ctx.getAddress(), List.of(HashUtils.sha256(topic1.getUnderlying()), HashUtils.sha256(topic2.getUnderlying())),
+                data.getUnderlying());
         result.addLog(log);
     }
 
@@ -243,7 +244,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != topic3, "topic3 can't be NULL");
         require(null != data, "data can't be NULL");
 
-        Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying()), data.getUnderlying());
+        Log log = new Log(ctx.getAddress(), List.of(HashUtils.sha256(topic1.getUnderlying()), HashUtils.sha256(topic2.getUnderlying()),
+                HashUtils.sha256(topic3.getUnderlying())), data.getUnderlying());
         result.addLog(log);
     }
 
@@ -255,7 +257,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != topic4, "topic4 can't be NULL");
         require(null != data, "data can't be NULL");
 
-        Log log = new Log(ctx.getAddress(), List.of(topic1.getUnderlying(), topic2.getUnderlying(), topic3.getUnderlying(), topic4.getUnderlying()), data.getUnderlying());
+        Log log = new Log(ctx.getAddress(), List.of(HashUtils.sha256(topic1.getUnderlying()), HashUtils.sha256(topic2.getUnderlying()),
+                HashUtils.sha256(topic3.getUnderlying()), HashUtils.sha256(topic4.getUnderlying())), data.getUnderlying());
         result.addLog(log);
     }
 
