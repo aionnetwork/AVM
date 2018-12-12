@@ -2,6 +2,7 @@ package org.aion.avm.core.persistence;
 
 import java.math.BigInteger;
 import org.aion.avm.core.Avm;
+import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.InstrumentationBasedStorageFees;
 import org.aion.avm.core.util.TestingHelper;
@@ -331,7 +332,10 @@ public class GraphReachabilityIntegrationTest {
         
         // Check that the deployment cost is what we expected.
         // The first three numbers here are: basic cost of tx, processing cost and storage cost
-        long miscCharges = 146472L + 36130L + (200 * jar.length) + 375L + 300L + 1500L + 6L + 53L;
+        long basicCost = BillingRules.getBasicTransactionCost(txData);
+        long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(1, jar.length);
+        long codeStorageOfDeploymentFee = BillingRules.getCodeStorageFee(jar.length);
+        long miscCharges = basicCost + codeInstantiationOfDeploymentFee + codeStorageOfDeploymentFee + 375L + 300L + 1500L + 6L + 53L;
         long storageCharges = 0L
                 // static
                     + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 161L

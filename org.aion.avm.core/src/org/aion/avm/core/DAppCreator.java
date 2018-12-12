@@ -3,7 +3,6 @@ package org.aion.avm.core;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
-import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
 import org.aion.avm.core.miscvisitors.ClinitStrippingVisitor;
@@ -241,11 +240,8 @@ public class DAppCreator {
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
             dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, task, ctx, codeAndArguments.arguments, result, dapp.runtimeSetup));
 
-            // billing the Processing cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
-            threadInstrumentation.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
-                    + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * rawDapp.bytecodeSize
-                    * (1 + rawDapp.numberOfClasses) / 10);
+            threadInstrumentation.chargeEnergy(BillingRules.getDeploymentFee(rawDapp.numberOfClasses, rawDapp.bytecodeSize));
 
             // Create the immortal version of the transformed DApp code by stripping the <clinit>.
             Map<String, byte[]> immortalClasses = new HashMap<>();
@@ -265,9 +261,8 @@ public class DAppCreator {
             byte[] immortalDappJar = immortalDapp.createJar(dappAddress, ctx);
             kernel.putCode(dappAddress, immortalDappJar);
 
-            // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
             // We want to bill the storage cost associated with the code, so use the jar size (since we don't save the initialization data).
-            threadInstrumentation.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * rawDapp.bytecodeSize);
+            threadInstrumentation.chargeEnergy(BillingRules.getCodeStorageFee(rawDapp.bytecodeSize));
             InstrumentationBasedStorageFees feeProcessor = new InstrumentationBasedStorageFees(threadInstrumentation);
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).

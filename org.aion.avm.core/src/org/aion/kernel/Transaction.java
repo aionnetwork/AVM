@@ -1,6 +1,8 @@
 package org.aion.kernel;
 
 import java.math.BigInteger;
+
+import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.util.Helpers;
 
 import java.util.Arrays;
@@ -8,8 +10,6 @@ import java.util.Objects;
 
 
 public class Transaction {
-    public static final int BASIC_COST = 21_000;
-
     public static Transaction create(byte[] from, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new Transaction(Type.CREATE, from, null, nonce, value, data, energyLimit, energyPrice);
     }
@@ -19,7 +19,7 @@ public class Transaction {
     }
 
     public static Transaction balanceTransfer(byte[] from, byte[] to, long nonce, BigInteger value, long energyPrice) {
-        return new Transaction(Type.BALANCE_TRANSFER, from, to, nonce, value, new byte[0], BASIC_COST, energyPrice);
+        return new Transaction(Type.BALANCE_TRANSFER, from, to, nonce, value, new byte[0], BillingRules.BASIC_COST, energyPrice);
     }
 
     public static Transaction garbageCollect(byte[] target, long nonce, long energyLimit, long energyPrice) {
@@ -154,11 +154,7 @@ public class Transaction {
     }
 
     public long getBasicCost() {
-        int cost = BASIC_COST;
-        for (byte b : getData()) {
-            cost += (b == 0) ? 4 : 64;
-        }
-        return cost;
+        return BillingRules.getBasicTransactionCost(getData());
     }
 
     public void setTimestamp(long timestamp) {
