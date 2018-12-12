@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import examples.BetaMapEvents;
+import examples.HelloWorld;
 
 
 /**
@@ -59,6 +60,24 @@ public class ExamplesIntegrationTest {
         callStatic(block, contractAddr, "put", "key1", "value1");
         callStatic(block, contractAddr, "put", "key1", "value2");
         callStatic(block, contractAddr, "get", "key1");
+    }
+
+    @Test
+    public void test_HelloWorld() throws Exception {
+        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(HelloWorld.class);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        
+        // Deploy.
+        long energyLimit = 10_000_000l;
+        long energyPrice = 1l;
+        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+        Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+        
+        // We only want to check that we can call it without issue (it only produces STDOUT).
+        callStatic(block, contractAddr, "sayHello");
     }
 
 
