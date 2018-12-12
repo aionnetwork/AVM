@@ -32,7 +32,12 @@ public interface TransactionContext {
 
     byte[] getTransactionHash();
 
-    int getBasicCost();
+    /**
+     * The basic cost is the fixed minimum cost of any transaction, plus an extra fee for any data.
+     * 
+     * @return The basic cost, in energy, of this transaction and its data.
+     */
+    long getBasicCost();
 
     long getTransactionTimestamp();
 

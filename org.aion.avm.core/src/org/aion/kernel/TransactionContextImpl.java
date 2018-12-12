@@ -113,7 +113,7 @@ public class TransactionContextImpl implements TransactionContext {
     }
 
     @Override
-    public int getBasicCost() {
+    public long getBasicCost() {
         return tx.getBasicCost();
     }
 

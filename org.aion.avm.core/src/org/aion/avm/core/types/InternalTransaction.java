@@ -15,7 +15,7 @@ public class InternalTransaction extends Transaction {
     }
 
     @Override
-    public int getBasicCost() {
+    public long getBasicCost() {
         return 0;
     }
 

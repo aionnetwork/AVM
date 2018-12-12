@@ -265,7 +265,7 @@ public class HandoffMonitorTest {
             throw new AssertionError("No calls expected");
         }
         @Override
-        public int getBasicCost() {
+        public long getBasicCost() {
             throw new AssertionError("No calls expected");
         }
         @Override

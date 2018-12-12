@@ -153,7 +153,7 @@ public class Transaction {
         return transactionHash;
     }
 
-    public int getBasicCost() {
+    public long getBasicCost() {
         int cost = BASIC_COST;
         for (byte b : getData()) {
             cost += (b == 0) ? 4 : 64;
