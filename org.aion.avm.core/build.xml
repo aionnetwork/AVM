@@ -11,6 +11,9 @@
     <property name="dir.global.build.main" value="../build/main"/>
     <property name="dir.global.build.test" value="../build/test"/>
 
+    <!-- Set this property to run a specific test. -->
+    <property name="unit.test" value="*Test" />
+
     <target name="clean" >
         <antcall target="cleanmain" />
         <antcall target="cleantest" />
@@ -104,7 +107,7 @@
             <formatter type="plain" usefile="false" />
             <formatter type="xml" />
             <batchtest todir="${dir.local.testreports}">
-                <fileset dir="${dir.local.src.test}" includes="**/*Test.java" />
+                <fileset dir="${dir.local.src.test}" includes="**/${unit.test}.java" />
             </batchtest>
         </junit>
     </target>
