@@ -266,7 +266,8 @@ public class DAppCreator {
             kernel.putCode(dappAddress, immortalDappJar);
 
             // billing the Storage cost, see {@linktourl https://github.com/aionnetworkp/aion_vm/wiki/Billing-the-Contract-Deployment}
-            threadInstrumentation.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * ctx.getData().length);
+            // We want to bill the storage cost associated with the code, so use the jar size (since we don't save the initialization data).
+            threadInstrumentation.chargeEnergy(BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * rawDapp.bytecodeSize);
             InstrumentationBasedStorageFees feeProcessor = new InstrumentationBasedStorageFees(threadInstrumentation);
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).

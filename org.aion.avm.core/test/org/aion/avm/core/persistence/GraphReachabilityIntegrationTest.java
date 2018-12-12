@@ -331,7 +331,7 @@ public class GraphReachabilityIntegrationTest {
         
         // Check that the deployment cost is what we expected.
         // The first three numbers here are: basic cost of tx, processing cost and storage cost
-        long miscCharges = 146472L + 36130L + 414600L + 375L + 300L + 1500L + 6L + 53L;
+        long miscCharges = 146472L + 36130L + (200 * jar.length) + 375L + 300L + 1500L + 6L + 53L;
         long storageCharges = 0L
                 // static
                     + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 161L

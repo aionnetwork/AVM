@@ -173,7 +173,7 @@ public class AvmImplTest {
         // BytecodeFeeScheduler:  PROCESS + (PROCESSDATA * bytecodeSize * (1 + numberOfClasses) / 10)
         long deploymentProcessCost = 32000 + (10 * jar.length * (1 + 1) / 10);
         // BytecodeFeeScheduler:  CODEDEPOSIT * data.length;
-        long deploymentStorageCost = 200 * txData.length;
+        long deploymentStorageCost = 200 * jar.length;
         long clinitCost = 188l;
         // Storage:  static 64 bytes (2 references) +  the 2 strings (hash code and string length: "CALL" + "NORMAL").
         long initialStorageCost = (3 * InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW)
