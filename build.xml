@@ -81,6 +81,12 @@
                 <exclude name="**/AionPlainSet.java"/>
             </fileset>
         </javadoc>
+
+        <copy todir="${dir.global.workspace}/dist/examples">
+            <fileset dir="${dir.global.workspace}/org.aion.avm.core/src/examples">
+                <include name="**/*.java"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="test">
