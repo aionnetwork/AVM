@@ -27,7 +27,7 @@ rm -fr "./build"
 
 # compile
 echo "Compiling the source code..."
-$JAVAC -cp "./lib/*" -d "./build" "${@:2}"  || exit 3
+$JAVAC --release 10 -cp "./lib/*" -d "./build" "${@:2}"  || exit 3
 
 # assemble the bytecode
 echo "Assembling the final jar..."
