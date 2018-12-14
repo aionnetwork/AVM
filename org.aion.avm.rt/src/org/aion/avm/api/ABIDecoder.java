@@ -94,6 +94,10 @@ public final class ABIDecoder {
      * @return the encoded return data from the method call.
      */
     public static ByteArray avm_decodeAndRunWithClass(org.aion.avm.shadow.java.lang.Class<?> clazz, ByteArray txData) {
+        if (txData.getUnderlying() == null || txData.getUnderlying().length == 0) {
+            return null;
+        } // do not charge in case of early exit, since the fee is quite high
+
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithClass);
         byte[] result = decodeAndRun(clazz.getRealClass(), txData.getUnderlying(), true);
         return (null != result)
@@ -108,6 +112,10 @@ public final class ABIDecoder {
      * @return the encoded return data from the method call.
      */
     public static ByteArray avm_decodeAndRunWithObject(IObject obj, ByteArray txData) {
+        if (txData.getUnderlying() == null || txData.getUnderlying().length == 0) {
+            return null;
+        } // do not charge in case of early exit, since the fee is quite high
+
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithObject);
         byte[] result = decodeAndRun(obj, txData.getUnderlying(), false);
         return (null != result)
@@ -121,6 +129,10 @@ public final class ABIDecoder {
      * @return the decoded method name.
      */
     public static org.aion.avm.shadow.java.lang.String avm_decodeMethodName(ByteArray txData) {
+        if (txData.getUnderlying() == null || txData.getUnderlying().length == 0) {
+            return null;
+        } // do not charge in case of early exit, since the fee is high
+
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeMethodName);
         return new org.aion.avm.shadow.java.lang.String(decodeMethodName(txData.getUnderlying()));
     }
@@ -131,6 +143,10 @@ public final class ABIDecoder {
      * @return an object array that contains all of the arguments.
      */
     public static IObjectArray avm_decodeArguments(ByteArray txData) {
+        if (txData.getUnderlying() == null || txData.getUnderlying().length == 0) {
+            return null;
+        } // do not charge in case of early exit, since the fee is high
+
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeArguments);
         Object[] result = decodeArguments(txData.getUnderlying());
         return (null != result)
@@ -144,6 +160,10 @@ public final class ABIDecoder {
      * @return the decoded object.
      */
     public static IObject avm_decodeOneObject(ByteArray txData){
+        if (txData.getUnderlying() == null || txData.getUnderlying().length == 0) {
+            return null;
+        } // do not charge in case of early exit, since the fee is high
+
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeOneObject);
         Descriptor descriptor = readOneDescriptor(txData.getUnderlying(), 0);
         return decodeOneObjectWithDescriptor(txData.getUnderlying(), descriptor.encodedBytes, descriptor).iObject;
@@ -161,9 +181,17 @@ public final class ABIDecoder {
      * expect that they can test this directly (although that assumption may be removed in the future).
      */
     public static byte[] decodeAndRunWithClass(Class<?> clazz, byte[] txData) {
+        if (txData == null || txData.length == 0) {
+            return null;
+        }
+
         return decodeAndRun(clazz, txData, true);
     }
     public static byte[] decodeAndRunWithObject(Object obj, byte[] txData) {
+        if (txData == null || txData.length == 0) {
+            return null;
+        }
+
         return decodeAndRun(obj, txData, false);
     }
 
@@ -176,6 +204,10 @@ public final class ABIDecoder {
      * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
     public static byte[] decodeAndRun(Object obj, byte[] txData, boolean isWithClass) {
+        if (txData == null || txData.length == 0) {
+            return null;
+        }
+
         MethodCaller methodCaller = decode(txData);
 
         String newMethodName = "avm_" + methodCaller.methodName;
@@ -231,6 +263,7 @@ public final class ABIDecoder {
         if (txData == null || txData.length == 0) {
             return null;
         }
+
         String decoded = new String(txData);
 
         int m1 = decoded.indexOf(DESCRIPTOR_S);
@@ -244,11 +277,19 @@ public final class ABIDecoder {
 
     /** Underlying implementation of {@link #avm_decodeArguments(ByteArray) avm_decodeArguments} method */
     public static Object[] decodeArguments(byte[] data){
+        if (data == null || data.length == 0) {
+            return null;
+        }
+
         return decode(data).arguments;
     }
 
     /** Underlying implementation of {@link #avm_decodeOneObject(ByteArray) avm_decodeOneObject} method */
     public static Object decodeOneObject(byte[] data){
+        if (data == null || data.length == 0) {
+            return null;
+        }
+
         Descriptor descriptor = readOneDescriptor(data, 0);
         return decodeOneObjectWithDescriptor(data, descriptor.encodedBytes, descriptor).object;
     }
@@ -260,6 +301,7 @@ public final class ABIDecoder {
         if (txData == null || txData.length == 0) {
             return null;
         }
+
         String decoded = new String(txData);
 
         int m1 = decoded.indexOf(DESCRIPTOR_S);
@@ -288,6 +330,10 @@ public final class ABIDecoder {
      * @return an object array that contains all of the arguments.
      */
     private static IObject[] decodeArgumentsWithDescriptor(byte[] data, String argsDescriptor){
+        if (data == null || data.length == 0) {
+            return null;
+        }
+
         // read all descriptors
         int encodedBytes = 0;
         List<Descriptor> descriptorList = new ArrayList<>();
@@ -321,6 +367,10 @@ public final class ABIDecoder {
      * is equal to the byte index in the byte array.
      */
     private static Descriptor readOneDescriptor(byte[] data, int start){
+        if (data == null || data.length == 0) {
+            return null;
+        }
+
         String decoded = new String(data).substring(start);
 
         if (decoded.startsWith("[[")) {
@@ -385,6 +435,10 @@ public final class ABIDecoder {
      * A helper method to decode one object from the encoded data stream with the starting index and descriptor.
      */
     private static DecodedObjectInfo decodeOneObjectWithDescriptor(byte[] data, int startByteOfData, Descriptor descriptor){
+        if (data == null || data.length == 0) {
+            return null;
+        }
+
         if (descriptor.dimension == 0) {
             return descriptor.type.decode(data, startByteOfData);
         }
@@ -400,6 +454,10 @@ public final class ABIDecoder {
      * A helper method to decode a 1D array from the encode data stream with the start index and descriptor.
      */
     private static DecodedObjectInfo decode1DArray(byte[] data, int startByteOfData, Descriptor descriptor){
+        if (data == null || data.length == 0) {
+            return null;
+        }
+
         if (descriptor.type == ABIEncoder.ABITypes.avm_String) {
             String s = (new String(Arrays.copyOfRange(data, startByteOfData, data.length))).substring(0, descriptor.size);
             return new DecodedObjectInfo(s, new org.aion.avm.shadow.java.lang.String(s), startByteOfData + s.getBytes().length);
@@ -420,6 +478,10 @@ public final class ABIDecoder {
      * A helper method to decode a 2D array from the encode data stream with the start index and descriptor.
      */
     private static DecodedObjectInfo decode2DArray(byte[] data, int startByteOfData, Descriptor descriptor){
+        if (data == null || data.length == 0) {
+            return null;
+        }
+
         int endByte = startByteOfData;
         Object[] array = new Object[descriptor.size];
         for (int idx = 0; idx < descriptor.size; idx ++) {

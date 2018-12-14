@@ -332,7 +332,10 @@ public class AvmImpl implements AvmInternal {
         // The nonce increment will be done regardless of the transaction result.
         task.getTaskKernel().incrementNonce(ctx.getCaller());
 
-        if (!ctx.isBalanceTransfer()) { // do nothing for balance transfers
+        // do nothing for balance transfers of which the recipient is not a DApp address.
+        if (!(ctx.isBalanceTransfer() &&
+                (null == thisTransactionKernel.getCode(ctx.getAddress())
+                || (null != thisTransactionKernel.getCode(ctx.getAddress()) && 0 == thisTransactionKernel.getCode(ctx.getAddress()).length)))) {
             if (ctx.isCreate()) { // create
                 DAppCreator.create(thisTransactionKernel, this, task, ctx, result);
             } else { // call
