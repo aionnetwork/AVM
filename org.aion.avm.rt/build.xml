@@ -6,7 +6,6 @@
     <property name="dir.local.src.main" value="${dir.local.workspace}/src"/>
     <property name="dir.global.lib" value="../lib"/>
     <property name="dir.global.build.main" value="../build/main"/>
-    <property name="dir.global.jar" value="../out/jar"/>
 
     <target name="clean" >
         <antcall target="cleanmain" />
@@ -41,11 +40,5 @@
         <move includeemptydirs="false" todir="${dir.global.build.main}">
             <file file="${dir.local.build.main}/${ant.project.name}.jar"/>
         </move>
-    </target>
-
-    <target name="buildJar">
-        <jar destfile = "${dir.global.jar}/org-aion-avm-rt.jar"
-             basedir = "${dir.local.build.main}">
-        </jar>
     </target>
 </project>
