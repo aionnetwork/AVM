@@ -98,5 +98,8 @@
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.core/build.xml" target="test">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.rt/build.xml" target="test">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
     </target>
 </project>
