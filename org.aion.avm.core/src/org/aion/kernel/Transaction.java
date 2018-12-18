@@ -7,9 +7,10 @@ import org.aion.avm.core.util.Helpers;
 
 import java.util.Arrays;
 import java.util.Objects;
+import org.aion.vm.api.interfaces.TransactionInterface;
 
 
-public class Transaction {
+public class Transaction implements TransactionInterface {
     public static Transaction create(byte[] from, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new Transaction(Type.CREATE, from, null, nonce, value, data, energyLimit, energyPrice);
     }
@@ -60,6 +61,8 @@ public class Transaction {
 
     long timestamp;
 
+    byte[] timestampAsBytes;
+
     byte[] data;
 
     long energyLimit;
@@ -67,6 +70,8 @@ public class Transaction {
     long energyPrice;
 
     byte[] transactionHash;
+
+    byte vm;
 
     protected Transaction(Type type, byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         Objects.requireNonNull(type, "The transaction `type` can't be NULL");
@@ -113,52 +118,96 @@ public class Transaction {
         this.transactionHash = transactionHash;
     }
 
-    public long getTimestamp() {
+    @Override
+    public byte[] getTimestamp() {
+        if (this.timestampAsBytes == null) {
+            this.timestampAsBytes = BigInteger.valueOf(this.timestamp).toByteArray();
+        }
+        return this.timestampAsBytes;
+    }
+
+    long getTimestampAsLong() {
         return timestamp;
     }
 
+    /**
+     * Returns the {@link org.aion.vm.api.interfaces.VirtualMachine} that this transaction must be
+     * executed by in the case of a contract creation.
+     *
+     * @return The VM to use to create a new contract.
+     */
+    @Override
+    public byte getTargetVM() {
+        return this.vm;
+    }
+
+    /**
+     * Returns the type of transactional logic that this transaction will cause to be executed.
+     */
     public Type getType() {
         return type;
     }
 
-    public byte[] getFrom() {
-        return from;
+    @Override
+    public AvmAddress getSenderAddress() {
+        return AvmAddress.wrap(from);
     }
 
-    public byte[] getTo() {
-        return to;
+    @Override
+    public AvmAddress getDestinationAddress() {
+        return AvmAddress.wrap(to);
     }
 
-    public long getNonce() {
+    @Override
+    public byte[] getNonce() {
+        return BigInteger.valueOf(this.nonce).toByteArray();
+    }
+
+    long getNonceAsLong() {
         return nonce;
     }
 
-    public BigInteger getValue() {
+    @Override
+    public byte[] getValue() {
+        return this.value.toByteArray();
+    }
+
+    BigInteger getValueAsBigInteger() {
         return value;
     }
 
+    @Override
     public byte[] getData() {
         return data;
     }
 
+    @Override
     public long getEnergyLimit() {
         return energyLimit;
     }
 
+    @Override
     public long getEnergyPrice() {
         return energyPrice;
     }
 
+    @Override
     public byte[] getTransactionHash() {
         return transactionHash;
     }
 
-    public long getBasicCost() {
+    @Override
+    public long getTransactionCost() {
         return BillingRules.getBasicTransactionCost(getData());
     }
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public boolean isContractCreationTransaction() {
+        return this.to == null;
     }
 
     @Override

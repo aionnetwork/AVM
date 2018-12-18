@@ -95,11 +95,11 @@ public class ParallelExecution {
                     TransactionResult r = f.get();
 
                     Set<String> set = new HashSet<>();
-                    set.add(Helpers.bytesToHexString(tx.getFrom()));
-                    set.add(Helpers.bytesToHexString(tx.getTo()));
+                    set.add(Helpers.bytesToHexString(tx.getSenderAddress().toBytes()));
+                    set.add(Helpers.bytesToHexString(tx.getDestinationAddress().toBytes()));
                     for (InternalTransaction it : r.internalTransactions) {
-                        set.add(Helpers.bytesToHexString(it.getFrom()));
-                        set.add(Helpers.bytesToHexString(it.getTo()));
+                        set.add(Helpers.bytesToHexString(it.getSenderAddress().toBytes()));
+                        set.add(Helpers.bytesToHexString(it.getDestinationAddress().toBytes()));
                     }
 
                     if (set.stream().anyMatch(k -> accounts.contains(k))) {
@@ -150,7 +150,7 @@ public class ParallelExecution {
                 public Result avm_call(Address targetAddress, org.aion.avm.shadow.java.math.BigInteger value, ByteArray payload, long energyLimit) {
                     InternalTransaction internalTx = new InternalTransaction(
                             Transaction.Type.CALL,
-                            tx.getTo(),
+                            tx.getDestinationAddress().toBytes(),
                             targetAddress.unwrap(),
                             0,
                             value.getUnderlying(),
@@ -161,7 +161,7 @@ public class ParallelExecution {
 
                     return new Result(true, new ByteArray(new byte[0]));
                 }
-            }.withCaller(tx.getFrom()).withAddress(tx.getTo()).withEnergyLimit(tx.getEnergyLimit()).withData(tx.getData()));
+            }.withCaller(tx.getSenderAddress().toBytes()).withAddress(tx.getDestinationAddress().toBytes()).withEnergyLimit(tx.getEnergyLimit()).withData(tx.getData()));
             try {
                 Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(Contract.class.getName());
                 ByteArray ret = (ByteArray) clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);

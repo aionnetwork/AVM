@@ -21,7 +21,7 @@ public class TransactionContextImpl implements TransactionContext {
 
     public TransactionContextImpl(Transaction tx, Block block) {
         this.tx = tx;
-        this.origin = tx.getFrom();
+        this.origin = tx.getSenderAddress().toBytes();
         this.internalCallDepth = 1;
 
         this.blockNumber = block.getNumber();
@@ -63,18 +63,18 @@ public class TransactionContextImpl implements TransactionContext {
     @Override
     public byte[] getAddress() {
         if (isCreate()) {
-            ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(tx.getFrom()).putLong(tx.getNonce());
+            ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(tx.getSenderAddress().toBytes()).putLong(tx.getNonceAsLong());
             byte[] hash = HashUtils.sha256(buffer.array());
             hash[0] = NodeEnvironment.CONTRACT_PREFIX;
             return hash;
         } else {
-            return tx.getTo();
+            return tx.getDestinationAddress().toBytes();
         }
     }
 
     @Override
     public byte[] getCaller() {
-        return tx.getFrom();
+        return tx.getSenderAddress().toBytes();
     }
 
     @Override
@@ -84,12 +84,12 @@ public class TransactionContextImpl implements TransactionContext {
 
     @Override
     public long getNonce() {
-        return tx.getNonce();
+        return tx.getNonceAsLong();
     }
 
     @Override
     public BigInteger getValue() {
-        return tx.getValue();
+        return tx.getValueAsBigInteger();
     }
 
     @Override
@@ -114,11 +114,11 @@ public class TransactionContextImpl implements TransactionContext {
 
     @Override
     public long getBasicCost() {
-        return tx.getBasicCost();
+        return tx.getTransactionCost();
     }
 
     @Override
-    public long getTransactionTimestamp() { return tx.getTimestamp(); }
+    public long getTransactionTimestamp() { return tx.getTimestampAsLong(); }
 
     @Override
     public long getBlockTimestamp() {

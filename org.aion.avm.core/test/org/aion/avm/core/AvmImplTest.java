@@ -74,13 +74,13 @@ public class AvmImplTest {
         // verify results
         assertTrue(result.getStatusCode().isSuccess());
         assertNull(result.getReturnData());
-        assertEquals(tx.getBasicCost(), result.getEnergyUsed());
+        assertEquals(tx.getTransactionCost(), result.getEnergyUsed());
         assertEquals(0, result.getLogs().size());
         assertEquals(0, result.getInternalTransactions().size());
 
         // verify state change
         assertEquals(1, kernel.getNonce(from));
-        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT.subtract(value).subtract(BigInteger.valueOf(tx.getBasicCost() * energyPrice)), kernel.getBalance(deployer));
+        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT.subtract(value).subtract(BigInteger.valueOf(tx.getTransactionCost() * energyPrice)), kernel.getBalance(deployer));
         assertEquals(0, kernel.getNonce(to));
         assertEquals(value, kernel.getBalance(to));
         avm.shutdown();
@@ -215,7 +215,7 @@ public class AvmImplTest {
         //        + (InstrumentationBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
                 ;
         long runtimeCost = 4073;
-        assertEquals(runtimeCost + tx2.getBasicCost() + costOfBlocks + costOfRuntimeCall + runStorageCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
+        assertEquals(runtimeCost + tx2.getTransactionCost() + costOfBlocks + costOfRuntimeCall + runStorageCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 
         avm.shutdown();
     }
