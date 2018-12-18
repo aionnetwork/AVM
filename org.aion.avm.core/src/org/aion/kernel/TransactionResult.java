@@ -2,6 +2,7 @@ package org.aion.kernel;
 
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
+import org.aion.vm.api.interfaces.ResultCode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,98 +14,121 @@ public class TransactionResult {
         SUCCESS, REJECTED, FAILED
     }
 
-    public enum  Code {
+    public enum Code implements ResultCode {
         /**
          * The transaction was executed successfully.
          */
-        SUCCESS(CodeType.SUCCESS),
+        SUCCESS(200, CodeType.SUCCESS),
 
         // rejected transactions should not be included on chain.
 
         /**
          * This transaction was rejected.
          */
-        REJECTED(CodeType.REJECTED),
+        REJECTED(201, CodeType.REJECTED),
 
         /**
          * Insufficient balance to conduct the transaction.
          */
-        REJECTED_INSUFFICIENT_BALANCE(CodeType.REJECTED),
+        REJECTED_INSUFFICIENT_BALANCE(202, CodeType.REJECTED),
 
         /**
          * The transaction nonce does not match the account nonce.
          */
-        REJECTED_INVALID_NONCE(CodeType.REJECTED),
+        REJECTED_INVALID_NONCE(203, CodeType.REJECTED),
 
         // failed transaction can be included on chain, but energy charge will apply.
 
         /**
          * A failure occurred during the execution of the transaction.
          */
-        FAILED(CodeType.FAILED),
+        FAILED(204, CodeType.FAILED),
 
         /**
          * The transaction data is malformed, for internal tx only.
          */
-        FAILED_INVALID_DATA(CodeType.FAILED),
+        FAILED_INVALID_DATA(205, CodeType.FAILED),
 
         /**
          * Transaction failed due to out of energy.
          */
-        FAILED_OUT_OF_ENERGY(CodeType.FAILED),
+        FAILED_OUT_OF_ENERGY(206, CodeType.FAILED),
 
         /**
          * Transaction failed due to stack overflow.
          */
-        FAILED_OUT_OF_STACK(CodeType.FAILED),
+        FAILED_OUT_OF_STACK(207, CodeType.FAILED),
 
         /**
          * Transaction failed due to exceeding the internal call depth limit.
          */
-        FAILED_CALL_DEPTH_LIMIT_EXCEEDED(CodeType.FAILED),
+        FAILED_CALL_DEPTH_LIMIT_EXCEEDED(208, CodeType.FAILED),
 
         /**
          * Transaction failed due to a REVERT operation.
          */
-        FAILED_REVERT(CodeType.FAILED),
+        FAILED_REVERT(209, CodeType.FAILED),
 
         /**
          * Transaction failed due to an INVALID operation.
          */
-        FAILED_INVALID(CodeType.FAILED),
+        FAILED_INVALID(210, CodeType.FAILED),
 
         /**
          * Transaction failed due to an uncaught exception.
          */
-        FAILED_EXCEPTION(CodeType.FAILED),
+        FAILED_EXCEPTION(211, CodeType.FAILED),
 
         /**
          * CREATE transaction failed due to a rejected of the user-provided classes.
          */
-        FAILED_REJECTED(CodeType.FAILED),
+        FAILED_REJECTED(212, CodeType.FAILED),
 
         /**
          * Transaction failed due to an early abort.
          */
-        FAILED_ABORT(CodeType.FAILED);
+        FAILED_ABORT(213, CodeType.FAILED);
 
         private CodeType type;
+        private int value;
 
-        Code(CodeType type) {
+        Code(int value, CodeType type) {
             this.type = type;
+            this.value = value;
         }
 
+        @Override
         public boolean isSuccess() {
             return type == CodeType.SUCCESS;
         }
 
+        @Override
         public boolean isRejected() {
             return type == CodeType.REJECTED;
         }
 
+        @Override
         public boolean isFailed() {
             return type == CodeType.FAILED;
         }
+
+        @Override
+        public boolean isRevert() {
+            //TODO: confirm whether or not we want the same REVERT behaviour as the fvm.
+            return false;
+        }
+
+        @Override
+        public boolean isFatal() {
+            // Avm currently has no fatal error codes defined yet.
+            return false;
+        }
+
+        @Override
+        public int toInt() {
+            return value;
+        }
+
     }
 
     /**
