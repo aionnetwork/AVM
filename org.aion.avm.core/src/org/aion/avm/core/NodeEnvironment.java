@@ -1,11 +1,13 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.util.GeneratedClassesFactory;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
 import org.aion.kernel.KernelInterface;
@@ -162,11 +164,8 @@ public class NodeEnvironment {
             throw RuntimeAssertionError.unexpected(e);
         }
 
-        try {
-            GeneratedClassesFactory.class.getMethod("initializeClassVariable", ClassLoader.class).invoke(null, this.sharedClassLoader);
-        } catch (Throwable e) {
-            throw RuntimeAssertionError.unexpected(e);
-        }
+        // Give the ABIEncoder (in runtime package) access to the array classes we can generate in the core implementation.
+        ABIEncoder.initializeArrayFactory(new GeneratedClassesFactory(this.sharedClassLoader));
 
         // Create the constant map.
         this.constantMap = Collections.unmodifiableMap(initializeConstantState());

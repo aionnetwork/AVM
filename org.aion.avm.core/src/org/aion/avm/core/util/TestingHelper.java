@@ -1,9 +1,9 @@
 package org.aion.avm.core.util;
 
 import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.internal.GeneratedClassesFactory;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.OutOfEnergyException;
@@ -41,10 +41,10 @@ public class TestingHelper implements IInstrumentation {
         TestingHelper helper = new TestingHelper(false);
         ObjectArray ret = null;
         if (data.getClass().getName() == "[[C") {
-            ret = (ObjectArray) GeneratedClassesFactory.construct2DCharArray((char[][]) data);
+            ret = ABIEncoder.testingFactoryAccess().construct2DCharArray((char[][]) data);
         }
         else if (data.getClass().getName() == "[[I") {
-            ret = (ObjectArray) GeneratedClassesFactory.construct2DIntArray((int[][]) data);
+            ret = ABIEncoder.testingFactoryAccess().construct2DIntArray((int[][]) data);
         }// add code for other 2D wrapped array when needed.
         helper.remove();
         return ret;
@@ -58,7 +58,7 @@ public class TestingHelper implements IInstrumentation {
             for (int i = 0; i < ((String[])data).length; i++) {
                 shadowArray[i] = new org.aion.avm.shadow.java.lang.String(((String[]) data)[i]);
             }
-            ret = (ObjectArray) GeneratedClassesFactory.construct1DStringArray(shadowArray);
+            ret = ABIEncoder.testingFactoryAccess().construct1DStringArray(shadowArray);
         }
         helper.remove();
         return ret;
