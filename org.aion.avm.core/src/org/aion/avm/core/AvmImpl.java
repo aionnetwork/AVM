@@ -22,6 +22,8 @@ import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
+import org.aion.vm.api.interfaces.Address;
+import org.aion.vm.api.interfaces.KernelInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -183,14 +185,14 @@ public class AvmImpl implements AvmInternal {
         }
 
         // Acquire both sender and target resources
-        byte[] sender = ctx.getCaller();
-        byte[] target = ctx.getAddress();
+        Address sender = AvmAddress.wrap(ctx.getCaller());
+        Address target = AvmAddress.wrap(ctx.getAddress());
 
-        this.resourceMonitor.acquire(sender, task);
-        this.resourceMonitor.acquire(target, task);
+        this.resourceMonitor.acquire(sender.toBytes(), task);
+        this.resourceMonitor.acquire(target.toBytes(), task);
 
         // nonce check
-        if (!taskTransactionalKernel.accountNonceEquals(sender, ctx.getNonce())) {
+        if (!taskTransactionalKernel.accountNonceEquals(sender, BigInteger.valueOf(ctx.getNonce()))) {
             error = TransactionResult.Code.REJECTED_INVALID_NONCE;
         }
 
@@ -273,7 +275,7 @@ public class AvmImpl implements AvmInternal {
 
         // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
-        byte[] sender = ctx.getCaller();
+        Address sender = AvmAddress.wrap(ctx.getCaller());
 
         BigInteger transactionCost = BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEnergyPrice()).add(ctx.getValue());
         if (!parentKernel.accountBalanceIsAtLeast(sender, transactionCost)) {
@@ -293,13 +295,13 @@ public class AvmImpl implements AvmInternal {
          */
 
         // Deduct the total energy cost
-        parentKernel.adjustBalance(ctx.getCaller(), BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEnergyPrice()).negate());
+        parentKernel.adjustBalance(sender, BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEnergyPrice()).negate());
 
         // Run the common logic with the parent kernel as the top-level one.
         TransactionResult result = commonInvoke(parentKernel, task, ctx);
 
         // Transfer fees to miner
-        parentKernel.adjustBalance(ctx.getBlockCoinbase(), BigInteger.valueOf(result.getEnergyUsed() * ctx.getEnergyPrice()));
+        parentKernel.adjustBalance(AvmAddress.wrap(ctx.getBlockCoinbase()), BigInteger.valueOf(result.getEnergyUsed() * ctx.getEnergyPrice()));
 
         return result;
     }
@@ -325,21 +327,21 @@ public class AvmImpl implements AvmInternal {
         result.setEnergyUsed(ctx.getBasicCost()); // basic tx cost
 
         // conduct value transfer
-        thisTransactionKernel.adjustBalance(ctx.getCaller(), ctx.getValue().negate());
-        thisTransactionKernel.adjustBalance(ctx.getAddress(), ctx.getValue());
+        thisTransactionKernel.adjustBalance(AvmAddress.wrap(ctx.getCaller()), ctx.getValue().negate());
+        thisTransactionKernel.adjustBalance(AvmAddress.wrap(ctx.getAddress()), ctx.getValue());
 
         // At this stage, transaction can no longer be rejected.
         // The nonce increment will be done regardless of the transaction result.
-        task.getTaskKernel().incrementNonce(ctx.getCaller());
+        task.getTaskKernel().incrementNonce(AvmAddress.wrap(ctx.getCaller()));
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
         if (!(ctx.isBalanceTransfer() &&
-                (null == thisTransactionKernel.getCode(ctx.getAddress())
-                || (null != thisTransactionKernel.getCode(ctx.getAddress()) && 0 == thisTransactionKernel.getCode(ctx.getAddress()).length)))) {
+                (null == thisTransactionKernel.getCode(AvmAddress.wrap(ctx.getAddress()))
+                || (null != thisTransactionKernel.getCode(AvmAddress.wrap(ctx.getAddress())) && 0 == thisTransactionKernel.getCode(AvmAddress.wrap(ctx.getAddress())).length)))) {
             if (ctx.isCreate()) { // create
                 DAppCreator.create(thisTransactionKernel, this, task, ctx, result);
             } else { // call
-                byte[] dappAddress = ctx.getAddress();
+                Address dappAddress = AvmAddress.wrap(ctx.getAddress());
                 // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
                 ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(dappAddress);
 
@@ -352,7 +354,7 @@ public class AvmImpl implements AvmInternal {
                     DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result);
                 } else {
                     // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
-                    ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress);
+                    ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress.toBytes());
                     dapp = this.hotCache.checkout(addressWrapper);
                     if (null == dapp) {
                         // If we didn't find it there, just load it.
@@ -391,10 +393,10 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private TransactionResult runGc(KernelInterface parentKernel, byte[] dappAddress, TransactionContext ctx) {
+    private TransactionResult runGc(KernelInterface parentKernel, Address dappAddress, TransactionContext ctx) {
         RuntimeAssertionError.assertTrue(ctx.isGarbageCollectionRequest());
 
-        ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress);
+        ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress.toBytes());
         IObjectGraphStore graphStore = new KeyValueObjectGraph(parentKernel, dappAddress);
         
         LoadedDApp dapp = this.hotCache.checkout(addressWrapper);

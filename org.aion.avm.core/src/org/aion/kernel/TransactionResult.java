@@ -2,6 +2,7 @@ package org.aion.kernel;
 
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
+import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.ResultCode;
 
 import java.util.ArrayList;

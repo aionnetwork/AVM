@@ -2,7 +2,6 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -23,10 +22,10 @@ import org.junit.Test;
  * any possible issues when we have a concrete method that overrides a generic method.
  */
 public class SyntheticMethodsTest {
-    private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private byte[] dappAddr;
+    private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.vm.api.interfaces.Address dappAddr;
 
-    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 6_000_0000;
     private long energyPrice = 1;
 
@@ -44,9 +43,9 @@ public class SyntheticMethodsTest {
 
         this.kernel = new KernelInterfaceImpl();
         this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
-        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(from, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        dappAddr = avm.run(new TransactionContext[] {context})[0].get().getReturnData();
+        dappAddr = AvmAddress.wrap(avm.run(new TransactionContext[] {context})[0].get().getReturnData());
     }
 
     @After
@@ -133,7 +132,7 @@ public class SyntheticMethodsTest {
 
     private TransactionResult createAndRunTransaction(String methodName, Object ... args){
         byte[] txData = ABIEncoder.encodeMethodArguments(methodName, args);
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return avm.run(new TransactionContext[]{context})[0].get();
     }

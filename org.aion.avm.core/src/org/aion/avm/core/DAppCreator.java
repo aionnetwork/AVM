@@ -36,6 +36,8 @@ import org.aion.avm.core.verification.Verifier;
 import org.aion.avm.internal.*;
 import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
+import org.aion.vm.api.interfaces.Address;
+import org.aion.vm.api.interfaces.KernelInterface;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.slf4j.Logger;
@@ -203,7 +205,7 @@ public class DAppCreator {
         LoadedDApp dapp = null;
         try {
             // read dapp module
-            byte[] dappAddress = ctx.getAddress();
+            Address dappAddress = AvmAddress.wrap(ctx.getAddress());
             CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(ctx.getData());
             if (codeAndArguments == null) {
                 result.setStatusCode(TransactionResult.Code.FAILED_INVALID_DATA);
@@ -279,7 +281,7 @@ public class DAppCreator {
             // TODO: whether we should return the dapp address is subject to change
             result.setStatusCode(TransactionResult.Code.SUCCESS);
             result.setEnergyUsed(ctx.getEnergyLimit() - threadInstrumentation.energyLeft());
-            result.setReturnData(dappAddress);
+            result.setReturnData(dappAddress.toBytes());
             result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
             result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_ENERGY);

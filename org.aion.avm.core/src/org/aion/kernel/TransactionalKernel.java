@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.aion.avm.core.util.ByteArrayWrapper;
+import org.aion.vm.api.interfaces.Address;
+import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
@@ -32,10 +34,16 @@ public class TransactionalKernel implements KernelInterface {
         this.cachedAccountBalances = new HashSet<>();
     }
 
+    @Override
+    public TransactionalKernel makeChildKernelInterface() {
+        return new TransactionalKernel(this);
+    }
+
     /**
      * Causes the changes enqueued in the receiver to be written back to the parent.
      * After this call, uses of the receiver are undefined.
      */
+    @Override
     public void commit() {
         for (Consumer<KernelInterface> mutation : this.writeLog) {
             mutation.accept(this.parent);
@@ -46,6 +54,7 @@ public class TransactionalKernel implements KernelInterface {
      * Causes the changes enqueued in the receiver to be written back to the target kernel.
      * This method should only be used by AION kernel for database write back.
      */
+    @Override
     public void commitTo(KernelInterface target) {
         for (Consumer<KernelInterface> mutation : this.writeLog) {
             mutation.accept(target);
@@ -53,21 +62,21 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public void createAccount(byte[] address) {
+    public void createAccount(Address address) {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.createAccount(address);
         };
         write.accept(writeCache);
         writeLog.add(write);
-        this.deletedAccountProjection.remove(new ByteArrayWrapper(address));
+        this.deletedAccountProjection.remove(new ByteArrayWrapper(address.toBytes()));
         // Say that we have this cached so we don't go back to any old version in the parent (even though it is unlikely we will create over delete).
-        this.cachedAccountBalances.add(new ByteArrayWrapper(address));
+        this.cachedAccountBalances.add(new ByteArrayWrapper(address.toBytes()));
     }
 
     @Override
-    public boolean hasAccountState(byte[] address) {
+    public boolean hasAccountState(Address address) {
         boolean result = false;
-        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
+        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address.toBytes()))) {
             result = this.writeCache.hasAccountState(address);
             if (!result) {
                 result = this.parent.hasAccountState(address);
@@ -77,7 +86,7 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public void putCode(byte[] address, byte[] code) {
+    public void putCode(Address address, byte[] code) {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.putCode(address, code);
         };
@@ -86,9 +95,9 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public byte[] getCode(byte[] address) {
+    public byte[] getCode(Address address) {
         byte[] result = null;
-        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
+        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address.toBytes()))) {
             result = this.writeCache.getCode(address);
             if (null == result) {
                 result = this.parent.getCode(address);
@@ -98,7 +107,7 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public void putStorage(byte[] address, byte[] key, byte[] value) {
+    public void putStorage(Address address, byte[] key, byte[] value) {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.putStorage(address, key, value);
         };
@@ -107,7 +116,7 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public byte[] getStorage(byte[] address, byte[] key) {
+    public byte[] getStorage(Address address, byte[] key) {
         // We issue these requests from the given address, only, so it is safe for us to decide that we permit reads after deletes.
         // The direct reason why this happens is that DApps which are already running are permitted to continue running but may need to lazyLoad.
         byte[] result = this.writeCache.getStorage(address, key);
@@ -118,20 +127,20 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public void deleteAccount(byte[] address) {
+    public void deleteAccount(Address address) {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.deleteAccount(address);
         };
         write.accept(writeCache);
         writeLog.add(write);
-        this.deletedAccountProjection.add(new ByteArrayWrapper(address));
-        this.cachedAccountBalances.remove(new ByteArrayWrapper(address));
+        this.deletedAccountProjection.add(new ByteArrayWrapper(address.toBytes()));
+        this.cachedAccountBalances.remove(new ByteArrayWrapper(address.toBytes()));
     }
 
     @Override
-    public BigInteger getBalance(byte[] address) {
+    public BigInteger getBalance(Address address) {
         BigInteger result = BigInteger.ZERO;
-        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
+        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address.toBytes()))) {
             result = this.writeCache.getBalance(address);
             if (result.equals(BigInteger.ZERO)) {
                 result = this.parent.getBalance(address);
@@ -141,22 +150,22 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public void adjustBalance(byte[] address, BigInteger delta) {
+    public void adjustBalance(Address address, BigInteger delta) {
         // This is a read-then-write operation so we need to make sure that there is an entry in our cache, first, before we can apply the mutation.
-        if (!this.cachedAccountBalances.contains(new ByteArrayWrapper(address))) {
+        if (!this.cachedAccountBalances.contains(new ByteArrayWrapper(address.toBytes()))) {
             // We can only re-cache this if we didn't already delete it.
             // If it was deleted, we need to fake the lazy creation and start it at zero.
-            if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
+            if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address.toBytes()))) {
                 BigInteger balance = this.parent.getBalance(address);
                 this.writeCache.adjustBalance(address, balance);
             } else {
                 this.writeCache.adjustBalance(address, BigInteger.ZERO);
             }
-            this.cachedAccountBalances.add(new ByteArrayWrapper(address));
+            this.cachedAccountBalances.add(new ByteArrayWrapper(address.toBytes()));
         }
         // If this was previously deleted, fake the lazy re-creation.
-        this.deletedAccountProjection.remove(new ByteArrayWrapper(address));
-        
+        this.deletedAccountProjection.remove(new ByteArrayWrapper(address.toBytes()));
+
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.adjustBalance(address, delta);
         };
@@ -165,11 +174,11 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public long getNonce(byte[] address) {
-        long result = 0L;
-        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address))) {
+    public BigInteger getNonce(Address address) {
+        BigInteger result = BigInteger.ZERO;
+        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address.toBytes()))) {
             result = this.writeCache.getNonce(address);
-            if (0 == result) {
+            if (result.equals(BigInteger.ZERO)) {
                 result = this.parent.getNonce(address);
             }
         }
@@ -177,7 +186,7 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public void incrementNonce(byte[] address) {
+    public void incrementNonce(Address address) {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.incrementNonce(address);
         };
@@ -186,12 +195,12 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public boolean accountNonceEquals(byte[] address, long nonce) {
-        return nonce == this.getNonce(address);
+    public boolean accountNonceEquals(Address address, BigInteger nonce) {
+        return nonce.compareTo(this.getNonce(address)) == 0;
     }
 
     @Override
-    public boolean accountBalanceIsAtLeast(byte[] address, BigInteger amount) {
+    public boolean accountBalanceIsAtLeast(Address address, BigInteger amount) {
         return this.getBalance(address).compareTo(amount) >= 0;
     }
 
@@ -203,6 +212,40 @@ public class TransactionalKernel implements KernelInterface {
     @Override
     public boolean isValidEnergyLimitForNonCreate(long energyLimit) {
         return energyLimit > 0;
+    }
+
+    @Override
+    public void refundAccount(Address address, BigInteger amount) {
+        // This method may have special logic in the kernel. Here it is just adjustBalance.
+        adjustBalance(address, amount);
+    }
+
+    @Override
+    public void deductEnergyCost(Address address, BigInteger cost) {
+        // This method may have special logic in the kernel. Here it is just adjustBalance.
+        adjustBalance(address, cost);
+    }
+
+    @Override
+    public void payMiningFee(Address address, BigInteger fee) {
+        // This method may have special logic in the kernel. Here it is just adjustBalance.
+        adjustBalance(address, fee);
+    }
+
+    @Override
+    public byte[] getBlockHashByNumber(long blockNumber) {
+        throw new AssertionError("No equivalent concept in the Avm.");
+    }
+
+    @Override
+    public void removeStorage(Address address, byte[] key) {
+        throw new AssertionError("This class does not implement this method.");
+    }
+
+    @Override
+    public boolean destinationAddressIsSafeForThisVM(Address address) {
+        //TODO: implement this with logic that detects fvm addresses.
+        return true;
     }
 
 }

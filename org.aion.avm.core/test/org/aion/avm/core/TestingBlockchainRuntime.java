@@ -11,7 +11,7 @@ import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.math.BigInteger;
-import org.aion.kernel.KernelInterface;
+import org.aion.kernel.AvmAddress;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.TransactionContext;
 
@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
@@ -27,9 +28,9 @@ import java.util.Objects;
  */
 public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
-    private byte[] address = Helpers.address(1);
-    private byte[] caller = Helpers.address(2);
-    private byte[] origin = Helpers.address(2);
+    private org.aion.vm.api.interfaces.Address address = Helpers.address(1);
+    private org.aion.vm.api.interfaces.Address caller = Helpers.address(2);
+    private org.aion.vm.api.interfaces.Address origin = Helpers.address(2);
     private BigInteger value = BigInteger.avm_ZERO;
     private byte[] data = new byte[0];
     private long energyLimit = 1_000_000L;
@@ -37,7 +38,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     private long blockNumber = 1;
     private long blockTimstamp = System.currentTimeMillis();
-    private byte[] blockCoinbase = Helpers.address(3);
+    private org.aion.vm.api.interfaces.Address blockCoinbase = Helpers.address(3);
     private byte[] blockPrevHash = new byte[32];
     private long blockEnergyLimit = 10_000_000L;
     private java.math.BigInteger blockDifficulty = java.math.BigInteger.valueOf(1000L);
@@ -50,9 +51,9 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     public TestingBlockchainRuntime(TransactionContext ctx) {
-        this.address = ctx.getAddress();
-        this.caller = ctx.getCaller();
-        this.origin = ctx.getOrigin();
+        this.address = AvmAddress.wrap(ctx.getAddress());
+        this.caller = AvmAddress.wrap(ctx.getCaller());
+        this.origin = AvmAddress.wrap(ctx.getOrigin());
         this.value = new BigInteger(ctx.getValue());
         this.data = ctx.getData();
         this.energyLimit = ctx.getEnergyLimit();
@@ -63,12 +64,12 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     public TestingBlockchainRuntime withAddress(byte[] address) {
-        this.address = address;
+        this.address = AvmAddress.wrap(address);
         return this;
     }
 
     public TestingBlockchainRuntime withCaller(byte[] caller) {
-        this.caller = caller;
+        this.caller = AvmAddress.wrap(caller);
         return this;
     }
 
@@ -94,17 +95,17 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     @Override
     public Address avm_getAddress() {
-        return new Address(address);
+        return new Address(address.toBytes());
     }
 
     @Override
     public Address avm_getCaller() {
-        return new Address(caller);
+        return new Address(caller.toBytes());
     }
 
     @Override
     public Address avm_getOrigin() {
-        return new Address(origin);
+        return new Address(origin.toBytes());
     }
 
     @Override
@@ -149,7 +150,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     @Override
     public Address avm_getBlockCoinbase() {
-        return new Address(blockCoinbase);
+        return new Address(blockCoinbase.toBytes());
     }
 
     @Override
@@ -161,13 +162,13 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public BigInteger avm_getBalance(Address address) {
         Objects.requireNonNull(address);
-        return new BigInteger(kernel.getBalance(address.unwrap()));
+        return new BigInteger(kernel.getBalance(AvmAddress.wrap(address.unwrap())));
     }
 
     @Override
     public int avm_getCodeSize(Address address) {
         Objects.requireNonNull(address);
-        byte[] vc = kernel.getCode(address.unwrap());
+        byte[] vc = kernel.getCode(AvmAddress.wrap(address.unwrap()));
         return vc == null ? 0 : vc.length;
     }
 

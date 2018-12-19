@@ -8,6 +8,7 @@ import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.ISuspendableInstanceLoader;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.vm.api.interfaces.Address;
 
 
 /**
@@ -41,11 +42,11 @@ public class ReentrantDAppStack {
      * @param address The address of the state we wish to find.
      * @return The first state found with the given address.
      */
-    public ReentrantState tryShareState(byte[] address) {
+    public ReentrantState tryShareState(Address address) {
         RuntimeAssertionError.assertTrue(null != address);
         ReentrantState foundState = null;
         for (ReentrantState state : this.stack) {
-            if (Arrays.equals(state.address, address)) {
+            if (state.address.equals(address)) {
                 foundState = state;
                 break;
             }
@@ -73,12 +74,12 @@ public class ReentrantDAppStack {
 
 
     public static class ReentrantState {
-        public final byte[] address;
+        public final Address address;
         public final LoadedDApp dApp;
         private ISuspendableInstanceLoader instanceLoader;
         private ContractEnvironmentState environment;
         
-        public ReentrantState(byte[] address, LoadedDApp dApp, ContractEnvironmentState environment) {
+        public ReentrantState(Address address, LoadedDApp dApp, ContractEnvironmentState environment) {
             this.address = address;
             this.dApp = dApp;
             this.environment = environment;

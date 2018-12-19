@@ -27,7 +27,7 @@ public class TransactionContextImpl implements TransactionContext {
         this.blockNumber = block.getNumber();
         this.blockTimestamp = block.getTimestamp();
         this.blockEnergyLimit = block.getEnergyLimit();
-        this.blockCoinbase = block.getCoinbase();
+        this.blockCoinbase = block.getCoinbase().toBytes();
         this.blockPrevHash = block.getPrevHash();
         this.blockDifficulty = block.getDifficulty();
     }

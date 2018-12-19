@@ -16,7 +16,10 @@ public class AvmAddress implements Address {
      * @param address the bytes of the address.
      */
     public AvmAddress(byte[] address) {
-        if (address == null || address.length != SIZE) {
+        if (address == null) {
+            throw new NullPointerException("Cannot construct an AvmAddress with null bytes.");
+        }
+        if (address.length != SIZE) {
             throw new IllegalArgumentException("Address byte array must be exactly length " + SIZE);
         }
         this.address = address;

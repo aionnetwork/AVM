@@ -1,7 +1,6 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.HashUtils;
@@ -26,7 +25,7 @@ public class BlockchainRuntimeTest {
     private KernelInterfaceImpl kernel;
     private Avm avm;
 
-    private byte[] premined = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.vm.api.interfaces.Address premined = KernelInterfaceImpl.PREMINED_ADDRESS;
 
     @Before
     public void setup() {
@@ -42,10 +41,10 @@ public class BlockchainRuntimeTest {
     @Test
     public void testBlockchainRuntime() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class, AionBuffer.class);
-        byte[] dappAddress = installJarAsDApp(jar);
+        org.aion.vm.api.interfaces.Address dappAddress = installJarAsDApp(jar);
         
-        byte[] from = premined;
-        byte[] to = dappAddress;
+        org.aion.vm.api.interfaces.Address from = premined;
+        org.aion.vm.api.interfaces.Address to = dappAddress;
         BigInteger value = BigInteger.ONE;
         byte[] txData = "tx_data".getBytes();
         long energyLimit = 2_000_000;
@@ -53,20 +52,20 @@ public class BlockchainRuntimeTest {
 
         byte[] blockPrevHash = Helpers.randomBytes(32);
         long blockNumber = 4;
-        byte[] blockCoinbase = address(5);
+        org.aion.vm.api.interfaces.Address blockCoinbase = address(5);
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
-        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined).longValue(), value, txData, energyLimit, energyPrice);
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
         TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
-        buffer.put(to);
-        buffer.put(from);
-        buffer.put(from);
+        buffer.put(to.toBytes());
+        buffer.put(from.toBytes());
+        buffer.put(from.toBytes());
         buffer.putLong(energyLimit);
         buffer.putLong(energyPrice);
         buffer.putLong(value.longValue());
@@ -74,11 +73,11 @@ public class BlockchainRuntimeTest {
         buffer.putLong(blockTimestamp);
         buffer.putLong(blockNumber);
         buffer.putLong(block.getEnergyLimit());
-        buffer.put(blockCoinbase);
+        buffer.put(blockCoinbase.toBytes());
         buffer.put(blockPrevHash);
         buffer.put(block.getDifficulty().toByteArray());
         buffer.put("value".getBytes());
-        buffer.putLong(kernel.getBalance(new byte[32]).longValue());
+        buffer.putLong(kernel.getBalance(AvmAddress.wrap(new byte[32])).longValue());
         buffer.putLong(kernel.getCode(dappAddress).length);
         buffer.put(HashUtils.blake2b("blake2b-message".getBytes()));
         buffer.put(HashUtils.sha256("sha256-message".getBytes()));
@@ -91,10 +90,10 @@ public class BlockchainRuntimeTest {
     @Test
     public void testIncorrectParameters() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestFailingResource.class);
-        byte[] dappAddress = installJarAsDApp(jar);
+        org.aion.vm.api.interfaces.Address dappAddress = installJarAsDApp(jar);
         
-        byte[] from = premined;
-        byte[] to = dappAddress;
+        org.aion.vm.api.interfaces.Address from = premined;
+        org.aion.vm.api.interfaces.Address to = dappAddress;
         BigInteger value = BigInteger.ONE;
         byte[] txData = "expectFailure".getBytes();
         long energyLimit = 2_000_000;
@@ -102,11 +101,11 @@ public class BlockchainRuntimeTest {
 
         byte[] blockPrevHash = Helpers.randomBytes(32);
         long blockNumber = 4;
-        byte[] blockCoinbase = address(5);
+        org.aion.vm.api.interfaces.Address blockCoinbase = address(5);
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
-        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined).longValue(), value, txData, energyLimit, energyPrice);
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
@@ -119,10 +118,10 @@ public class BlockchainRuntimeTest {
     @Test
     public void testInvalidAbiInput() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ABIFailureTestResource.class);
-        byte[] dappAddress = installJarAsDApp(jar);
+        org.aion.vm.api.interfaces.Address dappAddress = installJarAsDApp(jar);
         
-        byte[] from = premined;
-        byte[] to = dappAddress;
+        org.aion.vm.api.interfaces.Address from = premined;
+        org.aion.vm.api.interfaces.Address to = dappAddress;
         BigInteger value = BigInteger.ONE;
         byte[] txData = "not encoded for ABI usage".getBytes();
         long energyLimit = 2_000_000;
@@ -130,11 +129,11 @@ public class BlockchainRuntimeTest {
 
         byte[] blockPrevHash = Helpers.randomBytes(32);
         long blockNumber = 4;
-        byte[] blockCoinbase = address(5);
+        org.aion.vm.api.interfaces.Address blockCoinbase = address(5);
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
-        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined).longValue(), value, txData, energyLimit, energyPrice);
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
@@ -144,13 +143,13 @@ public class BlockchainRuntimeTest {
     }
 
 
-    private byte[] installJarAsDApp(byte[] jar) {
+    private org.aion.vm.api.interfaces.Address installJarAsDApp(byte[] jar) {
         byte[] arguments = null;
-        Transaction tx = Transaction.create(premined, kernel.getNonce(premined), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
-        TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]));
+        Transaction tx = Transaction.create(premined, kernel.getNonce(premined).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
+        TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]));
         TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getStatusCode().isSuccess());
 
-        return txResult.getReturnData();
+        return AvmAddress.wrap(txResult.getReturnData());
     }
 }

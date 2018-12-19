@@ -28,7 +28,7 @@ import org.aion.kernel.KernelInterfaceImpl;
  */
 public class ArgumentParser {
     static String DEFAULT_STORAGE = "./storage";
-    static String DEFAULT_SENDER_STRING = Helpers.bytesToHexString(KernelInterfaceImpl.PREMINED_ADDRESS);
+    static String DEFAULT_SENDER_STRING = KernelInterfaceImpl.PREMINED_ADDRESS.toString();
     static long DEFAULT_ENERGY_LIMIT = 100_000_000L;
 
     /**

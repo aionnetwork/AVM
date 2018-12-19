@@ -3,7 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IInstrumentationFactory;
-import org.aion.kernel.KernelInterface;
+import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**

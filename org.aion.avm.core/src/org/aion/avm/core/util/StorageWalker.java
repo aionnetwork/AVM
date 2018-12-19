@@ -35,7 +35,9 @@ import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.KernelInterface;
+import org.aion.kernel.AvmAddress;
+import org.aion.vm.api.interfaces.Address;
+import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
@@ -61,7 +63,7 @@ public class StorageWalker {
      * @throws IllegalArgumentException A problem interpreting the data.
      * @throws IllegalAccessException A problem interpreting the data.
      */
-    public static void walkAllStaticsForDapp(PrintStream output, KernelInterface kernel, byte[] dappAddress) throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    public static void walkAllStaticsForDapp(PrintStream output, KernelInterface kernel, Address dappAddress) throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         byte[] immortalDappJar = kernel.getCode(dappAddress);
         ImmortalDappModule app = ImmortalDappModule.readFromJar(immortalDappJar);
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes, Helpers.loadDefaultHelperBytecode());

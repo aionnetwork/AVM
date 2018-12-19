@@ -7,23 +7,24 @@ import org.aion.avm.core.util.Helpers;
 
 import java.util.Arrays;
 import java.util.Objects;
+import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 
 public class Transaction implements TransactionInterface {
-    public static Transaction create(byte[] from, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    public static Transaction create(Address from, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new Transaction(Type.CREATE, from, null, nonce, value, data, energyLimit, energyPrice);
     }
 
-    public static Transaction call(byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    public static Transaction call(Address from, Address to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new Transaction(Type.CALL, from, to, nonce, value, data, energyLimit, energyPrice);
     }
 
-    public static Transaction balanceTransfer(byte[] from, byte[] to, long nonce, BigInteger value, long energyPrice) {
+    public static Transaction balanceTransfer(Address from, Address to, long nonce, BigInteger value, long energyPrice) {
         return new Transaction(Type.BALANCE_TRANSFER, from, to, nonce, value, new byte[0], BillingRules.BASIC_COST, energyPrice);
     }
 
-    public static Transaction garbageCollect(byte[] target, long nonce, long energyLimit, long energyPrice) {
+    public static Transaction garbageCollect(Address target, long nonce, long energyLimit, long energyPrice) {
         // This may seem a bit odd but we state that the "target" of the GC is the "sender" address.
         // This is because, on a conceptual level, the GC is "sent to itself" but also allows the nonce check to be consistent.
         return new Transaction(Type.GARBAGE_COLLECT, target, target, nonce, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
@@ -73,7 +74,7 @@ public class Transaction implements TransactionInterface {
 
     byte vm;
 
-    protected Transaction(Type type, byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    protected Transaction(Type type, Address from, Address to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         Objects.requireNonNull(type, "The transaction `type` can't be NULL");
         Objects.requireNonNull(from, "The transaction `from` can't be NULL");
         if (type == Type.CREATE) {
@@ -85,8 +86,8 @@ public class Transaction implements TransactionInterface {
         }
 
         this.type = type;
-        this.from = from;
-        this.to = to;
+        this.from = from.toBytes();
+        this.to = (to == null) ? null : to.toBytes();
         this.nonce = nonce;
         this.value = value;
         this.data = data;

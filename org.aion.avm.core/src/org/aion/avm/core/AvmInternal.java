@@ -1,10 +1,10 @@
 package org.aion.avm.core;
 
-import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionResult;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
+import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**

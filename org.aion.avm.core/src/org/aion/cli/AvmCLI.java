@@ -23,13 +23,13 @@ import java.nio.file.Paths;
 
 
 public class AvmCLI {
-    static Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    public static TransactionContext setupOneDeploy(IEnvironment env, String storagePath, String jarPath, byte[] sender, long energyLimit) {
+    public static TransactionContext setupOneDeploy(IEnvironment env, String storagePath, String jarPath, org.aion.vm.api.interfaces.Address sender, long energyLimit) {
 
         reportDeployRequest(env, storagePath, jarPath, sender);
 
-        if (sender.length != Address.LENGTH){
+        if (sender.toBytes().length != Address.LENGTH){
             throw env.fail("deploy : Invalid sender address");
         }
 
@@ -45,17 +45,17 @@ public class AvmCLI {
             throw env.fail("deploy : Invalid location of Dapp jar");
         }
 
-        Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
+        Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
 
         return new TransactionContextImpl(createTransaction, block);
     }
 
-    public static void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, byte[] sender) {
+    public static void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, org.aion.vm.api.interfaces.Address sender) {
         lineSeparator(env);
         env.logLine("DApp deployment request");
         env.logLine("Storage      : " + storagePath);
         env.logLine("Dapp Jar     : " + jarPath);
-        env.logLine("Sender       : " + Helpers.bytesToHexString(sender));
+        env.logLine("Sender       : " + sender);
     }
 
     public static void reportDeployResult(IEnvironment env, TransactionResult createResult){
@@ -69,14 +69,14 @@ public class AvmCLI {
         env.logLine("Energy cost  : " + createResult.getEnergyUsed());
     }
 
-    public static TransactionContext setupOneCall(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, Object[] args, long energyLimit, long nonceBias) {
+    public static TransactionContext setupOneCall(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, String method, Object[] args, long energyLimit, long nonceBias) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
-        if (contract.length != Address.LENGTH){
+        if (contract.toBytes().length != Address.LENGTH){
             throw env.fail("call : Invalid Dapp address ");
         }
 
-        if (sender.length != Address.LENGTH){
+        if (sender.toBytes().length != Address.LENGTH){
             throw env.fail("call : Invalid sender address");
         }
 
@@ -87,17 +87,17 @@ public class AvmCLI {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
 
         // TODO:  Remove this bias when/if we change this to no longer send all transactions from the same account.
-        long biasedNonce = kernel.getNonce(sender) + nonceBias;
+        long biasedNonce = kernel.getNonce(sender).longValue() + nonceBias;
         Transaction callTransaction = Transaction.call(sender, contract, biasedNonce, BigInteger.ZERO, arguments, energyLimit, 1L);
         return new TransactionContextImpl(callTransaction, block);
     }
 
-    private static void reportCallRequest(IEnvironment env, String storagePath, byte[] contract, byte[] sender, String method, Object[] args){
+    private static void reportCallRequest(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, String method, Object[] args){
         lineSeparator(env);
         env.logLine("DApp call request");
         env.logLine("Storage      : " + storagePath);
-        env.logLine("Dapp Address : " + Helpers.bytesToHexString(contract));
-        env.logLine("Sender       : " + Helpers.bytesToHexString(sender));
+        env.logLine("Dapp Address : " + contract);
+        env.logLine("Sender       : " + sender);
         env.logLine("Method       : " + method);
         env.logLine("Arguments    : ");
         for (int i = 0; i < args.length; i += 2){
@@ -121,14 +121,14 @@ public class AvmCLI {
         env.logLine("*******************************************************************************************");
     }
 
-    public static void openAccount(IEnvironment env, String storagePath, byte[] toOpen){
+    public static void openAccount(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address toOpen){
         lineSeparator(env);
 
-        if (toOpen.length != Address.LENGTH){
+        if (toOpen.toBytes().length != Address.LENGTH){
             throw env.fail("open : Invalid address to open");
         }
 
-        env.logLine("Creating Account " + Helpers.bytesToHexString(toOpen));
+        env.logLine("Creating Account " + toOpen);
 
         File storageFile = new File(storagePath);
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
@@ -139,7 +139,7 @@ public class AvmCLI {
         env.logLine("Account Balance : " + kernel.getBalance(toOpen));
     }
 
-    public static void exploreStorage(IEnvironment env, String storagePath, byte[] dappAddress) {
+    public static void exploreStorage(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address dappAddress) {
         // Create the PrintStream abstraction that walkAllStaticsForDapp expects.
         // (ideally, we would incrementally filter this but that could be a later improvement - current Dapps are very small).
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -220,10 +220,10 @@ public class AvmCLI {
                     RuntimeAssertionError.unreachable("This should be in the batching path");
                     break;
                 case EXPLORE:
-                    exploreStorage(env, invocation.storagePath, Helpers.hexStringToBytes(command.contractAddress));
+                    exploreStorage(env, invocation.storagePath, AvmAddress.wrap(Helpers.hexStringToBytes(command.contractAddress)));
                     break;
                 case OPEN:
-                    openAccount(env, invocation.storagePath, Helpers.hexStringToBytes(command.contractAddress));
+                    openAccount(env, invocation.storagePath, AvmAddress.wrap(Helpers.hexStringToBytes(command.contractAddress)));
                     break;
                 case BYTES:
                     try {
@@ -253,10 +253,22 @@ public class AvmCLI {
                     case CALL:
                         Object[] callArgs = new Object[command.args.size()];
                         command.args.toArray(callArgs);
-                        transactions[i] = setupOneCall(env, invocation.storagePath, Helpers.hexStringToBytes(command.contractAddress), Helpers.hexStringToBytes(command.senderAddress), command.method, callArgs, command.energyLimit, i);
+                        transactions[i] = setupOneCall(
+                            env,
+                            invocation.storagePath,
+                            AvmAddress.wrap(Helpers.hexStringToBytes(command.contractAddress)),
+                            AvmAddress.wrap(Helpers.hexStringToBytes(command.senderAddress)),
+                            command.method, callArgs,
+                            command.energyLimit,
+                            i);
                         break;
                     case DEPLOY:
-                        transactions[i] = setupOneDeploy(env, invocation.storagePath, command.jarPath, Helpers.hexStringToBytes(command.senderAddress), command.energyLimit);
+                        transactions[i] = setupOneDeploy(
+                            env,
+                            invocation.storagePath,
+                            command.jarPath,
+                            AvmAddress.wrap(Helpers.hexStringToBytes(command.senderAddress)),
+                            command.energyLimit);
                         break;
                     case EXPLORE:
                     case OPEN:

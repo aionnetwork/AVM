@@ -13,13 +13,14 @@ import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
+import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,7 +28,7 @@ import org.junit.Test;
 public class ExceptionWrappingIntegrationTest {
     @Test
     public void testExceptionPersistence() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
@@ -59,7 +60,7 @@ public class ExceptionWrappingIntegrationTest {
 
     @Test
     public void testOutOfEnergy() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
@@ -81,7 +82,7 @@ public class ExceptionWrappingIntegrationTest {
 
     @Test
     public void testNullPointerException() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
@@ -103,7 +104,7 @@ public class ExceptionWrappingIntegrationTest {
 
     @Test
     public void testOutOfMemoryError() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
@@ -141,7 +142,7 @@ public class ExceptionWrappingIntegrationTest {
 
     @Test
     public void testOutOfMemoryErrorReentrant() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
@@ -190,12 +191,12 @@ public class ExceptionWrappingIntegrationTest {
     }
 
     private TransactionResult commonCallStatic(Block block, KernelInterface kernel, Avm avm, Address contractAddr, String methodName) {
-        byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
+        org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
         byte[] argData = (null != methodName)
                 ? ABIEncoder.encodeMethodArguments(methodName)
                 : new byte[0];
-        Transaction call = Transaction.call(from, contractAddr.unwrap(), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
+        Transaction call = Transaction.call(from, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(from).longValue(), BigInteger.ZERO, argData, energyLimit, 1l);
         return avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
     }
 }

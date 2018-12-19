@@ -8,13 +8,14 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
+import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionResult;
+import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,7 +26,7 @@ import org.junit.Test;
 public class SelfDestructTest {
     private static long ENERGY_LIMIT = 10_000_000L;
     private static long ENERGY_PRICE = 1L;
-    private static byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private static Block block;
 
     private KernelInterface kernel;
@@ -33,7 +34,7 @@ public class SelfDestructTest {
 
     @BeforeClass
     public static void setupClass() {
-        block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     }
 
     @Before
@@ -49,14 +50,14 @@ public class SelfDestructTest {
 
     @Test
     public void callMissingDApp() {
-        failToCall(TestingHelper.buildAddress(deployer));
+        failToCall(TestingHelper.buildAddress(deployer.toBytes()));
     }
 
     @Test
     public void deleteSelfAndReturnValue() {
         Address target = deployCommonResource(new byte[0]);
         
-        byte[] argData = ABIEncoder.encodeMethodArguments("deleteAndReturn", TestingHelper.buildAddress(deployer));
+        byte[] argData = ABIEncoder.encodeMethodArguments("deleteAndReturn", TestingHelper.buildAddress(deployer.toBytes()));
         Object resultObject = callDApp(target, argData);
         Assert.assertEquals(SelfDestructResource.DELETE_AND_RETURN, ((Integer)resultObject).intValue());
         failToCall(target);
@@ -67,7 +68,7 @@ public class SelfDestructTest {
         Address bystander = deployCommonResource(new byte[0]);
         Address target = deployCommonResource(new byte[0]);
         
-        byte[] argData = ABIEncoder.encodeMethodArguments("deleteCallAndReturn", TestingHelper.buildAddress(deployer), bystander);
+        byte[] argData = ABIEncoder.encodeMethodArguments("deleteCallAndReturn", TestingHelper.buildAddress(deployer.toBytes()), bystander);
         Object resultObject = callDApp(target, argData);
         Assert.assertEquals(SelfDestructResource.JUST_RETURN, ((Integer)resultObject).intValue());
         failToCall(target);
@@ -76,7 +77,7 @@ public class SelfDestructTest {
     @Test
     public void deleteSelfDuringDeploy() {
         // Provide the deployer address as an argument, it will pay to them.
-        Address target = deployCommonResource(deployer);
+        Address target = deployCommonResource(deployer.toBytes());
         
         // The response should be real, but also impossible to call.
         Assert.assertTrue(null != target);
@@ -88,7 +89,7 @@ public class SelfDestructTest {
         Address target = deployCommonResource(new byte[0]);
         
         // Call the callSelfForNull entry-point and it should return null to us.
-        byte[] argData = ABIEncoder.encodeMethodArguments("deleteDeployAndReturnAddress", TestingHelper.buildAddress(deployer), makeDeploymentData(new byte[0]));
+        byte[] argData = ABIEncoder.encodeMethodArguments("deleteDeployAndReturnAddress", TestingHelper.buildAddress(deployer.toBytes()), makeDeploymentData(new byte[0]));
         Object resultObject = callDApp(target, argData);
         Address newTarget = (Address)resultObject;
         
@@ -106,10 +107,10 @@ public class SelfDestructTest {
         // Give it some money, so we can check this later.
         sendMoney(target, new BigInteger("128"));
         
-        long start = kernel.getBalance(target.unwrap()).longValueExact();
+        long start = kernel.getBalance(AvmAddress.wrap(target.unwrap())).longValueExact();
         Assert.assertEquals(128L, start);
         
-        byte[] argData = ABIEncoder.encodeMethodArguments("deleteAndReturnBalance", TestingHelper.buildAddress(deployer));
+        byte[] argData = ABIEncoder.encodeMethodArguments("deleteAndReturnBalance", TestingHelper.buildAddress(deployer.toBytes()));
         long result = ((Long)callDApp(target, argData)).longValue();
         Assert.assertEquals(0L, result);
         failToCall(target);
@@ -123,10 +124,10 @@ public class SelfDestructTest {
         // Give it some money, so we can check this later.
         sendMoney(target, new BigInteger("128"));
         
-        long start = kernel.getBalance(target.unwrap()).longValueExact();
+        long start = kernel.getBalance(AvmAddress.wrap(target.unwrap())).longValueExact();
         Assert.assertEquals(128L, start);
         
-        byte[] argData = ABIEncoder.encodeMethodArguments("deleteAndReturnBalanceFromAnother", TestingHelper.buildAddress(deployer), bystander);
+        byte[] argData = ABIEncoder.encodeMethodArguments("deleteAndReturnBalanceFromAnother", TestingHelper.buildAddress(deployer.toBytes()), bystander);
         long result = ((Long)callDApp(target, argData)).longValue();
         Assert.assertEquals(0L, result);
         failToCall(target);
@@ -136,7 +137,7 @@ public class SelfDestructTest {
     public void deleteAndFailToCallSelf() {
         Address target = deployCommonResource(new byte[0]);
         
-        byte[] argData = ABIEncoder.encodeMethodArguments("deleteAndFailToCallSelf", TestingHelper.buildAddress(deployer));
+        byte[] argData = ABIEncoder.encodeMethodArguments("deleteAndFailToCallSelf", TestingHelper.buildAddress(deployer.toBytes()));
         Object resultObject = callDApp(target, argData);
         Assert.assertEquals(SelfDestructResource.DELETE_AND_FAIL_TO_CALL_SELF, ((Integer)resultObject).intValue());
         failToCall(target);
@@ -147,7 +148,7 @@ public class SelfDestructTest {
         Address accomplice = deployCommonResource(new byte[0]);
         Address target = deployCommonResource(new byte[0]);
         
-        byte[] argData = ABIEncoder.encodeMethodArguments("callToDeleteSuccess", TestingHelper.buildAddress(deployer), target);
+        byte[] argData = ABIEncoder.encodeMethodArguments("callToDeleteSuccess", TestingHelper.buildAddress(deployer.toBytes()), target);
         Object resultObject = callDApp(accomplice, argData);
         Assert.assertEquals(SelfDestructResource.CALL_TO_DELETE_SUCCESS, ((Integer)resultObject).intValue());
         failToCall(target);
@@ -158,7 +159,7 @@ public class SelfDestructTest {
         Address accomplice = deployCommonResource(new byte[0]);
         Address target = deployCommonResource(new byte[0]);
         
-        byte[] argData = ABIEncoder.encodeMethodArguments("callToDeleteFailure", TestingHelper.buildAddress(deployer), target);
+        byte[] argData = ABIEncoder.encodeMethodArguments("callToDeleteFailure", TestingHelper.buildAddress(deployer.toBytes()), target);
         Object resultObject = callDApp(accomplice, argData);
         Assert.assertEquals(SelfDestructResource.CALL_TO_DELETE_FAIL, ((Integer)resultObject).intValue());
         
@@ -175,7 +176,7 @@ public class SelfDestructTest {
         
         // Give it some money, so we can check this later.
         sendMoney(target, new BigInteger("128"));
-        long start = kernel.getBalance(target.unwrap()).longValueExact();
+        long start = kernel.getBalance(AvmAddress.wrap(target.unwrap())).longValueExact();
         Assert.assertEquals(128L, start);
         
         byte[] argData = ABIEncoder.encodeMethodArguments("deleteAndReturnBeneficiaryBalance", beneficiary);
@@ -185,7 +186,7 @@ public class SelfDestructTest {
         failToCall(target);
         
         // Check that we can see the balance having moved.
-        long end = kernel.getBalance(beneficiary.unwrap()).longValueExact();
+        long end = kernel.getBalance(AvmAddress.wrap(beneficiary.unwrap())).longValueExact();
         Assert.assertEquals(128L, end);
     }
 
@@ -193,21 +194,21 @@ public class SelfDestructTest {
     private Address deployCommonResource(byte[] deployArgs) {
         byte[] txData = makeDeploymentData(deployArgs);
         
-        Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
         return TestingHelper.buildAddress(result1.getReturnData());
     }
 
     private Object callDApp(Address dAppAddress, byte[] argData) {
-        Transaction tx = Transaction.call(deployer, dAppAddress.unwrap(), kernel.getNonce(deployer), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction tx = Transaction.call(deployer, AvmAddress.wrap(dAppAddress.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return TestingHelper.decodeResult(result);
     }
 
     private void failToCall(Address dAppAddress) {
-        Transaction tx = Transaction.call(deployer, dAppAddress.unwrap(), kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction tx = Transaction.call(deployer, AvmAddress.wrap(dAppAddress.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[0], ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         // Sending a call to nobody is a success, since the data doesn't need to go anywhere.
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
@@ -221,7 +222,7 @@ public class SelfDestructTest {
     }
 
     private void sendMoney(Address target, BigInteger value) {
-        Transaction tx = Transaction.call(deployer, target.unwrap(), kernel.getNonce(deployer), value, new byte[0], ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction tx = Transaction.call(deployer, AvmAddress.wrap(target.unwrap()), kernel.getNonce(deployer).longValue(), value, new byte[0], ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
     }

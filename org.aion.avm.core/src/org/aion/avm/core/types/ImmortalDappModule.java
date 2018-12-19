@@ -13,6 +13,7 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.kernel.TransactionContext;
+import org.aion.vm.api.interfaces.Address;
 
 
 /**
@@ -59,7 +60,7 @@ public class ImmortalDappModule {
     /**
      * Create the in-memory JAR containing all the classes in this module.
      */
-    public byte[] createJar(byte[] address, TransactionContext context) throws IOException {
+    public byte[] createJar(Address address, TransactionContext context) throws IOException {
         // set jar file timestamps to transaction timestamp.
         FileTime timestamp = FileTime.fromMillis(context.getTransactionTimestamp());
 

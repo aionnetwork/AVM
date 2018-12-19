@@ -17,7 +17,9 @@ import org.aion.avm.core.persistence.StreamingPrimitiveCodec;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.KernelInterface;
+import org.aion.kernel.AvmAddress;
+import org.aion.vm.api.interfaces.Address;
+import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
@@ -31,7 +33,7 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
 
     private final Map<Long, KeyValueNode> idToNodeMap;
     private final KernelInterface store;
-    private final byte[] address;
+    private final Address address;
     private long nextInstanceId;
     // Tells us which half of the semi-space we are in:  0L or HIGH_RANGE_BIAS.
     // Note that this instanceId is used for segmented addressing, but is not stored in the stored data.
@@ -47,7 +49,7 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     private IDeserializer logicalDeserializer;
     private Function<IRegularNode, IPersistenceToken> tokenBuilder;
 
-    public KeyValueObjectGraph(KernelInterface store, byte[] address) {
+    public KeyValueObjectGraph(KernelInterface store, Address address) {
         this.idToNodeMap = new HashMap<>();
         this.store = store;
         this.address = address;
@@ -318,14 +320,13 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
 
     @Override
     public String toString() {
-        return "KeyValueObjectGraph @" + Arrays.toString(this.address);
+        return "KeyValueObjectGraph @" + this.address;
     }
 
     /**
      * Called by KeyValueNode to create the instance it references (which it, internally, caches for any future requests).
      * 
      * @param instanceClassName
-     * @param instanceId
      * @return
      */
     public org.aion.avm.shadow.java.lang.Object createInstanceStubForNode(String instanceClassName, IRegularNode callingNode) {

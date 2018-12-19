@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.persistence.keyvalue.KeyValueCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
@@ -14,6 +15,7 @@ import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.vm.api.interfaces.Address;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,7 +67,7 @@ public class ReflectionStructureCodecTest {
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        byte[] address = {1,2,3};
+        Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph);
         SerializedRepresentationCodec.Encoder encoder = new SerializedRepresentationCodec.Encoder();
@@ -110,7 +112,7 @@ public class ReflectionStructureCodecTest {
         target.i_nine = new ReflectionStructureCodecTarget();
         
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        byte[] address = {1,2,3};
+        Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph);
         byte[] result = serializeSinceInstanceHelper(codec, target);
@@ -159,7 +161,7 @@ public class ReflectionStructureCodecTest {
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //i_eight
         };
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        byte[] address = {1,2,3};
+        Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         SerializedRepresentation extent = KeyValueCodec.decode(graph, expected);
         StandardFieldPopulator populator = new StandardFieldPopulator();
@@ -193,7 +195,7 @@ public class ReflectionStructureCodecTest {
         one.i_nine = two;
         
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        byte[] address = {1,2,3};
+        Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         StandardFieldPopulator populator = new StandardFieldPopulator();
@@ -240,7 +242,7 @@ public class ReflectionStructureCodecTest {
         root2.i_nine = overlap;
         
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        byte[] address = {1,2,3};
+        Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         StandardFieldPopulator populator = new StandardFieldPopulator();
@@ -292,7 +294,7 @@ public class ReflectionStructureCodecTest {
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //i_eight
         };
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        byte[] address = {1,2,3};
+        Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         SerializedRepresentation extent1 = KeyValueCodec.decode(graph, expected1);
         SerializedRepresentation extent2 = KeyValueCodec.decode(graph, expected2);

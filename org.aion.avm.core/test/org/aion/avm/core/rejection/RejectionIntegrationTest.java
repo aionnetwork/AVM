@@ -2,7 +2,6 @@ package org.aion.avm.core.rejection;
 
 import java.math.BigInteger;
 
-import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -25,7 +24,7 @@ import org.junit.Test;
  */
 public class RejectionIntegrationTest {
     // We will reuse these, for now, since we want to test that doing so is safe.  We may change this, in the future, is we depend on something perturbed by this.
-    private static final byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static final org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private static KernelInterfaceImpl kernel;
     private static Avm avm;
 
@@ -42,14 +41,14 @@ public class RejectionIntegrationTest {
 
     @Test
     public void rejectNonShadowJclSubclassError() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectNonShadowJclSubclassError.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         // Deploy.
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.FAILED_REJECTED, createResult.getStatusCode());
     }

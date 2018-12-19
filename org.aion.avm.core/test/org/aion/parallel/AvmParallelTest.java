@@ -2,7 +2,6 @@ package org.aion.parallel;
 
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -14,9 +13,9 @@ import org.junit.Test;
 
 public class AvmParallelTest {
 
-    private byte[] preminedAddress = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.vm.api.interfaces.Address preminedAddress = KernelInterfaceImpl.PREMINED_ADDRESS;
 
-    private Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     private TransactionContext[] generateCTXBatch(Transaction[] batch){
         TransactionContext[] ret = new TransactionContext[batch.length];
@@ -33,7 +32,7 @@ public class AvmParallelTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
-        byte[] usr1 = Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111");
+        org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
         BigInteger expected1 = BigInteger.ZERO;
 
         Transaction t0 = Transaction.call(preminedAddress, usr1, 0, BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
@@ -52,7 +51,7 @@ public class AvmParallelTest {
 
         Assert.assertEquals(expected1, kernel.getBalance(usr1));
 
-        byte[] usr2 = Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222");
+        org.aion.vm.api.interfaces.Address usr2 = AvmAddress.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
         BigInteger expected2 = BigInteger.ZERO;
 
         t0 = Transaction.call(usr1, usr2, 0, BigInteger.valueOf(100_000), new byte[0], 100000L, 1);
@@ -103,10 +102,10 @@ public class AvmParallelTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
-        byte[] usr1 = Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111");
-        byte[] usr2 = Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222");
-        byte[] usr3 = Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333");
-        byte[] usr4 = Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444");
+        org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
+        org.aion.vm.api.interfaces.Address usr2 = AvmAddress.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
+        org.aion.vm.api.interfaces.Address usr3 = AvmAddress.wrap(Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333"));
+        org.aion.vm.api.interfaces.Address usr4 = AvmAddress.wrap(Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444"));
 
         Transaction t0 = Transaction.call(preminedAddress, usr1, 0, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
         Transaction t1 = Transaction.call(usr1, usr2, 0, BigInteger.valueOf(4_000_000), new byte[0], 100000L, 1);
@@ -132,10 +131,10 @@ public class AvmParallelTest {
         Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
 
-        byte[] usr1 = Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111");
-        byte[] usr2 = Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222");
-        byte[] usr3 = Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333");
-        byte[] usr4 = Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444");
+        org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
+        org.aion.vm.api.interfaces.Address usr2 = AvmAddress.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
+        org.aion.vm.api.interfaces.Address usr3 = AvmAddress.wrap(Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333"));
+        org.aion.vm.api.interfaces.Address usr4 = AvmAddress.wrap(Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444"));
 
         Transaction t0 = Transaction.call(preminedAddress, usr1, 0, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
         Transaction t1 = Transaction.call(preminedAddress, usr2, 1, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
@@ -150,7 +149,7 @@ public class AvmParallelTest {
         }
 
         TransactionResult res = results[4].get();
-        byte[] contractAddr = res.getReturnData();
+        org.aion.vm.api.interfaces.Address contractAddr = AvmAddress.wrap(res.getReturnData());
 
         byte[] args = ABIEncoder.encodeMethodArguments("doTransfer");
         byte[] args2 = ABIEncoder.encodeMethodArguments("addValue");

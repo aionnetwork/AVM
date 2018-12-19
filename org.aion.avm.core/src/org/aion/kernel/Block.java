@@ -1,6 +1,7 @@
 package org.aion.kernel;
 
 import java.math.BigInteger;
+import org.aion.vm.api.interfaces.Address;
 
 public class Block {
 
@@ -8,13 +9,13 @@ public class Block {
 
     private long number;
 
-    private byte[] coinbase;
+    private Address coinbase;
 
     private long timestamp;
 
     private byte[] data;
 
-    public Block(byte[] prevHash, long number, byte[] coinbase, long timestamp, byte[] data) {
+    public Block(byte[] prevHash, long number, Address coinbase, long timestamp, byte[] data) {
         this.prevHash = prevHash;
         this.number = number;
         this.coinbase = coinbase;
@@ -30,7 +31,7 @@ public class Block {
         return number;
     }
 
-    public byte[] getCoinbase() {
+    public Address getCoinbase() {
         return coinbase;
     }
 

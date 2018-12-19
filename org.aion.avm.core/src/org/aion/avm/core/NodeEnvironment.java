@@ -10,13 +10,13 @@ import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.GeneratedClassesFactory;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
-import org.aion.kernel.KernelInterface;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**

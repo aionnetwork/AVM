@@ -9,6 +9,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
+import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
@@ -28,8 +29,8 @@ public class TransformedMethodTest {
     private static final long ENERGY_LIMIT = 10_000_000L;
     private static final long ENERGY_PRICE = 1L;
 
-    private static Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
-    private static byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private static org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private static KernelInterfaceImpl kernel = new KernelInterfaceImpl();
     private static Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
     private static Address dappAddress;
@@ -40,7 +41,7 @@ public class TransformedMethodTest {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         // Deploy.
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
         dappAddress = TestingHelper.buildAddress(createResult.getReturnData());
@@ -54,7 +55,7 @@ public class TransformedMethodTest {
     @Test
     public void testCallNothing() {
         byte[] argData = ABIEncoder.encodeMethodArguments("nothing");
-        Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction call = Transaction.call(deployer, AvmAddress.wrap(dappAddress.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
     }
@@ -384,7 +385,7 @@ public class TransformedMethodTest {
     }
 
     private TransactionResult runTransaction(byte[] argData) {
-        Transaction call = Transaction.call(deployer, dappAddress.unwrap(), kernel.getNonce(deployer), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction call = Transaction.call(deployer, AvmAddress.wrap(dappAddress.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
         return result;

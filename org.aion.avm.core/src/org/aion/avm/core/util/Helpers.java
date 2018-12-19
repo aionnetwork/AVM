@@ -11,6 +11,8 @@ import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.internal.StackWatcher;
+import org.aion.kernel.AvmAddress;
+import org.aion.vm.api.interfaces.Address;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -136,6 +138,17 @@ public class Helpers {
     private static SecureRandom secureRandom = new SecureRandom();
 
     /**
+     * Generate a random address.
+     *
+     * @return
+     */
+    public static Address randomAddress() {
+        byte[] bytes = new byte[Address.SIZE];
+        secureRandom.nextBytes(bytes);
+        return AvmAddress.wrap(bytes);
+    }
+
+    /**
      * Generate random byte array of the specified length.
      *
      * @param n
@@ -236,12 +249,12 @@ public class Helpers {
     }
 
     // for test suites only
-    public static byte[] address(int n) {
+    public static Address address(int n) {
         byte[] arr = new byte[32];
         for (int i = 0; i < arr.length; i++) {
             arr[i] = (byte) n;
         }
-        return arr;
+        return AvmAddress.wrap(arr);
     }
 
     public static byte[] merge(byte[]...arrays) {

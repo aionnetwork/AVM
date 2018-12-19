@@ -2,7 +2,6 @@ package org.aion.avm.core.exceptionwrapping;
 
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.util.TestingHelper;
@@ -15,14 +14,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.aion.avm.core.util.Helpers.randomBytes;
+import static org.aion.avm.core.util.Helpers.randomAddress;
 
 
 public class ExceptionWrappingTest {
-    private byte[] from = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private byte[] dappAddr;
+    private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.vm.api.interfaces.Address dappAddr;
 
-    private Block block = new Block(new byte[32], 1, randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
+    private Block block = new Block(new byte[32], 1, randomAddress(), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 6_000_0000;
     private long energyPrice = 1;
 
@@ -38,9 +37,9 @@ public class ExceptionWrappingTest {
         byte[] testExceptionJar = JarBuilder.buildJarForMainAndClasses(TestExceptionResource.class);
 
         byte[] txData = new CodeAndArguments(testExceptionJar, null).encodeToBytes();
-        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(from, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        dappAddr = avm.run(new TransactionContext[] {context})[0].get().getReturnData();
+        dappAddr = AvmAddress.wrap(avm.run(new TransactionContext[] {context})[0].get().getReturnData());
     }
 
     @After
@@ -54,7 +53,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchFinally() {
         byte[] txData = ABIEncoder.encodeMethodArguments("tryMultiCatchFinally");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
@@ -67,7 +66,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testmSimpleManuallyThrowNull() {
         byte[] txData = ABIEncoder.encodeMethodArguments("manuallyThrowNull");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
@@ -81,7 +80,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchInteraction() {
         byte[] txData = ABIEncoder.encodeMethodArguments("tryMultiCatch");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
@@ -94,7 +93,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testRecatchCoreException() {
         byte[] txData = ABIEncoder.encodeMethodArguments("outerCatch");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
@@ -107,7 +106,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testUserDefinedThrowCatch_commonPipeline() {
         byte[] txData = ABIEncoder.encodeMethodArguments("userDefinedCatch");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
@@ -120,7 +119,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testOriginalNull_commonPipeline() {
         byte[] txData = ABIEncoder.encodeMethodArguments("originalNull");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
@@ -134,7 +133,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testInnerCatch_commonPipeline() {
         byte[] txData = ABIEncoder.encodeMethodArguments("innerCatch");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();

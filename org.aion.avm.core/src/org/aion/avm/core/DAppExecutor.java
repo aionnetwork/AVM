@@ -7,10 +7,12 @@ import org.aion.avm.core.persistence.ReentrantGraphProcessor;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.internal.*;
+import org.aion.kernel.AvmAddress;
 import org.aion.kernel.TransactionContext;
-import org.aion.kernel.KernelInterface;
 import org.aion.kernel.TransactionResult;
 import org.aion.parallel.TransactionTask;
+import org.aion.vm.api.interfaces.Address;
+import org.aion.vm.api.interfaces.KernelInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +24,7 @@ public class DAppExecutor {
     public static void call(KernelInterface kernel, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
                             TransactionContext ctx, TransactionResult result) {
-        byte[] dappAddress = ctx.getAddress();
+        Address dappAddress = AvmAddress.wrap(ctx.getAddress());
         IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel, dappAddress);
         // Load the initial state of the environment.
         // (note that ContractEnvironmentState is immutable, so it is safe to just access the environment from a different invocation).

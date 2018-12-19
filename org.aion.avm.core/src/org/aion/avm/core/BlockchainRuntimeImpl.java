@@ -10,6 +10,7 @@ import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
 
 import java.util.List;
+import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
@@ -111,7 +112,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(address.unwrap(), this.task);
-        return new org.aion.avm.shadow.java.math.BigInteger(this.kernel.getBalance(address.unwrap()));
+        return new org.aion.avm.shadow.java.math.BigInteger(this.kernel.getBalance(AvmAddress.wrap(address.unwrap())));
     }
 
     @Override
@@ -120,7 +121,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(address.unwrap(), this.task);
-        byte[] vc = this.kernel.getCode(address.unwrap());
+        byte[] vc = this.kernel.getCode(AvmAddress.wrap(address.unwrap()));
         return vc == null ? 0 : vc.length;
     }
 
@@ -134,7 +135,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         java.math.BigInteger underlyingValue = value.getUnderlying();
         require(targetAddress != null, "Destination can't be NULL");
         require(underlyingValue.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
-        require(underlyingValue.compareTo(kernel.getBalance(ctx.getAddress())) <= 0, "Insufficient balance");
+        require(underlyingValue.compareTo(kernel.getBalance(AvmAddress.wrap(ctx.getAddress()))) <= 0, "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
 
@@ -144,9 +145,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL,
-                ctx.getAddress(),
-                targetAddress.unwrap(),
-                this.kernel.getNonce(ctx.getAddress()),
+                AvmAddress.wrap(ctx.getAddress()),
+                AvmAddress.wrap(targetAddress.unwrap()),
+                this.kernel.getNonce(AvmAddress.wrap(ctx.getAddress())).longValue(),
                 underlyingValue,
                 data.getUnderlying(),
                 restrictEnergyLimit(energyLimit),
@@ -160,7 +161,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     public Result avm_create(org.aion.avm.shadow.java.math.BigInteger value, ByteArray data, long energyLimit) {
         java.math.BigInteger underlyingValue = value.getUnderlying();
         require(underlyingValue.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
-        require(underlyingValue.compareTo(kernel.getBalance(ctx.getAddress())) <= 0, "Insufficient balance");
+        require(underlyingValue.compareTo(kernel.getBalance(AvmAddress.wrap(ctx.getAddress()))) <= 0, "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
 
@@ -170,9 +171,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CREATE,
-                ctx.getAddress(),
+                AvmAddress.wrap(ctx.getAddress()),
                 null,
-                this.kernel.getNonce(ctx.getAddress()),
+                this.kernel.getNonce(AvmAddress.wrap(ctx.getAddress())).longValue(),
                 underlyingValue,
                 data.getUnderlying(),
                 restrictEnergyLimit(energyLimit),
@@ -198,15 +199,15 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         this.avm.getResourceMonitor().acquire(beneficiary.unwrap(), this.task);
 
         // Value transfer
-        java.math.BigInteger balanceToTransfer = this.kernel.getBalance(contractAddr);
-        this.kernel.adjustBalance(contractAddr, balanceToTransfer.negate());
-        this.kernel.adjustBalance(beneficiary.unwrap(), balanceToTransfer);
+        java.math.BigInteger balanceToTransfer = this.kernel.getBalance(AvmAddress.wrap(contractAddr));
+        this.kernel.adjustBalance(AvmAddress.wrap(contractAddr), balanceToTransfer.negate());
+        this.kernel.adjustBalance(AvmAddress.wrap(beneficiary.unwrap()), balanceToTransfer);
 
         // Delete Account
         // Note that the account being deleted means it will still run but no DApp which sees this delete
         // (the current one and any callers, or any later transactions, assuming this commits) will be able
         // to invoke it (the code will be missing).
-        this.kernel.deleteAccount(contractAddr);
+        this.kernel.deleteAccount(AvmAddress.wrap(contractAddr));
     }
 
     @Override

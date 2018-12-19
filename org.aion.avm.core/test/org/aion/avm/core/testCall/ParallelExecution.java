@@ -10,6 +10,7 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,8 +151,8 @@ public class ParallelExecution {
                 public Result avm_call(Address targetAddress, org.aion.avm.shadow.java.math.BigInteger value, ByteArray payload, long energyLimit) {
                     InternalTransaction internalTx = new InternalTransaction(
                             Transaction.Type.CALL,
-                            tx.getDestinationAddress().toBytes(),
-                            targetAddress.unwrap(),
+                            tx.getDestinationAddress(),
+                            AvmAddress.wrap(targetAddress.unwrap()),
                             0,
                             value.getUnderlying(),
                             payload.getUnderlying(),
@@ -197,8 +198,8 @@ public class ParallelExecution {
     //============
 
     public static void simpleCall() {
-        Transaction tx1 = Transaction.call(Helpers.address(1), Helpers.address(2), 0, BigInteger.ZERO, Helpers.address(3), 1000000, 1);
-        Transaction tx2 = Transaction.call(Helpers.address(3), Helpers.address(4), 0, BigInteger.ZERO, Helpers.address(1), 1000000, 1);
+        Transaction tx1 = Transaction.call(Helpers.address(1), Helpers.address(2), 0, BigInteger.ZERO, Helpers.address(3).toBytes(), 1000000, 1);
+        Transaction tx2 = Transaction.call(Helpers.address(3), Helpers.address(4), 0, BigInteger.ZERO, Helpers.address(1).toBytes(), 1000000, 1);
         Transaction tx3 = Transaction.call(Helpers.address(3), Helpers.address(5), 0, BigInteger.ZERO, new byte[0], 1000000, 1);
 
         ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(null), NUM_THREADS);
@@ -218,7 +219,7 @@ public class ParallelExecution {
             int to = r.nextInt(numAccounts);
             int callee = r.nextInt(numAccounts);
 
-            Transaction tx = Transaction.call(Helpers.address(from), Helpers.address(to), 0, BigInteger.ZERO, Helpers.address(callee), 1000000, 1);
+            Transaction tx = Transaction.call(Helpers.address(from), Helpers.address(to), 0, BigInteger.ZERO, Helpers.address(callee).toBytes(), 1000000, 1);
             transactions.add(tx);
         }
 

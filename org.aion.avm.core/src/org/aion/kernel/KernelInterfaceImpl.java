@@ -8,6 +8,8 @@ import org.aion.data.IDataStore;
 import org.aion.data.MemoryBackedDataStore;
 
 import java.io.File;
+import org.aion.vm.api.interfaces.Address;
+import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
@@ -17,7 +19,7 @@ import java.io.File;
  */
 public class KernelInterfaceImpl implements KernelInterface {
 
-    public static final byte[] PREMINED_ADDRESS = Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378");
+    public static final Address PREMINED_ADDRESS = AvmAddress.wrap(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
     public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(18);
 
     private final IDataStore dataStore;
@@ -27,7 +29,7 @@ public class KernelInterfaceImpl implements KernelInterface {
      */
     public KernelInterfaceImpl() {
         this.dataStore = new MemoryBackedDataStore();
-        IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS);
+        IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toBytes());
         premined.setBalance(PREMINED_AMOUNT);
     }
 
@@ -39,91 +41,116 @@ public class KernelInterfaceImpl implements KernelInterface {
     public KernelInterfaceImpl(File onDiskRoot) {
         this.dataStore = new DirectoryBackedDataStore(onDiskRoot);
         // Try to open the account, creating it if doesn't exist.
-        IAccountStore premined = this.dataStore.openAccount(PREMINED_ADDRESS);
+        IAccountStore premined = this.dataStore.openAccount(PREMINED_ADDRESS.toBytes());
         if (null == premined) {
-            premined = this.dataStore.createAccount(PREMINED_ADDRESS);
+            premined = this.dataStore.createAccount(PREMINED_ADDRESS.toBytes());
         }
         premined.setBalance(PREMINED_AMOUNT);
     }
 
     @Override
-    public void createAccount(byte[] address) {
-        this.dataStore.createAccount(address);
+    public KernelInterface makeChildKernelInterface() {
+        return new TransactionalKernel(this);
     }
 
     @Override
-    public boolean hasAccountState(byte[] address) {
-        return this.dataStore.openAccount(address) != null;
+    public void commit() {
+        throw new AssertionError("This class does not implement this method.");
     }
 
     @Override
-    public void putCode(byte[] address, byte[] code) {
-        lazyCreateAccount(address).setCode(code);
+    public void commitTo(KernelInterface target) {
+        throw new AssertionError("This class does not implement this method.");
     }
 
     @Override
-    public byte[] getCode(byte[] address) {
-        IAccountStore account = this.dataStore.openAccount(address);
+    public byte[] getBlockHashByNumber(long blockNumber) {
+        throw new AssertionError("No equivalent concept in the Avm.");
+    }
+
+    @Override
+    public void removeStorage(Address address, byte[] key) {
+        throw new AssertionError("This class does not implement this method.");
+    }
+
+    @Override
+    public void createAccount(Address address) {
+        this.dataStore.createAccount(address.toBytes());
+    }
+
+    @Override
+    public boolean hasAccountState(Address address) {
+        return this.dataStore.openAccount(address.toBytes()) != null;
+    }
+
+    @Override
+    public void putCode(Address address, byte[] code) {
+        lazyCreateAccount(address.toBytes()).setCode(code);
+    }
+
+    @Override
+    public byte[] getCode(Address address) {
+        IAccountStore account = this.dataStore.openAccount(address.toBytes());
         return (null != account)
                 ? account.getCode()
                 : null;
     }
 
     @Override
-    public void putStorage(byte[] address, byte[] key, byte[] value) {
-        lazyCreateAccount(address).setData(key, value);
+    public void putStorage(Address address, byte[] key, byte[] value) {
+        lazyCreateAccount(address.toBytes()).setData(key, value);
     }
 
     @Override
-    public byte[] getStorage(byte[] address, byte[] key) {
-        IAccountStore account = this.dataStore.openAccount(address);
+    public byte[] getStorage(Address address, byte[] key) {
+        IAccountStore account = this.dataStore.openAccount(address.toBytes());
         return (null != account)
                 ? account.getData(key)
                 : null;
     }
 
     @Override
-    public void deleteAccount(byte[] address) {
-        this.dataStore.deleteAccount(address);
+    public void deleteAccount(Address address) {
+        this.dataStore.deleteAccount(address.toBytes());
     }
 
     @Override
-    public BigInteger getBalance(byte[] address) {
-        IAccountStore account = this.dataStore.openAccount(address);
+    public BigInteger getBalance(Address address) {
+        IAccountStore account = this.dataStore.openAccount(address.toBytes());
         return (null != account)
                 ? account.getBalance()
                 : BigInteger.ZERO;
     }
 
     @Override
-    public void adjustBalance(byte[] address, BigInteger delta) {
-        IAccountStore account = lazyCreateAccount(address);
+    public void adjustBalance(Address address, BigInteger delta) {
+        IAccountStore account = lazyCreateAccount(address.toBytes());
         BigInteger start = account.getBalance();
         account.setBalance(start.add(delta));
     }
 
     @Override
-    public long getNonce(byte[] address) {
-        IAccountStore account = this.dataStore.openAccount(address);
+    public BigInteger getNonce(Address address) {
+        IAccountStore account = this.dataStore.openAccount(address.toBytes());
         return (null != account)
-                ? account.getNonce()
-                : 0L;
+                ? BigInteger.valueOf(account.getNonce())
+                : BigInteger.ZERO;
     }
 
     @Override
-    public void incrementNonce(byte[] address) {
-        IAccountStore account = lazyCreateAccount(address);
+    public void incrementNonce(Address address) {
+        IAccountStore account = lazyCreateAccount(address.toBytes());
         long start = account.getNonce();
         account.setNonce(start + 1);
     }
 
     @Override
-    public boolean accountNonceEquals(byte[] address, long nonce) {
-        return nonce == this.getNonce(address);
+    public boolean accountNonceEquals(Address address, BigInteger nonce) {
+        return nonce.compareTo(this.getNonce(address)) == 0;
     }
 
     @Override
-    public boolean accountBalanceIsAtLeast(byte[] address, BigInteger amount) {
+    public boolean accountBalanceIsAtLeast(Address address, BigInteger amount) {
         return this.getBalance(address).compareTo(amount) >= 0;
     }
 
@@ -144,4 +171,29 @@ public class KernelInterfaceImpl implements KernelInterface {
         }
         return account;
     }
+
+    @Override
+    public boolean destinationAddressIsSafeForThisVM(Address address) {
+        //TODO: implement this with logic that detects fvm addresses.
+        return true;
+    }
+
+    @Override
+    public void refundAccount(Address address, BigInteger amount) {
+        // This method may have special logic in the kernel. Here it is just adjustBalance.
+        adjustBalance(address, amount);
+    }
+
+    @Override
+    public void deductEnergyCost(Address address, BigInteger cost) {
+        // This method may have special logic in the kernel. Here it is just adjustBalance.
+        adjustBalance(address, cost);
+    }
+
+    @Override
+    public void payMiningFee(Address address, BigInteger fee) {
+        // This method may have special logic in the kernel. Here it is just adjustBalance.
+        adjustBalance(address, fee);
+    }
+
 }

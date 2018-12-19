@@ -4,20 +4,20 @@ import static org.junit.Assert.assertEquals;
 
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.api.Address;
 import org.aion.avm.core.Avm;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterface;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.TransactionResult;
 import org.aion.kernel.TransactionResult.Code;
+import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.Test;
 
 /**
@@ -30,12 +30,12 @@ public class TestBootstrappingEnergyChargeConsistency {
     public void testConsistencyOverMultipleInvocations() {
         KernelInterface kernel = new KernelInterfaceImpl();
         Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
-        Block block = new Block(new byte[32], 1, Helpers.randomBytes(Address.LENGTH), System.currentTimeMillis(), new byte[0]);
-        byte[] deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-        long nonce = kernel.getNonce(deployer);
+        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+        long nonce = kernel.getNonce(deployer).longValue();
 
         // Deploy the contract.
-        byte[] contractAddress = deployContract(avm, block, deployer, nonce);
+        org.aion.vm.api.interfaces.Address contractAddress = deployContract(avm, block, deployer, nonce);
 
         // Run the contract multiple times.
         TransactionResult result1 = runContract(avm, block, deployer, contractAddress, nonce + 1);
@@ -57,7 +57,7 @@ public class TestBootstrappingEnergyChargeConsistency {
         assertEquals(energy2, energy3);
     }
 
-    private byte[] deployContract(Avm avm, Block block, byte[] deployer, long nonce) {
+    private org.aion.vm.api.interfaces.Address deployContract(Avm avm, Block block, org.aion.vm.api.interfaces.Address deployer, long nonce) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(EnergyChargeConsistencyTarget.class);
         byte[] createData = new CodeAndArguments(jar, null).encodeToBytes();
         Transaction transaction = Transaction.create(
@@ -68,10 +68,10 @@ public class TestBootstrappingEnergyChargeConsistency {
             6_000_000,
             1);
         TransactionContext context = new TransactionContextImpl(transaction, block);
-        return avm.run(new TransactionContext[] {context})[0].get().getReturnData();
+        return AvmAddress.wrap(avm.run(new TransactionContext[] {context})[0].get().getReturnData());
     }
 
-    private TransactionResult runContract(Avm avm, Block block, byte[] sender, byte[] contract, long nonce) {
+    private TransactionResult runContract(Avm avm, Block block, org.aion.vm.api.interfaces.Address sender, org.aion.vm.api.interfaces.Address contract, long nonce) {
         byte[] callData = ABIEncoder.encodeMethodArguments("run");
         Transaction transaction = Transaction.call(
             sender,
