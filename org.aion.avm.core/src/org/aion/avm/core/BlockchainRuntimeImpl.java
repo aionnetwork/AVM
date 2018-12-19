@@ -23,11 +23,11 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     private TransactionContext ctx;
     private final byte[] dAppData;
-    private TransactionResult result;
+    private AvmTransactionResult result;
     private TransactionTask task;
     private final IRuntimeSetup thisDAppSetup;
 
-    public BlockchainRuntimeImpl(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, TransactionContext ctx, byte[] dAppData, TransactionResult result, IRuntimeSetup thisDAppSetup) {
+    public BlockchainRuntimeImpl(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, TransactionContext ctx, byte[] dAppData, AvmTransactionResult result, IRuntimeSetup thisDAppSetup) {
         this.kernel = kernel;
         this.avm = avm;
         this.reentrantState = reentrantState;
@@ -329,7 +329,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         avm.getResourceMonitor().acquire(internalCTX.getAddress(), task);
 
         // execute the internal transaction
-        TransactionResult newResult = null;
+        AvmTransactionResult newResult = null;
         try {
             newResult = this.avm.runInternalTransaction(this.kernel, this.task, internalCTX);
             
@@ -348,7 +348,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // charge energy consumed
         currentThreadInstrumentation.chargeEnergy(newResult.getEnergyUsed());
 
-        return new Result(newResult.getStatusCode().isSuccess(),
+        return new Result(newResult.getResultCode().isSuccess(),
                 newResult.getReturnData() == null ? null : new ByteArray(newResult.getReturnData()));
     }
 }

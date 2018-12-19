@@ -47,7 +47,7 @@ public class RevertAndInvalidTest {
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         return AvmAddress.wrap(txResult.getReturnData());
     }
@@ -56,9 +56,9 @@ public class RevertAndInvalidTest {
     public void testRevert() {
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[]{1}, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
-        assertEquals(TransactionResult.Code.FAILED_REVERT, txResult.getStatusCode());
+        assertEquals(AvmTransactionResult.Code.FAILED_REVERT, txResult.getResultCode());
         assertNull(txResult.getReturnData());
         assertTrue(energyLimit > txResult.getEnergyUsed());
 
@@ -69,9 +69,9 @@ public class RevertAndInvalidTest {
     public void testInvalid() {
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[]{2}, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
-        assertEquals(TransactionResult.Code.FAILED_INVALID, txResult.getStatusCode());
+        assertEquals(AvmTransactionResult.Code.FAILED_INVALID, txResult.getResultCode());
         assertNull(txResult.getReturnData());
         assertEquals(energyLimit, txResult.getEnergyUsed());
 

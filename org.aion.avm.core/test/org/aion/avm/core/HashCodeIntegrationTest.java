@@ -7,12 +7,12 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.AvmAddress;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.kernel.TransactionResult;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.junit.After;
@@ -50,8 +50,8 @@ public class HashCodeIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+        AvmTransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         if (KeyValueObjectGraph.USE_DELTA_HASH) {
             // Empty statics:  0xe1781 -> [0, 0, 0, 0]
             Assert.assertEquals(0xe1781, createResult.getStorageRootHash());
@@ -74,8 +74,8 @@ public class HashCodeIntegrationTest {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, argData, energyLimit, 1l);
-        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        AvmTransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.
         if (KeyValueObjectGraph.USE_DELTA_HASH) {
             // The hash is 0 because the statics are empty, save for the reference to an empty Object, thus meaning that both have the same representation:

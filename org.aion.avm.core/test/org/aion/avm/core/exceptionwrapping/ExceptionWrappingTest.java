@@ -56,7 +56,7 @@ public class ExceptionWrappingTest {
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
         Assert.assertEquals(3, TestingHelper.decodeResult(result));
     }
 
@@ -69,8 +69,8 @@ public class ExceptionWrappingTest {
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        Assert.assertEquals(TransactionResult.Code.FAILED_EXCEPTION, result.getStatusCode());
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + NullPointerException.class.getName()).equals(result.getUncaughtException().getClass().getName()));
     }
 
@@ -83,7 +83,7 @@ public class ExceptionWrappingTest {
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
         Assert.assertEquals(2, TestingHelper.decodeResult(result));
     }
 
@@ -96,7 +96,7 @@ public class ExceptionWrappingTest {
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
         Assert.assertEquals(2, TestingHelper.decodeResult(result));
     }
 
@@ -109,7 +109,7 @@ public class ExceptionWrappingTest {
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
         Assert.assertEquals("two", TestingHelper.decodeResult(result));
     }
 
@@ -122,8 +122,8 @@ public class ExceptionWrappingTest {
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        Assert.assertEquals(TransactionResult.Code.FAILED_EXCEPTION, result.getStatusCode());
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         Assert.assertTrue(NullPointerException.class.getName().equals(result.getUncaughtException().getClass().getName()));
     }
 
@@ -136,8 +136,8 @@ public class ExceptionWrappingTest {
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        Assert.assertEquals(TransactionResult.Code.FAILED_EXCEPTION, result.getStatusCode());
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + NullPointerException.class.getName()).equals(result.getUncaughtException().getClass().getName()));
     }
 }

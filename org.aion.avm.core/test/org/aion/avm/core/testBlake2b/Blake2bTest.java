@@ -35,7 +35,7 @@ public class Blake2bTest {
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         System.out.println(txResult);
 
         dappAddress = AvmAddress.wrap(txResult.getReturnData());
@@ -54,7 +54,7 @@ public class Blake2bTest {
 
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         System.out.println(txResult);
 
         assertArrayEquals(hash, txResult.getReturnData());

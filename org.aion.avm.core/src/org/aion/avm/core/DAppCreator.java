@@ -200,7 +200,7 @@ public class DAppCreator {
         return processedClasses;
     }
 
-    public static void create(KernelInterface kernel, AvmInternal avm, TransactionTask task, TransactionContext ctx, TransactionResult result) {
+    public static void create(KernelInterface kernel, AvmInternal avm, TransactionTask task, TransactionContext ctx, AvmTransactionResult result) {
         // Expose the DApp outside the try so we can detach from it, when we exit.
         LoadedDApp dapp = null;
         try {
@@ -208,21 +208,21 @@ public class DAppCreator {
             Address dappAddress = AvmAddress.wrap(ctx.getAddress());
             CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(ctx.getData());
             if (codeAndArguments == null) {
-                result.setStatusCode(TransactionResult.Code.FAILED_INVALID_DATA);
+                result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getEnergyLimit());
                 return;
             }
 
             RawDappModule rawDapp = RawDappModule.readFromJar(codeAndArguments.code);
             if (rawDapp == null) {
-                result.setStatusCode(TransactionResult.Code.FAILED_INVALID_DATA);
+                result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getEnergyLimit());
                 return;
             }
 
             // validate dapp module
             if (!validateDapp(rawDapp)) {
-                result.setStatusCode(TransactionResult.Code.FAILED_INVALID_DATA);
+                result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getEnergyLimit());
                 return;
             }
@@ -279,43 +279,43 @@ public class DAppCreator {
             graphStore.flushWrites();
 
             // TODO: whether we should return the dapp address is subject to change
-            result.setStatusCode(TransactionResult.Code.SUCCESS);
+            result.setResultCode(AvmTransactionResult.Code.SUCCESS);
             result.setEnergyUsed(ctx.getEnergyLimit() - threadInstrumentation.energyLeft());
             result.setReturnData(dappAddress.toBytes());
             result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
-            result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_ENERGY);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (OutOfStackException e) {
-            result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_STACK);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_STACK);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (RevertException e) {
-            result.setStatusCode(TransactionResult.Code.FAILED_REVERT);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_REVERT);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (InvalidException e) {
-            result.setStatusCode(TransactionResult.Code.FAILED_INVALID);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (UncaughtException e) {
-            result.setStatusCode(TransactionResult.Code.FAILED_EXCEPTION);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_EXCEPTION);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
             result.setUncaughtException(e.getCause());
             logger.debug("Uncaught exception", e.getCause());
         } catch (RejectedClassException e) {
-            result.setStatusCode(TransactionResult.Code.FAILED_REJECTED);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_REJECTED);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (EarlyAbortException e) {
-            result.setStatusCode(TransactionResult.Code.FAILED_ABORT);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
             result.setEnergyUsed(0);
 
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
-            result.setStatusCode(TransactionResult.Code.FAILED);
+            result.setResultCode(AvmTransactionResult.Code.FAILED);
             result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (JvmError e) {
             // These are cases which we know we can't handle and have decided to handle by safely stopping the AVM instance so

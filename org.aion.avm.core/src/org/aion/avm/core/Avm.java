@@ -2,7 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.kernel.SimpleFuture;
 import org.aion.kernel.TransactionContext;
-import org.aion.kernel.TransactionResult;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.KernelInterface;
 
 
@@ -19,7 +19,7 @@ public interface Avm {
      * @param transactions The array of transactions to run (cannot be empty).
      * @return The results as a corresponding array of asynchronous futures.
      */
-    SimpleFuture<TransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException;
+    SimpleFuture<AvmTransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException;
 
     /**
      * Tells the Avm implementation to shut down.  This means that it can assume it will not be called again.

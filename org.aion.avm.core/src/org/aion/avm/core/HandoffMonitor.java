@@ -1,9 +1,9 @@
 package org.aion.avm.core;
 
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.SimpleFuture;
 import org.aion.kernel.TransactionContext;
-import org.aion.kernel.TransactionResult;
 import org.aion.parallel.TransactionTask;
 
 import java.util.LinkedList;
@@ -26,7 +26,7 @@ public class HandoffMonitor {
 
     private Queue<TransactionTask> taskQueue;
 
-    private TransactionResult[] outgoingResults;
+    private AvmTransactionResult[] outgoingResults;
     private Throwable backgroundThrowable;
     //private int nextTransactionIndex;
 
@@ -42,7 +42,7 @@ public class HandoffMonitor {
      * @param transactions The new transactions to pass in.
      * @return The result of newTransactions as a corresponding array of asynchronous futures.
      */
-    public synchronized SimpleFuture<TransactionResult>[] sendTransactionsAsynchronously(TransactionContext[] transactions) {
+    public synchronized SimpleFuture<AvmTransactionResult>[] sendTransactionsAsynchronously(TransactionContext[] transactions) {
         // We lock-step these, so there can't already be a transaction in the hand-off.
         RuntimeAssertionError.assertTrue(this.taskQueue.isEmpty());
         RuntimeAssertionError.assertTrue(null == this.outgoingResults);
@@ -57,7 +57,7 @@ public class HandoffMonitor {
             this.taskQueue.add(new TransactionTask(transactions[i], i));
         }
 
-        this.outgoingResults = new TransactionResult[transactions.length];
+        this.outgoingResults = new AvmTransactionResult[transactions.length];
         this.notifyAll();
         
         // Return the future result, which will do the waiting for us.
@@ -68,7 +68,7 @@ public class HandoffMonitor {
         return results;
     }
 
-    public synchronized TransactionResult blockingConsumeResult(int index) {
+    public synchronized AvmTransactionResult blockingConsumeResult(int index) {
         // Wait until we have the result or something went wrong.
         while ((null == this.outgoingResults[index]) && (null == this.backgroundThrowable)) {
             // Otherwise, wait until state changes.
@@ -84,7 +84,7 @@ public class HandoffMonitor {
         handleThrowable();
         
         // Consume the result and return it.
-        TransactionResult result = this.outgoingResults[index];
+        AvmTransactionResult result = this.outgoingResults[index];
         this.outgoingResults[index] = null;
         // If this is the last one in the list, drop it.
         // TODO:  Remove this once we have a more sophisticated handoff mechanism (probably within the parallel executor - we currently
@@ -103,7 +103,7 @@ public class HandoffMonitor {
      * @param previousResult The result of the previous transaction returned by this call.
      * @return The next transaction to run or null if we should shut down.
      */
-    public synchronized TransactionTask blockingPollForTransaction(TransactionResult previousResult, TransactionTask previousTask) {
+    public synchronized TransactionTask blockingPollForTransaction(AvmTransactionResult previousResult, TransactionTask previousTask) {
         // We may have been given these transactions as a list but we hand them out to the caller individually.
         
         // First, write-back any results that we have and notify anyone listening for that, on the front.
@@ -204,15 +204,15 @@ public class HandoffMonitor {
     }
 
 
-    private class ResultWaitFuture implements SimpleFuture<TransactionResult> {
+    private class ResultWaitFuture implements SimpleFuture<AvmTransactionResult> {
         private final int index;
         // We will cache the result.
-        private TransactionResult cachedResult;
+        private AvmTransactionResult cachedResult;
         public ResultWaitFuture(int index) {
             this.index = index;
         }
         @Override
-        public TransactionResult get() {
+        public AvmTransactionResult get() {
             if (null == this.cachedResult) {
                 this.cachedResult = HandoffMonitor.this.blockingConsumeResult(this.index);
             }

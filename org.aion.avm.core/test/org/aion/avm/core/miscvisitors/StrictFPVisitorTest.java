@@ -8,12 +8,12 @@ import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmAddress;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.kernel.TransactionResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class StrictFPVisitorTest {
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         dappAddress = AvmAddress.wrap(txResult.getReturnData());
         assertTrue(null != dappAddress);
@@ -73,7 +73,7 @@ public class StrictFPVisitorTest {
     public void testFp() {
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
-        assertTrue(txResult.getStatusCode().isSuccess());
+        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        assertTrue(txResult.getResultCode().isSuccess());
     }
 }

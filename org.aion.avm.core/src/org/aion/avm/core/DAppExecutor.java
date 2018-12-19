@@ -8,8 +8,8 @@ import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.internal.*;
 import org.aion.kernel.AvmAddress;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TransactionContext;
-import org.aion.kernel.TransactionResult;
 import org.aion.parallel.TransactionTask;
 import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
@@ -23,7 +23,7 @@ public class DAppExecutor {
 
     public static void call(KernelInterface kernel, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
-                            TransactionContext ctx, TransactionResult result) {
+                            TransactionContext ctx, AvmTransactionResult result) {
         Address dappAddress = AvmAddress.wrap(ctx.getAddress());
         IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel, dappAddress);
         // Load the initial state of the environment.
@@ -79,7 +79,7 @@ public class DAppExecutor {
             }
             graphStore.flushWrites();
 
-            result.setStatusCode(TransactionResult.Code.SUCCESS);
+            result.setResultCode(AvmTransactionResult.Code.SUCCESS);
             result.setReturnData(ret);
             result.setEnergyUsed(ctx.getEnergyLimit() - threadInstrumentation.energyLeft());
             result.setStorageRootHash(graphStore.simpleHashCode());
@@ -87,49 +87,49 @@ public class DAppExecutor {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
-            result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_ENERGY);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (OutOfStackException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
-            result.setStatusCode(TransactionResult.Code.FAILED_OUT_OF_STACK);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_STACK);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (CallDepthLimitExceededException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
-            result.setStatusCode(TransactionResult.Code.FAILED_CALL_DEPTH_LIMIT_EXCEEDED);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_CALL_DEPTH_LIMIT_EXCEEDED);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (RevertException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
-            result.setStatusCode(TransactionResult.Code.FAILED_REVERT);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_REVERT);
             result.setEnergyUsed(ctx.getEnergyLimit() - threadInstrumentation.energyLeft());
 
         } catch (InvalidException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
-            result.setStatusCode(TransactionResult.Code.FAILED_INVALID);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID);
             result.setEnergyUsed(ctx.getEnergyLimit());
 
         } catch (EarlyAbortException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
-            result.setStatusCode(TransactionResult.Code.FAILED_ABORT);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
             result.setEnergyUsed(0);
 
         } catch (UncaughtException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
-            result.setStatusCode(TransactionResult.Code.FAILED_EXCEPTION);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_EXCEPTION);
             result.setEnergyUsed(ctx.getEnergyLimit());
             result.setUncaughtException(e.getCause());
             logger.debug("Uncaught exception", e.getCause());
@@ -138,7 +138,7 @@ public class DAppExecutor {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
-            result.setStatusCode(TransactionResult.Code.FAILED);
+            result.setResultCode(AvmTransactionResult.Code.FAILED);
             result.setEnergyUsed(ctx.getEnergyLimit());
         } catch (JvmError e) {
             // These are cases which we know we can't handle and have decided to handle by safely stopping the AVM instance so

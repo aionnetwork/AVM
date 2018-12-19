@@ -34,7 +34,7 @@ public class StringShadowingTest {
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnInt");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, (int[]) TestingHelper.decodeResult(result)));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnBoolean");
@@ -118,7 +118,7 @@ public class StringShadowingTest {
         batch[5] = new TransactionContextImpl(tx, block);
 
         // Send the batch.
-        SimpleFuture<TransactionResult>[] results = avm.run(batch);
+        SimpleFuture<AvmTransactionResult>[] results = avm.run(batch);
         
         // Now, process the results.
         Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, (int[]) TestingHelper.decodeResult(results[0].get())));

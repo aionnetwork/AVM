@@ -69,7 +69,7 @@ public class AvmImpl implements AvmInternal {
             InstrumentationHelpers.attachThread(instrumentation);
             try {
                 // Run as long as we have something to do (null means shutdown).
-                TransactionResult outgoingResult = null;
+                AvmTransactionResult outgoingResult = null;
                 TransactionTask incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(null, null);
                 while (null != incomingTask) {
                     int abortCounter = 0;
@@ -83,7 +83,7 @@ public class AvmImpl implements AvmInternal {
                         outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask);
                         incomingTask.detachInstrumentationForThread();
 
-                        if (TransactionResult.Code.FAILED_ABORT == outgoingResult.getStatusCode()) {
+                        if (AvmTransactionResult.Code.FAILED_ABORT == outgoingResult.getResultCode()) {
                             // If this was an abort, we want to clear the abort state on the instrumentation for this thread, since
                             // this is the point where that is "handled".
                             // Note that this is safe to do here since the instrumentation isn't exposed to any other threads.
@@ -93,9 +93,9 @@ public class AvmImpl implements AvmInternal {
                                 System.out.println(this.getName() + " abort  " + incomingTask.getIndex() + " counter " + (++abortCounter));
                             }
                         }
-                    }while (TransactionResult.Code.FAILED_ABORT == outgoingResult.getStatusCode());
+                    }while (AvmTransactionResult.Code.FAILED_ABORT == outgoingResult.getResultCode());
 
-                    if (DEBUG_EXECUTOR) System.out.println(this.getName() + " finish " + incomingTask.getIndex() + " " + outgoingResult.getStatusCode());
+                    if (DEBUG_EXECUTOR) System.out.println(this.getName() + " finish " + incomingTask.getIndex() + " " + outgoingResult.getResultCode());
 
                     incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
                 }
@@ -141,7 +141,7 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public SimpleFuture<TransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException {
+    public SimpleFuture<AvmTransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
@@ -157,9 +157,9 @@ public class AvmImpl implements AvmInternal {
         return this.handoff.sendTransactionsAsynchronously(transactions);
     }
 
-    private TransactionResult backgroundProcessTransaction(TransactionTask task) {
+    private AvmTransactionResult backgroundProcessTransaction(TransactionTask task) {
         // to capture any error during validation
-        TransactionResult.Code error = null;
+        AvmTransactionResult.Code error = null;
 
         RuntimeAssertionError.assertTrue(task != null);
         TransactionContext ctx = task.getExternalTransactionCtx();
@@ -171,16 +171,16 @@ public class AvmImpl implements AvmInternal {
 
         // value/energyPrice/energyLimit sanity check
         if ((ctx.getValue().compareTo(BigInteger.ZERO) < 0) || (ctx.getEnergyPrice() <= 0)) {
-            error = TransactionResult.Code.REJECTED;
+            error = AvmTransactionResult.Code.REJECTED;
         }
         
         if (ctx.isCreate()) {
             if (!taskTransactionalKernel.isValidEnergyLimitForCreate(ctx.getEnergyLimit())) {
-                error = TransactionResult.Code.REJECTED;
+                error = AvmTransactionResult.Code.REJECTED;
             }
         } else {
             if (!taskTransactionalKernel.isValidEnergyLimitForNonCreate(ctx.getEnergyLimit())) {
-                error = TransactionResult.Code.REJECTED;
+                error = AvmTransactionResult.Code.REJECTED;
             }
         }
 
@@ -193,10 +193,10 @@ public class AvmImpl implements AvmInternal {
 
         // nonce check
         if (!taskTransactionalKernel.accountNonceEquals(sender, BigInteger.valueOf(ctx.getNonce()))) {
-            error = TransactionResult.Code.REJECTED_INVALID_NONCE;
+            error = AvmTransactionResult.Code.REJECTED_INVALID_NONCE;
         }
 
-        TransactionResult result = null;
+        AvmTransactionResult result = null;
         if (null == error) {
             // If this is a GC, we need to handle it specially.  Otherwise, use the common invoke path (handles both CREATE and CALL).
             if (ctx.isGarbageCollectionRequest()) {
@@ -208,8 +208,8 @@ public class AvmImpl implements AvmInternal {
                 result = runExternalInvoke(taskTransactionalKernel, task, ctx);
             }
         } else {
-            result = new TransactionResult();
-            result.setStatusCode(error);
+            result = new AvmTransactionResult();
+            result.setResultCode(error);
             result.setEnergyUsed(ctx.getEnergyLimit());
         }
 
@@ -218,12 +218,12 @@ public class AvmImpl implements AvmInternal {
         taskTransactionalKernel.adjustBalance(sender, BigInteger.valueOf(energyRemaining));
 
         // Task transactional kernel commits are serialized through address resource monitor
-        if (!this.resourceMonitor.commitKernelForTask(task, result.getStatusCode().isRejected())){
-            result.setStatusCode(TransactionResult.Code.FAILED_ABORT);
+        if (!this.resourceMonitor.commitKernelForTask(task, result.getResultCode().isRejected())){
+            result.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
         }
 
-        if (TransactionResult.Code.FAILED_ABORT != result.getStatusCode()){
-            result.setExternalTransactionalKernel(taskTransactionalKernel);
+        if (AvmTransactionResult.Code.FAILED_ABORT != result.getResultCode()){
+            result.setKernelInterface(taskTransactionalKernel);
         }
 
         return result;
@@ -262,16 +262,16 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public TransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, TransactionContext context) {
+    public AvmTransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, TransactionContext context) {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
         return commonInvoke(parentKernel, task, context);
     }
 
-    private TransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, TransactionContext ctx) {
+    private AvmTransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, TransactionContext ctx) {
         // to capture any error during validation
-        TransactionResult.Code error = null;
+        AvmTransactionResult.Code error = null;
 
         // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
@@ -279,13 +279,13 @@ public class AvmImpl implements AvmInternal {
 
         BigInteger transactionCost = BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEnergyPrice()).add(ctx.getValue());
         if (!parentKernel.accountBalanceIsAtLeast(sender, transactionCost)) {
-            error = TransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
+            error = AvmTransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
         }
 
         // exit if validation check fails
         if (error != null) {
-            TransactionResult result = new TransactionResult();
-            result.setStatusCode(error);
+            AvmTransactionResult result = new AvmTransactionResult();
+            result.setResultCode(error);
             result.setEnergyUsed(ctx.getEnergyLimit());
             return result;
         }
@@ -298,7 +298,7 @@ public class AvmImpl implements AvmInternal {
         parentKernel.adjustBalance(sender, BigInteger.valueOf(ctx.getEnergyLimit() * ctx.getEnergyPrice()).negate());
 
         // Run the common logic with the parent kernel as the top-level one.
-        TransactionResult result = commonInvoke(parentKernel, task, ctx);
+        AvmTransactionResult result = commonInvoke(parentKernel, task, ctx);
 
         // Transfer fees to miner
         parentKernel.adjustBalance(AvmAddress.wrap(ctx.getBlockCoinbase()), BigInteger.valueOf(result.getEnergyUsed() * ctx.getEnergyPrice()));
@@ -306,7 +306,7 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private TransactionResult commonInvoke(KernelInterface parentKernel, TransactionTask task, TransactionContext ctx) {
+    private AvmTransactionResult commonInvoke(KernelInterface parentKernel, TransactionTask task, TransactionContext ctx) {
         if (logger.isDebugEnabled()) {
             logger.debug("Transaction: address = {}, caller = {}, value = {}, data = {}, energyLimit = {}",
                     Helpers.bytesToHexString(ctx.getAddress()),
@@ -322,8 +322,8 @@ public class AvmImpl implements AvmInternal {
         TransactionalKernel thisTransactionKernel = new TransactionalKernel(parentKernel);
 
         // only one result (mutable) shall be created per transaction execution
-        TransactionResult result = new TransactionResult();
-        result.setStatusCode(TransactionResult.Code.SUCCESS);
+        AvmTransactionResult result = new AvmTransactionResult();
+        result.setResultCode(AvmTransactionResult.Code.SUCCESS);
         result.setEnergyUsed(ctx.getBasicCost()); // basic tx cost
 
         // conduct value transfer
@@ -373,7 +373,7 @@ public class AvmImpl implements AvmInternal {
                     // Run the call and, if successful, check this into the hot DApp cache.
                     if (null != dapp) {
                         DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result);
-                        if (TransactionResult.Code.SUCCESS == result.getStatusCode()) {
+                        if (AvmTransactionResult.Code.SUCCESS == result.getResultCode()) {
                             dapp.cleanForCache();
                             this.hotCache.checkin(addressWrapper, dapp);
                         }
@@ -382,7 +382,7 @@ public class AvmImpl implements AvmInternal {
             }
         }
 
-        if (result.getStatusCode().isSuccess()) {
+        if (result.getResultCode().isSuccess()) {
             thisTransactionKernel.commit();
         } else {
             result.clearLogs();
@@ -393,7 +393,7 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private TransactionResult runGc(KernelInterface parentKernel, Address dappAddress, TransactionContext ctx) {
+    private AvmTransactionResult runGc(KernelInterface parentKernel, Address dappAddress, TransactionContext ctx) {
         RuntimeAssertionError.assertTrue(ctx.isGarbageCollectionRequest());
 
         ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress.toBytes());
@@ -415,7 +415,7 @@ public class AvmImpl implements AvmInternal {
             }
         }
         
-        TransactionResult result = new TransactionResult();
+        AvmTransactionResult result = new AvmTransactionResult();
         if (null != dapp) {
             // Run the GC and check this into the hot DApp cache.
             long instancesFreed = graphStore.gc();
@@ -423,12 +423,12 @@ public class AvmImpl implements AvmInternal {
             // We want to set this to success and report the energy used as the refund found by the GC.
             // NOTE:  This is the total value of the refund as splitting that between the DApp and node is a higher-level decision.
             long storageEnergyRefund = instancesFreed * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST;
-            result.setStatusCode(TransactionResult.Code.SUCCESS);
+            result.setResultCode(AvmTransactionResult.Code.SUCCESS);
             result.setEnergyUsed(-storageEnergyRefund);
         } else {
             // If we failed to find the application, we will currently return this as a generic FAILED_INVALID but we may want a more
             // specific code in the future.
-            result.setStatusCode(TransactionResult.Code.FAILED_INVALID);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID);
             result.setEnergyUsed(0);
         }
         return result;

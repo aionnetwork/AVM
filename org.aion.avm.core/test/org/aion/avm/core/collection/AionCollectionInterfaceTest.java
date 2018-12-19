@@ -30,23 +30,23 @@ public class AionCollectionInterfaceTest {
         );
     }
 
-    private TransactionResult deploy(KernelInterface kernel, Avm avm, byte[] testJar){
+    private AvmTransactionResult deploy(KernelInterface kernel, Avm avm, byte[] testJar){
 
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = Transaction.create(from, kernel.getNonce(from).longValue(), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-        TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
+        AvmTransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
 
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
         return createResult;
     }
 
-    private TransactionResult call(KernelInterface kernel, Avm avm, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, byte[] args) {
+    private AvmTransactionResult call(KernelInterface kernel, Avm avm, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, byte[] args) {
         Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(from).longValue(), BigInteger.ZERO, args, energyLimit, 1l);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-        TransactionResult callResult = avm.run(new TransactionContext[] {callContext})[0].get();
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
+        AvmTransactionResult callResult = avm.run(new TransactionContext[] {callContext})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
         return callResult;
     }
 
@@ -56,12 +56,12 @@ public class AionCollectionInterfaceTest {
         KernelInterface kernel = new KernelInterfaceImpl();
         Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
-        TransactionResult deployRes = deploy(kernel, avm, buildJar());
+        AvmTransactionResult deployRes = deploy(kernel, avm, buildJar());
         org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
 
         args = ABIEncoder.encodeMethodArguments("testList");
-        TransactionResult testResult = call(kernel, avm, contract, from, args);
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, testResult.getStatusCode());
+        AvmTransactionResult testResult = call(kernel, avm, contract, from, args);
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, testResult.getResultCode());
         avm.shutdown();
     }
 
@@ -71,12 +71,12 @@ public class AionCollectionInterfaceTest {
         KernelInterface kernel = new KernelInterfaceImpl();
         Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
-        TransactionResult deployRes = deploy(kernel, avm, buildJar());
+        AvmTransactionResult deployRes = deploy(kernel, avm, buildJar());
         org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
 
         args = ABIEncoder.encodeMethodArguments("testSet");
-        TransactionResult testResult = call(kernel, avm, contract, from, args);
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, testResult.getStatusCode());
+        AvmTransactionResult testResult = call(kernel, avm, contract, from, args);
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, testResult.getResultCode());
         avm.shutdown();
     }
 
@@ -86,12 +86,12 @@ public class AionCollectionInterfaceTest {
         KernelInterface kernel = new KernelInterfaceImpl();
         Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
 
-        TransactionResult deployRes = deploy(kernel, avm, buildJar());
+        AvmTransactionResult deployRes = deploy(kernel, avm, buildJar());
         org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
 
         args = ABIEncoder.encodeMethodArguments("testMap");
-        TransactionResult testResult = call(kernel, avm, contract, from, args);
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, testResult.getStatusCode());
+        AvmTransactionResult testResult = call(kernel, avm, contract, from, args);
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, testResult.getResultCode());
         avm.shutdown();
     }
 

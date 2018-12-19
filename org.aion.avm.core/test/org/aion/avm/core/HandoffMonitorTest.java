@@ -5,9 +5,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.SimpleFuture;
 import org.aion.kernel.TransactionContext;
-import org.aion.kernel.TransactionResult;
 import org.aion.parallel.TransactionTask;
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class HandoffMonitorTest {
         thread.startAgainstMonitor(monitor);
         
         // Enqueue transaction and process result.
-        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction()});
+        SimpleFuture<AvmTransactionResult>[] results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction()});
         Assert.assertEquals(1, results.length);
         results[0].get();
         
@@ -82,7 +82,7 @@ public class HandoffMonitorTest {
         thread.startAgainstMonitor(monitor);
         
         // Enqueue 2 transactions and verify the result array length.
-        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction()});
+        SimpleFuture<AvmTransactionResult>[] results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction()});
         Assert.assertEquals(2, results.length);
         results[0].get();
         results[1].get();
@@ -118,7 +118,7 @@ public class HandoffMonitorTest {
         t4.startAgainstMonitor(monitor);
 
         // Enqueue 2 transactions and verify the result array length.
-        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction()});
+        SimpleFuture<AvmTransactionResult>[] results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction()});
         Assert.assertEquals(8, results.length);
 
         for (int i = 0; i < 8; i++){
@@ -159,7 +159,7 @@ public class HandoffMonitorTest {
             transactions[i] = new FakeTransaction();
         }
 
-        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(transactions);
+        SimpleFuture<AvmTransactionResult>[] results = monitor.sendTransactionsAsynchronously(transactions);
         Assert.assertEquals(128, results.length);
 
         Set<Thread> verifySet = new HashSet<>();
@@ -197,13 +197,13 @@ public class HandoffMonitorTest {
             TransactionTask task = this.monitor.blockingPollForTransaction(null, null);
             while (null != task) {
                 // Fake up a result.
-                TransactionResult result = new FakeResult(this);
+                AvmTransactionResult result = new FakeResult(this);
                 task = this.monitor.blockingPollForTransaction(result, task);
             }
         }
     }
 
-    private class FakeResult extends TransactionResult{
+    private class FakeResult extends AvmTransactionResult {
         public Thread executor;
 
         public FakeResult(Thread t){

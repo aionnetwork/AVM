@@ -6,12 +6,12 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.AvmAddress;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.kernel.TransactionResult;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
@@ -109,16 +109,16 @@ public class AssertKeywordIntegrationTest {
         
         // Deploy.
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS).longValue(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult createResult = this.avm.run(new TransactionContext[] {new TransactionContextImpl(create, BLOCK)})[0].get();
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+        AvmTransactionResult createResult = this.avm.run(new TransactionContext[] {new TransactionContextImpl(create, BLOCK)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         return TestingHelper.buildAddress(createResult.getReturnData());
     }
 
     private Object callStatic(Address dapp, String methodName, Object... arguments) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, arguments);
         Transaction call = Transaction.call(KernelInterfaceImpl.PREMINED_ADDRESS, AvmAddress.wrap(dapp.unwrap()), this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS).longValue(), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result = this.avm.run(new TransactionContext[] {new TransactionContextImpl(call, BLOCK)})[0].get();
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        AvmTransactionResult result = this.avm.run(new TransactionContext[] {new TransactionContextImpl(call, BLOCK)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return TestingHelper.decodeResult(result);
     }
 }

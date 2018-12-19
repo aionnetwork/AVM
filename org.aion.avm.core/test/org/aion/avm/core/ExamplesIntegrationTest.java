@@ -7,12 +7,12 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.AvmAddress;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.kernel.TransactionResult;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.junit.After;
@@ -53,8 +53,8 @@ public class ExamplesIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+        AvmTransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
         
         // We will just invoke a basic sequence of "PUT", "PUT", "GET" to make sure that we can call the main entry-points and execute the main paths.
@@ -73,8 +73,8 @@ public class ExamplesIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+        AvmTransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
         
         // We only want to check that we can call it without issue (it only produces STDOUT).
@@ -86,7 +86,7 @@ public class ExamplesIntegrationTest {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, argData, energyLimit, 1l);
-        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        AvmTransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 }

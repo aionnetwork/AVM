@@ -45,7 +45,7 @@ public class EnumShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testEnumAccess");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
@@ -55,7 +55,7 @@ public class EnumShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testEnumValues");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
@@ -65,7 +65,7 @@ public class EnumShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testShadowJDKEnum");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }

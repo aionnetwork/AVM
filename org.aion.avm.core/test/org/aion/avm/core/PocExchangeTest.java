@@ -72,51 +72,51 @@ public class PocExchangeTest {
         private org.aion.vm.api.interfaces.Address initCoin(byte[] jar, byte[] arguments){
             Transaction createTransaction = Transaction.create(minter, kernel.getNonce(minter).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-            TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+            AvmTransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
+            Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             return AvmAddress.wrap(createResult.getReturnData());
         }
 
-        public TransactionResult callTotalSupply() {
+        public AvmTransactionResult callTotalSupply() {
             byte[] args = ABIEncoder.encodeMethodArguments("totalSupply");
             return call(minter, args);
         }
 
-        private TransactionResult callBalanceOf(org.aion.vm.api.interfaces.Address toQuery) {
+        private AvmTransactionResult callBalanceOf(org.aion.vm.api.interfaces.Address toQuery) {
             byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", TestingHelper.buildAddress(toQuery.toBytes()));
             return call(minter, args);
         }
 
-        private TransactionResult callMint(org.aion.vm.api.interfaces.Address receiver, long amount) {
+        private AvmTransactionResult callMint(org.aion.vm.api.interfaces.Address receiver, long amount) {
             byte[] args = ABIEncoder.encodeMethodArguments("mint", TestingHelper.buildAddress(receiver.toBytes()), amount);
             return call(minter, args);
         }
 
-        private TransactionResult callTransfer(org.aion.vm.api.interfaces.Address sender, org.aion.vm.api.interfaces.Address receiver, long amount) {
+        private AvmTransactionResult callTransfer(org.aion.vm.api.interfaces.Address sender, org.aion.vm.api.interfaces.Address receiver, long amount) {
             byte[] args = ABIEncoder.encodeMethodArguments("transfer", TestingHelper.buildAddress(receiver.toBytes()), amount);
             return call(sender, args);
         }
 
-        private TransactionResult callAllowance(org.aion.vm.api.interfaces.Address owner, org.aion.vm.api.interfaces.Address spender) {
+        private AvmTransactionResult callAllowance(org.aion.vm.api.interfaces.Address owner, org.aion.vm.api.interfaces.Address spender) {
             byte[] args = ABIEncoder.encodeMethodArguments("allowance", TestingHelper.buildAddress(owner.toBytes()), TestingHelper.buildAddress(spender.toBytes()));
             return call(minter, args);
         }
 
-        private TransactionResult callApprove(org.aion.vm.api.interfaces.Address owner, org.aion.vm.api.interfaces.Address spender, long amount) {
+        private AvmTransactionResult callApprove(org.aion.vm.api.interfaces.Address owner, org.aion.vm.api.interfaces.Address spender, long amount) {
             byte[] args = ABIEncoder.encodeMethodArguments("approve", TestingHelper.buildAddress(spender.toBytes()), amount);
             return call(owner, args);
         }
 
-        private TransactionResult callTransferFrom(org.aion.vm.api.interfaces.Address executor, org.aion.vm.api.interfaces.Address from, org.aion.vm.api.interfaces.Address to, long amount) {
+        private AvmTransactionResult callTransferFrom(org.aion.vm.api.interfaces.Address executor, org.aion.vm.api.interfaces.Address from, org.aion.vm.api.interfaces.Address to, long amount) {
             byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", TestingHelper.buildAddress(from.toBytes()), TestingHelper.buildAddress(to.toBytes()), amount);
             return call(executor, args);
         }
 
-        private TransactionResult call(org.aion.vm.api.interfaces.Address sender, byte[] args) {
+        private AvmTransactionResult call(org.aion.vm.api.interfaces.Address sender, byte[] args) {
             Transaction callTransaction = Transaction.call(sender, addr, kernel.getNonce(sender).longValue(), BigInteger.ZERO, args, energyLimit, 1l);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-            TransactionResult callResult = avm.run(new TransactionContext[] {callContext})[0].get();
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
+            AvmTransactionResult callResult = avm.run(new TransactionContext[] {callContext})[0].get();
+            Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
             return callResult;
         }
     }
@@ -134,38 +134,38 @@ public class PocExchangeTest {
         private org.aion.vm.api.interfaces.Address initExchange(byte[] jar, byte[] arguments){
             Transaction createTransaction = Transaction.create(owner, kernel.getNonce(owner).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
             TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-            TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+            AvmTransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
+            Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             return AvmAddress.wrap(createResult.getReturnData());
         }
 
-        public TransactionResult callListCoin(String name, org.aion.vm.api.interfaces.Address coinAddr) {
+        public AvmTransactionResult callListCoin(String name, org.aion.vm.api.interfaces.Address coinAddr) {
             byte[] args = ABIEncoder.encodeMethodArguments("listCoin", name.toCharArray(), TestingHelper.buildAddress(coinAddr.toBytes()));
             return call(owner,args);
         }
 
-        public TransactionResult callRequestTransfer(String name, org.aion.vm.api.interfaces.Address from,  org.aion.vm.api.interfaces.Address to, long amount) {
+        public AvmTransactionResult callRequestTransfer(String name, org.aion.vm.api.interfaces.Address from,  org.aion.vm.api.interfaces.Address to, long amount) {
             byte[] args = ABIEncoder.encodeMethodArguments("requestTransfer", name.toCharArray(), TestingHelper.buildAddress(to.toBytes()), amount);
             return call(from,args);
         }
 
-        public TransactionResult callProcessExchangeTransaction(org.aion.vm.api.interfaces.Address sender) {
+        public AvmTransactionResult callProcessExchangeTransaction(org.aion.vm.api.interfaces.Address sender) {
             byte[] args = ABIEncoder.encodeMethodArguments("processExchangeTransaction");
             return call(sender,args);
         }
 
-        private TransactionResult call(org.aion.vm.api.interfaces.Address sender, byte[] args) {
+        private AvmTransactionResult call(org.aion.vm.api.interfaces.Address sender, byte[] args) {
             Transaction callTransaction = Transaction.call(sender, addr, kernel.getNonce(sender).longValue(), BigInteger.ZERO, args, energyLimit, 1l);
             TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
-            TransactionResult callResult = avm.run(new TransactionContext[] {callContext})[0].get();
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, callResult.getStatusCode());
+            AvmTransactionResult callResult = avm.run(new TransactionContext[] {callContext})[0].get();
+            Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
             return callResult;
         }
     }
 
     @Test
     public void testERC20() {
-        TransactionResult res;
+        AvmTransactionResult res;
         //System.out.println(">> Deploy \"PEPE\" token contract...");
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
@@ -254,7 +254,7 @@ public class PocExchangeTest {
         //System.out.println(">> Deploy the Exchange contract...");
         ExchangeContract ex = new ExchangeContract(null, exchangeOwner, testExchangeJar);
 
-        TransactionResult res;
+        AvmTransactionResult res;
 
         res = ex.callListCoin("PEPE", pepe.addr);
         Assert.assertEquals(true, TestingHelper.decodeResult(res));

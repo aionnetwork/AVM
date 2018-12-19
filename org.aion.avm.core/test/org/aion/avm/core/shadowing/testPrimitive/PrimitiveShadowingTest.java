@@ -45,7 +45,7 @@ public class PrimitiveShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testBoolean");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
@@ -55,7 +55,7 @@ public class PrimitiveShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testByte");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
@@ -65,7 +65,7 @@ public class PrimitiveShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testDouble");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
@@ -75,7 +75,7 @@ public class PrimitiveShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testFloat");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
@@ -85,7 +85,7 @@ public class PrimitiveShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testInteger");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
@@ -95,7 +95,7 @@ public class PrimitiveShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testLong");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
@@ -105,7 +105,7 @@ public class PrimitiveShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testShort");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }
@@ -115,7 +115,7 @@ public class PrimitiveShadowingTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("testAutoboxing");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(true, TestingHelper.decodeResult(result));
     }

@@ -8,12 +8,12 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.AvmAddress;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.kernel.TransactionResult;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -44,8 +44,8 @@ public class InstanceOfIntegrationTest {
         
         // Deploy.
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, createResult.getStatusCode());
+        AvmTransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         dappAddress = TestingHelper.buildAddress(createResult.getReturnData());
     }
 
@@ -167,8 +167,8 @@ public class InstanceOfIntegrationTest {
     private boolean callStaticBoolean(String methodName) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(dappAddress.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
-        Assert.assertEquals(TransactionResult.Code.SUCCESS, result.getStatusCode());
+        AvmTransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return ((Boolean)TestingHelper.decodeResult(result)).booleanValue();
     }
 }

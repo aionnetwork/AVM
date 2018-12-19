@@ -8,12 +8,12 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.AvmAddress;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContext;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.kernel.TransactionResult;
 
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.Assert;
@@ -73,8 +73,8 @@ public class BasicPerfTest {
             Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
             Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
-            TransactionResult result1 = this.avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
-            Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+            AvmTransactionResult result1 = this.avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+            Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
             this.contractAddress = AvmAddress.wrap(result1.getReturnData());
         }
         public void waitForSafeTermination() throws Throwable {
@@ -98,14 +98,14 @@ public class BasicPerfTest {
                 Block block = new Block(new byte[32], i, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
                 long transaction1EnergyLimit = 1_000_000_000l;
                 Transaction tx1 = Transaction.call(deployer, this.contractAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
-                TransactionResult result1 = this.avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
-                Assert.assertEquals(TransactionResult.Code.SUCCESS, result1.getStatusCode());
+                AvmTransactionResult result1 = this.avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+                Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
                 
                 // Every 100 iterations, we also want to run a GC, to verify that this doesn't break anything in a long-running test.
                 if (0 == (i % 100)) {
                     Transaction gcCall = Transaction.garbageCollect(this.contractAddress, kernel.getNonce(this.contractAddress).longValue(), transaction1EnergyLimit, 1L);
-                    TransactionResult gcResult = this.avm.run(new TransactionContext[] {new TransactionContextImpl(gcCall, block)})[0].get();
-                    Assert.assertEquals(TransactionResult.Code.SUCCESS, gcResult.getStatusCode());
+                    AvmTransactionResult gcResult = this.avm.run(new TransactionContext[] {new TransactionContextImpl(gcCall, block)})[0].get();
+                    Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
                     // Note that this GC never actually frees anything, since our workload never orphans objects.
                     Assert.assertEquals(0, gcResult.getEnergyUsed());
                 }

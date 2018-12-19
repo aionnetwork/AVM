@@ -7,6 +7,7 @@ import org.aion.avm.core.util.HashUtils;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.kernel.*;
+import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -60,7 +61,7 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(to.toBytes());
@@ -109,8 +110,8 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
-        assertTrue(txResult.getStatusCode().isSuccess());
+        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        assertTrue(txResult.getResultCode().isSuccess());
         // We expect it to handle all the exceptions and return the data we initially sent in.
         assertArrayEquals(txData, txResult.getReturnData());
     }
@@ -137,9 +138,9 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         // Note that we are expecting AvmException, which the DAppExecutor handles as FAILED.
-        Assert.assertEquals(TransactionResult.Code.FAILED, txResult.getStatusCode());
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED, txResult.getResultCode());
     }
 
 
@@ -148,7 +149,7 @@ public class BlockchainRuntimeTest {
         Transaction tx = Transaction.create(premined, kernel.getNonce(premined).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
         TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]));
         TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
-        assertTrue(txResult.getStatusCode().isSuccess());
+        assertTrue(txResult.getResultCode().isSuccess());
 
         return AvmAddress.wrap(txResult.getReturnData());
     }
