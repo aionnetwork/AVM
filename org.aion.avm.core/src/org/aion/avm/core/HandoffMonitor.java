@@ -2,13 +2,13 @@ package org.aion.avm.core;
 
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.TransactionContext;
 import org.aion.parallel.TransactionTask;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 import org.aion.vm.api.interfaces.SimpleFuture;
+import org.aion.vm.api.interfaces.TransactionContext;
 
 
 /**

@@ -8,6 +8,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.TransactionContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -75,7 +76,6 @@ public class BlockchainRuntimeTest {
         buffer.putLong(blockNumber);
         buffer.putLong(block.getEnergyLimit());
         buffer.put(blockCoinbase.toBytes());
-        buffer.put(blockPrevHash);
         buffer.put(block.getDifficulty().toByteArray());
         buffer.put("value".getBytes());
         buffer.putLong(kernel.getBalance(AvmAddress.wrap(new byte[32])).longValue());

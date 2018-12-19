@@ -6,6 +6,7 @@ import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
+import org.aion.vm.api.interfaces.TransactionContext;
 
 
 /**

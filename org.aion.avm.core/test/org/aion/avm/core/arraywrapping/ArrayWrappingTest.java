@@ -10,6 +10,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
+import org.aion.vm.api.interfaces.TransactionContext;
 import org.junit.*;
 
 

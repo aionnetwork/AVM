@@ -129,15 +129,6 @@ public final class BlockchainRuntime {
     }
 
     /**
-     * Returns the hash of the previous block.
-     *
-     * @return a 32-byte array
-     */
-    public static byte[] getBlockPreviousHash() {
-        return null;
-    }
-
-    /**
      * Returns the block difficulty.
      *
      * @return the PoW difficulty of the block.

@@ -10,6 +10,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.*;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
+import org.aion.vm.api.interfaces.TransactionContext;
 import org.junit.Assert;
 import org.junit.Test;
 

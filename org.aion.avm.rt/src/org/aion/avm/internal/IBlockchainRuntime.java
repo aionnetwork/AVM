@@ -84,13 +84,6 @@ public interface IBlockchainRuntime {
     Address avm_getBlockCoinbase();
 
     /**
-     * Block prevHash
-     *
-     * @return the hash of the previous block.
-     */
-    ByteArray avm_getBlockPreviousHash();
-
-    /**
      * Block difficulty
      *
      * @return the difficulty of the block.

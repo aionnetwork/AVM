@@ -2,6 +2,7 @@ package org.aion.avm.core.types;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.attribute.FileTime;
 import java.util.Map;
 import java.util.jar.Attributes;
@@ -12,8 +13,8 @@ import java.util.jar.Manifest;
 
 import java.util.zip.ZipEntry;
 import org.aion.avm.core.dappreading.LoadedJar;
-import org.aion.kernel.TransactionContext;
 import org.aion.vm.api.interfaces.Address;
+import org.aion.vm.api.interfaces.TransactionContext;
 
 
 /**
@@ -62,7 +63,7 @@ public class ImmortalDappModule {
      */
     public byte[] createJar(Address address, TransactionContext context) throws IOException {
         // set jar file timestamps to transaction timestamp.
-        FileTime timestamp = FileTime.fromMillis(context.getTransactionTimestamp());
+        FileTime timestamp = FileTime.fromMillis(new BigInteger(context.getTransaction().getTimestamp()).longValue());
 
         // manifest, we explicitly write it so that can can control its timestamps.
         Manifest manifest = new Manifest();

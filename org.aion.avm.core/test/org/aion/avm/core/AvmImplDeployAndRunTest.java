@@ -11,7 +11,7 @@ import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

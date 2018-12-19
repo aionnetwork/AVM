@@ -13,13 +13,14 @@ import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.kernel.AvmAddress;
 import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.TransactionContext;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import org.aion.kernel.Transaction.Type;
 import org.aion.vm.api.interfaces.KernelInterface;
+import org.aion.vm.api.interfaces.TransactionContext;
 
 
 /**
@@ -51,16 +52,18 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     public TestingBlockchainRuntime(TransactionContext ctx) {
-        this.address = AvmAddress.wrap(ctx.getAddress());
-        this.caller = AvmAddress.wrap(ctx.getCaller());
-        this.origin = AvmAddress.wrap(ctx.getOrigin());
-        this.value = new BigInteger(ctx.getValue());
-        this.data = ctx.getData();
-        this.energyLimit = ctx.getEnergyLimit();
-        this.energyPrice = ctx.getEnergyPrice();
+        this.address = (ctx.getTransactionKind() == Type.CREATE.toInt())
+            ? ctx.getContractAddress()
+            : ctx.getDestinationAddress();
+        this.caller = ctx.getSenderAddress();
+        this.origin = ctx.getOriginAddress();
+        this.value = new BigInteger(ctx.getTransferValue());
+        this.data = this.address.toBytes();
+        this.energyLimit = ctx.getTransaction().getEnergyLimit();
+        this.energyPrice = ctx.getTransactionEnergyPrice();
         this.blockNumber = ctx.getBlockNumber();
         this.blockTimstamp = ctx.getBlockTimestamp();
-        this.blockDifficulty = ctx.getBlockDifficulty();
+        this.blockDifficulty = java.math.BigInteger.valueOf(ctx.getBlockDifficulty());
     }
 
     public TestingBlockchainRuntime withAddress(byte[] address) {
@@ -152,12 +155,6 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     public Address avm_getBlockCoinbase() {
         return new Address(blockCoinbase.toBytes());
     }
-
-    @Override
-    public ByteArray avm_getBlockPreviousHash() {
-        return new ByteArray(blockPrevHash);
-    }
-
 
     @Override
     public BigInteger avm_getBalance(Address address) {

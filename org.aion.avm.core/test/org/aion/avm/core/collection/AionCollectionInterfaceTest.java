@@ -12,6 +12,7 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
+import org.aion.vm.api.interfaces.TransactionContext;
 import org.junit.Assert;
 import org.junit.Test;
 

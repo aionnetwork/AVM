@@ -1,9 +1,9 @@
 package org.aion.avm.core;
 
-import org.aion.kernel.TransactionContext;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.SimpleFuture;
+import org.aion.vm.api.interfaces.TransactionContext;
 
 
 /**

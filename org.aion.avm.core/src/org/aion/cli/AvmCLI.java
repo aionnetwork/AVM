@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.aion.vm.api.interfaces.SimpleFuture;
+import org.aion.vm.api.interfaces.TransactionContext;
 
 
 public class AvmCLI {

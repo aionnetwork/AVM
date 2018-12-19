@@ -6,104 +6,129 @@ import org.aion.avm.core.util.HashUtils;
 import java.math.BigInteger;
 
 import java.nio.ByteBuffer;
+import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.vm.api.interfaces.Address;
+import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionInterface;
+import org.aion.vm.api.interfaces.TransactionSideEffects;
 
 public class TransactionContextImpl implements TransactionContext {
 
     private Transaction tx;
-    private byte[] origin;
+    private TransactionSideEffects sideEffects;
+    private byte[] transactionHash, originTransactionHash;
+    private Address origin;
     private int internalCallDepth;
     private long blockNumber;
     private long blockTimestamp;
     private long blockEnergyLimit;
-    private byte[] blockCoinbase;
-    private byte[] blockPrevHash;
+    private Address blockCoinbase;
     private BigInteger blockDifficulty;
+    private Address contract;
 
     public TransactionContextImpl(Transaction tx, Block block) {
         this.tx = tx;
-        this.origin = tx.getSenderAddress().toBytes();
+        this.transactionHash = tx.getTransactionHash();
+        this.originTransactionHash = this.transactionHash;
+        this.origin = tx.getSenderAddress();
         this.internalCallDepth = 1;
 
         this.blockNumber = block.getNumber();
         this.blockTimestamp = block.getTimestamp();
         this.blockEnergyLimit = block.getEnergyLimit();
-        this.blockCoinbase = block.getCoinbase().toBytes();
-        this.blockPrevHash = block.getPrevHash();
+        this.blockCoinbase = block.getCoinbase();
         this.blockDifficulty = block.getDifficulty();
+        this.sideEffects = new SideEffects();
     }
 
     public TransactionContextImpl(TransactionContext parent, Transaction tx) {
         this.tx = tx;
-        this.origin = parent.getOrigin();
-        this.internalCallDepth = parent.getInternalCallDepth() + 1;
+        this.transactionHash = tx.getTransactionHash();
+        this.originTransactionHash = this.transactionHash;
+        this.origin = parent.getOriginAddress();
+        this.internalCallDepth = parent.getTransactionStackDepth() + 1;
 
         this.blockNumber = parent.getBlockNumber();
         this.blockTimestamp = parent.getBlockTimestamp();
         this.blockEnergyLimit = parent.getBlockEnergyLimit();
-        this.blockCoinbase = parent.getBlockCoinbase();
-        this.blockPrevHash = parent.getBlockPreviousHash();
-        this.blockDifficulty = parent.getBlockDifficulty();
+        this.blockCoinbase = parent.getMinerAddress();
+        this.blockDifficulty = BigInteger.valueOf(parent.getBlockDifficulty());
+        this.sideEffects = new SideEffects();
     }
 
     @Override
-    public boolean isCreate() {
-        return tx.getType() == Transaction.Type.CREATE;
+    public void setTransactionHash(byte[] hash) {
+        this.transactionHash = hash;
     }
 
     @Override
-    public boolean isBalanceTransfer() {
-        return tx.getType() == Transaction.Type.BALANCE_TRANSFER;
+    public byte[] getHashOfOriginTransaction() {
+        return this.originTransactionHash;
     }
 
     @Override
-    public boolean isGarbageCollectionRequest() {
-        return tx.getType() == Transaction.Type.GARBAGE_COLLECT;
+    public TransactionInterface getTransaction() {
+        return tx;
     }
 
     @Override
-    public byte[] getAddress() {
-        if (isCreate()) {
+    public int getTransactionKind() {
+        return tx.getType().toInt();
+    }
+
+    @Override
+    public Address getDestinationAddress() {
+        return tx.getDestinationAddress();
+    }
+
+    @Override
+    public Address getContractAddress() {
+        if (contract == null) {
             ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(tx.getSenderAddress().toBytes()).putLong(tx.getNonceAsLong());
             byte[] hash = HashUtils.sha256(buffer.array());
             hash[0] = NodeEnvironment.CONTRACT_PREFIX;
-            return hash;
-        } else {
-            return tx.getDestinationAddress().toBytes();
+            contract = AvmAddress.wrap(hash);
         }
+        return contract;
     }
 
     @Override
-    public byte[] getCaller() {
-        return tx.getSenderAddress().toBytes();
+    public void setDestinationAddress(Address address) {
+        throw new AssertionError("No equivalent concept exists in the Avm for this.");
     }
 
     @Override
-    public byte[] getOrigin() {
+    public Address getMinerAddress() {
+        return blockCoinbase;
+    }
+
+    @Override
+    public Address getSenderAddress() {
+        return tx.getSenderAddress();
+    }
+
+    @Override
+    public Address getOriginAddress() {
         return origin;
     }
 
     @Override
-    public long getNonce() {
-        return tx.getNonceAsLong();
-    }
-
-    @Override
-    public BigInteger getValue() {
+    public BigInteger getTransferValue() {
         return tx.getValueAsBigInteger();
     }
 
     @Override
-    public byte[] getData() {
+    public byte[] getTransactionData() {
         return tx.getData();
     }
 
     @Override
-    public long getEnergyLimit() {
-        return tx.getEnergyLimit();
+    public long getTransactionEnergy() {
+        return tx.getEnergyLimit() - tx.getTransactionCost();
     }
 
     @Override
-    public long getEnergyPrice() {
+    public long getTransactionEnergyPrice() {
         return tx.getEnergyPrice();
     }
 
@@ -111,14 +136,6 @@ public class TransactionContextImpl implements TransactionContext {
     public byte[] getTransactionHash() {
         return tx.getTransactionHash();
     }
-
-    @Override
-    public long getBasicCost() {
-        return tx.getTransactionCost();
-    }
-
-    @Override
-    public long getTransactionTimestamp() { return tx.getTimestampAsLong(); }
 
     @Override
     public long getBlockTimestamp() {
@@ -136,22 +153,28 @@ public class TransactionContextImpl implements TransactionContext {
     }
 
     @Override
-    public byte[] getBlockCoinbase() {
-        return blockCoinbase;
+    public long getBlockDifficulty() {
+        return blockDifficulty.longValue();
     }
 
     @Override
-    public byte[] getBlockPreviousHash() {
-        return blockPrevHash;
-    }
-
-    @Override
-    public BigInteger getBlockDifficulty() {
-        return blockDifficulty;
-    }
-
-    @Override
-    public int getInternalCallDepth() {
+    public int getTransactionStackDepth() {
         return internalCallDepth;
     }
+
+    @Override
+    public TransactionSideEffects getSideEffects() {
+        return this.sideEffects;
+    }
+
+    @Override
+    public int getFlags() {
+        throw RuntimeAssertionError.unimplemented("No equivalent concept exists in the Avm for this.");
+    }
+
+    @Override
+    public byte[] toBytes() {
+        throw RuntimeAssertionError.unimplemented("No equivalent concept exists in the Avm for this.");
+    }
+
 }

@@ -24,7 +24,6 @@ public class BlockchainRuntimeTestResource {
         buffer.putLong(getBlockNumber());
         buffer.putLong(getBlockEnergyLimit());
         buffer.put(getBlockCoinbase().unwrap());
-        buffer.put(getBlockPreviousHash());
         buffer.put(getBlockDifficulty().toByteArray());
 
         buffer.put("value".getBytes());

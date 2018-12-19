@@ -34,20 +34,30 @@ public class Transaction implements TransactionInterface {
         /**
          * The CREATE is used to deploy a new DApp.
          */
-        CREATE,
+        CREATE(3),
         /**
          * The CALL is used when sending an invocation to an existing DApp.
          */
-        CALL,
+        CALL(0),
         /**
          * The BALANCE_TRANSFER is used when ONLY a balance transfer is requested, without a DApp call or deployment.
          */
-        BALANCE_TRANSFER,
+        BALANCE_TRANSFER(4),
         /**
          * The GARBAGE_COLLECT is a special transaction which asks that the target DApp's storage be deterministically collected.
          * Note that this is the only transaction type which will result in a negative TransactionResult.energyUsed.
          */
-        GARBAGE_COLLECT,
+        GARBAGE_COLLECT(5);
+
+        private int value;
+
+        Type(int value) {
+            this.value = value;
+        }
+
+        public int toInt() {
+            return this.value;
+        }
     }
 
     Type type;

@@ -38,6 +38,7 @@ import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
 import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
+import org.aion.vm.api.interfaces.TransactionContext;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.slf4j.Logger;
@@ -205,25 +206,25 @@ public class DAppCreator {
         LoadedDApp dapp = null;
         try {
             // read dapp module
-            Address dappAddress = AvmAddress.wrap(ctx.getAddress());
-            CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(ctx.getData());
+            Address dappAddress = ctx.getContractAddress();
+            CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(ctx.getTransactionData());
             if (codeAndArguments == null) {
                 result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
-                result.setEnergyUsed(ctx.getEnergyLimit());
+                result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
                 return;
             }
 
             RawDappModule rawDapp = RawDappModule.readFromJar(codeAndArguments.code);
             if (rawDapp == null) {
                 result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
-                result.setEnergyUsed(ctx.getEnergyLimit());
+                result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
                 return;
             }
 
             // validate dapp module
             if (!validateDapp(rawDapp)) {
                 result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
-                result.setEnergyUsed(ctx.getEnergyLimit());
+                result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
                 return;
             }
             ClassHierarchyForest dappClassesForest = rawDapp.classHierarchyForest;
@@ -238,7 +239,7 @@ public class DAppCreator {
             
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
-            InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getEnergyLimit() - result.getEnergyUsed(), nextHashCode);
+            InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getTransaction().getEnergyLimit() - result.getEnergyUsed(), nextHashCode);
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
             dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, null, task, ctx, codeAndArguments.arguments, result, dapp.runtimeSetup));
 
@@ -280,34 +281,34 @@ public class DAppCreator {
 
             // TODO: whether we should return the dapp address is subject to change
             result.setResultCode(AvmTransactionResult.Code.SUCCESS);
-            result.setEnergyUsed(ctx.getEnergyLimit() - threadInstrumentation.energyLeft());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit() - threadInstrumentation.energyLeft());
             result.setReturnData(dappAddress.toBytes());
             result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
             result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (OutOfStackException e) {
             result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_STACK);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (RevertException e) {
             result.setResultCode(AvmTransactionResult.Code.FAILED_REVERT);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (InvalidException e) {
             result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (UncaughtException e) {
             result.setResultCode(AvmTransactionResult.Code.FAILED_EXCEPTION);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
             result.setUncaughtException(e.getCause());
             logger.debug("Uncaught exception", e.getCause());
         } catch (RejectedClassException e) {
             result.setResultCode(AvmTransactionResult.Code.FAILED_REJECTED);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (EarlyAbortException e) {
             result.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
@@ -316,7 +317,7 @@ public class DAppCreator {
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             result.setResultCode(AvmTransactionResult.Code.FAILED);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
         } catch (JvmError e) {
             // These are cases which we know we can't handle and have decided to handle by safely stopping the AVM instance so
             // re-throw this as the AvmImpl top-level loop will commute it into an asynchronous shutdown.

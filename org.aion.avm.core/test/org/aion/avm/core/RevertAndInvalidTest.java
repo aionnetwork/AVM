@@ -6,6 +6,7 @@ import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
+import org.aion.vm.api.interfaces.TransactionContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

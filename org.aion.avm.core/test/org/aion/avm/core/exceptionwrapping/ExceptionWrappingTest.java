@@ -9,6 +9,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.kernel.*;
+import org.aion.vm.api.interfaces.TransactionContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

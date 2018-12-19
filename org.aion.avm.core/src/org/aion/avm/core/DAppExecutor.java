@@ -9,10 +9,10 @@ import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.internal.*;
 import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.TransactionContext;
 import org.aion.parallel.TransactionTask;
 import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
+import org.aion.vm.api.interfaces.TransactionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,7 @@ public class DAppExecutor {
     public static void call(KernelInterface kernel, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
                             TransactionContext ctx, AvmTransactionResult result) {
-        Address dappAddress = AvmAddress.wrap(ctx.getAddress());
+        Address dappAddress = ctx.getDestinationAddress();
         IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel, dappAddress);
         // Load the initial state of the environment.
         // (note that ContractEnvironmentState is immutable, so it is safe to just access the environment from a different invocation).
@@ -40,8 +40,8 @@ public class DAppExecutor {
         task.getReentrantDAppStack().pushState(thisState);
         
         IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
-        InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode);
-        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, task, ctx, ctx.getData(), result, dapp.runtimeSetup));
+        InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getTransaction().getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode);
+        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, task, ctx, ctx.getTransactionData(), result, dapp.runtimeSetup));
         InstrumentationBasedStorageFees feeProcessor = new InstrumentationBasedStorageFees(threadInstrumentation);
 
         ReentrantGraphProcessor reentrantGraphData = null;
@@ -81,42 +81,42 @@ public class DAppExecutor {
 
             result.setResultCode(AvmTransactionResult.Code.SUCCESS);
             result.setReturnData(ret);
-            result.setEnergyUsed(ctx.getEnergyLimit() - threadInstrumentation.energyLeft());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit() - threadInstrumentation.energyLeft());
             result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
             result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (OutOfStackException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
             result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_STACK);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (CallDepthLimitExceededException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
             result.setResultCode(AvmTransactionResult.Code.FAILED_CALL_DEPTH_LIMIT_EXCEEDED);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (RevertException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
             result.setResultCode(AvmTransactionResult.Code.FAILED_REVERT);
-            result.setEnergyUsed(ctx.getEnergyLimit() - threadInstrumentation.energyLeft());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit() - threadInstrumentation.energyLeft());
 
         } catch (InvalidException e) {
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
             result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (EarlyAbortException e) {
             if (null != reentrantGraphData) {
@@ -130,7 +130,7 @@ public class DAppExecutor {
                 reentrantGraphData.revertToStoredFields();
             }
             result.setResultCode(AvmTransactionResult.Code.FAILED_EXCEPTION);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
             result.setUncaughtException(e.getCause());
             logger.debug("Uncaught exception", e.getCause());
         } catch (AvmException e) {
@@ -139,7 +139,7 @@ public class DAppExecutor {
                 reentrantGraphData.revertToStoredFields();
             }
             result.setResultCode(AvmTransactionResult.Code.FAILED);
-            result.setEnergyUsed(ctx.getEnergyLimit());
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
         } catch (JvmError e) {
             // These are cases which we know we can't handle and have decided to handle by safely stopping the AVM instance so
             // re-throw this as the AvmImpl top-level loop will commute it into an asynchronous shutdown.

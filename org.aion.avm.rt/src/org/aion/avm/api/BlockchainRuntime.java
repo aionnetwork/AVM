@@ -73,11 +73,6 @@ public final class BlockchainRuntime {
         return blockchainRuntime.avm_getBlockCoinbase();
     }
 
-    public static ByteArray avm_getBlockPreviousHash() {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getBlockPreviousHash);
-        return blockchainRuntime.avm_getBlockPreviousHash();
-    }
-
     public static BigInteger avm_getBlockDifficulty() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getBlockDifficulty);
         return blockchainRuntime.avm_getBlockDifficulty();
@@ -219,10 +214,6 @@ public final class BlockchainRuntime {
 
     public static Address getBlockCoinbase() {
         return avm_getBlockCoinbase();
-    }
-
-    public static byte[] getBlockPreviousHash() {
-        return avm_getBlockPreviousHash().getUnderlying();
     }
 
     public static java.math.BigInteger getBlockDifficulty() {
