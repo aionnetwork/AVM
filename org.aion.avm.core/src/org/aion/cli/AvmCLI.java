@@ -19,6 +19,7 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.aion.vm.api.interfaces.SimpleFuture;
 
 
 public class AvmCLI {

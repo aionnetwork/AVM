@@ -9,6 +9,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
+import org.aion.vm.api.interfaces.SimpleFuture;
 import org.junit.Assert;
 import org.junit.Test;
 

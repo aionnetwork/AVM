@@ -24,6 +24,7 @@ import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
 import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
+import org.aion.vm.api.interfaces.SimpleFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

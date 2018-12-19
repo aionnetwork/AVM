@@ -6,9 +6,9 @@ import java.util.Set;
 
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.SimpleFuture;
 import org.aion.kernel.TransactionContext;
 import org.aion.parallel.TransactionTask;
+import org.aion.vm.api.interfaces.SimpleFuture;
 import org.junit.Assert;
 import org.junit.Test;
 
