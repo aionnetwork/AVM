@@ -160,11 +160,11 @@ public final class ABIEncoder {
                 return array;
             }
         },
-        avm_CHAR    ('C', 0, new String[]{"C", "char", "java.lang.Character", PackageConstants.kShadowDotPrefix + "java.lang.Character",
-                PackageConstants.kArrayWrapperDotPrefix + "CharArray", PackageConstants.kArrayWrapperDotPrefix + "$$C", "[C", "[[C"}) { // variable length
+        avm_CHAR('C', Character.BYTES, new String[]{"C", "char", "java.lang.Character", PackageConstants.kShadowDotPrefix + "java.lang.Character",
+                PackageConstants.kArrayWrapperDotPrefix + "CharArray", PackageConstants.kArrayWrapperDotPrefix + "$$C", "[C", "[[C"}) {
             @Override
             public byte[] encode(Object data) {
-                return Character.toString((char)data).getBytes(StandardCharsets.UTF_8);
+                return ByteBuffer.allocate(this.bytes).putChar((char)data).array();
             }
             @Override
             public byte[] encodeShadowType(Object data) {
@@ -177,14 +177,17 @@ public final class ABIEncoder {
                 // descriptor bytes
                 byte[] descriptor = ("[" + symbol + String.valueOf(rawData.length) + "]").getBytes(StandardCharsets.UTF_8);
                 // encoded data bytes
-                byte[] encodedData = String.valueOf(rawData).getBytes(StandardCharsets.UTF_8);
+                byte[] encodedData = new byte[rawData.length * bytes];
+                for (int i = 0, idx = 0; idx < rawData.length; i += bytes, idx ++) {
+                    System.arraycopy(encode(rawData[idx]), 0, encodedData, i, bytes);
+                }
 
                 return new EncodedObject(descriptor, encodedData);
             }
             @Override
             public ABIDecoder.DecodedObjectInfo decode(byte[] data, int startIndex) {
-                char c = (new String(Arrays.copyOfRange(data, startIndex, data.length))).charAt(0);
-                return new ABIDecoder.DecodedObjectInfo(c, new org.aion.avm.shadow.java.lang.Character(c), startIndex + String.valueOf(c).getBytes(StandardCharsets.UTF_8).length);
+                char decoded = ByteBuffer.allocate(this.bytes).put(Arrays.copyOfRange(data, startIndex, startIndex + this.bytes)).getChar(0);
+                return new ABIDecoder.DecodedObjectInfo(decoded, new org.aion.avm.shadow.java.lang.Character(decoded), startIndex + this.bytes);
             }
             @Override
             public Array construct1DWrappedArray(Object[] data) {
@@ -867,20 +870,11 @@ public final class ABIEncoder {
             }
 
             // encoded data bytes
-            byte[] encodedData = null;
-            if (type == ABITypes.avm_CHAR) {
-                String dataS = "";
-                for (Object charArray : underlying) {
-                    dataS += String.valueOf(((CharArray) charArray).getUnderlying());
-                }
-                encodedData = dataS.getBytes(StandardCharsets.UTF_8);
-            } else {
-                encodedData = new byte[totalSize * type.bytes];
-                int i = 0;
-                for (Object array : underlying) {
-                    for (int idx = 0; idx < ((Array) array).length(); i += type.bytes, idx++) {
-                        System.arraycopy(type.encode(((Array) array).getAsObject(idx)), 0, encodedData, i, type.bytes);
-                    }
+            byte[] encodedData = new byte[totalSize * type.bytes];
+            int i = 0;
+            for (Object array : underlying) {
+                for (int idx = 0; idx < ((Array) array).length(); i += type.bytes, idx++) {
+                    System.arraycopy(type.encode(((Array) array).getAsObject(idx)), 0, encodedData, i, type.bytes);
                 }
             }
 

@@ -52,7 +52,7 @@ public class ABIEncoderTest {
         Assert.assertArrayEquals(new byte[] {66, -1}, encoded);
         
         encoded = ABIEncoder.encodeOneObject(Character.valueOf('a'));
-        Assert.assertArrayEquals(new byte[] {67, 97}, encoded);
+        Assert.assertArrayEquals(new byte[] {67, 0, 97}, encoded);
         
         encoded = ABIEncoder.encodeOneObject(Boolean.valueOf(true));
         Assert.assertArrayEquals(new byte[] {90, 1}, encoded);
@@ -78,7 +78,7 @@ public class ABIEncoderTest {
         byte[] encoded = new byte[] {66, -1};
         Assert.assertEquals((byte)-1, ABIDecoder.decodeOneObject(encoded));
         
-        encoded = new byte[] {67, 97};
+        encoded = new byte[] {67, 0, 97};
         Assert.assertEquals('a', ABIDecoder.decodeOneObject(encoded));
         
         encoded = new byte[] {90, 1};
@@ -133,7 +133,7 @@ public class ABIEncoderTest {
         Assert.assertArrayEquals(new byte[] {91, 66, 49, 93, -1}, encoded);
         
         encoded = ABIEncoder.encodeOneObject(new char[] { 'a' });
-        Assert.assertArrayEquals(new byte[] { 91, 67, 49, 93, 97 }, encoded);
+        Assert.assertArrayEquals(new byte[] {91, 67, 49, 93, 0, 97}, encoded);
         
         encoded = ABIEncoder.encodeOneObject(new boolean[] { true });
         Assert.assertArrayEquals(new byte[] {91, 90, 49, 93, 1}, encoded);
@@ -159,7 +159,7 @@ public class ABIEncoderTest {
         byte[] encoded = new byte[] {91, 66, 49, 93, -1};
         Assert.assertArrayEquals(new byte[] { (byte)-1 }, (byte[]) ABIDecoder.decodeOneObject(encoded));
         
-        encoded = new byte[] {91, 67, 49, 93, 97};
+        encoded = new byte[] {91, 67, 49, 93, 0, 97};
         Assert.assertArrayEquals(new char[] { 'a' }, (char[]) ABIDecoder.decodeOneObject(encoded));
         
         encoded = new byte[] {91, 90, 49, 93, 1};
@@ -187,7 +187,7 @@ public class ABIEncoderTest {
         Assert.assertArrayEquals(new byte[] { 91, 91, 66, 93, 50, 93, 40, 49, 41, 40, 49, 41, -1, -1 }, encoded);
         
         encoded = ABIEncoder.encodeOneObject(new char[][] { new char[] { 'a' }, new char[] { 'a' } } );
-        Assert.assertArrayEquals(new byte[] { 91, 91, 67, 93, 50, 93, 40, 49, 41, 40, 49, 41, 97, 97 }, encoded);
+        Assert.assertArrayEquals(new byte[] { 91, 91, 67, 93, 50, 93, 40, 49, 41, 40, 49, 41, 0, 97, 0, 97 }, encoded);
         
         encoded = ABIEncoder.encodeOneObject(new boolean[][] { new boolean[] { true }, new boolean[] { true } } );
         Assert.assertArrayEquals(new byte[] { 91, 91, 90, 93, 50, 93, 40, 49, 41, 40, 49, 41, 1, 1 }, encoded);
@@ -213,7 +213,7 @@ public class ABIEncoderTest {
         byte[] encoded = new byte[] {91, 66, 49, 93, -1};
         Assert.assertArrayEquals(new byte[] { (byte)-1 }, (byte[]) ABIDecoder.decodeOneObject(encoded));
         
-        encoded = new byte[] {91, 67, 49, 93, 97};
+        encoded = new byte[] {91, 67, 49, 93, 0, 97};
         Assert.assertArrayEquals(new char[] { 'a' }, (char[]) ABIDecoder.decodeOneObject(encoded));
         
         encoded = new byte[] {91, 90, 49, 93, 1};
