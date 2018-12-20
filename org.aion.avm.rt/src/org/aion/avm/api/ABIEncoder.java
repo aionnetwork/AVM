@@ -706,11 +706,17 @@ public final class ABIEncoder {
      * Runtime-facing implementation.
      */
     public static ByteArray avm_encodeMethodArguments(org.aion.avm.shadow.java.lang.String methodName, IObjectArray arguments)  {
+        if ((null == methodName) || (null == arguments)) {
+            throw new NullPointerException();
+        }
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIEncoder_avm_encodeMethodArguments);
         return new ByteArray(encodeMethodArguments(methodName.toString(), ((ObjectArray) arguments).getUnderlying()));
     }
 
     public static ByteArray avm_encodeOneObject(IObject data) {
+        if (null == data) {
+            throw new NullPointerException();
+        }
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIEncoder_avm_encodeOneObject);
         return new ByteArray(encodeOneObject(data));
     }
@@ -725,10 +731,11 @@ public final class ABIEncoder {
      * @param methodName the method name of the Dapp main class to call with.
      * @param arguments the arguments of the corresponding method of Dapp main class to call with.
      * @return the encoded byte array that contains the method descriptor, followed by the argument descriptor and encoded arguments, according the Aion ABI format.
+     * @throws NullPointerException If methodName or arguments are null (note that, under normal usage, arguments will be empty instead of null).
      */
     public static byte[] encodeMethodArguments(String methodName, Object... arguments)  {
-        if (arguments == null) {
-            return methodName.getBytes(StandardCharsets.UTF_8);
+        if ((null == methodName) || (null == arguments)) {
+            throw new NullPointerException();
         }
 
         // encode each argument
@@ -771,8 +778,12 @@ public final class ABIEncoder {
      * Encode one object of any type that Aion ABI allows; generate the byte array that contains the descriptor and the encoded data.
      * @param data one object of any type that Aion ABI allows
      * @return the byte array that contains the argument descriptor and the encoded data.
+     * @throws NullPointerException If data is null.
      */
     public static byte[] encodeOneObject(Object data) {
+        if (null == data) {
+            throw new NullPointerException();
+        }
         EncodedObject encoded = encodeOneObjectAndDescriptor(data);
         byte[] ret = new byte[encoded.descriptor.length + encoded.encodedData.length];
         System.arraycopy(encoded.descriptor, 0, ret, 0, encoded.descriptor.length);
@@ -787,9 +798,6 @@ public final class ABIEncoder {
      * @return The encoded data.
      */
     private static EncodedObject encodeOneObjectAndDescriptor(Object data) {
-        if (data == null) {
-            return null;
-        }
         String className = data.getClass().getName();
         ABITypes type = mapABITypes(className);
 
@@ -887,8 +895,12 @@ public final class ABIEncoder {
      * @param identifier a string that may be the class name, Java class file field descriptor, or the ABI symbol. See the {@link ABITypes} class.
      * @return the corresponding ABI type.
      * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
+     * @throws NullPointerException If identifier is null.
      */
     public static ABITypes mapABITypes(String identifier) {
+        if (null == identifier) {
+            throw new NullPointerException();
+        }
         // return the type
         if (!ABITypesMap.containsKey(identifier)) {
             throw new ABICodecException("data type is not compatible to Aion ABI types");

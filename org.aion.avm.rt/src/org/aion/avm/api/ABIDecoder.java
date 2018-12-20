@@ -92,9 +92,13 @@ public final class ABIDecoder {
      * @param clazz the user space class.
      * @param txData the transaction data that is encoded with the method name and arguments to call with.
      * @return the encoded return data from the method call.
+     * @throws NullPointerException If given null clazz or txData.
      */
     public static ByteArray avm_decodeAndRunWithClass(org.aion.avm.shadow.java.lang.Class<?> clazz, ByteArray txData) {
-        if (txData.getUnderlying() == null || txData.getUnderlying().length == 0) {
+        if ((null == clazz) || (null == txData)) {
+            throw new NullPointerException();
+        }
+        if (txData.getUnderlying().length == 0) {
             return null;
         } // do not charge in case of early exit, since the fee is quite high
 
@@ -110,9 +114,13 @@ public final class ABIDecoder {
      * @param obj the user space class object.
      * @param txData the transaction data that is encoded with the method name and arguments to call with.
      * @return the encoded return data from the method call.
+     * @throws NullPointerException If given null obj or txData.
      */
     public static ByteArray avm_decodeAndRunWithObject(IObject obj, ByteArray txData) {
-        if (txData.getUnderlying() == null || txData.getUnderlying().length == 0) {
+        if ((null == obj) || (null == txData)) {
+            throw new NullPointerException();
+        }
+        if (txData.getUnderlying().length == 0) {
             return null;
         } // do not charge in case of early exit, since the fee is quite high
 
@@ -127,9 +135,13 @@ public final class ABIDecoder {
      * Decode the transaction data and return the method name.
      * @param txData the transaction data that has the encoded method name to call with.
      * @return the decoded method name.
+     * @throws NullPointerException If given null txData.
      */
     public static org.aion.avm.shadow.java.lang.String avm_decodeMethodName(ByteArray txData) {
-        if (txData.getUnderlying() == null || txData.getUnderlying().length == 0) {
+        if (null == txData) {
+            throw new NullPointerException();
+        }
+        if (txData.getUnderlying().length == 0) {
             return null;
         } // do not charge in case of early exit, since the fee is high
 
@@ -141,9 +153,13 @@ public final class ABIDecoder {
      * Decode the transaction data and return the argument list that is encoded in it.
      * @param txData the transaction data that has the encoded arguments descriptor and arguments.
      * @return an object array that contains all of the arguments.
+     * @throws NullPointerException If given null txData.
      */
     public static IObjectArray avm_decodeArguments(ByteArray txData) {
-        if (txData.getUnderlying() == null || txData.getUnderlying().length == 0) {
+        if (null == txData) {
+            throw new NullPointerException();
+        }
+        if (txData.getUnderlying().length == 0) {
             return null;
         } // do not charge in case of early exit, since the fee is high
 
@@ -158,9 +174,13 @@ public final class ABIDecoder {
      * Decode the transaction data that has one object encoded in it.
      * @param txData the transaction data that has one object encoded in it (with the descriptor).
      * @return the decoded object.
+     * @throws NullPointerException If given null txData.
      */
     public static IObject avm_decodeOneObject(ByteArray txData){
-        if (txData.getUnderlying() == null || txData.getUnderlying().length == 0) {
+        if (null == txData) {
+            throw new NullPointerException();
+        }
+        if (txData.getUnderlying().length == 0) {
             return null;
         } // do not charge in case of early exit, since the fee is high
 
@@ -181,14 +201,20 @@ public final class ABIDecoder {
      * expect that they can test this directly (although that assumption may be removed in the future).
      */
     public static byte[] decodeAndRunWithClass(Class<?> clazz, byte[] txData) {
-        if (txData == null || txData.length == 0) {
+        if ((null == clazz) || (null == txData)) {
+            throw new NullPointerException();
+        }
+        if (txData.length == 0) {
             return null;
         }
 
         return decodeAndRun(clazz, txData, true);
     }
     public static byte[] decodeAndRunWithObject(Object obj, byte[] txData) {
-        if (txData == null || txData.length == 0) {
+        if ((null == obj) || (null == txData)) {
+            throw new NullPointerException();
+        }
+        if (txData.length == 0) {
             return null;
         }
 
@@ -203,8 +229,8 @@ public final class ABIDecoder {
      * and {@link #avm_decodeAndRunWithClass(org.aion.avm.shadow.java.lang.Class, ByteArray)}  avm_decodeAndRunWithClass} methods
      * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
-    public static byte[] decodeAndRun(Object obj, byte[] txData, boolean isWithClass) {
-        if (txData == null || txData.length == 0) {
+    private static byte[] decodeAndRun(Object obj, byte[] txData, boolean isWithClass) {
+        if (txData.length == 0) {
             return null;
         }
 
@@ -259,8 +285,8 @@ public final class ABIDecoder {
     /** Underlying implementation of {@link #avm_decodeMethodName(ByteArray) avm_decodeMethodName} method
      * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
-    public static String decodeMethodName(byte[] txData) {
-        if (txData == null || txData.length == 0) {
+    private static String decodeMethodName(byte[] txData) {
+        if (txData.length == 0) {
             return null;
         }
 
@@ -277,16 +303,28 @@ public final class ABIDecoder {
 
     /** Underlying implementation of {@link #avm_decodeArguments(ByteArray) avm_decodeArguments} method */
     public static Object[] decodeArguments(byte[] data){
-        if (data == null || data.length == 0) {
+        if (null == data) {
+            throw new NullPointerException();
+        }
+        if (data.length == 0) {
             return null;
         }
 
         return decode(data).arguments;
     }
 
-    /** Underlying implementation of {@link #avm_decodeOneObject(ByteArray) avm_decodeOneObject} method */
+    /**
+     * Used by external callers when they want to interpret the result data returned by a call.
+     * 
+     * @param data The serialized response.
+     * @return The inflated object instance.
+     * @throws NullPointerException If given null data.
+     */
     public static Object decodeOneObject(byte[] data){
-        if (data == null || data.length == 0) {
+        if (null == data) {
+            throw new NullPointerException();
+        }
+        if (data.length == 0) {
             return null;
         }
 
@@ -297,8 +335,8 @@ public final class ABIDecoder {
     /** A helper method to decode the transaction data into the method caller, which contains the method name, arguments descriptor and arguments.
      * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
-    public static MethodCaller decode(byte[] txData) {
-        if (txData == null || txData.length == 0) {
+    private static MethodCaller decode(byte[] txData) {
+        if (txData.length == 0) {
             return null;
         }
 
@@ -330,7 +368,7 @@ public final class ABIDecoder {
      * @return an object array that contains all of the arguments.
      */
     private static IObject[] decodeArgumentsWithDescriptor(byte[] data, String argsDescriptor){
-        if (data == null || data.length == 0) {
+        if (data.length == 0) {
             return null;
         }
 
@@ -367,7 +405,7 @@ public final class ABIDecoder {
      * is equal to the byte index in the byte array.
      */
     private static Descriptor readOneDescriptor(byte[] data, int start){
-        if (data == null || data.length == 0) {
+        if (data.length == 0) {
             return null;
         }
 
@@ -435,7 +473,7 @@ public final class ABIDecoder {
      * A helper method to decode one object from the encoded data stream with the starting index and descriptor.
      */
     private static DecodedObjectInfo decodeOneObjectWithDescriptor(byte[] data, int startByteOfData, Descriptor descriptor){
-        if (data == null || data.length == 0) {
+        if (data.length == 0) {
             return null;
         }
 
@@ -454,7 +492,7 @@ public final class ABIDecoder {
      * A helper method to decode a 1D array from the encode data stream with the start index and descriptor.
      */
     private static DecodedObjectInfo decode1DArray(byte[] data, int startByteOfData, Descriptor descriptor){
-        if (data == null || data.length == 0) {
+        if (data.length == 0) {
             return null;
         }
 
@@ -478,7 +516,7 @@ public final class ABIDecoder {
      * A helper method to decode a 2D array from the encode data stream with the start index and descriptor.
      */
     private static DecodedObjectInfo decode2DArray(byte[] data, int startByteOfData, Descriptor descriptor){
-        if (data == null || data.length == 0) {
+        if (data.length == 0) {
             return null;
         }
 
@@ -498,7 +536,7 @@ public final class ABIDecoder {
      * A helper method to match the method selector with the main-class methods.
      * @throws ABICodecException the transaction data cannot be properly decoded, or cannot be converted to the method arguments
      */
-    public static Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor){
+    private static Method matchMethodSelector(Class<?> clazz, String methodName, String argsDescriptor){
         Method[] methods = clazz.getMethods();
 
         String ARRAY_WRAPPER_PREFIX = PackageConstants.kArrayWrapperDotPrefix;
@@ -582,7 +620,7 @@ public final class ABIDecoder {
      * @param arguments the arguments to be converted to match with the method parameter types.
      * @return the converted arguments.
      */
-    public static Object[] convertArguments(Method method, IObject[] arguments){
+    private static Object[] convertArguments(Method method, IObject[] arguments){
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (arguments.length != parameterTypes.length) {
             return null;

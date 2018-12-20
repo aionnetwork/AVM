@@ -248,4 +248,81 @@ public class ABIEncoderTest {
         };
         Assert.assertArrayEquals(expected, encoded);
     }
+
+    @Test
+    public void testNullArguments() {
+        NullPointerException caught = null;
+        try {
+            // Note that this is a warning since you can't pass null as varargs array (we are just testing that we fail in the expected way).
+            ABIEncoder.encodeMethodArguments("", (Object[]) null);
+        } catch (NullPointerException e) {
+            caught = e;
+        }
+        Assert.assertNotNull(caught);
+        caught = null;
+        try {
+            ABIEncoder.encodeMethodArguments(null);
+        } catch (NullPointerException e) {
+            caught = e;
+        }
+        Assert.assertNotNull(caught);
+        caught = null;
+        try {
+            ABIEncoder.encodeOneObject(null);
+        } catch (NullPointerException e) {
+            caught = e;
+        }
+        Assert.assertNotNull(caught);
+        caught = null;
+        try {
+            ABIEncoder.mapABITypes(null);
+        } catch (NullPointerException e) {
+            caught = e;
+        }
+        Assert.assertNotNull(caught);
+        caught = null;
+        
+        try {
+            ABIDecoder.decodeAndRunWithClass(ABIEncoderTest.class, null);
+        } catch (NullPointerException e) {
+            caught = e;
+        }
+        Assert.assertNotNull(caught);
+        caught = null;
+        try {
+            ABIDecoder.decodeAndRunWithClass(null, new byte[0]);
+        } catch (NullPointerException e) {
+            caught = e;
+        }
+        Assert.assertNotNull(caught);
+        caught = null;
+        try {
+            ABIDecoder.decodeAndRunWithObject(new Object(), null);
+        } catch (NullPointerException e) {
+            caught = e;
+        }
+        Assert.assertNotNull(caught);
+        caught = null;
+        try {
+            ABIDecoder.decodeAndRunWithObject(null, new byte[0]);
+        } catch (NullPointerException e) {
+            caught = e;
+        }
+        Assert.assertNotNull(caught);
+        caught = null;
+        try {
+            ABIDecoder.decodeArguments(null);
+        } catch (NullPointerException e) {
+            caught = e;
+        }
+        Assert.assertNotNull(caught);
+        caught = null;
+        try {
+            ABIDecoder.decodeOneObject(null);
+        } catch (NullPointerException e) {
+            caught = e;
+        }
+        Assert.assertNotNull(caught);
+        caught = null;
+    }
 }
