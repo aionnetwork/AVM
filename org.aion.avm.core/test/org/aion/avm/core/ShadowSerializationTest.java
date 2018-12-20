@@ -15,6 +15,8 @@ import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,7 +43,7 @@ public class ShadowSerializationTest {
     org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
 
     private KernelInterface kernel;
-    private Avm avm;
+    private VirtualMachine avm;
 
     @Before
     public void setup() {
@@ -62,7 +64,7 @@ public class ShadowSerializationTest {
         
         // deploy
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
         
@@ -83,7 +85,7 @@ public class ShadowSerializationTest {
         
         // deploy
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
         
@@ -106,7 +108,7 @@ public class ShadowSerializationTest {
         
         // deploy
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
         
@@ -127,7 +129,7 @@ public class ShadowSerializationTest {
         
         // deploy
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
         
@@ -150,7 +152,7 @@ public class ShadowSerializationTest {
         
         // deploy
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
         
@@ -171,7 +173,7 @@ public class ShadowSerializationTest {
         
         // deploy
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
         
@@ -188,29 +190,29 @@ public class ShadowSerializationTest {
     }
 
 
-    private int populate(Avm avm, Address contractAddr, String segmentName) {
+    private int populate(VirtualMachine avm, Address contractAddr, String segmentName) {
         long energyLimit = 1_000_000L;
         byte[] argData = ABIEncoder.encodeMethodArguments("populate_" + segmentName);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
     }
 
-    private int getHash(Avm avm, Address contractAddr, String segmentName) {
+    private int getHash(VirtualMachine avm, Address contractAddr, String segmentName) {
         long energyLimit = 1_000_000L;
         byte[] argData = ABIEncoder.encodeMethodArguments("getHash_" + segmentName);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
     }
 
-    private void verifyReentrantChange(Avm avm, Address contractAddr, String segmentName) {
+    private void verifyReentrantChange(VirtualMachine avm, Address contractAddr, String segmentName) {
         long energyLimit = 2_000_000L;
         byte[] argData = ABIEncoder.encodeMethodArguments("verifyReentrantChange_" + segmentName);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertTrue((Boolean)TestingHelper.decodeResult(result));
     }

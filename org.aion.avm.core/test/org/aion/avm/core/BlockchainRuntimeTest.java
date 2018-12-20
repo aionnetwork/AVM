@@ -9,6 +9,7 @@ import org.aion.avm.userlib.AionBuffer;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 public class BlockchainRuntimeTest {
     // kernel & vm
     private KernelInterfaceImpl kernel;
-    private Avm avm;
+    private VirtualMachine avm;
 
     private org.aion.vm.api.interfaces.Address premined = KernelInterfaceImpl.PREMINED_ADDRESS;
 
@@ -62,7 +63,7 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(to.toBytes());
@@ -110,7 +111,7 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         // We expect it to handle all the exceptions and return the data we initially sent in.
         assertArrayEquals(txData, txResult.getReturnData());
@@ -138,7 +139,7 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         // Note that we are expecting AvmException, which the DAppExecutor handles as FAILED.
         Assert.assertEquals(AvmTransactionResult.Code.FAILED, txResult.getResultCode());
     }

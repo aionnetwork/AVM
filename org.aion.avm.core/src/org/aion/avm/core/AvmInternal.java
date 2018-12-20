@@ -5,13 +5,14 @@ import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.VirtualMachine;
 
 
 /**
  * The private/internal extension of the Avm public interface.  This is the internally-facing interface which supports things like internal
  * transactions, which aren't otherwise exposted/meaningful to calls originating outside an AVM implementation.
  */
-public interface AvmInternal extends Avm {
+public interface AvmInternal extends VirtualMachine {
     /**
      * Runs a transaction, originating from inside the AVM, itself.
      * 

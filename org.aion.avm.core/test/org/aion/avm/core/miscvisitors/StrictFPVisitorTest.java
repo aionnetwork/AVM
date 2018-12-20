@@ -1,19 +1,19 @@
 package org.aion.avm.core.miscvisitors;
 
 import java.math.BigInteger;
-import org.aion.avm.core.Avm;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmAddress;
-import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class StrictFPVisitorTest {
     private org.aion.vm.api.interfaces.Address dappAddress;
 
     private KernelInterfaceImpl kernel;
-    private Avm avm;
+    private VirtualMachine avm;
 
     @Before
     public void setup() {
@@ -47,7 +47,7 @@ public class StrictFPVisitorTest {
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         dappAddress = AvmAddress.wrap(txResult.getReturnData());
         assertTrue(null != dappAddress);
@@ -73,7 +73,7 @@ public class StrictFPVisitorTest {
     public void testFp() {
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
     }
 }

@@ -2,7 +2,6 @@ package org.aion.avm.core.shadowing.testString;
 
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.core.Avm;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -11,6 +10,8 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,7 +24,7 @@ public class StringShadowingTest {
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
+        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         // deploy it
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
@@ -36,7 +37,7 @@ public class StringShadowingTest {
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnInt");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, (int[]) TestingHelper.decodeResult(result)));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnBoolean");
@@ -83,7 +84,7 @@ public class StringShadowingTest {
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
+        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         // We do the deployment, first, since we need the resultant DApp address for the other calls.
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
@@ -120,7 +121,7 @@ public class StringShadowingTest {
         batch[5] = new TransactionContextImpl(tx, block);
 
         // Send the batch.
-        SimpleFuture<AvmTransactionResult>[] results = avm.run(batch);
+        SimpleFuture<TransactionResult>[] results = avm.run(batch);
         
         // Now, process the results.
         Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, (int[]) TestingHelper.decodeResult(results[0].get())));

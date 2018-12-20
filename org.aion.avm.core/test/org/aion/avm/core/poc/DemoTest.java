@@ -3,7 +3,6 @@ package org.aion.avm.core.poc;
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.core.Avm;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -24,6 +23,8 @@ import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -44,7 +45,7 @@ public class DemoTest {
     @Test
     public void testWallet() {
         KernelInterface kernel = new KernelInterfaceImpl();
-        Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
+        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
         kernel.adjustBalance(pepeMinter, BigInteger.valueOf(1_000_000_000L));
         kernel.adjustBalance(deployer, BigInteger.valueOf(1_000_000_000L));
         kernel.adjustBalance(owner1, BigInteger.valueOf(1_000_000_000L));
@@ -60,7 +61,7 @@ public class DemoTest {
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
         Transaction createTransaction = Transaction.create(pepeMinter, kernel.getNonce(pepeMinter).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(createTransaction, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         Address tokenDapp = TestingHelper.buildAddress(txResult.getReturnData());
         System.out.println(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.getReturnData()) + ")");

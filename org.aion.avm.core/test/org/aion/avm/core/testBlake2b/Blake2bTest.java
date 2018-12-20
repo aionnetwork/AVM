@@ -1,13 +1,14 @@
 package org.aion.avm.core.testBlake2b;
 
 import java.math.BigInteger;
-import org.aion.avm.core.Avm;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +26,7 @@ public class Blake2bTest {
     private org.aion.vm.api.interfaces.Address dappAddress;
 
     private KernelInterfaceImpl kernel;
-    private Avm avm;
+    private VirtualMachine avm;
 
     @Before
     public void setup() {
@@ -36,7 +37,7 @@ public class Blake2bTest {
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         System.out.println(txResult);
 
         dappAddress = AvmAddress.wrap(txResult.getReturnData());
@@ -55,7 +56,7 @@ public class Blake2bTest {
 
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         System.out.println(txResult);
 
         assertArrayEquals(hash, txResult.getReturnData());

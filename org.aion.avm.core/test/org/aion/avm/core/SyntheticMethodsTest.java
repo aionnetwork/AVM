@@ -11,6 +11,8 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,7 +33,7 @@ public class SyntheticMethodsTest {
     private long energyPrice = 1;
 
     private KernelInterfaceImpl kernel;
-    private Avm avm;
+    private VirtualMachine avm;
 
     @Before
     public void setup() {
@@ -56,7 +58,7 @@ public class SyntheticMethodsTest {
 
     @Test
     public void testDappWorking() {
-        AvmTransactionResult result = createAndRunTransaction("getCompareResult");
+        TransactionResult result = createAndRunTransaction("getCompareResult");
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(SyntheticMethodsTestTarget.DEFAULT_VALUE, TestingHelper.decodeResult(result));
@@ -65,44 +67,44 @@ public class SyntheticMethodsTest {
     @Test
     public void testCompareTo() {
         // BigInteger
-        AvmTransactionResult result1 = createAndRunTransaction("compareSomething", 1);
+        TransactionResult result1 = createAndRunTransaction("compareSomething", 1);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-        AvmTransactionResult result1Value = createAndRunTransaction("getCompareResult");
+        TransactionResult result1Value = createAndRunTransaction("getCompareResult");
         Assert.assertEquals(1, TestingHelper.decodeResult(result1Value));
 
-        AvmTransactionResult result2 = createAndRunTransaction("compareSomething", 2);
+        TransactionResult result2 = createAndRunTransaction("compareSomething", 2);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
-        AvmTransactionResult result2Value = createAndRunTransaction("getCompareResult");
+        TransactionResult result2Value = createAndRunTransaction("getCompareResult");
         Assert.assertEquals(0, TestingHelper.decodeResult(result2Value));
 
-        AvmTransactionResult result3 = createAndRunTransaction("compareSomething", 3);
+        TransactionResult result3 = createAndRunTransaction("compareSomething", 3);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result3.getResultCode());
-        AvmTransactionResult result3Value = createAndRunTransaction("getCompareResult");
+        TransactionResult result3Value = createAndRunTransaction("getCompareResult");
         Assert.assertEquals(-1, TestingHelper.decodeResult(result3Value));
 
-        AvmTransactionResult result4 = createAndRunTransaction("compareSomething", 4);
+        TransactionResult result4 = createAndRunTransaction("compareSomething", 4);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result4.getResultCode());
-        AvmTransactionResult result4Value = createAndRunTransaction("getCompareResult");
+        TransactionResult result4Value = createAndRunTransaction("getCompareResult");
         Assert.assertEquals(100, TestingHelper.decodeResult(result4Value));
     }
 
     @Test
     public void testTarget(){
         // pick target1Impl
-        AvmTransactionResult result1 = createAndRunTransaction("pickTarget", 1);
+        TransactionResult result1 = createAndRunTransaction("pickTarget", 1);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
 
         // check for correctness in synthetic, should get impl1 name
-        AvmTransactionResult result2 = createAndRunTransaction("getName");
+        TransactionResult result2 = createAndRunTransaction("getName");
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
         Assert.assertEquals("TargetClassImplOne", TestingHelper.decodeResult(result2));
 
         // pick target2Impl
-        AvmTransactionResult result3 = createAndRunTransaction("pickTarget", 2);
+        TransactionResult result3 = createAndRunTransaction("pickTarget", 2);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result3.getResultCode());
 
         // check for correctness in synthetic, should get abstract name
-        AvmTransactionResult result4 = createAndRunTransaction("getName");
+        TransactionResult result4 = createAndRunTransaction("getName");
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result4.getResultCode());
         Assert.assertEquals("TargetAbstractClass", TestingHelper.decodeResult(result4));
     }
@@ -113,25 +115,25 @@ public class SyntheticMethodsTest {
         int inputOverrideGeneric = 20;
 
         // calling setup generics
-        AvmTransactionResult result1 = createAndRunTransaction("setGenerics",
+        TransactionResult result1 = createAndRunTransaction("setGenerics",
                 inputGeneric, inputOverrideGeneric);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
 
         // retrieve each object
-        AvmTransactionResult result2 = createAndRunTransaction("getIntGen");
+        TransactionResult result2 = createAndRunTransaction("getIntGen");
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
         Assert.assertEquals(inputGeneric, TestingHelper.decodeResult(result2));
 
-        AvmTransactionResult result3 = createAndRunTransaction("getIntGenSub");
+        TransactionResult result3 = createAndRunTransaction("getIntGenSub");
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result3.getResultCode());
         Assert.assertEquals(inputOverrideGeneric, TestingHelper.decodeResult(result3));
 
-        AvmTransactionResult result4 = createAndRunTransaction("getSubCopy");
+        TransactionResult result4 = createAndRunTransaction("getSubCopy");
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result4.getResultCode());
         Assert.assertEquals(inputOverrideGeneric, TestingHelper.decodeResult(result4));
     }
 
-    private AvmTransactionResult createAndRunTransaction(String methodName, Object ... args){
+    private TransactionResult createAndRunTransaction(String methodName, Object ... args){
         byte[] txData = ABIEncoder.encodeMethodArguments(methodName, args);
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);

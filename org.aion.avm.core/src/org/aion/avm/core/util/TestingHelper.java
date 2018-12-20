@@ -10,6 +10,7 @@ import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.Class;
 import org.aion.kernel.AvmTransactionResult;
+import org.aion.vm.api.interfaces.TransactionResult;
 
 
 /**
@@ -25,7 +26,7 @@ public class TestingHelper implements IInstrumentation {
         helper.remove();
         return data;
     }
-    public static Object decodeResult(AvmTransactionResult result) {
+    public static Object decodeResult(TransactionResult result) {
         return decodeResultRaw(result.getReturnData());
     }
     public static Object decodeResultRaw(byte[] returnData) {

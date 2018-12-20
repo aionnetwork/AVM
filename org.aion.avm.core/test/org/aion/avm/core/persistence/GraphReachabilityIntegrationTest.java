@@ -1,7 +1,6 @@
 package org.aion.avm.core.persistence;
 
 import java.math.BigInteger;
-import org.aion.avm.core.Avm;
 import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.InstrumentationBasedStorageFees;
@@ -18,6 +17,8 @@ import org.aion.kernel.TransactionContextImpl;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,7 +34,7 @@ public class GraphReachabilityIntegrationTest {
     private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
 
     private KernelInterfaceImpl kernel;
-    private Avm avm;
+    private VirtualMachine avm;
 
     @Before
     public void setup() {
@@ -296,24 +297,24 @@ public class GraphReachabilityIntegrationTest {
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // GC now should reclaim nothing.
-        AvmTransactionResult gcResult = runGc(block, contractAddr);
+        AvmTransactionResult gcResult = (AvmTransactionResult) runGc(block, contractAddr);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
         Assert.assertEquals(0L, gcResult.getEnergyUsed());
         
         // Run the setup again and GC (should reclaim 5).
         callStatic(block, contractAddr, getCost_setup249(), "setup249");
-        gcResult = runGc(block, contractAddr);
+        gcResult = (AvmTransactionResult) runGc(block, contractAddr);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
         Assert.assertEquals(-5 * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST, gcResult.getEnergyUsed());
         
         // GC now should reclaim nothing.
-        gcResult = runGc(block, contractAddr);
+        gcResult = (AvmTransactionResult) runGc(block, contractAddr);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
         Assert.assertEquals(0L, gcResult.getEnergyUsed());
         
         // Run the setup again and GC (should reclaim 5).
         callStatic(block, contractAddr, getCost_setup249(), "setup249");
-        gcResult = runGc(block, contractAddr);
+        gcResult = (AvmTransactionResult) runGc(block, contractAddr);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
         Assert.assertEquals(-5 * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST, gcResult.getEnergyUsed());
     }
@@ -327,7 +328,7 @@ public class GraphReachabilityIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
         
@@ -358,7 +359,7 @@ public class GraphReachabilityIntegrationTest {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, argData, energyLimit, 1l);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(expectedCost, result.getEnergyUsed());
         return TestingHelper.decodeResult(result);
@@ -406,11 +407,11 @@ public class GraphReachabilityIntegrationTest {
         return miscCharges + storageCharges;
     }
 
-    private AvmTransactionResult runGc(Block block, Address contractAddr) {
+    private TransactionResult runGc(Block block, Address contractAddr) {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction gc = Transaction.garbageCollect(AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(AvmAddress.wrap(contractAddr.unwrap())).longValue(), energyLimit, energyPrice);
-        AvmTransactionResult gcResult = avm.run(new TransactionContext[] {new TransactionContextImpl(gc, block)})[0].get();
+        TransactionResult gcResult = avm.run(new TransactionContext[] {new TransactionContextImpl(gc, block)})[0].get();
         return gcResult;
     }
 }

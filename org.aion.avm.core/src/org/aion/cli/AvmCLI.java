@@ -3,7 +3,6 @@ package org.aion.cli;
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.core.Avm;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -21,6 +20,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 
 
 public class AvmCLI {
@@ -59,7 +60,7 @@ public class AvmCLI {
         env.logLine("Sender       : " + sender);
     }
 
-    public static void reportDeployResult(IEnvironment env, AvmTransactionResult createResult){
+    public static void reportDeployResult(IEnvironment env, TransactionResult createResult){
         String dappAddress = Helpers.bytesToHexString(createResult.getReturnData());
         env.noteRelevantAddress(dappAddress);
         
@@ -67,7 +68,7 @@ public class AvmCLI {
         env.logLine("DApp deployment status");
         env.logLine("Result status: " + createResult.getResultCode().name());
         env.logLine("Dapp Address : " + dappAddress);
-        env.logLine("Energy cost  : " + createResult.getEnergyUsed());
+        env.logLine("Energy cost  : " + ((AvmTransactionResult) createResult).getEnergyUsed());
     }
 
     public static TransactionContext setupOneCall(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, String method, Object[] args, long energyLimit, long nonceBias) {
@@ -106,15 +107,15 @@ public class AvmCLI {
         }
     }
 
-    private static void reportCallResult(IEnvironment env, AvmTransactionResult callResult){
+    private static void reportCallResult(IEnvironment env, TransactionResult callResult){
         lineSeparator(env);
         env.logLine("DApp call result");
         env.logLine("Result status: " + callResult.getResultCode().name());
         env.logLine("Return value : " + Helpers.bytesToHexString(callResult.getReturnData()));
-        env.logLine("Energy cost  : " + callResult.getEnergyUsed());
+        env.logLine("Energy cost  : " + ((AvmTransactionResult) callResult).getEnergyUsed());
 
         if (callResult.getResultCode() == AvmTransactionResult.Code.FAILED_EXCEPTION) {
-            env.dumpThrowable(callResult.getUncaughtException());
+            env.dumpThrowable(((AvmTransactionResult) callResult).getUncaughtException());
         }
     }
 
@@ -284,9 +285,9 @@ public class AvmCLI {
                 // Run them in a single batch.
                 File storageFile = new File(invocation.storagePath);
                 KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
-                Avm avm = CommonAvmFactory.buildAvmInstance(kernel);
-                SimpleFuture<AvmTransactionResult>[] futures = avm.run(transactions);
-                AvmTransactionResult[] results = new AvmTransactionResult[futures.length];
+                VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+                SimpleFuture<TransactionResult>[] futures = avm.run(transactions);
+                TransactionResult[] results = new AvmTransactionResult[futures.length];
                 for (int i = 0; i < futures.length; ++i) {
                     results[i] = futures[i].get();
                 }

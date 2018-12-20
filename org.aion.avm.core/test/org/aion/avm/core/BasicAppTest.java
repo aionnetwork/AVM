@@ -12,6 +12,8 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,7 +36,7 @@ public class BasicAppTest {
     private long energyPrice = 1;
 
     private KernelInterfaceImpl kernel;
-    private Avm avm;
+    private VirtualMachine avm;
 
     @Before
     public void setup() {
@@ -63,7 +65,7 @@ public class BasicAppTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("identity", new byte[] {42, 13});
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         // These should be the same instance.
         Assert.assertEquals(42, ((byte[]) TestingHelper.decodeResult(result))[0]);
@@ -75,7 +77,7 @@ public class BasicAppTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("sum", new byte[] {42, 13});
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         // Should be just 1 byte, containing the sum.
         Assert.assertEquals(42 + 13, TestingHelper.decodeResult(result));
@@ -91,7 +93,7 @@ public class BasicAppTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("swapInputs", 1);
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(0, TestingHelper.decodeResult(result));
 
@@ -115,7 +117,7 @@ public class BasicAppTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("arrayEquality", new byte[] {42, 13});
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(false, TestingHelper.decodeResult(result));
 
@@ -132,7 +134,7 @@ public class BasicAppTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("allocateObjectArray");
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(2, TestingHelper.decodeResult(result));
     }
@@ -142,7 +144,7 @@ public class BasicAppTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("byteAutoboxing", (byte) 42);
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals(42, ((byte[]) TestingHelper.decodeResult(result))[0]);
         Assert.assertEquals(42, ((byte[]) TestingHelper.decodeResult(result))[1]);
@@ -153,7 +155,7 @@ public class BasicAppTest {
         byte[] txData = ABIEncoder.encodeMethodArguments("mapPut", (byte)1, (byte)42);
         Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         Assert.assertEquals((byte) 42, TestingHelper.decodeResult(result));
 

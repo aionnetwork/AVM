@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.aion.vm.api.interfaces.KernelInterface;
+import org.aion.vm.api.interfaces.VirtualMachine;
 
 
 /**
@@ -252,9 +253,9 @@ public class NodeEnvironment {
      * @param kernel The kernel interface exposed by the consumer.
      * @return The long-lived AVM instance.
      */
-    public Avm buildAvmInstance(IInstrumentationFactory instrumentationFactory, KernelInterface kernel) {
+    public AvmImpl buildAvmInstance(IInstrumentationFactory instrumentationFactory, KernelInterface kernel) {
         AvmImpl avm = new AvmImpl(instrumentationFactory, kernel);
-        avm.startup();
+        avm.start();
         return avm;
     }
 

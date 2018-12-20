@@ -4,13 +4,14 @@ import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IInstrumentationFactory;
 import org.aion.vm.api.interfaces.KernelInterface;
+import org.aion.vm.api.interfaces.VirtualMachine;
 
 
 /**
  * Since issue-303 required the creation of IInstrumentationFactory, this helper class exists to cover the common case of our tests:  just using CommonInstrumentation.
  */
 public class CommonAvmFactory {
-    public static Avm buildAvmInstance(KernelInterface kernelInterface) {
+    public static AvmImpl buildAvmInstance(KernelInterface kernelInterface) {
         // We use the common instrumentation for this case.
         IInstrumentationFactory factory = new CommonInstrumentationFactory();
         return NodeEnvironment.singleton.buildAvmInstance(factory, kernelInterface);

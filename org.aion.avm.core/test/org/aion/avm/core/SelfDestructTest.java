@@ -16,6 +16,8 @@ import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,7 +32,7 @@ public class SelfDestructTest {
     private static Block block;
 
     private KernelInterface kernel;
-    private Avm avm;
+    private VirtualMachine avm;
 
     @BeforeClass
     public static void setupClass() {
@@ -195,21 +197,21 @@ public class SelfDestructTest {
         byte[] txData = makeDeploymentData(deployArgs);
         
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
         return TestingHelper.buildAddress(result1.getReturnData());
     }
 
     private Object callDApp(Address dAppAddress, byte[] argData) {
         Transaction tx = Transaction.call(deployer, AvmAddress.wrap(dAppAddress.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return TestingHelper.decodeResult(result);
     }
 
     private void failToCall(Address dAppAddress) {
         Transaction tx = Transaction.call(deployer, AvmAddress.wrap(dAppAddress.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[0], ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         // Sending a call to nobody is a success, since the data doesn't need to go anywhere.
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         // That said, our tests will always return something on a real call so check that this is nothing.
@@ -223,7 +225,7 @@ public class SelfDestructTest {
 
     private void sendMoney(Address target, BigInteger value) {
         Transaction tx = Transaction.call(deployer, AvmAddress.wrap(target.unwrap()), kernel.getNonce(deployer).longValue(), value, new byte[0], ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
+        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 }

@@ -27,6 +27,7 @@ import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,7 +124,8 @@ public class AvmImpl implements AvmInternal {
 
     }
 
-    public void startup() {
+    @Override
+    public void start() {
         RuntimeAssertionError.assertTrue(null == AvmImpl.currentAvm);
         AvmImpl.currentAvm = this;
         
@@ -144,7 +146,7 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public SimpleFuture<AvmTransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException {
+    public SimpleFuture<TransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
@@ -233,7 +235,7 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public void setKernel(KernelInterface kernel) {
+    public void setKernelInterface(KernelInterface kernel) {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }

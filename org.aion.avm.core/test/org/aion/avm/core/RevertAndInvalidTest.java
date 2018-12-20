@@ -7,6 +7,8 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +28,7 @@ public class RevertAndInvalidTest {
 
     // kernel & vm
     private KernelInterfaceImpl kernel;
-    private Avm avm;
+    private VirtualMachine avm;
 
     private org.aion.vm.api.interfaces.Address dappAddress;
 
@@ -48,7 +50,7 @@ public class RevertAndInvalidTest {
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
 
         return AvmAddress.wrap(txResult.getReturnData());
     }
@@ -57,7 +59,7 @@ public class RevertAndInvalidTest {
     public void testRevert() {
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[]{1}, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(new TransactionContext[] {txContext})[0].get();
 
         assertEquals(AvmTransactionResult.Code.FAILED_REVERT, txResult.getResultCode());
         assertNull(txResult.getReturnData());
@@ -70,7 +72,7 @@ public class RevertAndInvalidTest {
     public void testInvalid() {
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, new byte[]{2}, energyLimit, energyPrice);
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        AvmTransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(new TransactionContext[] {txContext})[0].get();
 
         assertEquals(AvmTransactionResult.Code.FAILED_INVALID, txResult.getResultCode());
         assertNull(txResult.getReturnData());
