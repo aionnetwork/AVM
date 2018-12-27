@@ -62,8 +62,8 @@ public class ImmortalDappModule {
      * Create the in-memory JAR containing all the classes in this module.
      */
     public byte[] createJar(Address address, TransactionContext context) throws IOException {
-        // set jar file timestamps to transaction timestamp.
-        FileTime timestamp = FileTime.fromMillis(new BigInteger(context.getTransaction().getTimestamp()).longValue());
+        // set jar file timestamp to block timestamp so the whole network is in agreement over this.
+        FileTime timestamp = FileTime.fromMillis(context.getBlockTimestamp());
 
         // manifest, we explicitly write it so that can can control its timestamps.
         Manifest manifest = new Manifest();
