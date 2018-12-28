@@ -1,26 +1,7 @@
 package org.aion.avm.api;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import org.aion.avm.arraywrapper.Array;
-import org.aion.avm.arraywrapper.BooleanArray;
-import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.arraywrapper.CharArray;
-import org.aion.avm.arraywrapper.DoubleArray;
-import org.aion.avm.arraywrapper.FloatArray;
-import org.aion.avm.arraywrapper.IntArray;
-import org.aion.avm.arraywrapper.LongArray;
-import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.arraywrapper.ShortArray;
-import org.aion.avm.internal.IArrayWrapperFactory;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.avm.internal.OutOfEnergyException;
-import org.aion.avm.shadow.java.lang.Class;
 import org.aion.avm.shadow.java.lang.Object;
 import org.junit.AfterClass;
 import org.junit.Assert;
