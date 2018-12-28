@@ -17,15 +17,7 @@ public class TransformedMethodContract {
         return getBool(b);
     }
 
-    public static boolean tryObjectBool(Boolean b) {
-        return getBool(b);
-    }
-
     public static byte tryPrimitiveByte(byte b) {
-        return getByte(b);
-    }
-
-    public static byte tryObjectByte(Byte b) {
         return getByte(b);
     }
 
@@ -33,15 +25,7 @@ public class TransformedMethodContract {
         return getChar(c);
     }
 
-    public static char tryObjectChar(Character c) {
-        return getChar(c);
-    }
-
     public static short tryPrimitiveShort(short s) {
-        return getShort(s);
-    }
-
-    public static short tryObjectShort(Short s) {
         return getShort(s);
     }
 
@@ -49,15 +33,7 @@ public class TransformedMethodContract {
         return getInt(i);
     }
 
-    public static int tryObjectInt(Integer i) {
-        return getInt(i);
-    }
-
     public static long tryPrimitiveLong(long l) {
-        return getLong(l);
-    }
-
-    public static long tryObjectLong(Long l) {
         return getLong(l);
     }
 
@@ -66,10 +42,6 @@ public class TransformedMethodContract {
     }
 
     public static double tryPrimitiveDouble(double d) {
-        return getDouble(d);
-    }
-
-    public static double tryObjectDouble(Double d) {
         return getDouble(d);
     }
 
@@ -186,11 +158,7 @@ public class TransformedMethodContract {
         return b;
     }
 
-    private static boolean getBool(Boolean b) {
-        return !b;
-    }
-
-    public static boolean collapseBools(Boolean b1, Boolean b2, boolean b3, boolean b4) {
+    public static boolean collapseBools(boolean b1, boolean b2, boolean b3, boolean b4) {
         return b1 ^ b2 ^ b3 ^ b4;
     }
 
@@ -200,11 +168,7 @@ public class TransformedMethodContract {
         return b;
     }
 
-    private static byte getByte(Byte b) {
-        return (byte) ~b;
-    }
-
-    public static Byte collapseBytes(Byte b1, Byte b2, byte b3, byte b4) {
+    public static Byte collapseBytes(byte b1, byte b2, byte b3, byte b4) {
         return (byte) (b1 + b2 + b3 + b4);
     }
 
@@ -214,11 +178,7 @@ public class TransformedMethodContract {
         return c;
     }
 
-    private static char getChar(Character c) {
-        return (char) ~c;
-    }
-
-    public static char collapseChars(Character c1, Character c2, char c3, char c4) {
+    public static char collapseChars(char c1, char c2, char c3, char c4) {
         return (char) (c1 ^ c2 ^ c3 ^ c4);
     }
 
@@ -228,11 +188,7 @@ public class TransformedMethodContract {
         return s;
     }
 
-    private static short getShort(Short s) {
-        return (short) -s;
-    }
-
-    public static Short collapseShorts(Short s1, Short s2, short s3, short s4) {
+    public static Short collapseShorts(short s1, short s2, short s3, short s4) {
         return (short) (s1 + s2 + s3 + s4);
     }
 
@@ -242,11 +198,7 @@ public class TransformedMethodContract {
         return i;
     }
 
-    private static int getInt(Integer i) {
-        return -i;
-    }
-
-    public static int collapseInts(Integer i1, Integer i2, int i3, int i4) {
+    public static int collapseInts(int i1, int i2, int i3, int i4) {
         return i1 + i2 + i3 + i4;
     }
 
@@ -256,11 +208,7 @@ public class TransformedMethodContract {
         return l;
     }
 
-    private static long getLong(Long l) {
-        return -l;
-    }
-
-    public static Long collapseLongs(Long l1, Long l2, long l3, long l4) {
+    public static Long collapseLongs(long l1, long l2, long l3, long l4) {
         return l1 + l2 + l3 + l4;
     }
 
@@ -276,11 +224,7 @@ public class TransformedMethodContract {
         return d;
     }
 
-    private static double getDouble(Double d) {
-        return -d;
-    }
-
-    public static Double collapseDoubles(Double d1, Double d2, double d3, double d4) {
+    public static Double collapseDoubles(double d1, double d2, double d3, double d4) {
         return d1 + d2 + d3 + d4;
     }
 

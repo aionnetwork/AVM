@@ -71,14 +71,6 @@ public class TransformedMethodTest {
     }
 
     @Test
-    public void testObjectBooleanParam() {
-        assertEquals(TransformedMethodContract.tryObjectBool(Boolean.FALSE),
-            callBooleanMethod("tryObjectBool", Boolean.FALSE));
-        assertEquals(TransformedMethodContract.tryObjectBool(Boolean.TRUE),
-            callBooleanMethod("tryObjectBool", Boolean.TRUE));
-    }
-
-    @Test
     public void testMultipleBooleanParams() {
         Boolean b1 = Boolean.FALSE, b2 = Boolean.TRUE;
         boolean b3 = false, b4 = false;
@@ -91,15 +83,6 @@ public class TransformedMethodTest {
         for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
             byte result = callByteMethod("tryPrimitiveByte", (byte) i);
             assertEquals(TransformedMethodContract.tryPrimitiveByte((byte) i), result);
-        }
-    }
-
-    @Test
-    public void testObjectByteParam() {
-        for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
-            Byte expected = TransformedMethodContract.tryObjectByte((byte) i);
-            Byte result = callByteMethod("tryObjectByte", (byte) i);
-            assertEquals(expected, result);
         }
     }
 
@@ -118,12 +101,6 @@ public class TransformedMethodTest {
     }
 
     @Test
-    public void testObjectCharParam() {
-        Character c = ' ';
-        assertEquals(TransformedMethodContract.tryObjectChar(c), callCharMethod("tryObjectChar", c));
-    }
-
-    @Test
     public void testMultipleCharParams() {
         Character c1 = 'a', c2 = 'A';
         char c3 = ' ', c4 = '!';
@@ -134,12 +111,6 @@ public class TransformedMethodTest {
     public void testPrimitiveShortParam() {
         short s = (short) 87;
         assertEquals(TransformedMethodContract.tryPrimitiveShort(s), callShortMethod("tryPrimitiveShort", s));
-    }
-
-    @Test
-    public void testObjectShortParam() {
-        Short s = (short) 22;
-        assertEquals(TransformedMethodContract.tryObjectShort(s), callShortMethod("tryObjectShort", s));
     }
 
     @Test
@@ -158,12 +129,6 @@ public class TransformedMethodTest {
     }
 
     @Test
-    public void testObjectIntParam() {
-        int i = -23523;
-        assertEquals(TransformedMethodContract.tryObjectInt(i), callIntMethod("tryObjectInt", i));
-    }
-
-    @Test
     public void testMultipleIntParams() {
         Integer i1 = 346, i2 = 9823;
         int i3 = 42, i4 = 198;
@@ -174,12 +139,6 @@ public class TransformedMethodTest {
     public void testPrimitiveLongParam() {
         long l = 325;
         assertEquals(TransformedMethodContract.tryPrimitiveLong(l), callLongMethod("tryPrimitiveLong", l));
-    }
-
-    @Test
-    public void testObjectLongParam() {
-        Long l = 23986523523L;
-        assertEquals(TransformedMethodContract.tryObjectLong(l), callLongMethod("tryObjectLong", l));
     }
 
     @Test
@@ -201,12 +160,6 @@ public class TransformedMethodTest {
     public void testPrimitiveDoubleParam() {
         double d = 32345;
         assertEquals(TransformedMethodContract.tryPrimitiveDouble(d), callDoubleMethod("tryPrimitiveDouble", d), 0);
-    }
-
-    @Test
-    public void testObjectDoubleParam() {
-        Double d = 436d;
-        assertEquals(TransformedMethodContract.tryObjectDouble(d), callDoubleMethod("tryObjectDouble", d), 0);
     }
 
     @Test
