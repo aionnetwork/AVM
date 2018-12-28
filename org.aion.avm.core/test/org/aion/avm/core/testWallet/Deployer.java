@@ -1,5 +1,6 @@
 package org.aion.avm.core.testWallet;
 
+import org.aion.avm.api.ABIStaticState;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.*;
@@ -9,6 +10,7 @@ import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.internal.CommonInstrumentation;
+import org.aion.avm.internal.IABISupport;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -65,6 +67,36 @@ public class Deployer {
 
 
     private static void invokeDirect() {
+        IABISupport standardWrapperFactory = ABIStaticState.testingSecondaryInitialization(new IABISupport() {
+            public String convertToShadowMethodName(String original) {
+                return original;
+            }
+            @Override
+            public Object convertToStandardValue(Object shadowValue) {
+                return shadowValue;
+            }
+            @Override
+            public Object convertToShadowValue(Object standardValue) {
+                return standardValue;
+            }
+            @Override
+            public Class<?> convertConcreteShadowToStandardType(Class<?> shadowType) {
+                return shadowType;
+            }
+            @Override
+            public Class<?> convertToConcreteShadowType(Class<?> standardType) {
+                return standardType;
+            }
+            @Override
+            public Class<?> convertToBindingShadowType(Class<?> standardType) {
+                return standardType;
+            }
+            @Override
+            public Class<?> mapFromBindingTypeToConcreteType(Class<?> bindingShadowType) {
+                return bindingShadowType;
+            }
+        });
+        
         // Note that this loggingRuntime is just to give us a consistent interface for reading the eventCounts.
         Map<String, Integer> eventCounts = new HashMap<>();
         TestingBlockchainRuntime loggingRuntime = new TestingBlockchainRuntime().withEventCounter(eventCounts);
@@ -159,6 +191,9 @@ public class Deployer {
 
         // We should have seen 13 confirmations over the course of the test run.
         RuntimeAssertionError.assertTrue(13 == loggingRuntime.getEventCount(EventLogger.kConfirmation));
+        
+        // Restore the original.
+        ABIStaticState.testingSecondaryInitialization(standardWrapperFactory);
     }
 
     private static void invokeTransformed() throws Throwable {

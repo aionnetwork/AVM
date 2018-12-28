@@ -1,18 +1,9 @@
 package testutils;
 
-import java.util.function.Function;
-
-import org.aion.avm.arraywrapper.BooleanArray;
-import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.arraywrapper.CharArray;
-import org.aion.avm.arraywrapper.DoubleArray;
-import org.aion.avm.arraywrapper.FloatArray;
-import org.aion.avm.arraywrapper.IntArray;
-import org.aion.avm.arraywrapper.LongArray;
-import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.arraywrapper.ShortArray;
 import org.aion.avm.internal.IABISupport;
-import org.aion.avm.shadow.java.lang.Object;
+import org.aion.avm.internal.IObject;
+
+import org.junit.Assert;
 
 
 /**
@@ -22,47 +13,59 @@ import org.aion.avm.shadow.java.lang.Object;
  */
 public class TestArrayWrapperFactory implements IABISupport {
     @Override
-    public ObjectArray construct2DByteArray(byte[][] nativeArray) {
-        return createArray(nativeArray.length, (i) -> new ByteArray(nativeArray[i]));
+    public String convertToShadowMethodName(String original) {
+        return original;
     }
     @Override
-    public ObjectArray construct2DBooleanArray(boolean[][] nativeArray) {
-        return createArray(nativeArray.length, (i) -> new BooleanArray(nativeArray[i]));
+    public Object convertToStandardValue(Object privateValue) {
+        return ((Wrapper)privateValue).real;
     }
     @Override
-    public ObjectArray construct2DCharArray(char[][] nativeArray) {
-        return createArray(nativeArray.length, (i) -> new CharArray(nativeArray[i]));
+    public IObject convertToShadowValue(Object publicValue) {
+        return new Wrapper(publicValue);
     }
     @Override
-    public ObjectArray construct2DShortArray(short[][] nativeArray) {
-        return createArray(nativeArray.length, (i) -> new ShortArray(nativeArray[i]));
+    public Class<?> convertConcreteShadowToStandardType(Class<?> privateType) {
+        return privateType;
     }
     @Override
-    public ObjectArray construct2DIntArray(int[][] nativeArray) {
-        return createArray(nativeArray.length, (i) -> new IntArray(nativeArray[i]));
+    public Class<?> convertToConcreteShadowType(Class<?> publicType) {
+        return publicType;
     }
     @Override
-    public ObjectArray construct2DLongArray(long[][] nativeArray) {
-        return createArray(nativeArray.length, (i) -> new LongArray(nativeArray[i]));
+    public Class<?> convertToBindingShadowType(Class<?> publicType) {
+        return publicType;
     }
     @Override
-    public ObjectArray construct2DFloatArray(float[][] nativeArray) {
-        return createArray(nativeArray.length, (i) -> new FloatArray(nativeArray[i]));
+    public Class<?> mapFromBindingTypeToConcreteType(Class<?> bindingShadowType) {
+        return bindingShadowType;
     }
-    @Override
-    public ObjectArray construct2DDoubleArray(double[][] nativeArray) {
-        return createArray(nativeArray.length, (i) -> new DoubleArray(nativeArray[i]));
-    }
-    @Override
-    public ObjectArray construct1DStringArray(org.aion.avm.shadow.java.lang.String[] shadowArray) {
-        return createArray(shadowArray.length, (i) -> shadowArray[i]);
-    }
-    private ObjectArray createArray(int length, Function<Integer, Object> mapper) {
-        ObjectArray array = ObjectArray.initArray(length);
-        for (int i = 0; i < length; ++i) {
-            Object elt = mapper.apply(i);
-            array.set(i, elt);
+
+
+    private static class Wrapper implements IObject {
+        public final Object real;
+        public Wrapper(Object real) {
+            this.real = real;
         }
-        return array;
+        @Override
+        public org.aion.avm.shadow.java.lang.Class<?> avm_getClass() {
+            Assert.fail("Not used in test");
+            return null;
+        }
+        @Override
+        public int avm_hashCode() {
+            Assert.fail("Not used in test");
+            return 0;
+        }
+        @Override
+        public boolean avm_equals(IObject obj) {
+            Assert.fail("Not used in test");
+            return false;
+        }
+        @Override
+        public org.aion.avm.shadow.java.lang.String avm_toString() {
+            Assert.fail("Not used in test");
+            return null;
+        }
     }
 }

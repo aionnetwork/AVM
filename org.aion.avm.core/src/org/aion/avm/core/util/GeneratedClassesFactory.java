@@ -1,17 +1,8 @@
 package org.aion.avm.core.util;
 
-import org.aion.avm.arraywrapper.BooleanArray;
-import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.arraywrapper.CharArray;
-import org.aion.avm.arraywrapper.DoubleArray;
-import org.aion.avm.arraywrapper.FloatArray;
-import org.aion.avm.arraywrapper.IntArray;
-import org.aion.avm.arraywrapper.LongArray;
-import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.arraywrapper.ShortArray;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.internal.IABISupport;
-import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
@@ -28,127 +19,66 @@ public class GeneratedClassesFactory implements IABISupport {
     }
 
     @Override
-    public ObjectArray construct2DBooleanArray(boolean[][] data) {
-        try {
-            Class<?> wrapperClass = this.classLoader.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$Z");
-            ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
-            for (int m = 0; m < data.length; m ++) {
-                wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new BooleanArray(data[m]));
+    public String convertToShadowMethodName(String original) {
+        return "avm_" + original;
+    }
+
+    @Override
+    public Object convertToStandardValue(Object shadowValue) {
+        String shadowClassName = shadowValue.getClass().getName();
+        return ShadowTypeBridge.FROM_CONCRETE_SHADOW_CLASS_NAME.get(shadowClassName).convertToStandardValue((IObject)shadowValue);
+    }
+
+    @Override
+    public Object convertToShadowValue(Object standardValue) {
+        Object shadowValue = null;
+        if (null != standardValue) {
+            Class<?> standardClass = standardValue.getClass();
+            try {
+                shadowValue = ShadowTypeBridge.FROM_STANDARD_CLASS.get(standardClass).convertToConcreteShadowValue(this.classLoader, standardValue);
+            } catch (Exception e) {
+                // This means that we didn't correctly filter the type at some other level (or that the installation is just missing shadow JCL components).
+                throw RuntimeAssertionError.unexpected(e);
             }
-            return ret;
-        } catch (Throwable e) {
+        }
+        return shadowValue;
+    }
+
+    @Override
+    public Class<?> convertConcreteShadowToStandardType(Class<?> shadowType) {
+        String shadowClassName = shadowType.getName();
+        return ShadowTypeBridge.FROM_CONCRETE_SHADOW_CLASS_NAME.get(shadowClassName).standardClass;
+    }
+
+    @Override
+    public Class<?> convertToConcreteShadowType(Class<?> standardType) {
+        String shadowClassName = ShadowTypeBridge.FROM_STANDARD_CLASS.get(standardType).concreteShadowClassName;
+        try {
+            return this.classLoader.loadClass(shadowClassName);
+        } catch (ClassNotFoundException e) {
+            // This means that we didn't correctly filter the type at some other level (or that the installation is just missing shadow JCL components).
             throw RuntimeAssertionError.unexpected(e);
         }
     }
 
     @Override
-    public ObjectArray construct2DByteArray(byte[][] data) {
+    public Class<?> convertToBindingShadowType(Class<?> standardType) {
+        String shadowClassName = ShadowTypeBridge.FROM_STANDARD_CLASS.get(standardType).bindingShadowClassName;
         try {
-            Class<?> wrapperClass = this.classLoader.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$B");
-            ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
-            for (int m = 0; m < data.length; m ++) {
-                wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new ByteArray(data[m]));
-            }
-            return ret;
-        } catch (Throwable e) {
+            return this.classLoader.loadClass(shadowClassName);
+        } catch (ClassNotFoundException e) {
+            // This means that we didn't correctly filter the type at some other level (or that the installation is just missing shadow JCL components).
             throw RuntimeAssertionError.unexpected(e);
         }
     }
 
     @Override
-    public ObjectArray construct2DCharArray(char[][] data) {
+    public Class<?> mapFromBindingTypeToConcreteType(Class<?> bindingShadowType) {
+        String shadowClassName = ShadowTypeBridge.FROM_BINDING_SHADOW_CLASS_NAME.get(bindingShadowType.getName()).concreteShadowClassName;
         try {
-            Class<?> wrapperClass = this.classLoader.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$C");
-            ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
-            for (int m = 0; m < data.length; m ++) {
-                wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new CharArray(data[m]));
-            }
-            return ret;
-        } catch (Throwable e) {
-            throw RuntimeAssertionError.unexpected(e);
-        }
-    }
-
-    @Override
-    public ObjectArray construct2DDoubleArray(double[][] data) {
-        try {
-            Class<?> wrapperClass = this.classLoader.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$D");
-            ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
-            for (int m = 0; m < data.length; m ++) {
-                wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new DoubleArray(data[m]));
-            }
-            return ret;
-        } catch (Throwable e) {
-            throw RuntimeAssertionError.unexpected(e);
-        }
-    }
-
-    @Override
-    public ObjectArray construct2DFloatArray(float[][] data) {
-        try {
-            Class<?> wrapperClass = this.classLoader.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$F");
-            ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
-            for (int m = 0; m < data.length; m ++) {
-                wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new FloatArray(data[m]));
-            }
-            return ret;
-        } catch (Throwable e) {
-            throw RuntimeAssertionError.unexpected(e);
-        }
-    }
-
-    @Override
-    public ObjectArray construct2DShortArray(short[][] data) {
-        try {
-            Class<?> wrapperClass = this.classLoader.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$S");
-            ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
-            for (int m = 0; m < data.length; m ++) {
-                wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new ShortArray(data[m]));
-            }
-            return ret;
-        } catch (Throwable e) {
-            throw RuntimeAssertionError.unexpected(e);
-        }
-    }
-
-    @Override
-    public ObjectArray construct2DIntArray(int[][] data) {
-        try {
-            Class<?> wrapperClass = this.classLoader.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$I");
-            ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
-            for (int m = 0; m < data.length; m ++) {
-                wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new IntArray(data[m]));
-            }
-            return ret;
-        } catch (Throwable e) {
-            throw RuntimeAssertionError.unexpected(e);
-        }
-    }
-
-    @Override
-    public ObjectArray construct2DLongArray(long[][] data) {
-        try {
-            Class<?> wrapperClass = this.classLoader.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$$J");
-            ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
-            for (int m = 0; m < data.length; m ++) {
-                wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, new LongArray(data[m]));
-            }
-            return ret;
-        } catch (Throwable e) {
-            throw RuntimeAssertionError.unexpected(e);
-        }
-    }
-
-    @Override
-    public ObjectArray construct1DStringArray(org.aion.avm.shadow.java.lang.String[] data) {
-        try {
-            Class<?> wrapperClass = this.classLoader.loadClass(PackageConstants.kArrayWrapperDotPrefix + "$L" + PackageConstants.kShadowDotPrefix + "java.lang.String");
-            ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, data.length);
-            for (int m = 0; m < data.length; m ++) {
-                wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, m, data[m]);
-            }
-            return ret;
-        } catch (Throwable e) {
+            return this.classLoader.loadClass(shadowClassName);
+        } catch (ClassNotFoundException e) {
+            // This means that we didn't correctly filter the type at some other level (or that the installation is just missing shadow JCL components).
             throw RuntimeAssertionError.unexpected(e);
         }
     }

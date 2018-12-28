@@ -1,9 +1,7 @@
 package org.aion.avm.core.util;
 
 import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIStaticState;
 import org.aion.avm.api.Address;
-import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.OutOfEnergyException;
@@ -37,32 +35,6 @@ public class TestingHelper implements IInstrumentation {
             helper.remove();
         }
         return data;
-    }
-    public static ObjectArray construct2DWrappedArray(Object data) {
-        TestingHelper helper = new TestingHelper(false);
-        ObjectArray ret = null;
-        if (data.getClass().getName() == "[[C") {
-            ret = ABIStaticState.getSupport().construct2DCharArray((char[][]) data);
-        }
-        else if (data.getClass().getName() == "[[I") {
-            ret = ABIStaticState.getSupport().construct2DIntArray((int[][]) data);
-        }// add code for other 2D wrapped array when needed.
-        helper.remove();
-        return ret;
-    }
-
-    public static ObjectArray construct1DWrappedStringArray(Object data) {
-        TestingHelper helper = new TestingHelper(false);
-        ObjectArray ret = null;
-        if (data.getClass().getName() == "[Ljava.lang.String;") {
-            org.aion.avm.shadow.java.lang.String[] shadowArray = new org.aion.avm.shadow.java.lang.String[((String[])data).length];
-            for (int i = 0; i < ((String[])data).length; i++) {
-                shadowArray[i] = new org.aion.avm.shadow.java.lang.String(((String[]) data)[i]);
-            }
-            ret = ABIStaticState.getSupport().construct1DStringArray(shadowArray);
-        }
-        helper.remove();
-        return ret;
     }
 
     /**

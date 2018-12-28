@@ -86,7 +86,7 @@ public class AvmCLIIntegrationTest {
         
         // Now, issue a call.
         // (this value requires decoding since it is ABI-encoded but means:  "int(32)").
-        TestEnvironment callEnv = new TestEnvironment("Return value : 4900000020");
+        TestEnvironment callEnv = new TestEnvironment("Return value : 0500000020");
         AvmCLI.testingMain(callEnv, new String[] {"call", dappAddress, "--method", "getAddressLength", "--args", "-A", dappAddress});
         Assert.assertTrue(callEnv.didScrapeString);
     }

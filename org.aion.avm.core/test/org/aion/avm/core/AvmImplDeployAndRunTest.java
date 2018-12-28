@@ -127,7 +127,7 @@ public class AvmImplDeployAndRunTest {
         int[][] a = new int[2][];
         a[0] = new int[]{123, 4};
         a[1] = new int[]{1, 2};
-        txData = ABIEncoder.encodeMethodArguments("addArray2", TestingHelper.construct2DWrappedArray(a));
+        txData = ABIEncoder.encodeMethodArguments("addArray2", (Object) a);
         tx = Transaction.call(from, AvmAddress.wrap(deployResult.getReturnData()), kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
@@ -139,7 +139,7 @@ public class AvmImplDeployAndRunTest {
         char[][] chars = new char[2][];
         chars[0] = "cat".toCharArray();
         chars[1] = "dog".toCharArray();
-        txData = ABIEncoder.encodeMethodArguments("concatenate", TestingHelper.construct2DWrappedArray(chars));
+        txData = ABIEncoder.encodeMethodArguments("concatenate", (Object) chars);
         tx = Transaction.call(from, AvmAddress.wrap(deployResult.getReturnData()), kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
@@ -157,7 +157,7 @@ public class AvmImplDeployAndRunTest {
         assertEquals("catdog", TestingHelper.decodeResult(result));
 
         // test another method call, "concatStringArray" with String array arguments and String return data
-        txData = ABIEncoder.encodeMethodArguments("concatStringArray", TestingHelper.construct1DWrappedStringArray((new String[]{"cat", "dog"}))); // Note - need to cast String[] into Object, to pass it as one argument to the varargs method
+        txData = ABIEncoder.encodeMethodArguments("concatStringArray", (Object) new String[]{"cat", "dog"}); // Note - need to cast String[] into Object, to pass it as one argument to the varargs method
         tx = Transaction.call(from, AvmAddress.wrap(deployResult.getReturnData()), kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
@@ -167,7 +167,7 @@ public class AvmImplDeployAndRunTest {
         assertEquals("perfect", ((String[])TestingHelper.decodeResult(result))[1]);
 
         // test another method call, "swap" with 2D array arguments and 2D array return data
-        txData = ABIEncoder.encodeMethodArguments("swap", TestingHelper.construct2DWrappedArray(chars));
+        txData = ABIEncoder.encodeMethodArguments("swap", (Object) chars);
         tx = Transaction.call(from, AvmAddress.wrap(deployResult.getReturnData()), kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
