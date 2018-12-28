@@ -280,6 +280,10 @@ public class Integer extends Number implements Comparable<Integer> {
         return java.lang.Integer.toString(this.v);
     }
 
+    public int getUnderlying() {
+        return this.v;
+    }
+
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================

@@ -272,6 +272,10 @@ public class Long extends Number implements Comparable<Long> {
 
     private long v;
 
+    public long getUnderlying() {
+        return this.v;
+    }
+
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================

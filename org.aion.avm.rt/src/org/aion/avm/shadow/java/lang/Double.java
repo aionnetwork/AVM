@@ -197,6 +197,10 @@ public class Double extends Number implements Comparable<Double>{
 
     private double v;
 
+    public double getUnderlying() {
+        return this.v;
+    }
+
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================

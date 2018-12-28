@@ -158,6 +158,10 @@ public final class Byte extends Object implements Comparable<Byte> {
 
     private byte v;
 
+    public byte getUnderlying() {
+        return this.v;
+    }
+
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================

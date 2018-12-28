@@ -609,6 +609,9 @@ public class Character extends Object {
         return java.lang.Character.toString(this.v);
     }
 
+    public char getUnderlying() {
+        return this.v;
+    }
 
     //========================================================
     // Methods below are excluded from shadowing

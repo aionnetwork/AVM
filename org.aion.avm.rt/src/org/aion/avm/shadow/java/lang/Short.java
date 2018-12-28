@@ -160,6 +160,10 @@ public class Short extends Number {
 
     private short v;
 
+    public short getUnderlying() {
+        return this.v;
+    }
+
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================

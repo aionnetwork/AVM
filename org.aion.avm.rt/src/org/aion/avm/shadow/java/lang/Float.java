@@ -191,6 +191,10 @@ public class Float extends Number implements Comparable<Float> {
 
     private float v;
 
+    public float getUnderlying() {
+        return this.v;
+    }
+
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================
