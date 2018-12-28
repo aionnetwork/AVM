@@ -1,7 +1,7 @@
 package org.aion.avm.core.util;
 
 import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.ABIStaticState;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.IInstrumentation;
@@ -42,10 +42,10 @@ public class TestingHelper implements IInstrumentation {
         TestingHelper helper = new TestingHelper(false);
         ObjectArray ret = null;
         if (data.getClass().getName() == "[[C") {
-            ret = ABIEncoder.testingFactoryAccess().construct2DCharArray((char[][]) data);
+            ret = ABIStaticState.getSupport().construct2DCharArray((char[][]) data);
         }
         else if (data.getClass().getName() == "[[I") {
-            ret = ABIEncoder.testingFactoryAccess().construct2DIntArray((int[][]) data);
+            ret = ABIStaticState.getSupport().construct2DIntArray((int[][]) data);
         }// add code for other 2D wrapped array when needed.
         helper.remove();
         return ret;
@@ -59,7 +59,7 @@ public class TestingHelper implements IInstrumentation {
             for (int i = 0; i < ((String[])data).length; i++) {
                 shadowArray[i] = new org.aion.avm.shadow.java.lang.String(((String[]) data)[i]);
             }
-            ret = ABIEncoder.testingFactoryAccess().construct1DStringArray(shadowArray);
+            ret = ABIStaticState.getSupport().construct1DStringArray(shadowArray);
         }
         helper.remove();
         return ret;

@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.ABIStaticState;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -165,8 +165,8 @@ public class NodeEnvironment {
             throw RuntimeAssertionError.unexpected(e);
         }
 
-        // Give the ABIEncoder (in runtime package) access to the array classes we can generate in the core implementation.
-        ABIEncoder.initializeArrayFactory(new GeneratedClassesFactory(this.sharedClassLoader));
+        // Give the ABI the knowledge of how to name/resolve our internal and shadow classes.
+        ABIStaticState.initializeSupport(new GeneratedClassesFactory(this.sharedClassLoader));
 
         // Create the constant map.
         this.constantMap = Collections.unmodifiableMap(initializeConstantState());

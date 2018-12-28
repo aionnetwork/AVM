@@ -17,7 +17,7 @@ public class ABIEncoderTest {
 
     @BeforeClass
     public static void classSetup() {
-        ABIEncoder.initializeArrayFactory(new TestArrayWrapperFactory());
+        ABIStaticState.initializeSupport(new TestArrayWrapperFactory());
         instrumentation = new TestInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
     }

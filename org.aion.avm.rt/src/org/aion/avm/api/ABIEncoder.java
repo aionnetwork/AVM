@@ -14,31 +14,6 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 
 
 public final class ABIEncoder {
-    private static IABISupport ARRAY_FACTORY;
-
-    /**
-     * MUST be called to initialize the encoder's ability to create higher-dimension arrays before it is used.
-     * This must only be called once.
-     * Ideally, this is called by the same mechanism which is forcing the initialization of the shadow class library.
-     * @param arrayFactory The factory to install (must NOT be null).
-     */
-    public static void initializeArrayFactory(IABISupport arrayFactory) {
-        // Verify that we were only called once and that we weren't given null.
-        RuntimeAssertionError.assertTrue(null == ARRAY_FACTORY);
-        RuntimeAssertionError.assertTrue(null != arrayFactory);
-        ARRAY_FACTORY = arrayFactory;
-    }
-
-    /**
-     * This is provided for the convenience of some tests which need to synthesize incoming ABI-encoded data.
-     * In the future, it might be removed if we can find a better way to share or abstract the factory.
-     * 
-     * @return The factory instance associated with the ABIEncoder class.
-     */
-    public static IABISupport testingFactoryAccess() {
-        return ARRAY_FACTORY;
-    }
-
     public enum ABITypes{
         avm_BYTE    ('B', 1, new String[]{"B", "byte", "java.lang.Byte", PackageConstants.kShadowDotPrefix + "java.lang.Byte",
                 PackageConstants.kArrayWrapperDotPrefix + "ByteArray", PackageConstants.kArrayWrapperDotPrefix + "$$B", "[B", "[[B"}) {
@@ -85,7 +60,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (byte[]) data[i];
                 }
-                return ARRAY_FACTORY.construct2DByteArray(nativeArray);
+                return ABIStaticState.getSupport().construct2DByteArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -149,7 +124,7 @@ public final class ABIEncoder {
                         nativeArray[i][j] = ((boolean[])data[i])[j];
                     }
                 }
-                return ARRAY_FACTORY.construct2DBooleanArray(nativeArray);
+                return ABIStaticState.getSupport().construct2DBooleanArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -211,7 +186,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (char[]) data[i];
                 }
-                return ARRAY_FACTORY.construct2DCharArray(nativeArray);
+                return ABIStaticState.getSupport().construct2DCharArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -273,7 +248,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (short[]) data[i];
                 }
-                return ARRAY_FACTORY.construct2DShortArray(nativeArray);
+                return ABIStaticState.getSupport().construct2DShortArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -335,7 +310,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (int[]) data[i];
                 }
-                return ARRAY_FACTORY.construct2DIntArray(nativeArray);
+                return ABIStaticState.getSupport().construct2DIntArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -397,7 +372,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (long[]) data[i];
                 }
-                return ARRAY_FACTORY.construct2DLongArray(nativeArray);
+                return ABIStaticState.getSupport().construct2DLongArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -459,7 +434,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (float[]) data[i];
                 }
-                return ARRAY_FACTORY.construct2DFloatArray(nativeArray);
+                return ABIStaticState.getSupport().construct2DFloatArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -521,7 +496,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     nativeArray[i] = (double[]) data[i];
                 }
-                return ARRAY_FACTORY.construct2DDoubleArray(nativeArray);
+                return ABIStaticState.getSupport().construct2DDoubleArray(nativeArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
@@ -605,7 +580,7 @@ public final class ABIEncoder {
                 for (int i = 0; i < data.length; i++) {
                     shadowArray[i] = new org.aion.avm.shadow.java.lang.String((String) data[i]);
                 }
-                return ARRAY_FACTORY.construct1DStringArray(shadowArray);
+                return ABIStaticState.getSupport().construct1DStringArray(shadowArray);
             }
             @Override
             public Object construct2DNativeArray(Object[] data) {
