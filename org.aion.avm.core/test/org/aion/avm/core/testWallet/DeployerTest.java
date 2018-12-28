@@ -1,5 +1,7 @@
 package org.aion.avm.core.testWallet;
 
+import org.aion.avm.core.NodeEnvironment;
+import org.junit.Assert;
 import org.junit.Test;
 
 
@@ -9,11 +11,13 @@ import org.junit.Test;
 public class DeployerTest {
     @Test
     public void runDirect() throws Throwable {
+        Assert.assertNotNull(NodeEnvironment.singleton);
         Deployer.callableInvokeDirect();
     }
 
     @Test
     public void runTransformed() throws Throwable {
+        Assert.assertNotNull(NodeEnvironment.singleton);
         Deployer.callableInvokeTransformed();
     }
 }
