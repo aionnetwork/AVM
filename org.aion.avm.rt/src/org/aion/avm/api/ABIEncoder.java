@@ -14,7 +14,7 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 
 
 public final class ABIEncoder {
-    private static IArrayWrapperFactory ARRAY_FACTORY;
+    private static IABISupport ARRAY_FACTORY;
 
     /**
      * MUST be called to initialize the encoder's ability to create higher-dimension arrays before it is used.
@@ -22,7 +22,7 @@ public final class ABIEncoder {
      * Ideally, this is called by the same mechanism which is forcing the initialization of the shadow class library.
      * @param arrayFactory The factory to install (must NOT be null).
      */
-    public static void initializeArrayFactory(IArrayWrapperFactory arrayFactory) {
+    public static void initializeArrayFactory(IABISupport arrayFactory) {
         // Verify that we were only called once and that we weren't given null.
         RuntimeAssertionError.assertTrue(null == ARRAY_FACTORY);
         RuntimeAssertionError.assertTrue(null != arrayFactory);
@@ -35,7 +35,7 @@ public final class ABIEncoder {
      * 
      * @return The factory instance associated with the ABIEncoder class.
      */
-    public static IArrayWrapperFactory testingFactoryAccess() {
+    public static IABISupport testingFactoryAccess() {
         return ARRAY_FACTORY;
     }
 

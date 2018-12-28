@@ -11,7 +11,7 @@ import org.aion.avm.arraywrapper.IntArray;
 import org.aion.avm.arraywrapper.LongArray;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.arraywrapper.ShortArray;
-import org.aion.avm.internal.IArrayWrapperFactory;
+import org.aion.avm.internal.IABISupport;
 import org.aion.avm.shadow.java.lang.Object;
 
 
@@ -20,7 +20,7 @@ import org.aion.avm.shadow.java.lang.Object;
  * type.  This makes this factory sufficient when just interacting with the array but not when using it in
  * instrumented code (since the types won't map properly:  both byte[][] and int[][] map to ObjectArray).
  */
-public class TestArrayWrapperFactory implements IArrayWrapperFactory {
+public class TestArrayWrapperFactory implements IABISupport {
     @Override
     public ObjectArray construct2DByteArray(byte[][] nativeArray) {
         return createArray(nativeArray.length, (i) -> new ByteArray(nativeArray[i]));

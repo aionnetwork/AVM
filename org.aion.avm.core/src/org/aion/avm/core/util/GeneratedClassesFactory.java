@@ -10,7 +10,7 @@ import org.aion.avm.arraywrapper.LongArray;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.arraywrapper.ShortArray;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
-import org.aion.avm.internal.IArrayWrapperFactory;
+import org.aion.avm.internal.IABISupport;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -20,7 +20,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * Note that this knows about the name/shape of generated array classes so we might want to fold this
  * support into a class which already has those assumptions.
  */
-public class GeneratedClassesFactory implements IArrayWrapperFactory {
+public class GeneratedClassesFactory implements IABISupport {
     private final AvmSharedClassLoader classLoader;
 
     public GeneratedClassesFactory(AvmSharedClassLoader classLoader) {
