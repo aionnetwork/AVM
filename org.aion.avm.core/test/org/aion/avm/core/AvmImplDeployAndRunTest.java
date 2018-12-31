@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
@@ -17,6 +18,9 @@ import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import legacy_examples.deployAndRunTest.DeployAndRunTarget;
+import legacy_examples.helloworld.HelloWorld;
 
 import java.util.Arrays;
 
@@ -45,7 +49,7 @@ public class AvmImplDeployAndRunTest {
     }
 
     public TransactionResult deployHelloWorld() {
-        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(HelloWorld.class);
         byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
         Transaction tx = Transaction.create(from, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
@@ -55,7 +59,7 @@ public class AvmImplDeployAndRunTest {
 
     @Test
     public void testDeployWithClinitCall() {
-        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.helloworld.jar");
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(HelloWorld.class);
         byte[] arguments = ABIEncoder.encodeMethodArguments("", 100);
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -91,7 +95,7 @@ public class AvmImplDeployAndRunTest {
     }
 
     public TransactionResult deployTheDeployAndRunTest() {
-        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(DeployAndRunTarget.class);
         byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
         Transaction tx = Transaction.create(from, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
@@ -212,7 +216,7 @@ public class AvmImplDeployAndRunTest {
     @Test
     public void testCreateAndCallWithBalanceTransfer() {
         // deploy the Dapp with 100000 value transfer; create with balance transfer
-        byte[] jar = Helpers.readFileToBytes("../examples/build/com.example.deployAndRunTest.jar");
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(DeployAndRunTarget.class);
         byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();
 
         Transaction tx = Transaction.create(from, kernel.getNonce(from).longValue(), BigInteger.valueOf(100000L), txData, energyLimit, energyPrice);

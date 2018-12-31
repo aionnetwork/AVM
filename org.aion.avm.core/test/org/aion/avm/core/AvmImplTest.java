@@ -32,6 +32,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import legacy_examples.avmstartuptest.MainClass;
+import legacy_examples.deployAndRunTest.DeployAndRunTarget;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -91,16 +94,12 @@ public class AvmImplTest {
 
     @Test
     public void checkMainClassHasProperName() throws IOException {
-        final var module = "com.example.avmstartuptest";
-        final Path path = Paths.get(format("%s/%s.jar", "../examples/build", module));
-        final byte[] jar = Files.readAllBytes(path);
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(MainClass.class);
         final RawDappModule dappModule = RawDappModule.readFromJar(jar);
-        final var mainClassName = "com.example.avmstartuptest.MainClass";
+        final String mainClassName = MainClass.class.getName();
         assertEquals(mainClassName, dappModule.mainClass);
         Map<String, byte[]> classes = dappModule.classes;
         assertEquals(1, classes.size());
-        final var expectedSizeOfFile = 424;
-        assertEquals(expectedSizeOfFile, classes.get(mainClassName).length);
     }
 
     @Test

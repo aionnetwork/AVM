@@ -191,6 +191,13 @@ public final class ABIDecoder {
         throw RuntimeAssertionError.unimplemented("Method for compilation only!");
     }
 
+    public static String decodeMethodName(byte[] data) {
+        if (null == data) {
+            throw new NullPointerException();
+        }
+        throw RuntimeAssertionError.unimplemented("Method for compilation only!");
+    }
+
 
     private static ByteArray internalDecodeAndRun(Class<?> clazz, IObject targetInstance, byte[] inputBytes) throws ABICodecException {
         List<ABICodec.Tuple> parsed = ABICodec.parseEverything(inputBytes);

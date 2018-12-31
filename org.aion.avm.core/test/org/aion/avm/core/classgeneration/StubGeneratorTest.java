@@ -38,37 +38,6 @@ public class StubGeneratorTest {
     }
 
     /**
-     * Tests that we can inject a stubbed class into the DApp loader.
-     */
-    @Test
-    public void testWithDapp() throws Exception {
-        final String dAppRuntimePath = "../out/jar/org-aion-avm-api.jar";
-        final String dAppModulesPath = "../examples/build";
-        final String startModuleName = "com.example.twoclasses";
-        final String mainClassName = "com.example.twoclasses.JavaAccessor";
-        
-        final var avm = new DAppLoader(dAppRuntimePath, dAppModulesPath);
-        ClassLoadingResult result = avm.loadDAppIntoNewLayer(startModuleName, mainClassName);
-        Assert.assertTrue(result.isLoaded());
-        Class<?> mainLoadedClass = result.getLoadedClass();
-        Assert.assertSame(mainLoadedClass.getName(), mainClassName);
-        Assert.assertTrue(mainLoadedClass.getClassLoader() instanceof DAppClassLoader);
-        
-        String slashName = "my/test/ClassName";
-        String dotName = slashName.replaceAll("/", ".");
-        String superName = TestClass.class.getName().replaceAll("\\.", "/");
-        byte[] bytecode = StubGenerator.generateWrapperClass(slashName, superName);
-        Class<?> clazz = avm.injectAndLoadClass(dotName, bytecode);
-        Assert.assertTrue(clazz.getClassLoader() instanceof DAppClassLoader);
-        Constructor<?> con = clazz.getConstructor(Object.class);
-        String contents = "one";
-        Object foo = con.newInstance(contents);
-        Assert.assertEquals(dotName, foo.getClass().getName());
-        TestClass bar = (TestClass)foo;
-        Assert.assertEquals(contents, bar.getContents());
-    }
-
-    /**
      * Tests that we can inject a stubbed class into the DApp loader and then subclass it within the same DApp.
      */
     @Test
