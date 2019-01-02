@@ -14,7 +14,9 @@ public class VerifierClassLoader extends ClassLoader {
     private final Map<String, byte[]> notYetLoaded;
     private final Map<String, Class<?>> loaded;
 
-    public VerifierClassLoader(ClassLoader parent, Map<String, byte[]> classes) {
+    public VerifierClassLoader(Map<String, byte[]> classes) {
+        // Note that we will always descend from the classloader which loaded us (issue-331: can't assume this is the system loader).
+        super(VerifierClassLoader.class.getClassLoader());
         // We want to mutate this, so make a copy.
         this.notYetLoaded = new HashMap<>(classes);
         this.loaded = new HashMap<>();

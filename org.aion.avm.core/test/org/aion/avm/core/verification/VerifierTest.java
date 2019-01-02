@@ -20,7 +20,7 @@ public class VerifierTest {
     public void verifyClinitOnInstantiate() throws Exception {
         // Load the test bytecode.
         Map<String, byte[]> testCode = VerifierTest.loadClassBytes(UserTarget.class, UserSubTarget.class);
-        VerifierClassLoader testLoader = new VerifierClassLoader(VerifierTest.class.getClassLoader(), testCode);
+        VerifierClassLoader testLoader = new VerifierClassLoader(testCode);
         
         // Verify that the common base class did run, but nothing else.
         Assert.assertTrue(CommonTarget.didILoad);
@@ -55,7 +55,7 @@ public class VerifierTest {
     public void verifyClinitOnInitializeArg() throws Exception {
         // Load the test bytecode.
         Map<String, byte[]> testCode = VerifierTest.loadClassBytes(UserTarget.class, UserSubTarget.class);
-        VerifierClassLoader testLoader = new VerifierClassLoader(VerifierTest.class.getClassLoader(), testCode);
+        VerifierClassLoader testLoader = new VerifierClassLoader(testCode);
         
         // Verify that the common base class did run, but nothing else.
         Assert.assertTrue(CommonTarget.didILoad);

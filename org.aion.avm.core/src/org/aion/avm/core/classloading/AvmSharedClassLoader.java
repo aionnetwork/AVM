@@ -36,6 +36,8 @@ public class AvmSharedClassLoader extends ClassLoader {
      * @param bytecodeMap the shared class bytecodes
      */
     public AvmSharedClassLoader(Map<String, byte[]> bytecodeMap) {
+        // Note that we will always descend from the classloader which loaded us (issue-331: can't assume this is the system loader).
+        super(AvmClassLoader.class.getClassLoader());
         this.bytecodeMap = bytecodeMap;
         this.cacheStatic = new HashMap<>();
         this.cacheDynamic = new HashMap<>();

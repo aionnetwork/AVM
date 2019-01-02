@@ -101,5 +101,28 @@
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.rt/build.xml" target="test">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
+
+<!-- We want to test that the dist and example work, especially when AVM is embedded in a non-system classloader.
+     (In the future, we might formalize this, but we will start with inline logic, here)
+ -->
+        <delete dir="${dir.global.build}/dist"/>
+        <copy todir="${dir.global.build}/dist">
+            <fileset dir="${dir.global.workspace}/dist">
+            </fileset>
+        </copy>
+        <chmod perm="755" file="${dir.global.build}/dist/compile.sh"></chmod>
+        <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
+               srcdir="${dir.global.workspace}/dist_test"
+            destdir="${dir.global.workspace}/dist_test" includes="**/*.java">
+        </javac>
+        <copy file="${dir.global.workspace}/dist_test/EmbedCli.class" todir="${dir.global.build}/dist"></copy>
+        <exec executable="./compile.sh" dir="${dir.global.build}/dist">
+            <arg value="examples.HelloWorld"/>
+            <arg value="examples/HelloWorld.java"/>
+        </exec>
+        <java classname="EmbedCli" dir="${dir.global.build}/dist" fork="true" failonerror="true">
+            <arg value="avm.jar"/>
+            <arg value="build/dapp.jar"/>
+        </java>
     </target>
 </project>

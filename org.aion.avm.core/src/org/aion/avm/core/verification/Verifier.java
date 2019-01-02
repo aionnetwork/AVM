@@ -25,8 +25,7 @@ public class Verifier {
     }
 
     private static void internalVerifyUntrustedClasses(Map<String, byte[]> classes) throws Throwable {
-        // Create the restricted class loader - we build this on the system class loader.
-        VerifierClassLoader loader = new VerifierClassLoader(ClassLoader.getSystemClassLoader(), classes);
+        VerifierClassLoader loader = new VerifierClassLoader(classes);
         
         // Ask that loader to load each class.
         for (String name : classes.keySet()) {
