@@ -151,6 +151,7 @@ public class AvmImplTest {
             assertEquals(error, e);
         }
         assertEquals(2, catchCount);
+        InstrumentationHelpers.popExistingStackFrame(runtimeSetup);
         InstrumentationHelpers.detachThread(instrumentation);
     }
 
