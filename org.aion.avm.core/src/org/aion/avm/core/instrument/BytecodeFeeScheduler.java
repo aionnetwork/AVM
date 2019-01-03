@@ -34,8 +34,8 @@ public class BytecodeFeeScheduler {
 
         // Deployment Energy levels
         PROCESS      (32000),
-        PROCESSDATA     (10),
-        CODEDEPOSIT    (200);
+        PROCESSDATA     (1),
+        CODEDEPOSIT    (5);
 
         private final int val;
 
