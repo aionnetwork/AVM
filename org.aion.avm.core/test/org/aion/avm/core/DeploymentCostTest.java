@@ -7,6 +7,7 @@ import java.util.Map;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.poc.AionBufferPerfContract;
+import org.aion.avm.core.poc.TRS;
 import org.aion.avm.core.testBlake2b.Blake2b;
 import org.aion.avm.core.testBlake2b.Main;
 import org.aion.avm.core.testExchange.CoinController;
@@ -67,7 +68,7 @@ public class DeploymentCostTest {
      * The contracts/dApps we use in the deployment cost test.
      */
     private enum Contract {
-        BLAKE2B, AION_BUFFER_PERF, POC_WALLET, BASIC_PERF, POC_EXCHANGE, ERC20, BASIC_APP;
+        BLAKE2B, AION_BUFFER_PERF, POC_WALLET, BASIC_PERF, POC_EXCHANGE, ERC20, BASIC_APP, TRS;
 
         private static Map<Contract, String> contractsAsStrings = new HashMap<>();
 
@@ -79,6 +80,7 @@ public class DeploymentCostTest {
             contractsAsStrings.put(POC_EXCHANGE, "PocExchange");
             contractsAsStrings.put(ERC20, "ERC20");
             contractsAsStrings.put(BASIC_APP, "BasicAppTestTarget");
+            contractsAsStrings.put(TRS, "TRS");
         }
 
         @Override
@@ -186,6 +188,11 @@ public class DeploymentCostTest {
                     AionMap.class,
                     AionSet.class,
                     AionList.class);
+                break;
+            case TRS:
+                jarBytes = classesToJarBytes(
+                    TRS.class,
+                    AionMap.class);
                 break;
             default: RuntimeAssertionError.unreachable("This should never be reached.");
         }
