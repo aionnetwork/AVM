@@ -64,6 +64,7 @@ public class RevertAndInvalidTest {
         assertEquals(AvmTransactionResult.Code.FAILED_REVERT, txResult.getResultCode());
         assertNull(txResult.getReturnData());
         assertTrue(energyLimit > txResult.getEnergyUsed());
+        assertTrue(0 < txResult.getEnergyRemaining());
 
         assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, kernel.getStorage(dappAddress, StorageKeys.CLASS_STATICS));
     }
@@ -77,6 +78,7 @@ public class RevertAndInvalidTest {
         assertEquals(AvmTransactionResult.Code.FAILED_INVALID, txResult.getResultCode());
         assertNull(txResult.getReturnData());
         assertEquals(energyLimit, txResult.getEnergyUsed());
+        assertEquals(0, txResult.getEnergyRemaining());
 
         assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, kernel.getStorage(dappAddress, StorageKeys.CLASS_STATICS));
     }

@@ -307,23 +307,27 @@ public class GraphReachabilityIntegrationTest {
         AvmTransactionResult gcResult = (AvmTransactionResult) runGc(block, contractAddr);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
         Assert.assertEquals(0L, gcResult.getEnergyUsed());
+        Assert.assertEquals(0L, gcResult.getEnergyRemaining());
         
         // Run the setup again and GC (should reclaim 5).
         callStatic(block, contractAddr, getCost_setup249(), "setup249");
         gcResult = (AvmTransactionResult) runGc(block, contractAddr);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
         Assert.assertEquals(-5 * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST, gcResult.getEnergyUsed());
+        Assert.assertEquals(-(-5 * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST), gcResult.getEnergyRemaining());
         
         // GC now should reclaim nothing.
         gcResult = (AvmTransactionResult) runGc(block, contractAddr);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
         Assert.assertEquals(0L, gcResult.getEnergyUsed());
+        Assert.assertEquals(0L, gcResult.getEnergyRemaining());
         
         // Run the setup again and GC (should reclaim 5).
         callStatic(block, contractAddr, getCost_setup249(), "setup249");
         gcResult = (AvmTransactionResult) runGc(block, contractAddr);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
         Assert.assertEquals(-5 * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST, gcResult.getEnergyUsed());
+        Assert.assertEquals(-(-5 * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST), gcResult.getEnergyRemaining());
     }
 
 
@@ -356,6 +360,7 @@ public class GraphReachabilityIntegrationTest {
                     + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 25L
                 ;
         Assert.assertEquals(miscCharges + storageCharges, createResult.getEnergyUsed());
+        Assert.assertEquals(energyLimit - (miscCharges + storageCharges), createResult.getEnergyRemaining());
         
         // Setup test.
         callStatic(block, contractAddr, getCost_setup249(), "setup249");
@@ -369,6 +374,7 @@ public class GraphReachabilityIntegrationTest {
         AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(expectedCost, result.getEnergyUsed());
+        Assert.assertEquals(energyLimit - expectedCost, result.getEnergyRemaining());
         return TestingHelper.decodeResult(result);
     }
 

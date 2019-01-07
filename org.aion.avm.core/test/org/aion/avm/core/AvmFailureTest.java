@@ -104,6 +104,7 @@ public class AvmFailureTest {
 
         assertEquals(AvmTransactionResult.Code.FAILED_REVERT, txResult.getResultCode());
         assertNotEquals(energyLimit, txResult.getEnergyUsed());
+        assertNotEquals(0, txResult.getEnergyRemaining());
     }
 
     @Test
@@ -115,6 +116,7 @@ public class AvmFailureTest {
 
         assertEquals(AvmTransactionResult.Code.FAILED_INVALID, txResult.getResultCode());
         assertEquals(energyLimit, txResult.getEnergyUsed());
+        assertEquals(0, txResult.getEnergyRemaining());
     }
 
     @Test

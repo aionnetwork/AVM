@@ -2,6 +2,7 @@ package org.aion.kernel;
 
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.ResultCode;
 
@@ -134,6 +135,11 @@ public class AvmTransactionResult implements TransactionResult {
     }
 
     /**
+     * The energy limit of the transaction.
+     */
+    private final long energyLimit;
+
+    /**
      * Any uncaught exception that flows to the AVM.
      */
     private Throwable uncaughtException;
@@ -152,6 +158,13 @@ public class AvmTransactionResult implements TransactionResult {
      * The cumulative energy used.
      */
     private long energyUsed;
+
+    /**
+     * The amount of energy unused by the transaction.
+     *
+     * Note that we should always have: energyUsed + energyRemaining = energyLimit
+     */
+    private long energyRemaining;
 
     /**
      * The storage root hash of the target account, after the transaction.
@@ -192,11 +205,13 @@ public class AvmTransactionResult implements TransactionResult {
     }
 
     /**
-     * Creates an empty result, where resultCode = SUCCESS and energyUsed = 0.
+     * Constructs a result whose code is SUCCESS and whose energyUsed is as specified.
      */
-    public AvmTransactionResult() {
+    public AvmTransactionResult(long energyLimit, long energyUsed) {
         this.resultCode = Code.SUCCESS;
-        this.energyUsed = 0;
+        this.energyLimit = energyLimit;
+        this.energyUsed = energyUsed;
+        this.energyRemaining = this.energyLimit - this.energyUsed;
     }
 
     @Override
@@ -221,12 +236,14 @@ public class AvmTransactionResult implements TransactionResult {
 
     @Override
     public long getEnergyRemaining() {
-        throw new AssertionError("Avm does not currently implement this.");
+        return this.energyRemaining;
     }
 
     @Override
     public void setEnergyRemaining(long energyRemaining) {
-        throw new AssertionError("Avm does not currently implement this.");
+        // In order to avoid double-setting this field (since it gets set by its dual 'energyUsed'
+        // variable, we only allow it to be set in 'energyUsed'. Cuts down on the complexity.
+        throw RuntimeAssertionError.unimplemented("This method should never be called.");
     }
 
     public long getEnergyUsed() {
@@ -235,6 +252,7 @@ public class AvmTransactionResult implements TransactionResult {
 
     public void setEnergyUsed(long energyUsed) {
         this.energyUsed = energyUsed;
+        this.energyRemaining = this.energyLimit - this.energyUsed;
     }
 
     public int getStorageRootHash() {

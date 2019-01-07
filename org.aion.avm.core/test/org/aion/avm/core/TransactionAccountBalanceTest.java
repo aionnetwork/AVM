@@ -32,6 +32,7 @@ import org.junit.Test;
 public class TransactionAccountBalanceTest {
     private static Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private static long energyLimit = 5_000_000L;
+    private static long energyLimitForValueTransfer = 21_000L;
     private static long energyPrice = 5;
     private static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
@@ -56,6 +57,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = deployContract(BigInteger.ZERO);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
         BigInteger transactionCost = BigInteger.valueOf(energyUsed * energyPrice);
         assertEquals(senderBalance.subtract(transactionCost), kernel.getBalance(from));
@@ -69,6 +71,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = deployContract(value);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
         BigInteger transactionCost = BigInteger.valueOf(energyUsed * energyPrice);
         assertEquals(senderBalance.subtract(transactionCost).subtract(value), kernel.getBalance(from));
@@ -83,6 +86,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = callContract(contract, BigInteger.ZERO);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
         BigInteger transactionCost = BigInteger.valueOf(energyUsed * energyPrice);
         assertEquals(senderBalance.subtract(transactionCost), kernel.getBalance(from));
@@ -98,6 +102,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = callContract(contract, value);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
         BigInteger transactionCost = BigInteger.valueOf(energyUsed * energyPrice);
         assertEquals(senderBalance.subtract(transactionCost).subtract(value), kernel.getBalance(from));
@@ -112,6 +117,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = transferValue(recipient, value);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimitForValueTransfer, energyUsed + result.getEnergyRemaining());
 
         BigInteger transactionCost = BigInteger.valueOf(energyUsed * energyPrice);
         assertEquals(senderBalance.subtract(transactionCost).subtract(value), kernel.getBalance(from));
@@ -124,6 +130,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = deployContract(BigInteger.TEN);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
         BigInteger transactionCost = BigInteger.valueOf(energyUsed * energyPrice);
         assertEquals(minerBalance.add(transactionCost), kernel.getBalance(block.getCoinbase()));
@@ -137,6 +144,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = callContract(contract, BigInteger.TEN);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
         BigInteger transactionCost = BigInteger.valueOf(energyUsed * energyPrice);
         assertEquals(minerBalance.add(transactionCost), kernel.getBalance(block.getCoinbase()));
@@ -151,6 +159,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = transferValue(recipient, value);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimitForValueTransfer, energyUsed + result.getEnergyRemaining());
 
         BigInteger transactionCost = BigInteger.valueOf(energyUsed * energyPrice);
         assertEquals(minerBalance.add(transactionCost), kernel.getBalance(block.getCoinbase()));
@@ -161,6 +170,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = deployContract(BigInteger.ZERO);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
         Address destination = AvmAddress.wrap(result.getReturnData());
         assertEquals(BigInteger.ZERO, kernel.getBalance(destination));
@@ -173,6 +183,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = deployContract(value);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
         Address destination = AvmAddress.wrap(result.getReturnData());
         assertEquals(value, kernel.getBalance(destination));
@@ -187,6 +198,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = callContract(contract, BigInteger.ZERO);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
         assertEquals(contractBalance, kernel.getBalance(contract));
     }
@@ -201,6 +213,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = callContract(contract, value);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
         assertEquals(contractBalance.add(value), kernel.getBalance(contract));
     }
@@ -214,6 +227,7 @@ public class TransactionAccountBalanceTest {
         TransactionResult result = transferValue(recipient, value);
         long energyUsed = ((AvmTransactionResult) result).getEnergyUsed();
         assertTrue(energyUsed > 0);
+        assertEquals(energyLimitForValueTransfer, energyUsed + result.getEnergyRemaining());
 
         assertEquals(initialBalance.add(value), kernel.getBalance(recipient));
     }

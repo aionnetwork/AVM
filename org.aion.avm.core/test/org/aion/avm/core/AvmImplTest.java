@@ -81,6 +81,7 @@ public class AvmImplTest {
         assertTrue(result.getResultCode().isSuccess());
         assertNull(result.getReturnData());
         assertEquals(tx.getTransactionCost(), result.getEnergyUsed());
+        assertEquals(energyLimit - tx.getTransactionCost(), result.getEnergyRemaining());
         assertEquals(0, result.getLogs().size());
         assertEquals(0, result.getInternalTransactions().size());
 
@@ -183,7 +184,9 @@ public class AvmImplTest {
                 + (byteSizeOfSerializedString("CALL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
                 + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
                 ;
-        assertEquals(basicCost + codeInstantiationOfDeploymentFee + codeStorageOfDeploymentFee + clinitCost + initialStorageCost, ((AvmTransactionResult) result1).getEnergyUsed());
+        long transactionCost = basicCost + codeInstantiationOfDeploymentFee + codeStorageOfDeploymentFee + clinitCost + initialStorageCost;
+        assertEquals(transactionCost, ((AvmTransactionResult) result1).getEnergyUsed());
+        assertEquals(energyLimit - transactionCost, result1.getEnergyRemaining());
 
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
@@ -218,7 +221,9 @@ public class AvmImplTest {
         //        + (InstrumentationBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
                 ;
         long runtimeCost = 4073;
-        assertEquals(runtimeCost + tx2.getTransactionCost() + costOfBlocks + costOfRuntimeCall + runStorageCost, ((AvmTransactionResult) result2).getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
+        transactionCost = runtimeCost + tx2.getTransactionCost() + costOfBlocks + costOfRuntimeCall + runStorageCost;
+        assertEquals(transactionCost, ((AvmTransactionResult) result2).getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
+        assertEquals(energyLimit - transactionCost, result2.getEnergyRemaining());
 
         avm.shutdown();
     }

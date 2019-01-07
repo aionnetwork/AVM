@@ -213,13 +213,12 @@ public class AvmImpl implements AvmInternal {
                 result = runExternalInvoke(taskTransactionalKernel, task, ctx);
             }
         } else {
-            result = new AvmTransactionResult();
+            result = new AvmTransactionResult(ctx.getTransaction().getEnergyLimit(), ctx.getTransaction().getEnergyLimit());
             result.setResultCode(error);
-            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
         }
 
         // Refund energy for transaction
-        long energyRemaining = (ctx.getTransaction().getEnergyLimit() - result.getEnergyUsed()) * ctx.getTransactionEnergyPrice();
+        long energyRemaining = result.getEnergyRemaining() * ctx.getTransactionEnergyPrice();
         taskTransactionalKernel.adjustBalance(sender, BigInteger.valueOf(energyRemaining));
 
         // Task transactional kernel commits are serialized through address resource monitor
@@ -289,9 +288,8 @@ public class AvmImpl implements AvmInternal {
 
         // exit if validation check fails
         if (error != null) {
-            AvmTransactionResult result = new AvmTransactionResult();
+            AvmTransactionResult result = new AvmTransactionResult(ctx.getTransaction().getEnergyLimit(), ctx.getTransaction().getEnergyLimit());
             result.setResultCode(error);
-            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
             return result;
         }
 
@@ -327,9 +325,7 @@ public class AvmImpl implements AvmInternal {
         TransactionalKernel thisTransactionKernel = new TransactionalKernel(parentKernel);
 
         // only one result (mutable) shall be created per transaction execution
-        AvmTransactionResult result = new AvmTransactionResult();
-        result.setResultCode(AvmTransactionResult.Code.SUCCESS);
-        result.setEnergyUsed(ctx.getTransaction().getTransactionCost()); // basic tx cost
+        AvmTransactionResult result = new AvmTransactionResult(ctx.getTransaction().getEnergyLimit(), ctx.getTransaction().getTransactionCost());
 
         // grab the recipient address as either the new contract address or the given account address.
         Address recipient = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? ctx.getContractAddress() : ctx.getDestinationAddress();
@@ -421,8 +417,11 @@ public class AvmImpl implements AvmInternal {
                 unexpected(e); // the jar was created by AVM; IOException is unexpected
             }
         }
-        
-        AvmTransactionResult result = new AvmTransactionResult();
+
+        // There is no concept of an energy limit for a GC transaction, we treat it as zero. This
+        // also keeps the energy used / remaining distinction meaningful in this case.
+        AvmTransactionResult result = new AvmTransactionResult(0, 0);
+
         if (null != dapp) {
             // Run the GC and check this into the hot DApp cache.
             long instancesFreed = graphStore.gc();

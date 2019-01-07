@@ -110,6 +110,7 @@ public class BasicPerfTest {
                     Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
                     // Note that this GC never actually frees anything, since our workload never orphans objects.
                     Assert.assertEquals(0, gcResult.getEnergyUsed());
+                    Assert.assertEquals(0, gcResult.getEnergyRemaining());
                 }
             }
         }

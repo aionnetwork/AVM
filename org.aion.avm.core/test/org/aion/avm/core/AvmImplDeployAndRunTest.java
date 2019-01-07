@@ -227,22 +227,30 @@ public class AvmImplDeployAndRunTest {
         assertEquals(BigInteger.valueOf(100000L), kernel.getBalance(AvmAddress.wrap(deployResult.getReturnData())));
 
         // account1 get 300000; pure balance transfer
+        BigInteger accountBalance = BigInteger.valueOf(300000L);
+
         org.aion.vm.api.interfaces.Address account1 = Helpers.randomAddress();
-        tx = Transaction.balanceTransfer(from, account1, kernel.getNonce(from).longValue(), BigInteger.valueOf(300000L), energyPrice);
+        tx = Transaction.balanceTransfer(from, account1, kernel.getNonce(from).longValue(), accountBalance, energyPrice);
         context = new TransactionContextImpl(tx, block);
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(BigInteger.valueOf(300000L), kernel.getBalance(account1));
+        assertEquals(accountBalance, kernel.getBalance(account1));
 
         // account1 to call the Dapp and transfer 50000 to it; call with balance transfer
+        long energyLimit = 200000L;
+        BigInteger value = BigInteger.valueOf(50000L);
+
         txData = ABIEncoder.encodeMethodArguments("encodeArgs");
-        tx = Transaction.call(account1, AvmAddress.wrap(deployResult.getReturnData()), kernel.getNonce(account1).longValue(), BigInteger.valueOf(50000L), txData, 200000L, energyPrice);
+        tx = Transaction.call(account1, AvmAddress.wrap(deployResult.getReturnData()), kernel.getNonce(account1).longValue(), value, txData, energyLimit, energyPrice);
         context = new TransactionContextImpl(tx, block);
         result = avm.run(new TransactionContext[] {context})[0].get();
 
+        BigInteger accountBalanceAfterValueTransfer = accountBalance.subtract(value);
+
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(BigInteger.valueOf(150000L), kernel.getBalance(AvmAddress.wrap(deployResult.getReturnData())));
-        assertEquals(BigInteger.valueOf(300000L - 50000L - ((AvmTransactionResult) result).getEnergyUsed()), kernel.getBalance(account1));
+        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(((AvmTransactionResult) result).getEnergyUsed())), kernel.getBalance(account1));
+        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(energyLimit - result.getEnergyRemaining())), kernel.getBalance(account1));
     }
 }

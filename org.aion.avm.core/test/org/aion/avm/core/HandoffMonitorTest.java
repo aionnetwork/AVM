@@ -211,6 +211,7 @@ public class HandoffMonitorTest {
         public Thread executor;
 
         public FakeResult(Thread t){
+            super(0, 0);
             this.executor = t;
         }
     }

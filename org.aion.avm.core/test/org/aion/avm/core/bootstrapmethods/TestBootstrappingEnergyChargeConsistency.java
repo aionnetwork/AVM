@@ -26,6 +26,7 @@ import org.junit.Test;
  * invoked multiple times.
  */
 public class TestBootstrappingEnergyChargeConsistency {
+    private long energyLimit = 6_000_000;
 
     @Test
     public void testConsistencyOverMultipleInvocations() {
@@ -56,6 +57,17 @@ public class TestBootstrappingEnergyChargeConsistency {
 
         assertEquals(energy1, energy2);
         assertEquals(energy2, energy3);
+
+        // The remaining energy amounts should all be equal to one another too.
+        long remaining1 = result1.getEnergyRemaining();
+        long remaining2 = result2.getEnergyRemaining();
+        long remaining3 = result3.getEnergyRemaining();
+
+        assertEquals(remaining1, remaining2);
+        assertEquals(remaining2, remaining3);
+
+        // We should also have: energyLimit = energyUsed + energyRemaining
+        assertEquals(energyLimit, energy1 + remaining1);
     }
 
     private org.aion.vm.api.interfaces.Address deployContract(VirtualMachine avm, Block block, org.aion.vm.api.interfaces.Address deployer, long nonce) {
@@ -66,7 +78,7 @@ public class TestBootstrappingEnergyChargeConsistency {
             nonce,
             BigInteger.ZERO,
             createData,
-            6_000_000,
+            energyLimit,
             1);
         TransactionContext context = new TransactionContextImpl(transaction, block);
         return AvmAddress.wrap(avm.run(new TransactionContext[] {context})[0].get().getReturnData());
@@ -80,7 +92,7 @@ public class TestBootstrappingEnergyChargeConsistency {
             nonce,
             BigInteger.ZERO,
             callData,
-            6_000_000,
+            energyLimit,
             1);
         TransactionContext context = new TransactionContextImpl(transaction, block);
         return avm.run(new TransactionContext[] {context})[0].get();
