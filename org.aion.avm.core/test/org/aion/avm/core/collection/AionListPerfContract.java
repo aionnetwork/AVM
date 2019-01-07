@@ -4,7 +4,6 @@ import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionList;
 
-import java.util.List;
 
 public class AionListPerfContract {
 
@@ -17,7 +16,7 @@ public class AionListPerfContract {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new AionListPerfContract(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(AionListPerfContract.class, BlockchainRuntime.getData());
     }
 
     public static void callInit(){

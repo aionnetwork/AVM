@@ -19,7 +19,7 @@ public class AionMapPerfContract {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new AionMapPerfContract(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(AionMapPerfContract.class, BlockchainRuntime.getData());
     }
 
     public static void callInit(){

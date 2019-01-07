@@ -46,14 +46,14 @@ public class DeployAndRunTarget {
     }
 
     public void setBar(int bar) {
-        this.bar = bar;
+        DeployAndRunTarget.bar = bar;
     }
 
-    public static byte[] run() {
+    public byte[] run() {
         return "Hello, world!".getBytes();
     }
 
-    public static byte[] encodeArgs(){
+    public byte[] encodeArgs(){
         String methodName = "addArray";
         int[] a = new int[]{123, 1};
         int b = 5;
@@ -62,6 +62,7 @@ public class DeployAndRunTarget {
 
     public static byte[] main() {
         String methodName = ABIDecoder.decodeMethodName(BlockchainRuntime.getData());
+        // We verify that we can both decode the method name and that we correctly handle both static and instance calls.
         if (methodName.equals("addArray")) {
             return ABIDecoder.decodeAndRunWithClass(DeployAndRunTarget.class, BlockchainRuntime.getData());
         }

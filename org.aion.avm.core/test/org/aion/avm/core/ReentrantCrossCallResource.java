@@ -22,7 +22,7 @@ public class ReentrantCrossCallResource {
 
     public static byte[] main() {
         byte[] input = BlockchainRuntime.getData();
-        return ABIDecoder.decodeAndRunWithObject(new ReentrantCrossCallResource(), input);
+        return ABIDecoder.decodeAndRunWithClass(ReentrantCrossCallResource.class, input);
     }
 
     public static Object callSelfForNull() {

@@ -7,10 +7,10 @@ import java.math.MathContext;
 
 public class TestResource {
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(TestResource.class, BlockchainRuntime.getData());
     }
 
-    public boolean testMaxMin(){
+    public static boolean testMaxMin(){
         boolean ret = true;
 
         ret = ret && (Math.max(1, 10) == 10);

@@ -11,15 +11,16 @@ public class HashCodeIntegrationTestTarget {
     private static Object persistentObject;
 
     public static byte[] main() {
+        // We use an instance target since that lets us advance the hashcode based on how many calls we receive.
         return ABIDecoder.decodeAndRunWithObject(new HashCodeIntegrationTestTarget(), BlockchainRuntime.getData());
     }
     
-    public static int persistNewObject() {
+    public int persistNewObject() {
         persistentObject = new Object();
         return persistentObject.hashCode();
     }
     
-    public static int readPersistentHashCode() {
+    public int readPersistentHashCode() {
         return persistentObject.hashCode();
     }
 }

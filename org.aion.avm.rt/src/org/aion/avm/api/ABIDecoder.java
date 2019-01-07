@@ -5,6 +5,7 @@ import org.aion.avm.internal.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
@@ -223,6 +224,12 @@ public final class ABIDecoder {
         Method targetMethod = null;
         try {
             targetMethod = clazz.getMethod(methodName, argTypes);
+            // Make sure that our static modifier is consistent with how we were used.
+            boolean mustBeStatic = (null == targetInstance);
+            boolean isStatic = (0 != (Modifier.STATIC & targetMethod.getModifiers()));
+            if (mustBeStatic != isStatic) {
+                throw new ABICodecException("Invalid static modifier");
+            }
         } catch (NoSuchMethodException | SecurityException e) {
             throw new ABICodecException("Method not found", e);
         }
