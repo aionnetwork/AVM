@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
@@ -242,10 +243,17 @@ public class TransactionalKernel implements KernelInterface {
         throw new AssertionError("This class does not implement this method.");
     }
 
+    /**
+     * Returns {@code true} if, and only if, address is an Avm contract address (that is, it begins
+     * with the Avm prefix byte) OR address is a regular address and not a contract address.
+     *
+     * @param address The address whose safety is to be determined.
+     * @return True if address is safe to call into.
+     */
     @Override
     public boolean destinationAddressIsSafeForThisVM(Address address) {
-        //TODO: implement this with logic that detects fvm addresses.
-        return true;
+        byte[] code = getCode(address);
+        return (code == null) || (code.length == 0) || (address.toBytes()[0] == NodeEnvironment.CONTRACT_PREFIX);
     }
 
 }

@@ -179,12 +179,19 @@ public final class BlockchainRuntime {
     /**
      * Calls another account, whether it's normal account or dapp.
      *
+     * In terms of the provided {@code targetAddress}, a call is legitimate only if:
+     *   1. The targetAddress has no code (ie. it is not a contract)
+     *   2. The targetAddress has code and its code can be executed by the Avm.
+     *
+     * If neither of these conditions is true then this method will throw an exception.
+     *
      * @param targetAddress the account address
      * @param value         the value to transfer
      * @param data          the value to pass
      * @param energyLimit   the max energy the invoked dapp can use.
      * @return the invocation result.
-     * @throws IllegalArgumentException when the arguments are invalid, e.g. insufficient balance or NULL address.
+     * @throws IllegalArgumentException when the arguments are invalid, e.g. insufficient balance, NULL address
+     * or the targetAddress is a contract that requires a foreign virtual machine in order to be executed.
      */
     public static Result call(Address targetAddress, BigInteger value, byte[] data, long energyLimit) throws IllegalArgumentException {
         return null;

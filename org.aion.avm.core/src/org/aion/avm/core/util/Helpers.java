@@ -1,6 +1,7 @@
 package org.aion.avm.core.util;
 
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.core.ClassToolchain;
@@ -138,13 +139,14 @@ public class Helpers {
     private static SecureRandom secureRandom = new SecureRandom();
 
     /**
-     * Generate a random address.
+     * Generate a random address with the Avm prefix byte.
      *
      * @return
      */
     public static Address randomAddress() {
         byte[] bytes = new byte[Address.SIZE];
         secureRandom.nextBytes(bytes);
+        bytes[0] = NodeEnvironment.CONTRACT_PREFIX;
         return AvmAddress.wrap(bytes);
     }
 

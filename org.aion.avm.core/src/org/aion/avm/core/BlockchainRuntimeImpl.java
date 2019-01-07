@@ -130,12 +130,12 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Result avm_call(Address targetAddress, org.aion.avm.shadow.java.math.BigInteger value, ByteArray data, long energyLimit) {
-        org.aion.vm.api.interfaces.Address recipient = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? ctx.getContractAddress() : ctx.getDestinationAddress();
+        org.aion.vm.api.interfaces.Address internalSender = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? ctx.getContractAddress() : ctx.getDestinationAddress();
 
         java.math.BigInteger underlyingValue = value.getUnderlying();
         require(targetAddress != null, "Destination can't be NULL");
         require(underlyingValue.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
-        require(underlyingValue.compareTo(kernel.getBalance(recipient)) <= 0, "Insufficient balance");
+        require(underlyingValue.compareTo(kernel.getBalance(internalSender)) <= 0, "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
 
@@ -143,11 +143,16 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
             throw new CallDepthLimitExceededException("Internal call depth cannot be more than 10");
         }
 
+        AvmAddress target = AvmAddress.wrap(targetAddress.unwrap());
+        if (!kernel.destinationAddressIsSafeForThisVM(target)) {
+            throw new IllegalArgumentException("Attempt to execute code using a foreign virtual machine");
+        }
+
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CALL,
-                recipient,
-                AvmAddress.wrap(targetAddress.unwrap()),
-                this.kernel.getNonce(recipient).longValue(),
+                internalSender,
+                target,
+                this.kernel.getNonce(internalSender).longValue(),
                 underlyingValue,
                 data.getUnderlying(),
                 restrictEnergyLimit(energyLimit),
@@ -159,11 +164,11 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Result avm_create(org.aion.avm.shadow.java.math.BigInteger value, ByteArray data, long energyLimit) {
-        org.aion.vm.api.interfaces.Address recipient = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? ctx.getContractAddress() : ctx.getDestinationAddress();
+        org.aion.vm.api.interfaces.Address internalSender = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? ctx.getContractAddress() : ctx.getDestinationAddress();
 
         java.math.BigInteger underlyingValue = value.getUnderlying();
         require(underlyingValue.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
-        require(underlyingValue.compareTo(kernel.getBalance(recipient)) <= 0, "Insufficient balance");
+        require(underlyingValue.compareTo(kernel.getBalance(internalSender)) <= 0, "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
 
@@ -173,9 +178,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // construct the internal transaction
         InternalTransaction internalTx = new InternalTransaction(Transaction.Type.CREATE,
-                recipient,
+                internalSender,
                 null,
-                this.kernel.getNonce(recipient).longValue(),
+                this.kernel.getNonce(internalSender).longValue(),
                 underlyingValue,
                 data.getUnderlying(),
                 restrictEnergyLimit(energyLimit),
