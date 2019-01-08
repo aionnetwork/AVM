@@ -77,7 +77,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         return createResult;

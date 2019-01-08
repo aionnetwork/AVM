@@ -46,7 +46,7 @@ public class SyntheticMethodsTest {
 
         this.kernel = new KernelInterfaceImpl();
         this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
-        Transaction tx = Transaction.create(from, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         dappAddr = AvmAddress.wrap(avm.run(new TransactionContext[] {context})[0].get().getReturnData());
     }
@@ -135,7 +135,7 @@ public class SyntheticMethodsTest {
 
     private TransactionResult createAndRunTransaction(String methodName, Object ... args){
         byte[] txData = ABIEncoder.encodeMethodArguments(methodName, args);
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return avm.run(new TransactionContext[]{context})[0].get();
     }

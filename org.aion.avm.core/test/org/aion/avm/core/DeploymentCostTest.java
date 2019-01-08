@@ -203,7 +203,7 @@ public class DeploymentCostTest {
 
     private AvmTransactionResult deployContract(Contract contract) {
         byte[] jar = getDeploymentJarBytesForContract(contract);
-        Transaction transaction = Transaction.create(DEPLOYER, kernel.getNonce(DEPLOYER).longValue(), BigInteger.ZERO, jar,
+        Transaction transaction = Transaction.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar,
             ENERGY_LIMIT, ENERGY_PRICE);
         TransactionContext txContext = new TransactionContextImpl(transaction, BLOCK);
         return (AvmTransactionResult) avm.run(new TransactionContext[] {txContext})[0].get();

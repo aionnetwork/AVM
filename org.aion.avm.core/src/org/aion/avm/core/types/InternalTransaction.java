@@ -12,7 +12,7 @@ public class InternalTransaction extends Transaction implements InternalTransact
 
     private boolean rejected ;
 
-    public InternalTransaction(Type type, Address from, Address to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    public InternalTransaction(Type type, Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         super(type, from, to, nonce, value, data, energyLimit, energyPrice);
     }
 

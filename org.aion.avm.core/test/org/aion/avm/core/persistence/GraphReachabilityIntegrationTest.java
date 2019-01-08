@@ -338,7 +338,7 @@ public class GraphReachabilityIntegrationTest {
         // Deploy.
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         AvmTransactionResult createResult = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
@@ -370,7 +370,7 @@ public class GraphReachabilityIntegrationTest {
     private Object callStatic(Block block, Address contractAddr, long expectedCost, String methodName, Object... args) {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
-        Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer).longValue(), BigInteger.ZERO, argData, energyLimit, 1l);
+        Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(expectedCost, result.getEnergyUsed());
@@ -425,7 +425,7 @@ public class GraphReachabilityIntegrationTest {
     private TransactionResult runGc(Block block, Address contractAddr) {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction gc = Transaction.garbageCollect(AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(AvmAddress.wrap(contractAddr.unwrap())).longValue(), energyLimit, energyPrice);
+        Transaction gc = Transaction.garbageCollect(AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(AvmAddress.wrap(contractAddr.unwrap())), energyLimit, energyPrice);
         TransactionResult gcResult = avm.run(new TransactionContext[] {new TransactionContextImpl(gc, block)})[0].get();
         return gcResult;
     }

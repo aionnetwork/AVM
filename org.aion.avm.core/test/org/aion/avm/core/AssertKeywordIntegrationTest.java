@@ -110,7 +110,7 @@ public class AssertKeywordIntegrationTest {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         // Deploy.
-        Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS).longValue(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult createResult = this.avm.run(new TransactionContext[] {new TransactionContextImpl(create, BLOCK)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         return TestingHelper.buildAddress(createResult.getReturnData());
@@ -118,7 +118,7 @@ public class AssertKeywordIntegrationTest {
 
     private Object callStatic(Address dapp, String methodName, Object... arguments) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, arguments);
-        Transaction call = Transaction.call(KernelInterfaceImpl.PREMINED_ADDRESS, AvmAddress.wrap(dapp.unwrap()), this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS).longValue(), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        Transaction call = Transaction.call(KernelInterfaceImpl.PREMINED_ADDRESS, AvmAddress.wrap(dapp.unwrap()), this.kernel.getNonce(KernelInterfaceImpl.PREMINED_ADDRESS), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult result = this.avm.run(new TransactionContext[] {new TransactionContextImpl(call, BLOCK)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return TestingHelper.decodeResult(result);

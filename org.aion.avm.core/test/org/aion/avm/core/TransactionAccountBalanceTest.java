@@ -236,7 +236,7 @@ public class TransactionAccountBalanceTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BasicAppTestTarget.class, AionMap.class, AionSet.class, AionList.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        Transaction transaction = Transaction.create(from, kernel.getNonce(from).longValue(), value, jar, energyLimit, energyPrice);
+        Transaction transaction = Transaction.create(from, kernel.getNonce(from), value, jar, energyLimit, energyPrice);
         TransactionContext context = new TransactionContextImpl(transaction, block);
         return avm.run(new TransactionContext[] {context})[0].get();
     }
@@ -249,13 +249,13 @@ public class TransactionAccountBalanceTest {
 
     private TransactionResult callContract(Address contract, BigInteger value) {
         byte[] callData = ABIEncoder.encodeMethodArguments("allocateObjectArray");
-        Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from).longValue(), value, callData, energyLimit, energyPrice);
+        Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), value, callData, energyLimit, energyPrice);
         TransactionContext context = new TransactionContextImpl(transaction, block);
         return avm.run(new TransactionContext[] {context})[0].get();
     }
 
     private TransactionResult transferValue(Address recipient, BigInteger value) {
-        Transaction transaction = Transaction.balanceTransfer(from, recipient, kernel.getNonce(from).longValue(), value, energyPrice);
+        Transaction transaction = Transaction.balanceTransfer(from, recipient, kernel.getNonce(from), value, energyPrice);
         TransactionContext context = new TransactionContextImpl(transaction, block);
         return avm.run(new TransactionContext[] {context})[0].get();
     }

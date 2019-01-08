@@ -12,19 +12,19 @@ import org.aion.vm.api.interfaces.TransactionInterface;
 
 
 public class Transaction implements TransactionInterface {
-    public static Transaction create(Address from, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    public static Transaction create(Address from, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new Transaction(Type.CREATE, from, null, nonce, value, data, energyLimit, energyPrice);
     }
 
-    public static Transaction call(Address from, Address to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    public static Transaction call(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new Transaction(Type.CALL, from, to, nonce, value, data, energyLimit, energyPrice);
     }
 
-    public static Transaction balanceTransfer(Address from, Address to, long nonce, BigInteger value, long energyPrice) {
+    public static Transaction balanceTransfer(Address from, Address to, BigInteger nonce, BigInteger value, long energyPrice) {
         return new Transaction(Type.BALANCE_TRANSFER, from, to, nonce, value, new byte[0], BillingRules.BASIC_COST, energyPrice);
     }
 
-    public static Transaction garbageCollect(Address target, long nonce, long energyLimit, long energyPrice) {
+    public static Transaction garbageCollect(Address target, BigInteger nonce, long energyLimit, long energyPrice) {
         // This may seem a bit odd but we state that the "target" of the GC is the "sender" address.
         // This is because, on a conceptual level, the GC is "sent to itself" but also allows the nonce check to be consistent.
         return new Transaction(Type.GARBAGE_COLLECT, target, target, nonce, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
@@ -66,7 +66,7 @@ public class Transaction implements TransactionInterface {
 
     byte[] to;
 
-    long nonce;
+    BigInteger nonce;
 
     BigInteger value;
 
@@ -84,7 +84,7 @@ public class Transaction implements TransactionInterface {
 
     byte vm;
 
-    protected Transaction(Type type, Address from, Address to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    protected Transaction(Type type, Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         Objects.requireNonNull(type, "The transaction `type` can't be NULL");
         Objects.requireNonNull(from, "The transaction `from` can't be NULL");
         if (type == Type.CREATE) {
@@ -107,7 +107,7 @@ public class Transaction implements TransactionInterface {
         this.transactionHash = Helpers.randomBytes(32);
     }
 
-    protected Transaction(Type type, byte[] from, byte[] to, long nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice, byte[] transactionHash) {
+    protected Transaction(Type type, byte[] from, byte[] to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice, byte[] transactionHash) {
         Objects.requireNonNull(type, "The transaction `type` can't be NULL");
         Objects.requireNonNull(from, "The transaction `from` can't be NULL");
         if (type == Type.CREATE) {
@@ -171,11 +171,11 @@ public class Transaction implements TransactionInterface {
 
     @Override
     public byte[] getNonce() {
-        return BigInteger.valueOf(this.nonce).toByteArray();
+        return this.nonce.toByteArray();
     }
 
     long getNonceAsLong() {
-        return nonce;
+        return nonce.longValue();
     }
 
     @Override

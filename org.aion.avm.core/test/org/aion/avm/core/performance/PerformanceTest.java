@@ -68,7 +68,7 @@ public class PerformanceTest {
             userAddrs[i] = userAddress;
 
             //deploying dapp
-            Transaction create = Transaction.create(userAddress, kernel.getNonce(userAddress).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
+            Transaction create = Transaction.create(userAddress, kernel.getNonce(userAddress), BigInteger.ZERO, txData, energyLimit, energyPrice);
             AvmTransactionResult createResult = (AvmTransactionResult) avm.run(new TransactionContext[]{new TransactionContextImpl(create, block)})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
@@ -119,7 +119,7 @@ public class PerformanceTest {
 
     private void callSingle(org.aion.vm.api.interfaces.Address sender, Block block, Address contractAddr, String methodName) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
-        Transaction call = Transaction.call(sender, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(sender).longValue(), BigInteger.ZERO, argData, energyLimit, energyPrice);
+        Transaction call = Transaction.call(sender, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
@@ -164,7 +164,7 @@ public class PerformanceTest {
             for (int i = 0; i < transactionBlockSize; ++i) {
                 org.aion.vm.api.interfaces.Address sender = userAddrs[i];
                 Address contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];
-                Transaction call = Transaction.call(sender, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(sender).longValue(), BigInteger.ZERO, argData, energyLimit, energyPrice);
+                Transaction call = Transaction.call(sender, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
                 transactionContext[i] = new TransactionContextImpl(call, block);
             }
             SimpleFuture<TransactionResult>[] futures = avm.run(transactionContext);

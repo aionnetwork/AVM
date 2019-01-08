@@ -44,7 +44,7 @@ public class HashTest {
 
         this.kernel = new KernelInterfaceImpl();
         this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
-        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         dappAddress = AvmAddress.wrap(avm.run(new TransactionContext[] {context})[0].get().getReturnData());
     }
@@ -60,7 +60,7 @@ public class HashTest {
 
         // Call blake2b
         byte[] txData = ABIEncoder.encodeMethodArguments(blake2bMethodName, hashMessage);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
         TransactionResult txResult = avm.run(new TransactionContext[]{context})[0].get();
@@ -69,7 +69,7 @@ public class HashTest {
 
         // Retrieve hash
         byte[] txData2 = ABIEncoder.encodeMethodArguments("getHashedVal");
-        Transaction tx2 = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData2, energyLimit, energyPrice);
+        Transaction tx2 = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData2, energyLimit, energyPrice);
         TransactionContextImpl context2 = new TransactionContextImpl(tx2, block);
 
         TransactionResult txResult2 = avm.run(new TransactionContext[]{context2})[0].get();
@@ -92,7 +92,7 @@ public class HashTest {
 
         // Call sha256
         byte[] txData = ABIEncoder.encodeMethodArguments(shaMethodName, hashMessage);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
         TransactionResult txResult = avm.run(new TransactionContext[]{context})[0].get();
@@ -101,7 +101,7 @@ public class HashTest {
 
         // Retrieve hash
         byte[] txData2 = ABIEncoder.encodeMethodArguments("getHashedVal");
-        Transaction tx2 = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData2, energyLimit, energyPrice);
+        Transaction tx2 = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData2, energyLimit, energyPrice);
         TransactionContextImpl context2 = new TransactionContextImpl(tx2, block);
 
         TransactionResult txResult2 = avm.run(new TransactionContext[]{context2})[0].get();
@@ -124,7 +124,7 @@ public class HashTest {
 
         // Call Keccak256
         byte[] txData = ABIEncoder.encodeMethodArguments(keccakbMethodName, hashMessage);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
 
         TransactionResult txResult = avm.run(new TransactionContext[]{context})[0].get();
@@ -133,7 +133,7 @@ public class HashTest {
 
         // Retrieve hash
         byte[] txData2 = ABIEncoder.encodeMethodArguments("getHashedVal");
-        Transaction tx2 = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer).longValue(), BigInteger.ZERO, txData2, energyLimit, energyPrice);
+        Transaction tx2 = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData2, energyLimit, energyPrice);
         TransactionContextImpl context2 = new TransactionContextImpl(tx2, block);
 
         TransactionResult txResult2 = avm.run(new TransactionContext[]{context2})[0].get();

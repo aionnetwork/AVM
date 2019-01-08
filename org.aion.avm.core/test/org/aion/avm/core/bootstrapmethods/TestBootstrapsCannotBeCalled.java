@@ -44,23 +44,23 @@ public class TestBootstrapsCannotBeCalled {
 
     @Test
     public void testStringConcatFactoryMakeConcat() {
-        TransactionResult result = deployContract(MakeConcatTarget.class, kernel.getNonce(deployer).longValue());
+        TransactionResult result = deployContract(MakeConcatTarget.class, kernel.getNonce(deployer));
         assertTrue(result.getResultCode().isFailed());
     }
 
     @Test
     public void testStringConcatFactoryMakeConcatWithConstants() {
-        TransactionResult result = deployContract(MakeConcatWithConstantsTarget.class, kernel.getNonce(deployer).longValue());
+        TransactionResult result = deployContract(MakeConcatWithConstantsTarget.class, kernel.getNonce(deployer));
         assertTrue(result.getResultCode().isFailed());
     }
 
     @Test
     public void testLambdaMetaFactory() {
-        TransactionResult result = deployContract(MetaFactoryTarget.class, kernel.getNonce(deployer).longValue());
+        TransactionResult result = deployContract(MetaFactoryTarget.class, kernel.getNonce(deployer));
         assertTrue(result.getResultCode().isFailed());
     }
 
-    private TransactionResult deployContract(Class<?> contract, long nonce) {
+    private TransactionResult deployContract(Class<?> contract, BigInteger nonce) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(contract);
         byte[] createData = new CodeAndArguments(jar, null).encodeToBytes();
         Transaction transaction = Transaction.create(

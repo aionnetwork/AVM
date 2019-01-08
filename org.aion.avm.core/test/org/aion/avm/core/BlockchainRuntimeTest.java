@@ -59,7 +59,7 @@ public class BlockchainRuntimeTest {
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
-        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined).longValue(), value, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
@@ -107,7 +107,7 @@ public class BlockchainRuntimeTest {
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
-        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined).longValue(), value, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
@@ -135,7 +135,7 @@ public class BlockchainRuntimeTest {
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
-        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined).longValue(), value, txData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(from, to, kernel.getNonce(premined), value, txData, energyLimit, energyPrice);
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
@@ -147,7 +147,7 @@ public class BlockchainRuntimeTest {
 
     private org.aion.vm.api.interfaces.Address installJarAsDApp(byte[] jar) {
         byte[] arguments = null;
-        Transaction tx = Transaction.create(premined, kernel.getNonce(premined).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
+        Transaction tx = Transaction.create(premined, kernel.getNonce(premined), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
         TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]));
         TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());

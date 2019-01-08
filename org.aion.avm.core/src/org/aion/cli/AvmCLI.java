@@ -47,7 +47,7 @@ public class AvmCLI {
             throw env.fail("deploy : Invalid location of Dapp jar");
         }
 
-        Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender).longValue(), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
+        Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
 
         return new TransactionContextImpl(createTransaction, block);
     }
@@ -89,7 +89,7 @@ public class AvmCLI {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
 
         // TODO:  Remove this bias when/if we change this to no longer send all transactions from the same account.
-        long biasedNonce = kernel.getNonce(sender).longValue() + nonceBias;
+        BigInteger biasedNonce = kernel.getNonce(sender).add(BigInteger.valueOf(nonceBias));
         Transaction callTransaction = Transaction.call(sender, contract, biasedNonce, BigInteger.ZERO, arguments, energyLimit, 1L);
         return new TransactionContextImpl(callTransaction, block);
     }

@@ -113,7 +113,7 @@ public class BadDestinationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BadDestinationTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        Transaction transaction = Transaction.create(from, kernel.getNonce(from).longValue(), BigInteger.ZERO, jar, energyLimit, energyPrice);
+        Transaction transaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
         TransactionContext context = new TransactionContextImpl(transaction, block);
         TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
 
@@ -123,14 +123,14 @@ public class BadDestinationTest {
 
     private TransactionResult callContractWithoutCatchingException(Address callAddress) {
         byte[] callData = encodeCallData("callDestinationNoExceptionCatching", callAddress);
-        Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from).longValue(), BigInteger.ZERO, callData, energyLimit, energyPrice);
+        Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
         TransactionContext context = new TransactionContextImpl(transaction, block);
         return avm.run(new TransactionContext[] {context})[0].get();
     }
 
     private TransactionResult callDestinationAndCatchException(Address callAddress) {
         byte[] callData = encodeCallData("callDestinationAndCatchException", callAddress);
-        Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from).longValue(), BigInteger.ZERO, callData, energyLimit, energyPrice);
+        Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
         TransactionContext context = new TransactionContextImpl(transaction, block);
         return avm.run(new TransactionContext[] {context})[0].get();
     }

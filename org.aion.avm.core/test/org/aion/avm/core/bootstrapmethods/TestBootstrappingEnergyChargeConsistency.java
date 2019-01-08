@@ -34,15 +34,15 @@ public class TestBootstrappingEnergyChargeConsistency {
         VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
         Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-        long nonce = kernel.getNonce(deployer).longValue();
+        BigInteger nonce = kernel.getNonce(deployer);
 
         // Deploy the contract.
         org.aion.vm.api.interfaces.Address contractAddress = deployContract(avm, block, deployer, nonce);
 
         // Run the contract multiple times.
-        AvmTransactionResult result1 = (AvmTransactionResult) runContract(avm, block, deployer, contractAddress, nonce + 1);
-        AvmTransactionResult result2 = (AvmTransactionResult) runContract(avm, block, deployer, contractAddress, nonce + 2);
-        AvmTransactionResult result3 = (AvmTransactionResult) runContract(avm, block, deployer, contractAddress, nonce + 3);
+        AvmTransactionResult result1 = (AvmTransactionResult) runContract(avm, block, deployer, contractAddress, nonce.add(BigInteger.ONE));
+        AvmTransactionResult result2 = (AvmTransactionResult) runContract(avm, block, deployer, contractAddress, nonce.add(BigInteger.TWO));
+        AvmTransactionResult result3 = (AvmTransactionResult) runContract(avm, block, deployer, contractAddress, nonce.add(BigInteger.valueOf(3)));
         avm.shutdown();
 
         // Ensure the calls were all successful.
@@ -70,7 +70,7 @@ public class TestBootstrappingEnergyChargeConsistency {
         assertEquals(energyLimit, energy1 + remaining1);
     }
 
-    private org.aion.vm.api.interfaces.Address deployContract(VirtualMachine avm, Block block, org.aion.vm.api.interfaces.Address deployer, long nonce) {
+    private org.aion.vm.api.interfaces.Address deployContract(VirtualMachine avm, Block block, org.aion.vm.api.interfaces.Address deployer, BigInteger nonce) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(EnergyChargeConsistencyTarget.class);
         byte[] createData = new CodeAndArguments(jar, null).encodeToBytes();
         Transaction transaction = Transaction.create(
@@ -84,7 +84,7 @@ public class TestBootstrappingEnergyChargeConsistency {
         return AvmAddress.wrap(avm.run(new TransactionContext[] {context})[0].get().getReturnData());
     }
 
-    private TransactionResult runContract(VirtualMachine avm, Block block, org.aion.vm.api.interfaces.Address sender, org.aion.vm.api.interfaces.Address contract, long nonce) {
+    private TransactionResult runContract(VirtualMachine avm, Block block, org.aion.vm.api.interfaces.Address sender, org.aion.vm.api.interfaces.Address contract, BigInteger nonce) {
         byte[] callData = ABIEncoder.encodeMethodArguments("run");
         Transaction transaction = Transaction.call(
             sender,
