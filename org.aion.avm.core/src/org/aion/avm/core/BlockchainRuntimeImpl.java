@@ -224,7 +224,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != data, "data can't be NULL");
 
         Log log = new Log(ctx.getDestinationAddress().toBytes(), List.of(), data.getUnderlying());
-        result.addLog(log);
+        ctx.getSideEffects().addLog(log);
     }
 
     @Override
@@ -233,7 +233,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != data, "data can't be NULL");
 
         Log log = new Log(ctx.getDestinationAddress().toBytes(), List.of(HashUtils.sha256(topic1.getUnderlying())), data.getUnderlying());
-        result.addLog(log);
+        ctx.getSideEffects().addLog(log);
     }
 
     @Override
@@ -244,7 +244,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         Log log = new Log(ctx.getDestinationAddress().toBytes(), List.of(HashUtils.sha256(topic1.getUnderlying()), HashUtils.sha256(topic2.getUnderlying())),
                 data.getUnderlying());
-        result.addLog(log);
+        ctx.getSideEffects().addLog(log);
     }
 
     @Override
@@ -256,7 +256,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         Log log = new Log(ctx.getDestinationAddress().toBytes(), List.of(HashUtils.sha256(topic1.getUnderlying()), HashUtils.sha256(topic2.getUnderlying()),
                 HashUtils.sha256(topic3.getUnderlying())), data.getUnderlying());
-        result.addLog(log);
+        ctx.getSideEffects().addLog(log);
     }
 
     @Override
@@ -269,7 +269,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         Log log = new Log(ctx.getDestinationAddress().toBytes(), List.of(HashUtils.sha256(topic1.getUnderlying()), HashUtils.sha256(topic2.getUnderlying()),
                 HashUtils.sha256(topic3.getUnderlying()), HashUtils.sha256(topic4.getUnderlying())), data.getUnderlying());
-        result.addLog(log);
+        ctx.getSideEffects().addLog(log);
     }
 
     @Override
@@ -321,7 +321,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     private Result runInternalCall(InternalTransaction internalTx) {
         // add the internal transaction to result
-        result.addInternalTransaction(internalTx);
+        ctx.getSideEffects().addInternalTransaction(internalTx);
 
         IInstrumentation currentThreadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
         if (null != this.reentrantState) {
@@ -346,7 +346,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
             newResult = this.avm.runInternalTransaction(this.kernel, this.task, internalCTX);
             
             // merge the results
-            result.merge(newResult);
+            this.ctx.getSideEffects().merge(internalCTX.getSideEffects());
         } finally {
             // Re-attach.
             InstrumentationHelpers.returnToExecutingFrame(this.thisDAppSetup);

@@ -388,8 +388,8 @@ public class AvmImpl implements AvmInternal {
         if (result.getResultCode().isSuccess()) {
             thisTransactionKernel.commit();
         } else {
-            result.clearLogs();
-            result.rejectInternalTransactions();
+            ctx.getSideEffects().getExecutionLogs().clear();
+            ctx.getSideEffects().markAllInternalTransactionsAsRejected();
         }
 
         logger.debug("Result: {}", result);

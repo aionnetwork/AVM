@@ -12,6 +12,7 @@ import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
+import org.aion.vm.api.interfaces.InternalTransactionInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.aion.vm.api.interfaces.VirtualMachine;
@@ -67,10 +68,10 @@ public class AvmFailureTest {
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(new TransactionContext[] {txContext})[0].get();
 
         assertEquals(AvmTransactionResult.Code.FAILED_REVERT, txResult.getResultCode());
-        assertEquals(5, txResult.getInternalTransactions().size());
-        assertEquals(0, txResult.getLogs().size());
+        assertEquals(5, txContext.getSideEffects().getInternalTransactions().size());
+        assertEquals(0, txContext.getSideEffects().getExecutionLogs().size());
 
-        for (InternalTransaction i : txResult.getInternalTransactions()) {
+        for (InternalTransactionInterface i : txContext.getSideEffects().getInternalTransactions()) {
             assertTrue(i.isRejected());
         }
     }

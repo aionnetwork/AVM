@@ -75,15 +75,16 @@ public class AvmImplTest {
         long energyLimit = 50_000L;
         long energyPrice = 1L;
         Transaction tx = Transaction.call(from, to, kernel.getNonce(from), value, data, energyLimit, energyPrice);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
+        TransactionContext context = new TransactionContextImpl(tx, block);
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] { context })[0].get();
 
         // verify results
         assertTrue(result.getResultCode().isSuccess());
         assertNull(result.getReturnData());
         assertEquals(tx.getTransactionCost(), result.getEnergyUsed());
         assertEquals(energyLimit - tx.getTransactionCost(), result.getEnergyRemaining());
-        assertEquals(0, result.getLogs().size());
-        assertEquals(0, result.getInternalTransactions().size());
+        assertEquals(0, context.getSideEffects().getExecutionLogs().size());
+        assertEquals(0, context.getSideEffects().getInternalTransactions().size());
 
         // verify state change
         assertEquals(1, kernel.getNonce(from).intValue());
