@@ -62,9 +62,9 @@ public class Log implements IExecutionLog {
      */
     @Override
     public BloomFilter getBloomFilterForLog() {
-        BloomFilter filter = new BloomFilter(HashUtils.blake2b(this.address));
+        BloomFilter filter = BloomFilter.create(HashUtils.blake2b(this.address));
         for (byte[] topic : this.topics) {
-            filter.or(new BloomFilter(HashUtils.blake2b(topic)));
+            filter.or(BloomFilter.create(HashUtils.blake2b(topic)));
         }
         return filter;
     }

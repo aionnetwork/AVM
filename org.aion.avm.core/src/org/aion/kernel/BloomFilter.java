@@ -24,6 +24,40 @@ public class BloomFilter implements IBloomFilter {
         this.filter = bytes;
     }
 
+    public static BloomFilter create(byte[] toBloom) {
+        // value range: [0, 2^12-1=4096]
+        int position1 = (((toBloom[0] & 0xff) & 7) << 8) + ((toBloom[1]) & 0xff);
+        int position2 = (((toBloom[2] & 0xff) & 7) << 8) + ((toBloom[3]) & 0xff);
+        int position3 = (((toBloom[4] & 0xff) & 7) << 8) + ((toBloom[5]) & 0xff);
+
+        // # bits: 8 * 256 = 2048
+        byte[] data = new byte[256];
+        BloomFilter bloom = new BloomFilter(data);
+
+        setBit(data, position1);
+        setBit(data, position2);
+        setBit(data, position3);
+
+        return bloom;
+    }
+
+    /**
+     * Sets the bit at position pos in data.
+     */
+    private static void setBit(byte[] data, int pos) {
+        if ((data.length * 8) - 1 < pos) {
+            throw new Error("outside byte array limit, pos: " + pos);
+        }
+
+        int posByte = data.length - 1 - (pos) / 8;
+        int posBit = (pos) % 8;
+        byte setter = (byte) (1 << (posBit));
+        byte toBeSet = data[posByte];
+        byte result = (byte) (toBeSet | setter);
+
+        data[posByte] = result;
+    }
+
     /**
      * @return The underlying bytes of the filter.
      */
@@ -54,11 +88,10 @@ public class BloomFilter implements IBloomFilter {
     public void and(IBloomFilter otherFilter) {
         byte[] otherBytes = otherFilter.getBloomFilterBytes();
         for (int i = 0; i < this.filter.length; i++) {
-            this.filter[i] |= otherBytes[i];
+            this.filter[i] &= otherBytes[i];
         }
     }
 
-    //TODO: confirm matches & contains have correct behaviour.
     @Override
     public boolean matches(IBloomFilter otherFilter) {
         BloomFilter copyOfThis = copy();
