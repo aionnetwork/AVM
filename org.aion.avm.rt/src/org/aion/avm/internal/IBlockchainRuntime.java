@@ -192,6 +192,11 @@ public interface IBlockchainRuntime {
     void avm_invalid();
 
     /**
+     * Requires that condition is true, otherwise triggers a revert.
+     */
+    void avm_require(boolean condition);
+
+    /**
      * Prints a message to console for debugging purpose
      *
      * @param message

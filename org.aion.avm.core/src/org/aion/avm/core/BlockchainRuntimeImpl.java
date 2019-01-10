@@ -304,6 +304,13 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
+    public void avm_require(boolean condition) {
+        if (!condition) {
+            throw new RevertException();
+        }
+    }
+
+    @Override
     public void avm_print(org.aion.avm.shadow.java.lang.String message) {
         task.outputPrint(message.toString());
     }

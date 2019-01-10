@@ -160,6 +160,11 @@ public final class BlockchainRuntime {
         blockchainRuntime.avm_invalid();
     }
 
+    public static void avm_require(boolean condition) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_require);
+        blockchainRuntime.avm_require(condition);
+    }
+
     public static void avm_print(String message) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_print);
         blockchainRuntime.avm_print(message);
@@ -284,6 +289,10 @@ public final class BlockchainRuntime {
 
     public static void invalid() {
         avm_invalid();
+    }
+
+    public static void require(boolean condition) {
+        avm_require(condition);
     }
 
     public static void print(java.lang.String message) {

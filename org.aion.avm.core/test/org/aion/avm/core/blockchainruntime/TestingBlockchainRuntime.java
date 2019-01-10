@@ -244,6 +244,13 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     @Override
+    public void avm_require(boolean condition) {
+        if (!condition) {
+            throw new RevertException();
+        }
+    }
+
+    @Override
     public void avm_print(String message) {
         System.out.print(message);
     }

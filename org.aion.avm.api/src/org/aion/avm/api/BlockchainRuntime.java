@@ -324,6 +324,17 @@ public final class BlockchainRuntime {
     }
 
     /**
+     * Checks that the provided condition is true and if it is false, triggers a revert.
+     * <p>
+     * In other words, if {@code condition == true} this method does nothing, otherwise it is
+     * equivalent to calling {@link BlockchainRuntime#revert()}.
+     *
+     * @param condition The condition that is required to be {@code true}.
+     */
+    public static void require(boolean condition) {
+    }
+
+    /**
      * Prints a message, for debugging purpose
      *
      * @param message the message to print
