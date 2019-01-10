@@ -84,6 +84,11 @@ public final class BlockchainRuntime {
         return blockchainRuntime.avm_getBalance(address);
     }
 
+    public static BigInteger avm_getBalanceOfThisContract() {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getBalanceOfThisContract);
+        return blockchainRuntime.avm_getBalanceOfThisContract();
+    }
+
     public static int avm_getCodeSize(Address address) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getCodeSize);
         return blockchainRuntime.avm_getCodeSize(address);
@@ -228,6 +233,10 @@ public final class BlockchainRuntime {
 
     public static java.math.BigInteger getBalance(Address address) {
         return avm_getBalance(address).getUnderlying();
+    }
+
+    public static java.math.BigInteger getBalanceOfThisContract() {
+        return avm_getBalanceOfThisContract().getUnderlying();
     }
 
     public static int getCodeSize(Address address) {

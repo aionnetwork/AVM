@@ -95,12 +95,19 @@ public interface IBlockchainRuntime {
     //================
 
     /**
-     * Returns the address of an account.
+     * Returns the balance of an account.
      *
      * @param address account address
-     * @return the balance if the account
+     * @return the balance of the account
      */
     BigInteger avm_getBalance(Address address) throws IllegalArgumentException;
+
+    /**
+     * Returns the balance of the contract in which this method is invoked.
+     *
+     * @return the balance of the contract.
+     */
+    BigInteger avm_getBalanceOfThisContract();
 
     /**
      * Returns the code size of an account.

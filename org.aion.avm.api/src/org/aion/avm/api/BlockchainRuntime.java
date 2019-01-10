@@ -153,6 +153,15 @@ public final class BlockchainRuntime {
     }
 
     /**
+     * Returns the balance of the contract in which this method was invoked.
+     *
+     * @return the contract balance.
+     */
+    public static BigInteger getBalanceOfThisContract() {
+        return BigInteger.ZERO;
+    }
+
+    /**
      * Returns the size of the code, of the given account.
      *
      * @param address the account address.

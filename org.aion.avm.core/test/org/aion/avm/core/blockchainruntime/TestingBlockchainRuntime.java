@@ -163,6 +163,11 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     @Override
+    public BigInteger avm_getBalanceOfThisContract() {
+        return new BigInteger(kernel.getBalance(address));
+    }
+
+    @Override
     public int avm_getCodeSize(Address address) {
         Objects.requireNonNull(address);
         byte[] vc = kernel.getCode(AvmAddress.wrap(address.unwrap()));

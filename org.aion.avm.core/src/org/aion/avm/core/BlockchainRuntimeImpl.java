@@ -114,6 +114,18 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
+    public org.aion.avm.shadow.java.math.BigInteger avm_getBalanceOfThisContract() {
+        // This method can be called inside clinit so CREATE is a valid context.
+        org.aion.vm.api.interfaces.Address contractAddress = (ctx.getTransaction().isContractCreationTransaction())
+            ? ctx.getContractAddress()
+            : ctx.getDestinationAddress();
+
+        // Acquire resource before reading
+        avm.getResourceMonitor().acquire(contractAddress.toBytes(), this.task);
+        return new org.aion.avm.shadow.java.math.BigInteger(this.kernel.getBalance(contractAddress));
+    }
+
+    @Override
     public int avm_getCodeSize(Address address) {
         require(null != address, "Address can't be NULL");
 
