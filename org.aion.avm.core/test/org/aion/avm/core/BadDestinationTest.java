@@ -136,7 +136,7 @@ public class BadDestinationTest {
     }
 
     private byte[] encodeCallData(String methodName, Address address) {
-        IInstrumentation instrumentation = newFakeInstrumentation();
+        IInstrumentation instrumentation = new EmptyInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
         byte[] encoding = ABIEncoder.encodeMethodArguments(methodName, new org.aion.avm.api.Address(address.toBytes()));
         InstrumentationHelpers.detachThread(instrumentation);
@@ -151,77 +151,6 @@ public class BadDestinationTest {
 
     private void addCodeToAddress(Address address) {
         kernel.putCode(address, new byte[1]);
-    }
-
-    private IInstrumentation newFakeInstrumentation() {
-        return new IInstrumentation () {
-            @Override
-            public void bootstrapOnly() {
-            }
-            @Override
-            public void chargeEnergy(long arg0) throws OutOfEnergyException {
-            }
-            @Override
-            public long energyLeft() {
-                return 0;
-            }
-            @Override
-            public void enterCatchBlock(int arg0, int arg1) {
-            }
-            @Override
-            public void enterMethod(int arg0) {
-            }
-            @Override
-            public void enterNewFrame(ClassLoader arg0, long arg1, int arg2) {
-            }
-            @Override
-            public void exitCurrentFrame() {
-            }
-            @Override
-            public void exitMethod(int arg0) {
-            }
-            @Override
-            public void forceNextHashCode(int arg0) {
-            }
-            @Override
-            public int getCurStackDepth() {
-                return 0;
-            }
-            @Override
-            public int getCurStackSize() {
-                return 0;
-            }
-            @Override
-            public int getNextHashCodeAndIncrement() {
-                return 0;
-            }
-            @Override
-            public int peekNextHashCode() {
-                return 0;
-            }
-            @Override
-            public void setAbortState() {
-            }
-            @Override
-            public void clearAbortState() {
-            }
-            @Override
-            public org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable arg0) {
-                return null;
-            }
-            @Override
-            public <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> arg0) {
-                return null;
-            }
-            @Override
-            public org.aion.avm.shadow.java.lang.String wrapAsString(String arg0) {
-                return null;
-            }
-            @Override
-            public Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg0) {
-                return null;
-            }
-        };
     }
 
 }
