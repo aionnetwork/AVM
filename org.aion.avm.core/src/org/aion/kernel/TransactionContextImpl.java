@@ -84,12 +84,16 @@ public class TransactionContextImpl implements TransactionContext {
     @Override
     public Address getContractAddress() {
         if (contract == null) {
-            ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(tx.getSenderAddress().toBytes()).putLong(tx.getNonceAsLong());
-            byte[] hash = HashUtils.sha256(buffer.array());
-            hash[0] = NodeEnvironment.CONTRACT_PREFIX;
-            contract = AvmAddress.wrap(hash);
+            contract = generateContractAddress(tx.getSenderAddress(), tx.getNonceAsLong());
         }
         return contract;
+    }
+
+    public static Address generateContractAddress(Address sender, long nonce) {
+        ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(sender.toBytes()).putLong(nonce);
+        byte[] hash = HashUtils.sha256(buffer.array());
+        hash[0] = NodeEnvironment.CONTRACT_PREFIX;
+        return AvmAddress.wrap(hash);
     }
 
     @Override
