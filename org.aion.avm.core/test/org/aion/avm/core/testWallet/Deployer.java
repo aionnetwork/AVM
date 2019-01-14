@@ -4,6 +4,7 @@ import org.aion.avm.api.ABIStaticState;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.*;
+import org.aion.avm.core.blockchainruntime.TestingBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;

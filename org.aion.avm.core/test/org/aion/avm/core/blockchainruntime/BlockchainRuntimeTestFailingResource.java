@@ -1,4 +1,4 @@
-package org.aion.avm.core;
+package org.aion.avm.core.blockchainruntime;
 
 import java.math.BigInteger;
 import org.aion.avm.api.BlockchainRuntime;

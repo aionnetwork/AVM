@@ -4,7 +4,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.api.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.TestingBlockchainRuntime;
+import org.aion.avm.core.blockchainruntime.TestingBlockchainRuntime;
 import org.aion.avm.core.SuspendedInstrumentation;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;

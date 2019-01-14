@@ -1,6 +1,8 @@
-package org.aion.avm.core;
+package org.aion.avm.core.blockchainruntime;
 
 import java.math.BigInteger;
+import org.aion.avm.core.ABIFailureTestResource;
+import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.HashUtils;
