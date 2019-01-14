@@ -263,7 +263,7 @@ public enum ShadowTypeBridge {
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) throws Exception {
-            String[] array = (String[]) standardValue;
+            Address[] array = (Address[]) standardValue;
             Class<?> wrapperClass = classLoader.loadClass(this.concreteShadowClassName);
             ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, array.length);
             for (int i = 0; i < array.length; ++i) {
