@@ -194,16 +194,23 @@ public class LoadedDApp {
     }
 
     /**
-     * Attaches a BlockchainRuntime instance to the Helper class (per contract) so DApp can
+     * Attaches an IBlockchainRuntime instance to the Helper class (per contract) so DApp can
      * access blockchain related methods.
+     *
+     * Returns the previously attached IBlockchainRuntime instance if one existed, or null otherwise.
+     *
      * NOTE:  The current implementation is mostly cloned from Helpers.attachBlockchainRuntime() but we will inline/cache more of this,
      * over time, and that older implementation is only used by tests (which may be ported to use this).
      *
      * @param runtime The runtime to install in the DApp.
+     * @return The previously attached IBlockchainRuntime instance or null if none.
      */
-    public void attachBlockchainRuntime(IBlockchainRuntime runtime) {
+    public IBlockchainRuntime attachBlockchainRuntime(IBlockchainRuntime runtime) {
         try {
-            getBlochchainRuntimeField().set(null, runtime);
+            Field field = getBlochchainRuntimeField();
+            IBlockchainRuntime previousBlockchainRuntime = (IBlockchainRuntime) field.get(null);
+            field.set(null, runtime);
+            return previousBlockchainRuntime;
         } catch (Throwable t) {
             // Errors at this point imply something wrong with the installation so fail.
             throw RuntimeAssertionError.unexpected(t);

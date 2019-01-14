@@ -41,7 +41,7 @@ public class DAppExecutor {
         
         IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
         InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getTransaction().getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode);
-        dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, task, ctx, ctx.getTransactionData(), result, dapp.runtimeSetup));
+        IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(kernel, avm, thisState, task, ctx, ctx.getTransactionData(), result, dapp.runtimeSetup));
         InstrumentationBasedStorageFees feeProcessor = new InstrumentationBasedStorageFees(threadInstrumentation);
 
         ReentrantGraphProcessor reentrantGraphData = null;
@@ -152,6 +152,9 @@ public class DAppExecutor {
             InstrumentationHelpers.popExistingStackFrame(dapp.runtimeSetup);
             // This state was only here while we were running, in case someone else needed to change it so now we can pop it.
             task.getReentrantDAppStack().popState();
+
+            // Re-attach the previously detached IBlockchainRuntime instance.
+            dapp.attachBlockchainRuntime(previousRuntime);
         }
     }
 }
