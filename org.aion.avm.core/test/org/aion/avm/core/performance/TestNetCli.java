@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,101 +23,106 @@ public class TestNetCli {
     private static final int heavyLevel = 1;
     private static final int allocSize = 1000000;//(1 * (1 << 20));
 
-    public void run(String password, String dappPath, String preminedAccount, int accountNum) {
+    public void run(String password, String dappPath, String preminedAccount, int accountNum, int threadNum) {
+        ExecutorService pool = Executors.newFixedThreadPool(threadNum);
 
-        ArrayList<String> accounts = createAccounts(accountNum, password);
+        ArrayList<String> accounts = createAccounts(accountNum, password, pool);
 
         String amount = "1000000000000000000";
-        ArrayList<String> transferReceipts = transfers(preminedAccount, password, amount, accounts);
+        ArrayList<String> transferReceipts = transfers(preminedAccount, password, amount, accounts, pool);
 
-        checkReceiptsStatus(transferReceipts);
+        checkReceiptsStatus(transferReceipts, pool, "Transfer");
 
-        unlockAllAccounts(accounts, password);
+        unlockAllAccounts(accounts, password, pool);
 
-        ArrayList<String> deployReceipts = deployDapps(accounts, dappPath);
+        ArrayList<String> deployReceipts = deployDapps(accounts, dappPath, pool);
 
-        ArrayList<String> dapps = getAllDappAddresses(deployReceipts);
+        ArrayList<String> dapps = getAllDappAddresses(deployReceipts, pool);
 
-        ArrayList<String> callReceipts = callDapps(accountNum, accounts, password, dapps);
+        ArrayList<String> callReceipts = callDapps(accountNum, accounts, dapps, pool);
 
-        checkReceiptsStatus(callReceipts);
+        checkReceiptsStatus(callReceipts, pool, "Call");
 
-        System.out.println("*****Test finished!");
+        pool.shutdown();
     }
 
-    private ArrayList<String> createAccounts(int accountNum, String password) {
+    private ArrayList<String> createAccounts(int accountNum, String password, ExecutorService pool) {
         ArrayList<String> accounts = new ArrayList<>();
 
         String header = "{\"jsonrpc\":\"2.0\",\"method\":\"personal_newAccount\",\"params\":[\"";
         String footer = "\"]}";
         String data = header + password + footer;
 
+        ArrayList<Future<String>> results = new ArrayList<>();
         for(int i = 0; i < accountNum; ++i) {
-            System.out.printf("%d: Creating account...\n", i);
-            String response = post(data);
-            assert (null != response);
-            System.out.println("Response:" + response);
-            String receiptHash = extractReceiptHash(response);
-            assert (null != receiptHash);
-            accounts.add(receiptHash);
+            final int n = i;
+            Callable<String> createAccountTask = () -> {
+                String threadName = Thread.currentThread().getName();
+                System.out.printf("%s: %d-creating account ...\n", threadName, n);
+                String response = post(data);
+                assert (null != response);
+                System.out.printf("%s: %d-response:%s\n", threadName, n, response);
+                String receiptHash = extractReceiptHash(response);
+                assert (null != receiptHash);
+                return receiptHash;
+            };
+            results.add(pool.submit(createAccountTask));
         }
+
+        for (Future<String> result : results) {
+            try {
+                accounts.add(result.get());
+            } catch (InterruptedException | ExecutionException ex) {
+                ex.printStackTrace();
+                System.exit(1);
+            }
+        }
+
         return accounts;
     }
 
-    private ArrayList<String> transfers(String preminedAccount, String password, String amount, ArrayList<String> accounts) {
+    private ArrayList<String> transfers(String preminedAccount, String password, String amount, ArrayList<String> accounts, ExecutorService pool) {
         ArrayList<String> transferReceipts = new ArrayList<>();
-        System.out.println("Unlocking " + preminedAccount);
+        System.out.printf("Unlocking account %s ...\n", preminedAccount);
         String responseUnlock = unlockAccount(preminedAccount, password);
         System.out.println("Response:" + responseUnlock);
         boolean isSucceed = extractUnlockResult(responseUnlock);
         assert (isSucceed);
         System.out.printf("Unlocking account %s successfully!\n", preminedAccount);
 
+        ArrayList<Future<String>> results = new ArrayList<>();
         for(int i = 0; i < accounts.size(); ++i) {
-            String recipient = accounts.get(i);
-            System.out.printf("%d: Transfering %s from %s to %s ...\n", i, amount, preminedAccount, recipient);
-            String response = transfer(preminedAccount, recipient, amount);
-            System.out.println("Response:" + response);
-            assert (response != null);
-            String receiptHash = extractReceiptHash(response);
-            assert (receiptHash != null);
-            transferReceipts.add(receiptHash);
+            final String recipient = accounts.get(i);
+            results.add(pool.submit(new TransferTask(preminedAccount, recipient, amount, i)));
         }
+
+        for (Future<String> result : results) {
+            try {
+                transferReceipts.add(result.get());
+            } catch (InterruptedException | ExecutionException ex) {
+                ex.printStackTrace();
+                System.exit(1);
+            }
+        }
+
         return transferReceipts;
     }
 
-    private String transfer(String sender, String recipient, String amount) {
-        String header = "{\"jsonrpc\":\"2.0\",\"method\":\"eth_sendTransaction\",\"params\":[{\"from\": \"";
-        String to = "\", \"to\": \"";
-        String gas = "\", \"gas\": \"2000000\", \"gasPrice\": \"100000000000\", \"value\": \"";
-        String footer="\"}]}";
-        String data = header + sender + to + recipient + gas + amount + footer;
-        return post(data);
-    }
-
-
-    private void checkReceiptsStatus(ArrayList<String> receipts) {
+    private void checkReceiptsStatus(ArrayList<String> receipts, ExecutorService pool, String description) {
+        CountDownLatch countDownLatch = new CountDownLatch(receipts.size());
         for(int i = 0; i < receipts.size(); ++i) {
-            String hash = receipts.get(i);
-            System.out.printf("%d: Checking receipt status of %s ...\n", i, hash);
-            while(!getReceiptStatus(hash)) {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            System.out.printf("Receipt %s succeeds!\n", hash);
+            pool.submit(new GetReceiptStatusTask(description, receipts.get(i), countDownLatch, i));
+        }
+
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
-    private boolean getReceiptStatus(String receiptHash) {
-        String response = getReceipt(receiptHash);
-        System.out.println("Response:" + response);
-        return extractReceiptStatus(response);
-    }
-
-    private String getReceipt(String receiptHash) {
+    private static String getReceipt(String receiptHash) {
         String header="{\"jsonrpc\":\"2.0\",\"method\":\"eth_getTransactionReceipt\",\"params\":[";
         String quote="'";
         String footer="']}";
@@ -124,19 +130,29 @@ public class TestNetCli {
         return post(data);
     }
 
-    private boolean extractReceiptStatus(String response) {
-        return response.contains("\"status\":\"0x1\"");
-    }
-
-    private void unlockAllAccounts(ArrayList<String> accounts, String password) {
+    private void unlockAllAccounts(ArrayList<String> accounts, String password, ExecutorService pool) {
+        final CountDownLatch countDownLatch = new CountDownLatch(accounts.size());
         for (int i = 0; i < accounts.size(); ++i) {
-            System.out.printf("%d: Unlocking %s\n", i , accounts.get(i));
-            String response = unlockAccount(accounts.get(i), password);
-            assert (response != null);
-            System.out.println("Response:" + response);
-            boolean isSucceed = extractUnlockResult(response);
-            assert (isSucceed);
-            System.out.printf("Unlocking account %s successfully!\n", accounts.get(i));
+            final String account = accounts.get(i);
+            final int n = i;
+            Runnable unlockAccountTask = () -> {
+                String threadName = Thread.currentThread().getName();
+                System.out.printf("%s: %d-unlocking account %s ...\n", threadName, n, account);
+                String response = unlockAccount(account, password);
+                assert (response != null);
+                System.out.printf("%s: %d-response:%s\n", threadName, n, response);
+                boolean isSucceed = extractUnlockResult(response);
+                assert (isSucceed);
+                System.out.printf("%s: %d-unlocking account %s successfully!\n", threadName, n, account);
+                countDownLatch.countDown();
+            };
+            pool.submit(unlockAccountTask);
+        }
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -153,7 +169,7 @@ public class TestNetCli {
         return post(data);
     }
 
-    private String post(String postParams) {
+    private static String post(String postParams) {
         String responseString = null;
         try {
             System.out.println("Request:" + postParams);
@@ -187,7 +203,7 @@ public class TestNetCli {
         return responseString;
     }
 
-    private String extractReceiptHash(String response) {
+    private static String extractReceiptHash(String response) {
         String hash = null;
 
         // String to be scanned to find the pattern.
@@ -204,22 +220,38 @@ public class TestNetCli {
         return hash;
     }
 
-    private ArrayList<String> deployDapps(ArrayList<String> accounts, String dappPath) {
+    private ArrayList<String> deployDapps(ArrayList<String> accounts, String dappPath, ExecutorService pool) {
         ArrayList<String> deployReceipts = new ArrayList<>();
         try {
             Path path = Paths.get(dappPath);
             byte[] jar = Files.readAllBytes(path);
             byte[] args = ABIEncoder.encodeOneObject(new int[] { heavyLevel, allocSize });
-            String codeArguments = Helpers.bytesToHexString(new CodeAndArguments(jar, args).encodeToBytes());
-            // Deploy dapps
+            final String codeArguments = Helpers.bytesToHexString(new CodeAndArguments(jar, args).encodeToBytes());
+
+            ArrayList<Future<String>> results = new ArrayList<>();
             for(int i = 0; i < accounts.size(); ++i) {
-                System.out.printf("%d: Deploying dapp for account %s  ...\n", i, accounts.get(i));
-                String response = deployDapp(accounts.get(i), codeArguments);
-                assert (response != null);
-                System.out.println("Response:" + response);
-                String receiptHash = extractReceiptHash(response);
-                assert (receiptHash != null);
-                deployReceipts.add(receiptHash);
+                final String account = accounts.get(i);
+                final int n = i;
+                Callable<String> deployTask = () -> {
+                    String threadName = Thread.currentThread().getName();
+                    System.out.printf("%s: %d-deploying dapp for account %s ...\n", threadName, n, account);
+                    String response = deployDapp(account, codeArguments);
+                    assert (response != null);
+                    System.out.printf("%s: %d-response:%s\n", threadName, n, response);
+                    String receiptHash = extractReceiptHash(response);
+                    assert (receiptHash != null);
+                    return receiptHash;
+                };
+                results.add(pool.submit(deployTask));
+            }
+
+            for (Future<String> result : results) {
+                try {
+                    deployReceipts.add(result.get());
+                } catch (InterruptedException | ExecutionException ex) {
+                    ex.printStackTrace();
+                    System.exit(1);
+                }
             }
         } catch (IOException e) {
             System.out.println(e.toString());
@@ -236,21 +268,37 @@ public class TestNetCli {
         return post(data);
     }
 
-    private ArrayList<String> getAllDappAddresses(ArrayList<String> deployReceipts) {
+    private ArrayList<String> getAllDappAddresses(ArrayList<String> deployReceipts, ExecutorService pool) {
         ArrayList<String> dapps = new ArrayList<>();
+        ArrayList<Future<String>> results = new ArrayList<>();
         for(int i = 0; i < deployReceipts.size(); ++i) {
-            String receiptHash = deployReceipts.get(i);
-            System.out.printf("%d: Getting dapp address from transaction %s ...\n", i, receiptHash);
-            String dappAddress;
-            while((dappAddress = getDappAddress(receiptHash)) == null){
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            final String receiptHash = deployReceipts.get(i);
+            final int n = i;
+            Callable<String> GetDappAddressTask = () -> {
+                String threadName = Thread.currentThread().getName();
+                System.out.printf("%s: %d-getting dapp address from transaction %s ...\n", threadName, n, receiptHash);
+                String dappAddress;
+                while((dappAddress = getDappAddress(receiptHash)) == null){
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
                 }
+                System.out.printf("%s: %d-getting dapp address %s successfully!\n", threadName, n, dappAddress);
+                return dappAddress;
+            };
+            results.add(pool.submit(GetDappAddressTask));
+        }
+
+        for (Future<String> result : results) {
+            try {
+                dapps.add(result.get());
+            } catch (InterruptedException | ExecutionException ex) {
+                ex.printStackTrace();
+                System.exit(1);
             }
-            dapps.add(dappAddress);
-            System.out.printf("Getting dapp address %s successfully!\n", dappAddress);
         }
         return dapps;
     }
@@ -278,16 +326,33 @@ public class TestNetCli {
         return address;
     }
 
-    private ArrayList<String> callDapps(int accountNum, ArrayList<String> accounts, String password, ArrayList<String> dapps) {
+    private ArrayList<String> callDapps(int accountNum, ArrayList<String> accounts, ArrayList<String> dapps, ExecutorService pool) {
         ArrayList<String> callReceipts = new ArrayList<>();
-        String callEncoding = Helpers.bytesToHexString(ABIEncoder.encodeMethodArguments("cpuHeavy"));
-        for(int i = 0; i < accountNum; ++i) {
-            System.out.printf("%d: Account %s is calling dapp %s ...\n", i, accounts.get(i), dapps.get(i));
-            String response = callDapp(accounts.get(i), dapps.get(i), callEncoding);
-            System.out.println("Response:" + response);
-            String receiptHash = extractReceiptHash(response);
-            assert (!receiptHash.equals(""));
-            callReceipts.add(receiptHash);
+        final String callEncoding = Helpers.bytesToHexString(ABIEncoder.encodeMethodArguments("cpuHeavy"));
+        ArrayList<Future<String>> results = new ArrayList<>();
+        for (int i = 0; i < accountNum; ++i) {
+            final String account = accounts.get(i);
+            final String dapp = dapps.get(i);
+            final int n = i;
+            Callable<String> callTask = () -> {
+                String threadName = Thread.currentThread().getName();
+                System.out.printf("%s: %d-account %s is calling dapp %s ...\n", threadName, n, account, dapp);
+                String response = callDapp(account, dapp, callEncoding);
+                System.out.printf("%s: %d-response:%s\n", threadName, n, response);
+                String receiptHash = extractReceiptHash(response);
+                assert (!receiptHash.equals(""));
+                return receiptHash;
+            };
+            results.add(pool.submit(callTask));
+        }
+
+        for (Future<String> result : results) {
+            try {
+                callReceipts.add(result.get());
+            } catch (InterruptedException | ExecutionException ex) {
+                ex.printStackTrace();
+                System.exit(1);
+            }
         }
         return callReceipts;
     }
@@ -302,9 +367,9 @@ public class TestNetCli {
     }
 
     static private void usage() {
-        System.out.printf("Usage: <main class> [options]\n" +
+        System.out.println("Usage: <main class> [options]\n" +
                 "  Options:\n" +
-                "    <password> <dapp path> <pre-mined account address> <account number> <dapp number> <thread number>");
+                "    <password> <dapp path> <pre-mined account address> <account number> <dapp number> <thread number>\n");
     }
 
     static public void main(String[] args) {
@@ -339,7 +404,9 @@ public class TestNetCli {
             System.out.printf("Parameters: %s, %s, %s, %d, %d, %d.\n", password, dappPath, preminedAccount, accountNum, dappNum, threadNum);
 
             TestNetCli testNetCli = new TestNetCli();
-            testNetCli.run(password, dappPath, preminedAccount, accountNum);
+            testNetCli.run(password, dappPath, preminedAccount, accountNum, threadNum);
+
+            System.out.println("*****Test finished!");
         } catch (NumberFormatException e) {
             System.out.println("Invalid number " + e.getMessage());
             usage();
@@ -348,6 +415,77 @@ public class TestNetCli {
             System.out.println(e.getMessage());
             usage();
             System.exit(1);
+        }
+    }
+
+    private static class TransferTask implements Callable<String>{
+        private final String preminedAccount;
+        private final String recipient;
+        private final String amount;
+        private final int xth;
+
+        private TransferTask(String preminedAccount, String recipient, String amount, int xth) {
+            this.preminedAccount = preminedAccount;
+            this.recipient = recipient;
+            this.amount = amount;
+            this.xth = xth;
+        }
+
+        public String call() {
+            String threadName = Thread.currentThread().getName();
+            System.out.printf("%s: %d-transfering %s from %s to %s ...\n", threadName, xth, amount, preminedAccount, recipient);
+            String response = transfer(preminedAccount, recipient, amount);
+            System.out.printf("%s: %d-response:%s\n", threadName, xth, response);
+            assert (response != null);
+            String receiptHash = extractReceiptHash(response);
+            assert (receiptHash != null);
+            return receiptHash;
+        }
+
+        private String transfer(String sender, String recipient, String amount) {
+            String header = "{\"jsonrpc\":\"2.0\",\"method\":\"eth_sendTransaction\",\"params\":[{\"from\": \"";
+            String to = "\", \"to\": \"";
+            String gas = "\", \"gas\": \"2000000\", \"gasPrice\": \"100000000000\", \"value\": \"";
+            String footer="\"}]}";
+            String data = header + sender + to + recipient + gas + amount + footer;
+            return post(data);
+        }
+    }
+
+    private static class GetReceiptStatusTask implements Runnable{
+        private final String description;
+        private final String receiptHash;
+        private CountDownLatch countDownLatch;
+        private int xth;
+        private GetReceiptStatusTask(String description, String receiptHash, CountDownLatch countDownLatch, int xth) {
+            this.description = description;
+            this.receiptHash = receiptHash;
+            this.xth = xth;
+            this.countDownLatch = countDownLatch;
+        }
+
+        public void run() {
+            String threadName = Thread.currentThread().getName();
+            System.out.printf("%s: %d-checking %s receipt status of %s ...\n", threadName, xth, description, receiptHash);
+            while (!getReceiptStatus(receiptHash)) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            System.out.printf("%s: %d-%s Receipt %s succeeds!\n", threadName, xth, description, receiptHash);
+            countDownLatch.countDown();
+        }
+
+        private boolean getReceiptStatus(String receiptHash) {
+            String response = getReceipt(receiptHash);
+            System.out.println("Response:" + response);
+            return extractReceiptStatus(response);
+        }
+
+        private boolean extractReceiptStatus(String response) {
+            return response.contains("\"status\":\"0x1\"");
         }
     }
 }
