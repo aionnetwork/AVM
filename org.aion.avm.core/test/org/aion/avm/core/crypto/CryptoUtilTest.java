@@ -1,10 +1,14 @@
 package org.aion.avm.core.crypto;
 
+import net.i2p.crypto.eddsa.EdDSAPrivateKey;
+import net.i2p.crypto.eddsa.EdDSAPublicKey;
+import net.i2p.crypto.eddsa.KeyPairGenerator;
 import net.i2p.crypto.eddsa.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
@@ -17,7 +21,7 @@ public class CryptoUtilTest {
 
     @Test
     public void testSignEdDSA(){
-        ISignature signature = null;
+        byte[] signature = null;
 
         try {
             signature = CryptoUtil.signEdDSA(testMessage, privateKeyBytes);
@@ -26,7 +30,7 @@ public class CryptoUtilTest {
         }
 
         Assert.assertNotNull(signature);
-        Assert.assertArrayEquals(messageSignature, signature.getSignature());
+        Assert.assertArrayEquals(messageSignature, signature);
     }
 
     @Test
@@ -60,14 +64,16 @@ public class CryptoUtilTest {
     }
 
     @Test
-    public void testSignAndVerify(){
-        Ed25519Key key = new Ed25519Key();
-        byte[] privateKey = key.getPrivKeyBytes();
-        byte[] publicKey = key.getPubKeyBytes();
+    public void testSignAndVerify() throws Exception {
+        KeyPairGenerator keyGen = new KeyPairGenerator();
+        KeyPair keyPair = keyGen.generateKeyPair();
+        byte[] publicKey = ((EdDSAPublicKey) keyPair.getPublic()).getAbyte();
+        byte[] privateKey = ((EdDSAPrivateKey) keyPair.getPrivate()).getSeed();
+
         byte[] testMessage = "create key from scratch".getBytes();
 
         // signing
-        ISignature signature = null;
+        byte[] signature = null;
         try {
             signature = CryptoUtil.signEdDSA(testMessage, privateKey);
         } catch (InvalidKeyException | InvalidKeySpecException | SignatureException e) {
@@ -79,7 +85,7 @@ public class CryptoUtilTest {
         // verify
         boolean verifyResult = false;
         try{
-            verifyResult = CryptoUtil.verifyEdDSA(testMessage, signature.getSignature(), publicKey);
+            verifyResult = CryptoUtil.verifyEdDSA(testMessage, signature, publicKey);
         } catch (SignatureException | InvalidKeyException | InvalidKeySpecException e) {
             e.printStackTrace();
         }

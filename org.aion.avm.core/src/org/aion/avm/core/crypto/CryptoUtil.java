@@ -1,9 +1,7 @@
 package org.aion.avm.core.crypto;
 
-import org.aion.avm.core.util.HashUtils;
 import org.spongycastle.util.encoders.Hex;
 
-import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
@@ -43,7 +41,7 @@ public class CryptoUtil {
     /**
      * Sign a byte array of data given the private key.
      */
-    public static ISignature signEdDSA(byte[] data, byte[] privateKey) throws InvalidKeySpecException, InvalidKeyException, SignatureException {
+    public static byte[] signEdDSA(byte[] data, byte[] privateKey) throws InvalidKeySpecException, InvalidKeyException, SignatureException {
         return Ed25519Key.sign(data, privateKey);
     }
 

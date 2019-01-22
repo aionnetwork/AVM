@@ -1,5 +1,8 @@
 package org.aion.avm.core.crypto;
 
+import net.i2p.crypto.eddsa.EdDSAPrivateKey;
+import net.i2p.crypto.eddsa.EdDSAPublicKey;
+import net.i2p.crypto.eddsa.KeyPairGenerator;
 import net.i2p.crypto.eddsa.Utils;
 import org.aion.avm.core.util.HashUtils;
 import org.junit.Assert;
@@ -7,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
@@ -29,8 +33,11 @@ public class Ed25519KeyTest {
 
     @BeforeClass
     public static void setup() throws InvalidKeySpecException {
-        // create Ed25519Key instance using both the normal constructor and import constructor.
-        key1 = new Ed25519Key();
+        KeyPairGenerator keyGen = new KeyPairGenerator();
+        KeyPair keyPair = keyGen.generateKeyPair();
+        byte[] publicKey = ((EdDSAPublicKey) keyPair.getPublic()).getAbyte();
+        byte[] privateKey = ((EdDSAPrivateKey) keyPair.getPrivate()).getSeed();
+        key1 = new Ed25519Key(privateKey, publicKey);
         key2 = new Ed25519Key(KEY2_PRI_KEY_BYTES, KEY2_PUB_KEY_BYTES);
     }
 
@@ -71,17 +78,17 @@ public class Ed25519KeyTest {
     @Test
     public void testKey1SignAndVerify() throws SignatureException, InvalidKeyException {
         // sign
-        ISignature signature = key1.sign(TEST_MESSAGE);
+        byte[] signature = key1.sign(TEST_MESSAGE);
 
         // verify
-        boolean verifyResult = key1.verify(TEST_MESSAGE, signature.getSignature());
+        boolean verifyResult = key1.verify(TEST_MESSAGE, signature);
         Assert.assertTrue(verifyResult);
     }
 
     @Test
     public void testKey2Sign() throws SignatureException, InvalidKeyException {
-        ISignature signature = key2.sign(TEST_MESSAGE);
-        Assert.assertArrayEquals(TEST_SIGNATURE, signature.getSignature());
+        byte[] signature = key2.sign(TEST_MESSAGE);
+        Assert.assertArrayEquals(TEST_SIGNATURE, signature);
     }
 
     @Test
@@ -92,8 +99,8 @@ public class Ed25519KeyTest {
 
     @Test
     public void testStaticSign() throws InvalidKeySpecException, InvalidKeyException, SignatureException {
-        ISignature signature = Ed25519Key.sign(TEST_STATIC_MESSAGE, key2.getPrivKeyBytes());
-        Assert.assertArrayEquals(TEST_STATIC_SIGNATURE, signature.getSignature());
+        byte[] signature = Ed25519Key.sign(TEST_STATIC_MESSAGE, key2.getPrivKeyBytes());
+        Assert.assertArrayEquals(TEST_STATIC_SIGNATURE, signature);
     }
 
     @Test
@@ -105,10 +112,10 @@ public class Ed25519KeyTest {
     @Test
     public void benchmark() throws InvalidKeyException, InvalidKeySpecException, SignatureException{
         for (int j = 0; j < BENCHMARK_TEST_LOOP_COUNT; j ++) {
-            final Ed25519Key key = new Ed25519Key();
+            final Ed25519Key key = createRandomKey();
             byte[] pk = key.getPubKeyBytes();
             byte[] input = HashUtils.blake2b("test".getBytes());
-            ISignature[] sig = new ISignature[BENCHMARK_TEST_AMOUNT_UNIT];
+            byte[][] sig = new byte[BENCHMARK_TEST_AMOUNT_UNIT][];
 
             // warm up
             for (int i = 0; i < 10; i++) {
@@ -133,10 +140,18 @@ public class Ed25519KeyTest {
             // time verify
             timStart = System.nanoTime();
             for (int i = 0; i < BENCHMARK_TEST_AMOUNT_UNIT; i++) {
-                Ed25519Key.verify(input, sig[i].getSignature(), pk);
+                Ed25519Key.verify(input, sig[i], pk);
             }
             timeEnd = System.nanoTime();
             System.out.println("ed25519   verify: " + (timeEnd - timStart) / BENCHMARK_TEST_AMOUNT_UNIT + " ns / call");
         }
+    }
+
+    private static Ed25519Key createRandomKey() throws InvalidKeySpecException {
+        KeyPairGenerator keyGen = new KeyPairGenerator();
+        KeyPair keyPair = keyGen.generateKeyPair();
+        byte[] publicKey = ((EdDSAPublicKey) keyPair.getPublic()).getAbyte();
+        byte[] privateKey = ((EdDSAPrivateKey) keyPair.getPrivate()).getSeed();
+        return new Ed25519Key(privateKey, publicKey);
     }
 }

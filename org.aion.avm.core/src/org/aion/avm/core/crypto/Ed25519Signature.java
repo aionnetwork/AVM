@@ -14,20 +14,23 @@ public class Ed25519Signature implements ISignature {
     private byte[] publicKey;
     private byte[] signature;
 
-    public Ed25519Signature(byte[] publicKey, byte[] signature) {
+    private Ed25519Signature(byte[] publicKey, byte[] signature) {
         this.publicKey = publicKey;
         this.signature = signature;
     }
 
+    public static Ed25519Signature fromPublicKeyAndSignature(byte[] publicKey, byte[] signature) {
+        return new Ed25519Signature(publicKey, signature);
+    }
+
     public static Ed25519Signature fromCombinedPublicKeyAndSignature(byte[] combined) {
-        if (combined != null && combined.length == LEN) {
-            byte[] publicKey = Arrays.copyOfRange(combined, 0, Ed25519Key.PUBKEY_BYTES);
-            byte[] sig = Arrays.copyOfRange(combined, Ed25519Key.PUBKEY_BYTES, LEN);
-            return new Ed25519Signature(publicKey, sig);
-        } else {
-            System.err.println("Ed25519 signature decode failed!");
-            return null;
+        if (LEN != combined.length) {
+            throw new IllegalArgumentException("Ed25519 signature length invalid");
         }
+        
+        byte[] publicKey = Arrays.copyOfRange(combined, 0, Ed25519Key.PUBKEY_BYTES);
+        byte[] signature = Arrays.copyOfRange(combined, Ed25519Key.PUBKEY_BYTES, LEN);
+        return new Ed25519Signature(publicKey, signature);
     }
 
     @Override

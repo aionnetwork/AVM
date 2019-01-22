@@ -1,7 +1,6 @@
 package org.aion.avm.core.crypto;
 
 import net.i2p.crypto.eddsa.*;
-import net.i2p.crypto.eddsa.KeyPairGenerator;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -49,31 +48,20 @@ public class Ed25519Key {
 
         this.privateKeyObject = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Hex.toHexString(privateKeyBytes))));
         this.publicKeyObject = new EdDSAPublicKey(new X509EncodedKeySpec(addPkPrefix(Hex.toHexString(publicKeyBytes))));
-        setKeyComponents();
-    }
-
-    public Ed25519Key(){
-        this.publicKeyBytes = new byte[PUBKEY_BYTES];
-        this.privateKeyBytes = new byte[SECKEY_BYTES];
-
-        KeyPairGenerator keyGen = new KeyPairGenerator();
-        KeyPair keyPair = keyGen.generateKeyPair();
-
-        this.publicKeyObject = (EdDSAPublicKey) keyPair.getPublic();
-        this.privateKeyObject = (EdDSAPrivateKey) keyPair.getPrivate();
-        setKeyComponents();
+        
+        this.publicKeyBytes = this.publicKeyObject.getAbyte();
+        this.privateKeyBytes = this.privateKeyObject.getSeed();
     }
 
     /**
      * Signs a message with this key.
      *
      * @param data the message that was signed
-     * @return the signature
+     * @return The bytes making up the raw signature (not including the public key)
      */
-    public ISignature sign(byte[] data) throws InvalidKeyException, SignatureException {
+    public byte[] sign(byte[] data) throws InvalidKeyException, SignatureException {
         edDSAEngine.initSign(this.privateKeyObject);
-        byte[] sig = edDSAEngine.signOneShot(data);
-        return new Ed25519Signature(this.publicKeyBytes, sig);
+        return edDSAEngine.signOneShot(data);
     }
 
     /**
@@ -81,13 +69,12 @@ public class Ed25519Key {
      *
      * @param data the message that was signed
      * @param privateKey bytes representation of private key
-     * @return the signature
+     * @return The bytes making up the raw signature (not including the public key)
      */
-    public static ISignature sign(byte[] data, byte[] privateKey) throws InvalidKeyException, InvalidKeySpecException, SignatureException {
+    public static byte[] sign(byte[] data, byte[] privateKey) throws InvalidKeyException, InvalidKeySpecException, SignatureException {
         EdDSAPrivateKey privateKeyObject = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Hex.toHexString(privateKey))));
         edDSAEngine.initSign(privateKeyObject);
-        byte[] sig = edDSAEngine.signOneShot(data);
-        return new Ed25519Signature(privateKey, sig);
+        return edDSAEngine.signOneShot(data);
     }
 
     /**
@@ -140,13 +127,4 @@ public class Ed25519Key {
         String skEncoded = skEncodedPrefix + skString;
         return Utils.hexToBytes(skEncoded);
     }
-
-    /**
-     * Extract public and private key byte[] representations
-     */
-    private void setKeyComponents(){
-        this.publicKeyBytes = this.publicKeyObject.getAbyte();
-        this.privateKeyBytes = this.privateKeyObject.getSeed();
-    }
-
 }
