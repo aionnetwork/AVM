@@ -9,11 +9,11 @@ package org.aion.avm.core.crypto;
  * - aion address
  */
 public interface ISignature {
-
     /**
-     * Converts into a byte array.
+     * Used when serialization transactions to combine both the public key and the data signature for later verification.
+     * @return The concatenated public key followed by signature.
      */
-    byte[] toBytes();
+    byte[] toPublicKeyAndSignaturePair();
 
     /**
      * Returns the raw signature.
@@ -25,5 +25,5 @@ public interface ISignature {
      *
      * @param msg Only required by Secp256k1; pass null if you're using ED25519
      */
-    byte[] getPubkey(byte[] msg);
+    byte[] getPublicKey(byte[] msg);
 }

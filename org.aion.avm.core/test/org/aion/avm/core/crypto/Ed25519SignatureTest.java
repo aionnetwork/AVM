@@ -14,9 +14,9 @@ public class Ed25519SignatureTest {
     public void testFromBytes(){
         byte[] input = getInput();
 
-        Ed25519Signature signature = Ed25519Signature.fromBytes(input);
+        Ed25519Signature signature = Ed25519Signature.fromCombinedPublicKeyAndSignature(input);
         Assert.assertNotNull(signature);
-        Assert.assertArrayEquals(PUB_KEY_BYTES, signature.getPubkey(null)); // pass null for ed25519
+        Assert.assertArrayEquals(PUB_KEY_BYTES, signature.getPublicKey(null)); // pass null for ed25519
         Assert.assertArrayEquals(TEST_SIGNATURE, signature.getSignature());
     }
 
@@ -27,13 +27,13 @@ public class Ed25519SignatureTest {
         System.arraycopy(PUB_KEY_BYTES,0, input, 0, PUB_KEY_BYTES.length);
         System.arraycopy(TEST_SIGNATURE, 0, input, PUB_KEY_BYTES.length, TEST_SIGNATURE.length-1);
 
-        Ed25519Signature signature = Ed25519Signature.fromBytes(input);
+        Ed25519Signature signature = Ed25519Signature.fromCombinedPublicKeyAndSignature(input);
         Assert.assertNull(signature);
     }
 
     @Test
     public void testToBytes(){
-        byte[] byteRepresentationOfSignature = defaultSignature.toBytes();
+        byte[] byteRepresentationOfSignature = defaultSignature.toPublicKeyAndSignaturePair();
 
         Assert.assertArrayEquals(getInput(), byteRepresentationOfSignature);
     }

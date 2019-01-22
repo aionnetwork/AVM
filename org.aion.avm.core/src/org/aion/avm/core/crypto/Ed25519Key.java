@@ -27,10 +27,10 @@ public class Ed25519Key {
     private static final String pkEncodedPrefix = "302a300506032b6570032100";
 
     // public and private key representations
-    private byte[] pk;
-    private byte[] sk;
-    private EdDSAPublicKey publicKey;
-    private EdDSAPrivateKey privateKey;
+    private byte[] publicKeyBytes;
+    private byte[] privateKeyBytes;
+    private EdDSAPublicKey publicKeyObject;
+    private EdDSAPrivateKey privateKeyObject;
 
     static {
         try {
@@ -40,27 +40,27 @@ public class Ed25519Key {
         }
     }
 
-    public Ed25519Key(byte[] skBytes, byte[] pkBytes) throws InvalidKeySpecException{
-        if (skBytes.length != 32){
+    public Ed25519Key(byte[] privateKeyBytes, byte[] publicKeyBytes) throws InvalidKeySpecException{
+        if (privateKeyBytes.length != SECKEY_BYTES){
             throw new IllegalArgumentException(IMPORT_PRIVATE_KEY_EXCEPTION_MESSAGE);
-        } else if (pkBytes.length != 32 ){
+        } else if (publicKeyBytes.length != PUBKEY_BYTES ){
             throw new IllegalArgumentException(IMPORT_PUBLIC_KEY_EXCEPTION_MESSAGE);
         }
 
-        this.privateKey = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Hex.toHexString(skBytes))));
-        this.publicKey = new EdDSAPublicKey(new X509EncodedKeySpec(addPkPrefix(Hex.toHexString(pkBytes))));
+        this.privateKeyObject = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Hex.toHexString(privateKeyBytes))));
+        this.publicKeyObject = new EdDSAPublicKey(new X509EncodedKeySpec(addPkPrefix(Hex.toHexString(publicKeyBytes))));
         setKeyComponents();
     }
 
     public Ed25519Key(){
-        this.pk = new byte[PUBKEY_BYTES];
-        this.sk = new byte[SECKEY_BYTES];
+        this.publicKeyBytes = new byte[PUBKEY_BYTES];
+        this.privateKeyBytes = new byte[SECKEY_BYTES];
 
         KeyPairGenerator keyGen = new KeyPairGenerator();
         KeyPair keyPair = keyGen.generateKeyPair();
 
-        this.publicKey = (EdDSAPublicKey) keyPair.getPublic();
-        this.privateKey = (EdDSAPrivateKey) keyPair.getPrivate();
+        this.publicKeyObject = (EdDSAPublicKey) keyPair.getPublic();
+        this.privateKeyObject = (EdDSAPrivateKey) keyPair.getPrivate();
         setKeyComponents();
     }
 
@@ -71,23 +71,23 @@ public class Ed25519Key {
      * @return the signature
      */
     public ISignature sign(byte[] data) throws InvalidKeyException, SignatureException {
-        edDSAEngine.initSign(privateKey);
+        edDSAEngine.initSign(this.privateKeyObject);
         byte[] sig = edDSAEngine.signOneShot(data);
-        return new Ed25519Signature(pk, sig);
+        return new Ed25519Signature(this.publicKeyBytes, sig);
     }
 
     /**
      * Static method for just signing a message using given private key
      *
      * @param data the message that was signed
-     * @param sk bytes representation of private key
+     * @param privateKey bytes representation of private key
      * @return the signature
      */
-    public static ISignature sign(byte[] data, byte[] sk) throws InvalidKeyException, InvalidKeySpecException, SignatureException {
-        EdDSAPrivateKey privateKey = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Hex.toHexString(sk))));
-        edDSAEngine.initSign(privateKey);
+    public static ISignature sign(byte[] data, byte[] privateKey) throws InvalidKeyException, InvalidKeySpecException, SignatureException {
+        EdDSAPrivateKey privateKeyObject = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Hex.toHexString(privateKey))));
+        edDSAEngine.initSign(privateKeyObject);
         byte[] sig = edDSAEngine.signOneShot(data);
-        return new Ed25519Signature(sk, sig);
+        return new Ed25519Signature(privateKey, sig);
     }
 
     /**
@@ -98,7 +98,7 @@ public class Ed25519Key {
      * @return verify result
      */
     public boolean verify(byte[] data, byte[] signature) throws InvalidKeyException, SignatureException {
-        edDSAEngine.initVerify(this.publicKey);
+        edDSAEngine.initVerify(this.publicKeyObject);
         return edDSAEngine.verifyOneShot(data, signature);
     }
 
@@ -118,11 +118,11 @@ public class Ed25519Key {
 
 
     public byte[] getPubKeyBytes() {
-        return pk;
+        return this.publicKeyBytes;
     }
 
     public byte[] getPrivKeyBytes() {
-        return sk;
+        return this.privateKeyBytes;
     }
 
     /**
@@ -145,8 +145,8 @@ public class Ed25519Key {
      * Extract public and private key byte[] representations
      */
     private void setKeyComponents(){
-        this.pk = publicKey.getAbyte();
-        this.sk = privateKey.getSeed();
+        this.publicKeyBytes = this.publicKeyObject.getAbyte();
+        this.privateKeyBytes = this.privateKeyObject.getSeed();
     }
 
 }

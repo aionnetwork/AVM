@@ -62,14 +62,14 @@ public class CryptoUtilTest {
     @Test
     public void testSignAndVerify(){
         Ed25519Key key = new Ed25519Key();
-        byte[] sk = key.getPrivKeyBytes();
-        byte[] pk = key.getPubKeyBytes();
+        byte[] privateKey = key.getPrivKeyBytes();
+        byte[] publicKey = key.getPubKeyBytes();
         byte[] testMessage = "create key from scratch".getBytes();
 
         // signing
         ISignature signature = null;
         try {
-            signature = CryptoUtil.signEdDSA(testMessage, sk);
+            signature = CryptoUtil.signEdDSA(testMessage, privateKey);
         } catch (InvalidKeyException | InvalidKeySpecException | SignatureException e) {
             e.printStackTrace();
         }
@@ -79,7 +79,7 @@ public class CryptoUtilTest {
         // verify
         boolean verifyResult = false;
         try{
-            verifyResult = CryptoUtil.verifyEdDSA(testMessage, signature.getSignature(), pk);
+            verifyResult = CryptoUtil.verifyEdDSA(testMessage, signature.getSignature(), publicKey);
         } catch (SignatureException | InvalidKeyException | InvalidKeySpecException e) {
             e.printStackTrace();
         }
