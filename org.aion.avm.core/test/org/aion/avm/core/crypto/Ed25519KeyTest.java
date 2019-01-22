@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.SignatureException;
@@ -147,11 +148,63 @@ public class Ed25519KeyTest {
         }
     }
 
+    /**
+     * Tests a problem with an early version of our implementation where a shared static variable was consulted by all instances, changing its state.
+     */
+    @Test
+    public void testSharedStaticCollision() throws Throwable {
+        // We want to create 10 threads, each with their own key instance,  and have each one sign a payload 100 times.
+        // If there is shared state, this has an appreciable probability of generating a mismatched signature.
+        final int THREAD_COUNT = 10;
+        final int ITERATIONS = 100;
+        final byte[] PAYLOAD = "Testing payload".getBytes(StandardCharsets.UTF_8);
+        
+        SigningThread[] threads = new SigningThread[THREAD_COUNT];
+        for (int i = 0; i < THREAD_COUNT; ++i) {
+            threads[i] = new SigningThread(PAYLOAD, ITERATIONS);
+        }
+        for (int i = 0; i < THREAD_COUNT; ++i) {
+            threads[i].start();
+        }
+        for (int i = 0; i < THREAD_COUNT; ++i) {
+            threads[i].join();
+            Assert.assertNull(threads[i].getBackgroundException());
+        }
+    }
+
     private static Ed25519Key createRandomKey() throws InvalidKeySpecException {
         KeyPairGenerator keyGen = new KeyPairGenerator();
         KeyPair keyPair = keyGen.generateKeyPair();
         byte[] publicKey = ((EdDSAPublicKey) keyPair.getPublic()).getAbyte();
         byte[] privateKey = ((EdDSAPrivateKey) keyPair.getPrivate()).getSeed();
         return new Ed25519Key(privateKey, publicKey);
+    }
+
+
+    private static class SigningThread extends Thread {
+        private final byte[] payload;
+        private final int iterations;
+        private Throwable backgroundException;
+        
+        public SigningThread(byte[] payload, int iterations) {
+            this.payload = payload;
+            this.iterations = iterations;
+        }
+        public Throwable getBackgroundException() {
+            return this.backgroundException;
+        }
+        @Override
+        public void run() {
+            try {
+                Ed25519Key key = createRandomKey();
+                byte[] original = key.sign(this.payload);
+                for (int j = 0; j < this.iterations; ++j) {
+                    byte[] check = key.sign(this.payload);
+                    Assert.assertArrayEquals(original, check);
+                }
+            } catch (Throwable e) {
+                this.backgroundException = e;
+            }
+        }
     }
 }

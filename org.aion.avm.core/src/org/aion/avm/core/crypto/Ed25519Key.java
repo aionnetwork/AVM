@@ -21,25 +21,19 @@ public class Ed25519Key {
 
     // statics
     private static final EdDSAParameterSpec spec = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519);
-    private static final EdDSAEngine edDSAEngine;
     private static final String skEncodedPrefix = "302e020100300506032b657004220420";
     private static final String pkEncodedPrefix = "302a300506032b6570032100";
 
-    // public and private key representations
+    private final EdDSAEngine edDSAEngine;
     private byte[] publicKeyBytes;
     private byte[] privateKeyBytes;
     private EdDSAPublicKey publicKeyObject;
     private EdDSAPrivateKey privateKeyObject;
 
-    static {
-        try {
-            edDSAEngine = new EdDSAEngine(MessageDigest.getInstance(spec.getHashAlgorithm()));
-        } catch (NoSuchAlgorithmException e) {
-            throw RuntimeAssertionError.unexpected(e);
-        }
-    }
 
     public Ed25519Key(byte[] privateKeyBytes, byte[] publicKeyBytes) throws InvalidKeySpecException{
+        this.edDSAEngine = createEngine();
+        
         if (privateKeyBytes.length != SECKEY_BYTES){
             throw new IllegalArgumentException(IMPORT_PRIVATE_KEY_EXCEPTION_MESSAGE);
         } else if (publicKeyBytes.length != PUBKEY_BYTES ){
@@ -73,8 +67,9 @@ public class Ed25519Key {
      */
     public static byte[] sign(byte[] data, byte[] privateKey) throws InvalidKeyException, InvalidKeySpecException, SignatureException {
         EdDSAPrivateKey privateKeyObject = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Hex.toHexString(privateKey))));
-        edDSAEngine.initSign(privateKeyObject);
-        return edDSAEngine.signOneShot(data);
+        EdDSAEngine engine = createEngine();
+        engine.initSign(privateKeyObject);
+        return engine.signOneShot(data);
     }
 
     /**
@@ -99,8 +94,9 @@ public class Ed25519Key {
      */
     public static boolean verify(byte[] data, byte[] signature, byte[] pk) throws InvalidKeyException, InvalidKeySpecException, SignatureException {
         EdDSAPublicKey publicKey = new EdDSAPublicKey(new X509EncodedKeySpec(addPkPrefix(Hex.toHexString(pk))));
-        edDSAEngine.initVerify(publicKey);
-        return edDSAEngine.verifyOneShot(data, signature);
+        EdDSAEngine engine = createEngine();
+        engine.initVerify(publicKey);
+        return engine.verifyOneShot(data, signature);
     }
 
 
@@ -126,5 +122,16 @@ public class Ed25519Key {
     private static byte[] addSkPrefix(String skString){
         String skEncoded = skEncodedPrefix + skString;
         return Utils.hexToBytes(skEncoded);
+    }
+
+    private static EdDSAEngine createEngine() {
+        EdDSAEngine engine = null;
+        try {
+            engine = new EdDSAEngine(MessageDigest.getInstance(spec.getHashAlgorithm()));
+        } catch (NoSuchAlgorithmException e) {
+            // If we see this exception, it means the AVM isn't properly installed.
+            throw RuntimeAssertionError.unexpected(e);
+        }
+        return engine;
     }
 }
