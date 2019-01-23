@@ -216,4 +216,14 @@ public interface IBlockchainRuntime {
      * @param message
      */
     void avm_println(String message);
+
+    /**
+     * Verify that the given data is signed by providing the public key and the signed signature.
+     *
+     * @param data byte array representation of the data
+     * @param signature of the signed data
+     * @param publicKey of the signed data
+     * @return result
+     */
+    boolean avm_edVerify(ByteArray data, ByteArray signature, ByteArray publicKey) throws IllegalArgumentException;
 }

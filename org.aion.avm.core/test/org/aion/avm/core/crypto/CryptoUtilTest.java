@@ -7,10 +7,7 @@ import net.i2p.crypto.eddsa.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 
 public class CryptoUtilTest {
 
@@ -25,7 +22,7 @@ public class CryptoUtilTest {
 
         try {
             signature = CryptoUtil.signEdDSA(testMessage, privateKeyBytes);
-        } catch (InvalidKeyException | InvalidKeySpecException | SignatureException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
 
@@ -39,7 +36,7 @@ public class CryptoUtilTest {
 
         try{
             verifyResult = CryptoUtil.verifyEdDSA(testMessage, messageSignature, publicKeyBytes);
-        } catch (SignatureException | InvalidKeyException | InvalidKeySpecException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
 
@@ -56,7 +53,7 @@ public class CryptoUtilTest {
 
         try{
             verifyResult = CryptoUtil.verifyEdDSA(testMessage, messageSignature, publicKeyBytes);
-        } catch (SignatureException | InvalidKeyException | InvalidKeySpecException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
 
@@ -64,7 +61,7 @@ public class CryptoUtilTest {
     }
 
     @Test
-    public void testSignAndVerify() throws Exception {
+    public void testSignAndVerify(){
         KeyPairGenerator keyGen = new KeyPairGenerator();
         KeyPair keyPair = keyGen.generateKeyPair();
         byte[] publicKey = ((EdDSAPublicKey) keyPair.getPublic()).getAbyte();
@@ -76,7 +73,7 @@ public class CryptoUtilTest {
         byte[] signature = null;
         try {
             signature = CryptoUtil.signEdDSA(testMessage, privateKey);
-        } catch (InvalidKeyException | InvalidKeySpecException | SignatureException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
 
@@ -86,7 +83,7 @@ public class CryptoUtilTest {
         boolean verifyResult = false;
         try{
             verifyResult = CryptoUtil.verifyEdDSA(testMessage, signature, publicKey);
-        } catch (SignatureException | InvalidKeyException | InvalidKeySpecException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
 

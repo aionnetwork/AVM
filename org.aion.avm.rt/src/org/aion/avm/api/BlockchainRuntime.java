@@ -180,6 +180,11 @@ public final class BlockchainRuntime {
         blockchainRuntime.avm_println(message);
     }
 
+    public static boolean avm_edVerify(ByteArray data, ByteArray signature, ByteArray publicKey) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_edverify);
+        return blockchainRuntime.avm_edVerify(data, signature, publicKey);
+    }
+
     // Compiler-facing implementation.
 
     public static Address getAddress() {
@@ -311,4 +316,8 @@ public final class BlockchainRuntime {
     public static void println(java.lang.String message) {
         avm_println(new String(message));
     }
+
+    public static boolean edVerify(byte[] data, byte[] signature, byte[] publicKey){
+        return avm_edVerify(new ByteArray(data), new ByteArray(signature), new ByteArray(publicKey));
+    };
 }

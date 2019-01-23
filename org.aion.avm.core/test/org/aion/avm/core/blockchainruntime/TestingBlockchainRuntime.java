@@ -2,6 +2,7 @@ package org.aion.avm.core.blockchainruntime;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.api.Result;
+import org.aion.avm.core.crypto.CryptoUtil;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.util.HashUtils;
@@ -263,6 +264,15 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public void avm_println(String message) {
         System.out.println(message);
+    }
+
+    @Override
+    public boolean avm_edVerify(ByteArray data, ByteArray signature, ByteArray publicKey) throws IllegalArgumentException {
+        Objects.requireNonNull(data);
+        Objects.requireNonNull(signature);
+        Objects.requireNonNull(publicKey);
+
+        return CryptoUtil.verifyEdDSA(data.getUnderlying(), signature.getUnderlying(), publicKey.getUnderlying());
     }
 
     public int getEventCount(java.lang.String event) {

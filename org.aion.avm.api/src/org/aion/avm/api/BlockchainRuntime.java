@@ -360,4 +360,17 @@ public final class BlockchainRuntime {
     public static void println(String message) {
 
     }
+
+    /**
+     * Verify that the given data is signed by providing the public key and the signed signature.
+     *
+     * @param data message to be signed
+     * @param signature signature of the message
+     * @param publicKey public key of the keypair used to sign the message
+     * @return result
+     * @throws IllegalArgumentException thrown when an input parameter has the wrong size
+     */
+    public static boolean edVerify(byte[] data, byte[] signature, byte[] publicKey) throws IllegalArgumentException {
+        return true;
+    }
 }

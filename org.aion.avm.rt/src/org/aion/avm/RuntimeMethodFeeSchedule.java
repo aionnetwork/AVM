@@ -6,6 +6,9 @@ public class RuntimeMethodFeeSchedule {
     public static final long RT_METHOD_FEE_LEVEL_3 = 600;
     public static final long RT_METHOD_FEE_LEVEL_4 = 1500;
 
+    public static final long RT_HASH_METHOD_FEE_LEVEL_1 = 2000; // for hashes calls
+    public static final long RT_VERIFY_METHOD_FEE_LEVEL_1 = RT_HASH_METHOD_FEE_LEVEL_1 * 50; // for edverify
+
     public static final long RT_METHOD_FEE_FACTOR = 5;
 
     public static final long BigInteger_avm_constructor = RT_METHOD_FEE_LEVEL_3; // totalCost - 687; // byte code cost - 459; invoked methods cost - 228;
@@ -401,14 +404,16 @@ public class RuntimeMethodFeeSchedule {
     public static final long BlockchainRuntime_avm_log_2 = RT_METHOD_FEE_LEVEL_1; // totalCost - 134;
     public static final long BlockchainRuntime_avm_log_3 = RT_METHOD_FEE_LEVEL_1; // totalCost - 140;
     public static final long BlockchainRuntime_avm_log_4 = RT_METHOD_FEE_LEVEL_1; // totalCost - 146;
-    public static final long BlockchainRuntime_avm_blake2b = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
-    public static final long BlockchainRuntime_avm_sha256 = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
-    public static final long BlockchainRuntime_avm_keccak256 = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
     public static final long BlockchainRuntime_avm_revert = RT_METHOD_FEE_LEVEL_1; // totalCost - 116;
     public static final long BlockchainRuntime_avm_invalid = RT_METHOD_FEE_LEVEL_1; // totalCost - 116;
     public static final long BlockchainRuntime_avm_require = RT_METHOD_FEE_LEVEL_1;
     public static final long BlockchainRuntime_avm_print = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
     public static final long BlockchainRuntime_avm_println = RT_METHOD_FEE_LEVEL_3; // totalCost - 696; // byte code cost - 122; invoked methods cost - 574;
+
+    public static final long BlockchainRuntime_avm_blake2b = RT_HASH_METHOD_FEE_LEVEL_1;
+    public static final long BlockchainRuntime_avm_sha256 = RT_HASH_METHOD_FEE_LEVEL_1;
+    public static final long BlockchainRuntime_avm_keccak256 = RT_HASH_METHOD_FEE_LEVEL_1;
+    public static final long BlockchainRuntime_avm_edverify = RT_VERIFY_METHOD_FEE_LEVEL_1;
 
     public static final long ShortArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 462; // byte code cost - 362; invoked methods cost - 100;
     public static final long ShortArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;

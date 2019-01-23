@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.api.Result;
+import org.aion.avm.core.crypto.CryptoUtil;
 import org.aion.avm.internal.*;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;
@@ -330,6 +331,15 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public void avm_println(org.aion.avm.shadow.java.lang.String message) {
         task.outputPrintln(message.toString());
+    }
+
+    @Override
+    public boolean avm_edVerify(ByteArray data, ByteArray signature, ByteArray publicKey) throws IllegalArgumentException {
+        require(null != data, "Input data can't be NULL");
+        require(null != signature, "Input signature can't be NULL");
+        require(null != publicKey, "Input public key can't be NULL");
+
+        return CryptoUtil.verifyEdDSA(data.getUnderlying(), signature.getUnderlying(), publicKey.getUnderlying());
     }
 
     private long restrictEnergyLimit(long energyLimit) {

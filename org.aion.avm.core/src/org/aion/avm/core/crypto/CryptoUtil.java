@@ -1,5 +1,6 @@
 package org.aion.avm.core.crypto;
 
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.spongycastle.util.encoders.Hex;
 
 import java.security.InvalidKeyException;
@@ -7,6 +8,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 public class CryptoUtil {
+    // TODO:  Determine if we want to impose a maximum on the data size for signatures.
+    private static final int VERIFY_EDDSA_MAX_MESSAGE_LENGTH = Integer.MAX_VALUE;
 
     /**
      * Converts string hex representation to data bytes Accepts following hex: - with or without 0x
@@ -40,15 +43,48 @@ public class CryptoUtil {
 
     /**
      * Sign a byte array of data given the private key.
+     *
+     * @param data message to be signed
+     * @param privateKey byte representation of a private key, length must equal 32
+     * @return byte representation of the signature
+     * @throws IllegalArgumentException thrown when an input parameter has the wrong size
      */
-    public static byte[] signEdDSA(byte[] data, byte[] privateKey) throws InvalidKeySpecException, InvalidKeyException, SignatureException {
-        return Ed25519Key.sign(data, privateKey);
+    public static byte[] signEdDSA(byte[] data, byte[] privateKey){
+        if(VERIFY_EDDSA_MAX_MESSAGE_LENGTH <= data.length){
+            throw new IllegalArgumentException("The input data length exceeds the maximum length allowed of" + VERIFY_EDDSA_MAX_MESSAGE_LENGTH);
+        } else if (privateKey.length != Ed25519Key.SECKEY_BYTES){
+            throw new IllegalArgumentException("Private key length should be equal to " + Ed25519Key.SECKEY_BYTES);
+        }
+
+        try {
+            return Ed25519Key.sign(data, privateKey);
+        } catch (InvalidKeyException | InvalidKeySpecException | SignatureException e) {
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 
     /**
      * Verify a message with given signature and public key.
+     *
+     * @param data message to be verified
+     * @param signature signature of the message
+     * @param publicKey public key of the message
+     * @return result
+     * @throws IllegalArgumentException thrown when an input parameter has the wrong size
      */
-    public static boolean verifyEdDSA(byte[] data, byte[] signature, byte[] publicKey) throws InvalidKeySpecException, InvalidKeyException, SignatureException {
-        return Ed25519Key.verify(data, signature, publicKey);
+    public static boolean verifyEdDSA(byte[] data, byte[] signature, byte[] publicKey) {
+        if(VERIFY_EDDSA_MAX_MESSAGE_LENGTH <= data.length){
+            throw new IllegalArgumentException("The input data length exceeds the maximum length allowed of" + VERIFY_EDDSA_MAX_MESSAGE_LENGTH);
+        } else if (signature.length != Ed25519Key.SIG_BYTES){
+            throw new IllegalArgumentException("Signature length should be equal to " + Ed25519Key.SIG_BYTES);
+        } else if (publicKey.length != Ed25519Key.PUBKEY_BYTES){
+            throw new IllegalArgumentException("Public key length should be equal to " + Ed25519Key.PUBKEY_BYTES);
+        }
+
+        try {
+            return Ed25519Key.verify(data, signature, publicKey);
+        } catch (InvalidKeyException | InvalidKeySpecException | SignatureException e) {
+            throw RuntimeAssertionError.unexpected(e);
+        }
     }
 }
