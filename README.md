@@ -64,13 +64,13 @@ Apache Ant 1.10 or higher
 
 ## Build
 
-```
+```shell
 ant
 ```
 
 
 ## Run the tests
-```
+```shell
 ant test
 ```
 
@@ -79,7 +79,7 @@ ant test
 
 To quickly get built and deploy a HelloWorld contract ([as described here](https://blog.aion.network/hello-world-from-the-aion-virtual-machine-25038ac62f17)):
 
-```
+```sh
 # Build the distribution.
 $ ant
 
