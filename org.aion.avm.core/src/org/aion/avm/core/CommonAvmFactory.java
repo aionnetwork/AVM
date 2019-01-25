@@ -17,6 +17,10 @@ public class CommonAvmFactory {
         return NodeEnvironment.singleton.buildAvmInstance(factory, kernelInterface, false);
     }
 
+    public static AvmImpl buildAvmInstanceInDebugMode(KernelInterface kernelInterface) {
+        IInstrumentationFactory factory = new CommonInstrumentationFactory();
+        return NodeEnvironment.singleton.buildAvmInstance(factory, kernelInterface, true);
+    }
 
     private static class CommonInstrumentationFactory implements IInstrumentationFactory {
         @Override

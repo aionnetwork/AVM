@@ -143,6 +143,9 @@ public class DAppCreator {
         Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy, debugMode);
 
         Map<String, byte[]> transformedClasses = new HashMap<>();
+
+        int parsingOptions = debugMode? ClassReader.EXPAND_FRAMES : ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
+
         for (String name : safeClasses.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
             RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
@@ -151,7 +154,6 @@ public class DAppCreator {
             // We also add SKIP_DEBUG since we aren't using debug data and skipping it removes extraneous labels which would otherwise
             // cause the BlockBuildingMethodVisitor to build lots of small blocks instead of a few big ones (each block incurs a Helper
             // static call, which is somewhat expensive - this is how we bill for energy).
-            int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
             byte[] bytecode = new ClassToolchain.Builder(safeClasses.get(name), parsingOptions)
                     .addNextVisitor(new ConstantVisitor())
                     .addNextVisitor(new ClassMetering(postRenameObjectSizes))
@@ -190,7 +192,6 @@ public class DAppCreator {
         });
         String javaLangObjectSlashName = PackageConstants.kShadowSlashPrefix + "java/lang/Object";
         for (String name : transformedClasses.keySet()) {
-            int parsingOptions = ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
             byte[] bytecode = new ClassToolchain.Builder(transformedClasses.get(name), parsingOptions)
                     .addNextVisitor(new InterfaceFieldMappingVisitor(consumer, userInterfaceSlashNames, javaLangObjectSlashName))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
@@ -349,8 +350,8 @@ public class DAppCreator {
         for (String name : inputClasses.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
             RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
-            
-            int parsingOptions = ClassReader.SKIP_DEBUG;
+
+            int parsingOptions = debugMode ? 0: ClassReader.SKIP_DEBUG;
             byte[] bytecode = new ClassToolchain.Builder(inputClasses.get(name), parsingOptions)
                     .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper, debugMode))
                     .addNextVisitor(new LoopingExceptionStrippingVisitor())

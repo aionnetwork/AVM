@@ -178,6 +178,9 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         } else if (className.startsWith(PackageConstants.kApiSlashPrefix)) {
             throw RuntimeAssertionError.unimplemented("Stripping name for API classes not implemented");
 
+        } else if(debugMode) {
+            return className;
+
         } else {
             throw RuntimeAssertionError.unreachable("Unknown class prefix: " + className);
         }

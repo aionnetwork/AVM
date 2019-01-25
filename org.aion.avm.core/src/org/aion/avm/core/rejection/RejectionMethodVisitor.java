@@ -148,12 +148,18 @@ public class RejectionMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
-        // This is debug data, so filter it out.
+        // This is debug data, so filter it out if we're not in debug mode.
+        if(debugMode){
+            super.visitLocalVariable(name, descriptor, signature, start, end, index);
+        }
     }
 
     @Override
     public void visitLineNumber(int line, Label start) {
-        // This is debug data, so filter it out.
+        // This is debug data, so filter it out if we're not in debug mode.
+        if(debugMode){
+            super.visitLineNumber(line, start);
+        }
     }
 
     @Override
