@@ -7,7 +7,6 @@ import org.aion.avm.core.persistence.ReentrantGraphProcessor;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.internal.*;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
 import org.aion.vm.api.interfaces.Address;
@@ -144,9 +143,12 @@ public class DAppExecutor {
             // These are cases which we know we can't handle and have decided to handle by safely stopping the AVM instance so
             // re-throw this as the AvmImpl top-level loop will commute it into an asynchronous shutdown.
             throw e;
+        } catch (RuntimeAssertionError e) {
+            // If one of these shows up here, we are wanting to pass it back up to the top, where we can shut down.
+            throw new AssertionError(e.getCause());
         } catch (Throwable e) {
-            e.printStackTrace();
-            System.exit(-1);
+            // Anything else we couldn't handle more specifically needs to be passed further up to the top.
+            throw new AssertionError(e);
         } finally {
             // Once we are done running this, no matter how it ended, we want to detach our thread from the DApp.
             InstrumentationHelpers.popExistingStackFrame(dapp.runtimeSetup);

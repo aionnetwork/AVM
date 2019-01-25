@@ -117,8 +117,6 @@ public class AvmImpl implements AvmInternal {
                 // Without this hand-off to the foreground thread, these exceptions would cause silent failures.
                 // Uncaught exception - this is fatal but we need to communicate it to the outside.
                 AvmImpl.this.handoff.setBackgroundThrowable(t);
-                // If the throwable makes it all the way to here, we can't handle it.
-                RuntimeAssertionError.unexpected(t);
             } finally {
                 InstrumentationHelpers.detachThread(instrumentation);
                 AvmImpl.this.instrumentationFactory.destroyInstrumentation(instrumentation);
@@ -246,13 +244,18 @@ public class AvmImpl implements AvmInternal {
 
     @Override
     public void shutdown() {
-        RuntimeException failureDuringShutdown = null;
+        // Note that we can fail due to either a RuntimeException or an Error, so catch either and be explicit about re-throwing.
+        Error errorDuringShutdown = null;
+        RuntimeException exceptionDuringShutdown = null;
         try {
             this.handoff.stopAndWaitForShutdown();
-        } catch (RuntimeException t) {
+        } catch (RuntimeException e) {
             // Note that this is usually the same instance as backgroundFatalError can fail for other reasons.  Catch this, complete
             // the shutdown, then re-throw it.
-            failureDuringShutdown = t;
+            exceptionDuringShutdown = e;
+        } catch (Error e) {
+            // Same thing for Error.
+            errorDuringShutdown = e;
         }
         this.handoff = null;
         RuntimeAssertionError.assertTrue(this == AvmImpl.currentAvm);
@@ -260,8 +263,11 @@ public class AvmImpl implements AvmInternal {
         this.hotCache = null;
         
         // Note that we don't want to hide the background exception, if one happened, but we do want to complete the shutdown, so we do this at the end.
-        if (null != failureDuringShutdown) {
-            throw failureDuringShutdown;
+        if (null != errorDuringShutdown) {
+            throw errorDuringShutdown;
+        }
+        if (null != exceptionDuringShutdown) {
+            throw exceptionDuringShutdown;
         }
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
