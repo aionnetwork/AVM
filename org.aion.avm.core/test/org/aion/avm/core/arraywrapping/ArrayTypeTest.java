@@ -17,10 +17,12 @@ public class ArrayTypeTest {
     private SimpleAvm avm;
     private Class<?> clazz;
     private ArrayTypeContract contract;
+    private boolean debugMode = false;
 
     @Before
     public void setup() throws ClassNotFoundException {
         avm = new SimpleAvm(1000000000000000000L,
+            debugMode,
             ArrayTypeContract.class,
             ArrayTypeContract.SuperestInterface.class,
             ArrayTypeContract.SuperInterface.class,
@@ -28,7 +30,7 @@ public class ArrayTypeTest {
             ArrayTypeContract.SuperClass.class,
             ArrayTypeContract.SubClass.class
         );
-        clazz = avm.getClassLoader().loadUserClassByOriginalName(ArrayTypeContract.class.getName());
+        clazz = avm.getClassLoader().loadUserClassByOriginalName(ArrayTypeContract.class.getName(), debugMode);
         contract = new ArrayTypeContract();
     }
 

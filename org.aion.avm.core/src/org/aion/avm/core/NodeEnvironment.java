@@ -253,8 +253,8 @@ public class NodeEnvironment {
      * @param kernel The kernel interface exposed by the consumer.
      * @return The long-lived AVM instance.
      */
-    public AvmImpl buildAvmInstance(IInstrumentationFactory instrumentationFactory, KernelInterface kernel) {
-        AvmImpl avm = new AvmImpl(instrumentationFactory, kernel);
+    public AvmImpl buildAvmInstance(IInstrumentationFactory instrumentationFactory, KernelInterface kernel, boolean debugMode) {
+        AvmImpl avm = new AvmImpl(instrumentationFactory, kernel, debugMode);
         avm.start();
         return avm;
     }

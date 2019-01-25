@@ -19,11 +19,12 @@ public class AutomaticGraphVisitorTest {
 
     @Before
     public void setup() throws Exception {
-        this.avm = new SimpleAvm(1_000_000L, AutomaticGraphVisitorTargetPrimary.class, AutomaticGraphVisitorTargetSecondary.class);
+        boolean debugMode = false;
+        this.avm = new SimpleAvm(1_000_000L, debugMode, AutomaticGraphVisitorTargetPrimary.class, AutomaticGraphVisitorTargetSecondary.class);
         AvmClassLoader loader = avm.getClassLoader();
         
-        this.primaryClass = loader.loadUserClassByOriginalName(AutomaticGraphVisitorTargetPrimary.class.getName());
-        this.secondaryClass = loader.loadUserClassByOriginalName(AutomaticGraphVisitorTargetSecondary.class.getName());
+        this.primaryClass = loader.loadUserClassByOriginalName(AutomaticGraphVisitorTargetPrimary.class.getName(), debugMode);
+        this.secondaryClass = loader.loadUserClassByOriginalName(AutomaticGraphVisitorTargetSecondary.class.getName(), debugMode);
     }
 
     @After

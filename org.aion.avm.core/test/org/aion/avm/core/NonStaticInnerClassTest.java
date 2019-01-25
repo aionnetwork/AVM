@@ -12,22 +12,24 @@ import org.junit.Test;
  * issue-156:  Verifies that non-static inner classes can be instantiated (including with other arguments).
  */
 public class NonStaticInnerClassTest {
+    private boolean debugMode = false;
+
     @Test
     public void testInnerClassLoads() throws Exception {
-        SimpleAvm avm = new SimpleAvm(10000L, NonStaticInnerClassTarget.class, NonStaticInnerClassTarget.Inner.class, NonStaticInnerClassTarget.Inner.Deeper.class);
+        SimpleAvm avm = new SimpleAvm(10000L, debugMode, NonStaticInnerClassTarget.class, NonStaticInnerClassTarget.Inner.class, NonStaticInnerClassTarget.Inner.Deeper.class);
         AvmClassLoader loader = avm.getClassLoader();
         
-        Class<?> clazz = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.class.getName());
+        Class<?> clazz = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.class.getName(), debugMode);
         Assert.assertNotNull(clazz);
         Object outerInstance = clazz.getConstructor().newInstance();
         Assert.assertNotNull(outerInstance);
         
-        Class<?> inner = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.Inner.class.getName());
+        Class<?> inner = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.Inner.class.getName(), debugMode);
         Assert.assertNotNull(inner);
         Object inner1 = inner.getConstructor(clazz, inner).newInstance(outerInstance, null);
         Assert.assertNotNull(inner1);
         
-        Class<?> deeper = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.Inner.Deeper.class.getName());
+        Class<?> deeper = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.Inner.Deeper.class.getName(), debugMode);
         Assert.assertNotNull(deeper);
         Object deeper1 = deeper.getConstructor(inner).newInstance(inner1);
         Assert.assertNotNull(deeper1);
@@ -36,20 +38,20 @@ public class NonStaticInnerClassTest {
 
     @Test
     public void testSetOnParameters() throws Exception {
-        SimpleAvm avm = new SimpleAvm(10000L, NonStaticInnerClassTarget.class, NonStaticInnerClassTarget.Inner.class, NonStaticInnerClassTarget.Inner.Deeper.class);
+        SimpleAvm avm = new SimpleAvm(10000L, debugMode, NonStaticInnerClassTarget.class, NonStaticInnerClassTarget.Inner.class, NonStaticInnerClassTarget.Inner.Deeper.class);
         AvmClassLoader loader = avm.getClassLoader();
         
-        Class<?> clazz = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.class.getName());
+        Class<?> clazz = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.class.getName(), debugMode);
         Assert.assertNotNull(clazz);
         Object outerInstance = clazz.getConstructor().newInstance();
         Assert.assertNotNull(outerInstance);
         
-        Class<?> inner = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.Inner.class.getName());
+        Class<?> inner = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.Inner.class.getName(), debugMode);
         Assert.assertNotNull(inner);
         Object inner1 = inner.getConstructor(clazz, inner).newInstance(outerInstance, null);
         Assert.assertNotNull(inner1);
         
-        Class<?> deeper = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.Inner.Deeper.class.getName());
+        Class<?> deeper = loader.loadUserClassByOriginalName(NonStaticInnerClassTarget.Inner.Deeper.class.getName(), debugMode);
         Assert.assertNotNull(deeper);
         Method readParent = deeper.getMethod(NamespaceMapper.mapMethodName("readParent"));
         

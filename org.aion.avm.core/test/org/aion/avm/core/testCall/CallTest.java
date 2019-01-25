@@ -19,6 +19,8 @@ import static org.junit.Assert.assertTrue;
 public class CallTest {
 
     private boolean callbackReceived = false;
+    private boolean debugMode = false;
+
 
     @Test
     public void testCallIsHandled() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
@@ -27,7 +29,7 @@ public class CallTest {
         byte[] to = new byte[Address.LENGTH];
         long energyLimit = 5000000;
 
-        SimpleAvm avm = new SimpleAvm(energyLimit, Caller.class);
+        SimpleAvm avm = new SimpleAvm(energyLimit, debugMode, Caller.class);
         avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
             @Override
             public Result avm_call(Address targetAddress, BigInteger value, ByteArray data, long energyLimit) {
@@ -43,7 +45,7 @@ public class CallTest {
         }.withCaller(from).withAddress(to).withEnergyLimit(energyLimit));
 
         AvmClassLoader loader = avm.getClassLoader();
-        Class<?> clazz = loader.loadUserClassByOriginalName(Caller.class.getName());
+        Class<?> clazz = loader.loadUserClassByOriginalName(Caller.class.getName(), debugMode);
         Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
 
         assertTrue(callbackReceived);
@@ -58,7 +60,7 @@ public class CallTest {
         byte[] to = new byte[Address.LENGTH];
         long energyLimit = 5000000;
 
-        SimpleAvm avm = new SimpleAvm(energyLimit, Caller.class);
+        SimpleAvm avm = new SimpleAvm(energyLimit, debugMode, Caller.class);
         avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
             @Override
             public Result avm_call(Address a, BigInteger v, ByteArray d, long e) {
@@ -69,9 +71,9 @@ public class CallTest {
 
                 SimpleAvm avm2 = null;
                 try {
-                    avm2 = new SimpleAvm(e, Callee.class);
+                    avm2 = new SimpleAvm(e,debugMode, Callee.class);
                     avm2.attachBlockchainRuntime(new TestingBlockchainRuntime().withCaller(to).withAddress(a.unwrap()).withData(d.getUnderlying()));
-                    Class<?> clazz = avm2.getClassLoader().loadUserClassByOriginalName(Callee.class.getName());
+                    Class<?> clazz = avm2.getClassLoader().loadUserClassByOriginalName(Callee.class.getName(), debugMode);
                     Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
 
                     // TODO: refund remaining energy
@@ -94,7 +96,7 @@ public class CallTest {
         }.withCaller(from).withAddress(to).withEnergyLimit(energyLimit));
 
         AvmClassLoader loader = avm.getClassLoader();
-        Class<?> clazz = loader.loadUserClassByOriginalName(Caller.class.getName());
+        Class<?> clazz = loader.loadUserClassByOriginalName(Caller.class.getName(), debugMode);
         Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
 
         assertTrue(callbackReceived);

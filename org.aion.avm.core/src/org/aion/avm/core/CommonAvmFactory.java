@@ -14,7 +14,7 @@ public class CommonAvmFactory {
     public static AvmImpl buildAvmInstance(KernelInterface kernelInterface) {
         // We use the common instrumentation for this case.
         IInstrumentationFactory factory = new CommonInstrumentationFactory();
-        return NodeEnvironment.singleton.buildAvmInstance(factory, kernelInterface);
+        return NodeEnvironment.singleton.buildAvmInstance(factory, kernelInterface, false);
     }
 
 

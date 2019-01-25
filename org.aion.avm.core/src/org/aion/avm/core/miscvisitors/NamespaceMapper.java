@@ -58,8 +58,8 @@ public class NamespaceMapper {
      * @param type The pre-transform method type.
      * @return The post-transform method type.
      */
-    public Type mapMethodType(Type type) {
-        return Type.getMethodType(mapDescriptor(type.getDescriptor()));
+    public Type mapMethodType(Type type, boolean debugMode) {
+        return Type.getMethodType(mapDescriptor(type.getDescriptor(), debugMode));
     }
 
     /**
@@ -67,14 +67,14 @@ public class NamespaceMapper {
      * @param mapMethodDescriptor True if the underlying descriptor should be mapped or false to leave it unchanged.
      * @return The post-transform method handle.
      */
-    public Handle mapHandle(Handle methodHandle, boolean mapMethodDescriptor) {
+    public Handle mapHandle(Handle methodHandle, boolean mapMethodDescriptor, boolean debugMode) {
         String methodOwner = methodHandle.getOwner();
         String methodName = methodHandle.getName();
         String methodDescriptor = methodHandle.getDesc();
 
-        String newMethodOwner = mapType(methodOwner);
+        String newMethodOwner = mapType(methodOwner, debugMode);
         String newMethodName = mapMethodName(methodName);
-        String newMethodDescriptor = mapMethodDescriptor ? mapDescriptor(methodDescriptor) : methodDescriptor;
+        String newMethodDescriptor = mapMethodDescriptor ? mapDescriptor(methodDescriptor,  debugMode) : methodDescriptor;
         return new Handle(methodHandle.getTag(), newMethodOwner, newMethodName, newMethodDescriptor, methodHandle.isInterface());
     }
 
@@ -82,12 +82,12 @@ public class NamespaceMapper {
      * @param descriptor The pre-transform descriptor.
      * @return The post-transform descriptor.
      */
-    public String mapDescriptor(String descriptor) {
+    public String mapDescriptor(String descriptor, boolean debugMode) {
         StringBuilder builder = DescriptorParser.parse(descriptor, new DescriptorParser.Callbacks<>() {
             @Override
             public StringBuilder readObject(int arrayDimensions, String type, StringBuilder userData) {
                 writeArrayDimensions(userData, arrayDimensions);
-                String newType = mapType(type);
+                String newType = mapType(type, debugMode);
                 userData.append(DescriptorParser.OBJECT_START);
                 userData.append(newType);
                 userData.append(DescriptorParser.OBJECT_END);
@@ -170,12 +170,12 @@ public class NamespaceMapper {
      * @param types The pre-transform types.
      * @return The post-transform types.
      */
-    public String[] mapTypeArray(String[] types) {
+    public String[] mapTypeArray(String[] types, boolean debugMode) {
         String[] newNames = null;
         if (null != types) {
             newNames = new String[types.length];
             for (int i = 0; i < types.length; ++i) {
-                newNames[i] = mapType(types[i]);
+                newNames[i] = mapType(types[i], debugMode);
             }
         }
         return newNames;
@@ -185,12 +185,12 @@ public class NamespaceMapper {
      * @param type The pre-transform type name.
      * @return The post-transform type name.
      */
-    public String mapType(String type) {
+    public String mapType(String type, boolean debugMode) {
         RuntimeAssertionError.assertTrue(-1 == type.indexOf("."));
         
         String newType = null;
         if (type.startsWith("[")){
-            newType = mapDescriptor(type);
+            newType = mapDescriptor(type, debugMode);
         }else {
             if (this.preRenameClassAccessRules.isUserDefinedClassOrInterface(type)) {
                 newType = PackageConstants.kUserSlashPrefix + type;

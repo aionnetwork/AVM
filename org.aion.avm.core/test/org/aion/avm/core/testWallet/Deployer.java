@@ -215,7 +215,7 @@ public class Deployer {
         );
         LoadedJar jar = LoadedJar.fromBytes(jarBytes);
 
-        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(DAppCreator.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar)), Helpers.loadDefaultHelperBytecode());
+        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(DAppCreator.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar), false), Helpers.loadDefaultHelperBytecode());
 
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(transformedClasses);
 
@@ -232,7 +232,7 @@ public class Deployer {
         // The idea is that we can reload a fresh Wallet class from a new AvmClassLoader for each invocation into the DApp in order to simulate
         // the DApp state at the point where it receives a call.
         // (currently, we just return the same walletClass instance since our persistence design is still being prototyped).
-        Class<?> walletClass = loader.loadUserClassByOriginalName(Wallet.class.getName());
+        Class<?> walletClass = loader.loadUserClassByOriginalName(Wallet.class.getName(), false);
         Supplier<Class<?>> classProvider = () -> {
             return walletClass;
         };

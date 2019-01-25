@@ -65,7 +65,7 @@ public class TypeAwareClassWriterTest {
 
     private static class TestClass extends TypeAwareClassWriter {
         public TestClass(HierarchyTreeBuilder dynamicHierarchyBuilder) {
-            super(0, new ParentPointers(Collections.emptySet(), new Forest<>()), dynamicHierarchyBuilder);
+            super(0, new ParentPointers(Collections.emptySet(), new Forest<>(), false), dynamicHierarchyBuilder);
         }
         public String testing_getCommonSuperClass(String type1, String type2) {
             return this.getCommonSuperClass(type1, type2);

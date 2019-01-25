@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 
 public class InterfaceFiledsTest {
 
+    private boolean debugMode = false;
     @Test
     public void testVisitor() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         Map<String, byte[]> classes = new HashMap<>();
@@ -58,28 +59,28 @@ public class InterfaceFiledsTest {
 
     @Test
     public void testInnnerInterfaceStaticFields() throws ClassNotFoundException {
-        SimpleAvm avm = new SimpleAvm(1_000_000L, InterfaceTestResource.class, InterfaceTestResource.InnerInterface.class);
+        SimpleAvm avm = new SimpleAvm(1_000_000L, debugMode, InterfaceTestResource.class, InterfaceTestResource.InnerInterface.class);
         AvmClassLoader classLoader = avm.getClassLoader();
 
-        classLoader.loadUserClassByOriginalName(InterfaceTestResource.InnerInterface.class.getName());
+        classLoader.loadUserClassByOriginalName(InterfaceTestResource.InnerInterface.class.getName(), debugMode);
         avm.shutdown();
     }
 
     @Test
     public void testOuterInterfaceStaticFields() throws ClassNotFoundException {
-        SimpleAvm avm = new SimpleAvm(1_000_000L, OuterInteface.class);
+        SimpleAvm avm = new SimpleAvm(1_000_000L, debugMode, OuterInteface.class);
         AvmClassLoader classLoader = avm.getClassLoader();
 
-        classLoader.loadUserClassByOriginalName(OuterInteface.class.getName());
+        classLoader.loadUserClassByOriginalName(OuterInteface.class.getName(), debugMode);
         avm.shutdown();
     }
 
     @Test
     public void testAccess() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        SimpleAvm avm = new SimpleAvm(1_000_000L, InterfaceTestResource.class, InterfaceTestResource.InnerInterface.class);
+        SimpleAvm avm = new SimpleAvm(1_000_000L, debugMode, InterfaceTestResource.class, InterfaceTestResource.InnerInterface.class);
         AvmClassLoader classLoader = avm.getClassLoader();
 
-        Class<?> clazz = classLoader.loadUserClassByOriginalName(InterfaceTestResource.class.getName());
+        Class<?> clazz = classLoader.loadUserClassByOriginalName(InterfaceTestResource.class.getName(), debugMode);
         Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("f")).invoke(null);
         assertEquals(6, ret);
 

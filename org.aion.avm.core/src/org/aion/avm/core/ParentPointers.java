@@ -18,7 +18,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
 public class ParentPointers {
     private final Map<String, String> postRenameParentMap;
 
-    public ParentPointers(Set<String> userDefinedClassNames, Forest<String, ClassInfo> classHierarchy) {
+    public ParentPointers(Set<String> userDefinedClassNames, Forest<String, ClassInfo> classHierarchy, boolean debugMode) {
         // Get every user-defined class, find its parent, and add the pair to the map, while renaming them.
         Map<String, String> mapping = new HashMap<>();
         for (String className : userDefinedClassNames) {

@@ -40,7 +40,7 @@ public class StringConstantVisitorTest {
         
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(classAccessRules)))
+                        .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(classAccessRules), false))
                         .addNextVisitor(new ConstantVisitor())
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
@@ -57,8 +57,8 @@ public class StringConstantVisitorTest {
         this.runtimeSetup = Helpers.getSetupForLoader(loader);
         InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, loader, 1_000_000L, 1);
         
-        this.clazz = loader.loadUserClassByOriginalName(targetTestName);
-        this.clazzNoStatic = loader.loadUserClassByOriginalName(targetNoStaticName);
+        this.clazz = loader.loadUserClassByOriginalName(targetTestName, false);
+        this.clazzNoStatic = loader.loadUserClassByOriginalName(targetNoStaticName, false);
     }
 
     @After

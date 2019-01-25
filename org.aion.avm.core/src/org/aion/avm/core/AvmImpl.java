@@ -56,9 +56,12 @@ public class AvmImpl implements AvmInternal {
     // Used in the case of a fatal JvmError in the background threads.  A shutdown() is the only option from this point.
     private AvmFailedException backgroundFatalError;
 
-    public AvmImpl(IInstrumentationFactory instrumentationFactory, KernelInterface kernel) {
+    private final boolean debugMode;
+
+    public AvmImpl(IInstrumentationFactory instrumentationFactory, KernelInterface kernel, boolean debugMode) {
         this.instrumentationFactory = instrumentationFactory;
         this.kernel = kernel;
+        this.debugMode = debugMode;
     }
 
     private class AvmExecutorThread extends Thread{
@@ -343,7 +346,7 @@ public class AvmImpl implements AvmInternal {
                 (null == thisTransactionKernel.getCode(recipient)
                 || (null != thisTransactionKernel.getCode(recipient) && 0 == thisTransactionKernel.getCode(recipient).length)))) {
             if (ctx.getTransactionKind() == Type.CREATE.toInt()) { // create
-                DAppCreator.create(thisTransactionKernel, this, task, ctx, result);
+                DAppCreator.create(thisTransactionKernel, this, task, ctx, result, debugMode);
             } else { // call
                 // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
                 ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
@@ -362,7 +365,7 @@ public class AvmImpl implements AvmInternal {
                     if (null == dapp) {
                         // If we didn't find it there, just load it.
                         try {
-                            dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, recipient).getCode());
+                            dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, recipient).getCode(), debugMode);
 
                             // If the dapp is freshly loaded, we set the block num
                             if (null != dapp){
@@ -406,7 +409,7 @@ public class AvmImpl implements AvmInternal {
         if (null == dapp) {
             // If we didn't find it there, just load it.
             try {
-                dapp = DAppLoader.loadFromGraph(graphStore.getCode());
+                dapp = DAppLoader.loadFromGraph(graphStore.getCode(), debugMode);
 
                 // If the dapp is freshly loaded, we set the block num
                 if (null != dapp){

@@ -31,11 +31,13 @@ import org.objectweb.asm.TypePath;
 public class RejectionMethodVisitor extends MethodVisitor {
     private final PreRenameClassAccessRules classAccessRules;
     private final NamespaceMapper namespaceMapper;
+    private final boolean debugMode;
 
-    public RejectionMethodVisitor(MethodVisitor visitor, PreRenameClassAccessRules classAccessRules, NamespaceMapper namespaceMapper) {
+    public RejectionMethodVisitor(MethodVisitor visitor, PreRenameClassAccessRules classAccessRules, NamespaceMapper namespaceMapper, boolean debugMode) {
         super(Opcodes.ASM6, visitor);
         this.classAccessRules = classAccessRules;
         this.namespaceMapper = namespaceMapper;
+        this.debugMode = debugMode;
     }
 
     @Override
@@ -182,9 +184,9 @@ public class RejectionMethodVisitor extends MethodVisitor {
     private boolean checkJclMethodExists(String owner, String name, String descriptor) {
         boolean didMatch = false;
         // Map the owner, name, and descriptor into the shadow space, look up the corresponding class, reflect, and see if this method exists.
-        String mappedOwner = this.namespaceMapper.mapType(owner);
+        String mappedOwner = this.namespaceMapper.mapType(owner, debugMode);
         String mappedName = NamespaceMapper.mapMethodName(name);
-        String mappedDescriptor = this.namespaceMapper.mapDescriptor(descriptor);
+        String mappedDescriptor = this.namespaceMapper.mapDescriptor(descriptor, debugMode);
         // TODO:  Determine if we need to implement some kind of cache for these reflected operations.
         // (if so, it should probably be implemented in NodeEnvironment, since these classes are shared and long-lived).
         try {

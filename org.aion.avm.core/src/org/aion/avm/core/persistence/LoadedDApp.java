@@ -58,6 +58,7 @@ public class LoadedDApp {
     private Field runtimeBlockchainRuntimeField;
     private Method mainMethod;
     private long loadedBlockNum;
+    private final boolean debugMode;
 
     /**
      * Creates the LoadedDApp to represent the classes related to DApp at address.
@@ -65,12 +66,12 @@ public class LoadedDApp {
      * @param loader The class loader to look up shape.
      * @param classes The list of classes to populate (order must always be the same).
      */
-    public LoadedDApp(ClassLoader loader, List<Class<?>> classes, String originalMainClassName) {
+    public LoadedDApp(ClassLoader loader, List<Class<?>> classes, String originalMainClassName, boolean debugMode) {
         this.loader = loader;
         this.classes = classes;
         this.originalMainClassName = originalMainClassName;
         this.fieldCache = new ReflectedFieldCache();
-        
+        this.debugMode = debugMode;
         // We also know that we need the runtimeSetup, meaning we also need the helperClass.
         try {
             String helperClassName = Helper.RUNTIME_HELPER_NAME;

@@ -45,6 +45,7 @@ public class InvokedynamicTransformationTest {
     private IInstrumentation instrumentation;
     // Note that not all tests use this.
     private IRuntimeSetup runtimeSetup;
+    private boolean debugMode = false;
 
     @Before
     public void setup() {
@@ -81,12 +82,12 @@ public class InvokedynamicTransformationTest {
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className), shadowPackage)))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className), shadowPackage), debugMode))
                 .addNextVisitor(new ConstantVisitor())
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(className), classHierarchy),
+                        new ParentPointers(Collections.singleton(className), classHierarchy, debugMode),
                         new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();
@@ -109,12 +110,12 @@ public class InvokedynamicTransformationTest {
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, classDotName), shadowPackage)))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, classDotName), shadowPackage), debugMode))
                 .addNextVisitor(new ConstantVisitor())
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(classDotName), classHierarchy),
+                        new ParentPointers(Collections.singleton(classDotName), classHierarchy, debugMode),
                         new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();
@@ -145,18 +146,18 @@ public class InvokedynamicTransformationTest {
             processedClasses.put(classDotName, bytecode);
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, false, bytecode);
         };
-        ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy);
+        ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy, debugMode);
         PreRenameClassAccessRules singletonRules = InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className);
         NamespaceMapper mapper = new NamespaceMapper(singletonRules);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper))
-                .addNextVisitor(new UserClassMappingVisitor(mapper))
+                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper, debugMode))
+                .addNextVisitor(new UserClassMappingVisitor(mapper, debugMode))
                 .addNextVisitor(new ConstantVisitor())
-                .addNextVisitor(new ClassMetering(DAppCreator.computeAllPostRenameObjectSizes(classHierarchy)))
+                .addNextVisitor(new ClassMetering(DAppCreator.computeAllPostRenameObjectSizes(classHierarchy, debugMode)))
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addNextVisitor(new StackWatcherClassAdapter())
-                .addNextVisitor(new ExceptionWrapping(parentPointers, generatedClassConsumer))
+                .addNextVisitor(new ExceptionWrapping(parentPointers, generatedClassConsumer, debugMode))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers, dynamicHierarchyBuilder))
                 .build()
                 .runAndGetBytecode();

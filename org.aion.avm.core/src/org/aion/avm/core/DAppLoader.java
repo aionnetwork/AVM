@@ -24,7 +24,7 @@ public class DAppLoader {
      * @return The DApp instance, or NULL if not exist
      * @throws IOException If there was a failure decoding the code from the kernel.
      */
-    public static LoadedDApp loadFromGraph(byte[] immortalDappJar) throws IOException {
+    public static LoadedDApp loadFromGraph(byte[] immortalDappJar, boolean debugMode) throws IOException {
         // normal account or account with no code?
         if (immortalDappJar == null || immortalDappJar.length == 0) {
             return null;
@@ -44,7 +44,7 @@ public class DAppLoader {
         List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
         
         // We now have all the information to describe the LoadedDApp.
-        return new LoadedDApp(classLoader, aphabeticalContractClasses, app.mainClass);
+        return new LoadedDApp(classLoader, aphabeticalContractClasses, app.mainClass, debugMode);
     }
 
     /**
@@ -53,7 +53,7 @@ public class DAppLoader {
      * @param app The transformed module.
      * @return The DApp instance.
      */
-    public static LoadedDApp fromTransformed(TransformedDappModule app) {
+    public static LoadedDApp fromTransformed(TransformedDappModule app, boolean debugMode) {
         // We now need all the classes which will loaded within the class loader for this DApp (includes Helper and userlib classes we add).
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes, Helpers.loadDefaultHelperBytecode());
         
@@ -65,6 +65,6 @@ public class DAppLoader {
         List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
         
         // We now have all the information to describe the LoadedDApp.
-        return new LoadedDApp(classLoader, aphabeticalContractClasses, app.mainClass);
+        return new LoadedDApp(classLoader, aphabeticalContractClasses, app.mainClass, debugMode);
     }
 }

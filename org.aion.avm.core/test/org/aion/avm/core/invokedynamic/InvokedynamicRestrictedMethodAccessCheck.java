@@ -21,6 +21,7 @@ import static org.aion.avm.core.invokedynamic.InvokedynamicUtils.getSlashClassNa
 import static org.aion.avm.core.util.Helpers.loadRequiredResourceAsBytes;
 
 public class InvokedynamicRestrictedMethodAccessCheck {
+    private static boolean debugMode = false;
     @Test
     public void given_userCallingToBootstrapMethods_then_dappRejected() {
         {
@@ -230,8 +231,8 @@ public class InvokedynamicRestrictedMethodAccessCheck {
         final var accessRules = new PreRenameClassAccessRules(setOfClassNames, setOfClassNames);
         final var namespaceMapper = new NamespaceMapper(accessRules);
         new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new RejectionClassVisitor(accessRules, namespaceMapper))
-                .addNextVisitor(new UserClassMappingVisitor(namespaceMapper))
+                .addNextVisitor(new RejectionClassVisitor(accessRules, namespaceMapper, debugMode))
+                .addNextVisitor(new UserClassMappingVisitor(namespaceMapper, debugMode))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();

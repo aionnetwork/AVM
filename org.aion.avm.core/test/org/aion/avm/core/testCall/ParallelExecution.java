@@ -129,6 +129,7 @@ public class ParallelExecution {
 
         private Transaction tx;
         private State track;
+        private boolean debugMode = false;
 
         public Worker(Transaction tx, State track) {
             this.tx = tx;
@@ -144,7 +145,7 @@ public class ParallelExecution {
             result.internalTransactions = new ArrayList<>();
 
             // Execute the transaction
-            SimpleAvm avm = new SimpleAvm(tx.getEnergyLimit(), Contract.class);
+            SimpleAvm avm = new SimpleAvm(tx.getEnergyLimit(), debugMode, Contract.class);
             avm.attachBlockchainRuntime(new TestingBlockchainRuntime() {
                 // TODO: runtime should be based on the state
                 @Override
@@ -164,7 +165,7 @@ public class ParallelExecution {
                 }
             }.withCaller(tx.getSenderAddress().toBytes()).withAddress(tx.getDestinationAddress().toBytes()).withEnergyLimit(tx.getEnergyLimit()).withData(tx.getData()));
             try {
-                Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(Contract.class.getName());
+                Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(Contract.class.getName(), debugMode);
                 ByteArray ret = (ByteArray) clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
                 result.returnData = ret.getUnderlying();
             } catch (Exception e) {

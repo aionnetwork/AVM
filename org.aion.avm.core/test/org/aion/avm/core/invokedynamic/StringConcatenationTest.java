@@ -36,6 +36,7 @@ public class StringConcatenationTest {
     private IInstrumentation instrumentation;
     // Note that not all tests use this.
     private IRuntimeSetup runtimeSetup;
+    private static boolean debugMode;
 
     @Before
     public void setup() {
@@ -43,6 +44,7 @@ public class StringConcatenationTest {
         Assert.assertNotNull(NodeEnvironment.singleton);
         this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
+        debugMode = false;
     }
 
     @After
@@ -135,12 +137,12 @@ public class StringConcatenationTest {
                 .asMutableForest();
         final var shadowPackage = PackageConstants.kShadowSlashPrefix;
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, className))))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, className)), debugMode))
                 .addNextVisitor(new ConstantVisitor())
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(className), classHierarchy),
+                        new ParentPointers(Collections.singleton(className), classHierarchy, debugMode),
                         new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();

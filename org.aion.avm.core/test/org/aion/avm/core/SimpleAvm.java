@@ -24,7 +24,7 @@ public class SimpleAvm {
     private final IInstrumentation instrumentation;
     private final Set<String> transformedClassNames;
 
-    public SimpleAvm(long energyLimit, Class<?>... classes) {
+    public SimpleAvm(long energyLimit, boolean debugMode, Class<?>... classes) {
         Map<String, byte[]> preTransformedClassBytecode = new HashMap<>();
 
         Stream.of(classes).forEach(clazz -> preTransformedClassBytecode.put(clazz.getName(),
@@ -48,7 +48,7 @@ public class SimpleAvm {
        Forest<String, ClassInfo> classHierarchy = builder.asMutableForest();
 
         // transform classes
-        Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(preTransformedClassBytecode, classHierarchy);
+        Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(preTransformedClassBytecode, classHierarchy, debugMode);
         Map<String, byte[]> finalContractClasses = Helpers.mapIncludingHelperBytecode(transformedClasses, Helpers.loadDefaultHelperBytecode());
         this.loader = NodeEnvironment.singleton.createInvocationClassLoader(finalContractClasses);
         this.transformedClassNames = Collections.unmodifiableSet(transformedClasses.keySet());
