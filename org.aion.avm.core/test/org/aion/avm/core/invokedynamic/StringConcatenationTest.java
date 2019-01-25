@@ -9,6 +9,7 @@ import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
@@ -122,7 +123,7 @@ public class StringConcatenationTest {
         final byte[] origBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
-        java.lang.String mappedClassName = PackageConstants.kUserDotPrefix + className;
+        java.lang.String mappedClassName = DebugNameResolver.getUserPackageDotPrefix(className, debugMode);
         Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(Map.of(mappedClassName, transformedBytecode), Helpers.loadDefaultHelperBytecode());
         AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
         

@@ -10,6 +10,7 @@ import java.util.Queue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.api.BlockchainRuntime;
@@ -21,7 +22,6 @@ import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.MethodAccessException;
 import org.aion.avm.internal.OutOfEnergyException;
-import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.internal.UncaughtException;
 
@@ -326,7 +326,7 @@ public class LoadedDApp {
     private Class<?> loadMainClass() throws ClassNotFoundException {
         Class<?> mainClass = this.mainClass;
         if (null == mainClass) {
-            String mappedUserMainClass = PackageConstants.kUserDotPrefix + this.originalMainClassName;
+            String mappedUserMainClass = DebugNameResolver.getUserPackageDotPrefix(this.originalMainClassName, debugMode);
             mainClass = this.loader.loadClass(mappedUserMainClass);
             RuntimeAssertionError.assertTrue(mainClass.getClassLoader() == this.loader);
             this.mainClass = mainClass;

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -28,9 +29,9 @@ public class ParentPointers {
             Forest.Node<String, ClassInfo> node = classHierarchy.getNodeById(className);
             String superClassName = node.getParent().getId();
             
-            String newName = PackageConstants.kUserDotPrefix + className;
+            String newName = DebugNameResolver.getUserPackageDotPrefix(className, debugMode);
             String newSuperName = userDefinedClassNames.contains(superClassName)
-                    ? (PackageConstants.kUserDotPrefix + superClassName)
+                    ? DebugNameResolver.getUserPackageDotPrefix(superClassName, debugMode)
                     : (superClassName.startsWith(PackageConstants.kApiDotPrefix) ? superClassName : (PackageConstants.kShadowDotPrefix + superClassName));
             mapping.put(newName, newSuperName);
         }

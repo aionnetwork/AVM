@@ -19,6 +19,7 @@ import org.aion.avm.core.testindy.java.lang.invoke.LambdaMetafactory;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.GeneratedClassConsumer;
+import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
@@ -171,7 +172,7 @@ public class InvokedynamicTransformationTest {
     }
 
     private Object callInstanceTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
-        String mappedClassName = PackageConstants.kUserDotPrefix + className;
+        String mappedClassName = DebugNameResolver.getUserPackageDotPrefix(className, debugMode);//PackageConstants.kUserDotPrefix + className;
         final Class<?> klass = loadClassInAvmLoader(bytecode, mappedClassName);
 
         final Constructor<?> constructor = klass.getDeclaredConstructor();
@@ -182,7 +183,7 @@ public class InvokedynamicTransformationTest {
     }
 
     private Object callStaticTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
-        String mappedClassName = PackageConstants.kUserDotPrefix + className;
+        String mappedClassName = DebugNameResolver.getUserPackageDotPrefix(className, debugMode);
         final Class<?> klass = loadClassInAvmLoader(bytecode, mappedClassName);
         
         final Method method = klass.getMethod(methodName, IObject.class);

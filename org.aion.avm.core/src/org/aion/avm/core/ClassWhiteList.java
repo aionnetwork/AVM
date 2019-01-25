@@ -25,6 +25,7 @@ public class ClassWhiteList {
      * @param slashClassName The class to check.
      * @return True if we are allowed to access this class by any means we know.
      */
+    // Node that this does not consider debug mode assumptions
     public boolean isInWhiteList(String slashClassName) {
         return (slashClassName.startsWith(PackageConstants.kUserSlashPrefix)
                 || slashClassName.startsWith(PackageConstants.kShadowSlashPrefix)

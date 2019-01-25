@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
+import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -135,7 +136,7 @@ public class AvmClassLoader extends ClassLoader {
      * @throws ClassNotFoundException Underlying load failed.
      */
     public Class<?> loadUserClassByOriginalName(String originalClassName, boolean debugMode) throws ClassNotFoundException {
-        String renamedClass = PackageConstants.kUserDotPrefix + originalClassName;
+        String renamedClass = DebugNameResolver.getUserPackageDotPrefix(originalClassName, debugMode);//PackageConstants.kUserDotPrefix + originalClassName;
         Class<?> clazz = this.loadClass(renamedClass);
         RuntimeAssertionError.assertTrue(this == clazz.getClassLoader());
         return clazz;
@@ -143,8 +144,7 @@ public class AvmClassLoader extends ClassLoader {
 
     //Internal
     public byte[] getUserClassBytecodeByOriginalName(String className, boolean debugMode) {
-        String renamedClass = PackageConstants.kUserDotPrefix + className;
-        return this.bytecodeMap.get(renamedClass);
+        return this.bytecodeMap.get(DebugNameResolver.getUserPackageDotPrefix(className, debugMode));
     }
 
     public byte[] getUserClassBytecode(String className){

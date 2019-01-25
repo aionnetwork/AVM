@@ -3,12 +3,12 @@ package org.aion.avm.core.miscvisitors;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
+import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.avm.internal.PackageConstants;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -46,8 +46,8 @@ public class StringConstantVisitorTest {
                         .build()
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
-        classes.put(PackageConstants.kUserDotPrefix + targetTestName, transformer.apply(targetTestBytes));
-        classes.put(PackageConstants.kUserDotPrefix + targetNoStaticName, transformer.apply(targetNoStaticBytes));
+        classes.put(DebugNameResolver.getUserPackageDotPrefix(targetTestName, false), transformer.apply(targetTestBytes));
+        classes.put(DebugNameResolver.getUserPackageDotPrefix(targetNoStaticName, false), transformer.apply(targetNoStaticBytes));
 
         Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);

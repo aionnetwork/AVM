@@ -31,6 +31,7 @@ import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.types.TransformedDappModule;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.verification.Verifier;
 import org.aion.avm.internal.*;
@@ -102,7 +103,7 @@ public class DAppCreator {
         Map<String, Integer> preRenameUserObjectSizes = computeUserObjectSizes(forest, NodeEnvironment.singleton.preRenameRuntimeObjectSizeMap);
 
         Map<String, Integer> postRenameObjectSizes = new HashMap<>(NodeEnvironment.singleton.postRenameRuntimeObjectSizeMap);
-        preRenameUserObjectSizes.forEach((k, v) -> postRenameObjectSizes.put(PackageConstants.kUserSlashPrefix + k, v));
+        preRenameUserObjectSizes.forEach((k, v) -> postRenameObjectSizes.put(DebugNameResolver.getUserPackageSlashPrefix(k, debugMode), v));
         return postRenameObjectSizes;
     }
 
@@ -183,7 +184,7 @@ public class DAppCreator {
             }
             public void onVisitNotRootNode(Forest.Node<String, ClassInfo> node) {
                 if (node.getContent().isInterface()) {
-                    userInterfaceSlashNames.add(Helpers.fulllyQualifiedNameToInternalName(PackageConstants.kUserDotPrefix + node.getId()));
+                    userInterfaceSlashNames.add(Helpers.fulllyQualifiedNameToInternalName(DebugNameResolver.getUserPackageDotPrefix(node.getId(), debugMode)));
                 }
             }
         });
@@ -358,7 +359,7 @@ public class DAppCreator {
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, new HierarchyTreeBuilder()))
                     .build()
                     .runAndGetBytecode();
-            String mappedName = PackageConstants.kUserDotPrefix + name;
+            String mappedName = DebugNameResolver.getUserPackageDotPrefix(name, debugMode);
             safeClasses.put(mappedName, bytecode);
         }
         return safeClasses;

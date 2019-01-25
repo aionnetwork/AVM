@@ -1,6 +1,7 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.rejection.RejectedClassException;
+import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -193,7 +194,7 @@ public class NamespaceMapper {
             newType = mapDescriptor(type, debugMode);
         }else {
             if (this.preRenameClassAccessRules.isUserDefinedClassOrInterface(type)) {
-                newType = PackageConstants.kUserSlashPrefix + type;
+                newType = DebugNameResolver.getUserPackageSlashPrefix(type, debugMode);
             } else if (this.preRenameClassAccessRules.isJclClass(type)) {
                 newType =  shadowPackageSlash + type;
             } else if (this.preRenameClassAccessRules.isApiClass(type)) {
