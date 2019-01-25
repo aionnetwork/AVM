@@ -26,7 +26,7 @@ public class Ed25519SignatureTest {
 
     @Test(expected=IllegalArgumentException.class)
     public void testFromBytesInvalidLength(){
-        // generate signature from given arguments, providing wrong lentgh
+        // generate signature from given arguments, providing wrong length
         byte[] input = new byte[PUB_KEY_BYTES.length + TEST_SIGNATURE.length - 1];
         System.arraycopy(PUB_KEY_BYTES,0, input, 0, PUB_KEY_BYTES.length);
         System.arraycopy(TEST_SIGNATURE, 0, input, PUB_KEY_BYTES.length, TEST_SIGNATURE.length-1);

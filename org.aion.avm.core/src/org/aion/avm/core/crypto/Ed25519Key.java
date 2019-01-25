@@ -109,7 +109,7 @@ public class Ed25519Key {
     }
 
     /**
-     * Add encoding prefix for importing private key
+     * Add encoding prefix for importing public key
      */
     private static byte[] addPkPrefix(String pkString){
         String pkEncoded = pkEncodedPrefix + pkString;
@@ -117,7 +117,7 @@ public class Ed25519Key {
     }
 
     /**
-     * Add encoding prefix for importing public key
+     * Add encoding prefix for importing private key
      */
     private static byte[] addSkPrefix(String skString){
         String skEncoded = skEncodedPrefix + skString;
