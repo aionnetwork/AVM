@@ -68,7 +68,7 @@ public class StorageWalker {
         ImmortalDappModule app = ImmortalDappModule.readFromJar(immortalDappJar);
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader classLoader = NodeEnvironment.singleton.createInvocationClassLoader(allClasses);
-        List<Class<?>> alphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
+        List<Class<?>> alphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedDappClasses(classLoader, app.classes.keySet());
         
         // We need to install a fake Helper since we create artificial shadow String objects to communicate some information back.
         // (We are using ReflectionStructureCodec.IFieldPopulator to store human-readable reference descriptions into fields).

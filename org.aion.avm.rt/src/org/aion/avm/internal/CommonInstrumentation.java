@@ -1,8 +1,7 @@
 package org.aion.avm.internal;
 
 import java.lang.reflect.Field;
-import java.util.IdentityHashMap;
-import java.util.Stack;
+import java.util.*;
 
 
 public class CommonInstrumentation implements IInstrumentation {
@@ -163,13 +162,16 @@ public class CommonInstrumentation implements IInstrumentation {
             // 1) This is an object from our "java/lang" shadows.
             // 2) This is an object defined by the user, and mapped into our "user" package.
             // Determine which case it is to strip off that prefix and apply the common wrapper prefix to look up the class.
-            RuntimeAssertionError.assertTrue(objectClass.startsWith(PackageConstants.kShadowDotPrefix)
-                    || objectClass.startsWith(PackageConstants.kUserDotPrefix));
-            
+
+            RuntimeAssertionError.assertTrue(isLoadedByCurrentClassLoader(arg.getClass()) || objectClass.startsWith(PackageConstants.kShadowDotPrefix));
+
             // Note that, since we currently declare the "java.lang." inside the constant for JDK shadows, we need to avoid curring that off.
-            int lengthToCut = objectClass.startsWith(PackageConstants.kShadowDotPrefix)
-                    ? PackageConstants.kShadowDotPrefix.length()
-                    : PackageConstants.kUserDotPrefix.length();
+            int lengthToCut = 0;
+            if(objectClass.startsWith(PackageConstants.kShadowDotPrefix) || objectClass.startsWith(PackageConstants.kUserDotPrefix)) {
+                lengthToCut = objectClass.startsWith(PackageConstants.kShadowDotPrefix)
+                        ? PackageConstants.kShadowDotPrefix.length()
+                        : PackageConstants.kUserDotPrefix.length();
+            }
             String wrapperClassName = PackageConstants.kExceptionWrapperDotPrefix + objectClass.substring(lengthToCut);
             Class<?> wrapperClass = this.currentFrame.lateLoader.loadClass(wrapperClassName);
             result = (Throwable)wrapperClass.getConstructor(Object.class).newInstance(arg);
@@ -291,6 +293,11 @@ public class CommonInstrumentation implements IInstrumentation {
         throw RuntimeAssertionError.unreachable("NOT a bootstrap IInstrumentation");
     }
 
+    @Override
+    public boolean isLoadedByCurrentClassLoader(Class userClass) {
+        // If this is the same classloader, they will both be obviously the same instance.
+        return (userClass.getClassLoader() == this.currentFrame.lateLoader);
+    }
 
     // Private helpers used internally.
     private org.aion.avm.shadow.java.lang.Throwable convertVmGeneratedException(Throwable t) throws Exception {

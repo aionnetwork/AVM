@@ -88,4 +88,9 @@ public class TestInstrumentation implements IInstrumentation {
     public void bootstrapOnly() {
         // These tests aren't using the NodeEnvironment to bootstrap the JCL so we need to handle that case.
     }
+
+    @Override
+    public boolean isLoadedByCurrentClassLoader(java.lang.Class userClass) {
+        throw RuntimeAssertionError.unreachable("Not expected in this test");
+    }
 }

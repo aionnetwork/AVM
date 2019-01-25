@@ -50,4 +50,9 @@ public interface IInstrumentation {
     void forceNextHashCode(int nextHashCode);
     
     void bootstrapOnly();
+
+    /**
+     * @return id the class has been loaded by the classloader associated to stackFrame
+     */
+    boolean isLoadedByCurrentClassLoader(Class userClass);
 }

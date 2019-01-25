@@ -341,6 +341,10 @@ public class NodeEnvironment {
             public void exitCurrentFrame() {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
+            @Override
+            public boolean isLoadedByCurrentClassLoader(java.lang.Class userClass) {
+                throw RuntimeAssertionError.unreachable("Not expected here.");
+            }
         };
 
         // Load all the classes - even just mentioning these might cause them to be loaded, even before the Class.forName().

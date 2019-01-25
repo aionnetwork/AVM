@@ -82,8 +82,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         // Get element class and array dim
         String elementInterfaceSlashName = wrapperInterfaceSlashName.substring((PackageConstants.kArrayWrapperSlashPrefix + "interface/").length());
         int dim = getPrefixSize(elementInterfaceSlashName, '_');
-        String elementInterfaceDotName = Helpers.internalNameToFulllyQualifiedName(elementInterfaceSlashName.substring(dim));
-        if (elementInterfaceDotName.startsWith("L")){elementInterfaceDotName = elementInterfaceDotName.substring(1);}
+        String elementInterfaceDotName = getElementInterfaceName(requestInterface);
 
         Class<?> elementClass = null;
         try {
@@ -163,14 +162,13 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         // Get element class and array dim
         String elementClassSlashName = wrapperClassSlashName.substring(PackageConstants.kArrayWrapperDotPrefix.length());
         int dim = getPrefixSize(elementClassSlashName, '$');
-        String elementClassDotName = Helpers.internalNameToFulllyQualifiedName(elementClassSlashName.substring(dim));
-        if (elementClassDotName.startsWith("L")){elementClassDotName = elementClassDotName.substring(1);}
+        String elementClassDotName = getClassWrapperElementName(requestClass);
 
         // Default super class is ObjectArray
 
         byte[] bytecode = null;
         // If element is not primitive type, we need to find its super class
-        if (!PRIMITIVES.contains(elementClassDotName)) {
+        if (!isPrimitiveElement(elementClassDotName)) {
             // Element is NOT primitive.
             Class<?> elementClass = null;
             try {
@@ -453,10 +451,14 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         // Note that we can't do any special unifying operation for primitive arrays so just handle them as "precise" types.
         boolean isPrimitiveArray = (2 == desc.length())
                 && ('[' == desc.charAt(0))
-                && (PRIMITIVES.contains(desc.substring(1)));
+                && (isPrimitiveElement(desc.substring(1)));
         return isPrimitiveArray
                 ? getClassWrapperDescriptor(desc)
                 : getInterfaceWrapper(desc);
+    }
+
+    private static boolean isPrimitiveElement(String desc){
+        return PRIMITIVES.contains(desc);
     }
 
     // Return the wrapper descriptor of an array
@@ -909,4 +911,25 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         return transformedTokens + remainder;
     }
 
+    public static String getElementInterfaceName(String interfaceClassName){
+        // Get element class and array dim
+        String elementName = interfaceClassName.substring((PackageConstants.kArrayWrapperDotPrefix + "interface.").length());
+        int dim = getPrefixSize(elementName, '_');
+        elementName = elementName.substring(dim);
+        if (elementName.startsWith("L")){
+            elementName = elementName.substring(1);
+        }
+        return  elementName;
+    }
+
+    public static String getClassWrapperElementName(String wrapperClassName){
+        // Get element class and array dim
+        String elementName = wrapperClassName.substring(PackageConstants.kArrayWrapperDotPrefix.length());
+        int dim = getPrefixSize(elementName, '$');
+        elementName = elementName.substring(dim);
+        if (elementName.startsWith("L")){
+            elementName = elementName.substring(1);
+        }
+        return elementName;
+    }
 }

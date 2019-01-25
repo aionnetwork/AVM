@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.OutOfEnergyException;
+import org.aion.avm.internal.RuntimeAssertionError;
 
 /**
  * An empty or nonsensical implementation of {@link IInstrumentation} for testing purposes. This
@@ -103,6 +104,11 @@ public class EmptyInstrumentation implements IInstrumentation {
     @Override
     public Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg0) {
         return null;
+    }
+
+    @Override
+    public boolean isLoadedByCurrentClassLoader(java.lang.Class userClass) {
+        throw RuntimeAssertionError.unreachable("Not expected in this test");
     }
 
 }

@@ -41,8 +41,8 @@ public class DAppLoader {
         
         // Load all the user-defined classes (these are required for both loading and storing state).
         // (we do this in alphabetical order since the persistence model needs consistent read/write order).
-        List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
-        
+        List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedDappClasses(classLoader, app.classes.keySet());
+
         // We now have all the information to describe the LoadedDApp.
         return new LoadedDApp(classLoader, aphabeticalContractClasses, app.mainClass, debugMode);
     }
@@ -62,8 +62,8 @@ public class DAppLoader {
         
         // Load all the user-defined classes (these are required for both loading and storing state).
         // (we do this in alphabetical order since the persistence model needs consistent read/write order).
-        List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedClasses(classLoader, allClasses.keySet());
-        
+        List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedDappClasses(classLoader, app.classes.keySet());
+
         // We now have all the information to describe the LoadedDApp.
         return new LoadedDApp(classLoader, aphabeticalContractClasses, app.mainClass, debugMode);
     }

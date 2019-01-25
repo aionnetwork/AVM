@@ -9,14 +9,7 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.CommonInstrumentation;
-import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IPersistenceToken;
-import org.aion.avm.internal.IRuntimeSetup;
-import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.avm.internal.OutOfEnergyException;
-import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -311,5 +304,7 @@ public class ClassShadowingTest {
         public void bootstrapOnly() {
             this.realImplementation.bootstrapOnly();
         }
+        @Override
+        public boolean isLoadedByCurrentClassLoader(java.lang.Class userClass) { return this.realImplementation.isLoadedByCurrentClassLoader(userClass); }
     }
 }

@@ -84,31 +84,29 @@ public class AvmClassLoader extends ClassLoader {
 
         // Contract classloader only load user Dapp classes and per Dapp internal/api classes
         // Non user classes will be delegated to shared class loader
-        if (name.contains(PackageConstants.kUserDotPrefix) || this.bytecodeMap.containsKey(name)) {
-            // We have a priority order to load:
-            // 1) Cache
-            // 2) Injected static code
-            // 3) Dynamically generated
-            if (this.cache.containsKey(name)) {
-                result = this.cache.get(name);
-                // We got this from the cache so don't resolve.
-                shouldResolve = false;
-            } else if (this.bytecodeMap.containsKey(name)) {
-                byte[] injected = this.bytecodeMap.get(name);
-                result = defineClass(name, injected, 0, injected.length);
-                // TODO: Can this check be removed?
-                // Note that this class loader should only be able to see classes we have transformed.  This means no enums.
-                RuntimeAssertionError.assertTrue(0 == (CLASS_IS_ENUM & result.getModifiers()));
-                this.cache.put(name, result);
-            } else {
-                // Try dynamic generation
-                for (Function<String, byte[]> handler : handlers) {
-                    byte[] code = handler.apply(name);
-                    if (code != null) {
-                        result = defineClass(name, code, 0, code.length);
-                        this.cache.put(name, result);
-                        break;
-                    }
+        // We have a priority order to load:
+        // 1) Cache
+        // 2) Injected static code
+        // 3) Dynamically generated
+        if (this.cache.containsKey(name)) {
+            result = this.cache.get(name);
+            // We got this from the cache so don't resolve.
+            shouldResolve = false;
+        } else if (this.bytecodeMap.containsKey(name)) {
+            byte[] injected = this.bytecodeMap.get(name);
+            result = defineClass(name, injected, 0, injected.length);
+            // TODO: Can this check be removed?
+            // Note that this class loader should only be able to see classes we have transformed.  This means no enums.
+            RuntimeAssertionError.assertTrue(0 == (CLASS_IS_ENUM & result.getModifiers()));
+            this.cache.put(name, result);
+        } else if (isUserArrayWrapper(name)) {
+            // Try dynamic generation
+            for (Function<String, byte[]> handler : handlers) {
+                byte[] code = handler.apply(name);
+                if (code != null) {
+                    result = defineClass(name, code, 0, code.length);
+                    this.cache.put(name, result);
+                    break;
                 }
             }
         }else{
@@ -126,6 +124,16 @@ public class AvmClassLoader extends ClassLoader {
             throw new ClassNotFoundException(name);
         }
         return result;
+    }
+
+    private boolean isUserArrayWrapper(String className) {
+        if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "interface")) {
+            return this.bytecodeMap.containsKey(ArrayWrappingClassGenerator.getElementInterfaceName(className));
+        } else if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$")) {
+            return this.bytecodeMap.containsKey(ArrayWrappingClassGenerator.getClassWrapperElementName(className));
+        }
+        // since it is not an array wrapper
+        return false;
     }
 
     /**

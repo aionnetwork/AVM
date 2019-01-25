@@ -1,9 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.avm.internal.CommonInstrumentation;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IInstrumentationFactory;
-import org.aion.avm.internal.OutOfEnergyException;
+import org.aion.avm.internal.*;
 
 
 /**
@@ -107,6 +104,8 @@ public class MockFailureInstrumentationFactory implements IInstrumentationFactor
             public void bootstrapOnly() {
                 underlying.bootstrapOnly();
             }
+            @Override
+            public boolean isLoadedByCurrentClassLoader(java.lang.Class userClass) { return underlying.isLoadedByCurrentClassLoader(userClass); }
         };
     }
     @Override

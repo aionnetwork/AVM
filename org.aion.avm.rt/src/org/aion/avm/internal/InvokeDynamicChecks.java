@@ -15,7 +15,7 @@ public class InvokeDynamicChecks {
      * @param owner The class owning the invokedynamic callsite.
      */
     public static void checkOwner(Lookup owner) {
-        RuntimeAssertionError.assertTrue(owner.lookupClass().getName().startsWith(PackageConstants.kUserDotPrefix));
+        RuntimeAssertionError.assertTrue (IInstrumentation.attachedThreadInstrumentation.get().isLoadedByCurrentClassLoader(owner.lookupClass()));
     }
 
     /**

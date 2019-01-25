@@ -283,19 +283,17 @@ public class Helpers {
      * @param classNames The names of the classes which should be loaded.
      * @return The class objects, in alphabetical order by their names.
      */
-    public static List<Class<?>> getAlphabeticalUserTransformedClasses(AvmClassLoader classLoader, Set<String> classNames) {
+    public static List<Class<?>> getAlphabeticalUserTransformedDappClasses(AvmClassLoader classLoader, Set<String> classNames) {
         List<String> nameList = new ArrayList<>(classNames);
         Collections.sort(nameList);
         List<Class<?>> classList = new ArrayList<>();
         for (String name : nameList) {
-            if (name.startsWith(PackageConstants.kUserDotPrefix)) {
                 try {
                     classList.add(classLoader.loadClass(name));
                 } catch (ClassNotFoundException e) {
                     // We can't fail to find something which we know we put in there.
                     RuntimeAssertionError.unexpected(e);
                 }
-            }
         }
         return classList;
     }
