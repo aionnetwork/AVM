@@ -13,6 +13,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -26,22 +27,29 @@ public class TestNetCli {
     public void run(String password, String dappPath, String preminedAccount, int accountNum, int threadNum) {
         ExecutorService pool = Executors.newFixedThreadPool(threadNum);
 
+        System.out.println("Test starting: " + LocalDateTime.now());
+        System.out.println("Starting creating accounts: " + LocalDateTime.now());
         ArrayList<String> accounts = createAccounts(accountNum, password, pool);
 
+        System.out.println("Starting transferring: " + LocalDateTime.now());
         String amount = "1000000000000000000";
         ArrayList<String> transferReceipts = transfers(preminedAccount, password, amount, accounts, pool);
 
+        System.out.println("Starting checking transferring receipts: " + LocalDateTime.now());
         checkReceiptsStatus(transferReceipts, pool, "Transfer");
 
-        unlockAllAccounts(accounts, password, pool);
+        System.out.println("Starting deploying dapps: " + LocalDateTime.now());
+        ArrayList<String> deployReceipts = deployDapps(accounts, password, dappPath, pool);
 
-        ArrayList<String> deployReceipts = deployDapps(accounts, dappPath, pool);
-
+        System.out.println("Starting getting dapp addresses: " + LocalDateTime.now());
         ArrayList<String> dapps = getAllDappAddresses(deployReceipts, pool);
 
-        ArrayList<String> callReceipts = callDapps(accountNum, accounts, dapps, pool);
+        System.out.println("Starting calling dapps: " + LocalDateTime.now());
+        ArrayList<String> callReceipts = callDapps(accountNum, accounts, password, dapps, pool);
 
+        System.out.println("Starting checking calling receipts: " + LocalDateTime.now());
         checkReceiptsStatus(callReceipts, pool, "Call");
+        System.out.println("Test finished: " + LocalDateTime.now());
 
         pool.shutdown();
     }
@@ -90,10 +98,13 @@ public class TestNetCli {
         assert (isSucceed);
         System.out.printf("Unlocking account %s successfully!\n", preminedAccount);
 
+        int nonce = getNonce(preminedAccount);
+
         ArrayList<Future<String>> results = new ArrayList<>();
         for(int i = 0; i < accounts.size(); ++i) {
             final String recipient = accounts.get(i);
-            results.add(pool.submit(new TransferTask(preminedAccount, recipient, amount, i)));
+            results.add(pool.submit(new TransferTask(preminedAccount, recipient, amount, Integer.toString(nonce), i)));
+            nonce++;
         }
 
         for (Future<String> result : results) {
@@ -169,6 +180,31 @@ public class TestNetCli {
         return post(data);
     }
 
+    private int getNonce(String preminedAccount) {
+        String data = "{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"eth_getTransactionCount\"," +
+                "\"params\":[\"" + preminedAccount + "\",\"latest\"]," +
+                "\"id\":1}";
+        return Integer.parseInt(extractNonce(post(data)).substring(2), 16);
+    }
+
+    private static String extractNonce(String response) {
+        String hash = null;
+
+        // String to be scanned to find the pattern.
+        String pattern = "\"result\":\"(0x[0-9a-f]+)\",";
+
+        // Create a Pattern object
+        Pattern r = Pattern.compile(pattern);
+
+        // Now create matcher object.
+        Matcher m = r.matcher(response);
+        if (m.find()) {
+            hash = m.group(1);
+        }
+        return hash;
+    }
+
     private static String post(String postParams) {
         String responseString = null;
         try {
@@ -220,7 +256,7 @@ public class TestNetCli {
         return hash;
     }
 
-    private ArrayList<String> deployDapps(ArrayList<String> accounts, String dappPath, ExecutorService pool) {
+    private ArrayList<String> deployDapps(ArrayList<String> accounts, String password, String dappPath, ExecutorService pool) {
         ArrayList<String> deployReceipts = new ArrayList<>();
         try {
             Path path = Paths.get(dappPath);
@@ -234,6 +270,14 @@ public class TestNetCli {
                 final int n = i;
                 Callable<String> deployTask = () -> {
                     String threadName = Thread.currentThread().getName();
+                    System.out.printf("%s: %d-unlocking account %s ...\n", threadName, n, account);
+                    String responseUnlock = unlockAccount(account, password);
+                    assert (responseUnlock != null);
+                    System.out.printf("%s: %d-response:%s\n", threadName, n, responseUnlock);
+                    boolean isSucceed = extractUnlockResult(responseUnlock);
+                    assert (isSucceed);
+                    System.out.printf("%s: %d-unlocking account %s successfully!\n", threadName, n, account);
+
                     System.out.printf("%s: %d-deploying dapp for account %s ...\n", threadName, n, account);
                     String response = deployDapp(account, codeArguments);
                     assert (response != null);
@@ -326,7 +370,7 @@ public class TestNetCli {
         return address;
     }
 
-    private ArrayList<String> callDapps(int accountNum, ArrayList<String> accounts, ArrayList<String> dapps, ExecutorService pool) {
+    private ArrayList<String> callDapps(int accountNum, ArrayList<String> accounts, String password, ArrayList<String> dapps, ExecutorService pool) {
         ArrayList<String> callReceipts = new ArrayList<>();
         final String callEncoding = Helpers.bytesToHexString(ABIEncoder.encodeMethodArguments("cpuHeavy"));
         ArrayList<Future<String>> results = new ArrayList<>();
@@ -336,6 +380,14 @@ public class TestNetCli {
             final int n = i;
             Callable<String> callTask = () -> {
                 String threadName = Thread.currentThread().getName();
+                System.out.printf("%s: %d-unlocking account %s ...\n", threadName, n, account);
+                String responseUnlock = unlockAccount(account, password);
+                assert (responseUnlock != null);
+                System.out.printf("%s: %d-response:%s\n", threadName, n, responseUnlock);
+                boolean isSucceed = extractUnlockResult(responseUnlock);
+                assert (isSucceed);
+                System.out.printf("%s: %d-unlocking account %s successfully!\n", threadName, n, account);
+
                 System.out.printf("%s: %d-account %s is calling dapp %s ...\n", threadName, n, account, dapp);
                 String response = callDapp(account, dapp, callEncoding);
                 System.out.printf("%s: %d-response:%s\n", threadName, n, response);
@@ -422,19 +474,21 @@ public class TestNetCli {
         private final String preminedAccount;
         private final String recipient;
         private final String amount;
+        private final String nonce;
         private final int xth;
 
-        private TransferTask(String preminedAccount, String recipient, String amount, int xth) {
+        private TransferTask(String preminedAccount, String recipient, String amount, String nonce, int xth) {
             this.preminedAccount = preminedAccount;
             this.recipient = recipient;
             this.amount = amount;
+            this.nonce = nonce;
             this.xth = xth;
         }
 
         public String call() {
             String threadName = Thread.currentThread().getName();
-            System.out.printf("%s: %d-transfering %s from %s to %s ...\n", threadName, xth, amount, preminedAccount, recipient);
-            String response = transfer(preminedAccount, recipient, amount);
+            System.out.printf("%s: %d-transfering %s from %s to %s with nonce %s ...\n", threadName, xth, amount, preminedAccount, recipient, nonce);
+            String response = transfer(preminedAccount, recipient, amount, nonce);
             System.out.printf("%s: %d-response:%s\n", threadName, xth, response);
             assert (response != null);
             String receiptHash = extractReceiptHash(response);
@@ -442,12 +496,13 @@ public class TestNetCli {
             return receiptHash;
         }
 
-        private String transfer(String sender, String recipient, String amount) {
+        private String transfer(String sender, String recipient, String amount, String nonce) {
             String header = "{\"jsonrpc\":\"2.0\",\"method\":\"eth_sendTransaction\",\"params\":[{\"from\": \"";
             String to = "\", \"to\": \"";
             String gas = "\", \"gas\": \"2000000\", \"gasPrice\": \"100000000000\", \"value\": \"";
+            String nonceStr = "\", \"nonce\":\"";
             String footer="\"}]}";
-            String data = header + sender + to + recipient + gas + amount + footer;
+            String data = header + sender + to + recipient + gas + amount + nonceStr + nonce + footer;
             return post(data);
         }
     }
