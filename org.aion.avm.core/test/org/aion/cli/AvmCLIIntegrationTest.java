@@ -1,11 +1,14 @@
 package org.aion.cli;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.core.ShadowCoverageTarget;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
+import org.aion.kernel.AvmAddress;
+import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -224,5 +227,112 @@ public class AvmCLIIntegrationTest {
         public void dumpThrowable(Throwable throwable) {
 
         }
+    }
+
+    @Test
+    public void callWithTransfer() throws IOException {
+        final int deployBalance = 100000;
+        final int transferBalance = 5000;
+        String storagePath = "./storage";
+        File storageFile = new File(storagePath);
+        KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
+        java.math.BigInteger contractBalance;
+
+        //deploy a contract first
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        File temp = this.folder.newFile();
+        Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
+
+        // Create the testing environment to look for the successful deployment.
+        TestEnvironment deployEnv = new TestEnvironment("Result status: SUCCESS");
+        AvmCLI.testingMain(deployEnv, new String[] {"deploy", temp.getAbsolutePath(), "--value", Integer.toString(deployBalance)});
+        String dappAddress = deployEnv.capturedAddress;
+
+        // check that contract has been deployed and balance has been transferred
+        contractBalance = kernelInterface.getBalance(AvmAddress.wrap(Helpers.hexStringToBytes(dappAddress)));
+        System.out.println("new balance after deploy with transfer: " + contractBalance);
+        Assert.assertEquals(deployBalance, contractBalance.intValue());
+
+        // now lets try to make some calls
+        TestEnvironment callEnv = new TestEnvironment("Return value : void");
+        AvmCLI.testingMain(callEnv, new String[] {"call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test1", "--value", Integer.toString(transferBalance)});
+        Assert.assertTrue(callEnv.didScrapeString);
+
+        // check that the call was successful and more balance has been added to the contract
+        contractBalance = kernelInterface.getBalance(AvmAddress.wrap(Helpers.hexStringToBytes(dappAddress)));
+        System.out.println("new balance after call with transfer: " + contractBalance);
+        Assert.assertEquals(deployBalance + transferBalance, contractBalance.intValue());
+
+        System.out.println("Contract balance: " + contractBalance);
+    }
+
+    @Test
+    public void testDeployAndCallWithNoTransfer() throws IOException {
+        String storagePath = "./storage";
+        File storageFile = new File(storagePath);
+        KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
+
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        File temp = this.folder.newFile();
+        Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
+
+        TestEnvironment deployEnv = new TestEnvironment("Result status: SUCCESS");
+        AvmCLI.testingMain(deployEnv, new String[] {"deploy", temp.getAbsolutePath()});
+        Assert.assertTrue(deployEnv.didScrapeString);
+
+        String dappAddress = deployEnv.capturedAddress;
+
+        // check for balance of 0
+        java.math.BigInteger contractBalance = kernelInterface.getBalance(AvmAddress.wrap(Helpers.hexStringToBytes(dappAddress)));
+        System.out.println("Contract balance: " + contractBalance);
+        Assert.assertEquals(0,contractBalance.intValue());
+
+        // now lets try to make some calls
+        TestEnvironment callEnv = new TestEnvironment("Return value : void");
+        AvmCLI.testingMain(callEnv, new String[] {"call", dappAddress, "--method", "addNewTuple", "--args", "-T", "test1"});
+        Assert.assertTrue(callEnv.didScrapeString);
+
+        // check that the call was successful and more balance has been added to the contract
+        contractBalance = kernelInterface.getBalance(AvmAddress.wrap(Helpers.hexStringToBytes(dappAddress)));
+        System.out.println("new balance after call with transfer: " + contractBalance);
+        Assert.assertEquals(0, contractBalance.intValue());
+
+        System.out.println("Contract balance: " + contractBalance);
+    }
+
+    @Test
+    public void testDeployTransfer() throws IOException {
+        final int deployBalance = 100000;
+        String storagePath = "./storage";
+        File storageFile = new File(storagePath);
+        KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
+
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        File temp = this.folder.newFile();
+        Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
+
+        TestEnvironment deployEnv = new TestEnvironment("Result status: SUCCESS");
+        AvmCLI.testingMain(deployEnv, new String[] {"deploy", temp.getAbsolutePath(), "--value", Integer.toString(deployBalance)});
+        Assert.assertTrue(deployEnv.didScrapeString);
+
+        String dappAddress = deployEnv.capturedAddress;
+
+        // check for balance of deployBalance
+        java.math.BigInteger contractBalance = kernelInterface.getBalance(AvmAddress.wrap(Helpers.hexStringToBytes(dappAddress)));
+        System.out.println("Contract balance: " + contractBalance);
+        Assert.assertEquals(deployBalance,contractBalance.intValue());
+    }
+
+    @Test (expected = NumberFormatException.class)
+    public void testDeployWithInvalidBalanceTransfer() throws IOException {
+        String invalidBalance = "123abc";
+
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        File temp = this.folder.newFile();
+        Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
+
+        TestEnvironment deployEnv = new TestEnvironment("Result status: SUCCESS");
+        AvmCLI.testingMain(deployEnv, new String[] {"deploy", temp.getAbsolutePath(), "--value", invalidBalance});
+        Assert.assertTrue(deployEnv.didScrapeString);
     }
 }

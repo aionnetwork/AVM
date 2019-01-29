@@ -1,5 +1,6 @@
 package org.aion.cli;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,6 +40,7 @@ public class ArgumentParser {
         SENDER(matches("-sd", "--sender"), true, (self, address) -> {ArgumentParser.currentCommand.senderAddress = address; return null;}),
         ENERGY_LIMIT(matches("-e", "--energy-limit"), true, (self, energyLimit) -> {ArgumentParser.currentCommand.energyLimit = Long.valueOf(energyLimit); return null;}),
         METHOD(matches("-m", "--method"), true, (self, method) -> {ArgumentParser.currentCommand.method = method; return null;}),
+        VALUE(matches("--value"), true, (self, balance) -> {ArgumentParser.currentCommand.balance = parseBigInteger(balance); return null;}),
         ARG_INT(matches("-I"), true, (self, arg) -> {ArgumentParser.currentCommand.args.add(Integer.valueOf(arg)); return null;}),
         ARG_LONG(matches("-J"), true, (self, arg) -> {ArgumentParser.currentCommand.args.add(Long.valueOf(arg)); return null;}),
         ARG_SHORT(matches("-S"), true, (self, arg) -> {ArgumentParser.currentCommand.args.add(Short.valueOf(arg)); return null;}),
@@ -98,8 +100,8 @@ public class ArgumentParser {
     private static enum TopArg {
         STORAGE(matches("-st", "--storage"), true, (self, path) -> {ArgumentParser.root.storagePath = path; return null;}),
         OPEN(matches("open"), false, (self, ignored) -> {appendNewCommand(Action.OPEN, false); self.runOnNested(); return null;}, InnerArg.ADDRESS),
-        DEPLOY(matches("deploy"), true, (self, jar) -> {appendNewCommand(Action.DEPLOY, true).jarPath = jar; self.runOnNested(); return null;}, InnerArg.SENDER),
-        CALL(matches("call"), true, (self, contract) -> {appendNewCommand(Action.CALL, true).contractAddress = contract; self.runOnNested(); return null;}, InnerArg.SENDER, InnerArg.ENERGY_LIMIT, InnerArg.METHOD, InnerArg.ARGS),
+        DEPLOY(matches("deploy"), true, (self, jar) -> {appendNewCommand(Action.DEPLOY, true).jarPath = jar; self.runOnNested(); return null;}, InnerArg.SENDER, InnerArg.VALUE),
+        CALL(matches("call"), true, (self, contract) -> {appendNewCommand(Action.CALL, true).contractAddress = contract; self.runOnNested(); return null;}, InnerArg.SENDER, InnerArg.ENERGY_LIMIT, InnerArg.METHOD, InnerArg.ARGS, InnerArg.VALUE),
         EXPLORE(matches("explore"), true, (self, contract) -> {appendNewCommand(Action.EXPLORE, false).contractAddress = contract; self.runOnNested(); return null;}),
         BYTES(matches("bytes"), true, (self, jar) -> {appendNewCommand(Action.BYTES, false).jarPath = jar; self.runOnNested(); return null;}),
         ENCODE_CALL(matches("encode-call"), true, (self, contract) -> {appendNewCommand(Action.ENCODE_CALL, false).contractAddress = contract; self.runOnNested(); return null;}, InnerArg.METHOD, InnerArg.ARGS)
@@ -170,6 +172,7 @@ public class ArgumentParser {
         public String openAddress;
         public String method;
         public List<Object> args = new ArrayList<>();
+        public BigInteger balance = BigInteger.ZERO; // this is an optional parameter, initialized to 0 since if not provided
     }
 
     /**
@@ -272,5 +275,13 @@ public class ArgumentParser {
         InstrumentationHelpers.popExistingStackFrame(runtime);
         InstrumentationHelpers.detachThread(commonInstrumentation);
         return address;
+    }
+
+    private static BigInteger parseBigInteger(String balance){
+        if (balance == null){
+            return BigInteger.ZERO;
+        } else {
+            return new BigInteger(balance);
+        }
     }
 }

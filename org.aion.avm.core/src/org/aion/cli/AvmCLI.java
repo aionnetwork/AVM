@@ -27,7 +27,7 @@ import org.aion.vm.api.interfaces.VirtualMachine;
 public class AvmCLI {
     static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    public static TransactionContext setupOneDeploy(IEnvironment env, String storagePath, String jarPath, org.aion.vm.api.interfaces.Address sender, long energyLimit) {
+    public static TransactionContext setupOneDeploy(IEnvironment env, String storagePath, String jarPath, org.aion.vm.api.interfaces.Address sender, long energyLimit, BigInteger balance) {
 
         reportDeployRequest(env, storagePath, jarPath, sender);
 
@@ -47,7 +47,7 @@ public class AvmCLI {
             throw env.fail("deploy : Invalid location of Dapp jar");
         }
 
-        Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
+        Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), balance, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
 
         return new TransactionContextImpl(createTransaction, block);
     }
@@ -71,7 +71,7 @@ public class AvmCLI {
         env.logLine("Energy cost  : " + ((AvmTransactionResult) createResult).getEnergyUsed());
     }
 
-    public static TransactionContext setupOneCall(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, String method, Object[] args, long energyLimit, long nonceBias) {
+    public static TransactionContext setupOneCall(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
         if (contract.toBytes().length != Address.LENGTH){
@@ -90,7 +90,7 @@ public class AvmCLI {
 
         // TODO:  Remove this bias when/if we change this to no longer send all transactions from the same account.
         BigInteger biasedNonce = kernel.getNonce(sender).add(BigInteger.valueOf(nonceBias));
-        Transaction callTransaction = Transaction.call(sender, contract, biasedNonce, BigInteger.ZERO, arguments, energyLimit, 1L);
+        Transaction callTransaction = Transaction.call(sender, contract, biasedNonce, balance, arguments, energyLimit, 1L);
         return new TransactionContextImpl(callTransaction, block);
     }
 
@@ -262,7 +262,8 @@ public class AvmCLI {
                             AvmAddress.wrap(Helpers.hexStringToBytes(command.senderAddress)),
                             command.method, callArgs,
                             command.energyLimit,
-                            i);
+                            i,
+                            command.balance);
                         break;
                     case DEPLOY:
                         transactions[i] = setupOneDeploy(
@@ -270,7 +271,8 @@ public class AvmCLI {
                             invocation.storagePath,
                             command.jarPath,
                             AvmAddress.wrap(Helpers.hexStringToBytes(command.senderAddress)),
-                            command.energyLimit);
+                            command.energyLimit,
+                            command.balance);
                         break;
                     case EXPLORE:
                     case OPEN:
