@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
  * Tests that a contract that uses string concatenation and lambdas charges the same amount when
  * invoked multiple times.
  */
-public class TestBootstrappingEnergyChargeConsistency {
+public class BootstrappingEnergyChargeConsistencyTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(false);
 

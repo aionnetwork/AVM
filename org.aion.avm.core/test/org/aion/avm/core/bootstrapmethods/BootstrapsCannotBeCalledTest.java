@@ -10,7 +10,7 @@ import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class TestBootstrapsCannotBeCalled {
+public class BootstrapsCannotBeCalledTest {
     @Rule
     public AvmRule avmRule = new AvmRule(false);
     private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;

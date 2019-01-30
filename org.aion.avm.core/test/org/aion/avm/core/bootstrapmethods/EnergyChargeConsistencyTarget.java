@@ -6,7 +6,7 @@ import org.aion.avm.api.BlockchainRuntime;
 public class EnergyChargeConsistencyTarget {
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new EnergyChargeConsistencyTarget(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(EnergyChargeConsistencyTarget.class, BlockchainRuntime.getData());
     }
 
     public static void run() {
