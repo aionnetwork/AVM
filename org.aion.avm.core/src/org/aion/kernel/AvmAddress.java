@@ -80,11 +80,11 @@ public class AvmAddress implements Address {
         if (other == this) {
             return true;
         }
-        if (!(other instanceof AvmAddress)) {
+        if (!(other instanceof Address)) {
             return false;
         }
-        AvmAddress otherAsAddress = (AvmAddress) other;
-        return Arrays.equals(this.address, otherAsAddress.address);
+        Address otherAsAddress = (Address) other;
+        return Arrays.equals(this.address, otherAsAddress.toBytes());
     }
 
     @Override
