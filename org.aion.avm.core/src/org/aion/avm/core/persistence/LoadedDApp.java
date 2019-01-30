@@ -278,6 +278,9 @@ public class LoadedDApp {
             } catch (ExceptionInInitializerError e) {
                 // handle the real exception
                 handleUncaughtException(e.getException());
+            } catch (Throwable t) {
+                // Some other exceptions can float out from the user clinit, not always wrapped in ExceptionInInitializerError.
+                handleUncaughtException(t);
             }
         }
     }
@@ -292,7 +295,7 @@ public class LoadedDApp {
             throw cause;
 
             // thrown by runtime, but is never handled
-        } else if (cause instanceof RuntimeException) {
+        } else if ((cause instanceof RuntimeException) || (cause instanceof Error)) {
             throw new UncaughtException(cause);
 
             // thrown by users

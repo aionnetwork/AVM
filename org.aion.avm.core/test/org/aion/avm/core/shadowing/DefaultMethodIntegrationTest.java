@@ -39,11 +39,7 @@ public class DefaultMethodIntegrationTest {
 
     @After
     public void tearDown() {
-        try {
-            this.avm.shutdown();
-        } catch (AssertionError e) {
-            // Note that this is just an echo of the issue pointed out below (it stays in the AVM instance).
-        }
+        this.avm.shutdown();
     }
 
     @Test
@@ -57,15 +53,9 @@ public class DefaultMethodIntegrationTest {
         long energyPrice = 1l;
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         
-        // Getting the result code will trigger the internal exception to be thrown back to us - we are expecting AssertionError.
-        boolean didCatchAssertionError = false;
-        try {
-            // This should show up as an uncaught exception (we can't statically prove that the method isn't there, on create).
-            avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
-        } catch (AssertionError e) {
-            didCatchAssertionError = true;
-        }
-        Assert.assertTrue(didCatchAssertionError);
+        // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
     }
 
     @Test
@@ -86,14 +76,8 @@ public class DefaultMethodIntegrationTest {
         byte[] argData = new byte[0];
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         
-        // Getting the result code will trigger the internal exception to be thrown back to us - we are expecting AssertionError.
-        boolean didCatchAssertionError = false;
-        try {
-            // This should show up as an uncaught exception (we can't statically prove that the method isn't there, on create).
-            avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
-        } catch (AssertionError e) {
-            didCatchAssertionError = true;
-        }
-        Assert.assertTrue(didCatchAssertionError);
+        // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
     }
 }
