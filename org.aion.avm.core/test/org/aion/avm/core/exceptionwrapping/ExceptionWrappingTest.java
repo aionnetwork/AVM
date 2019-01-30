@@ -2,51 +2,21 @@ package org.aion.avm.core.exceptionwrapping;
 
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.core.CommonAvmFactory;
-import org.aion.avm.core.util.TestingHelper;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.TransactionContext;
-import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.aion.avm.core.util.Helpers.randomAddress;
+import org.junit.*;
 
 
 public class ExceptionWrappingTest {
+    @Rule
+    public AvmRule avmRule = new AvmRule(false);
     private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private org.aion.vm.api.interfaces.Address dappAddr;
 
-    private Block block = new Block(new byte[32], 1, randomAddress(), System.currentTimeMillis(), new byte[0]);
-    private long energyLimit = 6_000_0000;
-    private long energyPrice = 1;
-
-    private KernelInterfaceImpl kernel;
-    private VirtualMachine avm;
-
     @Before
     public void setup() {
-        this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
-        
-        // Deploy the Dapp
-        byte[] testExceptionJar = JarBuilder.buildJarForMainAndClasses(TestExceptionResource.class);
-
-        byte[] txData = new CodeAndArguments(testExceptionJar, null).encodeToBytes();
-        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        dappAddr = AvmAddress.wrap(avm.run(new TransactionContext[] {context})[0].get().getReturnData());
-    }
-
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
+        dappAddr = avmRule.deploy(from, BigInteger.ZERO, avmRule.getDappBytes(TestExceptionResource.class, null)).getDappAddress();
     }
 
     /**
@@ -55,11 +25,8 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchFinally() {
         byte[] txData = ABIEncoder.encodeMethodArguments("tryMultiCatchFinally");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        Assert.assertEquals(3, TestingHelper.decodeResult(result));
+        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
+        Assert.assertEquals(3, result);
     }
 
     /**
@@ -68,10 +35,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testmSimpleManuallyThrowNull() {
         byte[] txData = ABIEncoder.encodeMethodArguments("manuallyThrowNull");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + NullPointerException.class.getName()).equals(result.getUncaughtException().getClass().getName()));
     }
@@ -82,11 +46,8 @@ public class ExceptionWrappingTest {
     @Test
     public void testSimpleTryMultiCatchInteraction() {
         byte[] txData = ABIEncoder.encodeMethodArguments("tryMultiCatch");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        Assert.assertEquals(2, TestingHelper.decodeResult(result));
+        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
+        Assert.assertEquals(2, result);
     }
 
     /**
@@ -95,11 +56,8 @@ public class ExceptionWrappingTest {
     @Test
     public void testRecatchCoreException() {
         byte[] txData = ABIEncoder.encodeMethodArguments("outerCatch");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        Assert.assertEquals(2, TestingHelper.decodeResult(result));
+        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
+        Assert.assertEquals(2, result);
     }
 
     /**
@@ -108,11 +66,8 @@ public class ExceptionWrappingTest {
     @Test
     public void testUserDefinedThrowCatch_commonPipeline() {
         byte[] txData = ABIEncoder.encodeMethodArguments("userDefinedCatch");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        Assert.assertEquals("two", TestingHelper.decodeResult(result));
+        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
+        Assert.assertEquals("two", result);
     }
 
     /**
@@ -121,10 +76,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testOriginalNull_commonPipeline() {
         byte[] txData = ABIEncoder.encodeMethodArguments("originalNull");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         Assert.assertTrue(NullPointerException.class.getName().equals(result.getUncaughtException().getClass().getName()));
     }
@@ -135,10 +87,7 @@ public class ExceptionWrappingTest {
     @Test
     public void testInnerCatch_commonPipeline() {
         byte[] txData = ABIEncoder.encodeMethodArguments("innerCatch");
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {context})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + NullPointerException.class.getName()).equals(result.getUncaughtException().getClass().getName()));
     }

@@ -1,48 +1,30 @@
 package org.aion.avm.core;
 
-import java.math.BigInteger;
-import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.Map;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.poc.AionBufferPerfContract;
 import org.aion.avm.core.poc.TRS;
 import org.aion.avm.core.testBlake2b.Blake2b;
 import org.aion.avm.core.testBlake2b.Main;
-import org.aion.avm.core.testExchange.CoinController;
-import org.aion.avm.core.testExchange.ERC20;
-import org.aion.avm.core.testExchange.ERC20Token;
-import org.aion.avm.core.testExchange.Exchange;
-import org.aion.avm.core.testExchange.ExchangeController;
-import org.aion.avm.core.testExchange.ExchangeTransaction;
-import org.aion.avm.core.testWallet.ByteArrayHelpers;
-import org.aion.avm.core.testWallet.ByteArrayWrapper;
-import org.aion.avm.core.testWallet.BytesKey;
-import org.aion.avm.core.testWallet.Daylimit;
-import org.aion.avm.core.testWallet.EventLogger;
-import org.aion.avm.core.testWallet.Multiowned;
-import org.aion.avm.core.testWallet.Operation;
-import org.aion.avm.core.testWallet.RequireFailedException;
-import org.aion.avm.core.testWallet.Wallet;
+import org.aion.avm.core.testExchange.*;
+import org.aion.avm.core.testWallet.*;
+import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
 import org.aion.vm.api.interfaces.Address;
-import org.aion.vm.api.interfaces.TransactionContext;
-import org.aion.vm.api.interfaces.VirtualMachine;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+
+import java.math.BigInteger;
+import java.text.NumberFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This suite is really just for viewing the deployment costs of some of our various Dapp examples.
@@ -50,13 +32,13 @@ import org.junit.Test;
  * The purpose is more to give us an idea about how our deployment costs look for different Dapps.
  */
 public class DeploymentCostTest {
+    @Rule
+    public AvmRule avmRule = new AvmRule(false);
+
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1L;
-    private static final Block BLOCK = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private static final Address DEPLOYER = KernelInterfaceImpl.PREMINED_ADDRESS;
-    
-    private KernelInterfaceImpl kernel;
-    private VirtualMachine avm;
+
 
     // NOTE: To add a new dApp to this test simply do the following:
     // 1. Create a Contract enum for it and put a String representation into contractsAsStrings
@@ -88,19 +70,6 @@ public class DeploymentCostTest {
             return contractsAsStrings.get(this);
         }
 
-    }
-
-    @Before
-    public void setup() {
-        this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
-    }
-
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
-        this.avm = null;
-        this.kernel = null;
     }
 
     /**
@@ -203,10 +172,7 @@ public class DeploymentCostTest {
 
     private AvmTransactionResult deployContract(Contract contract) {
         byte[] jar = getDeploymentJarBytesForContract(contract);
-        Transaction transaction = Transaction.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar,
-            ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionContext txContext = new TransactionContextImpl(transaction, BLOCK);
-        return (AvmTransactionResult) avm.run(new TransactionContext[] {txContext})[0].get();
+        return (AvmTransactionResult) avmRule.deploy(DEPLOYER, BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
     }
 
     private byte[] classesToJarBytes(Class<?> main, Class<?>... others) {

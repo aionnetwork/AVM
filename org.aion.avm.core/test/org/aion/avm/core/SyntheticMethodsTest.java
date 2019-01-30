@@ -1,22 +1,16 @@
 package org.aion.avm.core;
 
-import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+
+import java.math.BigInteger;
 
 /**
  * As part of issue-215, we want to see if Synthetic Methods would break any of our assumptions in method
@@ -25,35 +19,20 @@ import org.junit.Test;
  * any possible issues when we have a concrete method that overrides a generic method.
  */
 public class SyntheticMethodsTest {
+    @Rule
+    public AvmRule avmRule = new AvmRule(false);
+
     private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private org.aion.vm.api.interfaces.Address dappAddr;
 
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 6_000_0000;
     private long energyPrice = 1;
 
-    private KernelInterfaceImpl kernel;
-    private VirtualMachine avm;
 
     @Before
     public void setup() {
-        byte[] basicAppTestJar = JarBuilder.buildJarForMainAndClasses(SyntheticMethodsTestTarget.class
-                , AionMap.class
-                , AionSet.class
-                , AionList.class);
-
-        byte[] txData = new CodeAndArguments(basicAppTestJar, null).encodeToBytes();
-
-        this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
-        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        dappAddr = AvmAddress.wrap(avm.run(new TransactionContext[] {context})[0].get().getReturnData());
-    }
-
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
+        byte[] txData = avmRule.getDappBytes(SyntheticMethodsTestTarget.class, null, AionMap.class, AionSet.class, AionList.class);
+        dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getDappAddress();
     }
 
     @Test
@@ -135,8 +114,6 @@ public class SyntheticMethodsTest {
 
     private TransactionResult createAndRunTransaction(String methodName, Object ... args){
         byte[] txData = ABIEncoder.encodeMethodArguments(methodName, args);
-        Transaction tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        return avm.run(new TransactionContext[]{context})[0].get();
+        return avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
     }
 }

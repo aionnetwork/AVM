@@ -1,64 +1,45 @@
 package org.aion.avm.core;
 
-import static org.junit.Assert.assertEquals;
-
-import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.api.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+
+import java.math.BigInteger;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests that methods are transformed correctly so that all of the expected behaviour in Java is
  * replicated properly. Things like method overloading, array type hierarchies etc.
  */
 public class TransformedMethodTest {
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
     private static final long ENERGY_LIMIT = 10_000_000L;
     private static final long ENERGY_PRICE = 1L;
 
     private static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private static org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private static KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-    private static VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
-    private static Address dappAddress;
+    private static  org.aion.vm.api.interfaces.Address dappAddress;
 
     @BeforeClass
     public static void setupClass() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(TransformedMethodContract.class);
-        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-
-        // Deploy.
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
-        assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        dappAddress = TestingHelper.buildAddress(createResult.getReturnData());
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        avm.shutdown();
+        dappAddress =  avmRule.deploy(deployer, BigInteger.ZERO, avmRule.getDappBytes(TransformedMethodContract.class, new byte[0]), ENERGY_LIMIT, ENERGY_PRICE).getDappAddress();
     }
 
     @Test
     public void testCallNothing() {
         byte[] argData = ABIEncoder.encodeMethodArguments("nothing");
-        Transaction call = Transaction.call(deployer, AvmAddress.wrap(dappAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        TransactionResult result = avmRule.call(deployer, dappAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 
@@ -340,8 +321,7 @@ public class TransformedMethodTest {
     }
 
     private TransactionResult runTransaction(byte[] argData) {
-        Transaction call = Transaction.call(deployer, AvmAddress.wrap(dappAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        TransactionResult result = avmRule.call(deployer, dappAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return result;
     }

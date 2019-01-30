@@ -7,25 +7,15 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.EmptyInstrumentation;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.AvmAddress;
-import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
 import org.aion.vm.api.interfaces.Address;
-import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 /**
@@ -43,25 +33,13 @@ import org.junit.Test;
  * being handled correctly even when dApps fail.
  */
 public class FailedInternalCallAddressesTest {
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
     private static final int MAX_CALL_DEPTH = 10;
     private static Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 5;
-    private static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private static KernelInterface kernel;
-    private static AvmImpl avm;
-
-    @BeforeClass
-    public static void setup() {
-        kernel = new KernelInterfaceImpl();
-        avm = CommonAvmFactory.buildAvmInstance(kernel);
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        avm.shutdown();
-    }
 
     // All of the print calls become active when this is set true. By default this is false to speed
     // up the running of these tests / not pollute stdout, but a handy option for debugging.
@@ -290,20 +268,13 @@ public class FailedInternalCallAddressesTest {
             callData = ABIEncoder.encodeMethodArguments("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse", otherContractsAsAbiAddresses);
         }
 
-        Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
         return returnDataToAddresses(result.getReturnData());
     }
 
     private static Address deployFailedInternalCallAddressTrackerContract() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(FailedInternalCallAddressesContract.class);
-        jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-
-        Transaction transaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, avmRule.getDappBytes(FailedInternalCallAddressesContract.class, new byte[0]), energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
         return AvmAddress.wrap(result.getReturnData());
     }
@@ -317,12 +288,7 @@ public class FailedInternalCallAddressesTest {
     }
 
     private static Address deployInternalCallAddressTrackerContract() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(FailedInternalCallAddressesContract.class);
-        jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-
-        Transaction transaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, avmRule.getDappBytes(FailedInternalCallAddressesContract.class, new byte[0]), energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
         return AvmAddress.wrap(result.getReturnData());
     }

@@ -2,8 +2,8 @@ package org.aion.avm.core.persistence;
 
 import java.math.BigInteger;
 import org.aion.avm.core.BillingRules;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.InstrumentationBasedStorageFees;
+import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -18,11 +18,7 @@ import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 
 /**
@@ -31,21 +27,10 @@ import org.junit.Test;
  * It may be worth relying on some more coarse-grained information, should it become available.
  */
 public class GraphReachabilityIntegrationTest {
+    @Rule
+    public AvmRule avmRule = new AvmRule(false);
+
     private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-
-    private KernelInterfaceImpl kernel;
-    private VirtualMachine avm;
-
-    @Before
-    public void setup() {
-        this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
-    }
-
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
-    }
 
     /**
      * Tests that a hidden object, changed via a path that is destroyed, is still observed as changed by other paths.
@@ -338,8 +323,8 @@ public class GraphReachabilityIntegrationTest {
         // Deploy.
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+
+        AvmTransactionResult createResult = (AvmTransactionResult) avmRule.deploy(deployer, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
         
@@ -370,8 +355,7 @@ public class GraphReachabilityIntegrationTest {
     private Object callStatic(Block block, Address contractAddr, long expectedCost, String methodName, Object... args) {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
-        Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avmRule.call(deployer, AvmAddress.wrap(contractAddr.unwrap()),BigInteger.ZERO, argData, energyLimit, 1l).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(expectedCost, result.getEnergyUsed());
         Assert.assertEquals(energyLimit - expectedCost, result.getEnergyRemaining());
@@ -425,8 +409,8 @@ public class GraphReachabilityIntegrationTest {
     private TransactionResult runGc(Block block, Address contractAddr) {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction gc = Transaction.garbageCollect(AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(AvmAddress.wrap(contractAddr.unwrap())), energyLimit, energyPrice);
-        TransactionResult gcResult = avm.run(new TransactionContext[] {new TransactionContextImpl(gc, block)})[0].get();
+        Transaction gc = Transaction.garbageCollect(AvmAddress.wrap(contractAddr.unwrap()), avmRule.kernel.getNonce(AvmAddress.wrap(contractAddr.unwrap())), energyLimit, energyPrice);
+        TransactionResult gcResult = avmRule.avm.run(new TransactionContext[] {new TransactionContextImpl(gc, block)})[0].get();
         return gcResult;
     }
 }
