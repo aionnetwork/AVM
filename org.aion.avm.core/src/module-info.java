@@ -21,4 +21,7 @@ module org.aion.avm.core {
     requires spongycastle;
     requires aion.vm.api;
     requires ed25519;
+
+    //Dependency for Junit Rule
+    requires junit;
 }
