@@ -218,10 +218,6 @@ public class AvmImpl implements AvmInternal {
             result.setResultCode(error);
         }
 
-        // Refund energy for transaction
-        long energyRemaining = result.getEnergyRemaining() * ctx.getTransactionEnergyPrice();
-        taskTransactionalKernel.adjustBalance(sender, BigInteger.valueOf(energyRemaining));
-
         // Task transactional kernel commits are serialized through address resource monitor
         if (!this.resourceMonitor.commitKernelForTask(task, result.getResultCode().isRejected())){
             result.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
@@ -311,6 +307,10 @@ public class AvmImpl implements AvmInternal {
 
         // Run the common logic with the parent kernel as the top-level one.
         AvmTransactionResult result = commonInvoke(parentKernel, task, ctx);
+
+        // Refund energy for transaction
+        long energyRemaining = result.getEnergyRemaining() * ctx.getTransactionEnergyPrice();
+        parentKernel.refundAccount(sender, BigInteger.valueOf(energyRemaining));
 
         // Transfer fees to miner
         parentKernel.adjustBalance(ctx.getMinerAddress(), BigInteger.valueOf(result.getEnergyUsed() * ctx.getTransactionEnergyPrice()));

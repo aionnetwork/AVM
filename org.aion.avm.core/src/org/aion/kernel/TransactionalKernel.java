@@ -197,22 +197,30 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public boolean accountNonceEquals(Address address, BigInteger nonce) {
-        return nonce.compareTo(this.getNonce(address)) == 0;
+        // Delegate the check to our parent. The actual KernelInterface given to us by the kernel
+        // has an opportunity to do some special case logic here when it wishes.
+        return this.parent.accountNonceEquals(address, nonce);
     }
 
     @Override
     public boolean accountBalanceIsAtLeast(Address address, BigInteger amount) {
-        return this.getBalance(address).compareTo(amount) >= 0;
+        // Delegate the check to our parent. The actual KernelInterface given to us by the kernel
+        // has an opportunity to do some special case logic here when it wishes.
+        return this.parent.accountBalanceIsAtLeast(address, amount);
     }
 
     @Override
     public boolean isValidEnergyLimitForCreate(long energyLimit) {
-        return energyLimit > 0;
+        // Delegate the check to our parent. The actual KernelInterface given to us by the kernel
+        // has an opportunity to do some special case logic here when it wishes.
+        return this.parent.isValidEnergyLimitForCreate(energyLimit);
     }
 
     @Override
     public boolean isValidEnergyLimitForNonCreate(long energyLimit) {
-        return energyLimit > 0;
+        // Delegate the check to our parent. The actual KernelInterface given to us by the kernel
+        // has an opportunity to do some special case logic here when it wishes.
+        return this.parent.isValidEnergyLimitForNonCreate(energyLimit);
     }
 
     @Override
