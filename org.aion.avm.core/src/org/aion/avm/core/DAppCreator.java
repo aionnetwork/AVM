@@ -329,7 +329,7 @@ public class DAppCreator {
             throw e;
         } catch (RuntimeAssertionError e) {
             // If one of these shows up here, we are wanting to pass it back up to the top, where we can shut down.
-            throw new AssertionError(e.getCause());
+            throw new AssertionError(e);
         } catch (Throwable e) {
             // Anything else we couldn't handle more specifically needs to be passed further up to the top.
             throw new AssertionError(e);
