@@ -219,6 +219,7 @@ public class RuntimeMethodFeeSchedule {
     public static final long Float_avm_compareTo_1 = RT_METHOD_FEE_LEVEL_1; // totalCost - 124;
 
 
+    public static final long BigDecimal_avm_equals = RT_METHOD_FEE_LEVEL_3;
     public static final long BigDecimal_avm_constructor = RT_METHOD_FEE_LEVEL_3; // totalCost - 663; // byte code cost - 435; invoked methods cost - 228;
     public static final long BigDecimal_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 791; // byte code cost - 501; invoked methods cost - 290;
     public static final long BigDecimal_avm_constructor_2 = RT_METHOD_FEE_LEVEL_3; // totalCost - 651; // byte code cost - 423; invoked methods cost - 228;

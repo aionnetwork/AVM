@@ -392,6 +392,20 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
         return new BigDecimal(v.ulp());
     }
 
+    public boolean avm_equals(IObject x) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_equals);
+        if (x == this) {
+            return true;
+        }
+
+        if (!(x instanceof BigDecimal)) {
+            return false;
+        }
+
+        BigDecimal xInt = (BigDecimal) x;
+        return v.equals(xInt.v);
+    }
+
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================
@@ -422,7 +436,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(String.class, serializer);
+        super.serializeSelf(BigDecimal.class, serializer);
         
         // We serialize this as a string.
         CodecIdioms.serializeString(serializer, this.v.toString());
