@@ -404,6 +404,11 @@ public class NodeEnvironment {
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Long.avm_TYPE, 24);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Short.avm_TYPE, 25);
 
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_ZERO, 26);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_ONE, 27);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_TWO, 28);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_TEN, 29);
+
         return constantMap;
     }
 
