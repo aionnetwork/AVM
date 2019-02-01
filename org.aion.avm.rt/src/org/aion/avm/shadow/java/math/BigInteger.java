@@ -322,7 +322,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(String.class, serializer);
+        super.serializeSelf(BigInteger.class, serializer);
         
         // We can serialize this as its actual 2s compliment byte array.
         CodecIdioms.serializeByteArray(serializer, this.v.toByteArray());
