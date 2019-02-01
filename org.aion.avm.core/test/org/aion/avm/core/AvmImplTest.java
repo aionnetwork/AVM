@@ -33,18 +33,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import legacy_examples.avmstartuptest.MainClass;
-import legacy_examples.deployAndRunTest.DeployAndRunTarget;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 
-import static java.lang.String.format;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -579,6 +574,12 @@ public class AvmImplTest {
         avm.shutdown();
     }
 
+    @Test
+    public void testDeployFailedWithInvalidMainClassBytecode() {
+        byte[] jar = JarBuilder.buildJarForExplicitClassNameAndBytecode("NotAValidClass", new byte[] {0x1, 0x2, 0x3});
+        deployInvalidJar(jar);
+    }
+
 
     private int callRecursiveHash(KernelInterface kernel, VirtualMachine avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);
@@ -614,5 +615,17 @@ public class AvmImplTest {
         TransactionResult result2 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
         return TestingHelper.decodeResult(result2);
+    }
+
+    private void deployInvalidJar(byte[] jar) {
+        byte[] deployment = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        long energyLimit = 10_000_000l;
+        long energyPrice = 1l;
+        Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, deployment, energyLimit, energyPrice);
+        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        avm.shutdown();
+        assertEquals(AvmTransactionResult.Code.FAILED_INVALID_DATA, result1.getResultCode());
     }
 }

@@ -28,9 +28,26 @@ public class JarBuilder {
      * @return The bytes representing this JAR.
      */
     public static byte[] buildJarForMainAndClasses(Class<?> mainClass, Class<?> ...otherClasses) {
-        JarBuilder builder = new JarBuilder(mainClass);
+        JarBuilder builder = new JarBuilder(mainClass, null);
         for (Class<?> clazz : otherClasses) {
             builder.addClassAndInners(clazz);
+        }
+        return builder.toBytes();
+    }
+
+    /**
+     * Creates the in-memory representation of a JAR with the given class names and direct bytes.
+     * NOTE:  This method is really just used to build invalid JARs (given classes may be corrupt/invalid).
+     * 
+     * @return The bytes representing this JAR.
+     */
+    public static byte[] buildJarForExplicitClassNameAndBytecode(String mainClassName, byte[] mainClassBytes) {
+        JarBuilder builder = new JarBuilder(null, mainClassName);
+        try {
+            builder.saveClassToStream(mainClassName, mainClassBytes);
+        } catch (IOException e) {
+            // Can't happen - in-memory.
+            RuntimeAssertionError.unexpected(e);
         }
         return builder.toBytes();
     }
@@ -40,7 +57,7 @@ public class JarBuilder {
     private final JarOutputStream jarStream;
     private final Set<String> entriesInJar;
 
-    private JarBuilder(Class<?> mainClass) {
+    private JarBuilder(Class<?> mainClass, String mainClassName) {
         // Build the manifest.
         Manifest manifest = new Manifest();
         Attributes mainAttributes = manifest.getMainAttributes();
@@ -49,6 +66,8 @@ public class JarBuilder {
         // The main class is technically optional (we mostly use a null main for testing cases).
         if (null != mainClass) {
             mainAttributes.put(Attributes.Name.MAIN_CLASS, mainClass.getName());
+        } else if (null != mainClassName) {
+            mainAttributes.put(Attributes.Name.MAIN_CLASS, mainClassName);
         }
         
         // Create the underlying byte stream (hold onto this for serialization).
