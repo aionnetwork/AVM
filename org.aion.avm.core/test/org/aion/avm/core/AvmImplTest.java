@@ -593,6 +593,12 @@ public class AvmImplTest {
     }
 
     @Test
+    public void testDeployFailedWithMissingMainMethod() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(InterfaceTestResource.class, MainClass.class);
+        deployInvalidJar(jar);
+    }
+
+    @Test
     public void testDeployFailedWithInvalidMainClassBytecode() {
         byte[] jar = JarBuilder.buildJarForExplicitClassNameAndBytecode("NotAValidClass", new byte[] {0x1, 0x2, 0x3});
         deployInvalidJar(jar);

@@ -19,6 +19,7 @@ import org.aion.avm.core.persistence.IObjectGraphStore;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
+import org.aion.avm.core.rejection.MainMethodChecker;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
@@ -200,8 +201,8 @@ public class DAppCreator {
                 return;
             }
 
-            // Verify that the DApp contains the main class they listed.
-            if (!rawDapp.classes.containsKey(rawDapp.mainClass)) {
+            // Verify that the DApp contains the main class they listed and that it has a "public static byte[] main()" method.
+            if (!rawDapp.classes.containsKey(rawDapp.mainClass) || !MainMethodChecker.checkForMain(rawDapp.classes.get(rawDapp.mainClass))) {
                 result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
                 return;

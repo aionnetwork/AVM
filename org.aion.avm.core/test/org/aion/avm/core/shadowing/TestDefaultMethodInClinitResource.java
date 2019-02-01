@@ -12,4 +12,8 @@ public class TestDefaultMethodInClinitResource {
         // This is a default method so it should fail.
         instance.putIfAbsent("foo", "bar");
     }
+
+    public static byte[] main() {
+        return new byte[0];
+    }
 }
