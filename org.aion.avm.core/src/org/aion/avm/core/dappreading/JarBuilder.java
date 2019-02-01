@@ -36,6 +36,22 @@ public class JarBuilder {
     }
 
     /**
+     * Creates the in-memory representation of a JAR with the given classes and explicit main class name.
+     * NOTE:  This method is really just used to build invalid JARs (main class might not be included).
+     * 
+     * @param mainClassName The name of the main class to reference in the manifest (cannot be null).
+     * @param otherClasses The other classes to include (main is already included).
+     * @return The bytes representing this JAR.
+     */
+    public static byte[] buildJarForExplicitMainAndClasses(String mainClassName, Class<?> ...otherClasses) {
+        JarBuilder builder = new JarBuilder(null, mainClassName);
+        for (Class<?> clazz : otherClasses) {
+            builder.addClassAndInners(clazz);
+        }
+        return builder.toBytes();
+    }
+
+    /**
      * Creates the in-memory representation of a JAR with the given class names and direct bytes.
      * NOTE:  This method is really just used to build invalid JARs (given classes may be corrupt/invalid).
      * 

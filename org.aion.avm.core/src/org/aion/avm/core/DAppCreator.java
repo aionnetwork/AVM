@@ -52,29 +52,6 @@ public class DAppCreator {
     private static final Logger logger = LoggerFactory.getLogger(DAppExecutor.class);
 
     /**
-     * Validates all classes, including but not limited to:
-     *
-     * <ul>
-     * <li>class format (hash, version, etc.)</li>
-     * <li>no native method</li>
-     * <li>no invalid opcode</li>
-     * <li>package name does not start with <code>org.aion.avm</code></li>
-     * <li>no access to any <code>org.aion.avm</code> packages but the <code>org.aion.avm.api</code> package</li>
-     * <li>any assumptions that the class transformation has made</li>
-     * <li>TODO: add more</li>
-     * </ul>
-     *
-     * @param dapp the classes of DApp
-     * @return true if the DApp is valid, otherwise false
-     */
-    private static boolean validateDapp(RawDappModule dapp) {
-
-        // TODO: Rom, complete module validation
-
-        return true;
-    }
-
-    /**
      * Returns the sizes of all the user-space classes
      *
      * @param classHierarchy     the class hierarchy
@@ -223,8 +200,8 @@ public class DAppCreator {
                 return;
             }
 
-            // validate dapp module
-            if (!validateDapp(rawDapp)) {
+            // Verify that the DApp contains the main class they listed.
+            if (!rawDapp.classes.containsKey(rawDapp.mainClass)) {
                 result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
                 return;

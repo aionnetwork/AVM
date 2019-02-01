@@ -575,6 +575,24 @@ public class AvmImplTest {
     }
 
     @Test
+    public void testDeployFailedWithNullMainClass() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(null, MainClass.class);
+        deployInvalidJar(jar);
+    }
+
+    @Test
+    public void testDeployFailedWithMissingMainClass() {
+        byte[] jar = JarBuilder.buildJarForExplicitMainAndClasses("NonExistentClass", MainClass.class);
+        deployInvalidJar(jar);
+    }
+
+    @Test
+    public void testDeployFailedWithInvalidMainClass() {
+        byte[] jar = JarBuilder.buildJarForExplicitMainAndClasses(".Invalid..Class.....Name", MainClass.class);
+        deployInvalidJar(jar);
+    }
+
+    @Test
     public void testDeployFailedWithInvalidMainClassBytecode() {
         byte[] jar = JarBuilder.buildJarForExplicitClassNameAndBytecode("NotAValidClass", new byte[] {0x1, 0x2, 0x3});
         deployInvalidJar(jar);
