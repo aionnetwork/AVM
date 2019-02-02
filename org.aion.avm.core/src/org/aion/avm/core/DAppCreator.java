@@ -189,6 +189,9 @@ public class DAppCreator {
             Address dappAddress = ctx.getContractAddress();
             CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(ctx.getTransactionData());
             if (codeAndArguments == null) {
+                if (debugMode) {
+                    System.err.println("DApp deployment failed due to incorrectly packaged JAR and initialization arguments");
+                }
                 result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
                 return;
@@ -196,6 +199,9 @@ public class DAppCreator {
 
             RawDappModule rawDapp = RawDappModule.readFromJar(codeAndArguments.code);
             if (rawDapp == null) {
+                if (debugMode) {
+                    System.err.println("DApp deployment failed due to corrupt JAR data");
+                }
                 result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
                 return;
@@ -203,6 +209,10 @@ public class DAppCreator {
 
             // Verify that the DApp contains the main class they listed and that it has a "public static byte[] main()" method.
             if (!rawDapp.classes.containsKey(rawDapp.mainClass) || !MainMethodChecker.checkForMain(rawDapp.classes.get(rawDapp.mainClass))) {
+                if (debugMode) {
+                    String explanation = !rawDapp.classes.containsKey(rawDapp.mainClass) ? "missing Main class" : "missing main() method";
+                    System.err.println("DApp deployment failed due to " + explanation);
+                }
                 result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
                 result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
                 return;
@@ -284,12 +294,18 @@ public class DAppCreator {
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (UncaughtException e) {
+            if (debugMode) {
+                System.err.println("DApp deployment failed due to uncaught EXCEPTION: \"" + e.getMessage() + "\"");
+            }
             result.setResultCode(AvmTransactionResult.Code.FAILED_EXCEPTION);
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
             result.setUncaughtException(e.getCause());
             logger.debug("Uncaught exception", e.getCause());
         } catch (RejectedClassException e) {
+            if (debugMode) {
+                System.err.println("DApp deployment REJECTED with reason: \"" + e.getMessage() + "\"");
+            }
             result.setResultCode(AvmTransactionResult.Code.FAILED_REJECTED);
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 

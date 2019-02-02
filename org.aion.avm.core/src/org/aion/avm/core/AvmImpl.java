@@ -363,7 +363,7 @@ public class AvmImpl implements AvmInternal {
                 if ((null != stateToResume) && (null != thisTransactionKernel.getCode(recipient))) {
                     dapp = stateToResume.dApp;
                     // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
-                    DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result);
+                    DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.debugMode);
                 } else {
                     // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
                     ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toBytes());
@@ -384,7 +384,7 @@ public class AvmImpl implements AvmInternal {
                     }
                     // Run the call and, if successful, check this into the hot DApp cache.
                     if (null != dapp) {
-                        DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result);
+                        DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.debugMode);
                         if (AvmTransactionResult.Code.SUCCESS == result.getResultCode()) {
                             dapp.cleanForCache();
                             this.hotCache.checkin(addressWrapper, dapp);
