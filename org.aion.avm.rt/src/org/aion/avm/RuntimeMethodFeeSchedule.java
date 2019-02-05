@@ -938,4 +938,16 @@ public class RuntimeMethodFeeSchedule {
     public static final long Short_avm_reverseBytes = RT_METHOD_FEE_LEVEL_3; // totalCost - 416; // byte code cost - 116; invoked methods cost - 300;
     public static final long Short_avm_toUnsignedInt = RT_METHOD_FEE_LEVEL_1; // totalCost - 65;
     public static final long Short_avm_toUnsignedLong = RT_METHOD_FEE_LEVEL_1; // totalCost - 67;
+
+    public static final long TimeUnit_avm_convert = RT_METHOD_FEE_LEVEL_1;
+    public static final long TimeUnit_avm_toDays = RT_METHOD_FEE_LEVEL_1;
+    public static final long TimeUnit_avm_toHours = RT_METHOD_FEE_LEVEL_1;
+    public static final long TimeUnit_avm_toMinutes = RT_METHOD_FEE_LEVEL_1;
+    public static final long TimeUnit_avm_toSeconds = RT_METHOD_FEE_LEVEL_1;
+    public static final long TimeUnit_avm_toMillis = RT_METHOD_FEE_LEVEL_1;
+    public static final long TimeUnit_avm_toMicros = RT_METHOD_FEE_LEVEL_1;
+    public static final long TimeUnit_avm_toNanos = RT_METHOD_FEE_LEVEL_1;
+    public static final long TimeUnit_avm_values = RT_METHOD_FEE_LEVEL_3;
+    public static final long TimeUnit_avm_valueOf = RT_METHOD_FEE_LEVEL_2;
+    public static final long TimeUnit_avm_valueOf_1 = RT_METHOD_FEE_LEVEL_3;
 }

@@ -130,6 +130,8 @@ public class NodeEnvironment {
                     , org.aion.avm.shadow.java.util.Set.class
                     , org.aion.avm.shadow.java.util.List.class
                     , org.aion.avm.shadow.java.util.function.Function.class
+
+                    , org.aion.avm.shadow.java.util.concurrent.TimeUnit.class
             };
 
             this.jclClassNames = new HashSet<>();
@@ -408,6 +410,14 @@ public class NodeEnvironment {
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_ONE, 27);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_TWO, 28);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_TEN, 29);
+
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_DAYS, 30);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_HOURS, 31);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MINUTES, 32);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_SECONDS, 33);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MILLISECONDS, 34);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MICROSECONDS, 35);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_NANOSECONDS, 36);
 
         return constantMap;
     }
