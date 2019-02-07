@@ -267,6 +267,7 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public Integer(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
+        lazyLoad();
     }
 
     private int v;

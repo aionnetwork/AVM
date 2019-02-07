@@ -13,7 +13,6 @@ public abstract class Number extends Object {
 
     public Number(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
-        lazyLoad();
     }
 
     public Number(){};

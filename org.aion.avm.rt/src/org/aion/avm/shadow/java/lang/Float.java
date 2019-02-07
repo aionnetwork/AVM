@@ -197,6 +197,7 @@ public class Float extends Number implements Comparable<Float> {
 
     public Float(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
+        lazyLoad();
     }
 
     private float v;

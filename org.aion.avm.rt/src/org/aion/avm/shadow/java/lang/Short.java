@@ -157,6 +157,7 @@ public class Short extends Number {
 
     public Short(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
+        lazyLoad();
     }
 
     private short v;

@@ -199,6 +199,7 @@ public class Double extends Number implements Comparable<Double>{
 
     public Double(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
+        lazyLoad();
     }
 
     private double v;

@@ -269,6 +269,7 @@ public class Long extends Number implements Comparable<Long> {
 
     public Long(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
+        lazyLoad();
     }
 
     private long v;
