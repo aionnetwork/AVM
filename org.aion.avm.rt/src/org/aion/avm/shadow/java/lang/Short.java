@@ -21,27 +21,27 @@ public class Short extends Number {
 
     public static String avm_toString(short s) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_toString);
-        return Integer.avm_toString((int)s, 10);
+        return new String(java.lang.Short.toString(s));
     }
 
     public static short avm_parseShort(String s, int radix) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_parseShort);
-        return java.lang.Short.parseShort(s.getUnderlying(), radix);
+        return internalParseShort(s, radix);
     }
 
     public static short avm_parseShort(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_parseShort_1);
-        return avm_parseShort(s, 10);
+        return internalParseShort(s, 10);
     }
 
     public static Short avm_valueOf(String s, int radix) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_valueOf);
-        return avm_valueOf(avm_parseShort(s, radix));
+        return new Short(internalParseShort(s, radix));
     }
 
     public static Short avm_valueOf(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_valueOf_1);
-        return avm_valueOf(s, 10);
+        return new Short(internalParseShort(s, 10));
     }
 
     public static Short avm_valueOf(short s) {
@@ -96,40 +96,41 @@ public class Short extends Number {
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_toString_1);
-        return Integer.avm_toString((int) v);
+        return new String(java.lang.Short.toString(this.v));
     }
 
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_hashCode);
-        return Short.avm_hashCode(v);
+        return internalHashCode(this.v);
     }
 
     public static int avm_hashCode(short value) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_hashCode_1);
-        return (int)value;
+        return internalHashCode(value);
     }
 
     public boolean avm_equals(IObject obj) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_equals);
         if (obj instanceof Short) {
-            return v == ((Short)obj).avm_shortValue();
+            Short other = (Short) obj;
+            return this.v == other.v;
         }
         return false;
     }
 
     public int avm_compareTo(Short anotherShort) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_compareTo);
-        return avm_compare(this.v, anotherShort.v);
+        return internalCompare(this.v, anotherShort.v);
     }
 
     public static int avm_compare(short x, short y) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_compare);
-        return x - y;
+        return internalCompare(x, y);
     }
 
     public static int avm_compareUnsigned(short x, short y) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_compareUnsigned);
-        return avm_toUnsignedInt(x) - avm_toUnsignedInt(y);
+        return internalToUnsignedInt(x) - internalToUnsignedInt(y);
     }
 
     public static final int avm_SIZE = java.lang.Short.SIZE;
@@ -143,12 +144,28 @@ public class Short extends Number {
 
     public static int avm_toUnsignedInt(short x) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_toUnsignedInt);
-        return ((int) x) & 0xffff;
+        return internalToUnsignedInt(x);
     }
 
     public static long avm_toUnsignedLong(short x) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_toUnsignedLong);
         return ((long) x) & 0xffffL;
+    }
+
+    private static short internalParseShort(String s, int radix) throws NumberFormatException {
+        return java.lang.Short.parseShort(s.getUnderlying(), radix);
+    }
+
+    private static int internalHashCode(short value) {
+        return (int)value;
+    }
+
+    private static int internalCompare(short x, short y) {
+        return x - y;
+    }
+
+    private static int internalToUnsignedInt(short x) {
+        return ((int) x) & 0xffff;
     }
 
     //=======================================================

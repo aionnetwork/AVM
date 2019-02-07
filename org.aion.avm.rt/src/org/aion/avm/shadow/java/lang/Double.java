@@ -55,13 +55,13 @@ public class Double extends Number implements Comparable<Double>{
     public static String avm_toString(double a)
     {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_toString);
-        return new String(java.lang.Double.toString(a));
+        return internalToString(a);
     }
 
     public static Double avm_valueOf(String a)
     {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_valueOf);
-        return new Double(avm_parseDouble(a));
+        return new Double(internalParseDouble(a));
     }
 
     public static Double avm_valueOf(double origValue) {
@@ -72,39 +72,39 @@ public class Double extends Number implements Comparable<Double>{
     public static double avm_parseDouble(String a)
     {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_parseDouble);
-        return java.lang.Double.parseDouble(a.getUnderlying());
+        return internalParseDouble(a);
     }
 
     public static boolean avm_isNaN(double v)
     {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isNaN);
-        return (v != v);
+        return java.lang.Double.isNaN(v);
     }
 
     public static boolean avm_isInfinite(double v) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isInfinite);
-        return (v == avm_POSITIVE_INFINITY) || (v == avm_NEGATIVE_INFINITY);
+        return internalIsInfinite(v);
     }
 
     public static boolean avm_isFinite(double d) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isFinite);
-        return Math.avm_abs(d) <= Double.avm_MAX_VALUE;
+        return java.lang.Math.abs(d) <= Double.avm_MAX_VALUE;
     }
 
     public boolean avm_isNaN() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isNaN_1);
-        return avm_isNaN(v);
+        return java.lang.Double.isNaN(this.v);
     }
 
     public boolean avm_isInfinite() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isInfinite_1);
-        return avm_isInfinite(v);
+        return internalIsInfinite(v);
     }
 
     public String avm_toString()
     {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_toString_1);
-        return avm_toString(v);
+        return internalToString(v);
     }
 
     public byte avm_byteValue() {
@@ -139,7 +139,7 @@ public class Double extends Number implements Comparable<Double>{
 
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_hashCode);
-        return Double.avm_hashCode(v);
+        return java.lang.Double.hashCode(this.v);
     }
 
     public static int avm_hashCode(double value) {
@@ -164,7 +164,7 @@ public class Double extends Number implements Comparable<Double>{
 
     public int avm_compareTo(Double anotherDouble) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_compareTo);
-        return avm_compare(v, anotherDouble.v);
+        return java.lang.Double.compare(this.v, anotherDouble.v);
     }
 
     public static int avm_compare(double d1, double d2){
@@ -179,12 +179,26 @@ public class Double extends Number implements Comparable<Double>{
 
     public static double avm_max(double a, double b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_max);
-        return Math.avm_max(a, b);
+        return java.lang.Math.max(a, b);
     }
 
     public static double avm_min(double a, double b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_min);
-        return Math.avm_min(a, b);
+        return java.lang.Math.min(a, b);
+    }
+
+    private static String internalToString(double a)
+    {
+        return new String(java.lang.Double.toString(a));
+    }
+
+    private static double internalParseDouble(String a)
+    {
+        return java.lang.Double.parseDouble(a.getUnderlying());
+    }
+
+    private static boolean internalIsInfinite(double v) {
+        return (v == avm_POSITIVE_INFINITY) || (v == avm_NEGATIVE_INFINITY);
     }
 
     //========================================================

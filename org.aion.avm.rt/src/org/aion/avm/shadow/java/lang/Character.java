@@ -169,20 +169,22 @@ public class Character extends Object {
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Character_avm_hashCode);
         lazyLoad();
-        return Character.avm_hashCode(v);
+        return internalHashCode(v);
     }
 
     public static int avm_hashCode(char value) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Character_avm_hashCode_1);
+        return internalHashCode(value);
+    }
+
+    private static int internalHashCode(char value) {
         return (int)value;
     }
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Character_avm_toString);
         lazyLoad();
-        char buf[] = {v};
-        CharArray a = new CharArray(buf);
-        return String.avm_valueOf(a);
+        return new String(java.lang.Character.toString(this.v));
     }
 
     public static String avm_toString(char c) {

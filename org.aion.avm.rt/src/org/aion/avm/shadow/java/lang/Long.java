@@ -46,7 +46,7 @@ public class Long extends Number implements Comparable<Long> {
 
     public static String avm_toString(long i) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_toString_1);
-        return new String(java.lang.Long.toString(i));
+        return internalToString(i);
     }
 
     public static String avm_toUnsignedString(long i){
@@ -56,7 +56,7 @@ public class Long extends Number implements Comparable<Long> {
 
     public static long avm_parseLong(String s, int radix) throws NumberFormatException{
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_parseLong);
-        return java.lang.Long.parseLong(s.getUnderlying(), radix);
+        return internalParseLong(s, radix);
     }
 
     public static long avm_parseLong(String s) throws NumberFormatException {
@@ -88,12 +88,12 @@ public class Long extends Number implements Comparable<Long> {
 
     public static Long avm_valueOf(String s, int radix) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_valueOf);
-        return avm_valueOf(avm_parseLong(s, radix));
+        return new Long(internalParseLong(s, radix));
     }
 
     public static Long avm_valueOf(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_valueOf_1);
-        return avm_valueOf(avm_parseLong(s, 10));
+        return new Long(internalParseLong(s, 10));
     }
 
     public static Long avm_valueOf(long l) {
@@ -148,40 +148,41 @@ public class Long extends Number implements Comparable<Long> {
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_toString_2);
-        return avm_toString(v);
+        return internalToString(this.v);
     }
 
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_hashCode);
-        return avm_hashCode(v);
+        return internalHashCode(this.v);
     }
 
     public static int avm_hashCode(long value) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_hashCode_1);
-        return (int)(value ^ (value >>> 32));
+        return internalHashCode(value);
     }
 
     public boolean avm_equals(IObject obj) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_equals);
         if (obj instanceof Long) {
-            return v == ((Long)obj).avm_longValue();
+            Long other = (Long) obj;
+            return this.v == other.v;
         }
         return false;
     }
 
     public int avm_compareTo(Long anotherLong) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_compareTo);
-        return avm_compare(this.v, anotherLong.v);
+        return internalCompare(this.v, anotherLong.v);
     }
 
     public static int avm_compare(long x, long y) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_compare);
-        return (x < y) ? -1 : ((x == y) ? 0 : 1);
+        return internalCompare(x, y);
     }
 
     public static int avm_compareUnsigned(long x, long y) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_compareUnsigned);
-        return avm_compare(x + avm_MIN_VALUE, y + avm_MIN_VALUE);
+        return internalCompare(x + avm_MIN_VALUE, y + avm_MIN_VALUE);
     }
 
     public static long avm_divideUnsigned(long dividend, long divisor){
@@ -255,12 +256,28 @@ public class Long extends Number implements Comparable<Long> {
 
     public static long avm_max(long a, long b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_max);
-        return Math.avm_max(a, b);
+        return java.lang.Math.max(a, b);
     }
 
     public static long avm_min(long a, long b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_min);
-        return Math.avm_min(a, b);
+        return java.lang.Math.min(a, b);
+    }
+
+    private static String internalToString(long i) {
+        return new String(java.lang.Long.toString(i));
+    }
+
+    private static long internalParseLong(String s, int radix) throws NumberFormatException{
+        return java.lang.Long.parseLong(s.getUnderlying(), radix);
+    }
+
+    private static int internalHashCode(long value) {
+        return (int)(value ^ (value >>> 32));
+    }
+
+    private static int internalCompare(long x, long y) {
+        return (x < y) ? -1 : ((x == y) ? 0 : 1);
     }
 
     //========================================================

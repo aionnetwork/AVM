@@ -60,7 +60,7 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public static int avm_parseInt(String s, int radix) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_parseInt);
-        return java.lang.Integer.parseInt(s.getUnderlying(), radix);
+        return internalParseInt(s, radix);
     }
 
     public static int avm_parseInt(String s) throws NumberFormatException {
@@ -92,12 +92,12 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public static Integer avm_valueOf(String s, int radix) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_valueOf);
-        return Integer.avm_valueOf(avm_parseInt(s, radix));
+        return new Integer(internalParseInt(s, radix));
     }
 
     public static Integer avm_valueOf(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_valueOf_1);
-        return Integer.avm_valueOf(avm_parseInt(s, 10));
+        return new Integer(internalParseInt(s, 10));
     }
 
     public static Integer avm_valueOf(int i) {
@@ -147,13 +147,13 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_toString_2);
-        return avm_toString(v);
+        return new String(java.lang.Integer.toString(this.v));
     }
 
     @Override
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_hashCode);
-        return Integer.avm_hashCode(v);
+        return this.v;
     }
 
     public static int avm_hashCode(int value) {
@@ -163,10 +163,12 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public boolean avm_equals(IObject obj) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_equals);
+        boolean isEqual = false;
         if (obj instanceof Integer) {
-            return v == ((Integer)obj).avm_intValue();
+            Integer other = (Integer) obj;
+            isEqual = this.v == other.v;
         }
-        return false;
+        return isEqual;
     }
 
     public static Integer avm_decode(String nm) throws NumberFormatException {
@@ -176,34 +178,34 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public int avm_compareTo(Integer anotherInteger) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_compareTo);
-        return avm_compare(this.v, anotherInteger.v);
+        return internalCompare(this.v, anotherInteger.v);
     }
 
     public static int avm_compare(int x, int y) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_compare);
-        return (x < y) ? -1 : ((x == y) ? 0 : 1);
+        return internalCompare(x, y);
     }
 
     public static int avm_compareUnsigned(int x, int y) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_compareUnsigned);
-        return avm_compare(x + avm_MIN_VALUE, y + avm_MIN_VALUE);
+        return internalCompare(x + avm_MIN_VALUE, y + avm_MIN_VALUE);
     }
 
     public static long avm_toUnsignedLong(int x) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_toUnsignedLong);
-        return ((long) x) & 0xffffffffL;
+        return internalToUnsignedLong(x);
     }
 
     public static int avm_divideUnsigned(int dividend, int divisor) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_divideUnsigned);
         // In lieu of tricky code, for now just use long arithmetic.
-        return (int)(avm_toUnsignedLong(dividend) / avm_toUnsignedLong(divisor));
+        return (int)(internalToUnsignedLong(dividend) / internalToUnsignedLong(divisor));
     }
 
     public static int avm_remainderUnsigned(int dividend, int divisor) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_remainderUnsigned);
         // In lieu of tricky code, for now just use long arithmetic.
-        return (int)(avm_toUnsignedLong(dividend) % avm_toUnsignedLong(divisor));
+        return (int)(internalToUnsignedLong(dividend) % internalToUnsignedLong(divisor));
     }
 
     public static int avm_highestOneBit(int i) {
@@ -253,12 +255,24 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public static int avm_max(int a, int b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_max);
-        return Math.avm_max(a, b);
+        return java.lang.Math.max(a, b);
     }
 
     public static int avm_min(int a, int b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_min);
-        return Math.avm_min(a, b);
+        return java.lang.Math.min(a, b);
+    }
+
+    private static int internalParseInt(String s, int radix) throws NumberFormatException {
+        return java.lang.Integer.parseInt(s.getUnderlying(), radix);
+    }
+
+    private static int internalCompare(int x, int y) {
+        return (x < y) ? -1 : ((x == y) ? 0 : 1);
+    }
+
+    private static long internalToUnsignedLong(int x) {
+        return ((long) x) & 0xffffffffL;
     }
 
     //========================================================

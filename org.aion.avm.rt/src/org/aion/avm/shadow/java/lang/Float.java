@@ -61,7 +61,7 @@ public class Float extends Number implements Comparable<Float> {
 
     public static Float avm_valueOf(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_valueOf);
-        return new Float(avm_parseFloat(s));
+        return new Float(internalParseFloat(s));
     }
 
     public static Float avm_valueOf(float f) {
@@ -71,7 +71,7 @@ public class Float extends Number implements Comparable<Float> {
 
     public static float avm_parseFloat(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_parseFloat);
-        return java.lang.Float.parseFloat(s.getUnderlying());
+        return internalParseFloat(s);
     }
 
     public static boolean avm_isNaN(float v) {
@@ -81,27 +81,27 @@ public class Float extends Number implements Comparable<Float> {
 
     public static boolean avm_isInfinite(float v) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_isInfinite);
-        return (v == avm_POSITIVE_INFINITY) || (v == avm_NEGATIVE_INFINITY);
+        return internalIsInfinite(v);
     }
 
     public static boolean avm_isFinite(float f) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_isFinite);
-        return Math.avm_abs(f) <= Float.avm_MAX_VALUE;
+        return java.lang.Float.isFinite(f);
     }
 
     public boolean avm_isNaN() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_isNaN_1);
-        return avm_isNaN(v);
+        return java.lang.Float.isNaN(this.v);
     }
 
     public boolean avm_isInfinite() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_isInfinite_1);
-        return avm_isInfinite(v);
+        return internalIsInfinite(v);
     }
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_toString_1);
-        return Float.avm_toString(v);
+        return new String(java.lang.Float.toString(this.v));
     }
 
     public byte avm_byteValue() {
@@ -136,23 +136,27 @@ public class Float extends Number implements Comparable<Float> {
 
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_hashCode);
-        return Float.avm_hashCode(v);
+        return internalHashCode(v);
     }
 
     public static int avm_hashCode(float value) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_hashCode_1);
-        return avm_floatToIntBits(value);
+        return internalHashCode(value);
     }
 
     public boolean avm_equals(IObject obj) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_equals);
-        return (obj instanceof Float)
-                && (avm_floatToIntBits(((Float)obj).v) == avm_floatToIntBits(v));
+        boolean isEqual = false;
+        if (obj instanceof Float) {
+            Float other = (Float) obj;
+            isEqual = java.lang.Float.floatToIntBits(this.v) == java.lang.Float.floatToIntBits(other.v);
+        }
+        return isEqual;
     }
 
     public static int avm_floatToIntBits(float value) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_floatToIntBits);
-        return java.lang.Float.floatToIntBits(value);
+        return internalFloatToIntBits(value);
     }
 
     public static int avm_floatToRawIntBits(float value){
@@ -167,7 +171,7 @@ public class Float extends Number implements Comparable<Float> {
 
     public int avm_compareTo(Float anotherFloat) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_compareTo);
-        return Float.avm_compare(v, anotherFloat.v);
+        return java.lang.Float.compare(this.v, anotherFloat.v);
     }
 
     public static int avm_compare(float f1, float f2) {
@@ -182,12 +186,28 @@ public class Float extends Number implements Comparable<Float> {
 
     public static float avm_max(float a, float b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_max);
-        return Math.avm_max(a, b);
+        return java.lang.Math.max(a, b);
     }
 
     public static float avm_min(float a, float b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_min);
-        return Math.avm_min(a, b);
+        return java.lang.Math.min(a, b);
+    }
+
+    private static float internalParseFloat(String s) throws NumberFormatException {
+        return java.lang.Float.parseFloat(s.getUnderlying());
+    }
+
+    private static boolean internalIsInfinite(float v) {
+        return (v == avm_POSITIVE_INFINITY) || (v == avm_NEGATIVE_INFINITY);
+    }
+
+    private static int internalHashCode(float value) {
+        return internalFloatToIntBits(value);
+    }
+
+    private static int internalFloatToIntBits(float value) {
+        return java.lang.Float.floatToIntBits(value);
     }
 
 

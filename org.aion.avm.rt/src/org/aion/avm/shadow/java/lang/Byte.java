@@ -21,33 +21,32 @@ public final class Byte extends Object implements Comparable<Byte> {
 
     public static String avm_toString(byte b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_toString);
-        return Integer.avm_toString((int)b, 10);
+        return new String(java.lang.Byte.toString(b));
     }
 
     public static Byte avm_valueOf(byte b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_valueOf);
-        return new Byte(b);
+        return internalValueOf(b);
     }
 
     public static byte avm_parseByte(String s, int radix){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_parseByte);
-        return java.lang.Byte.parseByte(s.getUnderlying(), radix);
+        return internalParseByte(s, radix);
     }
 
     public static byte avm_parseByte(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_parseByte_1);
-        return avm_parseByte(s, 10);
+        return internalParseByte(s, 10);
     }
 
-    public static Byte avm_valueOf(String s, int radix)
-            throws NumberFormatException {
+    public static Byte avm_valueOf(String s, int radix) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_valueOf_1);
-        return avm_valueOf(avm_parseByte(s, radix));
+        return internalValueOf(internalParseByte(s, radix));
     }
 
     public static Byte avm_valueOf(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_valueOf_2);
-        return avm_valueOf(s, 10);
+        return internalValueOf(internalParseByte(s, 10));
     }
 
     public static Byte avm_decode(String nm) throws NumberFormatException {
@@ -97,46 +96,48 @@ public final class Byte extends Object implements Comparable<Byte> {
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_toString_1);
-        return Integer.avm_toString((int) v);
+        return new String(java.lang.Byte.toString(this.v));
     }
 
     @Override
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_hashCode);
-        return Byte.avm_hashCode(v);
+        return internalHashCode(this.v);
     }
 
     public static int avm_hashCode(byte value) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_hashCode_1);
-        return (int)value;
+        return internalHashCode(value);
     }
 
     public boolean avm_equals(IObject obj) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_equals);
+        boolean isEqual = false;
         if (obj instanceof Byte) {
-            return v == ((Byte)obj).avm_byteValue();
+            Byte other = (Byte)obj;
+            isEqual = v == other.v;
         }
-        return false;
+        return isEqual;
     }
 
     public int avm_compareTo(Byte anotherByte) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_compareTo);
-        return avm_compare(this.v, anotherByte.v);
+        return internalCompare(this.v, anotherByte.v);
     }
 
     public static int avm_compare(byte x, byte y) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_compare);
-        return x - y;
+        return internalCompare(x, y);
     }
 
     public static int avm_compareUnsigned(byte x, byte y) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_compareUnsigned);
-        return Byte.avm_toUnsignedInt(x) - Byte.avm_toUnsignedInt(y);
+        return internalToUnsignedInt(x) - internalToUnsignedInt(y);
     }
 
     public static int avm_toUnsignedInt(byte x) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_toUnsignedInt);
-        return ((int) x) & 0xff;
+        return internalToUnsignedInt(x);
     }
 
     public static long avm_toUnsignedLong(byte x) {
@@ -147,6 +148,26 @@ public final class Byte extends Object implements Comparable<Byte> {
     public static final int avm_SIZE = java.lang.Byte.SIZE;
 
     public static final int avm_BYTES = java.lang.Byte.BYTES;
+
+    private static Byte internalValueOf(byte b) {
+        return new Byte(b);
+    }
+
+    private static byte internalParseByte(String s, int radix){
+        return java.lang.Byte.parseByte(s.getUnderlying(), radix);
+    }
+
+    private static int internalHashCode(byte value) {
+        return (int)value;
+    }
+
+    private static int internalCompare(byte x, byte y) {
+        return x - y;
+    }
+
+    private static int internalToUnsignedInt(byte x) {
+        return ((int) x) & 0xff;
+    }
 
     //=======================================================
     // Methods below are used by runtime and test code only!
