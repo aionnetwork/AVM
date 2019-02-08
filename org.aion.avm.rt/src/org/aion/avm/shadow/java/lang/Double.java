@@ -4,6 +4,7 @@ import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 
@@ -13,14 +14,14 @@ public class Double extends Number implements Comparable<Double>{
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
     }
 
+    // These are the constructors provided in the JDK but we mark them private since they are deprecated.
+    // (in the future, we may change these to not exist - depends on the kind of error we want to give the user).
     private Double(double d){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_constructor);
         this.v = d;
     }
-
+    @SuppressWarnings("unused")
     private Double(String s){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_constructor);
-        this.v = java.lang.Double.parseDouble(s.getUnderlying());
+        throw RuntimeAssertionError.unimplemented("This is only provided for a consistent error to user code - not to be called");
     }
 
     public static final int avm_BYTES = java.lang.Double.BYTES;

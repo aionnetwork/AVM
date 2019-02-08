@@ -149,8 +149,9 @@ public class Character extends Object {
 
     public static final int avm_MAX_CODE_POINT = 0X10FFFF;
 
+    // These are the constructors provided in the JDK but we mark them private since they are deprecated.
+    // (in the future, we may change these to not exist - depends on the kind of error we want to give the user).
     private Character(char c) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Character_avm_constructor);
         this.v = c;
     }
 

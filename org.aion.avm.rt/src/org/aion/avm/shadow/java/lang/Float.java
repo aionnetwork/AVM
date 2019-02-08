@@ -4,6 +4,7 @@ import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Float extends Number implements Comparable<Float> {
@@ -34,19 +35,18 @@ public class Float extends Number implements Comparable<Float> {
 
     public static final Class<Float> avm_TYPE = new Class(java.lang.Float.TYPE);
 
+    // These are the constructors provided in the JDK but we mark them private since they are deprecated.
+    // (in the future, we may change these to not exist - depends on the kind of error we want to give the user).
     private Float(float f) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_constructor);
         this.v = f;
     }
-
+    @SuppressWarnings("unused")
     private Float(double f) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_constructor);
-        this.v = (float)f;
+        throw RuntimeAssertionError.unimplemented("This is only provided for a consistent error to user code - not to be called");
     }
-
+    @SuppressWarnings("unused")
     private Float(String f) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_constructor);
-        this.v = java.lang.Float.parseFloat(f.getUnderlying());
+        throw RuntimeAssertionError.unimplemented("This is only provided for a consistent error to user code - not to be called");
     }
 
     public static String avm_toString(float f){

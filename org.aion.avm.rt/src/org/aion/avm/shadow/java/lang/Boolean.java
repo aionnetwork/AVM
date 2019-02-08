@@ -4,6 +4,7 @@ import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Boolean extends Object implements Comparable<Boolean> {
@@ -18,13 +19,14 @@ public class Boolean extends Object implements Comparable<Boolean> {
 
     public static final Class<Boolean> avm_TYPE = new Class(java.lang.Boolean.TYPE);
 
+    // These are the constructors provided in the JDK but we mark them private since they are deprecated.
+    // (in the future, we may change these to not exist - depends on the kind of error we want to give the user).
     private Boolean(boolean b) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Boolean_avm_constructor);
         this.v = b;
     }
-
+    @SuppressWarnings("unused")
     private Boolean(String s) {
-        this(avm_parseBoolean(s));
+        throw RuntimeAssertionError.unimplemented("This is only provided for a consistent error to user code - not to be called");
     }
 
     public static boolean avm_parseBoolean(String s){

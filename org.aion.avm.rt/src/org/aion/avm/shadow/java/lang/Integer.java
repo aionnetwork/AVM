@@ -4,6 +4,7 @@ import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Integer extends Number implements Comparable<Integer> {
@@ -104,14 +105,14 @@ public class Integer extends Number implements Comparable<Integer> {
         return new Integer(i);
     }
 
+    // These are the constructors provided in the JDK but we mark them private since they are deprecated.
+    // (in the future, we may change these to not exist - depends on the kind of error we want to give the user).
     private Integer(int v) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_constructor);
         this.v = v;
     }
-
-    private Integer(String s) throws NumberFormatException {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_constructor_1);
-        this.v = avm_parseInt(s, 10);
+    @SuppressWarnings("unused")
+    private Integer(String s) {
+        throw RuntimeAssertionError.unimplemented("This is only provided for a consistent error to user code - not to be called");
     }
 
     public byte avm_byteValue() {
