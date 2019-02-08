@@ -147,12 +147,6 @@ public class Double extends Number implements Comparable<Double>{
         return java.lang.Double.hashCode(value);
     }
 
-    public boolean equals(IObject obj) {
-        return (obj instanceof Double)
-                && (avm_doubleToLongBits(((Double)obj).v) ==
-                avm_doubleToLongBits(v));
-    }
-
     public static long avm_doubleToLongBits(double value) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_doubleToLongBits);
         return java.lang.Double.doubleToLongBits(value);

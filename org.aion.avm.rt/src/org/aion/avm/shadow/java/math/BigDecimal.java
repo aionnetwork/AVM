@@ -128,6 +128,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     }
 
     public BigDecimal add(BigDecimal augend, MathContext mc) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_add_1);
         return new BigDecimal(v.add(augend.v, mc.getUnderlying()));
     }
 
@@ -294,17 +295,6 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     public int avm_compareTo(BigDecimal val) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_compareTo);
         return v.compareTo(val.v);
-    }
-
-    public boolean equals(IObject x) {
-        if (x == this)
-            return true;
-
-        if (!(x instanceof BigDecimal))
-            return false;
-
-        BigDecimal xDec = (BigDecimal) x;
-        return v.equals(xDec.v);
     }
 
     public BigDecimal avm_min(BigDecimal val){

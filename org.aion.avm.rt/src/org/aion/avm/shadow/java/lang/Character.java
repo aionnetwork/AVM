@@ -3,7 +3,6 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
@@ -176,13 +175,6 @@ public class Character extends Object {
     public static int avm_hashCode(char value) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Character_avm_hashCode_1);
         return (int)value;
-    }
-
-    public boolean equals(IObject obj) {
-        if (obj instanceof Character) {
-            return v == ((Character)obj).avm_charValue();
-        }
-        return false;
     }
 
     public String avm_toString() {
@@ -599,16 +591,6 @@ public class Character extends Object {
     }
 
     private char v;
-
-    @Override
-    public boolean equals(java.lang.Object obj) {
-        return obj instanceof Character && this.v == ((Character) obj).v;
-    }
-
-    @Override
-    public java.lang.String toString() {
-        return java.lang.Character.toString(this.v);
-    }
 
     public char getUnderlying() {
         return this.v;

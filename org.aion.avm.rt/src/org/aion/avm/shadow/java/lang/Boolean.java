@@ -114,16 +114,6 @@ public class Boolean extends Object implements Comparable<Boolean> {
 
     private boolean v;
 
-    @Override
-    public boolean equals(java.lang.Object obj) {
-        return obj instanceof Boolean && this.v == ((Boolean) obj).v;
-    }
-
-    @Override
-    public java.lang.String toString() {
-        return java.lang.Boolean.toString(this.v);
-    }
-
     public boolean getUnderlying() {
         return this.v;
     }

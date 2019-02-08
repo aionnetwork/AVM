@@ -236,6 +236,7 @@ public class RuntimeMethodFeeSchedule {
     public static final long BigDecimal_avm_valueOf_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 448; // byte code cost - 348; invoked methods cost - 100;
     public static final long BigDecimal_avm_valueOf_2 = RT_METHOD_FEE_LEVEL_3; // totalCost - 448; // byte code cost - 348; invoked methods cost - 100;
     public static final long BigDecimal_avm_add = RT_METHOD_FEE_LEVEL_3; // totalCost - 628; // byte code cost - 366; invoked methods cost - 262;
+    public static final long BigDecimal_avm_add_1 = RT_METHOD_FEE_LEVEL_3; // (recently added, assumed roughly the same as BigDecimal_avm_add).
     public static final long BigDecimal_avm_subtract = RT_METHOD_FEE_LEVEL_3; // totalCost - 466; // byte code cost - 366; invoked methods cost - 100;
     public static final long BigDecimal_avm_subtract_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 594; // byte code cost - 432; invoked methods cost - 162;
     public static final long BigDecimal_avm_multiply = RT_METHOD_FEE_LEVEL_4; // totalCost - 1366; // byte code cost - 366; invoked methods cost - 1000;

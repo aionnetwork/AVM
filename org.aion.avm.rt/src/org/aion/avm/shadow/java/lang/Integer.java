@@ -272,16 +272,6 @@ public class Integer extends Number implements Comparable<Integer> {
 
     private int v;
 
-    @Override
-    public boolean equals(java.lang.Object obj) {
-        return obj instanceof Integer && this.v == ((Integer) obj).v;
-    }
-
-    @Override
-    public java.lang.String toString() {
-        return java.lang.Integer.toString(this.v);
-    }
-
     public int getUnderlying() {
         return this.v;
     }
