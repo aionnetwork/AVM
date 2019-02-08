@@ -53,12 +53,12 @@ public class Short extends Number {
         return new Short(java.lang.Short.decode(nm.getUnderlying()).shortValue());
     }
 
-    public Short(short v) {
+    private Short(short v) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_constructor);
         this.v = v;
     }
 
-    public Short(String s) throws NumberFormatException {
+    private Short(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_constructor_1);
         this.v = avm_parseShort(s, 10);
     }

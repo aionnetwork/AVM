@@ -54,12 +54,12 @@ public final class Byte extends Object implements Comparable<Byte> {
         return new Byte(java.lang.Byte.decode(nm.getUnderlying()).byteValue());
     }
 
-    public Byte(byte v) {
+    private Byte(byte v) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_constructor);
         this.v = v;
     }
 
-    public Byte(String s) throws NumberFormatException {
+    private Byte(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_constructor_1);
         this.v = avm_parseByte(s, 10);
     }

@@ -136,13 +136,6 @@ public class HashCodeTestTarget {
         return diffHashes(Short.valueOf((short)5), Short.valueOf((short)5));
     }
     
-    // NOTE:  We still have this constructor in our shadow JCL and the Boolean.valueOf helper only ever returns the 2 constant instances
-    // so explicitly create these instances to compare them.
-    @SuppressWarnings("deprecation")
-    public static int diffBooleanHashes() {
-        return diffHashes(new Boolean(true), new Boolean(true));
-    }
-    
     
     private static int diffHashes(Object one, Object two) {
         // The test requires that these not be the same instance.

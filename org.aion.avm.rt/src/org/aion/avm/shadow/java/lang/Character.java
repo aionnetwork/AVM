@@ -149,7 +149,7 @@ public class Character extends Object {
 
     public static final int avm_MAX_CODE_POINT = 0X10FFFF;
 
-    public Character(char c) {
+    private Character(char c) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Character_avm_constructor);
         this.v = c;
     }

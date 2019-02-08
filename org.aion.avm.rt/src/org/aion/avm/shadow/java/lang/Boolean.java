@@ -18,12 +18,12 @@ public class Boolean extends Object implements Comparable<Boolean> {
 
     public static final Class<Boolean> avm_TYPE = new Class(java.lang.Boolean.TYPE);
 
-    public Boolean(boolean b) {
+    private Boolean(boolean b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Boolean_avm_constructor);
         this.v = b;
     }
 
-    public Boolean(String s) {
+    private Boolean(String s) {
         this(avm_parseBoolean(s));
     }
 

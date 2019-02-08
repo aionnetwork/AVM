@@ -314,7 +314,6 @@ public class HashCodeTest {
         Assert.assertEquals(0, callIntReturnMethod("diffIntegerHashes"));
         Assert.assertEquals(0, callIntReturnMethod("diffLongHashes"));
         Assert.assertEquals(0, callIntReturnMethod("diffShortHashes"));
-        Assert.assertEquals(0, callIntReturnMethod("diffBooleanHashes"));
     }
 
 

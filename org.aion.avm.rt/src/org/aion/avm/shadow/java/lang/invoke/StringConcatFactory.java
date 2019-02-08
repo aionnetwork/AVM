@@ -59,28 +59,28 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
             java.lang.String name = obj.getClass().getSimpleName();
             switch (name) {
                 case "Short":
-                    ret = new Short(((java.lang.Short)obj));
+                    ret = Short.avm_valueOf(((java.lang.Short)obj));
                     break;
                 case "Integer":
-                    ret = new Integer(((java.lang.Integer)obj));
+                    ret = Integer.avm_valueOf(((java.lang.Integer)obj));
                     break;
                 case "Long":
-                    ret = new Long(((java.lang.Long)obj));
+                    ret = Long.avm_valueOf(((java.lang.Long)obj));
                     break;
                 case "Float":
-                    ret = new Float(((java.lang.Float)obj));
+                    ret = Float.avm_valueOf(((java.lang.Float)obj));
                     break;
                 case "Double":
-                    ret = new Double(((java.lang.Double)obj));
+                    ret = Double.avm_valueOf(((java.lang.Double)obj));
                     break;
                 case "Boolean":
-                    ret = new Boolean(((java.lang.Boolean)obj));
+                    ret = Boolean.avm_valueOf(((java.lang.Boolean)obj));
                     break;
                 case "Byte":
-                    ret = new Byte(((java.lang.Byte)obj));
+                    ret = Byte.avm_valueOf(((java.lang.Byte)obj));
                     break;
                 case "Character":
-                    ret = new Character(((java.lang.Character)obj));
+                    ret = Character.avm_valueOf(((java.lang.Character)obj));
                     break;
                 default:
                     RuntimeAssertionError.unreachable("String concat receives unexpected type " + name);

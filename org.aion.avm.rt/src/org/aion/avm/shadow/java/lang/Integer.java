@@ -104,12 +104,12 @@ public class Integer extends Number implements Comparable<Integer> {
         return new Integer(i);
     }
 
-    public Integer(int v) {
+    private Integer(int v) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_constructor);
         this.v = v;
     }
 
-    public Integer(String s) throws NumberFormatException {
+    private Integer(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_constructor_1);
         this.v = avm_parseInt(s, 10);
     }

@@ -105,12 +105,12 @@ public class Long extends Number implements Comparable<Long> {
         return new Long(java.lang.Long.decode(nm.getUnderlying()).longValue());
     }
 
-    public Long(long v) {
+    private Long(long v) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_constructor);
         this.v = v;
     }
 
-    public Long(String s) throws NumberFormatException {
+    private Long(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_constructor_1);
         this.v = avm_parseLong(s, 10);
     }

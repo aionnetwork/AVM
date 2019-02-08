@@ -36,7 +36,7 @@ public enum ShadowTypeBridge {
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) {
-            return new org.aion.avm.shadow.java.lang.Byte(((Byte)standardValue).byteValue());
+            return org.aion.avm.shadow.java.lang.Byte.avm_valueOf(((Byte)standardValue).byteValue());
         }
     },
     BOOLEAN(Boolean.class, org.aion.avm.shadow.java.lang.Boolean.class.getName(), org.aion.avm.shadow.java.lang.Boolean.class.getName()) {
@@ -46,7 +46,7 @@ public enum ShadowTypeBridge {
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) {
-            return new org.aion.avm.shadow.java.lang.Boolean(((Boolean)standardValue).booleanValue());
+            return org.aion.avm.shadow.java.lang.Boolean.avm_valueOf(((Boolean)standardValue).booleanValue());
         }
     },
     SHORT(Short.class, org.aion.avm.shadow.java.lang.Short.class.getName(), org.aion.avm.shadow.java.lang.Short.class.getName()) {
@@ -56,7 +56,7 @@ public enum ShadowTypeBridge {
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) {
-            return new org.aion.avm.shadow.java.lang.Short(((Short)standardValue).shortValue());
+            return org.aion.avm.shadow.java.lang.Short.avm_valueOf(((Short)standardValue).shortValue());
         }
     },
     CHAR(Character.class, org.aion.avm.shadow.java.lang.Character.class.getName(), org.aion.avm.shadow.java.lang.Character.class.getName()) {
@@ -66,7 +66,7 @@ public enum ShadowTypeBridge {
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) {
-            return new org.aion.avm.shadow.java.lang.Character(((Character)standardValue).charValue());
+            return org.aion.avm.shadow.java.lang.Character.avm_valueOf(((Character)standardValue).charValue());
         }
     },
     INT(Integer.class, org.aion.avm.shadow.java.lang.Integer.class.getName(), org.aion.avm.shadow.java.lang.Integer.class.getName()) {
@@ -76,7 +76,7 @@ public enum ShadowTypeBridge {
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) {
-            return new org.aion.avm.shadow.java.lang.Integer(((Integer)standardValue).intValue());
+            return org.aion.avm.shadow.java.lang.Integer.avm_valueOf(((Integer)standardValue).intValue());
         }
     },
     FLOAT(Float.class, org.aion.avm.shadow.java.lang.Float.class.getName(), org.aion.avm.shadow.java.lang.Float.class.getName()) {
@@ -86,7 +86,7 @@ public enum ShadowTypeBridge {
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) {
-            return new org.aion.avm.shadow.java.lang.Float(((Float)standardValue).floatValue());
+            return org.aion.avm.shadow.java.lang.Float.avm_valueOf(((Float)standardValue).floatValue());
         }
     },
     LONG(Long.class, org.aion.avm.shadow.java.lang.Long.class.getName(), org.aion.avm.shadow.java.lang.Long.class.getName()) {
@@ -96,7 +96,7 @@ public enum ShadowTypeBridge {
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) {
-            return new org.aion.avm.shadow.java.lang.Long(((Long)standardValue).longValue());
+            return org.aion.avm.shadow.java.lang.Long.avm_valueOf(((Long)standardValue).longValue());
         }
     },
     DOUBLE(Double.class, org.aion.avm.shadow.java.lang.Double.class.getName(), org.aion.avm.shadow.java.lang.Double.class.getName()) {
@@ -106,7 +106,7 @@ public enum ShadowTypeBridge {
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) {
-            return new org.aion.avm.shadow.java.lang.Double(((Double)standardValue).doubleValue());
+            return org.aion.avm.shadow.java.lang.Double.avm_valueOf(((Double)standardValue).doubleValue());
         }
     },
     

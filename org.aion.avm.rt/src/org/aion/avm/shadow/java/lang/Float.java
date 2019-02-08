@@ -34,9 +34,19 @@ public class Float extends Number implements Comparable<Float> {
 
     public static final Class<Float> avm_TYPE = new Class(java.lang.Float.TYPE);
 
-    public Float(float f){
+    private Float(float f) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_constructor);
         this.v = f;
+    }
+
+    private Float(double f) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_constructor);
+        this.v = (float)f;
+    }
+
+    private Float(String f) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_constructor);
+        this.v = java.lang.Float.parseFloat(f.getUnderlying());
     }
 
     public static String avm_toString(float f){
