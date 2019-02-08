@@ -118,41 +118,49 @@ public class Long extends Number implements Comparable<Long> {
 
     public byte avm_byteValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_byteValue);
+        lazyLoad();
         return (byte) v;
     }
 
     public short avm_shortValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_shortValue);
+        lazyLoad();
         return (short) v;
     }
 
     public int avm_intValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_intValue);
+        lazyLoad();
         return (int) v;
     }
 
     public long avm_longValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_longValue);
+        lazyLoad();
         return v;
     }
 
     public float avm_floatValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_floatValue);
+        lazyLoad();
         return (float) v;
     }
 
     public double avm_doubleValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_doubleValue);
+        lazyLoad();
         return (double) v;
     }
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_toString_2);
+        lazyLoad();
         return internalToString(this.v);
     }
 
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_hashCode);
+        lazyLoad();
         return internalHashCode(this.v);
     }
 
@@ -165,6 +173,8 @@ public class Long extends Number implements Comparable<Long> {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_equals);
         if (obj instanceof Long) {
             Long other = (Long) obj;
+            lazyLoad();
+            other.lazyLoad();
             return this.v == other.v;
         }
         return false;
@@ -286,12 +296,12 @@ public class Long extends Number implements Comparable<Long> {
 
     public Long(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
-        lazyLoad();
     }
 
     private long v;
 
     public long getUnderlying() {
+        lazyLoad();
         return this.v;
     }
 

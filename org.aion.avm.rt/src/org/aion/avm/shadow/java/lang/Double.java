@@ -93,52 +93,62 @@ public class Double extends Number implements Comparable<Double>{
 
     public boolean avm_isNaN() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isNaN_1);
+        lazyLoad();
         return java.lang.Double.isNaN(this.v);
     }
 
     public boolean avm_isInfinite() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_isInfinite_1);
+        lazyLoad();
         return internalIsInfinite(v);
     }
 
     public String avm_toString()
     {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_toString_1);
+        lazyLoad();
         return internalToString(v);
     }
 
     public byte avm_byteValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_byteValue);
+        lazyLoad();
         return (byte) v;
     }
 
     public short avm_shortValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_shortValue);
+        lazyLoad();
         return (short) v;
     }
 
     public int avm_intValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_intValue);
+        lazyLoad();
         return (int) v;
     }
 
     public long avm_longValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_longValue);
+        lazyLoad();
         return (long) v;
     }
 
     public float avm_floatValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_floatValue);
+        lazyLoad();
         return (float) v;
     }
 
     public double avm_doubleValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_doubleValue);
+        lazyLoad();
         return v;
     }
 
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_hashCode);
+        lazyLoad();
         return java.lang.Double.hashCode(this.v);
     }
 
@@ -164,6 +174,8 @@ public class Double extends Number implements Comparable<Double>{
 
     public int avm_compareTo(Double anotherDouble) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_compareTo);
+        lazyLoad();
+        anotherDouble.lazyLoad();
         return java.lang.Double.compare(this.v, anotherDouble.v);
     }
 
@@ -207,12 +219,12 @@ public class Double extends Number implements Comparable<Double>{
 
     public Double(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
-        lazyLoad();
     }
 
     private double v;
 
     public double getUnderlying() {
+        lazyLoad();
         return this.v;
     }
 

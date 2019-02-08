@@ -45,12 +45,14 @@ public class Address extends Object {
      */
     public ByteArray avm_unwrap() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_unwrap);
+        lazyLoad();
         return this.underlying;
     }
 
     @Override
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_hashCode);
+        lazyLoad();
         // Just a really basic implementation.
         int code = 0;
         for (byte elt : this.underlying.getUnderlying()) {
@@ -62,11 +64,11 @@ public class Address extends Object {
     @Override
     public boolean avm_equals(IObject obj) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_equals);
-        lazyLoad();
 
         boolean isEqual = this == obj;
         if (!isEqual && (obj instanceof Address)) {
             Address other = (Address)obj;
+            lazyLoad();
             other.lazyLoad();
             if (this.underlying.length() == other.underlying.length()) {
                 isEqual = true;
@@ -83,6 +85,7 @@ public class Address extends Object {
     @Override
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_toString);
+        lazyLoad();
         return toHexString(this.underlying.getUnderlying());
     }
 
@@ -119,6 +122,7 @@ public class Address extends Object {
      * @return The raw bytes underneath the address.
      */
     public byte[] unwrap() {
+        lazyLoad();
         return this.underlying.getUnderlying();
     }
 
@@ -127,6 +131,8 @@ public class Address extends Object {
         boolean isEqual = this == obj;
         if (!isEqual && (obj instanceof Address)) {
             Address other = (Address) obj;
+            lazyLoad();
+            other.lazyLoad();
             if (this.underlying.length() == other.underlying.length()) {
                 isEqual = true;
                 for (int i = 0; isEqual && (i < other.underlying.length()); ++i) {
@@ -140,6 +146,7 @@ public class Address extends Object {
     @Override
     public int hashCode() {
         int code = 0;
+        lazyLoad();
         for (byte elt : this.underlying.getUnderlying()) {
             code += (int)elt;
         }
@@ -149,6 +156,5 @@ public class Address extends Object {
     // Support for deserialization
     public Address(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
-        lazyLoad();
     }
 }

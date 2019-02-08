@@ -47,31 +47,38 @@ public final class MathContext extends Object {
 
     public int avm_getPrecision() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_getPrecision);
+        lazyLoad();
         return this.v.getPrecision();
     }
 
     public RoundingMode avm_getRoundingMode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_getRoundingMode);
+        lazyLoad();
         return RoundingMode.avm_valueOf(new String(this.v.getRoundingMode().name()));
     }
 
     public boolean avm_equals(IObject x){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_equals);
-        MathContext mc;
-        if (!(x instanceof MathContext))
-            return false;
-        mc = (MathContext) x;
-        return mc.v.equals(v);
+        boolean isEqual = false;
+        if (x instanceof MathContext) {
+            MathContext other = (MathContext) x;
+            lazyLoad();
+            other.lazyLoad();
+            isEqual = this.v.equals(other.v);
+        }
+        return isEqual;
     }
 
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_hashCode);
+        lazyLoad();
         RoundingMode roundingMode = RoundingMode.avm_valueOf(new String(this.v.getRoundingMode().name()));
         return this.v.getPrecision() + roundingMode.hashCode() * 59;
     }
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_toString);
+        lazyLoad();
         return new String(v.toString());
     }
 
@@ -88,7 +95,6 @@ public final class MathContext extends Object {
     // Deserializer support.
     public MathContext(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
-        lazyLoad();
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

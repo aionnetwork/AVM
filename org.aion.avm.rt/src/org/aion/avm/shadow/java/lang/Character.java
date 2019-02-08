@@ -556,6 +556,8 @@ public class Character extends Object {
 
     public int avm_compareTo(Character anotherCharacter) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Character_avm_compareTo);
+        lazyLoad();
+        anotherCharacter.lazyLoad();
         return avm_compare(this.v, anotherCharacter.v);
     }
 
@@ -589,12 +591,12 @@ public class Character extends Object {
 
     public Character(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
-        lazyLoad();
     }
 
     private char v;
 
     public char getUnderlying() {
+        lazyLoad();
         return this.v;
     }
 

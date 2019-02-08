@@ -149,6 +149,78 @@ public class ShadowSerializationTest {
         verifyReentrantChange(contractAddr, "Api");
     }
 
+    @Test
+    public void testEnergyLoadingJavaLang() {
+        byte[] txData = avmRule.getDappBytes(ShadowCoverageTarget.class, new byte[0]);
+        
+        // deploy
+        TransactionResult result1 = avmRule.deploy(deployer, BigInteger.ZERO, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Populate initial data.
+        int firstHash = populate(contractAddr, "JavaLang");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(HASH_JAVA_LANG, firstHash);
+        
+        long energyLimit = 0;
+        int hash = 0;
+        while (0 == hash) {
+            hash = getHashSuccessWithLimit(contractAddr, "JavaLang", energyLimit);
+            // Allow at most one more read to succeed on the next attempt.
+            energyLimit += InstrumentationBasedStorageFees.FIXED_READ_COST;
+        }
+        Assert.assertEquals(firstHash, hash);
+    }
+
+    @Test
+    public void testEnergyLoadingJavaMath() {
+        byte[] txData = avmRule.getDappBytes(ShadowCoverageTarget.class, new byte[0]);
+        
+        // deploy
+        TransactionResult result1 = avmRule.deploy(deployer, BigInteger.ZERO, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Populate initial data.
+        int firstHash = populate(contractAddr, "JavaMath");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(HASH_JAVA_MATH, firstHash);
+        
+        long energyLimit = 0;
+        int hash = 0;
+        while (0 == hash) {
+            hash = getHashSuccessWithLimit(contractAddr, "JavaMath", energyLimit);
+            // Allow at most one more read to succeed on the next attempt.
+            energyLimit += InstrumentationBasedStorageFees.FIXED_READ_COST;
+        }
+        Assert.assertEquals(firstHash, hash);
+    }
+
+    @Test
+    public void testEnergyLoadingApi() {
+        byte[] txData = avmRule.getDappBytes(ShadowCoverageTarget.class, new byte[0]);
+        
+        // deploy
+        TransactionResult result1 = avmRule.deploy(deployer, BigInteger.ZERO, txData, DEPLOY_ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
+        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        
+        // Populate initial data.
+        int firstHash = populate(contractAddr, "Api");
+        // For now, just do the basic verification based on knowing the number.
+        Assert.assertEquals(HASH_API, firstHash);
+        
+        long energyLimit = 0;
+        int hash = 0;
+        while (0 == hash) {
+            hash = getHashSuccessWithLimit(contractAddr, "Api", energyLimit);
+            // Allow at most one more read to succeed on the next attempt.
+            energyLimit += InstrumentationBasedStorageFees.FIXED_READ_COST;
+        }
+        Assert.assertEquals(firstHash, hash);
+    }
+
 
     private int populate(Address contractAddr, String segmentName) {
         long energyLimit = 1_000_000L;
@@ -164,6 +236,14 @@ public class ShadowSerializationTest {
         TransactionResult result  = avmRule.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return ((Integer)TestingHelper.decodeResult(result)).intValue();
+    }
+
+    private int getHashSuccessWithLimit(Address contractAddr, String segmentName, long energyLimit) {
+        byte[] argData = ABIEncoder.encodeMethodArguments("getHash_" + segmentName);
+        TransactionResult result  = avmRule.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE).getTransactionResult();
+        return (AvmTransactionResult.Code.SUCCESS == result.getResultCode())
+                ? ((Integer)TestingHelper.decodeResult(result)).intValue()
+                : 0;
     }
 
     private void verifyReentrantChange(Address contractAddr, String segmentName) {

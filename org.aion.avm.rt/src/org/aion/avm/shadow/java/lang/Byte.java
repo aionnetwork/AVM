@@ -66,42 +66,50 @@ public final class Byte extends Object implements Comparable<Byte> {
 
     public byte avm_byteValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_byteValue);
+        lazyLoad();
         return v;
     }
 
     public short avm_shortValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_shortValue);
+        lazyLoad();
         return (short) v;
     }
 
     public int avm_intValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_intValue);
+        lazyLoad();
         return (int) v;
     }
 
     public long avm_longValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_longValue);
+        lazyLoad();
         return (long) v;
     }
 
     public float avm_floatValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_floatValue);
+        lazyLoad();
         return (float) v;
     }
 
     public double avm_doubleValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_doubleValue);
+        lazyLoad();
         return (double) v;
     }
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_toString_1);
+        lazyLoad();
         return new String(java.lang.Byte.toString(this.v));
     }
 
     @Override
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_hashCode);
+        lazyLoad();
         return internalHashCode(this.v);
     }
 
@@ -115,6 +123,8 @@ public final class Byte extends Object implements Comparable<Byte> {
         boolean isEqual = false;
         if (obj instanceof Byte) {
             Byte other = (Byte)obj;
+            lazyLoad();
+            other.lazyLoad();
             isEqual = v == other.v;
         }
         return isEqual;
@@ -122,6 +132,8 @@ public final class Byte extends Object implements Comparable<Byte> {
 
     public int avm_compareTo(Byte anotherByte) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_compareTo);
+        lazyLoad();
+        anotherByte.lazyLoad();
         return internalCompare(this.v, anotherByte.v);
     }
 
@@ -175,12 +187,12 @@ public final class Byte extends Object implements Comparable<Byte> {
 
     public Byte(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
-        lazyLoad();
     }
 
     private byte v;
 
     public byte getUnderlying() {
+        lazyLoad();
         return this.v;
     }
 

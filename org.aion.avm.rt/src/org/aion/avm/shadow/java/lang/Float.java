@@ -91,51 +91,61 @@ public class Float extends Number implements Comparable<Float> {
 
     public boolean avm_isNaN() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_isNaN_1);
+        lazyLoad();
         return java.lang.Float.isNaN(this.v);
     }
 
     public boolean avm_isInfinite() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_isInfinite_1);
+        lazyLoad();
         return internalIsInfinite(v);
     }
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_toString_1);
+        lazyLoad();
         return new String(java.lang.Float.toString(this.v));
     }
 
     public byte avm_byteValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_byteValue);
+        lazyLoad();
         return (byte) v;
     }
 
     public short avm_shortValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_shortValue);
+        lazyLoad();
         return (short) v;
     }
 
     public int avm_intValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_intValue);
+        lazyLoad();
         return (int) v;
     }
 
     public long avm_longValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_longValue);
+        lazyLoad();
         return (long) v;
     }
 
     public float avm_floatValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_floatValue);
+        lazyLoad();
         return v;
     }
 
     public double avm_doubleValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_doubleValue);
+        lazyLoad();
         return (double) v;
     }
 
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_hashCode);
+        lazyLoad();
         return internalHashCode(v);
     }
 
@@ -149,6 +159,8 @@ public class Float extends Number implements Comparable<Float> {
         boolean isEqual = false;
         if (obj instanceof Float) {
             Float other = (Float) obj;
+            lazyLoad();
+            other.lazyLoad();
             isEqual = java.lang.Float.floatToIntBits(this.v) == java.lang.Float.floatToIntBits(other.v);
         }
         return isEqual;
@@ -171,6 +183,8 @@ public class Float extends Number implements Comparable<Float> {
 
     public int avm_compareTo(Float anotherFloat) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_compareTo);
+        lazyLoad();
+        anotherFloat.lazyLoad();
         return java.lang.Float.compare(this.v, anotherFloat.v);
     }
 
@@ -217,12 +231,12 @@ public class Float extends Number implements Comparable<Float> {
 
     public Float(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
-        lazyLoad();
     }
 
     private float v;
 
     public float getUnderlying() {
+        lazyLoad();
         return this.v;
     }
 

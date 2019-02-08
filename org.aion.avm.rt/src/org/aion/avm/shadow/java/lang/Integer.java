@@ -117,42 +117,50 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public byte avm_byteValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_byteValue);
+        lazyLoad();
         return (byte) v;
     }
 
     public short avm_shortValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_shortValue);
+        lazyLoad();
         return (short) v;
     }
 
     public int avm_intValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_intValue);
+        lazyLoad();
         return v;
     }
 
     public long avm_longValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_longValue);
+        lazyLoad();
         return (long) v;
     }
 
     public float avm_floatValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_floatValue);
+        lazyLoad();
         return (float) v;
     }
 
     public double avm_doubleValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_doubleValue);
+        lazyLoad();
         return (double) v;
     }
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_toString_2);
+        lazyLoad();
         return new String(java.lang.Integer.toString(this.v));
     }
 
     @Override
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_hashCode);
+        lazyLoad();
         return this.v;
     }
 
@@ -166,6 +174,8 @@ public class Integer extends Number implements Comparable<Integer> {
         boolean isEqual = false;
         if (obj instanceof Integer) {
             Integer other = (Integer) obj;
+            lazyLoad();
+            other.lazyLoad();
             isEqual = this.v == other.v;
         }
         return isEqual;
@@ -178,6 +188,8 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public int avm_compareTo(Integer anotherInteger) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_compareTo);
+        lazyLoad();
+        anotherInteger.lazyLoad();
         return internalCompare(this.v, anotherInteger.v);
     }
 
@@ -281,12 +293,12 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public Integer(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
-        lazyLoad();
     }
 
     private int v;
 
     public int getUnderlying() {
+        lazyLoad();
         return this.v;
     }
 

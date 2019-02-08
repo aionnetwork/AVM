@@ -66,41 +66,49 @@ public class Short extends Number {
 
     public byte avm_byteValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_byteValue);
+        lazyLoad();
         return (byte) v;
     }
 
     public short avm_shortValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_shortValue);
+        lazyLoad();
         return v;
     }
 
     public int avm_intValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_intValue);
+        lazyLoad();
         return (int) v;
     }
 
     public long avm_longValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_longValue);
+        lazyLoad();
         return (long) v;
     }
 
     public float avm_floatValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_floatValue);
+        lazyLoad();
         return (float) v;
     }
 
     public double avm_doubleValue() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_doubleValue);
+        lazyLoad();
         return (double) v;
     }
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_toString_1);
+        lazyLoad();
         return new String(java.lang.Short.toString(this.v));
     }
 
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_hashCode);
+        lazyLoad();
         return internalHashCode(this.v);
     }
 
@@ -113,6 +121,8 @@ public class Short extends Number {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_equals);
         if (obj instanceof Short) {
             Short other = (Short) obj;
+            lazyLoad();
+            other.lazyLoad();
             return this.v == other.v;
         }
         return false;
@@ -120,6 +130,8 @@ public class Short extends Number {
 
     public int avm_compareTo(Short anotherShort) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_compareTo);
+        lazyLoad();
+        anotherShort.lazyLoad();
         return internalCompare(this.v, anotherShort.v);
     }
 
@@ -174,12 +186,12 @@ public class Short extends Number {
 
     public Short(IDeserializer deserializer, IPersistenceToken persistenceToken) {
         super(deserializer, persistenceToken);
-        lazyLoad();
     }
 
     private short v;
 
     public short getUnderlying() {
+        lazyLoad();
         return this.v;
     }
 
