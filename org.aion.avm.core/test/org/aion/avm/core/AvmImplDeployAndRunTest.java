@@ -147,14 +147,14 @@ public class AvmImplDeployAndRunTest {
 
         // account1 get 10000
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
-        TransactionResult result = avmRule.balanceTransfer(from, account1, BigInteger.valueOf(100000L), energyPrice).getTransactionResult();
+        TransactionResult result = avmRule.balanceTransfer(from, account1, BigInteger.valueOf(100000L), 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(AvmAddress.wrap(account1.unwrap())));
 
         // account1 transfers 1000 to account2
         Address account2 = avmRule.getRandomAddress(BigInteger.ZERO);
-        result = avmRule.balanceTransfer(account1, account2, BigInteger.valueOf(1000L), energyPrice).getTransactionResult();
+        result = avmRule.balanceTransfer(account1, account2, BigInteger.valueOf(1000L), 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(BigInteger.valueOf(100000L - 1000L - energyPrice * 21000L), avmRule.kernel.getBalance(AvmAddress.wrap(account1.unwrap())));
@@ -173,7 +173,7 @@ public class AvmImplDeployAndRunTest {
         BigInteger accountBalance = BigInteger.valueOf(300000L);
 
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
-        TransactionResult result = avmRule.balanceTransfer(from, account1, accountBalance, energyPrice).getTransactionResult();
+        TransactionResult result = avmRule.balanceTransfer(from, account1, accountBalance, 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(accountBalance, avmRule.kernel.getBalance(AvmAddress.wrap(account1.unwrap())));

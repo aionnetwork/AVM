@@ -123,8 +123,8 @@ public final class AvmRule implements TestRule {
      * @param energyPrice Energy price to be used for the transfer
      * @return Result of the operation
      */
-    public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyPrice) {
-	    Transaction tx = Transaction.balanceTransfer(AvmAddress.wrap(from.unwrap()), AvmAddress.wrap(to.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, energyPrice);
+    public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyLimit, long energyPrice) {
+        Transaction tx = Transaction.call(AvmAddress.wrap(from.unwrap()), AvmAddress.wrap(to.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, new byte[0], energyLimit, energyPrice);
 
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return new ResultWrapper(avm.run(new TransactionContext[]{context})[0].get(), context.getSideEffects());
@@ -180,7 +180,11 @@ public final class AvmRule implements TestRule {
          * @return Address of the Dapp deployed in this transaction, Null if the deploy transaction failed
          */
         public Address getDappAddress() {
-            return result.getResultCode().isSuccess()? new Address(result.getReturnData()) : null;
+            if (!result.getResultCode().isSuccess()) {
+                System.out.println("Contract deployment failed with error " + result.getResultCode());
+                return null;
+            }
+            return new Address(result.getReturnData());
         }
 
         /**
