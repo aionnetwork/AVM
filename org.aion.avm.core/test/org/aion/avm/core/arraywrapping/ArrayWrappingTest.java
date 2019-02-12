@@ -2,8 +2,8 @@ package org.aion.avm.core.arraywrapping;
 
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
-import org.aion.kernel.*;
 import org.junit.*;
 
 
@@ -11,8 +11,8 @@ public class ArrayWrappingTest {
 
     @Rule
     public AvmRule avmRule = new AvmRule(false);
-    private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private org.aion.vm.api.interfaces.Address dappAddr;
+    private Address from = avmRule.getPreminedAccount();
+    private Address dappAddr;
 
     private long energyLimit = 6_000_0000;
     private long energyPrice = 1;

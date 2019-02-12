@@ -1,14 +1,18 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
-import org.aion.kernel.*;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 import java.math.BigInteger;
 
@@ -22,8 +26,8 @@ public class SyntheticMethodsTest {
     @Rule
     public AvmRule avmRule = new AvmRule(false);
 
-    private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private org.aion.vm.api.interfaces.Address dappAddr;
+    private Address from = avmRule.getPreminedAccount();
+    private Address dappAddr;
 
     private long energyLimit = 6_000_0000;
     private long energyPrice = 1;

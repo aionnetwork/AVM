@@ -38,4 +38,11 @@ public class SingleLoader extends ClassLoader {
         }
         return clazz;
     }
+
+    public Class<?> loadClassFromByteCode (String name, byte[] bytecode) {
+        Class<?> clazz = this.defineClass(name, bytecode, 0, bytecode.length);
+        Assert.assertNotNull(clazz);
+        Assert.assertEquals(this, clazz.getClassLoader());
+        return clazz;
+    }
 }

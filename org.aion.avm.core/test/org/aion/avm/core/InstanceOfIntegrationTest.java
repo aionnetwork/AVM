@@ -1,11 +1,10 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.TestingHelper;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -19,19 +18,21 @@ import java.math.BigInteger;
  * Tests various cases around the instanceof opcode.
  */
 public class InstanceOfIntegrationTest {
-    private static final long ENERGY_LIMIT = 10_000_000L;
-    private static final long ENERGY_PRICE = 1L;
-    private static org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private static org.aion.vm.api.interfaces.Address dappAddress;
-
     @ClassRule
     public static AvmRule avmRule = new AvmRule(false);
+
+    private static final long ENERGY_LIMIT = 10_000_000L;
+    private static final long ENERGY_PRICE = 1L;
+    private static Address deployer = avmRule.getPreminedAccount();
+    private static Address dappAddress;
+
+
 
     @BeforeClass
     public static void setupClass() throws Exception {
         TransactionResult createResult = avmRule.deploy(deployer, BigInteger.ZERO, avmRule.getDappBytes(InstanceOfIntegrationTestTarget.class, new byte[0]), ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        dappAddress = AvmAddress.wrap(createResult.getReturnData());
+        dappAddress = new Address(createResult.getReturnData());
     }
 
     @Test

@@ -1,24 +1,22 @@
 package org.aion.avm.core.persistence;
 
-import java.math.BigInteger;
-import org.aion.avm.core.BillingRules;
-import org.aion.avm.core.InstrumentationBasedStorageFees;
-import org.aion.avm.core.util.AvmRule;
-import org.aion.avm.core.util.TestingHelper;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.AvmAddress;
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.core.BillingRules;
+import org.aion.avm.core.InstrumentationBasedStorageFees;
+import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.AvmRule;
+import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.TestingHelper;
+import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+
+import java.math.BigInteger;
 
 
 /**
@@ -30,7 +28,7 @@ public class GraphReachabilityIntegrationTest {
     @Rule
     public AvmRule avmRule = new AvmRule(false);
 
-    private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private Address deployer = avmRule.getPreminedAccount();
 
     /**
      * Tests that a hidden object, changed via a path that is destroyed, is still observed as changed by other paths.
@@ -326,7 +324,7 @@ public class GraphReachabilityIntegrationTest {
 
         AvmTransactionResult createResult = (AvmTransactionResult) avmRule.deploy(deployer, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+        Address contractAddr = new Address(createResult.getReturnData());
         
         // Check that the deployment cost is what we expected.
         // The first three numbers here are: basic cost of tx, processing cost and storage cost
@@ -355,7 +353,7 @@ public class GraphReachabilityIntegrationTest {
     private Object callStatic(Block block, Address contractAddr, long expectedCost, String methodName, Object... args) {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
-        AvmTransactionResult result = (AvmTransactionResult) avmRule.call(deployer, AvmAddress.wrap(contractAddr.unwrap()),BigInteger.ZERO, argData, energyLimit, 1l).getTransactionResult();
+        AvmTransactionResult result = (AvmTransactionResult) avmRule.call(deployer, contractAddr, BigInteger.ZERO, argData, energyLimit, 1l).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(expectedCost, result.getEnergyUsed());
         Assert.assertEquals(energyLimit - expectedCost, result.getEnergyRemaining());

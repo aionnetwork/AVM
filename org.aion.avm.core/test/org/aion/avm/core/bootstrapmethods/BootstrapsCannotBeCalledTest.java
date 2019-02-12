@@ -1,19 +1,19 @@
 package org.aion.avm.core.bootstrapmethods;
 
-import static junit.framework.TestCase.assertTrue;
-
-import java.math.BigInteger;
-
+import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
-import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.math.BigInteger;
+
+import static junit.framework.TestCase.assertTrue;
+
 public class BootstrapsCannotBeCalledTest {
     @Rule
     public AvmRule avmRule = new AvmRule(false);
-    private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private Address deployer = avmRule.getPreminedAccount();
 
     @Test
     public void testStringConcatFactoryMakeConcat() {

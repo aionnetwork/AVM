@@ -167,7 +167,7 @@ public class AvmImplTest {
         TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
 
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        Address contractAddr = new Address(result1.getReturnData());
 
         // Account for the cost:  deployment, clinit, init call.
         long basicCost = BillingRules.getBasicTransactionCost(txData);
@@ -630,7 +630,7 @@ public class AvmImplTest {
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, createData, energyLimit, energyPrice);
         TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-        return TestingHelper.buildAddress(result1.getReturnData());
+        return new Address(result1.getReturnData());
     }
 
     private Object callDApp(KernelInterface kernel, VirtualMachine avm, Address dAppAddress, byte[] argData) {

@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.poc.AionBufferPerfContract;
 import org.aion.avm.core.poc.TRS;
@@ -16,9 +17,7 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.vm.api.interfaces.Address;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -32,12 +31,12 @@ import java.util.Map;
  * The purpose is more to give us an idea about how our deployment costs look for different Dapps.
  */
 public class DeploymentCostTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
 
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1L;
-    private static final Address DEPLOYER = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static final Address DEPLOYER = avmRule.getPreminedAccount();
 
 
     // NOTE: To add a new dApp to this test simply do the following:

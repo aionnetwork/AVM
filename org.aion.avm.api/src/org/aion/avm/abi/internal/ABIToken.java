@@ -1,4 +1,6 @@
-package org.aion.avm.api;
+package org.aion.avm.abi.internal;
+
+import org.aion.avm.api.Address;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -7,13 +9,13 @@ import java.util.stream.Stream;
 
 /**
  * Description of the tokens the ABI uses to describe extends of data in the stream.
- * 
+ *
  * The a reference in the stream can either be a leaf type, array type, or a null:
  * -a leaf type is just the leaf type token, potentially a 2-byte length, then the data.
  * -an array type is the ARRAY token, followed by the leaf token it is an array of, followed by a 2-byte length,
  *  followed by the elements (as tokens).
  * -a null type is the NULL token, followed by the leaf token it is an array of.
- * 
+ *
  * Note that array types cannot contain other array types.  While it would be trivial to extend this model to cover
  * such cases, there is no reason to support/test them.
  */
@@ -27,7 +29,7 @@ public enum ABIToken {
     LONG      ((byte)0x06, true, false, long.class, Long.class),
     FLOAT     ((byte)0x07, true, false, float.class, Float.class),
     DOUBLE    ((byte)0x08, true, false, double.class, Double.class),
-    
+
     A_BYTE    ((byte)0x11, true, true, byte[].class, byte[].class),
     // (boolean is encoded as a byte)
     A_BOOLEAN ((byte)0x12, true, true, boolean[].class, boolean[].class),
@@ -37,11 +39,11 @@ public enum ABIToken {
     A_LONG    ((byte)0x16, true, true, long[].class, long[].class),
     A_FLOAT   ((byte)0x17, true, true, float[].class, float[].class),
     A_DOUBLE  ((byte)0x18, true, true, double[].class, double[].class),
-    
+
     // Note that the string is described as number of UTF-8 encoded bytes, so each element is actually 1 byte.
     STRING    ((byte)0x21, true, true, String.class, String.class),
     ADDRESS   ((byte)0x22, true, false, Address.class, Address.class),
-    
+
     // ARRAY and NULL can't have sizes since they only decorate other types or represent placeholders in the stream, respectively.
     ARRAY     ((byte)0x31, false, true, null, null),
     NULL      ((byte)0x32, false, false, null, null),

@@ -1,16 +1,17 @@
 package org.aion.avm.core;
 
-import java.math.BigInteger;
-
-import org.aion.avm.core.util.AvmRule;
-import org.aion.avm.core.util.TestingHelper;
-import org.aion.kernel.AvmAddress;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.core.util.AvmRule;
+import org.aion.avm.core.util.TestingHelper;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+
+import java.math.BigInteger;
 
 
 /**
@@ -109,14 +110,14 @@ public class AssertionErrorIntegrationTest {
         byte[] txData = avmRule.getDappBytes(testClass, new byte[0]);
         
         // Deploy.
-        TransactionResult createResult = avmRule.deploy(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        TransactionResult createResult = avmRule.deploy(avmRule.getPreminedAccount(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        return TestingHelper.buildAddress(createResult.getReturnData());
+        return new Address(createResult.getReturnData());
     }
 
     private String callStaticString(Address dapp, String methodName, Object... arguments) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, arguments);
-        TransactionResult result = avmRule.call(KernelInterfaceImpl.PREMINED_ADDRESS, AvmAddress.wrap(dapp.unwrap()), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        TransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         byte[] utf8 = (byte[])TestingHelper.decodeResult(result);
         return (null != utf8)

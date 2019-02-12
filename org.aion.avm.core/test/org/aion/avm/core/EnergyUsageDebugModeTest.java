@@ -5,7 +5,6 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -67,7 +66,7 @@ public class EnergyUsageDebugModeTest {
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, 10_000_000l, energyPrice);
         TransactionResult createResult = avmDebugMode.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Address contractAddressDebug = TestingHelper.buildAddress(createResult.getReturnData());
+        Address contractAddressDebug = new Address(createResult.getReturnData());
 
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
@@ -94,7 +93,7 @@ public class EnergyUsageDebugModeTest {
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, 10_000_000l, energyPrice);
         TransactionResult createResult = avmNormalMode.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Address contractAddressNormal = TestingHelper.buildAddress(createResult.getReturnData());
+        Address contractAddressNormal = new Address(createResult.getReturnData());
 
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddressNormal.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);

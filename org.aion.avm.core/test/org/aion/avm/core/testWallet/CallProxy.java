@@ -3,7 +3,7 @@ package org.aion.avm.core.testWallet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
@@ -57,7 +57,7 @@ public class CallProxy {
     public static Address getOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, int ownerIndex) throws Exception {
         byte[] onto = CallEncoder.getOwner(ownerIndex);
         inputConsumer.accept(onto);
-        return (Address) callDecode(loader);
+        return new Address(((org.aion.avm.shadowapi.org.aion.avm.api.Address) callDecode(loader)).unwrap());
     }
 
     public static boolean changeOwner(Consumer<byte[]> inputConsumer, Supplier<Class<?>> loader, Address from, Address to) throws Exception {

@@ -1,5 +1,11 @@
 package org.aion.avm.api;
 
+
+import org.aion.avm.abi.internal.ABICodec;
+import org.aion.avm.abi.internal.RuntimeAssertionError;
+
+import java.util.List;
+
 /**
  * Utility class for AVM ABI decoding. This class contains static methods
  * for parsing transaction data and invoking corresponding methods.
@@ -54,6 +60,13 @@ public final class ABIDecoder {
      * @return the decoded object.
      */
     public static Object decodeOneObject(byte[] txData) {
-        return null;
+        // We will handle an empty payload as a null.
+        Object result = null;
+        if (txData.length > 0) {
+            List<ABICodec.Tuple> parsed = ABICodec.parseEverything(txData);
+            RuntimeAssertionError.assertTrue(1 == parsed.size());
+            result = parsed.get(0).value;
+        }
+        return result;
     }
 }

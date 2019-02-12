@@ -1,6 +1,6 @@
 package org.aion.avm.core.testWallet;
 
-import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;

@@ -59,7 +59,7 @@ public class HashCodeIntegrationTest {
         } else {
             Assert.assertEquals(923521, createResult.getStorageRootHash());
         }
-        Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+        Address contractAddr = new Address(createResult.getReturnData());
         
         // Store an object.
         int systemHash = ((Integer)callStatic(block, contractAddr, "persistNewObject")).intValue();

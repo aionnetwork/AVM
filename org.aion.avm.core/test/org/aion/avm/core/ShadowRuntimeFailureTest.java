@@ -1,12 +1,9 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.TestingHelper;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -25,7 +22,7 @@ public class ShadowRuntimeFailureTest {
     private static final long ENERGY_LIMIT = 10_000_000L;
     private static final long ENERGY_PRICE = 1L;
 
-    org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    Address deployer = avmRule.getPreminedAccount();
 
     @Test
     public void testFailuresInDeployment() {
@@ -47,16 +44,16 @@ public class ShadowRuntimeFailureTest {
         byte[] txData = avmRule.getDappBytes(ShadowRuntimeFailureTarget.class, new byte[0]);
         TransactionResult result1 = avmRule.deploy(deployer, BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-        Address contractAddr = TestingHelper.buildAddress(result1.getReturnData());
+        Address contractAddr = new Address(result1.getReturnData());
         
         // 0-7 are failures and 8 is a success.
         for (int i = 0; i < 8; ++i) {
             byte[] data =  new byte[] {(byte)i};
-            TransactionResult result  = avmRule.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+            TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
             Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
        }
         byte[] data = new byte[] {(byte)8};
-        TransactionResult result  = avmRule.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(Boolean.valueOf(true), TestingHelper.decodeResult(result));
         

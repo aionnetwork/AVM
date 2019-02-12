@@ -1,6 +1,5 @@
 package org.aion.avm.core.performance;
 
-import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.CommonAvmFactory;
@@ -8,12 +7,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
-import org.aion.kernel.AvmAddress;
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
+import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -22,6 +16,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.math.BigInteger;
 
 public class PerformanceTest {
     private KernelInterfaceImpl kernel;
@@ -71,7 +67,7 @@ public class PerformanceTest {
             Transaction create = Transaction.create(userAddress, kernel.getNonce(userAddress), BigInteger.ZERO, txData, energyLimit, energyPrice);
             AvmTransactionResult createResult = (AvmTransactionResult) avm.run(new TransactionContext[]{new TransactionContextImpl(create, block)})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-            Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+            Address contractAddr = new Address(createResult.getReturnData());
             contractAddrs[i] = contractAddr;
         }
 

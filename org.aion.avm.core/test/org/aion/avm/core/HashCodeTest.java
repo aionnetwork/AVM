@@ -7,11 +7,7 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.CommonInstrumentation;
-import org.aion.avm.internal.IRuntimeSetup;
-import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.avm.internal.OutOfEnergyException;
-import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -288,16 +284,18 @@ public class HashCodeTest {
         Address outside = new Address(data);
         // Just to make this interesting, we will see what happens if we create the Address objects from different environments.
         ByteArray wrapper = new ByteArray(data);
-        Address inside = (Address) this.clazz.getMethod(NamespaceMapper.mapMethodName("createAddress"), ByteArray.class)
+        org.aion.avm.shadowapi.org.aion.avm.api.Address inside = (org.aion.avm.shadowapi.org.aion.avm.api.Address) this.clazz.getMethod(NamespaceMapper.mapMethodName("createAddress"), ByteArray.class)
                 .invoke(null, wrapper);
         
         // Compare these outside.
         Assert.assertEquals(outside.hashCode(), inside.hashCode());
-        Assert.assertEquals(outside, inside);
-        
+
+        Assert.assertEquals(outside, new Address(inside.unwrap()));
+        Assert.assertEquals(new org.aion.avm.shadowapi.org.aion.avm.api.Address(outside.unwrap()), inside);
+
         // Compare them insider.
-        boolean didBothMatch = (Boolean) this.clazz.getMethod(NamespaceMapper.mapMethodName("compareAddresses"), Address.class, Address.class)
-                .invoke(null, outside, inside);
+        boolean didBothMatch = (Boolean) this.clazz.getMethod(NamespaceMapper.mapMethodName("compareAddresses"), org.aion.avm.shadowapi.org.aion.avm.api.Address.class, org.aion.avm.shadowapi.org.aion.avm.api.Address.class)
+                .invoke(null, new org.aion.avm.shadowapi.org.aion.avm.api.Address(outside.unwrap()), inside);
         Assert.assertTrue(didBothMatch);
     }
 

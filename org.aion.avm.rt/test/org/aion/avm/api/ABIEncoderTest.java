@@ -1,5 +1,7 @@
 package org.aion.avm.api;
 
+import org.aion.avm.abi.internal.ABIToken;
+import org.aion.avm.internal.ABIStaticState;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.shadow.java.lang.Object;
@@ -7,7 +9,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import testutils.TestArrayWrapperFactory;
 import testutils.TestInstrumentation;
 
@@ -255,35 +256,35 @@ public class ABIEncoderTest {
         caught = null;
         
         try {
-            ABIDecoder.decodeAndRunWithClass(ABIEncoderTest.class, null);
+            org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.decodeAndRunWithClass(ABIEncoderTest.class, null);
         } catch (NullPointerException e) {
             caught = e;
         }
         Assert.assertNotNull(caught);
         caught = null;
         try {
-            ABIDecoder.decodeAndRunWithClass(null, new byte[0]);
+            org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.decodeAndRunWithClass(null, new byte[0]);
         } catch (NullPointerException e) {
             caught = e;
         }
         Assert.assertNotNull(caught);
         caught = null;
         try {
-            ABIDecoder.decodeAndRunWithObject(new Object(), null);
+            org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.decodeAndRunWithObject(new Object(), null);
         } catch (NullPointerException e) {
             caught = e;
         }
         Assert.assertNotNull(caught);
         caught = null;
         try {
-            ABIDecoder.decodeAndRunWithObject(null, new byte[0]);
+            org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.decodeAndRunWithObject(null, new byte[0]);
         } catch (NullPointerException e) {
             caught = e;
         }
         Assert.assertNotNull(caught);
         caught = null;
         try {
-            ABIDecoder.decodeArguments(null);
+            org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.decodeArguments(null);
         } catch (NullPointerException e) {
             caught = e;
         }

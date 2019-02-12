@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
-import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.*;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
@@ -20,6 +20,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.math.BigInteger;
 
 
 public class PocExchangeTest {
@@ -86,32 +88,32 @@ public class PocExchangeTest {
         }
 
         private TransactionResult callBalanceOf(org.aion.vm.api.interfaces.Address toQuery) {
-            byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", TestingHelper.buildAddress(toQuery.toBytes()));
+            byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", new Address(toQuery.toBytes()));
             return call(minter, args);
         }
 
         private TransactionResult callMint(org.aion.vm.api.interfaces.Address receiver, long amount) {
-            byte[] args = ABIEncoder.encodeMethodArguments("mint", TestingHelper.buildAddress(receiver.toBytes()), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("mint", new Address(receiver.toBytes()), amount);
             return call(minter, args);
         }
 
         private TransactionResult callTransfer(org.aion.vm.api.interfaces.Address sender, org.aion.vm.api.interfaces.Address receiver, long amount) {
-            byte[] args = ABIEncoder.encodeMethodArguments("transfer", TestingHelper.buildAddress(receiver.toBytes()), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("transfer", new Address(receiver.toBytes()), amount);
             return call(sender, args);
         }
 
         private TransactionResult callAllowance(org.aion.vm.api.interfaces.Address owner, org.aion.vm.api.interfaces.Address spender) {
-            byte[] args = ABIEncoder.encodeMethodArguments("allowance", TestingHelper.buildAddress(owner.toBytes()), TestingHelper.buildAddress(spender.toBytes()));
+            byte[] args = ABIEncoder.encodeMethodArguments("allowance", new Address(owner.toBytes()), new Address(spender.toBytes()));
             return call(minter, args);
         }
 
         private TransactionResult callApprove(org.aion.vm.api.interfaces.Address owner, org.aion.vm.api.interfaces.Address spender, long amount) {
-            byte[] args = ABIEncoder.encodeMethodArguments("approve", TestingHelper.buildAddress(spender.toBytes()), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("approve", new Address(spender.toBytes()), amount);
             return call(owner, args);
         }
 
         private TransactionResult callTransferFrom(org.aion.vm.api.interfaces.Address executor, org.aion.vm.api.interfaces.Address from, org.aion.vm.api.interfaces.Address to, long amount) {
-            byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", TestingHelper.buildAddress(from.toBytes()), TestingHelper.buildAddress(to.toBytes()), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", new Address(from.toBytes()), new Address(to.toBytes()), amount);
             return call(executor, args);
         }
 
@@ -143,12 +145,12 @@ public class PocExchangeTest {
         }
 
         public TransactionResult callListCoin(String name, org.aion.vm.api.interfaces.Address coinAddr) {
-            byte[] args = ABIEncoder.encodeMethodArguments("listCoin", name.toCharArray(), TestingHelper.buildAddress(coinAddr.toBytes()));
+            byte[] args = ABIEncoder.encodeMethodArguments("listCoin", name.toCharArray(), new Address(coinAddr.toBytes()));
             return call(owner,args);
         }
 
         public TransactionResult callRequestTransfer(String name, org.aion.vm.api.interfaces.Address from,  org.aion.vm.api.interfaces.Address to, long amount) {
-            byte[] args = ABIEncoder.encodeMethodArguments("requestTransfer", name.toCharArray(), TestingHelper.buildAddress(to.toBytes()), amount);
+            byte[] args = ABIEncoder.encodeMethodArguments("requestTransfer", name.toCharArray(), new Address(to.toBytes()), amount);
             return call(from,args);
         }
 

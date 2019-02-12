@@ -1,9 +1,10 @@
 package org.aion.avm.core.blockchainruntime;
 
+import org.aion.avm.api.Address;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.core.util.AvmRule;
+import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,18 +19,18 @@ public class RevertAndInvalidTest {
     public AvmRule avmRule = new AvmRule(false);
 
     // transaction
-    private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private Address deployer = avmRule.getPreminedAccount();
     private long energyLimit = 1_000_000L;
     private long energyPrice = 1L;
 
-    private org.aion.vm.api.interfaces.Address dappAddress;
+    private Address dappAddress;
 
     @Before
     public void setup() {
         dappAddress = deploy();
     }
 
-    private org.aion.vm.api.interfaces.Address deploy() {
+    private Address deploy() {
         byte[] arguments = null;
         return avmRule.deploy(deployer, BigInteger.ZERO, avmRule.getDappBytes(RevertAndInvalidTestResource.class, arguments), energyLimit, energyPrice).getDappAddress();
     }
@@ -43,7 +44,7 @@ public class RevertAndInvalidTest {
         assertTrue(energyLimit > txResult.getEnergyUsed());
         assertTrue(0 < txResult.getEnergyRemaining());
 
-        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, avmRule.kernel.getStorage(dappAddress, StorageKeys.CLASS_STATICS));
+        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, avmRule.kernel.getStorage(AvmAddress.wrap(dappAddress.unwrap()), StorageKeys.CLASS_STATICS));
     }
 
     @Test
@@ -54,7 +55,7 @@ public class RevertAndInvalidTest {
         assertEquals(energyLimit, txResult.getEnergyUsed());
         assertEquals(0, txResult.getEnergyRemaining());
 
-        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, avmRule.kernel.getStorage(dappAddress, StorageKeys.CLASS_STATICS));
+        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, avmRule.kernel.getStorage(AvmAddress.wrap(dappAddress.unwrap()), StorageKeys.CLASS_STATICS));
     }
 
 }

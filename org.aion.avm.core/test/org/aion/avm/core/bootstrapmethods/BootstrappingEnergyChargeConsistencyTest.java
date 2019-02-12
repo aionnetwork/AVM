@@ -1,10 +1,10 @@
 package org.aion.avm.core.bootstrapmethods;
 
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -22,14 +22,14 @@ public class BootstrappingEnergyChargeConsistencyTest {
     public static AvmRule avmRule = new AvmRule(false);
 
     private long energyLimit = 6_000_000;
-    private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private Address deployer = avmRule.getPreminedAccount();
 
 
 
     @Test
     public void testConsistencyOverMultipleInvocations() {
         // Deploy the contract.
-        org.aion.vm.api.interfaces.Address contractAddress = deployContract();
+        Address contractAddress = deployContract();
 
         // Run the contract multiple times.
         AvmTransactionResult result1 = (AvmTransactionResult) runContract(deployer, contractAddress);
@@ -61,11 +61,11 @@ public class BootstrappingEnergyChargeConsistencyTest {
         assertEquals(energyLimit, energy1 + remaining1);
     }
 
-    private org.aion.vm.api.interfaces.Address deployContract() {
+    private Address deployContract() {
         return avmRule.deploy(deployer, BigInteger.ZERO, avmRule.getDappBytes(EnergyChargeConsistencyTarget.class, null)).getDappAddress();
     }
 
-    private TransactionResult runContract(org.aion.vm.api.interfaces.Address sender, org.aion.vm.api.interfaces.Address contract) {
+    private TransactionResult runContract(Address sender, Address contract) {
         byte[] callData = ABIEncoder.encodeMethodArguments("run");
         return avmRule.call(sender, contract, BigInteger.ZERO, callData, energyLimit, 1L).getTransactionResult();
     }

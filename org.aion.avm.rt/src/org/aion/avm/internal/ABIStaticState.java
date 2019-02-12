@@ -1,14 +1,10 @@
-package org.aion.avm.api;
-
-import org.aion.avm.internal.IABISupport;
-import org.aion.avm.internal.RuntimeAssertionError;
-
+package org.aion.avm.internal;
 
 /**
  * Contains the IABISupport instance shared by all the static invocation paths and provides mechanisms for tests and startup to manage it.
  * Note that the reason why this is needed is that the ABI is invoked from DApp code, as a static, so we either need per-DApp class copies
  * (which would be overkill) or some kind of static singleton (and the external support interface seemed the obvious answer).
- * 
+ *
  */
 public final class ABIStaticState {
     private static IABISupport SUPPORT_SINGLETON;

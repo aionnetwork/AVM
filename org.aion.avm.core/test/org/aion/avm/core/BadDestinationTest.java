@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -10,8 +11,6 @@ import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -30,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 public class BadDestinationTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(false);
-    private static Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static Address from = avmRule.getPreminedAccount();
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 1;
     private static Address contract;
@@ -102,7 +101,7 @@ public class BadDestinationTest {
 
         TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        contract = AvmAddress.wrap(result.getReturnData());
+        contract = new Address(result.getReturnData());
     }
 
     private TransactionResult callContractWithoutCatchingException(Address callAddress) {
@@ -116,21 +115,17 @@ public class BadDestinationTest {
     }
 
     private byte[] encodeCallData(String methodName, Address address) {
-        IInstrumentation instrumentation = new EmptyInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
-        byte[] encoding = ABIEncoder.encodeMethodArguments(methodName, new org.aion.avm.api.Address(address.toBytes()));
-        InstrumentationHelpers.detachThread(instrumentation);
-        return encoding;
+        return ABIEncoder.encodeMethodArguments(methodName, address);
     }
 
     private Address generateDestinationAddressWithSpecifiedFirstByte(byte firstByte) {
-        byte[] bytes = Helpers.randomBytes(Address.SIZE);
+        byte[] bytes = Helpers.randomBytes(Address.LENGTH);
         bytes[0] = firstByte;
-        return AvmAddress.wrap(bytes);
+        return new Address(bytes);
     }
 
     private void addCodeToAddress(Address address) {
-        avmRule.kernel.putCode(address, new byte[1]);
+        avmRule.kernel.putCode(AvmAddress.wrap(address.unwrap()), new byte[1]);
     }
 
 }

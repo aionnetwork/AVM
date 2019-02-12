@@ -1,22 +1,19 @@
 package org.aion.avm.core.blockchainruntime;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.math.BigInteger;
-import java.util.Arrays;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.core.EmptyInstrumentation;
+import org.aion.avm.api.Address;
+import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.util.AvmRule;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.kernel.AvmAddress;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import java.math.BigInteger;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link org.aion.avm.api.BlockchainRuntime} functionality for getting the origin, caller
@@ -36,7 +33,7 @@ public class FailedInternalCallAddressesTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(false);
     private static final int MAX_CALL_DEPTH = 10;
-    private static Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static Address from = avmRule.getPreminedAccount();
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 5;
 
@@ -258,8 +255,8 @@ public class FailedInternalCallAddressesTest {
 
     private Address[] callFailedInternalCallAddressesContract(Address contract, Address[] otherContracts, boolean recurseFirst) {
         // An array to hold our array so that the varargs doesn't get confused over what we're doing here.
-        org.aion.avm.api.Address[][] otherContractsAsAbiAddresses = new org.aion.avm.api.Address[1][];
-        otherContractsAsAbiAddresses[0] = toAbiAddress(otherContracts);
+        Address[][] otherContractsAsAbiAddresses = new Address[1][];
+        otherContractsAsAbiAddresses[0] = otherContracts;
 
         byte[] callData;
         if (recurseFirst) {
@@ -270,13 +267,13 @@ public class FailedInternalCallAddressesTest {
 
         TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        return returnDataToAddresses(result.getReturnData());
+        return (Address[]) ABIDecoder.decodeOneObject(result.getReturnData());
     }
 
     private static Address deployFailedInternalCallAddressTrackerContract() {
         TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, avmRule.getDappBytes(FailedInternalCallAddressesContract.class, new byte[0]), energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        return AvmAddress.wrap(result.getReturnData());
+        return new Address(result.getReturnData());
     }
 
     private static Address[] deployInternalCallAddressTrackerContracts(int numContractsToDeploy) {
@@ -290,34 +287,7 @@ public class FailedInternalCallAddressesTest {
     private static Address deployInternalCallAddressTrackerContract() {
         TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, avmRule.getDappBytes(FailedInternalCallAddressesContract.class, new byte[0]), energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        return AvmAddress.wrap(result.getReturnData());
-    }
-
-    private org.aion.avm.api.Address[] toAbiAddress(Address[] addresses) {
-        IInstrumentation instrumentation = new EmptyInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
-        org.aion.avm.api.Address[] convertedAddresses = new org.aion.avm.api.Address[addresses.length];
-        for (int i = 0; i < addresses.length; i++) {
-            convertedAddresses[i] = new org.aion.avm.api.Address(addresses[i].toBytes());
-        }
-        InstrumentationHelpers.detachThread(instrumentation);
-        return convertedAddresses;
-    }
-
-    private Address[] returnDataToAddresses(byte[] data) {
-        IInstrumentation instrumentation = new EmptyInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
-        org.aion.avm.api.Address[] addresses = (org.aion.avm.api.Address[]) ABIDecoder.decodeOneObject(data);
-        InstrumentationHelpers.detachThread(instrumentation);
-        return convertFromAbiAddresses(addresses);
-    }
-
-    private Address[] convertFromAbiAddresses(org.aion.avm.api.Address[] addresses) {
-        Address[] convertedAddresses = new Address[addresses.length];
-        for (int i = 0; i < addresses.length; i++) {
-            convertedAddresses[i] = AvmAddress.wrap(addresses[i].unwrap());
-        }
-        return convertedAddresses;
+        return new Address(result.getReturnData());
     }
 
     /**

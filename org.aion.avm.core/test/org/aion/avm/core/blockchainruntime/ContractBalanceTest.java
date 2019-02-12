@@ -9,13 +9,10 @@ import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
-import org.aion.avm.core.EmptyInstrumentation;
 import org.aion.avm.core.RedirectContract;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -161,11 +158,7 @@ public class ContractBalanceTest {
     }
 
     private org.aion.avm.api.Address getContractAsAbiAddress(Address contract) {
-        IInstrumentation instrumentation = new EmptyInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
-        org.aion.avm.api.Address converted = new org.aion.avm.api.Address(contract.toBytes());
-        InstrumentationHelpers.detachThread(instrumentation);
-        return converted;
+        return new org.aion.avm.api.Address(contract.toBytes());
     }
 
 }

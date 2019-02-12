@@ -198,8 +198,7 @@ public class NamespaceMapper {
             } else if (this.preRenameClassAccessRules.isJclClass(type)) {
                 newType =  shadowPackageSlash + type;
             } else if (this.preRenameClassAccessRules.isApiClass(type)) {
-                // API maps directly - no prefix.
-                newType =  type;
+                newType =  PackageConstants.kShadowApiSlashPrefix + type;
             } else {
                 // NOTE:  We probably want to make this into a private exception so that this helper can be an isolated utility.
                 // We are currently throwing RejectedClassException, directly, since that was the original use in UserClassMappingVisitor.

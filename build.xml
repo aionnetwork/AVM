@@ -27,6 +27,9 @@
         <echo message="Building ${ant.project.name}..."/>
 
         <delete dir="${dir.global.build.main}"/>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.api/build.xml" target="clean_buildmain">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.rt/build.xml" target="clean_buildmain">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
@@ -34,9 +37,6 @@
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.core/build.xml" target="clean_buildmain">
-            <property name="compile.debug" value="${compile.debug}"/>
-        </ant>
-        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.api/build.xml" target="clean_buildmain">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
 

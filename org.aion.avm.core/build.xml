@@ -83,6 +83,7 @@
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-userlib.jar"/>
+                <pathelement location="${dir.global.build.main}/org-aion-avm-api.jar"/>
             </classpath>
         </javac>
     </target>
@@ -106,6 +107,7 @@
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-userlib.jar"/>
+                <pathelement location="${dir.global.build.main}/org-aion-avm-api.jar"/>
                 <pathelement location="${dir.local.build.test}" />
             </classpath>
             <formatter type="plain" usefile="false" />

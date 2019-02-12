@@ -1,17 +1,21 @@
 package org.aion.avm.core.shadowing.testSystem;
 
-import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
-import org.aion.kernel.*;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+
+import java.math.BigInteger;
 
 
 public class SystemShadowingTest {
     @Rule
     public AvmRule avmRule = new AvmRule(false);
-    private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private org.aion.vm.api.interfaces.Address dappAddr;
+    private Address from = avmRule.getPreminedAccount();
+    private Address dappAddr;
 
     @Before
     public void setup() {

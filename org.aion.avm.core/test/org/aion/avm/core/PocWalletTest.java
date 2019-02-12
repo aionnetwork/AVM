@@ -9,10 +9,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.avm.internal.OutOfEnergyException;
-import org.aion.avm.shadow.java.lang.Class;
-import org.aion.avm.shadow.java.lang.Object;
-import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -194,10 +190,6 @@ public class PocWalletTest {
     }
 
     private static Address createAddressInFakeContract(byte[] bytes) {
-        IInstrumentation instrumentation = new EmptyInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
-        Address instance = new Address(bytes);
-        InstrumentationHelpers.detachThread(instrumentation);
-        return instance;
+        return new Address(bytes);
     }
 }

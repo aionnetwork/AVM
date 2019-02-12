@@ -1,14 +1,16 @@
 package org.aion.avm.core.rejection.errors;
 
-import java.math.BigInteger;
-
+import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import java.math.BigInteger;
 
 
 /**
@@ -20,10 +22,11 @@ import org.junit.*;
  * since Throwable can be caught, but none of the VirtualMachineError instances should actually appear there.
  */
 public class RejectVirtualMachineErrorIntegrationTest {
-    // We will reuse these, for now, since we want to test that doing so is safe.  We may change this, in the future, is we depend on something perturbed by this.
-    private static final org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     @ClassRule
     public static AvmRule avmRule = new AvmRule(false);
+
+    // We will reuse these, for now, since we want to test that doing so is safe.  We may change this, in the future, is we depend on something perturbed by this.
+    private static final Address deployer = avmRule.getPreminedAccount();
 
     @Test
     public void rejectCatchError() throws Exception {

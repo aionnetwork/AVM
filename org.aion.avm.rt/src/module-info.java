@@ -8,8 +8,10 @@ module org.aion.avm.rt {
     exports org.aion.avm.shadow.java.util;
     exports org.aion.avm.shadow.java.util.concurrent;
     exports org.aion.avm.shadow.java.util.function;
-    exports org.aion.avm.api;
+    exports org.aion.avm.shadowapi.org.aion.avm.api;
     exports org.aion.avm;
+
+    requires org.aion.avm.api;
 
     // These are required in order to satisfy test compilation in Eclipse.
     // (our build process may avoid this need in other cases - not sure if that is more/less correct)

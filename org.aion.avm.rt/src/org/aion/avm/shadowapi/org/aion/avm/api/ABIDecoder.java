@@ -1,5 +1,7 @@
-package org.aion.avm.api;
+package org.aion.avm.shadowapi.org.aion.avm.api;
 
+import org.aion.avm.abi.internal.ABICodec;
+import org.aion.avm.abi.internal.ABIException;
 import org.aion.avm.arraywrapper.*;
 import org.aion.avm.internal.*;
 
@@ -9,6 +11,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
+import org.aion.avm.internal.ABIStaticState;
 
 
 public final class ABIDecoder {
@@ -33,7 +36,7 @@ public final class ABIDecoder {
         } // do not charge in case of early exit, since the fee is quite high
 
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithClass);
-        
+
         return internalDecodeAndRun(clazz.getRealClass(), null, txData.getUnderlying());
     }
 
@@ -71,10 +74,16 @@ public final class ABIDecoder {
         } // do not charge in case of early exit, since the fee is high
 
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeMethodName);
-        
+
         // We inline the core "decodeAsShadowObjects" logic here since we are only interested in decoding the first data element.
         // (We will probably deprecate this method, anyway).
-        List<ABICodec.Tuple> parsed = ABICodec.parseEverything(txData.getUnderlying());
+        List<ABICodec.Tuple> parsed;
+        try {
+            parsed = ABICodec.parseEverything(txData.getUnderlying());
+        } catch (ABIException e) {
+            throw new ABICodecException(e.getMessage());
+        }
+
         if (parsed.size() < 1) {
             throw new ABICodecException("Decoded as " + parsed.size() + " elements");
         }
@@ -102,10 +111,15 @@ public final class ABIDecoder {
         } // do not charge in case of early exit, since the fee is high
 
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeArguments);
-        
+
         // We inline the core "decodeAsShadowObjects" logic here since we aren't interested in decoding the first data element.
         // (We will probably deprecate this method, anyway).
-        List<ABICodec.Tuple> parsed = ABICodec.parseEverything(txData.getUnderlying());
+        List<ABICodec.Tuple> parsed;
+        try {
+            parsed = ABICodec.parseEverything(txData.getUnderlying());
+        } catch (ABIException e) {
+            throw new ABICodecException(e.getMessage());
+        }
         if (parsed.size() < 1) {
             throw new ABICodecException("Decoded as " + parsed.size() + " elements");
         }
@@ -140,14 +154,9 @@ public final class ABIDecoder {
         return (IObject) privateValues[0];
     }
 
-
     /*
      * These 2 methods are mostly just for satisfying compilation of DApp unit tests.
-     * Since the unit tests are in "org.aion.avm.core" module, with "import org.aion.avm.api.ABIDecoder", at compilation time,
-     * this class is actually referred; instead, in the user space where the real Dapp lives in, the ABIDecoder in "org.aion.avm.api"
-     * module (from which the api jar is built) is referred. Thus, at the compilation time, the unit tests need the 2 methods below;
-     * while the Dapps do not.
-     * 
+     *
      * At runtime, most callers have been transformed to call the "avm_*" variants.  Some cases, however, such as the testWallet,
      * expect that they can test this directly (although that assumption may be removed in the future).
      */
@@ -160,7 +169,7 @@ public final class ABIDecoder {
         } // do not charge in case of early exit, since the fee is quite high
 
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithClass);
-        
+
         ByteArray result = internalDecodeAndRun(clazz, null, txData);
         return (null != result)
                 ? result.getUnderlying()
@@ -171,18 +180,6 @@ public final class ABIDecoder {
             throw new NullPointerException();
         }
         throw RuntimeAssertionError.unimplemented("Method for compilation only!");
-    }
-
-    public static Object decodeOneObject(byte[] response) {
-        // We will handle an empty payload as a null.
-        // TODO:  Generalize this handling.
-        Object result = null;
-        if (response.length > 0) {
-            List<ABICodec.Tuple> parsed = ABICodec.parseEverything(response);
-            RuntimeAssertionError.assertTrue(1 == parsed.size());
-            result = parsed.get(0).value;
-        }
-        return result;
     }
 
     public static Object[] decodeArguments(byte[] data) {
@@ -200,8 +197,13 @@ public final class ABIDecoder {
     }
 
 
-    private static ByteArray internalDecodeAndRun(Class<?> clazz, IObject targetInstance, byte[] inputBytes) throws ABICodecException {
-        List<ABICodec.Tuple> parsed = ABICodec.parseEverything(inputBytes);
+    public static ByteArray internalDecodeAndRun(Class<?> clazz, IObject targetInstance, byte[] inputBytes) throws ABICodecException {
+        List<ABICodec.Tuple> parsed;
+        try {
+            parsed = ABICodec.parseEverything(inputBytes);
+        } catch (ABIException e) {
+            throw new ABICodecException(e.getMessage());
+        }
         // There MUST be at least 1 parsed parameter and the first one MUST be a string (methodName).
         if (parsed.size() < 1) {
             throw new ABICodecException("Decoded as " + parsed.size() + " elements");
@@ -209,7 +211,7 @@ public final class ABIDecoder {
         if (String.class != parsed.get(0).standardType) {
             throw new ABICodecException("First parsed value not String (method name)");
         }
-        String methodName = ABIStaticState.getSupport().convertToShadowMethodName((String)parsed.get(0).value);
+        String methodName = ABIStaticState.getSupport().convertToShadowMethodName((String) parsed.get(0).value);
         // Capture the types - skip the first, since that is the method name.
         Class<?>[] argTypes = new Class<?>[parsed.size() - 1];
         for (int i = 1; i < parsed.size(); ++i) {
@@ -284,22 +286,32 @@ public final class ABIDecoder {
             Class<?> publicType = isBoxType(boxedReturnType)
                     ? boxedReturnType
                     : ABIStaticState.getSupport().convertConcreteShadowToStandardType(boxedReturnType);
-            
+
             Object publicValue = null;
             if (null != result) {
                 publicValue = isBoxType(result.getClass())
                         ? result
                         : ABIStaticState.getSupport().convertToStandardValue(result);
             }
-            encodedResultBytes = ABICodec.serializeList(Collections.singletonList(new ABICodec.Tuple(publicType, publicValue)));
+
+            try {
+                encodedResultBytes = ABICodec.serializeList(Collections.singletonList(new ABICodec.Tuple(publicType, publicValue)));
+            } catch (ABIException e) {
+                throw new ABICodecException(e.getMessage());
+            }
         }
         return (null != encodedResultBytes)
                 ? new ByteArray(encodedResultBytes)
                 : null;
     }
 
-    private static Object[] decodeAsShadowObjects(byte[] inputBytes) {
-        List<ABICodec.Tuple> parsed = ABICodec.parseEverything(inputBytes);
+    public static Object[] decodeAsShadowObjects(byte[] inputBytes) {
+        List<ABICodec.Tuple> parsed;
+        try {
+            parsed = ABICodec.parseEverything(inputBytes);
+        } catch (ABIException e) {
+            throw new ABICodecException(e.getMessage());
+        }
         Object[] argValues = new Object[parsed.size()];
         for (int i = 0; i < parsed.size(); ++i) {
             Object publicValue = parsed.get(i).value;
@@ -359,14 +371,14 @@ public final class ABIDecoder {
 
     private static boolean isBoxType(Class<?> clazz) {
         return (false
-            || (Byte.class == clazz)
-            || (Boolean.class == clazz)
-            || (Short.class == clazz)
-            || (Character.class == clazz)
-            || (Integer.class == clazz)
-            || (Float.class == clazz)
-            || (Long.class == clazz)
-            || (Double.class == clazz)
+                || (Byte.class == clazz)
+                || (Boolean.class == clazz)
+                || (Short.class == clazz)
+                || (Character.class == clazz)
+                || (Integer.class == clazz)
+                || (Float.class == clazz)
+                || (Long.class == clazz)
+                || (Double.class == clazz)
         );
     }
 }

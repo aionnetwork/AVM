@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.ABIStaticState;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
@@ -16,8 +15,9 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.aion.avm.internal.ABIStaticState;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.VirtualMachine;
 
 
 /**
@@ -39,14 +39,14 @@ public class NodeEnvironment {
     // mechanisms can map from this primitive identity into the actual instances.
     private final Map<Integer, org.aion.avm.shadow.java.lang.Object> constantMap;
 
-    private Class<?>[] apiClasses;
+    private Class<?>[] shadowApiClasses;
     private Class<?>[] shadowClasses;
     private Class<?>[] arraywrapperClasses;
     private Class<?>[] exceptionwrapperClasses;
     private Set<String> jclClassNames;
 
     public final Map<String, Integer> shadowObjectSizeMap;  // pre-rename; shadow objects and exceptions
-    public final Map<String, Integer> apiObjectSizeMap;     // no rename needed; API objects
+    public final Map<String, Integer> apiObjectSizeMap;     // post-rename; API objects
     public final Map<String, Integer> preRenameRuntimeObjectSizeMap;     // pre-rename; runtime objects including shadow objects, exceptions and API objects
     public final Map<String, Integer> postRenameRuntimeObjectSizeMap;    // post-rename; runtime objects including shadow objects, exceptions and API objects
 
@@ -54,12 +54,12 @@ public class NodeEnvironment {
         Map<String, byte[]> generatedShadowJDK = CommonGenerators.generateShadowJDK();
         this.sharedClassLoader = new AvmSharedClassLoader(generatedShadowJDK);
         try {
-            this.apiClasses = new Class<?>[] {
-                org.aion.avm.api.Address.class,
-                org.aion.avm.api.BlockchainRuntime.class,
-                org.aion.avm.api.ABIDecoder.class,
-                org.aion.avm.api.ABIEncoder.class,
-                org.aion.avm.api.Result.class,
+            this.shadowApiClasses = new Class<?>[] {
+                org.aion.avm.shadowapi.org.aion.avm.api.Address.class,
+                org.aion.avm.shadowapi.org.aion.avm.api.BlockchainRuntime.class,
+                org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.class,
+                org.aion.avm.shadowapi.org.aion.avm.api.ABIEncoder.class,
+                org.aion.avm.shadowapi.org.aion.avm.api.Result.class,
             };
 
             this.arraywrapperClasses = new Class<?>[] {
@@ -158,7 +158,7 @@ public class NodeEnvironment {
 
             // Inject shadow and api class into shared classloader so we can build a static cache
             this.sharedClassLoader.putIntoStaticCache(this.shadowClasses);
-            this.sharedClassLoader.putIntoStaticCache(this.apiClasses);
+            this.sharedClassLoader.putIntoStaticCache(this.shadowApiClasses);
             this.sharedClassLoader.putIntoStaticCache(this.exceptionwrapperClasses);
             this.sharedClassLoader.finishInitialization();
 
@@ -186,12 +186,12 @@ public class NodeEnvironment {
                 this.postRenameRuntimeObjectSizeMap.put(k, v);
             }
             // the object size of API classes
-            if (k.startsWith(PackageConstants.kApiSlashPrefix)) {
+            if (k.startsWith(PackageConstants.kShadowApiSlashPrefix)) {
                 this.apiObjectSizeMap.put(k, v);
+                this.preRenameRuntimeObjectSizeMap.put(k.substring(PackageConstants.kShadowApiSlashPrefix.length()), v);
             }
         });
         this.preRenameRuntimeObjectSizeMap.putAll(shadowObjectSizeMap);
-        this.preRenameRuntimeObjectSizeMap.putAll(apiObjectSizeMap);
         this.postRenameRuntimeObjectSizeMap.putAll(apiObjectSizeMap);
     }
 
@@ -227,8 +227,8 @@ public class NodeEnvironment {
      *
      * @return a list of class objects
      */
-    public List<Class<?>> getApiClasses() {
-        return Arrays.asList(apiClasses);
+    public List<Class<?>> getShadowApiClasses() {
+        return Arrays.asList(shadowApiClasses);
     }
 
     /**
@@ -441,7 +441,7 @@ public class NodeEnvironment {
         String mainClassName = "java.lang.Object";
 
         List<Class<?>> classes = new ArrayList<>();
-        classes.addAll(getApiClasses());
+        classes.addAll(getShadowApiClasses());
         classes.addAll(getShadowClasses());
         for (Class<?> clazz : classes) {
             try {

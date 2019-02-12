@@ -1,4 +1,6 @@
-package org.aion.avm.api;
+package org.aion.avm.abi.internal;
+
+import org.aion.avm.api.Address;
 
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
@@ -9,10 +11,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.aion.avm.internal.ABICodecException;
-import org.aion.avm.internal.RuntimeAssertionError;
-
-
 /**
  * Note that there are at least 2 versions of the type system which need to be considered to use this and a third
  * type is relevant when interacting with deployed DApps:
@@ -21,7 +19,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * -Standard Type:  This is the type of the actual objects being passed around, meaning the ABI types with
  *  primitives replaced with box types (char becomes Character, etc).
  * -Internal Type:  This is the "shadow" type which the AVM uses at runtime.
- * 
+ *
  * Examples of distinction:
  * ***************************************************
  * * ABI Type  * Standard Type  * Internal Type      *
@@ -42,25 +40,25 @@ public class ABICodec {
 
     /**
      * Fully parses the given input data, returning a list of the Tuples defined by the data.
-     * 
+     * nre
      * @param data ABI-encoded bytes to interpret.
      * @return The list of Tuples found.
      * @throws NullPointerException The data was null.
-     * @throws ABICodecException The data was malformed.
+     * @throws ABIException The data was malformed.
      */
-    public static List<Tuple> parseEverything(byte[] data) throws NullPointerException, ABICodecException {
+    public static List<Tuple> parseEverything(byte[] data) throws NullPointerException, ABIException {
         if (null == data) {
             throw new NullPointerException();
         }
         try {
             List<Tuple> processedTuples = new ArrayList<>();
             ByteBuffer buffer = ByteBuffer.wrap(data);
-            
+
             // This loop is the top-level, so it can see leaf types, array modifiers, and null modifiers.
             while (buffer.hasRemaining()) {
                 ABIToken token = TOKEN_MAP.get(buffer.get());
                 RuntimeAssertionError.assertTrue(null != token);
-                
+
                 if (ABIToken.ARRAY == token) {
                     // Pull out the type and length, since they are "part" of this token.
                     ABIToken leafType = TOKEN_MAP.get(buffer.get());
@@ -76,19 +74,19 @@ public class ABICodec {
             return processedTuples;
         } catch (Throwable t) {
             // If we fail to interpret this data, it is a codec exception.
-            throw new ABICodecException("Failed to parse serialized data", t);
+            throw new ABIException("Failed to parse serialized data", t);
         }
     }
 
     /**
      * Serializes the given list of tuples as a stream of bytes.
-     * 
+     *
      * @param list The tuples to serialize.
      * @return The serialized data from the list, in the order specified.
      * @throws NullPointerException The list was null.
-     * @throws ABICodecException The tuples in the list were malformed.
+     * @throws ABIException The tuples in the list were malformed.
      */
-    public static byte[] serializeList(List<Tuple> list) throws NullPointerException, ABICodecException {
+    public static byte[] serializeList(List<Tuple> list) throws NullPointerException, ABIException {
         if (null == list) {
             throw new NullPointerException();
         }
@@ -97,7 +95,7 @@ public class ABICodec {
             for (Tuple elt : list) {
                 writeTupleToBuffer(buffer, elt);
             }
-            
+
             // Convert this into a byte[] of the appropriate size;
             int length = buffer.position();
             byte[] populated = new byte[length];
@@ -105,7 +103,7 @@ public class ABICodec {
             return populated;
         } catch (Throwable t) {
             // If we fail to serialize this data, it is a codec exception.
-            throw new ABICodecException("Failed to serialize data", t);
+            throw new ABIException("Failed to serialize data", t);
         }
     }
 
@@ -226,9 +224,9 @@ public class ABICodec {
                 // This is fixed-size - an address or primitive.
                 switch (token) {
                     case ADDRESS: {
-                        byte[] data = new byte[Address.avm_LENGTH];
+                        byte[] data = new byte[Address.LENGTH];
                         buffer.get(data);
-                        parsedData = new Address(data);
+                        parsedData = new org.aion.avm.api.Address(data);
                         break;
                     }
                     case BYTE: {
@@ -281,7 +279,7 @@ public class ABICodec {
 
     private static void writeTupleToBuffer(ByteBuffer buffer, Tuple elt) {
         // Note that this Tuple was built from outside so we aren't sure what this type means (leaf type, array type, unknown type, etc) but it should be a standard type.
-        
+
         if (ABIToken.STANDARD_LEAF_TYPE_MAP.containsKey(elt.standardType)) {
             // This is a direct leaf type (including a primitive array - they are caught here).
             writeNonArrayToBuffer(buffer, elt.standardType, elt.value);
@@ -301,7 +299,7 @@ public class ABICodec {
                 // Proceed with length and contents if it was not null.
                 if (null != cast) {
                     writeLength(buffer, cast.length);
-                    
+
                     // Now, walk the elements and handle them.
                     for (Object val : cast) {
                         writeNonArrayToBuffer(buffer, componentStandardType, val);
@@ -319,7 +317,7 @@ public class ABICodec {
         if (null == value) {
             buffer.put(ABIToken.NULL.identifier);
         }
-        
+
         // Primitive types.
         if (ABIToken.BYTE.standardType == standardType) {
             buffer.put(ABIToken.BYTE.identifier);
@@ -345,7 +343,7 @@ public class ABICodec {
         } else if (ABIToken.DOUBLE.standardType == standardType) {
             buffer.put(ABIToken.DOUBLE.identifier);
             buffer.putDouble((Double) value);
-            
+
             // Primitive array types.
         } else if (ABIToken.A_BYTE.standardType == standardType) {
             buffer.put(ABIToken.A_BYTE.identifier);
@@ -419,7 +417,7 @@ public class ABICodec {
                     buffer.putDouble(d);
                 }
             }
-            
+
             // Special types
         } else if (ABIToken.STRING.standardType == standardType) {
             buffer.put(ABIToken.STRING.identifier);
@@ -431,11 +429,11 @@ public class ABICodec {
         } else if (ABIToken.ADDRESS.standardType == standardType) {
             buffer.put(ABIToken.ADDRESS.identifier);
             if (null != value) {
-                byte[] cast = ((Address)value).unwrap();
-                RuntimeAssertionError.assertTrue(Address.avm_LENGTH == cast.length);
+                byte[] cast = ((org.aion.avm.api.Address)value).unwrap();
+                RuntimeAssertionError.assertTrue(Address.LENGTH == cast.length);
                 buffer.put(cast);
             }
-            
+
         } else {
             // There should be no other kind of case.
             RuntimeAssertionError.unreachable("Unknown type in encoder");

@@ -2,16 +2,12 @@ package org.aion.avm.core.blockchainruntime;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.core.EmptyInstrumentation;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.AvmAddress;
-import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -26,7 +22,7 @@ public class InternalCallClinitAddressesTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(false);
     private static final int MAX_CALL_DEPTH = 10;
-    private static Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static Address from = avmRule.getPreminedAccount();
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 5;
 
@@ -78,7 +74,7 @@ public class InternalCallClinitAddressesTest {
         printTestContext("verifyRunningInternalCallsFromDappIntoOtherDapps", numInternalTransactionsToSpawn, recurseFirst);
 
         Address contract = deployInternalCallClinitAddressTrackerContract();
-        Address[] deployedContracts = generateTheAddressesOfTheContractsThatWillBeCreated(numInternalTransactionsToSpawn, contract, avmRule.kernel.getNonce(contract).longValue());
+        Address[] deployedContracts = generateTheAddressesOfTheContractsThatWillBeCreated(numInternalTransactionsToSpawn, contract, avmRule.kernel.getNonce(AvmAddress.wrap(contract.unwrap())).longValue());
         printOrderOfContractCalls(contract, deployedContracts);
 
         // Grab the 'report', the batch of all addresses that were tracked by the contract.
@@ -129,9 +125,9 @@ public class InternalCallClinitAddressesTest {
         Address[] contracts = new Address[numContractsToDeploy];
         for (int i = 0; i < numContractsToDeploy; i++) {
             if (i == 0) {
-                contracts[i] = TransactionContextImpl.generateContractAddress(contract, nonce + i);
+                contracts[i] = new Address(TransactionContextImpl.generateContractAddress(AvmAddress.wrap(contract.unwrap()), nonce + i).toBytes());
             } else {
-                contracts[i] = TransactionContextImpl.generateContractAddress(contracts[i - 1], 0);
+                contracts[i] = new Address(TransactionContextImpl.generateContractAddress(AvmAddress.wrap(contracts[i - 1].unwrap()), 0).toBytes());
             }
         }
         return contracts;
@@ -140,7 +136,7 @@ public class InternalCallClinitAddressesTest {
     private static Address deployInternalCallClinitAddressTrackerContract() {
         TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, getDappBytes(), energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        return AvmAddress.wrap(result.getReturnData());
+        return new Address(result.getReturnData());
     }
 
     private Address[] callInternalCallClinitAddressesContract(Address contract, int numInternalCalls, boolean recurseFirst) {
@@ -155,28 +151,12 @@ public class InternalCallClinitAddressesTest {
 
         TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        return returnDataToAddresses(result.getReturnData());
+        return (Address[]) ABIDecoder.decodeOneObject(result.getReturnData());
     }
 
     private static byte[] getDappBytes() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(InternalCallClinitAddressesContract.class);
         return new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-    }
-
-    private Address[] returnDataToAddresses(byte[] data) {
-        IInstrumentation instrumentation = new EmptyInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
-        org.aion.avm.api.Address[] addresses = (org.aion.avm.api.Address[]) ABIDecoder.decodeOneObject(data);
-        InstrumentationHelpers.detachThread(instrumentation);
-        return convertFromAbiAddresses(addresses);
-    }
-
-    private Address[] convertFromAbiAddresses(org.aion.avm.api.Address[] addresses) {
-        Address[] convertedAddresses = new Address[addresses.length];
-        for (int i = 0; i < addresses.length; i++) {
-            convertedAddresses[i] = AvmAddress.wrap(addresses[i].unwrap());
-        }
-        return convertedAddresses;
     }
 
     private static Address[] joinArrays(Address[] array1, Address[] array2) {

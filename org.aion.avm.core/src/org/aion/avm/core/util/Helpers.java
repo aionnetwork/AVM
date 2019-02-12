@@ -1,6 +1,6 @@
 package org.aion.avm.core.util;
 
-import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.shadowapi.org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.internal.IRuntimeSetup;
@@ -9,7 +9,6 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ClassRenameVisitor;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.internal.StackWatcher;
 import org.aion.kernel.AvmAddress;

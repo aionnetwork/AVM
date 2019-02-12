@@ -1,8 +1,8 @@
 package org.aion.avm.core.shadowing.testEnum;
 
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
-import org.aion.kernel.KernelInterfaceImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,8 +14,8 @@ public class EnumShadowingTest {
     @Rule
     public AvmRule avmRule = new AvmRule(false);
 
-    private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private org.aion.vm.api.interfaces.Address dappAddr;
+    private Address from = avmRule.getPreminedAccount();
+    private Address dappAddr;
 
     private long energyLimit = 600_000_00000L;
     private long energyPrice = 1;

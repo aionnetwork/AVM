@@ -1,57 +1,32 @@
 package org.aion.avm.core.blockchainruntime;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
-import org.aion.avm.core.EmptyInstrumentation;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.AvmAddress;
-import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
-import org.aion.vm.api.interfaces.Address;
-import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionContext;
-import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+
+import java.math.BigInteger;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link BlockchainRuntime#getBalanceOfThisContract()} method on a contract that is at
  * some specified depth in a chain of internal contract calls.
  */
 public class InternalCallContractBalanceTest {
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
     private static final int MAX_CALL_DEPTH = 10;
-    private static Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static Address from = avmRule.getPreminedAccount();
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 5;
-    private static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-
-    private static KernelInterface kernel;
-    private static AvmImpl avm;
-
-    @BeforeClass
-    public static void setup() {
-        kernel = new KernelInterfaceImpl();
-        avm = CommonAvmFactory.buildAvmInstance(kernel);
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        avm.shutdown();
-    }
 
     /**
      * Tests running a contract that spawns a chain of internal calls such that the dapp at the targeted
@@ -163,57 +138,37 @@ public class InternalCallContractBalanceTest {
     }
 
     private Address deployContract(BigInteger value) {
-        Transaction transaction = Transaction.create(from, kernel.getNonce(from), value, getDappBytes(), energyLimit, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        assertTrue(result.getResultCode().isSuccess());
-        return AvmAddress.wrap(result.getReturnData());
+        AvmRule.ResultWrapper result = avmRule.deploy(from, value, getDappBytes(), energyLimit, energyPrice);
+        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        return result.getDappAddress();
     }
 
     private BigInteger callContractToGetBalanceAtDepth(Address contract, Address[] otherContracts, int depthToQuery) {
-        org.aion.avm.api.Address[] otherContractsAsAbiAddresses = toAbiAddress(otherContracts);
 
-        byte[] callData = ABIEncoder.encodeMethodArguments("getBalanceOfDappViaInternalCall", otherContractsAsAbiAddresses, depthToQuery);
-        Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        assertTrue(result.getResultCode().isSuccess());
-        return new BigInteger((byte[]) ABIDecoder.decodeOneObject(result.getReturnData()));
+        byte[] callData = ABIEncoder.encodeMethodArguments("getBalanceOfDappViaInternalCall", otherContracts, depthToQuery);
+        AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
+        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        return new BigInteger((byte[]) result.getDecodedReturnData());
     }
 
     private Address callContractDoCreateAndTransferValueAtDeployTime(Address contract, long amountToTransfer) {
         byte[] callData = ABIEncoder.encodeMethodArguments("createNewContractWithValue", getDappBytes(), amountToTransfer);
-        Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        assertTrue(result.getResultCode().isSuccess());
-        return AvmAddress.wrap((byte[]) ABIDecoder.decodeOneObject(result.getReturnData()));
+        AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
+        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        return new Address((byte[]) result.getDecodedReturnData());
     }
 
     private BigInteger getClinitBalanceOfContract(Address contract) {
         byte[] callData = ABIEncoder.encodeMethodArguments("getBalanceOfThisContractDuringClinit");
-        Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
-        assertTrue(result.getResultCode().isSuccess());
-        return new BigInteger((byte[]) ABIDecoder.decodeOneObject(result.getReturnData()));
+        AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
+        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        return new BigInteger((byte[]) result.getDecodedReturnData());
     }
 
     private void giveValueToContracts(Address[] contracts, BigInteger[] value) {
         for (int i = 0; i < contracts.length; i++) {
-            kernel.adjustBalance(contracts[i], value[i]);
+            avmRule.kernel.adjustBalance(AvmAddress.wrap(contracts[i].unwrap()), value[i]);
         }
-    }
-
-    private org.aion.avm.api.Address[] toAbiAddress(Address[] addresses) {
-        IInstrumentation instrumentation = new EmptyInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
-        org.aion.avm.api.Address[] convertedAddresses = new org.aion.avm.api.Address[addresses.length];
-        for (int i = 0; i < addresses.length; i++) {
-            convertedAddresses[i] = new org.aion.avm.api.Address(addresses[i].toBytes());
-        }
-        InstrumentationHelpers.detachThread(instrumentation);
-        return convertedAddresses;
     }
 
     private BigInteger[] produceRandomBalances(int numBalances) {
@@ -228,7 +183,7 @@ public class InternalCallContractBalanceTest {
 
     private static void verifyEachContractHasSpecifiedBalance(Address[] contracts, BigInteger[] balances) {
         for (int i = 0; i < contracts.length; i++) {
-            assertEquals(kernel.getBalance(contracts[i]), balances[i]);
+            assertEquals(avmRule.kernel.getBalance(AvmAddress.wrap(contracts[i].unwrap())), balances[i]);
         }
     }
 

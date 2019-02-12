@@ -1,9 +1,5 @@
 package org.aion.avm.core;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
-
-import java.math.BigInteger;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -12,14 +8,8 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.userlib.AionMap;
-import org.aion.kernel.AvmAddress;
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
+import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -27,6 +17,11 @@ import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.math.BigInteger;
+
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 
 public class TrsTest {
     private static final Address DEPLOYER = KernelInterfaceImpl.PREMINED_ADDRESS;
@@ -142,11 +137,7 @@ public class TrsTest {
     }
 
     private TransactionResult mintAccountToTrs(Address account, BigInteger amount) {
-        IInstrumentation instrumentation = new EmptyInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
-        TransactionResult result = callContract("mint", new org.aion.avm.api.Address(account.toBytes()), amount.longValue());
-        InstrumentationHelpers.detachThread(instrumentation);
-        return result;
+        return callContract("mint", new org.aion.avm.api.Address(account.toBytes()), amount.longValue());
     }
 
     private TransactionResult withdrawFromTrs(Address recipient) {

@@ -3,7 +3,7 @@ package org.aion.parallel;
 /**
  * A package private class wraps address byte array.
  *
- * This class is to remove the requirement of attaching dumpy helper to use {@link org.aion.avm.api.Address}.
+ * This class is to remove the requirement of attaching dumpy helper to use {@link org.aion.avm.shadowapi.org.aion.avm.api.Address}.
  */
 class AddressWrapper {
 

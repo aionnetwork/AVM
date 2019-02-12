@@ -175,7 +175,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         } else if (className.startsWith(PackageConstants.kShadowSlashPrefix)) {
             return className.substring(PackageConstants.kShadowSlashPrefix.length());
 
-        } else if (className.startsWith(PackageConstants.kApiSlashPrefix)) {
+        } else if (className.startsWith(PackageConstants.kShadowApiSlashPrefix)) {
             throw RuntimeAssertionError.unimplemented("Stripping name for API classes not implemented");
 
         } else if(debugMode) {

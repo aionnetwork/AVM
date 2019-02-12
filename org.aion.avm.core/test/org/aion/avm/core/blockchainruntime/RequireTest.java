@@ -1,17 +1,13 @@
 package org.aion.avm.core.blockchainruntime;
 
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.core.EmptyInstrumentation;
+import org.aion.avm.api.Address;
+import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.RedirectContract;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -28,7 +24,8 @@ import static org.junit.Assert.assertTrue;
 public class RequireTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(false);
-    private static Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+
+    private static Address from = avmRule.getPreminedAccount();
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 5;
     private static Address contract;
@@ -98,7 +95,7 @@ public class RequireTest {
         byte[] jar = new CodeAndArguments(getRawJarBytesForRequireContract(), new byte[0]).encodeToBytes();
         TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        contract = AvmAddress.wrap(result.getReturnData());
+        contract = new Address(result.getReturnData());
     }
 
     private TransactionResult callContractRequireMethod(boolean condition) {
@@ -117,7 +114,7 @@ public class RequireTest {
 
         TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        return AvmAddress.wrap(result.getReturnData());
+        return new Address(result.getReturnData());
     }
 
     private TransactionResult callRedirectContract(Address redirect, boolean condition) {
@@ -126,17 +123,8 @@ public class RequireTest {
     }
 
     private byte[] encodeRedirectCallArgs(boolean condition) {
-        org.aion.avm.api.Address contractToCall = getRequireContractAsAbiAddress();
         byte[] args = getAbiEncodingOfRequireContractCall(condition);
-        return ABIEncoder.encodeMethodArguments("callOtherContractAndRequireItIsSuccess", contractToCall, 0L, args);
-    }
-
-    private org.aion.avm.api.Address getRequireContractAsAbiAddress() {
-        IInstrumentation instrumentation = new EmptyInstrumentation();
-        InstrumentationHelpers.attachThread(instrumentation);
-        org.aion.avm.api.Address converted = new org.aion.avm.api.Address(contract.toBytes());
-        InstrumentationHelpers.detachThread(instrumentation);
-        return converted;
+        return ABIEncoder.encodeMethodArguments("callOtherContractAndRequireItIsSuccess", contract, 0L, args);
     }
 
     private byte[] getAbiEncodingOfRequireContractCall(boolean condition) {

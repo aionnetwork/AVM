@@ -1,5 +1,6 @@
 package org.aion.avm.core.util;
 
+import org.aion.avm.api.Address;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.kernel.*;
@@ -122,10 +123,11 @@ public final class AvmRule implements TestRule {
      * @param energyPrice Energy price to be used for the transfer
      * @return Result of the operation
      */
-    public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyPrice){
-        Transaction tx = Transaction.balanceTransfer(from, to, kernel.getNonce(from), value, energyPrice);
+    public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyPrice) {
+	    Transaction tx = Transaction.balanceTransfer(AvmAddress.wrap(from.unwrap()), AvmAddress.wrap(to.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, energyPrice);
+
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        return new ResultWrapper (avm.run(new TransactionContext[] {context})[0].get(), context.getSideEffects());
+        return new ResultWrapper(avm.run(new TransactionContext[]{context})[0].get(), context.getSideEffects());
     }
 
     /**
@@ -133,27 +135,27 @@ public final class AvmRule implements TestRule {
      * @param initialBalance Initial balance of the created account
      * @return Address of the newly created account
      */
-    public Address getRandomAddress(BigInteger initialBalance){
-        Address account = Helpers.randomAddress();
+    public Address getRandomAddress(BigInteger initialBalance) {
+        org.aion.vm.api.interfaces.Address account = Helpers.randomAddress();
         kernel.adjustBalance(account, initialBalance);
-        return account;
+        return new Address(account.toBytes());
     }
 
     /**
      * @return Address of the account with initial (pre-mined) balance in the kernel
      */
-    public Address getPreminedAccount(){
-        return  KernelInterfaceImpl.PREMINED_ADDRESS;
+    public Address getPreminedAccount() {
+        return new Address(KernelInterfaceImpl.PREMINED_ADDRESS.toBytes());
     }
 
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {
-        Transaction tx = Transaction.call(from, dappAddress, kernel.getNonce(from), value, transactionData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(AvmAddress.wrap(from.unwrap()), AvmAddress.wrap(dappAddress.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, transactionData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return new ResultWrapper(avm.run(new TransactionContext[]{context})[0].get(), context.getSideEffects());
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
-        Transaction tx = Transaction.create(from, kernel.getNonce(from), value, dappBytes, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(AvmAddress.wrap(from.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, dappBytes, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
         return new ResultWrapper(avm.run(new TransactionContext[]{context})[0].get(), context.getSideEffects());
     }
@@ -178,7 +180,7 @@ public final class AvmRule implements TestRule {
          * @return Address of the Dapp deployed in this transaction, Null if the deploy transaction failed
          */
         public Address getDappAddress() {
-            return result.getResultCode().isSuccess()? AvmAddress.wrap(result.getReturnData()) : null;
+            return result.getResultCode().isSuccess()? new Address(result.getReturnData()) : null;
         }
 
         /**

@@ -1,4 +1,4 @@
-package org.aion.avm.api;
+package org.aion.avm.shadowapi.org.aion.avm.api;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.shadow.java.lang.Object;
@@ -25,14 +25,5 @@ public class Result extends Object {
     public ByteArray avm_getReturnData() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Result_avm_getReturnData);
         return returnData;
-    }
-
-    // compiler-facing
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public byte[] getReturnData() {
-        return returnData.getUnderlying();
     }
 }

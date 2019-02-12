@@ -69,6 +69,7 @@
                destdir="${dir.local.build.test}" includes="**/*.java,module-info.java">
             <classpath>
                 <pathelement location="${dir.global.lib}/junit-4.12.jar"/>
+                <pathelement location="${dir.global.build.main}/org-aion-avm-api.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
             </classpath>
         </javac>
@@ -80,6 +81,7 @@
             <classpath>
                 <pathelement location="${dir.global.lib}/junit-4.12.jar"/>
                 <pathelement location="${dir.global.lib}/hamcrest-all-1.3.jar"/>
+                <pathelement location="${dir.global.build.main}/org-aion-avm-api.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
                 <pathelement location="${dir.local.build.test}" />
             </classpath>

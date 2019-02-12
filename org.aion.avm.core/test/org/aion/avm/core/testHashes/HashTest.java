@@ -1,11 +1,11 @@
 package org.aion.avm.core.testHashes;
 
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.HashUtils;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,8 +22,8 @@ public class HashTest {
     private long energyLimit = 10_000_000L;
     private long energyPrice = 1L;
 
-    private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private org.aion.vm.api.interfaces.Address dappAddress;
+    private Address deployer = avmRule.getPreminedAccount();
+    private Address dappAddress;
 
     private byte[] hashMessage = "test".getBytes();
     private final String blake2bMethodName = "callBlake2b";

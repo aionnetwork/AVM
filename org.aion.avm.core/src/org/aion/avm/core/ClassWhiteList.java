@@ -29,7 +29,7 @@ public class ClassWhiteList {
     public boolean isInWhiteList(String slashClassName) {
         return (slashClassName.startsWith(PackageConstants.kUserSlashPrefix)
                 || slashClassName.startsWith(PackageConstants.kShadowSlashPrefix)
-                || slashClassName.startsWith(PackageConstants.kApiSlashPrefix)
+                || slashClassName.startsWith(PackageConstants.kShadowApiSlashPrefix)
                 );
     }
 

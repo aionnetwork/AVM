@@ -102,7 +102,7 @@ public class PreRenameClassAccessRules {
 
     private boolean internalIsApiClass(String slashName) {
         // TODO:  We should change this to a hard-coded list, somewhere.
-        return slashName.startsWith(PackageConstants.kApiSlashPrefix);
+        return slashName.startsWith(PackageConstants.kPublicApiSlashPrefix);
     }
 
     private boolean internalIsJclSubclassWhitelist(String slashName) {

@@ -1,31 +1,27 @@
 package org.aion.avm.core.poc;
 
-import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.CommonAvmFactory;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.CoinController;
 import org.aion.avm.core.testExchange.ERC20;
 import org.aion.avm.core.testExchange.ERC20Token;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
-import org.aion.kernel.AvmAddress;
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
+import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.Test;
+
+import java.math.BigInteger;
 
 import static org.junit.Assert.assertTrue;
 
@@ -63,18 +59,18 @@ public class DemoTest {
         TransactionContext txContext = new TransactionContextImpl(createTransaction, block);
         TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        Address tokenDapp = TestingHelper.buildAddress(txResult.getReturnData());
+        Address tokenDapp = new Address(txResult.getReturnData());
         System.out.println(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.getReturnData()) + ")");
 
         System.out.println("\n>> Deploy the Multi-sig Wallet Dapp...");
         jar = JarBuilder.buildJarForMainAndClasses(Main.class, Wallet.class, Bytes32.class, AionList.class, AionSet.class, AionMap.class, AionBuffer.class);
         int confirmationsRequired = 2;
-        arguments = ABIEncoder.encodeMethodArguments("", TestingHelper.buildAddress(owner1.toBytes()), TestingHelper.buildAddress(owner2.toBytes()), confirmationsRequired);
+        arguments = ABIEncoder.encodeMethodArguments("", new Address(owner1.toBytes()), new Address(owner2.toBytes()), confirmationsRequired);
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        Address walletDapp = TestingHelper.buildAddress(txResult.getReturnData());
+        Address walletDapp = new Address(txResult.getReturnData());
         System.out.println(">> Wallet Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.getReturnData()) + ")");
         System.out.println(">> Owners List:");
         System.out.println(">>   Deployer - (Address " + deployer + ")");
@@ -99,7 +95,7 @@ public class DemoTest {
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println(">> balance of wallet: " + TestingHelper.decodeResult(txResult));
 
-        arguments = ABIEncoder.encodeMethodArguments("balanceOf", TestingHelper.buildAddress(receiver.toBytes()));
+        arguments = ABIEncoder.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
         tx = Transaction.call(pepeMinter, AvmAddress.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();
@@ -109,7 +105,7 @@ public class DemoTest {
         //================
         // PROPOSE
         //================
-        byte[] data = ABIEncoder.encodeMethodArguments("transfer", TestingHelper.buildAddress(receiver.toBytes()), 3000L);
+        byte[] data = ABIEncoder.encodeMethodArguments("transfer", new Address(receiver.toBytes()), 3000L);
         arguments = ABIEncoder.encodeMethodArguments("propose", tokenDapp, 0L, data, energyLimit);
         tx = Transaction.call(deployer, AvmAddress.wrap(walletDapp.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, arguments, 2_000_000L, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
@@ -150,7 +146,7 @@ public class DemoTest {
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println("\n>> balance of wallet: " + TestingHelper.decodeResult(txResult));
 
-        arguments = ABIEncoder.encodeMethodArguments("balanceOf", TestingHelper.buildAddress(receiver.toBytes()));
+        arguments = ABIEncoder.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
         tx = Transaction.call(pepeMinter, AvmAddress.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();

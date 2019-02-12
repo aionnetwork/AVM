@@ -1,7 +1,9 @@
 package org.aion.avm.core.collection;
 
 import java.math.BigInteger;
+
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -16,7 +18,7 @@ public class AionCollectionInterfaceTest {
 
     @Rule
     public AvmRule avmRule = new AvmRule(false);
-    private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private Address from = avmRule.getPreminedAccount();
     private long energyLimit = 10_000_000L;
     private long energyPrice = 1;
 
@@ -27,7 +29,7 @@ public class AionCollectionInterfaceTest {
         return createResult;
     }
 
-    private TransactionResult call(org.aion.vm.api.interfaces.Address contract, byte[] args) {
+    private TransactionResult call(Address contract, byte[] args) {
         TransactionResult callResult = avmRule.call(from, contract, BigInteger.ZERO, args, energyLimit, energyPrice).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
         return callResult;
@@ -36,7 +38,7 @@ public class AionCollectionInterfaceTest {
     @Test
     public void testList() {
         TransactionResult deployRes = deploy();
-        org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
+        Address contract = new Address(deployRes.getReturnData());
 
         byte[] args = ABIEncoder.encodeMethodArguments("testList");
         TransactionResult testResult = call(contract, args);
@@ -46,7 +48,7 @@ public class AionCollectionInterfaceTest {
     @Test
     public void testSet() {
         TransactionResult deployRes = deploy();
-        org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
+        Address contract = new Address(deployRes.getReturnData());
 
         byte[] args = ABIEncoder.encodeMethodArguments("testSet");
         TransactionResult testResult = call(contract, args);
@@ -56,7 +58,7 @@ public class AionCollectionInterfaceTest {
     @Test
     public void testMap() {
         TransactionResult deployRes = deploy();
-        org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
+        Address contract = new Address(deployRes.getReturnData());
 
         byte[] args = ABIEncoder.encodeMethodArguments("testMap");
         TransactionResult testResult = call(contract, args);

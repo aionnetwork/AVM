@@ -3,7 +3,9 @@ package org.aion.avm.api;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import org.aion.avm.api.ABICodec.Tuple;
+
+import org.aion.avm.abi.internal.ABICodec;
+import org.aion.avm.internal.ABIStaticState;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.junit.AfterClass;
@@ -23,7 +25,7 @@ public class ABIEncoderRandomTest {
 
     private int numberOfArgs;
     private Object[] varArgs;
-    private Tuple[] argTuples;
+    private ABICodec.Tuple[] argTuples;
     private int[] argTypes;
 
     @BeforeClass
@@ -47,7 +49,7 @@ public class ABIEncoderRandomTest {
 
         numberOfArgs = random.nextInt(10);
         varArgs = new Object[numberOfArgs];
-        argTuples = new Tuple[numberOfArgs];
+        argTuples = new ABICodec.Tuple[numberOfArgs];
         argTypes = new int[numberOfArgs];
     }
 
@@ -65,56 +67,56 @@ public class ABIEncoderRandomTest {
     private void addByte(int i) {
         byte b = (byte) random.nextInt();
         varArgs[i] = b;
-        argTuples[i] = new Tuple(Byte.class, b);
+        argTuples[i] = new ABICodec.Tuple(Byte.class, b);
     }
 
     private void addBool(int i) {
         boolean b = random.nextBoolean();
         varArgs[i] = b;
-        argTuples[i] = new Tuple(Boolean.class, b);
+        argTuples[i] = new ABICodec.Tuple(Boolean.class, b);
     }
 
     private void addChar(int i) {
         char b = (char) random.nextInt();
         varArgs[i] = b;
-        argTuples[i] = new Tuple(Character.class, b);
+        argTuples[i] = new ABICodec.Tuple(Character.class, b);
     }
 
     private void addShort(int i) {
         short b = (short) random.nextInt();
         varArgs[i] = b;
-        argTuples[i] = new Tuple(Short.class, b);
+        argTuples[i] = new ABICodec.Tuple(Short.class, b);
     }
 
     private void addInt(int i) {
         int b = random.nextInt();
         varArgs[i] = b;
-        argTuples[i] = new Tuple(Integer.class, b);
+        argTuples[i] = new ABICodec.Tuple(Integer.class, b);
     }
 
     private void addLong(int i) {
         long b = random.nextLong();
         varArgs[i] = b;
-        argTuples[i] = new Tuple(Long.class, b);
+        argTuples[i] = new ABICodec.Tuple(Long.class, b);
     }
 
     private void addFloat(int i) {
         float b = random.nextFloat();
         varArgs[i] = b;
-        argTuples[i] = new Tuple(Float.class, b);
+        argTuples[i] = new ABICodec.Tuple(Float.class, b);
     }
 
     private void addDouble(int i) {
         double b = random.nextDouble();
         varArgs[i] = b;
-        argTuples[i] = new Tuple(Double.class, b);
+        argTuples[i] = new ABICodec.Tuple(Double.class, b);
     }
 
     private void addByteArray(int i) {
         byte[] b = new byte[random.nextInt(50)];
         random.nextBytes(b);
         varArgs[i] = b;
-        argTuples[i] = new Tuple(byte[].class, b);
+        argTuples[i] = new ABICodec.Tuple(byte[].class, b);
     }
 
     private void addBoolArray(int i) {
@@ -124,7 +126,7 @@ public class ABIEncoderRandomTest {
             b[j] = random.nextBoolean();
         }
         varArgs[i] = b;
-        argTuples[i] = new Tuple(boolean[].class, b);
+        argTuples[i] = new ABICodec.Tuple(boolean[].class, b);
     }
 
     private void addCharArray(int i) {
@@ -134,7 +136,7 @@ public class ABIEncoderRandomTest {
             b[j] = (char) random.nextInt();
         }
         varArgs[i] = b;
-        argTuples[i] = new Tuple(char[].class, b);
+        argTuples[i] = new ABICodec.Tuple(char[].class, b);
     }
 
     private void addShortArray(int i) {
@@ -144,13 +146,13 @@ public class ABIEncoderRandomTest {
             b[j] = (short) random.nextInt();
         }
         varArgs[i] = b;
-        argTuples[i] = new Tuple(short[].class, b);
+        argTuples[i] = new ABICodec.Tuple(short[].class, b);
     }
 
     private void addIntArray(int i) {
         int[] b = getRandomIntArray();
         varArgs[i] = b;
-        argTuples[i] = new Tuple(int[].class, b);
+        argTuples[i] = new ABICodec.Tuple(int[].class, b);
     }
 
     private void addLongArray(int i) {
@@ -160,7 +162,7 @@ public class ABIEncoderRandomTest {
             b[j] = random.nextLong();
         }
         varArgs[i] = b;
-        argTuples[i] = new Tuple(long[].class, b);
+        argTuples[i] = new ABICodec.Tuple(long[].class, b);
     }
 
     private void addFloatArray(int i) {
@@ -170,7 +172,7 @@ public class ABIEncoderRandomTest {
             b[j] = random.nextFloat();
         }
         varArgs[i] = b;
-        argTuples[i] = new Tuple(float[].class, b);
+        argTuples[i] = new ABICodec.Tuple(float[].class, b);
     }
 
     private void addDoubleArray(int i) {
@@ -180,13 +182,13 @@ public class ABIEncoderRandomTest {
             b[j] = random.nextDouble();
         }
         varArgs[i] = b;
-        argTuples[i] = new Tuple(double[].class, b);
+        argTuples[i] = new ABICodec.Tuple(double[].class, b);
     }
 
     private void addString(int i) {
         String b = getRandomString(20);
         varArgs[i] = b;
-        argTuples[i] = new Tuple(String.class, b);
+        argTuples[i] = new ABICodec.Tuple(String.class, b);
     }
 
     private int[] getRandomIntArray() {
@@ -209,7 +211,7 @@ public class ABIEncoderRandomTest {
         }
 
         varArgs[i] = b;
-        argTuples[i] = new Tuple(int[][].class, b);
+        argTuples[i] = new ABICodec.Tuple(int[][].class, b);
     }
 
     private void addRandomType(int type, int index) {
@@ -316,7 +318,7 @@ public class ABIEncoderRandomTest {
         }
 
         byte[] encoded = ABIEncoder.encodeMethodArguments(methodName, varArgs);
-        List<Tuple> list = ABICodec.parseEverything(encoded);
+        List<ABICodec.Tuple> list = ABICodec.parseEverything(encoded);
         Assert.assertEquals(numberOfArgs + 1, list.size());
         Assert.assertEquals(methodName, list.get(0).value);
         for (int i = 0; i < numberOfArgs; i++) {
@@ -337,7 +339,7 @@ public class ABIEncoderRandomTest {
 
         numberOfArgs = random.nextInt(10);
         varArgs = new Object[numberOfArgs];
-        argTuples = new Tuple[numberOfArgs];
+        argTuples = new ABICodec.Tuple[numberOfArgs];
         argTypes = new int[numberOfArgs];
 
         byte[] encoded = {33, 0, 10, 85, 79, 76, 70, 70, 78, 89, 114, 99, 81, 6, 123, 88, 120, 23,
@@ -357,7 +359,7 @@ public class ABIEncoderRandomTest {
         for (int i = 0; i < numberOfArgs; i++) {
             addRandomType(random.nextInt(18) + 1, i);
         }
-        List<Tuple> list = ABICodec.parseEverything(encoded);
+        List<ABICodec.Tuple> list = ABICodec.parseEverything(encoded);
         Assert.assertEquals(numberOfArgs + 1, list.size());
         Assert.assertEquals(methodName, list.get(0).value);
         for (int i = 0; i < numberOfArgs; i++) {

@@ -1,8 +1,8 @@
 package org.aion.avm.core.concurrent;
 
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
-import org.aion.vm.api.interfaces.Address;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;

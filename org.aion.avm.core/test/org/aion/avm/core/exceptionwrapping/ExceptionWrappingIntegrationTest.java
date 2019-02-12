@@ -1,30 +1,22 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmFailedException;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.MockFailureInstrumentationFactory;
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.util.TestingHelper;
-import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.AvmAddress;
-import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.ResultCode;
-import org.aion.vm.api.interfaces.TransactionContext;
-import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
+import org.aion.avm.core.util.TestingHelper;
+import org.aion.avm.internal.OutOfEnergyException;
+import org.aion.kernel.*;
+import org.aion.vm.api.interfaces.*;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.math.BigInteger;
 
 
 public class ExceptionWrappingIntegrationTest {
@@ -42,7 +34,7 @@ public class ExceptionWrappingIntegrationTest {
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+        Address contractAddr = new Address(createResult.getReturnData());
         
         // Store the exceptions.
         int systemHash = ((Integer)callStatic(block, kernel, avm, contractAddr, "storeSystem")).intValue();
@@ -74,7 +66,7 @@ public class ExceptionWrappingIntegrationTest {
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+        Address contractAddr = new Address(createResult.getReturnData());
         
         // The next call will perform 10 block enters, thus triggering our failure.
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, callStaticStatus(block, kernel, avm, contractAddr, "storeSystem"));
@@ -96,7 +88,7 @@ public class ExceptionWrappingIntegrationTest {
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+        Address contractAddr = new Address(createResult.getReturnData());
         
         // The next call will perform 10 block enters, thus triggering our failure.
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, callStaticStatus(block, kernel, avm, contractAddr, "storeSystem"));
@@ -118,7 +110,7 @@ public class ExceptionWrappingIntegrationTest {
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+        Address contractAddr = new Address(createResult.getReturnData());
         
         // The next call will spin in a loop, thus triggering our failure.
         // (we expect this failure to happen when we try to get() the response from the future).
@@ -156,7 +148,7 @@ public class ExceptionWrappingIntegrationTest {
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionResult createResult = avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Address contractAddr = TestingHelper.buildAddress(createResult.getReturnData());
+        Address contractAddr = new Address(createResult.getReturnData());
         
         // The next call will spin in a loop, thus triggering our failure.
         // (we expect this failure to happen when we try to get() the response from the future).
