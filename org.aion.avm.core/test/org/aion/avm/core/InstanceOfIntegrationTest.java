@@ -1,9 +1,9 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
@@ -149,6 +149,6 @@ public class InstanceOfIntegrationTest {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
         TransactionResult result = avmRule.call(deployer, dappAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ((Boolean)TestingHelper.decodeResult(result)).booleanValue();
+        return ((Boolean) ABIDecoder.decodeOneObject(result.getReturnData())).booleanValue();
     }
 }

@@ -1,9 +1,9 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
@@ -97,6 +97,6 @@ public class AssertKeywordIntegrationTest {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, arguments);
         TransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return TestingHelper.decodeResult(result);
+        return ABIDecoder.decodeOneObject(result.getReturnData());
     }
 }

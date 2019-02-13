@@ -1,14 +1,13 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
+
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testWallet.*;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.TestingHelper;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -136,7 +135,7 @@ public class PocWalletTest {
         TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
         TransactionResult executeResult = avm.run(new TransactionContext[] {executeContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, executeResult.getResultCode());
-        byte[] toConfirm = (byte[]) TestingHelper.decodeResult(executeResult);
+        byte[] toConfirm = (byte[]) ABIDecoder.decodeOneObject(executeResult.getReturnData());
 
         // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
         kernel.adjustBalance(extra1, BigInteger.valueOf(1_000_000_000_000L));

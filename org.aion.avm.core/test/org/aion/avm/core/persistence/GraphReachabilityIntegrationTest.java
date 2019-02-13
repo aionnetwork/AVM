@@ -1,5 +1,6 @@
 package org.aion.avm.core.persistence;
 
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.BillingRules;
@@ -8,7 +9,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -30,6 +30,8 @@ public class GraphReachabilityIntegrationTest {
 
     private Address deployer = avmRule.getPreminedAccount();
 
+    // added for methods with void return
+    private static long byteArrayReturnCost = 600L;
     /**
      * Tests that a hidden object, changed via a path that is destroyed, is still observed as changed by other paths.
      * This version of the test calls in a sequence of transactions, meaning normal serialization.
@@ -55,7 +57,7 @@ public class GraphReachabilityIntegrationTest {
                 // write instances (3 - only 2 were actually modified)
                     + (2 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
-        callStatic(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges, "modify249");
+        callStatic(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges + byteArrayReturnCost, "modify249");
         
         // Verify after.
         callStatic(block, contractAddr, getCost_check249(false), "check249", 5);
@@ -104,7 +106,8 @@ public class GraphReachabilityIntegrationTest {
                 // write instance
                 //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 17L)
                 ;
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges, "run249_reentrant_notLoaded");
+        // added byteArrayReturnCost cost for 3 methods with void return type
+        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + byteArrayReturnCost * 3, "run249_reentrant_notLoaded");
         
         // Verify after.
         callStatic(block, contractAddr, getCost_check249(false), "check249", 5);
@@ -153,7 +156,7 @@ public class GraphReachabilityIntegrationTest {
                 // write instance
                 //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 17L)
                 ;
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges, "run249_reentrant_loaded");
+        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + byteArrayReturnCost * 3, "run249_reentrant_loaded");
         
         // Verify after.
         callStatic(block, contractAddr, getCost_check249(false), "check249", 5);
@@ -195,7 +198,7 @@ public class GraphReachabilityIntegrationTest {
                 // write instance
                 //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 25L)
                 ;
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges, "runNewInstance_reentrant");
+        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + byteArrayReturnCost * 3, "runNewInstance_reentrant");
         
         // Verify result.
         long check_basicCost = 22156L;
@@ -259,7 +262,7 @@ public class GraphReachabilityIntegrationTest {
                 // write instance
                 //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 32L)
                 ;
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges, "runNewInstance_reentrant2");
+        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + byteArrayReturnCost * 5, "runNewInstance_reentrant2");
         
         // Verify result.
         long check_basicCost = 22156L;
@@ -357,7 +360,7 @@ public class GraphReachabilityIntegrationTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(expectedCost, result.getEnergyUsed());
         Assert.assertEquals(energyLimit - expectedCost, result.getEnergyRemaining());
-        return TestingHelper.decodeResult(result);
+        return ABIDecoder.decodeOneObject(result.getReturnData());
     }
 
     private static long getCost_check249(boolean before) {
@@ -379,7 +382,7 @@ public class GraphReachabilityIntegrationTest {
                 // write instances (5)
                 //    + (5 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
-        return basicCost + miscCharges + storageCharges;
+        return basicCost + miscCharges + storageCharges + byteArrayReturnCost;
     }
 
     private static long getCost_setup249() {
@@ -401,7 +404,7 @@ public class GraphReachabilityIntegrationTest {
                 // instance
                     + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
                 ;
-        return basicCost + miscCharges + storageCharges;
+        return basicCost + miscCharges + storageCharges + byteArrayReturnCost;
     }
 
     private TransactionResult runGc(Block block, Address contractAddr) {

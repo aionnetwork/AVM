@@ -1,11 +1,12 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
+
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
@@ -85,6 +86,6 @@ public class HashCodeIntegrationTest {
         } else {
             Assert.assertEquals(-1723350948, result.getStorageRootHash());
         }
-        return TestingHelper.decodeResult(result);
+        return ABIDecoder.decodeOneObject(result.getReturnData());
     }
 }

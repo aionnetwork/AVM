@@ -1,12 +1,12 @@
 package org.aion.avm.core.performance;
 
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -167,7 +167,7 @@ public class PerformanceTest {
             for (SimpleFuture<TransactionResult> future : futures) {
                 AvmTransactionResult result = (AvmTransactionResult) future.get();
                 Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-                TestingHelper.decodeResult(result);
+                ABIDecoder.decodeOneObject(result.getReturnData());
             }
         }
     }

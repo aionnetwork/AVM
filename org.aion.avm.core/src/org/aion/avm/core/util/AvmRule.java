@@ -1,5 +1,6 @@
 package org.aion.avm.core.util;
 
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -191,7 +192,7 @@ public final class AvmRule implements TestRule {
          * @return Decoded returned data of the call
          */
         public Object getDecodedReturnData() {
-            return TestingHelper.decodeResult(result);
+            return ABIDecoder.decodeOneObject(result.getReturnData());
         }
 
         /**

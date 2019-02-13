@@ -1,10 +1,10 @@
 package org.aion.avm.core;
 
 import net.i2p.crypto.eddsa.Utils;
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
@@ -41,7 +41,7 @@ public class EdverifyTest {
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertTrue((Boolean) TestingHelper.decodeResult(txResult));
+        Assert.assertTrue((Boolean) ABIDecoder.decodeOneObject(txResult.getReturnData()));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class EdverifyTest {
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertFalse((Boolean) TestingHelper.decodeResult(txResult));
+        Assert.assertFalse((Boolean) ABIDecoder.decodeOneObject(txResult.getReturnData()));
     }
 
     @Test
@@ -67,6 +67,6 @@ public class EdverifyTest {
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertFalse((Boolean) TestingHelper.decodeResult(txResult));
+        Assert.assertFalse((Boolean) ABIDecoder.decodeOneObject(txResult.getReturnData()));
     }
 }

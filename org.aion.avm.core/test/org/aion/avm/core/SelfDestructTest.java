@@ -1,11 +1,11 @@
 package org.aion.avm.core;
 
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -178,7 +178,7 @@ public class SelfDestructTest {
     private Object callDApp(Address dAppAddress, byte[] argData) {
         TransactionResult result = avmRule.call(deployer, dAppAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return TestingHelper.decodeResult(result);
+        return ABIDecoder.decodeOneObject(result.getReturnData());
     }
 
     private void failToCall(Address dAppAddress) {

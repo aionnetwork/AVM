@@ -1,6 +1,8 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
+
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -8,7 +10,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
@@ -447,7 +448,7 @@ public class AvmImplTest {
         byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnAndCall", incrementorCallData);
         byte[] incrementorResult = (byte[]) callDApp(kernel, avm, spawnerAddress, spawnerCallData);
         // We double-encoded the arguments, so double-decode the response.
-        byte[] spawnerResult = (byte[]) TestingHelper.decodeResultRaw(incrementorResult);
+        byte[] spawnerResult = (byte[]) ABIDecoder.decodeOneObject(incrementorResult);
         assertEquals(input.length, spawnerResult.length);
         for (int i = 0; i < input.length; ++i) {
             assertEquals(incrementBy + input[i], spawnerResult[i]);
@@ -610,7 +611,7 @@ public class AvmImplTest {
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
         TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ((Integer)TestingHelper.decodeResult(result)).intValue();
+        return ((Integer) ABIDecoder.decodeOneObject(result.getReturnData())).intValue();
     }
 
     private int callReentrantAccess(KernelInterface kernel, VirtualMachine avm, Address contractAddr, String methodName, boolean shouldFail) {
@@ -638,7 +639,7 @@ public class AvmImplTest {
         Transaction tx = Transaction.call(deployer, AvmAddress.wrap(dAppAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
         TransactionResult result2 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
-        return TestingHelper.decodeResult(result2);
+        return ABIDecoder.decodeOneObject(result2.getReturnData());
     }
 
     private void deployInvalidJar(byte[] jar) {

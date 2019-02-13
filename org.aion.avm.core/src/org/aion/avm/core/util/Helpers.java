@@ -43,7 +43,7 @@ public class Helpers {
      * @return
      */
     public static String bytesToHexString(byte[] bytes) {
-        if (null == bytes){
+        if (bytes.length == 0){
             return "void";
         }
 

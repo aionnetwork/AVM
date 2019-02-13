@@ -1,5 +1,6 @@
 package org.aion.avm.core.poc;
 
+import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.CommonAvmFactory;
@@ -9,7 +10,6 @@ import org.aion.avm.core.testExchange.ERC20;
 import org.aion.avm.core.testExchange.ERC20Token;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -86,21 +86,21 @@ public class DemoTest {
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + TestingHelper.decodeResult(txResult));
+        System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", walletDapp);
         tx = Transaction.call(pepeMinter, AvmAddress.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> balance of wallet: " + TestingHelper.decodeResult(txResult));
+        System.out.println(">> balance of wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
         tx = Transaction.call(pepeMinter, AvmAddress.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> balance of receiver: " + TestingHelper.decodeResult(txResult));
+        System.out.println(">> balance of receiver: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         //================
         // PROPOSE
@@ -111,8 +111,8 @@ public class DemoTest {
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.bytesToHexString((byte[]) TestingHelper.decodeResult(txResult)) + ")");
-        byte[] pendingTx = (byte[]) TestingHelper.decodeResult(txResult);
+        System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.bytesToHexString((byte[]) ABIDecoder.decodeOneObject(txResult.getReturnData())) + ")");
+        byte[] pendingTx = (byte[]) ABIDecoder.decodeOneObject(txResult.getReturnData());
 
         //================
         // CONFIRM #1
@@ -122,7 +122,7 @@ public class DemoTest {
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> Transaction confirmed by Owner 1: " + TestingHelper.decodeResult(txResult));
+        System.out.println(">> Transaction confirmed by Owner 1: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         //================
         // CONFIRM #2
@@ -132,7 +132,7 @@ public class DemoTest {
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> Transaction confirmed by Owner 2: " + TestingHelper.decodeResult(txResult));
+        System.out.println(">> Transaction confirmed by Owner 2: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         System.out.println("\n>> Number of confirmations reach to " + confirmationsRequired + ". Transaction is processed.");
 
@@ -144,14 +144,14 @@ public class DemoTest {
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println("\n>> balance of wallet: " + TestingHelper.decodeResult(txResult));
+        System.out.println("\n>> balance of wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIEncoder.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
         tx = Transaction.call(pepeMinter, AvmAddress.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = new TransactionContextImpl(tx, block);
         txResult = avm.run(new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> balance of receiver: " + TestingHelper.decodeResult(txResult));
+        System.out.println(">> balance of receiver: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
         avm.shutdown();
     }
 }

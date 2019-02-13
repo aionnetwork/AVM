@@ -276,7 +276,7 @@ public final class ABIDecoder {
         byte[] encodedResultBytes = null;
         if (isVoidReturn) {
             // We just handle void return as an empty byte[].
-            encodedResultBytes = null;
+            encodedResultBytes = new byte[0];
         } else {
             // Note that we don't want to operate on primitives so get the boxed type, if need be.
             Class<?> boxedReturnType = bindingReturnType.isPrimitive()
@@ -300,9 +300,7 @@ public final class ABIDecoder {
                 throw new ABICodecException(e.getMessage());
             }
         }
-        return (null != encodedResultBytes)
-                ? new ByteArray(encodedResultBytes)
-                : null;
+        return new ByteArray(encodedResultBytes);
     }
 
     public static Object[] decodeAsShadowObjects(byte[] inputBytes) {

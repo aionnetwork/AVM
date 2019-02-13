@@ -1,14 +1,10 @@
 package org.aion.avm.core.util;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.Address;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.Class;
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.vm.api.interfaces.TransactionResult;
 
 
 /**
@@ -18,24 +14,6 @@ import org.aion.vm.api.interfaces.TransactionResult;
  * Additionally, it provides some common static helpers for common cases of its use.
  */
 public class TestingHelper implements IInstrumentation {
-    public static Address buildAddress(byte[] raw) {
-        TestingHelper helper = new TestingHelper(false);
-        Address data = new Address(raw);
-        helper.remove();
-        return data;
-    }
-    public static Object decodeResult(TransactionResult result) {
-        return decodeResultRaw(result.getReturnData());
-    }
-    public static Object decodeResultRaw(byte[] returnData) {
-        Object data = null;
-        if (null != returnData) {
-            TestingHelper helper = new TestingHelper(false);
-            data = ABIDecoder.decodeOneObject(returnData);
-            helper.remove();
-        }
-        return data;
-    }
 
     /**
      * A special entry-point used only the test wallet when running the constract, inline.  This allows the helper to be setup for constant initialization.
