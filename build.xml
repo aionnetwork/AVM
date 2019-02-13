@@ -4,6 +4,7 @@
     <property name="dir.global.workspace" value="."/>
     <property name="dir.global.build" value="${dir.global.workspace}/build"/>
     <property name="dir.global.build.main" value="${dir.global.build}/main"/>
+    <property name="dir.global.build.scratch-deps-jar" value="${dir.global.build.main}/scratch-deps.jar"/>
 
     <target name="clean">
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.rt/build.xml" target="clean">
@@ -42,13 +43,22 @@
 
         <delete dir="${dir.global.workspace}/dist"/>
 
+        <!-- Create a scratch JAR of our dependencies since we can't filter their contents in one step -->
+        <jar jarfile="${dir.global.build.scratch-deps-jar}" >
+            <zipgroupfileset dir="${dir.global.build.main}" includes="*.jar" />
+            <zipgroupfileset dir="${dir.global.workspace}/lib" includes="*.jar" />
+        </jar>
+
+        <!-- Now, build this dependency JAR into our static avm.jar -->
         <jar jarfile="${dir.global.workspace}/dist/avm.jar">
             <manifest>
                 <attribute name="Automatic-Module-Name" value="avm" />
                 <attribute name="Main-Class" value="org.aion.cli.AvmCLI" />
             </manifest>
-            <zipgroupfileset dir="${dir.global.build.main}" includes="*.jar" excludes="META-INF/*.SF" />
-            <zipgroupfileset dir="${dir.global.workspace}/lib" includes="*.jar" excludes="META-INF/*.SF" />
+            <zipfileset src="${dir.global.build.scratch-deps-jar}">
+                <exclude name="META-INF/**" />
+                <exclude name="module-info.class" />
+            </zipfileset>
         </jar>
 
         <copy file="${dir.global.build.main}/org-aion-avm-api.jar" todir="${dir.global.workspace}/dist/lib"></copy>
