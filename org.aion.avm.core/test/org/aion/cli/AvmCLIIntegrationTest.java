@@ -335,4 +335,59 @@ public class AvmCLIIntegrationTest {
         AvmCLI.testingMain(deployEnv, new String[] {"deploy", temp.getAbsolutePath(), "--value", invalidBalance});
         Assert.assertTrue(deployEnv.didScrapeString);
     }
+
+    @Test
+    public void testTransferToContract() throws IOException {
+        final int transferBalance = 20000;
+        String storagePath = "./storage";
+        File storageFile = new File(storagePath);
+        KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
+
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        File temp = this.folder.newFile();
+        Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
+
+        // deploy first, with no balance
+        TestEnvironment deployEnv = new TestEnvironment("Result status: SUCCESS");
+        AvmCLI.testingMain(deployEnv, new String[] {"deploy", temp.getAbsolutePath()});
+        Assert.assertTrue(deployEnv.didScrapeString);
+
+        String dappAddress = deployEnv.capturedAddress;
+
+        // check for balance of 0
+        java.math.BigInteger contractBalance = kernelInterface.getBalance(AvmAddress.wrap(Helpers.hexStringToBytes(dappAddress)));
+        System.out.println("Contract balance: " + contractBalance);
+        Assert.assertEquals(0,contractBalance.intValue());
+
+        // do transfer only
+        TestEnvironment callEnv = new TestEnvironment("Return value : void");
+        AvmCLI.testingMain(callEnv, new String[] {"transfer", dappAddress, "--value", Integer.toString(transferBalance)});
+        Assert.assertTrue(callEnv.didScrapeString);
+
+        // check for balance of transferBalance
+        contractBalance = kernelInterface.getBalance(AvmAddress.wrap(Helpers.hexStringToBytes(dappAddress)));
+        System.out.println("Contract balance: " + contractBalance);
+        Assert.assertEquals(transferBalance,contractBalance.intValue());
+    }
+
+    @Test
+    public void testTransferToAccount() {
+        final int transferBalance = 20000;
+        String storagePath = "./storage";
+        File storageFile = new File(storagePath);
+        KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
+
+        org.aion.vm.api.interfaces.Address address = Helpers.randomAddress();
+        kernelInterface.createAccount(address);
+
+        // do transfer only
+        TestEnvironment callEnv = new TestEnvironment("Return value : void");
+        AvmCLI.testingMain(callEnv, new String[] {"transfer", address.toString(), "--value", Integer.toString(transferBalance)});
+        Assert.assertTrue(callEnv.didScrapeString);
+
+        // check for balance of transferBalance
+        java.math.BigInteger contractBalance = kernelInterface.getBalance(AvmAddress.wrap(Helpers.hexStringToBytes(address.toString())));
+        System.out.println("Contract balance: " + contractBalance);
+        Assert.assertEquals(transferBalance,contractBalance.intValue());
+    }
 }
