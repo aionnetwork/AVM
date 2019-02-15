@@ -21,7 +21,7 @@ import java.util.List;
 public final class AvmRule implements TestRule {
 
     private boolean debugMode;
-    public KernelInterfaceImpl kernel;
+    public final KernelInterfaceImpl kernel;
     public VirtualMachine avm;
     public Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
@@ -30,6 +30,7 @@ public final class AvmRule implements TestRule {
      */
     public AvmRule(boolean debugMode) {
         this.debugMode = debugMode;
+        this.kernel = new KernelInterfaceImpl();
     }
 
     @Override
@@ -37,7 +38,6 @@ public final class AvmRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                kernel = new KernelInterfaceImpl();
                 avm = debugMode ? CommonAvmFactory.buildAvmInstanceInDebugMode(kernel) : CommonAvmFactory.buildAvmInstance(kernel);
                 try {
                     statement.evaluate();
