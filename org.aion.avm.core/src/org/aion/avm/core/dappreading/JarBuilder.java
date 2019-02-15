@@ -3,12 +3,12 @@ package org.aion.avm.core.dappreading;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -52,7 +52,7 @@ public class JarBuilder {
     }
 
     /**
-     * Creates the in-memory representation of a JAR with the given class names and direct bytes.
+     * Creates the in-memory representation of a JAR with the given class name and direct bytes.
      * NOTE:  This method is really just used to build invalid JARs (given classes may be corrupt/invalid).
      * 
      * @return The bytes representing this JAR.
@@ -68,6 +68,23 @@ public class JarBuilder {
         return builder.toBytes();
     }
 
+    /**
+     * Creates the in-memory representation of a JAR with the given class names and direct bytes.
+     * @return The bytes representing this JAR.
+     */
+    public static byte[] buildJarForExplicitClassNamesAndBytecode(String mainClassName, byte[] mainClassBytes, Map<String, byte[]> classMap) {
+        JarBuilder builder = new JarBuilder(null, mainClassName);
+        try {
+            builder.saveClassToStream(mainClassName, mainClassBytes);
+            for (Map.Entry<String, byte[]> entry : classMap.entrySet()) {
+                builder.saveClassToStream(entry.getKey(), entry.getValue());
+            }
+        } catch (IOException e) {
+            // Can't happen - in-memory.
+            RuntimeAssertionError.unexpected(e);
+        }
+        return builder.toBytes();
+    }
 
     private final ByteArrayOutputStream byteStream;
     private final JarOutputStream jarStream;
