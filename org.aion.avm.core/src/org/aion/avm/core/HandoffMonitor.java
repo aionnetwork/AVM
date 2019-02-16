@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 import org.aion.vm.api.interfaces.SimpleFuture;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 
 
@@ -40,29 +39,29 @@ public class HandoffMonitor {
      * Called by the external thread.
      * Called to send new transactions to the internal thread.
      * 
-     * @param transactions The new transactions to pass in.
-     * @return The result of newTransactions as a corresponding array of asynchronous futures.
+     * @param tasks The tasks for each transaction to run.
+     * @return The result of the transactions in the given tasks as a corresponding array of asynchronous futures.
      */
-    public synchronized SimpleFuture<TransactionResult>[] sendTransactionsAsynchronously(TransactionContext[] transactions) {
+    public synchronized SimpleFuture<TransactionResult>[] sendTransactionsAsynchronously(TransactionTask[] tasks) {
         // We lock-step these, so there can't already be a transaction in the hand-off.
         RuntimeAssertionError.assertTrue(this.taskQueue.isEmpty());
         RuntimeAssertionError.assertTrue(null == this.outgoingResults);
-        RuntimeAssertionError.assertTrue(transactions.length > 0);
+        RuntimeAssertionError.assertTrue(tasks.length > 0);
         // Also, we can't have already been shut down.
         if (null == this.internalThreads) {
             throw new IllegalStateException("Thread already stopped");
         }
         
-        // Set the new transaction and wake up the background thread.
-        for (int i = 0; i < transactions.length; i++){
-            this.taskQueue.add(new TransactionTask(transactions[i], i));
+        // Enqueue the new tasks and wake up the background thread.
+        for (TransactionTask task : tasks) {
+            this.taskQueue.add(task);
         }
 
-        this.outgoingResults = new AvmTransactionResult[transactions.length];
+        this.outgoingResults = new AvmTransactionResult[tasks.length];
         this.notifyAll();
         
         // Return the future result, which will do the waiting for us.
-        ResultWaitFuture[] results = new ResultWaitFuture[transactions.length];
+        ResultWaitFuture[] results = new ResultWaitFuture[tasks.length];
         for (int i = 0; i < results.length; ++i ) {
             results[i] = new ResultWaitFuture(i);
         }

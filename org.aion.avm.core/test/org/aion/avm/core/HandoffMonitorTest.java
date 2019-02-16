@@ -39,11 +39,11 @@ public class HandoffMonitorTest {
         thread.startAgainstMonitor(monitor);
         
         // Enqueue transaction.
-        monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction()});
+        monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new FakeTransaction[] {new FakeTransaction()}));
         // Second enqueue should fail with RuntimeAssertionError.
         boolean didFail = false;
         try {
-            monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction()});
+            monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new FakeTransaction[] {new FakeTransaction()}));
         } catch (RuntimeAssertionError e) {
             didFail = true;
         }
@@ -63,12 +63,12 @@ public class HandoffMonitorTest {
         thread.startAgainstMonitor(monitor);
         
         // Enqueue transaction and process result.
-        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction()});
+        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new FakeTransaction[] {new FakeTransaction()}));
         Assert.assertEquals(1, results.length);
         results[0].get();
         
         // Enqueue and process again.
-        results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction()});
+        results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new FakeTransaction[] {new FakeTransaction()}));
         Assert.assertEquals(1, results.length);
         results[0].get();
         
@@ -86,13 +86,13 @@ public class HandoffMonitorTest {
         thread.startAgainstMonitor(monitor);
         
         // Enqueue 2 transactions and verify the result array length.
-        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction()});
+        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction()}));
         Assert.assertEquals(2, results.length);
         results[0].get();
         results[1].get();
         
         // Enqueue another batch to make sure that we reset state correctly.
-        results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction(), new FakeTransaction()});
+        results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction(), new FakeTransaction()}));
         Assert.assertEquals(3, results.length);
         results[0].get();
         results[1].get();
@@ -122,7 +122,7 @@ public class HandoffMonitorTest {
         t4.startAgainstMonitor(monitor);
 
         // Enqueue 2 transactions and verify the result array length.
-        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction()});
+        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction()}));
         Assert.assertEquals(8, results.length);
 
         for (int i = 0; i < 8; i++){
@@ -130,7 +130,7 @@ public class HandoffMonitorTest {
         }
 
         // Enqueue another batch to make sure that we reset state correctly.
-        results = monitor.sendTransactionsAsynchronously(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction()});
+        results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new FakeTransaction[] {new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction(), new FakeTransaction()}));
         Assert.assertEquals(10, results.length);
 
         for (int i = 0; i < 10; i++){
@@ -163,7 +163,7 @@ public class HandoffMonitorTest {
             transactions[i] = new FakeTransaction();
         }
 
-        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(transactions);
+        SimpleFuture<TransactionResult>[] results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(transactions));
         Assert.assertEquals(128, results.length);
 
         Set<Thread> verifySet = new HashSet<>();
@@ -313,5 +313,13 @@ public class HandoffMonitorTest {
         public byte[] toBytes() {
             throw new AssertionError("No calls expected");
         }
+    }
+
+    private static TransactionTask[] wrapTransactionInTasks(FakeTransaction[] transactions) {
+        TransactionTask[] tasks = new TransactionTask[transactions.length];
+        for (int i = 0; i < transactions.length; ++i) {
+            tasks[i] = new TransactionTask(transactions[i], i);
+        }
+        return tasks;
     }
 }

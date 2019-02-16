@@ -159,8 +159,14 @@ public class AvmImpl implements AvmInternal {
             long currentBlockNum = transactions[0].getBlockNumber();
             validateCodeCache(currentBlockNum);
         }
+        
+        // Create tasks for these new transactions and send them off to be asynchronously executed.
+        TransactionTask[] tasks = new TransactionTask[transactions.length];
+        for (int i = 0; i < transactions.length; i++){
+            tasks[i] = new TransactionTask(transactions[i], i);
+        }
 
-        return this.handoff.sendTransactionsAsynchronously(transactions);
+        return this.handoff.sendTransactionsAsynchronously(tasks);
     }
 
     private AvmTransactionResult backgroundProcessTransaction(TransactionTask task) {
