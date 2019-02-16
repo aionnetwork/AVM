@@ -33,7 +33,7 @@ public class AvmParallelTest {
     @Test
     public void basicConcurrencyTest(){
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
 
         org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
         BigInteger expected1 = BigInteger.ZERO;
@@ -45,7 +45,7 @@ public class AvmParallelTest {
         Transaction t4 = Transaction.call(preminedAddress, usr1, BigInteger.valueOf(4), BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
 
         Transaction[] batch = new Transaction[]{t0, t1, t2, t3, t4};
-        SimpleFuture<TransactionResult>[] results = avm.run(generateCTXBatch(batch));
+        SimpleFuture<TransactionResult>[] results = avm.run(kernel, generateCTXBatch(batch));
         for (SimpleFuture<TransactionResult> f : results){
             f.get();
         }
@@ -64,7 +64,7 @@ public class AvmParallelTest {
         t4 = Transaction.call(usr1, usr2, BigInteger.valueOf(4), BigInteger.valueOf(100_000), new byte[0], 100000L, 1);
 
         batch = new Transaction[]{t0, t1, t2, t3, t4};
-        results = avm.run(generateCTXBatch(batch));
+        results = avm.run(kernel, generateCTXBatch(batch));
         for (SimpleFuture<TransactionResult> f : results){
             f.get();
         }
@@ -85,7 +85,7 @@ public class AvmParallelTest {
             batch[i * 2 + 1] = Transaction.call(usr2, usr1, BigInteger.valueOf(i), BigInteger.valueOf(100_000), new byte[0], 100000L, 1);
         }
 
-        results = avm.run(generateCTXBatch(batch));
+        results = avm.run(kernel, generateCTXBatch(batch));
         for (SimpleFuture<TransactionResult> f : results){
             f.get();
         }
@@ -103,7 +103,7 @@ public class AvmParallelTest {
     public void cyclicWaitTest(){
 
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
 
         org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
         org.aion.vm.api.interfaces.Address usr2 = AvmAddress.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
@@ -117,7 +117,7 @@ public class AvmParallelTest {
         Transaction t4 = Transaction.call(usr4, usr1, BigInteger.ZERO, BigInteger.valueOf(1_000_000), new byte[0], 100000L, 1);
 
         Transaction[] batch = new Transaction[]{t0, t1, t2, t3, t4};
-        SimpleFuture<TransactionResult>[] results = avm.run(generateCTXBatch(batch));
+        SimpleFuture<TransactionResult>[] results = avm.run(kernel, generateCTXBatch(batch));
         for (SimpleFuture<TransactionResult> f : results){
             f.get();
         }
@@ -131,7 +131,7 @@ public class AvmParallelTest {
         byte[] code = JarBuilder.buildJarForMainAndClasses(TestContract.class);
 
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
 
 
         org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
@@ -146,7 +146,7 @@ public class AvmParallelTest {
         Transaction t4 = Transaction.create(usr4, BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 3_000_000L, 1);
 
         Transaction[] batch = new Transaction[]{t0, t1, t2, t3, t4};
-        SimpleFuture<TransactionResult>[] results = avm.run(generateCTXBatch(batch));
+        SimpleFuture<TransactionResult>[] results = avm.run(kernel, generateCTXBatch(batch));
         for (SimpleFuture<TransactionResult> f : results){
             f.get();
         }
@@ -164,7 +164,7 @@ public class AvmParallelTest {
         t4 = Transaction.call(usr4, contractAddr, BigInteger.ONE, BigInteger.ZERO, args, 200000L, 1);
 
         batch = new Transaction[]{t0, t1, t2, t3, t4};
-        results = avm.run(generateCTXBatch(batch));
+        results = avm.run(kernel, generateCTXBatch(batch));
         for (SimpleFuture<TransactionResult> f : results){
             f.get();
         }
@@ -178,7 +178,7 @@ public class AvmParallelTest {
     @Test
     public void heavyAbortTest(){
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // We will send 2x the value to these accounts, initially, and they will send 1x to the target.
         int iterations = 100;
@@ -192,7 +192,7 @@ public class AvmParallelTest {
             tempUsers[i] = AvmAddress.wrap(Helpers.randomBytes(org.aion.vm.api.interfaces.Address.SIZE));
             firstBatch[i] = Transaction.call(preminedAddress, tempUsers[i], BigInteger.valueOf(i), BigInteger.valueOf(2L * valueToSend), new byte[0], 100_000L, 1L);
         }
-        SimpleFuture<TransactionResult>[] results = avm.run(generateCTXBatch(firstBatch));
+        SimpleFuture<TransactionResult>[] results = avm.run(kernel, generateCTXBatch(firstBatch));
         for (SimpleFuture<TransactionResult> f : results){
             Assert.assertTrue(f.get().getResultCode().isSuccess());
         }
@@ -202,7 +202,7 @@ public class AvmParallelTest {
         for (int i = 0; i < iterations; ++i) {
             secondBatch[i] = Transaction.call(tempUsers[i], targetUser, BigInteger.ZERO, BigInteger.valueOf(valueToSend), new byte[0], 100_000L, 1L);
         }
-        results = avm.run(generateCTXBatch(secondBatch));
+        results = avm.run(kernel, generateCTXBatch(secondBatch));
         for (SimpleFuture<TransactionResult> f : results){
             Assert.assertTrue(f.get().getResultCode().isSuccess());
         }

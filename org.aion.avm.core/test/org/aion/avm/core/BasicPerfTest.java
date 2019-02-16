@@ -70,11 +70,11 @@ public class BasicPerfTest {
         public void deploy(byte[] jar, byte[] arguments) {
             // Deploy.
             this.kernel = new KernelInterfaceImpl();
-            this.avm = CommonAvmFactory.buildAvmInstance(kernel);
+            this.avm = CommonAvmFactory.buildAvmInstance();
             Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;
             Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
-            TransactionResult result1 = this.avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+            TransactionResult result1 = this.avm.run(this.kernel, new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
             this.contractAddress = AvmAddress.wrap(result1.getReturnData());
         }
@@ -99,13 +99,13 @@ public class BasicPerfTest {
                 Block block = new Block(new byte[32], i, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
                 long transaction1EnergyLimit = 1_000_000_000l;
                 Transaction tx1 = Transaction.call(deployer, this.contractAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
-                TransactionResult result1 = this.avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+                TransactionResult result1 = this.avm.run(this.kernel, new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
                 Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
                 
                 // Every 100 iterations, we also want to run a GC, to verify that this doesn't break anything in a long-running test.
                 if (0 == (i % 100)) {
                     Transaction gcCall = Transaction.garbageCollect(this.contractAddress, kernel.getNonce(this.contractAddress), transaction1EnergyLimit, 1L);
-                    AvmTransactionResult gcResult = (AvmTransactionResult) this.avm.run(new TransactionContext[] {new TransactionContextImpl(gcCall, block)})[0].get();
+                    AvmTransactionResult gcResult = (AvmTransactionResult) this.avm.run(this.kernel, new TransactionContext[] {new TransactionContextImpl(gcCall, block)})[0].get();
                     Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
                     // Note that this GC never actually frees anything, since our workload never orphans objects.
                     Assert.assertEquals(0, gcResult.getEnergyUsed());

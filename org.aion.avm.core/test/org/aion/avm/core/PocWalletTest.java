@@ -40,7 +40,7 @@ public class PocWalletTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
+        this.avm = CommonAvmFactory.buildAvmInstance();
     }
 
     @After
@@ -75,7 +75,7 @@ public class PocWalletTest {
 
         Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-        TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
+        TransactionResult createResult = avm.run(this.kernel, new TransactionContext[] {createContext})[0].get();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Assert.assertNotNull(kernel.getCode(AvmAddress.wrap(createResult.getReturnData())));
@@ -96,7 +96,7 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-        TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
+        TransactionResult createResult = avm.run(this.kernel, new TransactionContext[] {createContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
         // contract address is stored in return data
@@ -105,7 +105,7 @@ public class PocWalletTest {
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
         Transaction initTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
         TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
-        TransactionResult initResult = avm.run(new TransactionContext[] {initContext})[0].get();
+        TransactionResult initResult = avm.run(this.kernel, new TransactionContext[] {initContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, initResult.getResultCode());
     }
 
@@ -132,7 +132,7 @@ public class PocWalletTest {
         byte[] execArgs = encodeExecute(to.toBytes(), dailyLimit + 1, data);
         Transaction executeTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, execArgs, energyLimit, energyPrice);
         TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
-        TransactionResult executeResult = avm.run(new TransactionContext[] {executeContext})[0].get();
+        TransactionResult executeResult = avm.run(this.kernel, new TransactionContext[] {executeContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, executeResult.getResultCode());
         byte[] toConfirm = (byte[]) ABIDecoder.decodeOneObject(executeResult.getReturnData());
 
@@ -141,7 +141,7 @@ public class PocWalletTest {
         byte[] confirmArgs = CallEncoder.confirm(toConfirm);
         Transaction confirmTransaction = Transaction.call(extra1, contractAddress, kernel.getNonce(extra1), BigInteger.ZERO, confirmArgs, energyLimit, energyPrice);
         TransactionContext confirmContext = new TransactionContextImpl(confirmTransaction, block);
-        TransactionResult confirmResult = avm.run(new TransactionContext[] {confirmContext})[0].get();
+        TransactionResult confirmResult = avm.run(this.kernel, new TransactionContext[] {confirmContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, confirmResult.getResultCode()); // transfer to non-existing accounts
     }
 
@@ -150,7 +150,7 @@ public class PocWalletTest {
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
         Transaction initTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
         TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
-        TransactionResult initResult = avm.run(new TransactionContext[] {initContext})[0].get();
+        TransactionResult initResult = avm.run(this.kernel, new TransactionContext[] {initContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, initResult.getResultCode());
     }
 
@@ -160,7 +160,7 @@ public class PocWalletTest {
 
         Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
-        TransactionResult createResult = avm.run(new TransactionContext[] {createContext})[0].get();
+        TransactionResult createResult = avm.run(this.kernel, new TransactionContext[] {createContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
         // contract address is stored in return data

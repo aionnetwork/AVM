@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aion.avm.internal.ABIStaticState;
-import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
@@ -252,11 +251,10 @@ public class NodeEnvironment {
      * could be moved in the future.
      *
      * @param instrumentationFactory The factory to build IInstrumentation instances for the AVM's threads.
-     * @param kernel The kernel interface exposed by the consumer.
      * @return The long-lived AVM instance.
      */
-    public AvmImpl buildAvmInstance(IInstrumentationFactory instrumentationFactory, KernelInterface kernel, boolean debugMode) {
-        AvmImpl avm = new AvmImpl(instrumentationFactory, kernel, debugMode);
+    public AvmImpl buildAvmInstance(IInstrumentationFactory instrumentationFactory, boolean debugMode) {
+        AvmImpl avm = new AvmImpl(instrumentationFactory, debugMode);
         avm.start();
         return avm;
     }

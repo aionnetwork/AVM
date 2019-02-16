@@ -28,7 +28,7 @@ public class DefaultMethodIntegrationTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
+        this.avm = CommonAvmFactory.buildAvmInstance();
     }
 
     @After
@@ -48,7 +48,7 @@ public class DefaultMethodIntegrationTest {
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         
         // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
     }
 
@@ -62,7 +62,7 @@ public class DefaultMethodIntegrationTest {
         long energyLimit = 2_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -71,7 +71,7 @@ public class DefaultMethodIntegrationTest {
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         
         // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
     }
 }

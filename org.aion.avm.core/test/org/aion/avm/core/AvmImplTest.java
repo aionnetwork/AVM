@@ -61,7 +61,7 @@ public class AvmImplTest {
     @Test
     public void testStateUpdates() {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
 
         org.aion.vm.api.interfaces.Address from = deployer;
         org.aion.vm.api.interfaces.Address to = AvmAddress.wrap(new byte[32]);
@@ -71,7 +71,7 @@ public class AvmImplTest {
         long energyPrice = 1L;
         Transaction tx = Transaction.call(from, to, kernel.getNonce(from), value, data, energyLimit, energyPrice);
         TransactionContext context = new TransactionContextImpl(tx, block);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(new TransactionContext[] { context })[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TransactionContext[] { context })[0].get();
 
         // verify results
         assertTrue(result.getResultCode().isSuccess());
@@ -158,13 +158,13 @@ public class AvmImplTest {
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
 
         // deploy
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        TransactionResult result1 = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
 
         Address contractAddr = new Address(result1.getReturnData());
@@ -187,7 +187,7 @@ public class AvmImplTest {
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
         Transaction tx2 = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, contractAddr.unwrap(), transaction2EnergyLimit, energyPrice);
-        TransactionResult result2 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx2, block)})[0].get();
+        TransactionResult result2 = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(tx2, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
         // Account for the cost:  (blocks in call method) + runtime.call
@@ -229,7 +229,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -246,7 +246,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // deploy
         long energyLimit = 1_000_000l;
@@ -279,7 +279,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -307,7 +307,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -329,7 +329,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // deploy
         long energyLimit = 1_000_000l;
@@ -338,7 +338,7 @@ public class AvmImplTest {
         // Cause the failure.
         byte[] nearData = ABIEncoder.encodeMethodArguments("localFailAfterReentrant");
         Transaction tx = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, nearData, energyLimit, 1L);
-        TransactionResult result2 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
+        TransactionResult result2 = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, result2.getResultCode());
         
         // We shouldn't see any changes, since this failed.
@@ -358,7 +358,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -385,7 +385,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -411,7 +411,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
 
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -419,7 +419,7 @@ public class AvmImplTest {
         // Verify the internal call depth limit is in effect.
         byte[] callData = ABIEncoder.encodeMethodArguments("recursiveChangeNested", 0, 10);
         Transaction tx = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, callData, 20_000_000l, 1L);
-        TransactionResult result2 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
+        TransactionResult result2 = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result2.getResultCode());
 
         avm.shutdown();
@@ -436,7 +436,7 @@ public class AvmImplTest {
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // CREATE the spawner.
         Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
@@ -466,7 +466,7 @@ public class AvmImplTest {
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // CREATE the spawner.
         Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
@@ -499,7 +499,7 @@ public class AvmImplTest {
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // CREATE the spawner.
         Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
@@ -509,7 +509,7 @@ public class AvmImplTest {
         byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
         long energyLimit = 1_000_000l;
         Transaction tx = Transaction.call(KernelInterfaceImpl.PREMINED_ADDRESS, AvmAddress.wrap(spawnerAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, spawnerCallData, energyLimit, 1L);
-        TransactionResult result2 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
+        TransactionResult result2 = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.FAILED_INVALID, result2.getResultCode());
         avm.shutdown();
     }
@@ -527,7 +527,7 @@ public class AvmImplTest {
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(directory);
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         
         // We always start out with the PREMINE account, but that should be the only one.
         assertEquals(1, directory.listFiles().length);
@@ -545,7 +545,7 @@ public class AvmImplTest {
         // Restart the AVM.
         avm.shutdown();
         kernel = new KernelInterfaceImpl(directory);
-        avm = CommonAvmFactory.buildAvmInstance(kernel);
+        avm = CommonAvmFactory.buildAvmInstance();
         
         // Call the incrementor, directly.
         byte[] input = new byte[] {1,2,3,4,5};
@@ -608,7 +608,7 @@ public class AvmImplTest {
     private int callRecursiveHash(KernelInterface kernel, AvmImpl avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
-        TransactionResult result = avm.run(new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        TransactionResult result = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return ((Integer) ABIDecoder.decodeOneObject(result.getReturnData())).intValue();
     }
@@ -628,7 +628,7 @@ public class AvmImplTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, createData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        TransactionResult result1 = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
         return new Address(result1.getReturnData());
     }
@@ -636,7 +636,7 @@ public class AvmImplTest {
     private Object callDApp(KernelInterface kernel, AvmImpl avm, Address dAppAddress, byte[] argData) {
         long energyLimit = 2_000_000l;
         Transaction tx = Transaction.call(deployer, AvmAddress.wrap(dAppAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
-        TransactionResult result2 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
+        TransactionResult result2 = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
         return ABIDecoder.decodeOneObject(result2.getReturnData());
     }
@@ -644,11 +644,11 @@ public class AvmImplTest {
     private void deployInvalidJar(byte[] jar) {
         byte[] deployment = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, deployment, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
+        TransactionResult result1 = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(tx1, block)})[0].get();
         avm.shutdown();
         assertEquals(AvmTransactionResult.Code.FAILED_INVALID_DATA, result1.getResultCode());
     }

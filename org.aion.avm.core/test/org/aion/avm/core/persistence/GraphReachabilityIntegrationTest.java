@@ -411,7 +411,7 @@ public class GraphReachabilityIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction gc = Transaction.garbageCollect(AvmAddress.wrap(contractAddr.unwrap()), avmRule.kernel.getNonce(AvmAddress.wrap(contractAddr.unwrap())), energyLimit, energyPrice);
-        TransactionResult gcResult = avmRule.avm.run(new TransactionContext[] {new TransactionContextImpl(gc, block)})[0].get();
+        TransactionResult gcResult = avmRule.avm.run(avmRule.kernel, new TransactionContext[] {new TransactionContextImpl(gc, block)})[0].get();
         return gcResult;
     }
 }

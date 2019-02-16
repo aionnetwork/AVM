@@ -42,7 +42,7 @@ public class TransactionAccountBalanceTest {
     @BeforeClass
     public static void setup() {
         kernel = new KernelInterfaceImpl();
-        avm = CommonAvmFactory.buildAvmInstance(kernel);
+        avm = CommonAvmFactory.buildAvmInstance();
     }
 
     @AfterClass
@@ -238,7 +238,7 @@ public class TransactionAccountBalanceTest {
 
         Transaction transaction = Transaction.create(from, kernel.getNonce(from), value, jar, energyLimit, energyPrice);
         TransactionContext context = new TransactionContextImpl(transaction, block);
-        return avm.run(new TransactionContext[] {context})[0].get();
+        return avm.run(TransactionAccountBalanceTest.kernel, new TransactionContext[] {context})[0].get();
     }
 
     private Address deployContractAndGetAddress() {
@@ -251,13 +251,13 @@ public class TransactionAccountBalanceTest {
         byte[] callData = ABIEncoder.encodeMethodArguments("allocateObjectArray");
         Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), value, callData, energyLimit, energyPrice);
         TransactionContext context = new TransactionContextImpl(transaction, block);
-        return avm.run(new TransactionContext[] {context})[0].get();
+        return avm.run(TransactionAccountBalanceTest.kernel, new TransactionContext[] {context})[0].get();
     }
 
     private TransactionResult transferValue(Address recipient, BigInteger value) {
         Transaction transaction = Transaction.balanceTransfer(from, recipient, kernel.getNonce(from), value, energyPrice);
         TransactionContext context = new TransactionContextImpl(transaction, block);
-        return avm.run(new TransactionContext[] {context})[0].get();
+        return avm.run(TransactionAccountBalanceTest.kernel, new TransactionContext[] {context})[0].get();
     }
 
     private Address createNewAccountWithBalance(BigInteger balance) {

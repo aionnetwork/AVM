@@ -335,8 +335,8 @@ public class AvmCLI {
                 // Run them in a single batch.
                 File storageFile = new File(invocation.storagePath);
                 KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
-                AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
-                SimpleFuture<TransactionResult>[] futures = avm.run(transactions);
+                AvmImpl avm = CommonAvmFactory.buildAvmInstance();
+                SimpleFuture<TransactionResult>[] futures = avm.run(kernel, transactions);
                 TransactionResult[] results = new AvmTransactionResult[futures.length];
                 for (int i = 0; i < futures.length; ++i) {
                     results[i] = futures[i].get();

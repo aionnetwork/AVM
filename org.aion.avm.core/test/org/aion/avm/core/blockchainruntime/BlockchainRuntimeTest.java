@@ -35,7 +35,7 @@ public class BlockchainRuntimeTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
+        this.avm = CommonAvmFactory.buildAvmInstance();
     }
 
     @After
@@ -65,7 +65,7 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(to.toBytes());
@@ -113,7 +113,7 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         // We expect it to handle all the exceptions and return the data we initially sent in.
         assertArrayEquals(txData, txResult.getReturnData());
@@ -141,7 +141,7 @@ public class BlockchainRuntimeTest {
         Block block = new Block(blockPrevHash, blockNumber, blockCoinbase, blockTimestamp, blockData);
 
         TransactionContext txContext = new TransactionContextImpl(tx, block);
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
         // Note that we are expecting AvmException, which the DAppExecutor handles as FAILED.
         Assert.assertEquals(AvmTransactionResult.Code.FAILED, txResult.getResultCode());
     }
@@ -151,7 +151,7 @@ public class BlockchainRuntimeTest {
         byte[] arguments = null;
         Transaction tx = Transaction.create(premined, kernel.getNonce(premined), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
         TransactionContext txContext = new TransactionContextImpl(tx, new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]));
-        TransactionResult txResult = avm.run(new TransactionContext[] {txContext})[0].get();
+        TransactionResult txResult = avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
 
         return AvmAddress.wrap(txResult.getReturnData());

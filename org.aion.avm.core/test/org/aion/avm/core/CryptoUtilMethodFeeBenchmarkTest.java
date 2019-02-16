@@ -87,10 +87,10 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         byte[] txData = new CodeAndArguments(basicAppTestJar, null).encodeToBytes();
 
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance(this.kernel);
+        this.avm = CommonAvmFactory.buildAvmInstance();
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        dappAddress = AvmAddress.wrap(avm.run(new TransactionContext[] {context})[0].get().getReturnData());
+        dappAddress = AvmAddress.wrap(avm.run(this.kernel, new TransactionContext[] {context})[0].get().getReturnData());
     }
 
     @After
@@ -283,7 +283,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         TransactionContextImpl context = setupTransactionContext(methodName,count, message);
 
         st = System.nanoTime();
-        avm.run(new TransactionContext[]{context})[0].get();
+        avm.run(this.kernel, new TransactionContext[]{context})[0].get();
         et = System.nanoTime();
 
         return et - st;

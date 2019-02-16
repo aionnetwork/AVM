@@ -45,7 +45,7 @@ public class ContractLoggingTest {
     @BeforeClass
     public static void setup() {
         kernel = new KernelInterfaceImpl();
-        avm = CommonAvmFactory.buildAvmInstance(kernel);
+        avm = CommonAvmFactory.buildAvmInstance();
         deployContract();
     }
 
@@ -162,14 +162,14 @@ public class ContractLoggingTest {
 
         Transaction transaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
         TransactionContext context = new TransactionContextImpl(transaction, block);
-        TransactionResult result = avm.run(new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(ContractLoggingTest.kernel, new TransactionContext[] {context})[0].get();
 
         assertTrue(result.getResultCode().isSuccess());
         contract = AvmAddress.wrap(result.getReturnData());
     }
 
     private TransactionResult runTransaction(TransactionContext context) {
-        return avm.run(new TransactionContext[] {context})[0].get();
+        return avm.run(ContractLoggingTest.kernel, new TransactionContext[] {context})[0].get();
     }
 
     private TransactionContext generateContextForMethodCall(String methodName, Object... args) {

@@ -39,7 +39,7 @@ public final class AvmRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                avm = debugMode ? CommonAvmFactory.buildAvmInstanceInDebugMode(kernel) : CommonAvmFactory.buildAvmInstance(kernel);
+                avm = debugMode ? CommonAvmFactory.buildAvmInstanceInDebugMode() : CommonAvmFactory.buildAvmInstance();
                 try {
                     statement.evaluate();
                 } finally {
@@ -129,7 +129,7 @@ public final class AvmRule implements TestRule {
         Transaction tx = Transaction.call(AvmAddress.wrap(from.unwrap()), AvmAddress.wrap(to.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, new byte[0], energyLimit, energyPrice);
 
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        return new ResultWrapper(avm.run(new TransactionContext[]{context})[0].get(), context.getSideEffects());
+        return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
     }
 
     /**
@@ -153,13 +153,13 @@ public final class AvmRule implements TestRule {
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {
         Transaction tx = Transaction.call(AvmAddress.wrap(from.unwrap()), AvmAddress.wrap(dappAddress.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, transactionData, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        return new ResultWrapper(avm.run(new TransactionContext[]{context})[0].get(), context.getSideEffects());
+        return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
         Transaction tx = Transaction.create(AvmAddress.wrap(from.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, dappBytes, energyLimit, energyPrice);
         TransactionContextImpl context = new TransactionContextImpl(tx, block);
-        return new ResultWrapper(avm.run(new TransactionContext[]{context})[0].get(), context.getSideEffects());
+        return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
     }
 
     public static class ResultWrapper {

@@ -58,9 +58,8 @@ public class AvmImpl implements AvmInternal {
 
     private final boolean debugMode;
 
-    public AvmImpl(IInstrumentationFactory instrumentationFactory, KernelInterface kernel, boolean debugMode) {
+    public AvmImpl(IInstrumentationFactory instrumentationFactory, boolean debugMode) {
         this.instrumentationFactory = instrumentationFactory;
-        this.kernel = kernel;
         this.debugMode = debugMode;
     }
 
@@ -144,6 +143,17 @@ public class AvmImpl implements AvmInternal {
         RuntimeAssertionError.assertTrue(null == this.handoff);
         this.handoff = new HandoffMonitor(executorThreads);
         this.handoff.startExecutorThreads();
+    }
+
+    /**
+     * This is just a temporary change to support the appearance of a forthcoming API change for out tests.
+     * This allows the separation of the "large" part of the change (updating all the tests) from the "meaningful" part of the change (change to common API).
+     * TODO:  Remove this once we update to API f2978f4 or later.
+     */
+    public SimpleFuture<TransactionResult>[] run(KernelInterface kernel, TransactionContext[] transactions) throws IllegalStateException {
+        // Since this is just temporary, we will call the public interfaces, directly (since we just want to emulate combining them)
+        this.setKernelInterface(kernel);
+        return this.run(transactions);
     }
 
     @Override
