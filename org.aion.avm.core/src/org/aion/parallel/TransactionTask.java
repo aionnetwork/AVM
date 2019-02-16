@@ -32,12 +32,6 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.outBuffer = new StringBuffer();
     }
 
-    public TransactionTask(int index, Thread t){
-        this.abortState = false;
-        this.threadOwningTask = null;
-        this.index = index;
-    }
-
     public void resetState(){
         this.abortState = false;
         this.threadOwningTask = null;
