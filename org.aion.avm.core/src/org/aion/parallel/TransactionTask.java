@@ -14,16 +14,17 @@ import org.aion.vm.api.interfaces.TransactionContext;
  * The purpose of this class is to support asynchronous task abort to achieve concurrency.
  */
 public class TransactionTask implements Comparable<TransactionTask>{
-
+    private final KernelInterface parentKernel;
     private TransactionContext externalTransactionContext;
     private volatile boolean abortState;
     private IInstrumentation threadOwningTask;
     private ReentrantDAppStack reentrantDAppStack;
     private int index;
-    private KernelInterface taskKernel;
     private StringBuffer outBuffer;
+    private TransactionalKernel thisTransactionKernel;
 
-    public TransactionTask(TransactionContext ctx, int index){
+    public TransactionTask(KernelInterface parentKernel, TransactionContext ctx, int index){
+        this.parentKernel = parentKernel;
         this.externalTransactionContext = ctx;
         this.index = index;
         this.abortState = false;
@@ -32,11 +33,14 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.outBuffer = new StringBuffer();
     }
 
-    public void resetState(){
+    public void startNewTransaction() {
         this.abortState = false;
         this.threadOwningTask = null;
         this.reentrantDAppStack = new ReentrantDAppStack();
         this.outBuffer = new StringBuffer();
+        
+        // All IO will be performed on an per task transactional kernel so we can abort the whole task in one go
+        this.thisTransactionKernel = new TransactionalKernel(this.parentKernel);
     }
 
     /**
@@ -107,20 +111,12 @@ public class TransactionTask implements Comparable<TransactionTask>{
     }
 
     /**
-     * Set the per task transactional kernel of the current task.
-     */
-    public void setTaskKernel(KernelInterface taskKernel) {
-        RuntimeAssertionError.assertTrue(taskKernel instanceof TransactionalKernel);
-        this.taskKernel = taskKernel;
-    }
-
-    /**
      * Get the per task transactional kernel of the current task.
      *
      * @return The task transactional kernel of the task.
      */
-    public KernelInterface getTaskKernel() {
-        return taskKernel;
+    public TransactionalKernel getThisTransactionalKernel() {
+        return this.thisTransactionKernel;
     }
 
     public void outputPrint(String toPrint){

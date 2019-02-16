@@ -318,7 +318,7 @@ public class HandoffMonitorTest {
     private static TransactionTask[] wrapTransactionInTasks(FakeTransaction[] transactions) {
         TransactionTask[] tasks = new TransactionTask[transactions.length];
         for (int i = 0; i < transactions.length; ++i) {
-            tasks[i] = new TransactionTask(transactions[i], i);
+            tasks[i] = new TransactionTask(null, transactions[i], i);
         }
         return tasks;
     }

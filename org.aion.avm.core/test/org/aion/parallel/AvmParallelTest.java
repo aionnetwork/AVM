@@ -172,4 +172,44 @@ public class AvmParallelTest {
         avm.shutdown();
     }
 
+    /**
+     * This test attempts to transfer to 100 users and then from those to 1 user.  This will cause heavy abort behaviour because this is a data hazard.
+     */
+    @Test
+    public void heavyAbortTest(){
+        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        
+        // We will send 2x the value to these accounts, initially, and they will send 1x to the target.
+        int iterations = 100;
+        long valueToSend = 1_000_000L;
+        org.aion.vm.api.interfaces.Address targetUser = AvmAddress.wrap(Helpers.randomBytes(org.aion.vm.api.interfaces.Address.SIZE));
+        org.aion.vm.api.interfaces.Address[] tempUsers = new org.aion.vm.api.interfaces.Address[iterations];
+        
+        // First batch - disperse funds.
+        Transaction[] firstBatch = new Transaction[iterations];
+        for (int i = 0; i < iterations; ++i) {
+            tempUsers[i] = AvmAddress.wrap(Helpers.randomBytes(org.aion.vm.api.interfaces.Address.SIZE));
+            firstBatch[i] = Transaction.call(preminedAddress, tempUsers[i], BigInteger.valueOf(i), BigInteger.valueOf(2L * valueToSend), new byte[0], 100_000L, 1L);
+        }
+        SimpleFuture<TransactionResult>[] results = avm.run(generateCTXBatch(firstBatch));
+        for (SimpleFuture<TransactionResult> f : results){
+            Assert.assertTrue(f.get().getResultCode().isSuccess());
+        }
+        
+        // Second batch - collect funds.
+        Transaction[] secondBatch = new Transaction[iterations];
+        for (int i = 0; i < iterations; ++i) {
+            secondBatch[i] = Transaction.call(tempUsers[i], targetUser, BigInteger.ZERO, BigInteger.valueOf(valueToSend), new byte[0], 100_000L, 1L);
+        }
+        results = avm.run(generateCTXBatch(secondBatch));
+        for (SimpleFuture<TransactionResult> f : results){
+            Assert.assertTrue(f.get().getResultCode().isSuccess());
+        }
+        
+        // Check that this had the expected result.
+        Assert.assertEquals(BigInteger.valueOf((long)iterations * valueToSend), kernel.getBalance(targetUser));
+        avm.shutdown();
+    }
+
 }

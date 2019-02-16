@@ -85,7 +85,7 @@ public class AvmImpl implements AvmInternal {
                         if (DEBUG_EXECUTOR) System.out.println(this.getName() + " start  " + incomingTask.getIndex());
 
                         // TODO:  Determine if we can coalesce the IInstrumentation and TransactionTask to avoid this attach/detach.
-                        incomingTask.resetState();
+                        incomingTask.startNewTransaction();
                         incomingTask.attachInstrumentationForThread();
                         outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask);
                         incomingTask.detachInstrumentationForThread();
@@ -163,7 +163,7 @@ public class AvmImpl implements AvmInternal {
         // Create tasks for these new transactions and send them off to be asynchronously executed.
         TransactionTask[] tasks = new TransactionTask[transactions.length];
         for (int i = 0; i < transactions.length; i++){
-            tasks[i] = new TransactionTask(transactions[i], i);
+            tasks[i] = new TransactionTask(this.kernel, transactions[i], i);
         }
 
         return this.handoff.sendTransactionsAsynchronously(tasks);
@@ -177,21 +177,17 @@ public class AvmImpl implements AvmInternal {
         TransactionContext ctx = task.getExternalTransactionCtx();
         RuntimeAssertionError.assertTrue(ctx != null);
 
-        // All IO will be performed on an per task transactional kernel so we can abort the whole task in one go
-        TransactionalKernel taskTransactionalKernel = new TransactionalKernel(this.kernel);
-        task.setTaskKernel(taskTransactionalKernel);
-
         // value/energyPrice/energyLimit sanity check
         if ((ctx.getTransferValue().compareTo(BigInteger.ZERO) < 0) || (ctx.getTransactionEnergyPrice() <= 0)) {
             error = AvmTransactionResult.Code.REJECTED;
         }
         
         if (ctx.getTransactionKind() == Type.CREATE.toInt()) {
-            if (!taskTransactionalKernel.isValidEnergyLimitForCreate(ctx.getTransaction().getEnergyLimit())) {
+            if (!task.getThisTransactionalKernel().isValidEnergyLimitForCreate(ctx.getTransaction().getEnergyLimit())) {
                 error = AvmTransactionResult.Code.REJECTED;
             }
         } else {
-            if (!taskTransactionalKernel.isValidEnergyLimitForNonCreate(ctx.getTransaction().getEnergyLimit())) {
+            if (!task.getThisTransactionalKernel().isValidEnergyLimitForNonCreate(ctx.getTransaction().getEnergyLimit())) {
                 error = AvmTransactionResult.Code.REJECTED;
             }
         }
@@ -204,7 +200,7 @@ public class AvmImpl implements AvmInternal {
         this.resourceMonitor.acquire(target.toBytes(), task);
 
         // nonce check
-        if (!taskTransactionalKernel.accountNonceEquals(sender, new BigInteger(ctx.getTransaction().getNonce()))) {
+        if (!task.getThisTransactionalKernel().accountNonceEquals(sender, new BigInteger(ctx.getTransaction().getNonce()))) {
             error = AvmTransactionResult.Code.REJECTED_INVALID_NONCE;
         }
 
@@ -214,10 +210,10 @@ public class AvmImpl implements AvmInternal {
             if (ctx.getTransactionKind() == Type.GARBAGE_COLLECT.toInt()) {
                 // The GC case operates directly on the top-level KernelInterface.
                 // (remember that the "sender" is who we are updating).
-                result = runGc(taskTransactionalKernel, sender, ctx);
+                result = runGc(task.getThisTransactionalKernel(), sender, ctx);
             } else {
                 // The CREATE/CALL case is handled via the common external invoke path.
-                result = runExternalInvoke(taskTransactionalKernel, task, ctx);
+                result = runExternalInvoke(task.getThisTransactionalKernel(), task, ctx);
             }
         } else {
             result = new AvmTransactionResult(ctx.getTransaction().getEnergyLimit(), ctx.getTransaction().getEnergyLimit());
@@ -230,7 +226,7 @@ public class AvmImpl implements AvmInternal {
         }
 
         if (AvmTransactionResult.Code.FAILED_ABORT != result.getResultCode()){
-            result.setKernelInterface(taskTransactionalKernel);
+            result.setKernelInterface(task.getThisTransactionalKernel());
         }
 
         return result;
@@ -351,7 +347,7 @@ public class AvmImpl implements AvmInternal {
 
         // At this stage, transaction can no longer be rejected.
         // The nonce increment will be done regardless of the transaction result.
-        task.getTaskKernel().incrementNonce(ctx.getSenderAddress());
+        task.getThisTransactionalKernel().incrementNonce(ctx.getSenderAddress());
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
         if (!((ctx.getTransactionKind() == Type.BALANCE_TRANSFER.toInt()) &&

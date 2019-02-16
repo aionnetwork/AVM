@@ -1,7 +1,6 @@
 package org.aion.parallel;
 
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.TransactionalKernel;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -170,7 +169,7 @@ public class AddressResourceMonitor {
 
             if (!task.inAbortState()){
                 if (!isRejected) {
-                    ((TransactionalKernel) task.getTaskKernel()).commit();
+                    task.getThisTransactionalKernel().commit();
                     task.outputFlush();
                 }
                 this.commitCounter++;
