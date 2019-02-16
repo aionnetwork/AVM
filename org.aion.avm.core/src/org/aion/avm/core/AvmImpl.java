@@ -43,7 +43,6 @@ public class AvmImpl implements AvmInternal {
     private static final int NUM_EXECUTORS = 4;
 
     private final IInstrumentationFactory instrumentationFactory;
-    private KernelInterface kernel;
 
     // Long-lived state which is book-ended by the startup/shutdown calls.
     private static AvmImpl currentAvm;  // (only here for testing - makes sure that we properly clean these up between invocations)
@@ -145,19 +144,8 @@ public class AvmImpl implements AvmInternal {
         this.handoff.startExecutorThreads();
     }
 
-    /**
-     * This is just a temporary change to support the appearance of a forthcoming API change for out tests.
-     * This allows the separation of the "large" part of the change (updating all the tests) from the "meaningful" part of the change (change to common API).
-     * TODO:  Remove this once we update to API f2978f4 or later.
-     */
-    public SimpleFuture<TransactionResult>[] run(KernelInterface kernel, TransactionContext[] transactions) throws IllegalStateException {
-        // Since this is just temporary, we will call the public interfaces, directly (since we just want to emulate combining them)
-        this.setKernelInterface(kernel);
-        return this.run(transactions);
-    }
-
     @Override
-    public SimpleFuture<TransactionResult>[] run(TransactionContext[] transactions) throws IllegalStateException {
+    public SimpleFuture<TransactionResult>[] run(KernelInterface kernel, TransactionContext[] transactions) throws IllegalStateException {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
@@ -173,7 +161,7 @@ public class AvmImpl implements AvmInternal {
         // Create tasks for these new transactions and send them off to be asynchronously executed.
         TransactionTask[] tasks = new TransactionTask[transactions.length];
         for (int i = 0; i < transactions.length; i++){
-            tasks[i] = new TransactionTask(this.kernel, transactions[i], i);
+            tasks[i] = new TransactionTask(kernel, transactions[i], i);
         }
 
         return this.handoff.sendTransactionsAsynchronously(tasks);
@@ -240,14 +228,6 @@ public class AvmImpl implements AvmInternal {
         }
 
         return result;
-    }
-
-    @Override
-    public void setKernelInterface(KernelInterface kernel) {
-        if (null != this.backgroundFatalError) {
-            throw this.backgroundFatalError;
-        }
-        this.kernel = kernel;
     }
 
     @Override
