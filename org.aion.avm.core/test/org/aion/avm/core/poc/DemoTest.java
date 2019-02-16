@@ -3,6 +3,7 @@ package org.aion.avm.core.poc;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.CoinController;
@@ -18,7 +19,6 @@ import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -41,7 +41,7 @@ public class DemoTest {
     @Test
     public void testWallet() {
         KernelInterface kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
         kernel.adjustBalance(pepeMinter, BigInteger.valueOf(1_000_000_000L));
         kernel.adjustBalance(deployer, BigInteger.valueOf(1_000_000_000L));
         kernel.adjustBalance(owner1, BigInteger.valueOf(1_000_000_000L));

@@ -1,6 +1,8 @@
 package org.aion.avm.core.miscvisitors;
 
 import java.math.BigInteger;
+
+import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
@@ -13,7 +15,6 @@ import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +37,7 @@ public class StrictFPVisitorTest {
     private org.aion.vm.api.interfaces.Address dappAddress;
 
     private KernelInterfaceImpl kernel;
-    private VirtualMachine avm;
+    private AvmImpl avm;
 
     @Before
     public void setup() {

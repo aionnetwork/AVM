@@ -16,7 +16,6 @@ import org.aion.kernel.TransactionContextImpl;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.vm.api.interfaces.TransactionContext;
-import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,7 +28,7 @@ import org.junit.Test;
 public class HashCodeIntegrationTest {
     private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private KernelInterfaceImpl kernel;
-    private VirtualMachine avm;
+    private AvmImpl avm;
 
     @Before
     public void setup() {

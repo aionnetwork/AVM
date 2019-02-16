@@ -6,14 +6,11 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.poc.TRS;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +29,7 @@ public class TrsTest {
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     private KernelInterfaceImpl kernel;
-    private VirtualMachine avm;
+    private AvmImpl avm;
     private Address contract;
 
     @Before

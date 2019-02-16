@@ -2,6 +2,7 @@ package org.aion.avm.core.util;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.kernel.*;
@@ -22,7 +23,7 @@ public final class AvmRule implements TestRule {
 
     private boolean debugMode;
     public final KernelInterfaceImpl kernel;
-    public VirtualMachine avm;
+    public AvmImpl avm;
     public Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     /**

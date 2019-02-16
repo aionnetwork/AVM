@@ -3,7 +3,6 @@ package org.aion.avm.core;
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmAddress;
@@ -15,7 +14,6 @@ import org.aion.kernel.TransactionContextImpl;
 import org.aion.vm.api.interfaces.InternalTransactionInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +33,7 @@ public class AvmFailureTest {
 
     // kernel & vm
     private KernelInterfaceImpl kernel;
-    private VirtualMachine avm;
+    private AvmImpl avm;
 
     private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private org.aion.vm.api.interfaces.Address dappAddress;

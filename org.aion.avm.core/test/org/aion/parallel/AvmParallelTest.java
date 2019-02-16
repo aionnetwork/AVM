@@ -2,6 +2,7 @@ package org.aion.parallel;
 
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -10,7 +11,6 @@ import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,7 +33,7 @@ public class AvmParallelTest {
     @Test
     public void basicConcurrencyTest(){
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
         BigInteger expected1 = BigInteger.ZERO;
@@ -103,7 +103,7 @@ public class AvmParallelTest {
     public void cyclicWaitTest(){
 
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
         org.aion.vm.api.interfaces.Address usr2 = AvmAddress.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
@@ -131,7 +131,7 @@ public class AvmParallelTest {
         byte[] code = JarBuilder.buildJarForMainAndClasses(TestContract.class);
 
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
 
 
         org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
@@ -178,7 +178,7 @@ public class AvmParallelTest {
     @Test
     public void heavyAbortTest(){
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
         
         // We will send 2x the value to these accounts, initially, and they will send 1x to the target.
         int iterations = 100;

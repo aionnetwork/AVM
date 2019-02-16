@@ -8,7 +8,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +55,7 @@ public class EnergyUsageDebugModeTest {
 
     private long testEnergyUsedInDebugMode(String methodName, Object ... args){
 
-        VirtualMachine avmDebugMode = CommonAvmFactory.buildAvmInstanceInDebugMode(this.kernel);
+        AvmImpl avmDebugMode = CommonAvmFactory.buildAvmInstanceInDebugMode(this.kernel);
 
         byte[] jar = JarBuilder.buildJarForMainAndClasses(EnergyUsageDebugModeTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
@@ -83,7 +82,7 @@ public class EnergyUsageDebugModeTest {
 
     private long testEnergyUsedInNormalMode(String methodName, Object ... args){
 
-        VirtualMachine avmNormalMode = CommonAvmFactory.buildAvmInstance(this.kernel);
+        AvmImpl avmNormalMode = CommonAvmFactory.buildAvmInstance(this.kernel);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(EnergyUsageDebugModeTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         long energyLimit = 1_000_000l;

@@ -2,6 +2,7 @@ package org.aion.avm.core.collection;
 
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -11,7 +12,6 @@ import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,7 +50,7 @@ public class AionCollectionPerfTest {
         );
     }
 
-    private TransactionResult deploy(KernelInterface kernel, VirtualMachine avm, byte[] testJar){
+    private TransactionResult deploy(KernelInterface kernel, AvmImpl avm, byte[] testJar){
 
 
         byte[] testWalletArguments = new byte[0];
@@ -64,7 +64,7 @@ public class AionCollectionPerfTest {
     }
 
 
-    private TransactionResult call(KernelInterface kernel, VirtualMachine avm, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, byte[] args) {
+    private TransactionResult call(KernelInterface kernel, AvmImpl avm, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, byte[] args) {
         Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
         TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
         TransactionResult callResult = avm.run(new TransactionContext[] {callContext})[0].get();
@@ -78,7 +78,7 @@ public class AionCollectionPerfTest {
         System.out.println(">> Energy measurement for AionList");
         byte[] args;
         KernelInterface kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(kernel, avm, buildListPerfJar());
         org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
@@ -113,7 +113,7 @@ public class AionCollectionPerfTest {
         System.out.println(">> Energy measurement for AionSet");
         byte[] args;
         KernelInterface kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(kernel, avm, buildSetPerfJar());
         org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
@@ -164,7 +164,7 @@ public class AionCollectionPerfTest {
         System.out.println(">> Energy measurement for AionMap");
         byte[] args;
         KernelInterface kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(kernel, avm, buildMapPerfJar());
         org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());

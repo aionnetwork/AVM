@@ -2,6 +2,7 @@ package org.aion.avm.core.blockchainruntime;
 
 import java.math.BigInteger;
 import org.aion.avm.core.ABIFailureTestResource;
+import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -11,7 +12,6 @@ import org.aion.avm.userlib.AionBuffer;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.aion.vm.api.interfaces.TransactionContext;
-import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 public class BlockchainRuntimeTest {
     // kernel & vm
     private KernelInterfaceImpl kernel;
-    private VirtualMachine avm;
+    private AvmImpl avm;
 
     private org.aion.vm.api.interfaces.Address premined = KernelInterfaceImpl.PREMINED_ADDRESS;
 

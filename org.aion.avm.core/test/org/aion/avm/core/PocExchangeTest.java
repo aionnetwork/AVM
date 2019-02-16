@@ -15,7 +15,6 @@ import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.VirtualMachine;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,9 +24,8 @@ import java.math.BigInteger;
 
 
 public class PocExchangeTest {
-    private static final int ADDRESS_SIZE = org.aion.vm.api.interfaces.Address.SIZE;
     private KernelInterface kernel;
-    private VirtualMachine avm;
+    private AvmImpl avm;
     private byte[] testERC20Jar;
     private byte[] testExchangeJar;
 

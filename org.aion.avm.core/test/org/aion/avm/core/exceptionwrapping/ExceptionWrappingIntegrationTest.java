@@ -4,6 +4,7 @@ import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmFailedException;
+import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.MockFailureInstrumentationFactory;
 import org.aion.avm.core.NodeEnvironment;
@@ -26,7 +27,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = CommonAvmFactory.buildAvmInstance(kernel);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstance(kernel);
         
         // Deploy.
         long energyLimit = 1_000_000l;
@@ -58,7 +59,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(10, () -> {throw new OutOfEnergyException();}), kernel, false);
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(10, () -> {throw new OutOfEnergyException();}), kernel, false);
         
         // Deploy.
         long energyLimit = 1_000_000l;
@@ -80,7 +81,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(10, () -> {throw new NullPointerException();}), kernel, false);
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(10, () -> {throw new NullPointerException();}), kernel, false);
         
         // Deploy.
         long energyLimit = 1_000_000l;
@@ -102,7 +103,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(100, () -> {throw new OutOfMemoryError();}), kernel, false);
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(100, () -> {throw new OutOfMemoryError();}), kernel, false);
         
         // Deploy.
         long energyLimit = 1_000_000l;
@@ -140,7 +141,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        VirtualMachine avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(200, () -> {throw new OutOfMemoryError();}), kernel, false);
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(200, () -> {throw new OutOfMemoryError();}), kernel, false);
         
         // Deploy.
         long energyLimit = 1_000_000l;
@@ -173,18 +174,18 @@ public class ExceptionWrappingIntegrationTest {
     }
 
 
-    private Object callStatic(Block block, KernelInterface kernel,  VirtualMachine avm, Address contractAddr, String methodName) {
+    private Object callStatic(Block block, KernelInterface kernel,  AvmImpl avm, Address contractAddr, String methodName) {
         TransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return ABIDecoder.decodeOneObject(result.getReturnData());
     }
 
-    private ResultCode callStaticStatus(Block block, KernelInterface kernel,  VirtualMachine avm, Address contractAddr, String methodName) {
+    private ResultCode callStaticStatus(Block block, KernelInterface kernel,  AvmImpl avm, Address contractAddr, String methodName) {
         TransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         return result.getResultCode();
     }
 
-    private TransactionResult commonCallStatic(Block block, KernelInterface kernel, VirtualMachine avm, Address contractAddr, String methodName) {
+    private TransactionResult commonCallStatic(Block block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
         org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
         byte[] argData = (null != methodName)
