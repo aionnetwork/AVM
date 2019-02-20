@@ -8,6 +8,12 @@ package org.aion.avm.core;
  */
 public class AvmConfiguration {
     /**
+     * The number of threads to start for running the incoming transactions.
+     * A lower number will reduce maximum throughput but a higher number will increase the number of aborts experienced as a result
+     * of data hazards.  The transaction restarts caused by these aborts may reduce throughput on such highly connected blocks.
+     */
+    public int threadCount;
+    /**
      * Decides if debug data and names need to be preserved during deployment transformation.
      * Note that this must be set to false as a requirement of the security model but that prohibits local debugging.  Hence, it
      * should only be enabled for embedded use-cases during development, never in actual deployment in a node.
@@ -19,11 +25,19 @@ public class AvmConfiguration {
      * Enabling this is useful for local debugging cases.
      */
     public boolean enableVerboseContractErrors;
+    /**
+     * If set to true, will log more information about the state of the concurrent executor.
+     * Enabling this is only really useful when actively modifying the concurrent executor.
+     */
+    public boolean enableVerboseConcurrentExecutor;
 
     public AvmConfiguration() {
+        // 4 threads is generally a safe, yet useful, number.
+        this.threadCount = 4;
         // By default, we MUST reparent user code and discard debug data!  This is part of the security model so it should only be enabled to enable local contract debugging.
         this.preserveDebuggability = false;
         // By default, none of our verbose options are enabled.
         this.enableVerboseContractErrors = false;
+        this.enableVerboseConcurrentExecutor = false;
     }
 }

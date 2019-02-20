@@ -38,10 +38,6 @@ public class AvmImpl implements AvmInternal {
 
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
 
-    private static final boolean DEBUG_EXECUTOR = false;
-
-    private static final int NUM_EXECUTORS = 4;
-
     private final IInstrumentationFactory instrumentationFactory;
 
     // Long-lived state which is book-ended by the startup/shutdown calls.
@@ -55,13 +51,21 @@ public class AvmImpl implements AvmInternal {
     // Used in the case of a fatal JvmError in the background threads.  A shutdown() is the only option from this point.
     private AvmFailedException backgroundFatalError;
 
+    private final int threadCount;
     private final boolean preserveDebuggability;
     private final boolean enableVerboseContractErrors;
+    private final boolean enableVerboseConcurrentExecutor;
 
     public AvmImpl(IInstrumentationFactory instrumentationFactory, AvmConfiguration configuration) {
         this.instrumentationFactory = instrumentationFactory;
+        // Make sure that the threadCount isn't totally invalid.
+        if (configuration.threadCount < 1) {
+            throw new IllegalArgumentException("Thread count must be a positive integer");
+        }
+        this.threadCount = configuration.threadCount;
         this.preserveDebuggability = configuration.preserveDebuggability;
         this.enableVerboseContractErrors = configuration.enableVerboseContractErrors;
+        this.enableVerboseConcurrentExecutor = configuration.enableVerboseConcurrentExecutor;
     }
 
     private class AvmExecutorThread extends Thread{
@@ -82,7 +86,9 @@ public class AvmImpl implements AvmInternal {
                     int abortCounter = 0;
 
                     do {
-                        if (DEBUG_EXECUTOR) System.out.println(this.getName() + " start  " + incomingTask.getIndex());
+                        if (AvmImpl.this.enableVerboseConcurrentExecutor) {
+                            System.out.println(this.getName() + " start  " + incomingTask.getIndex());
+                        }
 
                         // TODO:  Determine if we can coalesce the IInstrumentation and TransactionTask to avoid this attach/detach.
                         incomingTask.startNewTransaction();
@@ -96,13 +102,15 @@ public class AvmImpl implements AvmInternal {
                             // Note that this is safe to do here since the instrumentation isn't exposed to any other threads.
                             instrumentation.clearAbortState();
                             
-                            if (DEBUG_EXECUTOR){
+                            if (AvmImpl.this.enableVerboseConcurrentExecutor) {
                                 System.out.println(this.getName() + " abort  " + incomingTask.getIndex() + " counter " + (++abortCounter));
                             }
                         }
                     }while (AvmTransactionResult.Code.FAILED_ABORT == outgoingResult.getResultCode());
 
-                    if (DEBUG_EXECUTOR) System.out.println(this.getName() + " finish " + incomingTask.getIndex() + " " + outgoingResult.getResultCode());
+                    if (AvmImpl.this.enableVerboseConcurrentExecutor) {
+                        System.out.println(this.getName() + " finish " + incomingTask.getIndex() + " " + outgoingResult.getResultCode());
+                    }
 
                     incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
                 }
@@ -137,7 +145,7 @@ public class AvmImpl implements AvmInternal {
         this.resourceMonitor = new AddressResourceMonitor();
 
         Set<Thread> executorThreads = new HashSet<>();
-        for (int i = 0; i < NUM_EXECUTORS; i++){
+        for (int i = 0; i < this.threadCount; i++){
             executorThreads.add(new AvmExecutorThread("AVM Executor Thread " + i));
         }
 
