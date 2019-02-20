@@ -58,10 +58,10 @@ public class AvmImpl implements AvmInternal {
     private final boolean preserveDebuggability;
     private final boolean enableVerboseContractErrors;
 
-    public AvmImpl(IInstrumentationFactory instrumentationFactory, boolean debugMode) {
+    public AvmImpl(IInstrumentationFactory instrumentationFactory, AvmConfiguration configuration) {
         this.instrumentationFactory = instrumentationFactory;
-        this.preserveDebuggability = debugMode;
-        this.enableVerboseContractErrors = debugMode;
+        this.preserveDebuggability = configuration.preserveDebuggability;
+        this.enableVerboseContractErrors = configuration.enableVerboseContractErrors;
     }
 
     private class AvmExecutorThread extends Thread{
