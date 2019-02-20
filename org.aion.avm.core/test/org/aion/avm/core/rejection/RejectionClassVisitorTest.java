@@ -26,7 +26,7 @@ import org.objectweb.asm.tree.TryCatchBlockNode;
 
 public class RejectionClassVisitorTest {
     private NamespaceMapper mapper = null;
-    private boolean debugMode = false;
+    private boolean preserveDebuggability = false;
 
     @Test
     public void testFiltering() throws Exception {
@@ -40,8 +40,8 @@ public class RejectionClassVisitorTest {
 
         // We want to prove we can strip out everything so don't use any special parsing options for this visitor.
         byte[] filteredBytes = new ClassToolchain.Builder(raw, 0)
-                .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, mapper, debugMode))
-                .addNextVisitor(new UserClassMappingVisitor(mapper, debugMode))
+                .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, mapper, this.preserveDebuggability))
+                .addNextVisitor(new UserClassMappingVisitor(mapper, this.preserveDebuggability))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();
@@ -208,7 +208,7 @@ public class RejectionClassVisitorTest {
         for (int i = 0; i < inputInnerClasses.size(); ++i) {
             // Names received user renaming - but only the classes which are strictly user-defined (not MethodHandles).
             String inputName = inputInnerClasses.get(i).name;
-            String expectedName = mapper.mapType(inputName, debugMode);
+            String expectedName = mapper.mapType(inputName, this.preserveDebuggability);
             Assert.assertEquals(expectedName, outputInnerClasses.get(i).name);
         }
         
@@ -218,7 +218,7 @@ public class RejectionClassVisitorTest {
         Assert.assertEquals(inputInterfaces.size(), outputInterfaces.size());
         
         for (int i = 0; i < inputInterfaces.size(); ++i) {
-            Assert.assertEquals(mapper.mapType(inputInterfaces.get(i), debugMode), outputInterfaces.get(i));
+            Assert.assertEquals(mapper.mapType(inputInterfaces.get(i), this.preserveDebuggability), outputInterfaces.get(i));
         }
         
         // Neither use any invisible annotations.
@@ -252,7 +252,7 @@ public class RejectionClassVisitorTest {
         // We expect the sourceFile to be removed.
         Assert.assertNull(outputNode.sourceFile);
         
-        Assert.assertEquals(mapper.mapType(inputNode.superName, debugMode), outputNode.superName);
+        Assert.assertEquals(mapper.mapType(inputNode.superName, this.preserveDebuggability), outputNode.superName);
     }
 
     private void compareFields(FieldNode inputField, FieldNode outputField) {
@@ -265,7 +265,7 @@ public class RejectionClassVisitorTest {
         
         // Field name and descriptor
         Assert.assertEquals(NamespaceMapper.mapFieldName(inputField.name), outputField.name);
-        Assert.assertEquals(mapper.mapDescriptor(inputField.desc, debugMode), outputField.desc);
+        Assert.assertEquals(mapper.mapDescriptor(inputField.desc, this.preserveDebuggability), outputField.desc);
         
         // Neither use any invisible annotations.
         Assert.assertNull(inputField.invisibleAnnotations);
@@ -286,7 +286,7 @@ public class RejectionClassVisitorTest {
 
     private void compareMethods(MethodNode inputMethod, MethodNode outputMethod) {
         Assert.assertEquals(inputMethod.access, outputMethod.access);
-        Assert.assertEquals(mapper.mapDescriptor(inputMethod.desc, debugMode), outputMethod.desc);
+        Assert.assertEquals(mapper.mapDescriptor(inputMethod.desc, this.preserveDebuggability), outputMethod.desc);
         Assert.assertEquals(inputMethod.invisibleAnnotableParameterCount, outputMethod.invisibleAnnotableParameterCount);
         Assert.assertEquals(inputMethod.maxLocals, outputMethod.maxLocals);
         Assert.assertEquals(inputMethod.maxStack, outputMethod.maxStack);
@@ -350,8 +350,8 @@ public class RejectionClassVisitorTest {
         PreRenameClassAccessRules singletonRules = createTestingAccessRules(userClassDotNameSet);
         NamespaceMapper mapper = new NamespaceMapper(singletonRules);
         byte[] filteredBytes = new ClassToolchain.Builder(testBytes, 0)
-                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper, debugMode))
-                .addNextVisitor(new UserClassMappingVisitor(mapper, debugMode))
+                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper, this.preserveDebuggability))
+                .addNextVisitor(new UserClassMappingVisitor(mapper, this.preserveDebuggability))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
                 .runAndGetBytecode();

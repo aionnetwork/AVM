@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 
 public class InterfaceFiledsTest {
 
-    private boolean debugMode = false;
+    private boolean preserveDebuggability = false;
     @Test
     public void testVisitor() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         Map<String, byte[]> classes = new HashMap<>();
@@ -59,28 +59,28 @@ public class InterfaceFiledsTest {
 
     @Test
     public void testInnnerInterfaceStaticFields() throws ClassNotFoundException {
-        SimpleAvm avm = new SimpleAvm(1_000_000L, debugMode, InterfaceTestResource.class, InterfaceTestResource.InnerInterface.class);
+        SimpleAvm avm = new SimpleAvm(1_000_000L, this.preserveDebuggability, InterfaceTestResource.class, InterfaceTestResource.InnerInterface.class);
         AvmClassLoader classLoader = avm.getClassLoader();
 
-        classLoader.loadUserClassByOriginalName(InterfaceTestResource.InnerInterface.class.getName(), debugMode);
+        classLoader.loadUserClassByOriginalName(InterfaceTestResource.InnerInterface.class.getName(), this.preserveDebuggability);
         avm.shutdown();
     }
 
     @Test
     public void testOuterInterfaceStaticFields() throws ClassNotFoundException {
-        SimpleAvm avm = new SimpleAvm(1_000_000L, debugMode, OuterInteface.class);
+        SimpleAvm avm = new SimpleAvm(1_000_000L, this.preserveDebuggability, OuterInteface.class);
         AvmClassLoader classLoader = avm.getClassLoader();
 
-        classLoader.loadUserClassByOriginalName(OuterInteface.class.getName(), debugMode);
+        classLoader.loadUserClassByOriginalName(OuterInteface.class.getName(), this.preserveDebuggability);
         avm.shutdown();
     }
 
     @Test
     public void testAccess() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        SimpleAvm avm = new SimpleAvm(1_000_000L, debugMode, InterfaceTestResource.class, InterfaceTestResource.InnerInterface.class);
+        SimpleAvm avm = new SimpleAvm(1_000_000L, this.preserveDebuggability, InterfaceTestResource.class, InterfaceTestResource.InnerInterface.class);
         AvmClassLoader classLoader = avm.getClassLoader();
 
-        Class<?> clazz = classLoader.loadUserClassByOriginalName(InterfaceTestResource.class.getName(), debugMode);
+        Class<?> clazz = classLoader.loadUserClassByOriginalName(InterfaceTestResource.class.getName(), this.preserveDebuggability);
         Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("f")).invoke(null);
         assertEquals(6, ret);
 

@@ -55,11 +55,13 @@ public class AvmImpl implements AvmInternal {
     // Used in the case of a fatal JvmError in the background threads.  A shutdown() is the only option from this point.
     private AvmFailedException backgroundFatalError;
 
-    private final boolean debugMode;
+    private final boolean preserveDebuggability;
+    private final boolean enableVerboseContractErrors;
 
     public AvmImpl(IInstrumentationFactory instrumentationFactory, boolean debugMode) {
         this.instrumentationFactory = instrumentationFactory;
-        this.debugMode = debugMode;
+        this.preserveDebuggability = debugMode;
+        this.enableVerboseContractErrors = debugMode;
     }
 
     private class AvmExecutorThread extends Thread{
@@ -344,7 +346,7 @@ public class AvmImpl implements AvmInternal {
                 (null == thisTransactionKernel.getCode(recipient)
                 || (null != thisTransactionKernel.getCode(recipient) && 0 == thisTransactionKernel.getCode(recipient).length)))) {
             if (ctx.getTransactionKind() == Type.CREATE.toInt()) { // create
-                DAppCreator.create(thisTransactionKernel, this, task, ctx, result, debugMode);
+                DAppCreator.create(thisTransactionKernel, this, task, ctx, result, this.preserveDebuggability, this.enableVerboseContractErrors);
             } else { // call
                 // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
                 ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
@@ -355,7 +357,7 @@ public class AvmImpl implements AvmInternal {
                 if ((null != stateToResume) && (null != thisTransactionKernel.getCode(recipient))) {
                     dapp = stateToResume.dApp;
                     // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
-                    DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.debugMode);
+                    DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
                 } else {
                     // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
                     ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toBytes());
@@ -363,7 +365,7 @@ public class AvmImpl implements AvmInternal {
                     if (null == dapp) {
                         // If we didn't find it there, just load it.
                         try {
-                            dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, recipient).getCode(), debugMode);
+                            dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, recipient).getCode(), this.preserveDebuggability);
 
                             // If the dapp is freshly loaded, we set the block num
                             if (null != dapp){
@@ -376,7 +378,7 @@ public class AvmImpl implements AvmInternal {
                     }
                     // Run the call and, if successful, check this into the hot DApp cache.
                     if (null != dapp) {
-                        DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.debugMode);
+                        DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
                         if (AvmTransactionResult.Code.SUCCESS == result.getResultCode()) {
                             dapp.cleanForCache();
                             this.hotCache.checkin(addressWrapper, dapp);
@@ -407,7 +409,7 @@ public class AvmImpl implements AvmInternal {
         if (null == dapp) {
             // If we didn't find it there, just load it.
             try {
-                dapp = DAppLoader.loadFromGraph(graphStore.getCode(), debugMode);
+                dapp = DAppLoader.loadFromGraph(graphStore.getCode(), this.preserveDebuggability);
 
                 // If the dapp is freshly loaded, we set the block num
                 if (null != dapp){

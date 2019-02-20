@@ -17,12 +17,12 @@ public class ArrayTypeTest {
     private SimpleAvm avm;
     private Class<?> clazz;
     private ArrayTypeContract contract;
-    private boolean debugMode = false;
+    private boolean preserveDebuggability = false;
 
     @Before
     public void setup() throws ClassNotFoundException {
         avm = new SimpleAvm(1000000000000000000L,
-            debugMode,
+            this.preserveDebuggability,
             ArrayTypeContract.class,
             ArrayTypeContract.SuperestInterface.class,
             ArrayTypeContract.SuperInterface.class,
@@ -30,7 +30,7 @@ public class ArrayTypeTest {
             ArrayTypeContract.SuperClass.class,
             ArrayTypeContract.SubClass.class
         );
-        clazz = avm.getClassLoader().loadUserClassByOriginalName(ArrayTypeContract.class.getName(), debugMode);
+        clazz = avm.getClassLoader().loadUserClassByOriginalName(ArrayTypeContract.class.getName(), this.preserveDebuggability);
         contract = new ArrayTypeContract();
     }
 

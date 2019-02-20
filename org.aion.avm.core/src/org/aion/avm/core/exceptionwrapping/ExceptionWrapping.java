@@ -18,13 +18,13 @@ import java.util.Set;
 public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
     private final ParentPointers pointers;
     private final GeneratedClassConsumer generatedClassesSink;
-    private final boolean debugMode;
+    private final boolean preserveDebuggability;
 
-    public ExceptionWrapping(ParentPointers parentClassResolver, GeneratedClassConsumer generatedClassesSink, boolean debugMode) {
+    public ExceptionWrapping(ParentPointers parentClassResolver, GeneratedClassConsumer generatedClassesSink, boolean preserveDebuggability) {
         super(Opcodes.ASM6);
         this.pointers = parentClassResolver;
         this.generatedClassesSink = generatedClassesSink;
-        this.debugMode = debugMode;
+        this.preserveDebuggability = preserveDebuggability;
     }
 
     @Override
@@ -60,8 +60,8 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         }
         if (isThrowable) {
             // Generate our handler for this.
-            String reparentedName = prependExceptionWrapperSlashPrefix(name, debugMode);
-            String reparentedSuperName = prependExceptionWrapperSlashPrefix(superName, debugMode);
+            String reparentedName = prependExceptionWrapperSlashPrefix(name, this.preserveDebuggability);
+            String reparentedSuperName = prependExceptionWrapperSlashPrefix(superName, this.preserveDebuggability);
             byte[] wrapperBytes = StubGenerator.generateWrapperClass(reparentedName, reparentedSuperName);
             generatedClassesSink.accept(reparentedSuperName, reparentedName, wrapperBytes);
         }
@@ -129,13 +129,13 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                 if (null != type) {
                     if (type.startsWith(PackageConstants.kShadowSlashPrefix + "java/lang/")) {
                         // If this was trying to catch anything in "java/lang/*", then duplicate it for our wrapper type.
-                        String strippedClass = getStrippedClassSlashName(type, debugMode);
+                        String strippedClass = getStrippedClassSlashName(type, ExceptionWrapping.this.preserveDebuggability);
                         super.visitTryCatchBlock(start, end, handler, strippedClass);
-                        String wrapperType = prependExceptionWrapperSlashPrefix(type, debugMode);
+                        String wrapperType = prependExceptionWrapperSlashPrefix(type, ExceptionWrapping.this.preserveDebuggability);
                         super.visitTryCatchBlock(start, end, handler, wrapperType);
                     } else {
                         // This is user-defined (or should have been stripped, earlier) so replace it with the appropriate wrapper type.
-                        String wrapperType = prependExceptionWrapperSlashPrefix(type, debugMode);
+                        String wrapperType = prependExceptionWrapperSlashPrefix(type, ExceptionWrapping.this.preserveDebuggability);
                         super.visitTryCatchBlock(start, end, handler, wrapperType);
                     }
                 } else {
@@ -168,7 +168,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         };
     }
 
-    private static String getStrippedClassSlashName(String className, boolean debugMode) {
+    private static String getStrippedClassSlashName(String className, boolean preserveDebuggability) {
         if (className.startsWith(PackageConstants.kUserSlashPrefix)) {
             return className.substring(PackageConstants.kUserSlashPrefix.length());
 
@@ -178,7 +178,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         } else if (className.startsWith(PackageConstants.kShadowApiSlashPrefix)) {
             throw RuntimeAssertionError.unimplemented("Stripping name for API classes not implemented");
 
-        } else if(debugMode) {
+        } else if(preserveDebuggability) {
             return className;
 
         } else {
@@ -186,9 +186,9 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         }
     }
 
-    private static String prependExceptionWrapperSlashPrefix(String className, boolean debugMode) {
+    private static String prependExceptionWrapperSlashPrefix(String className, boolean preserveDebuggability) {
         // It is possible that the name could have the user prefix, or a java.lang shadow prefix, so remove that before prepending the wrapper.
-        String strippedClassName = getStrippedClassSlashName(className, debugMode);
+        String strippedClassName = getStrippedClassSlashName(className, preserveDebuggability);
         return PackageConstants.kExceptionWrapperSlashPrefix + strippedClassName;
     }
 

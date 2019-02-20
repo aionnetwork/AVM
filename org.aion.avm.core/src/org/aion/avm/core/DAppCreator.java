@@ -77,11 +77,11 @@ public class DAppCreator {
     }
 
     // NOTE:  This is only public because InvokedynamicTransformationTest calls it.
-    public static Map<String, Integer> computeAllPostRenameObjectSizes(Forest<String, ClassInfo> forest, boolean debugMode) {
+    public static Map<String, Integer> computeAllPostRenameObjectSizes(Forest<String, ClassInfo> forest, boolean preserveDebuggability) {
         Map<String, Integer> preRenameUserObjectSizes = computeUserObjectSizes(forest, NodeEnvironment.singleton.preRenameRuntimeObjectSizeMap);
 
         Map<String, Integer> postRenameObjectSizes = new HashMap<>(NodeEnvironment.singleton.postRenameRuntimeObjectSizeMap);
-        preRenameUserObjectSizes.forEach((k, v) -> postRenameObjectSizes.put(DebugNameResolver.getUserPackageSlashPrefix(k, debugMode), v));
+        preRenameUserObjectSizes.forEach((k, v) -> postRenameObjectSizes.put(DebugNameResolver.getUserPackageSlashPrefix(k, preserveDebuggability), v));
         return postRenameObjectSizes;
     }
 
@@ -93,17 +93,17 @@ public class DAppCreator {
      * @param preRenameClassHierarchy The pre-rename hierarchy of user-defined classes in the DApp (/-style).
      * @return the transformed classes and any generated classes (names specified in .-style)
      */
-    public static Map<String, byte[]> transformClasses(Map<String, byte[]> inputClasses, Forest<String, ClassInfo> preRenameClassHierarchy, boolean debugMode) {
+    public static Map<String, byte[]> transformClasses(Map<String, byte[]> inputClasses, Forest<String, ClassInfo> preRenameClassHierarchy, boolean preserveDebuggability) {
         // Before anything, pass the list of classes through the verifier.
         // (this will throw UncaughtException, on verification failure).
         Verifier.verifyUntrustedClasses(inputClasses);
         
         // Note:  preRenameUserDefinedClasses includes ONLY classes while preRenameUserClassAndInterfaceSet includes classes AND interfaces.
         Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
-        ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy, debugMode);
+        ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy, preserveDebuggability);
         
         // We need to run our rejection filter and static rename pass.
-        Map<String, byte[]> safeClasses = rejectionAndRenameInputClasses(inputClasses, preRenameUserDefinedClasses, parentClassResolver, debugMode);
+        Map<String, byte[]> safeClasses = rejectionAndRenameInputClasses(inputClasses, preRenameUserDefinedClasses, parentClassResolver, preserveDebuggability);
         
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
@@ -118,11 +118,11 @@ public class DAppCreator {
             String superClassDotName = Helpers.internalNameToFulllyQualifiedName(superClassSlashName);
             dynamicHierarchyBuilder.addClass(classDotName, superClassDotName, false, bytecode);
         };
-        Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy, debugMode);
+        Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy, preserveDebuggability);
 
         Map<String, byte[]> transformedClasses = new HashMap<>();
 
-        int parsingOptions = debugMode? ClassReader.EXPAND_FRAMES : ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
+        int parsingOptions = preserveDebuggability ? ClassReader.EXPAND_FRAMES : ClassReader.EXPAND_FRAMES | ClassReader.SKIP_DEBUG;
 
         for (String name : safeClasses.keySet()) {
             // Note that transformClasses requires that the input class names by the .-style names.
@@ -138,7 +138,7 @@ public class DAppCreator {
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new StackWatcherClassAdapter())
-                    .addNextVisitor(new ExceptionWrapping(parentClassResolver, generatedClassesSink, debugMode))
+                    .addNextVisitor(new ExceptionWrapping(parentClassResolver, generatedClassesSink, preserveDebuggability))
                     .addNextVisitor(new AutomaticGraphVisitor())
                     .addNextVisitor(new StrictFPVisitor())
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
@@ -164,7 +164,7 @@ public class DAppCreator {
             }
             public void onVisitNotRootNode(Forest.Node<String, ClassInfo> node) {
                 if (node.getContent().isInterface()) {
-                    userInterfaceSlashNames.add(Helpers.fulllyQualifiedNameToInternalName(DebugNameResolver.getUserPackageDotPrefix(node.getId(), debugMode)));
+                    userInterfaceSlashNames.add(Helpers.fulllyQualifiedNameToInternalName(DebugNameResolver.getUserPackageDotPrefix(node.getId(), preserveDebuggability)));
                 }
             }
         });
@@ -181,7 +181,7 @@ public class DAppCreator {
         return processedClasses;
     }
 
-    public static void create(KernelInterface kernel, AvmInternal avm, TransactionTask task, TransactionContext ctx, AvmTransactionResult result, boolean debugMode) {
+    public static void create(KernelInterface kernel, AvmInternal avm, TransactionTask task, TransactionContext ctx, AvmTransactionResult result, boolean preserveDebuggability, boolean verboseErrors) {
         // Expose the DApp outside the try so we can detach from it, when we exit.
         LoadedDApp dapp = null;
         try {
@@ -189,7 +189,7 @@ public class DAppCreator {
             Address dappAddress = ctx.getContractAddress();
             CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(ctx.getTransactionData());
             if (codeAndArguments == null) {
-                if (debugMode) {
+                if (verboseErrors) {
                     System.err.println("DApp deployment failed due to incorrectly packaged JAR and initialization arguments");
                 }
                 result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
@@ -199,7 +199,7 @@ public class DAppCreator {
 
             RawDappModule rawDapp = RawDappModule.readFromJar(codeAndArguments.code);
             if (rawDapp == null) {
-                if (debugMode) {
+                if (verboseErrors) {
                     System.err.println("DApp deployment failed due to corrupt JAR data");
                 }
                 result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID_DATA);
@@ -209,7 +209,7 @@ public class DAppCreator {
 
             // Verify that the DApp contains the main class they listed and that it has a "public static byte[] main()" method.
             if (!rawDapp.classes.containsKey(rawDapp.mainClass) || !MainMethodChecker.checkForMain(rawDapp.classes.get(rawDapp.mainClass))) {
-                if (debugMode) {
+                if (verboseErrors) {
                     String explanation = !rawDapp.classes.containsKey(rawDapp.mainClass) ? "missing Main class" : "missing main() method";
                     System.err.println("DApp deployment failed due to " + explanation);
                 }
@@ -220,12 +220,12 @@ public class DAppCreator {
             ClassHierarchyForest dappClassesForest = rawDapp.classHierarchyForest;
 
             // transform
-            Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest, debugMode);
+            Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest, preserveDebuggability);
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
             // We can now construct the abstraction of the loaded DApp which has the machinery for the rest of the initialization.
             IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel,dappAddress);
-            dapp = DAppLoader.fromTransformed(transformedDapp, debugMode);
+            dapp = DAppLoader.fromTransformed(transformedDapp, preserveDebuggability);
             
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
@@ -294,7 +294,7 @@ public class DAppCreator {
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (UncaughtException e) {
-            if (debugMode) {
+            if (verboseErrors) {
                 System.err.println("DApp deployment failed due to uncaught EXCEPTION: \"" + e.getMessage() + "\"");
             }
             result.setResultCode(AvmTransactionResult.Code.FAILED_EXCEPTION);
@@ -303,7 +303,7 @@ public class DAppCreator {
             result.setUncaughtException(e.getCause());
             logger.debug("Uncaught exception", e.getCause());
         } catch (RejectedClassException e) {
-            if (debugMode) {
+            if (verboseErrors) {
                 System.err.println("DApp deployment REJECTED with reason: \"" + e.getMessage() + "\"");
             }
             result.setResultCode(AvmTransactionResult.Code.FAILED_REJECTED);
@@ -336,7 +336,7 @@ public class DAppCreator {
     }
 
 
-    private static Map<String, byte[]> rejectionAndRenameInputClasses(Map<String, byte[]> inputClasses, Set<String> preRenameUserDefinedClasses, ParentPointers parentClassResolver, boolean debugMode) {
+    private static Map<String, byte[]> rejectionAndRenameInputClasses(Map<String, byte[]> inputClasses, Set<String> preRenameUserDefinedClasses, ParentPointers parentClassResolver, boolean preserveDebuggability) {
         Map<String, byte[]> safeClasses = new HashMap<>();
         Set<String> preRenameUserClassAndInterfaceSet = inputClasses.keySet();
         PreRenameClassAccessRules preRenameClassAccessRules = new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserClassAndInterfaceSet);
@@ -346,16 +346,16 @@ public class DAppCreator {
             // Note that transformClasses requires that the input class names by the .-style names.
             RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
 
-            int parsingOptions = debugMode ? 0: ClassReader.SKIP_DEBUG;
+            int parsingOptions = preserveDebuggability ? 0: ClassReader.SKIP_DEBUG;
             byte[] bytecode = new ClassToolchain.Builder(inputClasses.get(name), parsingOptions)
-                    .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper, debugMode))
+                    .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper, preserveDebuggability))
                     .addNextVisitor(new LoopingExceptionStrippingVisitor())
-                    .addNextVisitor(new UserClassMappingVisitor(namespaceMapper, debugMode))
+                    .addNextVisitor(new UserClassMappingVisitor(namespaceMapper, preserveDebuggability))
                     // (note that we need to pass a bogus HierarchyTreeBuilder into the class writer - can be empty, but not null)
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, new HierarchyTreeBuilder()))
                     .build()
                     .runAndGetBytecode();
-            String mappedName = DebugNameResolver.getUserPackageDotPrefix(name, debugMode);
+            String mappedName = DebugNameResolver.getUserPackageDotPrefix(name, preserveDebuggability);
             safeClasses.put(mappedName, bytecode);
         }
         return safeClasses;

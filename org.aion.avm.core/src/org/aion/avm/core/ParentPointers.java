@@ -19,7 +19,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
 public class ParentPointers {
     private final Map<String, String> postRenameParentMap;
 
-    public ParentPointers(Set<String> userDefinedClassNames, Forest<String, ClassInfo> classHierarchy, boolean debugMode) {
+    public ParentPointers(Set<String> userDefinedClassNames, Forest<String, ClassInfo> classHierarchy, boolean preserveDebuggability) {
         // Get every user-defined class, find its parent, and add the pair to the map, while renaming them.
         Map<String, String> mapping = new HashMap<>();
         for (String className : userDefinedClassNames) {
@@ -29,9 +29,9 @@ public class ParentPointers {
             Forest.Node<String, ClassInfo> node = classHierarchy.getNodeById(className);
             String superClassName = node.getParent().getId();
             
-            String newName = DebugNameResolver.getUserPackageDotPrefix(className, debugMode);
+            String newName = DebugNameResolver.getUserPackageDotPrefix(className, preserveDebuggability);
             String newSuperName = userDefinedClassNames.contains(superClassName)
-                    ? DebugNameResolver.getUserPackageDotPrefix(superClassName, debugMode)
+                    ? DebugNameResolver.getUserPackageDotPrefix(superClassName, preserveDebuggability)
                     : (superClassName.startsWith(PackageConstants.kPublicApiDotPrefix) ? PackageConstants.kShadowApiDotPrefix + superClassName : (PackageConstants.kShadowDotPrefix + superClassName));
             mapping.put(newName, newSuperName);
         }

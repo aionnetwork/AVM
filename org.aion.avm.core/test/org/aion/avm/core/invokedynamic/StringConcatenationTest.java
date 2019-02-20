@@ -37,7 +37,7 @@ public class StringConcatenationTest {
     private IInstrumentation instrumentation;
     // Note that not all tests use this.
     private IRuntimeSetup runtimeSetup;
-    private static boolean debugMode;
+    private static boolean preserveDebuggability;
 
     @Before
     public void setup() {
@@ -45,7 +45,7 @@ public class StringConcatenationTest {
         Assert.assertNotNull(NodeEnvironment.singleton);
         this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
-        debugMode = false;
+        StringConcatenationTest.preserveDebuggability = false;
     }
 
     @After
@@ -123,7 +123,7 @@ public class StringConcatenationTest {
         final byte[] origBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
         final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
-        java.lang.String mappedClassName = DebugNameResolver.getUserPackageDotPrefix(className, debugMode);
+        java.lang.String mappedClassName = DebugNameResolver.getUserPackageDotPrefix(className, StringConcatenationTest.preserveDebuggability);
         Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(Map.of(mappedClassName, transformedBytecode), Helpers.loadDefaultHelperBytecode());
         AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
         
@@ -138,12 +138,12 @@ public class StringConcatenationTest {
                 .asMutableForest();
         final var shadowPackage = PackageConstants.kShadowSlashPrefix;
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, className)), debugMode))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, className)), StringConcatenationTest.preserveDebuggability))
                 .addNextVisitor(new ConstantVisitor())
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(className), classHierarchy, debugMode),
+                        new ParentPointers(Collections.singleton(className), classHierarchy, StringConcatenationTest.preserveDebuggability),
                         new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();

@@ -46,7 +46,7 @@ public class InvokedynamicTransformationTest {
     private IInstrumentation instrumentation;
     // Note that not all tests use this.
     private IRuntimeSetup runtimeSetup;
-    private boolean debugMode = false;
+    private boolean preserveDebuggability = false;
 
     @Before
     public void setup() {
@@ -83,12 +83,12 @@ public class InvokedynamicTransformationTest {
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className), shadowPackage), debugMode))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className), shadowPackage), this.preserveDebuggability))
                 .addNextVisitor(new ConstantVisitor())
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(className), classHierarchy, debugMode),
+                        new ParentPointers(Collections.singleton(className), classHierarchy, this.preserveDebuggability),
                         new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();
@@ -111,12 +111,12 @@ public class InvokedynamicTransformationTest {
                 .asMutableForest();
         final var shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, classDotName), shadowPackage), debugMode))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, classDotName), shadowPackage), this.preserveDebuggability))
                 .addNextVisitor(new ConstantVisitor())
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(classDotName), classHierarchy, debugMode),
+                        new ParentPointers(Collections.singleton(classDotName), classHierarchy, this.preserveDebuggability),
                         new HierarchyTreeBuilder()))
                 .build()
                 .runAndGetBytecode();
@@ -147,18 +147,18 @@ public class InvokedynamicTransformationTest {
             processedClasses.put(classDotName, bytecode);
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, false, bytecode);
         };
-        ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy, debugMode);
+        ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy, this.preserveDebuggability);
         PreRenameClassAccessRules singletonRules = InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className);
         NamespaceMapper mapper = new NamespaceMapper(singletonRules);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper, debugMode))
-                .addNextVisitor(new UserClassMappingVisitor(mapper, debugMode))
+                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper, this.preserveDebuggability))
+                .addNextVisitor(new UserClassMappingVisitor(mapper, this.preserveDebuggability))
                 .addNextVisitor(new ConstantVisitor())
-                .addNextVisitor(new ClassMetering(DAppCreator.computeAllPostRenameObjectSizes(classHierarchy, debugMode)))
+                .addNextVisitor(new ClassMetering(DAppCreator.computeAllPostRenameObjectSizes(classHierarchy, this.preserveDebuggability)))
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addNextVisitor(new StackWatcherClassAdapter())
-                .addNextVisitor(new ExceptionWrapping(parentPointers, generatedClassConsumer, debugMode))
+                .addNextVisitor(new ExceptionWrapping(parentPointers, generatedClassConsumer, this.preserveDebuggability))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers, dynamicHierarchyBuilder))
                 .build()
                 .runAndGetBytecode();
@@ -172,7 +172,7 @@ public class InvokedynamicTransformationTest {
     }
 
     private Object callInstanceTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
-        String mappedClassName = DebugNameResolver.getUserPackageDotPrefix(className, debugMode);//PackageConstants.kUserDotPrefix + className;
+        String mappedClassName = DebugNameResolver.getUserPackageDotPrefix(className, this.preserveDebuggability);//PackageConstants.kUserDotPrefix + className;
         final Class<?> klass = loadClassInAvmLoader(bytecode, mappedClassName);
 
         final Constructor<?> constructor = klass.getDeclaredConstructor();
@@ -183,7 +183,7 @@ public class InvokedynamicTransformationTest {
     }
 
     private Object callStaticTestMethod(byte[] bytecode, String className, String methodName) throws Exception {
-        String mappedClassName = DebugNameResolver.getUserPackageDotPrefix(className, debugMode);
+        String mappedClassName = DebugNameResolver.getUserPackageDotPrefix(className, this.preserveDebuggability);
         final Class<?> klass = loadClassInAvmLoader(bytecode, mappedClassName);
         
         final Method method = klass.getMethod(methodName, IObject.class);

@@ -31,13 +31,13 @@ import org.objectweb.asm.TypePath;
 public class RejectionMethodVisitor extends MethodVisitor {
     private final PreRenameClassAccessRules classAccessRules;
     private final NamespaceMapper namespaceMapper;
-    private final boolean debugMode;
+    private final boolean preserveDebuggability;
 
-    public RejectionMethodVisitor(MethodVisitor visitor, PreRenameClassAccessRules classAccessRules, NamespaceMapper namespaceMapper, boolean debugMode) {
+    public RejectionMethodVisitor(MethodVisitor visitor, PreRenameClassAccessRules classAccessRules, NamespaceMapper namespaceMapper, boolean preserveDebuggability) {
         super(Opcodes.ASM6, visitor);
         this.classAccessRules = classAccessRules;
         this.namespaceMapper = namespaceMapper;
-        this.debugMode = debugMode;
+        this.preserveDebuggability = preserveDebuggability;
     }
 
     @Override
@@ -149,7 +149,7 @@ public class RejectionMethodVisitor extends MethodVisitor {
     @Override
     public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
         // This is debug data, so filter it out if we're not in debug mode.
-        if(debugMode){
+        if(this.preserveDebuggability){
             super.visitLocalVariable(name, descriptor, signature, start, end, index);
         }
     }
@@ -157,7 +157,7 @@ public class RejectionMethodVisitor extends MethodVisitor {
     @Override
     public void visitLineNumber(int line, Label start) {
         // This is debug data, so filter it out if we're not in debug mode.
-        if(debugMode){
+        if(this.preserveDebuggability){
             super.visitLineNumber(line, start);
         }
     }
@@ -190,9 +190,9 @@ public class RejectionMethodVisitor extends MethodVisitor {
     private boolean checkJclMethodExists(String owner, String name, String descriptor) {
         boolean didMatch = false;
         // Map the owner, name, and descriptor into the shadow space, look up the corresponding class, reflect, and see if this method exists.
-        String mappedOwner = this.namespaceMapper.mapType(owner, debugMode);
+        String mappedOwner = this.namespaceMapper.mapType(owner, this.preserveDebuggability);
         String mappedName = NamespaceMapper.mapMethodName(name);
-        String mappedDescriptor = this.namespaceMapper.mapDescriptor(descriptor, debugMode);
+        String mappedDescriptor = this.namespaceMapper.mapDescriptor(descriptor, this.preserveDebuggability);
         // TODO:  Determine if we need to implement some kind of cache for these reflected operations.
         // (if so, it should probably be implemented in NodeEnvironment, since these classes are shared and long-lived).
         try {

@@ -28,13 +28,13 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
     // The names of the classes that the user defined in their JAR (note:  this does NOT include interfaces).
     private final PreRenameClassAccessRules preRenameClassAccessRules;
     private final NamespaceMapper namespaceMapper;
-    private final boolean debugMode;
+    private final boolean preserveDebuggability;
 
-    public RejectionClassVisitor(PreRenameClassAccessRules preRenameClassAccessRules, NamespaceMapper namespaceMapper, boolean debugMode) {
+    public RejectionClassVisitor(PreRenameClassAccessRules preRenameClassAccessRules, NamespaceMapper namespaceMapper, boolean preserveDebuggability) {
         super(Opcodes.ASM6);
         this.preRenameClassAccessRules = preRenameClassAccessRules;
         this.namespaceMapper = namespaceMapper;
-        this.debugMode = debugMode;
+        this.preserveDebuggability = preserveDebuggability;
     }
 
     @Override
@@ -102,6 +102,6 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
         
         // Null the signature, since we don't use it and don't want to make sure it is safe.
         MethodVisitor mv = super.visitMethod(access, name, descriptor, null, exceptions);
-        return new RejectionMethodVisitor(mv, this.preRenameClassAccessRules, this.namespaceMapper, debugMode);
+        return new RejectionMethodVisitor(mv, this.preRenameClassAccessRules, this.namespaceMapper, this.preserveDebuggability);
     }
 }

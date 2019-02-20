@@ -58,7 +58,7 @@ public class LoadedDApp {
     private Field runtimeBlockchainRuntimeField;
     private Method mainMethod;
     private long loadedBlockNum;
-    private final boolean debugMode;
+    private final boolean preserveDebuggability;
 
     /**
      * Creates the LoadedDApp to represent the classes related to DApp at address.
@@ -66,12 +66,12 @@ public class LoadedDApp {
      * @param loader The class loader to look up shape.
      * @param classes The list of classes to populate (order must always be the same).
      */
-    public LoadedDApp(ClassLoader loader, List<Class<?>> classes, String originalMainClassName, boolean debugMode) {
+    public LoadedDApp(ClassLoader loader, List<Class<?>> classes, String originalMainClassName, boolean preserveDebuggability) {
         this.loader = loader;
         this.classes = classes;
         this.originalMainClassName = originalMainClassName;
         this.fieldCache = new ReflectedFieldCache();
-        this.debugMode = debugMode;
+        this.preserveDebuggability = preserveDebuggability;
         // We also know that we need the runtimeSetup, meaning we also need the helperClass.
         try {
             String helperClassName = Helper.RUNTIME_HELPER_NAME;
@@ -331,7 +331,7 @@ public class LoadedDApp {
     private Class<?> loadMainClass() throws ClassNotFoundException {
         Class<?> mainClass = this.mainClass;
         if (null == mainClass) {
-            String mappedUserMainClass = DebugNameResolver.getUserPackageDotPrefix(this.originalMainClassName, debugMode);
+            String mappedUserMainClass = DebugNameResolver.getUserPackageDotPrefix(this.originalMainClassName, this.preserveDebuggability);
             mainClass = this.loader.loadClass(mappedUserMainClass);
             RuntimeAssertionError.assertTrue(mainClass.getClassLoader() == this.loader);
             this.mainClass = mainClass;

@@ -59,8 +59,8 @@ public class NamespaceMapper {
      * @param type The pre-transform method type.
      * @return The post-transform method type.
      */
-    public Type mapMethodType(Type type, boolean debugMode) {
-        return Type.getMethodType(mapDescriptor(type.getDescriptor(), debugMode));
+    public Type mapMethodType(Type type, boolean preserveDebuggability) {
+        return Type.getMethodType(mapDescriptor(type.getDescriptor(), preserveDebuggability));
     }
 
     /**
@@ -68,14 +68,14 @@ public class NamespaceMapper {
      * @param mapMethodDescriptor True if the underlying descriptor should be mapped or false to leave it unchanged.
      * @return The post-transform method handle.
      */
-    public Handle mapHandle(Handle methodHandle, boolean mapMethodDescriptor, boolean debugMode) {
+    public Handle mapHandle(Handle methodHandle, boolean mapMethodDescriptor, boolean preserveDebuggability) {
         String methodOwner = methodHandle.getOwner();
         String methodName = methodHandle.getName();
         String methodDescriptor = methodHandle.getDesc();
 
-        String newMethodOwner = mapType(methodOwner, debugMode);
+        String newMethodOwner = mapType(methodOwner, preserveDebuggability);
         String newMethodName = mapMethodName(methodName);
-        String newMethodDescriptor = mapMethodDescriptor ? mapDescriptor(methodDescriptor,  debugMode) : methodDescriptor;
+        String newMethodDescriptor = mapMethodDescriptor ? mapDescriptor(methodDescriptor,  preserveDebuggability) : methodDescriptor;
         return new Handle(methodHandle.getTag(), newMethodOwner, newMethodName, newMethodDescriptor, methodHandle.isInterface());
     }
 
@@ -83,12 +83,12 @@ public class NamespaceMapper {
      * @param descriptor The pre-transform descriptor.
      * @return The post-transform descriptor.
      */
-    public String mapDescriptor(String descriptor, boolean debugMode) {
+    public String mapDescriptor(String descriptor, boolean preserveDebuggability) {
         StringBuilder builder = DescriptorParser.parse(descriptor, new DescriptorParser.Callbacks<>() {
             @Override
             public StringBuilder readObject(int arrayDimensions, String type, StringBuilder userData) {
                 writeArrayDimensions(userData, arrayDimensions);
-                String newType = mapType(type, debugMode);
+                String newType = mapType(type, preserveDebuggability);
                 userData.append(DescriptorParser.OBJECT_START);
                 userData.append(newType);
                 userData.append(DescriptorParser.OBJECT_END);
@@ -171,12 +171,12 @@ public class NamespaceMapper {
      * @param types The pre-transform types.
      * @return The post-transform types.
      */
-    public String[] mapTypeArray(String[] types, boolean debugMode) {
+    public String[] mapTypeArray(String[] types, boolean preserveDebuggability) {
         String[] newNames = null;
         if (null != types) {
             newNames = new String[types.length];
             for (int i = 0; i < types.length; ++i) {
-                newNames[i] = mapType(types[i], debugMode);
+                newNames[i] = mapType(types[i], preserveDebuggability);
             }
         }
         return newNames;
@@ -184,17 +184,18 @@ public class NamespaceMapper {
 
     /**
      * @param type The pre-transform type name.
+     * @param preserveDebuggability True if we cannot rename types.
      * @return The post-transform type name.
      */
-    public String mapType(String type, boolean debugMode) {
+    public String mapType(String type, boolean preserveDebuggability) {
         RuntimeAssertionError.assertTrue(-1 == type.indexOf("."));
         
         String newType = null;
         if (type.startsWith("[")){
-            newType = mapDescriptor(type, debugMode);
+            newType = mapDescriptor(type, preserveDebuggability);
         }else {
             if (this.preRenameClassAccessRules.isUserDefinedClassOrInterface(type)) {
-                newType = DebugNameResolver.getUserPackageSlashPrefix(type, debugMode);
+                newType = DebugNameResolver.getUserPackageSlashPrefix(type, preserveDebuggability);
             } else if (this.preRenameClassAccessRules.isJclClass(type)) {
                 newType =  shadowPackageSlash + type;
             } else if (this.preRenameClassAccessRules.isApiClass(type)) {

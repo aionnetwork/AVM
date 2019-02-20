@@ -19,9 +19,9 @@ public class MiscellaneousShadowTest {
 
     @Before
     public void setup() throws Exception {
-        boolean debugMode = false;
-        this.avm = new SimpleAvm(1_000_000L, debugMode, TestResource.class);
-        this.clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName(), debugMode);
+        boolean preserveDebuggability = false;
+        this.avm = new SimpleAvm(1_000_000L, preserveDebuggability, TestResource.class);
+        this.clazz = avm.getClassLoader().loadUserClassByOriginalName(TestResource.class.getName(), preserveDebuggability);
     }
 
     @After

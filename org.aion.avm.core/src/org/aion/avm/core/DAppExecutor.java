@@ -22,7 +22,7 @@ public class DAppExecutor {
 
     public static void call(KernelInterface kernel, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
-                            TransactionContext ctx, AvmTransactionResult result, boolean debugMode) {
+                            TransactionContext ctx, AvmTransactionResult result, boolean verboseErrors) {
         Address dappAddress = ctx.getDestinationAddress();
         IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel, dappAddress);
         // Load the initial state of the environment.
@@ -125,7 +125,7 @@ public class DAppExecutor {
             result.setEnergyUsed(0);
 
         } catch (UncaughtException e) {
-            if (debugMode) {
+            if (verboseErrors) {
                 System.err.println("DApp execution failed due to uncaught EXCEPTION: \"" + e.getMessage() + "\"");
             }
             if (null != reentrantGraphData) {

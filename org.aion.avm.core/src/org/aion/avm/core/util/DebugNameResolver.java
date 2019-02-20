@@ -4,11 +4,11 @@ import org.aion.avm.internal.PackageConstants;
 
 public class DebugNameResolver {
 
-    public static String getUserPackageSlashPrefix (String name, boolean debugMode){
-        return debugMode? name: PackageConstants.kUserSlashPrefix + name;
+    public static String getUserPackageSlashPrefix (String name, boolean preserveDebuggability){
+        return preserveDebuggability ? name : PackageConstants.kUserSlashPrefix + name;
     }
 
-    public static String getUserPackageDotPrefix (String name, boolean debugMode){
-        return debugMode? name: PackageConstants.kUserDotPrefix + name;
+    public static String getUserPackageDotPrefix (String name, boolean preserveDebuggability){
+        return preserveDebuggability ? name : PackageConstants.kUserDotPrefix + name;
     }
 }

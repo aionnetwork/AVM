@@ -143,16 +143,16 @@ public class AvmClassLoader extends ClassLoader {
      * @return The transformed/renamed class instance.
      * @throws ClassNotFoundException Underlying load failed.
      */
-    public Class<?> loadUserClassByOriginalName(String originalClassName, boolean debugMode) throws ClassNotFoundException {
-        String renamedClass = DebugNameResolver.getUserPackageDotPrefix(originalClassName, debugMode);//PackageConstants.kUserDotPrefix + originalClassName;
+    public Class<?> loadUserClassByOriginalName(String originalClassName, boolean preserveDebuggability) throws ClassNotFoundException {
+        String renamedClass = DebugNameResolver.getUserPackageDotPrefix(originalClassName, preserveDebuggability);
         Class<?> clazz = this.loadClass(renamedClass);
         RuntimeAssertionError.assertTrue(this == clazz.getClassLoader());
         return clazz;
     }
 
     //Internal
-    public byte[] getUserClassBytecodeByOriginalName(String className, boolean debugMode) {
-        return this.bytecodeMap.get(DebugNameResolver.getUserPackageDotPrefix(className, debugMode));
+    public byte[] getUserClassBytecodeByOriginalName(String className, boolean preserveDebuggability) {
+        return this.bytecodeMap.get(DebugNameResolver.getUserPackageDotPrefix(className, preserveDebuggability));
     }
 
     public byte[] getUserClassBytecode(String className){

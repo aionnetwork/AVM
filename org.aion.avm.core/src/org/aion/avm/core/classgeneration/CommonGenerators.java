@@ -162,7 +162,7 @@ public class CommonGenerators {
         return generatedClasses;
     }
 
-    public static Map<String, byte[]> generateShadowEnum(boolean debugMode){
+    public static Map<String, byte[]> generateShadowEnum(boolean preserveDebuggability){
         Map<String, byte[]> generatedClasses = new HashMap<>();
 
         for (String name : kShadowEnumClassNames){
@@ -170,7 +170,7 @@ public class CommonGenerators {
 
             PreRenameClassAccessRules emptyUserRuleRuleSet = new PreRenameClassAccessRules(Collections.emptySet(), Collections.emptySet());
             byte[] bytecode = new ClassToolchain.Builder(cnt, ClassReader.EXPAND_FRAMES)
-                    .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(emptyUserRuleRuleSet), debugMode))
+                    .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(emptyUserRuleRuleSet), preserveDebuggability))
                     .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
                     .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                     .build()
