@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -209,6 +210,26 @@ public class ClassShadowingTest {
         avm.shutdown();
     }
 
+    @Test(expected=RuntimeAssertionError.class)
+    public void testUserClassInShadowNamespace() throws Exception {
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        String className = PackageConstants.kShadowSlashPrefix + "Test";
+        writer.visit(54, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", new String[0]);
+        byte[] inputBytes = writer.toByteArray();
+        
+        // Note that the ClassShadowing visitor will throw an assertion error when it sees something in PackageConstants.kShadowSlashPrefix
+        // which hasn't been renamed.
+        // We believe that this is reasonable behaviour (as local debug requires disabling the renaming security feature) but it is why
+        // debug should only ever be enabled, locally.
+        boolean preserveDebuggability = true;
+        new ClassToolchain.Builder(inputBytes, 0)
+                .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className), preserveDebuggability))
+                .addNextVisitor(new ConstantVisitor())
+                .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
+                .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                .build()
+                .runAndGetBytecode();
+    }
 
     private NamespaceMapper createTestingMapper(String... userDotNameClasses) {
         // WARNING:  We are providing the class set as both the "classes only" and "classes plus interfaces" sets.
