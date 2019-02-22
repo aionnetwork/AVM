@@ -186,7 +186,7 @@ public class DAppCreator {
         LoadedDApp dapp = null;
         try {
             // read dapp module
-            Address dappAddress = ctx.getContractAddress();
+            Address dappAddress = AddressUtil.generateContractAddress(ctx.getTransaction());
             CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(ctx.getTransactionData());
             if (codeAndArguments == null) {
                 if (verboseErrors) {

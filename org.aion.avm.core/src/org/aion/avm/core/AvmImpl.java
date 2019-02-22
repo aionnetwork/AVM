@@ -202,7 +202,7 @@ public class AvmImpl implements AvmInternal {
 
         // Acquire both sender and target resources
         Address sender = ctx.getSenderAddress();
-        Address target = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? ctx.getContractAddress() : ctx.getDestinationAddress();
+        Address target = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? AddressUtil.generateContractAddress(ctx.getTransaction()) : ctx.getDestinationAddress();
 
         this.resourceMonitor.acquire(sender.toBytes(), task);
         this.resourceMonitor.acquire(target.toBytes(), task);
@@ -339,7 +339,7 @@ public class AvmImpl implements AvmInternal {
         AvmTransactionResult result = new AvmTransactionResult(ctx.getTransaction().getEnergyLimit(), ctx.getTransaction().getTransactionCost());
 
         // grab the recipient address as either the new contract address or the given account address.
-        Address recipient = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? ctx.getContractAddress() : ctx.getDestinationAddress();
+        Address recipient = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? AddressUtil.generateContractAddress(ctx.getTransaction()) : ctx.getDestinationAddress();
 
         // conduct value transfer
         thisTransactionKernel.adjustBalance(ctx.getSenderAddress(), ctx.getTransferValue().negate());

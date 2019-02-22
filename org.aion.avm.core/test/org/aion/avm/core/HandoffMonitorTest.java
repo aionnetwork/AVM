@@ -246,10 +246,6 @@ public class HandoffMonitorTest {
             throw new AssertionError("No calls expected");
         }
         @Override
-        public Address getContractAddress() {
-            throw new AssertionError("No calls expected");
-        }
-        @Override
         public Address getMinerAddress() {
             throw new AssertionError("No calls expected");
         }

@@ -1,11 +1,7 @@
 package org.aion.kernel;
 
-
-import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.util.HashUtils;
 import java.math.BigInteger;
 
-import java.nio.ByteBuffer;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -24,7 +20,6 @@ public class TransactionContextImpl implements TransactionContext {
     private long blockEnergyLimit;
     private Address blockCoinbase;
     private BigInteger blockDifficulty;
-    private Address contract;
 
     public TransactionContextImpl(Transaction tx, Block block) {
         this.tx = tx;
@@ -79,21 +74,6 @@ public class TransactionContextImpl implements TransactionContext {
     @Override
     public Address getDestinationAddress() {
         return tx.getDestinationAddress();
-    }
-
-    @Override
-    public Address getContractAddress() {
-        if (contract == null) {
-            contract = generateContractAddress(tx.getSenderAddress(), tx.getNonceAsLong());
-        }
-        return contract;
-    }
-
-    public static Address generateContractAddress(Address sender, long nonce) {
-        ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(sender.toBytes()).putLong(nonce);
-        byte[] hash = HashUtils.sha256(buffer.array());
-        hash[0] = NodeEnvironment.CONTRACT_PREFIX;
-        return AvmAddress.wrap(hash);
     }
 
     @Override

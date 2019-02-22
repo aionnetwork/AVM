@@ -12,6 +12,7 @@ import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.math.BigInteger;
+import org.aion.kernel.AddressUtil;
 import org.aion.kernel.AvmAddress;
 import org.aion.kernel.KernelInterfaceImpl;
 
@@ -54,7 +55,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     public TestingBlockchainRuntime(TransactionContext ctx) {
         this.address = (ctx.getTransactionKind() == Type.CREATE.toInt())
-            ? ctx.getContractAddress()
+            ? AddressUtil.generateContractAddress(ctx.getTransaction())
             : ctx.getDestinationAddress();
         this.caller = ctx.getSenderAddress();
         this.origin = ctx.getOriginAddress();
