@@ -1,7 +1,7 @@
 package org.aion.avm.core.crypto;
 
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.spongycastle.util.encoders.Hex;
 
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
@@ -28,7 +28,7 @@ public class CryptoUtil {
         if (data.length() % 2 == 1) {
             data = "0" + data;
         }
-        return Hex.decode(data);
+        return Helpers.hexStringToBytes(data);
     }
 
     /**
@@ -38,7 +38,7 @@ public class CryptoUtil {
      * @return hex representation of the data.
      */
     public static String toHexString(byte[] data) {
-        return Hex.toHexString(data);
+        return Helpers.bytesToHexString(data);
     }
 
     /**

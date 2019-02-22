@@ -5,13 +5,13 @@ import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.HashUtils;
+import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
 
@@ -54,7 +54,7 @@ public class HashTest {
 
         // check hash correctness
         byte[] hash = (byte[]) ABIDecoder.decodeOneObject(txResult2.getReturnData());
-        String decodedHash = Hex.toHexString(hash);
+        String decodedHash = Helpers.bytesToHexString(hash);
 
         // check decoded
         Assert.assertEquals(expected, decodedHash);
@@ -82,7 +82,7 @@ public class HashTest {
 
         // check hash correctness
         byte[] hash = (byte[]) ABIDecoder.decodeOneObject(txResult2.getReturnData());
-        String decodedHash = Hex.toHexString(hash);
+        String decodedHash = Helpers.bytesToHexString(hash);
 
         // check decoded
         Assert.assertEquals(expected, decodedHash);
@@ -110,7 +110,7 @@ public class HashTest {
 
         // check hash correctness
         byte[] hash = (byte[]) ABIDecoder.decodeOneObject(txResult2.getReturnData());
-        String decodedHash = Hex.toHexString(hash);
+        String decodedHash = Helpers.bytesToHexString(hash);
 
         // check decoded
         Assert.assertEquals(expected, decodedHash);

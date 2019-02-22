@@ -3,8 +3,9 @@ package org.aion.avm.core.crypto;
 import net.i2p.crypto.eddsa.*;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
+
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.spongycastle.util.encoders.Hex;
 
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -40,8 +41,8 @@ public class Ed25519Key {
             throw new IllegalArgumentException(IMPORT_PUBLIC_KEY_EXCEPTION_MESSAGE);
         }
 
-        this.privateKeyObject = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Hex.toHexString(privateKeyBytes))));
-        this.publicKeyObject = new EdDSAPublicKey(new X509EncodedKeySpec(addPkPrefix(Hex.toHexString(publicKeyBytes))));
+        this.privateKeyObject = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Helpers.bytesToHexString(privateKeyBytes))));
+        this.publicKeyObject = new EdDSAPublicKey(new X509EncodedKeySpec(addPkPrefix(Helpers.bytesToHexString(publicKeyBytes))));
         
         this.publicKeyBytes = this.publicKeyObject.getAbyte();
         this.privateKeyBytes = this.privateKeyObject.getSeed();
@@ -66,7 +67,7 @@ public class Ed25519Key {
      * @return The bytes making up the raw signature (not including the public key)
      */
     public static byte[] sign(byte[] data, byte[] privateKey) throws InvalidKeyException, InvalidKeySpecException, SignatureException {
-        EdDSAPrivateKey privateKeyObject = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Hex.toHexString(privateKey))));
+        EdDSAPrivateKey privateKeyObject = new EdDSAPrivateKey(new PKCS8EncodedKeySpec(addSkPrefix(Helpers.bytesToHexString(privateKey))));
         EdDSAEngine engine = createEngine();
         engine.initSign(privateKeyObject);
         return engine.signOneShot(data);
@@ -93,7 +94,7 @@ public class Ed25519Key {
      * @return verify result
      */
     public static boolean verify(byte[] data, byte[] signature, byte[] pk) throws InvalidKeyException, InvalidKeySpecException, SignatureException {
-        EdDSAPublicKey publicKey = new EdDSAPublicKey(new X509EncodedKeySpec(addPkPrefix(Hex.toHexString(pk))));
+        EdDSAPublicKey publicKey = new EdDSAPublicKey(new X509EncodedKeySpec(addPkPrefix(Helpers.bytesToHexString(pk))));
         EdDSAEngine engine = createEngine();
         engine.initVerify(publicKey);
         return engine.verifyOneShot(data, signature);
