@@ -303,8 +303,7 @@ public class AvmCLIIntegrationTest {
     @Test
     public void testDeployTransfer() throws IOException {
         final int deployBalance = 100000;
-        String storagePath = "./storage";
-        File storageFile = new File(storagePath);
+        File storageFile = this.folder.newFolder();
         KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
 
         byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
@@ -312,7 +311,7 @@ public class AvmCLIIntegrationTest {
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 
         TestEnvironment deployEnv = new TestEnvironment("Result status: SUCCESS");
-        AvmCLI.testingMain(deployEnv, new String[] {"deploy", temp.getAbsolutePath(), "--value", Integer.toString(deployBalance)});
+        AvmCLI.testingMain(deployEnv, new String[] {"--storage", storageFile.getAbsolutePath(), "deploy", temp.getAbsolutePath(), "--value", Integer.toString(deployBalance)});
         Assert.assertTrue(deployEnv.didScrapeString);
 
         String dappAddress = deployEnv.capturedAddress;
