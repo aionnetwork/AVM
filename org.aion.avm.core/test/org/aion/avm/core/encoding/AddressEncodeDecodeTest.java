@@ -57,13 +57,11 @@ public class AddressEncodeDecodeTest {
 
     @Test
     public void testAddressArrayArgument(){
-        Address[][] addressArray = new Address[1][];
         Address[] tempArray = new Address[3];
         for(int i = 0 ; i< tempArray.length; i++){
             tempArray[i] = avmRule.getRandomAddress(BigInteger.ZERO);
         }
-        addressArray[0] = tempArray;
-        byte[] data = ABIEncoder.encodeMethodArguments("checkAddressArrayArgument", addressArray);
+        byte[] data = ABIEncoder.encodeMethodArguments("checkAddressArrayArgument", (Object)tempArray);
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
         Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
     }
@@ -78,13 +76,11 @@ public class AddressEncodeDecodeTest {
 
     @Test
     public void testAddressArrayEncodeDecode(){
-        Address[][] addressArray = new Address[1][];
         Address[] tempArray = new Address[3];
         for(int i = 0 ; i< tempArray.length; i++){
             tempArray[i] = avmRule.getRandomAddress(BigInteger.ZERO);
         }
-        addressArray[0] = tempArray;
-        byte[] data = ABIEncoder.encodeMethodArguments("addressArrayEncodeDecode", addressArray);
+        byte[] data = ABIEncoder.encodeMethodArguments("addressArrayEncodeDecode", (Object)tempArray);
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
         Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
         Assert.assertTrue(Arrays.equals(tempArray, (Address [])r.getDecodedReturnData()));

@@ -233,15 +233,11 @@ public class InternalCallAddressesTest {
     }
 
     private Address[] callInternalCallAddressesContract(Address contract, Address[] otherContracts, boolean recurseFirst) {
-        // An array to hold our array so that the varargs doesn't get confused over what we're doing here.
-        Address[][] otherContractsAsAbiAddresses = new Address[1][];
-        otherContractsAsAbiAddresses[0] = otherContracts;
-
         byte[] callData;
         if (recurseFirst) {
-            callData = ABIEncoder.encodeMethodArguments("runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress", otherContractsAsAbiAddresses);
+            callData = ABIEncoder.encodeMethodArguments("runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress", (Object)otherContracts);
         } else {
-            callData = ABIEncoder.encodeMethodArguments("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse", otherContractsAsAbiAddresses);
+            callData = ABIEncoder.encodeMethodArguments("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse", (Object)otherContracts);
         }
 
         TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
