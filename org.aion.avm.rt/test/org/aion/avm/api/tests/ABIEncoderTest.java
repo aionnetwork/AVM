@@ -1,6 +1,8 @@
-package org.aion.avm.api;
+package org.aion.avm.api.tests;
 
 import org.aion.avm.abi.internal.ABIToken;
+import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.internal.ABIStaticState;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;

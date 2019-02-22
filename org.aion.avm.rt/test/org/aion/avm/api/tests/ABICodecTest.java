@@ -1,4 +1,4 @@
-package org.aion.avm.api;
+package org.aion.avm.api.tests;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.aion.avm.abi.internal.ABICodec;
 import org.aion.avm.abi.internal.ABIToken;
+import org.aion.avm.api.Address;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.junit.AfterClass;

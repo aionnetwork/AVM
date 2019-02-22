@@ -1,10 +1,11 @@
-package org.aion.avm.api;
+package org.aion.avm.api.tests;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import org.aion.avm.abi.internal.ABICodec;
+import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.internal.ABIStaticState;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;

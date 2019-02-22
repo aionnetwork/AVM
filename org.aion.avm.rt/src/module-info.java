@@ -17,4 +17,9 @@ module org.aion.avm.rt {
     // (our build process may avoid this need in other cases - not sure if that is more/less correct)
     requires slf4j.api;
     requires slf4j.simple;
+
+    // When running unit tests in Eclipse, these are required (our Ant build process avoids this but it is probably more correct with them).
+    opens org.aion.avm.shadow.java.lang;
+    opens org.aion.avm.shadowapi.org.aion.avm.api;
+    opens org.aion.avm.internal;
 }
