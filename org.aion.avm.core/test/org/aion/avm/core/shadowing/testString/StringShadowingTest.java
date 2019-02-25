@@ -31,44 +31,44 @@ public class StringShadowingTest {
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
         org.aion.vm.api.interfaces.Address dappAddr = AvmAddress.wrap(avm.run(kernel, new TransactionContext[] {context})[0].get().getReturnData());
 
         // call transactions and validate the results
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnInt");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        context = new TransactionContextImpl(tx, block);
+        context = TransactionContextImpl.forExternalTransaction(tx, block);
         TransactionResult result = avm.run(kernel, new TransactionContext[] {context})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, (int[]) ABIDecoder.decodeOneObject(result.getReturnData())));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnBoolean");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        context = new TransactionContextImpl(tx, block);
+        context = TransactionContextImpl.forExternalTransaction(tx, block);
         result = avm.run(kernel, new TransactionContext[] {context})[0].get();
         //Assert.assertTrue(java.util.Arrays.equals(new byte[]{1, 0, 1, 0, 1, 0, 0}, (byte[]) ABIDecoder.decodeOneObject(result.getReturnData())));
         Assert.assertTrue(java.util.Arrays.equals(new boolean[]{true, false, true, false, true, false, false}, (boolean[]) ABIDecoder.decodeOneObject(result.getReturnData())));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnChar");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        context = new TransactionContextImpl(tx, block);
+        context = TransactionContextImpl.forExternalTransaction(tx, block);
         result = avm.run(kernel, new TransactionContext[] {context})[0].get();
         Assert.assertEquals('a', ABIDecoder.decodeOneObject(result.getReturnData()));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnBytes");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        context = new TransactionContextImpl(tx, block);
+        context = TransactionContextImpl.forExternalTransaction(tx, block);
         result = avm.run(kernel, new TransactionContext[] {context})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new byte[]{'a', 'b', 'c'}, (byte[]) ABIDecoder.decodeOneObject(result.getReturnData())));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnLowerCase");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        context = new TransactionContextImpl(tx, block);
+        context = TransactionContextImpl.forExternalTransaction(tx, block);
         result = avm.run(kernel, new TransactionContext[] {context})[0].get();
         Assert.assertEquals("abc", ABIDecoder.decodeOneObject(result.getReturnData()));
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnUpperCase");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        context = new TransactionContextImpl(tx, block);
+        context = TransactionContextImpl.forExternalTransaction(tx, block);
         result = avm.run(kernel, new TransactionContext[] {context})[0].get();
         Assert.assertEquals("ABC", ABIDecoder.decodeOneObject(result.getReturnData()));
         avm.shutdown();
@@ -91,7 +91,7 @@ public class StringShadowingTest {
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
         org.aion.vm.api.interfaces.Address dappAddr = AvmAddress.wrap(avm.run(kernel, new TransactionContext[] {context})[0].get().getReturnData());
 
         // Now, batch the other 6 transactions together and verify that the result is the same (note that the nonces are artificially incremented since these all have the same sender).
@@ -99,27 +99,27 @@ public class StringShadowingTest {
         
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnInt");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        batch[0] = new TransactionContextImpl(tx, block);
+        batch[0] = TransactionContextImpl.forExternalTransaction(tx, block);
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnBoolean");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from) .add(BigInteger.ONE), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        batch[1] = new TransactionContextImpl(tx, block);
+        batch[1] = TransactionContextImpl.forExternalTransaction(tx, block);
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnChar");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from).add(BigInteger.TWO), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        batch[2] = new TransactionContextImpl(tx, block);
+        batch[2] = TransactionContextImpl.forExternalTransaction(tx, block);
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnBytes");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from).add(BigInteger.valueOf(3)), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        batch[3] = new TransactionContextImpl(tx, block);
+        batch[3] = TransactionContextImpl.forExternalTransaction(tx, block);
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnLowerCase");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from).add(BigInteger.valueOf(4)), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        batch[4] = new TransactionContextImpl(tx, block);
+        batch[4] = TransactionContextImpl.forExternalTransaction(tx, block);
 
         txData = ABIEncoder.encodeMethodArguments("singleStringReturnUpperCase");
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from).add(BigInteger.valueOf(5)), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        batch[5] = new TransactionContextImpl(tx, block);
+        batch[5] = TransactionContextImpl.forExternalTransaction(tx, block);
 
         // Send the batch.
         SimpleFuture<TransactionResult>[] results = avm.run(kernel, batch);

@@ -34,7 +34,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -66,7 +66,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -88,7 +88,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -110,7 +110,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -148,7 +148,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction create = Transaction.create(KernelInterfaceImpl.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -193,6 +193,6 @@ public class ExceptionWrappingIntegrationTest {
                 ? ABIEncoder.encodeMethodArguments(methodName)
                 : new byte[0];
         Transaction call = Transaction.call(from, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
-        return avm.run(kernel, new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        return avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
     }
 }

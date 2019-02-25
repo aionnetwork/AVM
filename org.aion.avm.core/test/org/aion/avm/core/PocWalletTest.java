@@ -74,7 +74,7 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
 
         Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+        TransactionContext createContext = TransactionContextImpl.forExternalTransaction(createTransaction, block);
         TransactionResult createResult = avm.run(this.kernel, new TransactionContext[] {createContext})[0].get();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
@@ -95,7 +95,7 @@ public class PocWalletTest {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+        TransactionContext createContext = TransactionContextImpl.forExternalTransaction(createTransaction, block);
         TransactionResult createResult = avm.run(this.kernel, new TransactionContext[] {createContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
@@ -104,7 +104,7 @@ public class PocWalletTest {
 
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
         Transaction initTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
-        TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
+        TransactionContext initContext = TransactionContextImpl.forExternalTransaction(initTransaction, block);
         TransactionResult initResult = avm.run(this.kernel, new TransactionContext[] {initContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, initResult.getResultCode());
     }
@@ -131,7 +131,7 @@ public class PocWalletTest {
         byte[] data = Helpers.randomBytes(ADDRESS_SIZE);
         byte[] execArgs = encodeExecute(to.toBytes(), dailyLimit + 1, data);
         Transaction executeTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, execArgs, energyLimit, energyPrice);
-        TransactionContext executeContext = new TransactionContextImpl(executeTransaction, block);
+        TransactionContext executeContext = TransactionContextImpl.forExternalTransaction(executeTransaction, block);
         TransactionResult executeResult = avm.run(this.kernel, new TransactionContext[] {executeContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, executeResult.getResultCode());
         byte[] toConfirm = (byte[]) ABIDecoder.decodeOneObject(executeResult.getReturnData());
@@ -140,7 +140,7 @@ public class PocWalletTest {
         kernel.adjustBalance(extra1, BigInteger.valueOf(1_000_000_000_000L));
         byte[] confirmArgs = CallEncoder.confirm(toConfirm);
         Transaction confirmTransaction = Transaction.call(extra1, contractAddress, kernel.getNonce(extra1), BigInteger.ZERO, confirmArgs, energyLimit, energyPrice);
-        TransactionContext confirmContext = new TransactionContextImpl(confirmTransaction, block);
+        TransactionContext confirmContext = TransactionContextImpl.forExternalTransaction(confirmTransaction, block);
         TransactionResult confirmResult = avm.run(this.kernel, new TransactionContext[] {confirmContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, confirmResult.getResultCode()); // transfer to non-existing accounts
     }
@@ -149,7 +149,7 @@ public class PocWalletTest {
     private void runInit(org.aion.vm.api.interfaces.Address contractAddress, org.aion.vm.api.interfaces.Address extra1, org.aion.vm.api.interfaces.Address extra2, int requiredVotes, long dailyLimit) throws Exception {
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
         Transaction initTransaction = Transaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
-        TransactionContext initContext = new TransactionContextImpl(initTransaction, block);
+        TransactionContext initContext = TransactionContextImpl.forExternalTransaction(initTransaction, block);
         TransactionResult initResult = avm.run(this.kernel, new TransactionContext[] {initContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, initResult.getResultCode());
     }
@@ -159,7 +159,7 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
 
         Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+        TransactionContext createContext = TransactionContextImpl.forExternalTransaction(createTransaction, block);
         TransactionResult createResult = avm.run(this.kernel, new TransactionContext[] {createContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 

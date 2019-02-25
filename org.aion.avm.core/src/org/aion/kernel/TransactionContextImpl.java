@@ -8,46 +8,69 @@ import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionInterface;
 import org.aion.vm.api.interfaces.TransactionSideEffects;
 
+
 public class TransactionContextImpl implements TransactionContext {
-
-    private Transaction tx;
-    private TransactionSideEffects sideEffects;
-    private byte[] transactionHash, originTransactionHash;
-    private Address origin;
-    private int internalCallDepth;
-    private long blockNumber;
-    private long blockTimestamp;
-    private long blockEnergyLimit;
-    private Address blockCoinbase;
-    private BigInteger blockDifficulty;
-
-    public TransactionContextImpl(Transaction tx, Block block) {
-        this.tx = tx;
-        this.transactionHash = tx.getTransactionHash();
-        this.originTransactionHash = this.transactionHash;
-        this.origin = tx.getSenderAddress();
-        this.internalCallDepth = 1;
-
-        this.blockNumber = block.getNumber();
-        this.blockTimestamp = block.getTimestamp();
-        this.blockEnergyLimit = block.getEnergyLimit();
-        this.blockCoinbase = block.getCoinbase();
-        this.blockDifficulty = block.getDifficulty();
-        this.sideEffects = new SideEffects();
+    /**
+     * Called to create a transaction context from the top-level of a block (the common case).
+     * 
+     * @param tx The transaction.
+     * @param block The top-level of the block.
+     * @return The transaction context.
+     */
+    public static TransactionContextImpl forExternalTransaction(Transaction tx, Block block) {
+        Address origin = tx.getSenderAddress();
+        int internalCallDepth = 1;
+        long blockNumber = block.getNumber();
+        long blockTimestamp = block.getTimestamp();
+        long blockEnergyLimit = block.getEnergyLimit();
+        Address blockCoinbase = block.getCoinbase();
+        BigInteger blockDifficulty = block.getDifficulty();
+        return new TransactionContextImpl(tx, origin, internalCallDepth, blockNumber, blockTimestamp, blockEnergyLimit, blockCoinbase, blockDifficulty);
     }
 
-    public TransactionContextImpl(TransactionContext parent, Transaction tx) {
+    /**
+     * Called to create a transaction context from within the execution of an existing one (the rare case).
+     * 
+     * @param parent The context of the parent transaction.
+     * @param tx The transaction.
+     * @return The transaction context.
+     */
+    public static TransactionContextImpl forInternalTransaction(TransactionContext parent, Transaction tx) {
+        Address origin = parent.getOriginAddress();
+        int internalCallDepth = parent.getTransactionStackDepth() + 1;
+        long blockNumber = parent.getBlockNumber();
+        long blockTimestamp = parent.getBlockTimestamp();
+        long blockEnergyLimit = parent.getBlockEnergyLimit();
+        Address blockCoinbase = parent.getMinerAddress();
+        BigInteger blockDifficulty = BigInteger.valueOf(parent.getBlockDifficulty());
+        return new TransactionContextImpl(tx, origin, internalCallDepth, blockNumber, blockTimestamp, blockEnergyLimit, blockCoinbase, blockDifficulty);
+    }
+
+
+    private final Transaction tx;
+    private final TransactionSideEffects sideEffects;
+    private byte[] transactionHash;
+    private final byte[] originTransactionHash;
+    private final Address origin;
+    private final int internalCallDepth;
+    private final long blockNumber;
+    private final long blockTimestamp;
+    private final long blockEnergyLimit;
+    private final Address blockCoinbase;
+    private final BigInteger blockDifficulty;
+
+    private TransactionContextImpl(Transaction tx, Address origin, int internalCallDepth, long blockNumber, long blockTimestamp, long blockEnergyLimit, Address blockCoinbase, BigInteger blockDifficulty) {
         this.tx = tx;
         this.transactionHash = tx.getTransactionHash();
         this.originTransactionHash = this.transactionHash;
-        this.origin = parent.getOriginAddress();
-        this.internalCallDepth = parent.getTransactionStackDepth() + 1;
+        this.origin = origin;
+        this.internalCallDepth = internalCallDepth;
 
-        this.blockNumber = parent.getBlockNumber();
-        this.blockTimestamp = parent.getBlockTimestamp();
-        this.blockEnergyLimit = parent.getBlockEnergyLimit();
-        this.blockCoinbase = parent.getMinerAddress();
-        this.blockDifficulty = BigInteger.valueOf(parent.getBlockDifficulty());
+        this.blockNumber = blockNumber;
+        this.blockTimestamp = blockTimestamp;
+        this.blockEnergyLimit = blockEnergyLimit;
+        this.blockCoinbase = blockCoinbase;
+        this.blockDifficulty = blockDifficulty;
         this.sideEffects = new SideEffects();
     }
 

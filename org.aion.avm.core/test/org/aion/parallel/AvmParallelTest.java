@@ -24,7 +24,7 @@ public class AvmParallelTest {
         TransactionContext[] ret = new TransactionContext[batch.length];
 
         for (int i = 0; i < batch.length; i++){
-            ret[i] = new TransactionContextImpl(batch[i], block);
+            ret[i] = TransactionContextImpl.forExternalTransaction(batch[i], block);
         }
 
         return ret;

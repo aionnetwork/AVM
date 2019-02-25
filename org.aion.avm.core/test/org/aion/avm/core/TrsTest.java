@@ -129,7 +129,7 @@ public class TrsTest {
 
     private TransactionResult sendFundsTo(Address recipient, BigInteger amount) {
         Transaction callTransaction = Transaction.call(DEPLOYER, recipient, kernel.getNonce(DEPLOYER), amount, new byte[0], ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+        TransactionContext callContext = TransactionContextImpl.forExternalTransaction(callTransaction, block);
         return avm.run(this.kernel, new TransactionContext[] {callContext})[0].get();
     }
 
@@ -160,14 +160,14 @@ public class TrsTest {
     private TransactionResult callContract(Address sender, String method, Object... parameters) {
         byte[] callData = ABIEncoder.encodeMethodArguments(method, parameters);
         Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, callData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+        TransactionContext callContext = TransactionContextImpl.forExternalTransaction(callTransaction, block);
         return avm.run(this.kernel, new TransactionContext[] {callContext})[0].get();
     }
 
     private TransactionResult deployContract() {
         byte[] jarBytes = new CodeAndArguments(JarBuilder.buildJarForMainAndClasses(TRS.class, AionMap.class), null).encodeToBytes();
         Transaction transaction = Transaction.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
+        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         TransactionResult result = avm.run(this.kernel, new TransactionContext[] {context})[0].get();
         contract = AvmAddress.wrap(result.getReturnData());
         return result;

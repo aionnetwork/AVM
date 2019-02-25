@@ -74,7 +74,7 @@ public class PocExchangeTest {
 
         private org.aion.vm.api.interfaces.Address initCoin(byte[] jar, byte[] arguments){
             Transaction createTransaction = Transaction.create(minter, kernel.getNonce(minter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
-            TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+            TransactionContext createContext = TransactionContextImpl.forExternalTransaction(createTransaction, block);
             TransactionResult createResult = avm.run(PocExchangeTest.this.kernel, new TransactionContext[] {createContext})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             return AvmAddress.wrap(createResult.getReturnData());
@@ -117,7 +117,7 @@ public class PocExchangeTest {
 
         private TransactionResult call(org.aion.vm.api.interfaces.Address sender, byte[] args) {
             Transaction callTransaction = Transaction.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-            TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+            TransactionContext callContext = TransactionContextImpl.forExternalTransaction(callTransaction, block);
             TransactionResult callResult = avm.run(PocExchangeTest.this.kernel, new TransactionContext[] {callContext})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
             return callResult;
@@ -136,7 +136,7 @@ public class PocExchangeTest {
 
         private org.aion.vm.api.interfaces.Address initExchange(byte[] jar, byte[] arguments){
             Transaction createTransaction = Transaction.create(owner, kernel.getNonce(owner), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
-            TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+            TransactionContext createContext = TransactionContextImpl.forExternalTransaction(createTransaction, block);
             TransactionResult createResult = avm.run(PocExchangeTest.this.kernel, new TransactionContext[] {createContext})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             return AvmAddress.wrap(createResult.getReturnData());
@@ -159,7 +159,7 @@ public class PocExchangeTest {
 
         private TransactionResult call(org.aion.vm.api.interfaces.Address sender, byte[] args) {
             Transaction callTransaction = Transaction.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-            TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+            TransactionContext callContext = TransactionContextImpl.forExternalTransaction(callTransaction, block);
             TransactionResult callResult = avm.run(PocExchangeTest.this.kernel, new TransactionContext[] {callContext})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
             return callResult;

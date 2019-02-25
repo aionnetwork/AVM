@@ -359,7 +359,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // Temporarily detach from the DApp we were in.
         InstrumentationHelpers.temporarilyExitFrame(this.thisDAppSetup);
 
-        TransactionContext internalCTX = new TransactionContextImpl(this.ctx, internalTx);
+        TransactionContext internalCTX = TransactionContextImpl.forInternalTransaction(this.ctx, internalTx);
 
         // Acquire the target of the internal transaction
         org.aion.vm.api.interfaces.Address target = (internalCTX.getTransactionKind() == Type.CREATE.toInt())

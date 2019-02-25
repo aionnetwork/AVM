@@ -161,7 +161,7 @@ public class ContractLoggingTest {
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
+        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         TransactionResult result = avm.run(ContractLoggingTest.kernel, new TransactionContext[] {context})[0].get();
 
         assertTrue(result.getResultCode().isSuccess());
@@ -175,7 +175,7 @@ public class ContractLoggingTest {
     private TransactionContext generateContextForMethodCall(String methodName, Object... args) {
         byte[] callData = ABIEncoder.encodeMethodArguments(methodName, args);
         Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        return new TransactionContextImpl(transaction, block);
+        return TransactionContextImpl.forExternalTransaction(transaction, block);
     }
 
     private void resetCounters() {

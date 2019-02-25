@@ -35,7 +35,7 @@ public class AionBufferPerfTest {
     private TransactionResult deploy(KernelInterface kernel, AvmImpl avm, byte[] testJar){
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionContext createContext = new TransactionContextImpl(createTransaction, block);
+        TransactionContext createContext = TransactionContextImpl.forExternalTransaction(createTransaction, block);
         TransactionResult createResult = avm.run(kernel, new TransactionContext[] {createContext})[0].get();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
@@ -44,7 +44,7 @@ public class AionBufferPerfTest {
 
     private TransactionResult call(KernelInterface kernel, AvmImpl avm, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, byte[] args) {
         Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1L);
-        TransactionContext callContext = new TransactionContextImpl(callTransaction, block);
+        TransactionContext callContext = TransactionContextImpl.forExternalTransaction(callTransaction, block);
         TransactionResult callResult = avm.run(kernel, new TransactionContext[] {callContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
         return callResult;

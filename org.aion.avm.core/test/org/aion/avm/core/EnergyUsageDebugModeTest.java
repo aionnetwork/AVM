@@ -63,14 +63,14 @@ public class EnergyUsageDebugModeTest {
 
         //deploy in debugMode Mode
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, 10_000_000l, energyPrice);
-        TransactionResult createResult = avmDebugMode.run(this.kernel, new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        TransactionResult createResult = avmDebugMode.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddressDebug = new Address(createResult.getReturnData());
 
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddressDebug.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        TransactionResult result = avmDebugMode.run(this.kernel, new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        TransactionResult result = avmDebugMode.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
 
         long energyUsed = energyLimit - result.getEnergyRemaining();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
@@ -90,13 +90,13 @@ public class EnergyUsageDebugModeTest {
 
         //deploy in normal Mode
         Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, 10_000_000l, energyPrice);
-        TransactionResult createResult = avmNormalMode.run(this.kernel, new TransactionContext[] {new TransactionContextImpl(create, block)})[0].get();
+        TransactionResult createResult = avmNormalMode.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddressNormal = new Address(createResult.getReturnData());
 
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
         Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddressNormal.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        TransactionResult result = avmNormalMode.run(this.kernel, new TransactionContext[] {new TransactionContextImpl(call, block)})[0].get();
+        TransactionResult result = avmNormalMode.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         long energyUsed = energyLimit - result.getEnergyRemaining();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(111, new BigInteger(result.getReturnData()).intValue());

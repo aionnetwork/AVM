@@ -49,7 +49,7 @@ public class AvmCLI {
 
         Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), balance, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
 
-        return new TransactionContextImpl(createTransaction, block);
+        return TransactionContextImpl.forExternalTransaction(createTransaction, AvmCLI.block);
     }
 
     public static void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, org.aion.vm.api.interfaces.Address sender) {
@@ -101,7 +101,7 @@ public class AvmCLI {
         // TODO:  Remove this bias when/if we change this to no longer send all transactions from the same account.
         BigInteger biasedNonce = kernel.getNonce(sender).add(BigInteger.valueOf(nonceBias));
         Transaction callTransaction = Transaction.call(sender, target, biasedNonce, balance, data, energyLimit, 1L);
-        return new TransactionContextImpl(callTransaction, block);
+        return TransactionContextImpl.forExternalTransaction(callTransaction, block);
     }
 
     private static void reportCallRequest(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, String method, Object[] args){

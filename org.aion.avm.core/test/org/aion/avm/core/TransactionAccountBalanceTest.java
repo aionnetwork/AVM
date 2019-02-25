@@ -237,7 +237,7 @@ public class TransactionAccountBalanceTest {
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = Transaction.create(from, kernel.getNonce(from), value, jar, energyLimit, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
+        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         return avm.run(TransactionAccountBalanceTest.kernel, new TransactionContext[] {context})[0].get();
     }
 
@@ -250,13 +250,13 @@ public class TransactionAccountBalanceTest {
     private TransactionResult callContract(Address contract, BigInteger value) {
         byte[] callData = ABIEncoder.encodeMethodArguments("allocateObjectArray");
         Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), value, callData, energyLimit, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
+        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         return avm.run(TransactionAccountBalanceTest.kernel, new TransactionContext[] {context})[0].get();
     }
 
     private TransactionResult transferValue(Address recipient, BigInteger value) {
         Transaction transaction = Transaction.balanceTransfer(from, recipient, kernel.getNonce(from), value, energyPrice);
-        TransactionContext context = new TransactionContextImpl(transaction, block);
+        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         return avm.run(TransactionAccountBalanceTest.kernel, new TransactionContext[] {context})[0].get();
     }
 

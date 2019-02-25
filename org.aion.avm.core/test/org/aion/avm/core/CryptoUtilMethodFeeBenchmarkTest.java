@@ -89,7 +89,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         this.kernel = new KernelInterfaceImpl();
         this.avm = CommonAvmFactory.buildAvmInstance();
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = new TransactionContextImpl(tx, block);
+        TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
         dappAddress = AvmAddress.wrap(avm.run(this.kernel, new TransactionContext[] {context})[0].get().getReturnData());
     }
 
@@ -292,7 +292,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     private TransactionContextImpl setupTransactionContext(String methodName, java.lang.Object... arguments){
         byte[] txData = ABIEncoder.encodeMethodArguments(methodName, arguments);
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        return new TransactionContextImpl(tx, block);
+        return TransactionContextImpl.forExternalTransaction(tx, block);
     }
 
     private String[] generateListOfStrings(int count){
