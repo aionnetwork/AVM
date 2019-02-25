@@ -26,17 +26,15 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     private TransactionContext ctx;
     private final byte[] dAppData;
-    private AvmTransactionResult result;
     private TransactionTask task;
     private final IRuntimeSetup thisDAppSetup;
 
-    public BlockchainRuntimeImpl(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, TransactionContext ctx, byte[] dAppData, AvmTransactionResult result, IRuntimeSetup thisDAppSetup) {
+    public BlockchainRuntimeImpl(KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, TransactionContext ctx, byte[] dAppData, IRuntimeSetup thisDAppSetup) {
         this.kernel = kernel;
         this.avm = avm;
         this.reentrantState = reentrantState;
         this.ctx = ctx;
         this.dAppData = dAppData;
-        this.result = result;
         this.task = task;
         this.thisDAppSetup = thisDAppSetup;
     }
