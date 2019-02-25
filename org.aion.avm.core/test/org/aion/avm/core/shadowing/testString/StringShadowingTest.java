@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -25,7 +26,7 @@ public class StringShadowingTest {
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
 
         // deploy it
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
@@ -85,7 +86,7 @@ public class StringShadowingTest {
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstance();
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
 
         // We do the deployment, first, since we need the resultant DApp address for the other calls.
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);

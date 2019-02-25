@@ -42,7 +42,7 @@ public class TransactionAccountBalanceTest {
     @BeforeClass
     public static void setup() {
         kernel = new KernelInterfaceImpl();
-        avm = CommonAvmFactory.buildAvmInstance();
+        avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
     }
 
     @AfterClass

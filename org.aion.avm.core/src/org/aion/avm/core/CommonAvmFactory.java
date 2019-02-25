@@ -6,24 +6,16 @@ import org.aion.avm.internal.IInstrumentationFactory;
 
 
 /**
- * Since issue-303 required the creation of IInstrumentationFactory, this helper class exists to cover the common case of our tests:  just using CommonInstrumentation.
+ * This is the top-level factory which should be called by embedding kernels and other tooling.
+ * Anything below this point should be considered an implementation detail (IInstrumentationFactory, NodeEnvironment, etc).
  */
 public class CommonAvmFactory {
-    public static AvmImpl buildAvmInstance() {
-        // We use the common instrumentation for this case.
-        IInstrumentationFactory factory = new CommonInstrumentationFactory();
-        AvmConfiguration configuration = new AvmConfiguration();
-        return NodeEnvironment.singleton.buildAvmInstance(factory, configuration);
-    }
-
-    public static AvmImpl buildAvmInstanceInDebugMode() {
-        IInstrumentationFactory factory = new CommonInstrumentationFactory();
-        AvmConfiguration configuration = new AvmConfiguration();
-        configuration.enableVerboseContractErrors = true;
-        configuration.preserveDebuggability = true;
-        return NodeEnvironment.singleton.buildAvmInstance(factory, configuration);
-    }
-
+    /**
+     * Creates an AVM instance based on the given configuration object.
+     * 
+     * @param configuration The configuration to use when assembling the AVM instance.
+     * @return An AVM instance.
+     */
     public static AvmImpl buildAvmInstanceForConfiguration(AvmConfiguration configuration) {
         IInstrumentationFactory factory = new CommonInstrumentationFactory();
         return NodeEnvironment.singleton.buildAvmInstance(factory, configuration);

@@ -3,6 +3,7 @@ package org.aion.cli;
 import java.math.BigInteger;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -335,7 +336,7 @@ public class AvmCLI {
                 // Run them in a single batch.
                 File storageFile = new File(invocation.storagePath);
                 KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
-                AvmImpl avm = CommonAvmFactory.buildAvmInstance();
+                AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
                 SimpleFuture<TransactionResult>[] futures = avm.run(kernel, transactions);
                 TransactionResult[] results = new AvmTransactionResult[futures.length];
                 for (int i = 0; i < futures.length; ++i) {

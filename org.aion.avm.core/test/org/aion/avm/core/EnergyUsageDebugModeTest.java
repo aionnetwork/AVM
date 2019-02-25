@@ -54,8 +54,10 @@ public class EnergyUsageDebugModeTest {
     }
 
     private long testEnergyUsedInDebugMode(String methodName, Object ... args){
-
-        AvmImpl avmDebugMode = CommonAvmFactory.buildAvmInstanceInDebugMode();
+        AvmConfiguration config = new AvmConfiguration();
+        config.preserveDebuggability = true;
+        config.enableVerboseContractErrors = true;
+        AvmImpl avmDebugMode = CommonAvmFactory.buildAvmInstanceForConfiguration(config);
 
         byte[] jar = JarBuilder.buildJarForMainAndClasses(EnergyUsageDebugModeTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
@@ -82,7 +84,7 @@ public class EnergyUsageDebugModeTest {
 
     private long testEnergyUsedInNormalMode(String methodName, Object ... args){
 
-        AvmImpl avmNormalMode = CommonAvmFactory.buildAvmInstance();
+        AvmImpl avmNormalMode = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
         byte[] jar = JarBuilder.buildJarForMainAndClasses(EnergyUsageDebugModeTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         long energyLimit = 1_000_000l;

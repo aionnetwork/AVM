@@ -2,6 +2,7 @@ package org.aion.avm.core.blockchainruntime;
 
 import java.math.BigInteger;
 import org.aion.avm.core.ABIFailureTestResource;
+import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -35,7 +36,7 @@ public class BlockchainRuntimeTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance();
+        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
     }
 
     @After

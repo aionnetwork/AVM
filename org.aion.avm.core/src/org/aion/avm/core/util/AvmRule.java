@@ -2,6 +2,7 @@ package org.aion.avm.core.util;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -39,7 +40,12 @@ public final class AvmRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                avm = debugMode ? CommonAvmFactory.buildAvmInstanceInDebugMode() : CommonAvmFactory.buildAvmInstance();
+                AvmConfiguration config = new AvmConfiguration();
+                if (AvmRule.this.debugMode) {
+                    config.preserveDebuggability = true;
+                    config.enableVerboseContractErrors = true;
+                }
+                avm = CommonAvmFactory.buildAvmInstanceForConfiguration(config);
                 try {
                     statement.evaluate();
                 } finally {

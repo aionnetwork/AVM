@@ -1,6 +1,7 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -28,7 +29,7 @@ public class DefaultMethodIntegrationTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance();
+        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
     }
 
     @After

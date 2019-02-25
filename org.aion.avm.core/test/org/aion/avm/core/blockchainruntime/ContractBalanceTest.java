@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.RedirectContract;
@@ -42,7 +43,7 @@ public class ContractBalanceTest {
     @BeforeClass
     public static void setup() {
         kernel = new KernelInterfaceImpl();
-        avm = CommonAvmFactory.buildAvmInstance();
+        avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
     }
 
     @AfterClass

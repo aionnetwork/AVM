@@ -35,7 +35,7 @@ public class TrsTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance();
+        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
     }
 
     @After

@@ -87,7 +87,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         byte[] txData = new CodeAndArguments(basicAppTestJar, null).encodeToBytes();
 
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstance();
+        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
         dappAddress = AvmAddress.wrap(avm.run(this.kernel, new TransactionContext[] {context})[0].get().getReturnData());
