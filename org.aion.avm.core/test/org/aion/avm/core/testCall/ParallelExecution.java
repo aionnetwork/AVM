@@ -30,14 +30,11 @@ import java.util.concurrent.Future;
  * Represents the world initState.
  */
 class State {
-    private State parent;
-
-    public State(State parent) {
-        this.parent = parent;
+    public State() {
     }
 
     public State track() {
-        return new State(this);
+        return new State();
     }
 
     public void commit() {
@@ -166,8 +163,7 @@ public class ParallelExecution {
             }.withCaller(tx.getSenderAddress().toBytes()).withAddress(tx.getDestinationAddress().toBytes()).withEnergyLimit(tx.getEnergyLimit()).withData(tx.getData()));
             try {
                 Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(Contract.class.getName(), this.preserveDebuggability);
-                ByteArray ret = (ByteArray) clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
-                result.returnData = ret.getUnderlying();
+                clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
             } catch (Exception e) {
                 // revert changes on failure
                 result.track.rollback();
@@ -186,9 +182,6 @@ public class ParallelExecution {
      * Represents the receipt of transaction.
      */
     private static class TransactionResult {
-
-        byte[] returnData;
-
         List<InternalTransaction> internalTransactions;
 
         State track;
@@ -203,7 +196,7 @@ public class ParallelExecution {
         Transaction tx2 = Transaction.call(Helpers.address(3), Helpers.address(4), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(1).toBytes(), 1000000, 1);
         Transaction tx3 = Transaction.call(Helpers.address(3), Helpers.address(5), BigInteger.ZERO, BigInteger.ZERO, new byte[0], 1000000, 1);
 
-        ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(null), NUM_THREADS);
+        ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(), NUM_THREADS);
         exec.execute();
 
         threadPool.shutdown();
@@ -225,7 +218,7 @@ public class ParallelExecution {
         }
 
         long t1 = System.currentTimeMillis();
-        ParallelExecution exec = new ParallelExecution(transactions, new State(null), numThreads);
+        ParallelExecution exec = new ParallelExecution(transactions, new State(), numThreads);
         exec.execute();
         long t2 = System.currentTimeMillis();
         logger.info("# of accounts = {}, # of threads = {}, # of txs = {}, Time elapsed: {}ms",

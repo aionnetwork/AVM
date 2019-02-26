@@ -5,7 +5,6 @@ import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.*;
-import org.aion.avm.core.testWallet.ByteArrayHelpers;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
@@ -35,7 +34,7 @@ public class PocExchangeTest {
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
         
         testERC20Jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
-        testExchangeJar = JarBuilder.buildJarForMainAndClasses(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ByteArrayHelpers.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
+        testExchangeJar = JarBuilder.buildJarForMainAndClasses(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
     }
 
     @After
