@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
+import org.aion.avm.core.StandardCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -43,7 +44,7 @@ public class StrictFPVisitorTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(StrictFPVisitorTestResource.class);
         byte[] arguments = null;

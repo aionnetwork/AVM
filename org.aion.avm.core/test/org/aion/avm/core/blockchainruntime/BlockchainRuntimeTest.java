@@ -5,6 +5,7 @@ import org.aion.avm.core.ABIFailureTestResource;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
+import org.aion.avm.core.StandardCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.HashUtils;
@@ -36,7 +37,7 @@ public class BlockchainRuntimeTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
     }
 
     @After

@@ -33,7 +33,7 @@ public class HashCodeIntegrationTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
     }
 
     @After

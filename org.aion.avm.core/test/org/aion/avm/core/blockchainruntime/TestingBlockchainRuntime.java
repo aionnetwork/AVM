@@ -2,17 +2,15 @@ package org.aion.avm.core.blockchainruntime;
 
 import org.aion.avm.shadowapi.org.aion.avm.api.Address;
 import org.aion.avm.shadowapi.org.aion.avm.api.Result;
-import org.aion.avm.core.crypto.CryptoUtil;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.core.util.HashUtils;
+import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.InvalidException;
 import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.math.BigInteger;
-import org.aion.kernel.AddressUtil;
 import org.aion.kernel.AvmAddress;
 import org.aion.kernel.KernelInterfaceImpl;
 
@@ -30,7 +28,7 @@ import org.aion.vm.api.interfaces.TransactionContext;
  * These provide only the direct inputs, none of the interactive data layer.
  */
 public class TestingBlockchainRuntime implements IBlockchainRuntime {
-
+    private final IExternalCapabilities capabilities;
     private org.aion.vm.api.interfaces.Address address = Helpers.address(1);
     private org.aion.vm.api.interfaces.Address caller = Helpers.address(2);
     private org.aion.vm.api.interfaces.Address origin = Helpers.address(2);
@@ -42,7 +40,6 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private long blockNumber = 1;
     private long blockTimstamp = System.currentTimeMillis();
     private org.aion.vm.api.interfaces.Address blockCoinbase = Helpers.address(3);
-    private byte[] blockPrevHash = new byte[32];
     private long blockEnergyLimit = 10_000_000L;
     private java.math.BigInteger blockDifficulty = java.math.BigInteger.valueOf(1000L);
 
@@ -50,12 +47,14 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private KernelInterface kernel = new KernelInterfaceImpl();
     private Map<java.lang.String, Integer> eventCounter = new HashMap<>();
 
-    public TestingBlockchainRuntime() {
+    public TestingBlockchainRuntime(IExternalCapabilities capabilities) {
+        this.capabilities = capabilities;
     }
 
-    public TestingBlockchainRuntime(TransactionContext ctx) {
+    public TestingBlockchainRuntime(IExternalCapabilities capabilities, TransactionContext ctx) {
+        this.capabilities = capabilities;
         this.address = (ctx.getTransactionKind() == Type.CREATE.toInt())
-            ? AddressUtil.generateContractAddress(ctx.getTransaction())
+            ? capabilities.generateContractAddress(ctx.getTransaction())
             : ctx.getDestinationAddress();
         this.caller = ctx.getSenderAddress();
         this.origin = ctx.getOriginAddress();
@@ -225,19 +224,19 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public ByteArray avm_blake2b(ByteArray data) {
         Objects.requireNonNull(data);
-        return new ByteArray(HashUtils.blake2b(data.getUnderlying()));
+        return new ByteArray(this.capabilities.blake2b(data.getUnderlying()));
     }
 
     @Override
     public ByteArray avm_sha256(ByteArray data) {
         Objects.requireNonNull(data);
-        return new ByteArray(HashUtils.sha256(data.getUnderlying()));
+        return new ByteArray(this.capabilities.sha256(data.getUnderlying()));
     }
 
     @Override
     public ByteArray avm_keccak256(ByteArray data) {
         Objects.requireNonNull(data);
-        return new ByteArray(HashUtils.keccak256(data.getUnderlying()));
+        return new ByteArray(this.capabilities.keccak256(data.getUnderlying()));
     }
 
     @Override
@@ -273,7 +272,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
         Objects.requireNonNull(signature);
         Objects.requireNonNull(publicKey);
 
-        return CryptoUtil.verifyEdDSA(data.getUnderlying(), signature.getUnderlying(), publicKey.getUnderlying());
+        return this.capabilities.verifyEdDSA(data.getUnderlying(), signature.getUnderlying(), publicKey.getUnderlying());
     }
 
     public int getEventCount(java.lang.String event) {

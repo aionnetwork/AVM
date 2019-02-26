@@ -61,7 +61,7 @@ public class AvmImplTest {
     @Test
     public void testStateUpdates() {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
         org.aion.vm.api.interfaces.Address from = deployer;
         org.aion.vm.api.interfaces.Address to = AvmAddress.wrap(new byte[32]);
@@ -158,7 +158,7 @@ public class AvmImplTest {
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
         // deploy
         long energyLimit = 1_000_000l;
@@ -229,7 +229,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -246,7 +246,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // deploy
         long energyLimit = 1_000_000l;
@@ -279,7 +279,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -307,7 +307,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -329,7 +329,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // deploy
         long energyLimit = 1_000_000l;
@@ -358,7 +358,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -385,7 +385,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -411,7 +411,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
         // deploy
         Address contractAddr = createDApp(kernel, avm, txData);
@@ -436,7 +436,7 @@ public class AvmImplTest {
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // CREATE the spawner.
         Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
@@ -466,7 +466,7 @@ public class AvmImplTest {
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // CREATE the spawner.
         Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
@@ -499,7 +499,7 @@ public class AvmImplTest {
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // CREATE the spawner.
         Address spawnerAddress = createDApp(kernel, avm, spanerCreateData);
@@ -527,7 +527,7 @@ public class AvmImplTest {
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl(directory);
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // We always start out with the PREMINE account, but that should be the only one.
         assertEquals(1, directory.listFiles().length);
@@ -545,7 +545,7 @@ public class AvmImplTest {
         // Restart the AVM.
         avm.shutdown();
         kernel = new KernelInterfaceImpl(directory);
-        avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         // Call the incrementor, directly.
         byte[] input = new byte[] {1,2,3,4,5};
@@ -644,7 +644,7 @@ public class AvmImplTest {
     private void deployInvalidJar(byte[] jar) {
         byte[] deployment = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, deployment, energyLimit, energyPrice);

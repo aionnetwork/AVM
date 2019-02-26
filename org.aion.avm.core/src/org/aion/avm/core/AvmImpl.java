@@ -39,6 +39,7 @@ public class AvmImpl implements AvmInternal {
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
 
     private final IInstrumentationFactory instrumentationFactory;
+    private final IExternalCapabilities capabilities;
 
     // Long-lived state which is book-ended by the startup/shutdown calls.
     private static AvmImpl currentAvm;  // (only here for testing - makes sure that we properly clean these up between invocations)
@@ -56,8 +57,9 @@ public class AvmImpl implements AvmInternal {
     private final boolean enableVerboseContractErrors;
     private final boolean enableVerboseConcurrentExecutor;
 
-    public AvmImpl(IInstrumentationFactory instrumentationFactory, AvmConfiguration configuration) {
+    public AvmImpl(IInstrumentationFactory instrumentationFactory, IExternalCapabilities capabilities, AvmConfiguration configuration) {
         this.instrumentationFactory = instrumentationFactory;
+        this.capabilities = capabilities;
         // Make sure that the threadCount isn't totally invalid.
         if (configuration.threadCount < 1) {
             throw new IllegalArgumentException("Thread count must be a positive integer");
@@ -202,7 +204,7 @@ public class AvmImpl implements AvmInternal {
 
         // Acquire both sender and target resources
         Address sender = ctx.getSenderAddress();
-        Address target = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? AddressUtil.generateContractAddress(ctx.getTransaction()) : ctx.getDestinationAddress();
+        Address target = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(ctx.getTransaction()) : ctx.getDestinationAddress();
 
         this.resourceMonitor.acquire(sender.toBytes(), task);
         this.resourceMonitor.acquire(target.toBytes(), task);
@@ -339,7 +341,7 @@ public class AvmImpl implements AvmInternal {
         AvmTransactionResult result = new AvmTransactionResult(ctx.getTransaction().getEnergyLimit(), ctx.getTransaction().getTransactionCost());
 
         // grab the recipient address as either the new contract address or the given account address.
-        Address recipient = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? AddressUtil.generateContractAddress(ctx.getTransaction()) : ctx.getDestinationAddress();
+        Address recipient = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(ctx.getTransaction()) : ctx.getDestinationAddress();
 
         // conduct value transfer
         thisTransactionKernel.adjustBalance(ctx.getSenderAddress(), ctx.getTransferValue().negate());
@@ -354,7 +356,7 @@ public class AvmImpl implements AvmInternal {
                 (null == thisTransactionKernel.getCode(recipient)
                 || (null != thisTransactionKernel.getCode(recipient) && 0 == thisTransactionKernel.getCode(recipient).length)))) {
             if (ctx.getTransactionKind() == Type.CREATE.toInt()) { // create
-                DAppCreator.create(thisTransactionKernel, this, task, ctx, result, this.preserveDebuggability, this.enableVerboseContractErrors);
+                DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, ctx, result, this.preserveDebuggability, this.enableVerboseContractErrors);
             } else { // call
                 // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
                 ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
@@ -365,7 +367,7 @@ public class AvmImpl implements AvmInternal {
                 if ((null != stateToResume) && (null != thisTransactionKernel.getCode(recipient))) {
                     dapp = stateToResume.dApp;
                     // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
-                    DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
+                    DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
                 } else {
                     // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
                     ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toBytes());
@@ -386,7 +388,7 @@ public class AvmImpl implements AvmInternal {
                     }
                     // Run the call and, if successful, check this into the hot DApp cache.
                     if (null != dapp) {
-                        DAppExecutor.call(thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
+                        DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
                         if (AvmTransactionResult.Code.SUCCESS == result.getResultCode()) {
                             dapp.cleanForCache();
                             this.hotCache.checkin(addressWrapper, dapp);

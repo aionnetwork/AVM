@@ -251,11 +251,12 @@ public class NodeEnvironment {
      * could be moved in the future.
      *
      * @param instrumentationFactory The factory to build IInstrumentation instances for the AVM's threads.
+     * @param capabilities The external capabilities which this AVM instance can use.
      * @param configuration The configuration options for this new AVM instance.
      * @return The long-lived AVM instance.
      */
-    public AvmImpl buildAvmInstance(IInstrumentationFactory instrumentationFactory, AvmConfiguration configuration) {
-        AvmImpl avm = new AvmImpl(instrumentationFactory, configuration);
+    public AvmImpl buildAvmInstance(IInstrumentationFactory instrumentationFactory, IExternalCapabilities capabilities, AvmConfiguration configuration) {
+        AvmImpl avm = new AvmImpl(instrumentationFactory, capabilities, configuration);
         avm.start();
         return avm;
     }

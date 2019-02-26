@@ -5,6 +5,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
+import org.aion.avm.core.StandardCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.*;
@@ -45,7 +46,7 @@ public final class AvmRule implements TestRule {
                     config.preserveDebuggability = true;
                     config.enableVerboseContractErrors = true;
                 }
-                avm = CommonAvmFactory.buildAvmInstanceForConfiguration(config);
+                avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), config);
                 try {
                     statement.evaluate();
                 } finally {

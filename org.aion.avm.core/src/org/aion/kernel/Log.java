@@ -1,6 +1,6 @@
 package org.aion.kernel;
 
-import org.aion.avm.core.util.HashUtils;
+import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.util.Helpers;
 
 import java.util.List;
@@ -11,11 +11,13 @@ import org.aion.vm.api.interfaces.IExecutionLog;
  * Represents a log emitted by dapp.
  */
 public class Log implements IExecutionLog {
+    private final IExternalCapabilities capabilities;
     private byte[] address;
     private List<byte[]> topics;
     private byte[] data;
 
-    public Log(byte[] address, List<byte[]> topics, byte[] data) {
+    public Log(IExternalCapabilities capabilities, byte[] address, List<byte[]> topics, byte[] data) {
+        this.capabilities = capabilities;
         this.address = address;
         this.topics = topics;
         this.data = data;
@@ -62,9 +64,9 @@ public class Log implements IExecutionLog {
      */
     @Override
     public BloomFilter getBloomFilterForLog() {
-        BloomFilter filter = BloomFilter.create(HashUtils.blake2b(this.address));
+        BloomFilter filter = BloomFilter.create(this.capabilities.blake2b(this.address));
         for (byte[] topic : this.topics) {
-            filter.or(BloomFilter.create(HashUtils.blake2b(topic)));
+            filter.or(BloomFilter.create(this.capabilities.blake2b(topic)));
         }
         return filter;
     }

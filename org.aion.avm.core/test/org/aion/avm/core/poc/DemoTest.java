@@ -6,6 +6,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
+import org.aion.avm.core.StandardCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testExchange.CoinController;
 import org.aion.avm.core.testExchange.ERC20;
@@ -42,7 +43,7 @@ public class DemoTest {
     @Test
     public void testWallet() {
         KernelInterface kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         kernel.adjustBalance(pepeMinter, BigInteger.valueOf(1_000_000_000L));
         kernel.adjustBalance(deployer, BigInteger.valueOf(1_000_000_000L));
         kernel.adjustBalance(owner1, BigInteger.valueOf(1_000_000_000L));

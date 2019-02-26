@@ -41,7 +41,7 @@ public class AvmFailureTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmFailureTestResource.class);
         byte[] arguments = null;

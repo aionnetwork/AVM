@@ -7,6 +7,7 @@ import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
+import org.aion.avm.core.StandardCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -26,7 +27,7 @@ public class StringShadowingTest {
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
         // deploy it
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
@@ -86,7 +87,7 @@ public class StringShadowingTest {
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
         // We do the deployment, first, since we need the resultant DApp address for the other calls.
         byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);

@@ -6,6 +6,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
+import org.aion.avm.core.StandardCapabilities;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.StorageWalker;
@@ -336,7 +337,7 @@ public class AvmCLI {
                 // Run them in a single batch.
                 File storageFile = new File(invocation.storagePath);
                 KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
-                AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new AvmConfiguration());
+                AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
                 SimpleFuture<TransactionResult>[] futures = avm.run(kernel, transactions);
                 TransactionResult[] results = new AvmTransactionResult[futures.length];
                 for (int i = 0; i < futures.length; ++i) {
