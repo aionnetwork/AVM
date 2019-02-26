@@ -11,8 +11,8 @@ import java.util.List;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.HashUtils;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -126,28 +126,28 @@ public class ContractLoggingTest {
                 incrementCounter(0);
                 break;
             case 1:
-                assertArrayEquals(HashUtils.sha256(LoggingTarget.TOPIC1), log.getTopics().get(0));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.getTopics().get(0));
                 assertArrayEquals(LoggingTarget.DATA2, log.getData());
                 incrementCounter(1);
                 break;
             case 2:
-                assertArrayEquals(HashUtils.sha256(LoggingTarget.TOPIC1), log.getTopics().get(0));
-                assertArrayEquals(HashUtils.sha256(LoggingTarget.TOPIC2), log.getTopics().get(1));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.getTopics().get(0));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC2), log.getTopics().get(1));
                 assertArrayEquals(LoggingTarget.DATA3, log.getData());
                 incrementCounter(2);
                 break;
             case 3:
-                assertArrayEquals(HashUtils.sha256(LoggingTarget.TOPIC1), log.getTopics().get(0));
-                assertArrayEquals(HashUtils.sha256(LoggingTarget.TOPIC2), log.getTopics().get(1));
-                assertArrayEquals(HashUtils.sha256(LoggingTarget.TOPIC3), log.getTopics().get(2));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.getTopics().get(0));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC2), log.getTopics().get(1));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC3), log.getTopics().get(2));
                 assertArrayEquals(LoggingTarget.DATA4, log.getData());
                 incrementCounter(3);
                 break;
             case 4:
-                assertArrayEquals(HashUtils.sha256(LoggingTarget.TOPIC1), log.getTopics().get(0));
-                assertArrayEquals(HashUtils.sha256(LoggingTarget.TOPIC2), log.getTopics().get(1));
-                assertArrayEquals(HashUtils.sha256(LoggingTarget.TOPIC3), log.getTopics().get(2));
-                assertArrayEquals(HashUtils.sha256(LoggingTarget.TOPIC4), log.getTopics().get(3));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.getTopics().get(0));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC2), log.getTopics().get(1));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC3), log.getTopics().get(2));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC4), log.getTopics().get(3));
                 assertArrayEquals(LoggingTarget.DATA5, log.getData());
                 incrementCounter(4);
                 break;

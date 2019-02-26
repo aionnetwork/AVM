@@ -3,7 +3,7 @@ package org.aion.rules;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.util.AvmRule;
-import org.aion.avm.core.util.HashUtils;
+import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.AvmAddress;
 import org.aion.vm.api.interfaces.ResultCode;
@@ -78,7 +78,7 @@ public class JUnitRuleTest {
         Assert.assertEquals(2, result.getLogs().size());
         assertEquals(dappAddr, new Address(result.getLogs().get(0).getSourceAddress().toBytes()));
         assertArrayEquals(new byte[]{ 0x1 }, result.getLogs().get(0).getData());
-        assertArrayEquals(HashUtils.sha256(new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa }), result.getLogs().get(1).getTopics().get(0));
+        assertArrayEquals(LogSizeUtils.truncatePadTopic(new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa }), result.getLogs().get(1).getTopics().get(0));
     }
 
     @Test
