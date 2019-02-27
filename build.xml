@@ -19,6 +19,9 @@
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.userlib/build.xml" target="clean">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.tooling/build.xml" target="clean">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
         <delete dir="${dir.global.build}"/>
 
         <delete file="${dir.global.workspace}/avm.jar"/>
@@ -38,6 +41,9 @@
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.core/build.xml" target="clean_buildmain">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.tooling/build.xml" target="clean_buildmain">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
 
@@ -93,7 +99,7 @@
         </javadoc>
 
         <copy todir="${dir.global.workspace}/dist/examples">
-            <fileset dir="${dir.global.workspace}/org.aion.avm.core/src/examples">
+            <fileset dir="${dir.global.workspace}/org.aion.avm.tooling/src/examples">
                 <include name="**/*.java"/>
             </fileset>
         </copy>
@@ -109,6 +115,9 @@
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.rt/build.xml" target="test">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.tooling/build.xml" target="test">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
 

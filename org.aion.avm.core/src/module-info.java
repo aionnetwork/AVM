@@ -6,7 +6,6 @@ module org.aion.avm.core {
     exports org.aion.avm.core.classloading;
     exports org.aion.kernel;
     exports org.aion.parallel;
-    exports org.aion.avm.tooling;
 
     requires org.aion.avm.rt;
     requires org.aion.avm.userlib;
@@ -20,10 +19,5 @@ module org.aion.avm.core {
     requires org.objectweb.asm.tree;
     requires org.objectweb.asm.util;
     requires org.objectweb.asm.tree.analysis;
-    requires spongycastle;
     requires aion.vm.api;
-    requires ed25519;
-
-    //Dependency for Junit Rule
-    requires junit;
 }
