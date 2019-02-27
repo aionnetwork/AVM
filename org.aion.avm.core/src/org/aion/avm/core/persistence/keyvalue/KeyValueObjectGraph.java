@@ -17,8 +17,7 @@ import org.aion.avm.core.persistence.StreamingPrimitiveCodec;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.AvmAddress;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 
 

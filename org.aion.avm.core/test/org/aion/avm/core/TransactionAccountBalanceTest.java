@@ -12,13 +12,12 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -173,7 +172,7 @@ public class TransactionAccountBalanceTest {
         assertTrue(energyUsed > 0);
         assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
-        Address destination = AvmAddress.wrap(result.getReturnData());
+        Address destination = Address.wrap(result.getReturnData());
         assertEquals(BigInteger.ZERO, kernel.getBalance(destination));
     }
 
@@ -186,7 +185,7 @@ public class TransactionAccountBalanceTest {
         assertTrue(energyUsed > 0);
         assertEquals(energyLimit, energyUsed + result.getEnergyRemaining());
 
-        Address destination = AvmAddress.wrap(result.getReturnData());
+        Address destination = Address.wrap(result.getReturnData());
         assertEquals(value, kernel.getBalance(destination));
     }
 
@@ -245,7 +244,7 @@ public class TransactionAccountBalanceTest {
     private Address deployContractAndGetAddress() {
         TransactionResult result = deployContract(BigInteger.ZERO);
         assertTrue(result.getResultCode().isSuccess());
-        return AvmAddress.wrap(result.getReturnData());
+        return Address.wrap(result.getReturnData());
     }
 
     private TransactionResult callContract(Address contract, BigInteger value) {

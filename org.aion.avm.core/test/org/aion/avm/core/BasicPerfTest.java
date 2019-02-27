@@ -9,7 +9,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -64,10 +63,10 @@ public class BasicPerfTest {
 
 
     private static class TestRunnable extends Thread {
-        private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+        private org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
         private KernelInterface kernel;
         private AvmImpl avm;
-        private org.aion.vm.api.interfaces.Address contractAddress;
+        private org.aion.types.Address contractAddress;
         private Throwable backgroundThrowable;
         public void deploy(byte[] jar, byte[] arguments) {
             // Deploy.
@@ -78,7 +77,7 @@ public class BasicPerfTest {
             Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
             TransactionResult result1 = this.avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx1, block)})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-            this.contractAddress = AvmAddress.wrap(result1.getReturnData());
+            this.contractAddress = org.aion.types.Address.wrap(result1.getReturnData());
         }
         public void waitForSafeTermination() throws Throwable {
             this.join();

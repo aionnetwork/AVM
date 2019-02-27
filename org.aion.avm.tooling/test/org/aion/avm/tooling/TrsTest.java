@@ -11,7 +11,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
@@ -172,7 +172,7 @@ public class TrsTest {
         Transaction transaction = Transaction.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         TransactionResult result = avm.run(this.kernel, new TransactionContext[] {context})[0].get();
-        contract = AvmAddress.wrap(result.getReturnData());
+        contract = Address.wrap(result.getReturnData());
         return result;
     }
 

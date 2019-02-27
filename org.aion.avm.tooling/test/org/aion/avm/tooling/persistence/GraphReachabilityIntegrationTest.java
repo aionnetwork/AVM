@@ -410,7 +410,7 @@ public class GraphReachabilityIntegrationTest {
     private TransactionResult runGc(Block block, Address contractAddr) {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
-        Transaction gc = Transaction.garbageCollect(AvmAddress.wrap(contractAddr.unwrap()), avmRule.kernel.getNonce(AvmAddress.wrap(contractAddr.unwrap())), energyLimit, energyPrice);
+        Transaction gc = Transaction.garbageCollect(org.aion.types.Address.wrap(contractAddr.unwrap()), avmRule.kernel.getNonce(org.aion.types.Address.wrap(contractAddr.unwrap())), energyLimit, energyPrice);
         TransactionResult gcResult = avmRule.avm.run(avmRule.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(gc, block)})[0].get();
         return gcResult;
     }

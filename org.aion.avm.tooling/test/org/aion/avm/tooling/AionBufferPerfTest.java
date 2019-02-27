@@ -10,7 +10,6 @@ import org.aion.avm.tooling.poc.AionBufferPerfContract;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionBuffer;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -24,7 +23,7 @@ import org.junit.Test;
 
 
 public class AionBufferPerfTest {
-    private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private long energyLimit = 100_000_000_000L;
     private long energyPrice = 1;
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(),
@@ -45,7 +44,7 @@ public class AionBufferPerfTest {
         return createResult;
     }
 
-    private TransactionResult call(KernelInterface kernel, AvmImpl avm, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, byte[] args) {
+    private TransactionResult call(KernelInterface kernel, AvmImpl avm, org.aion.types.Address contract, org.aion.types.Address sender, byte[] args) {
         Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1L);
         TransactionContext callContext = TransactionContextImpl.forExternalTransaction(callTransaction, block);
         TransactionResult callResult = avm.run(kernel, new TransactionContext[] {callContext})[0].get();
@@ -62,7 +61,7 @@ public class AionBufferPerfTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
         TransactionResult deployRes = deploy(kernel, avm, buildBufferPerfJar());
-        org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
+        org.aion.types.Address contract = org.aion.types.Address.wrap(deployRes.getReturnData());
 
         args = ABIEncoder.encodeMethodArguments("callPutByte");
         AvmTransactionResult putByteResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);

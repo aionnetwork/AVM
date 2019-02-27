@@ -6,7 +6,6 @@ import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -123,7 +122,7 @@ public class BadDestinationTest {
     }
 
     private void addCodeToAddress(Address address) {
-        avmRule.kernel.putCode(AvmAddress.wrap(address.unwrap()), new byte[1]);
+        avmRule.kernel.putCode(org.aion.types.Address.wrap(address.unwrap()), new byte[1]);
     }
 
 }

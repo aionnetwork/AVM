@@ -7,7 +7,7 @@ import java.util.Set;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionInterface;

@@ -7,9 +7,9 @@ import org.aion.data.DirectoryBackedDataStore;
 import org.aion.data.IAccountStore;
 import org.aion.data.IDataStore;
 import org.aion.data.MemoryBackedDataStore;
+import org.aion.types.Address;
 
 import java.io.File;
-import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 
 
@@ -20,7 +20,7 @@ import org.aion.vm.api.interfaces.KernelInterface;
  */
 public class KernelInterfaceImpl implements KernelInterface {
 
-    public static final Address PREMINED_ADDRESS = AvmAddress.wrap(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
+    public static final Address PREMINED_ADDRESS = Address.wrap(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
     public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(18);
 
     private final IDataStore dataStore;

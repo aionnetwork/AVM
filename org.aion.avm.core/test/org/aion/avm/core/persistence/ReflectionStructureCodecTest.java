@@ -15,7 +15,7 @@ import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

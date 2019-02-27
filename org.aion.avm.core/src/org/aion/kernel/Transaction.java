@@ -4,10 +4,10 @@ import java.math.BigInteger;
 
 import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.util.Helpers;
+import org.aion.types.Address;
 
 import java.util.Arrays;
 import java.util.Objects;
-import org.aion.vm.api.interfaces.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 
@@ -160,13 +160,13 @@ public class Transaction implements TransactionInterface {
     }
 
     @Override
-    public AvmAddress getSenderAddress() {
-        return AvmAddress.wrap(from);
+    public Address getSenderAddress() {
+        return org.aion.types.Address.wrap(from);
     }
 
     @Override
-    public AvmAddress getDestinationAddress() {
-        return AvmAddress.wrap(to);
+    public Address getDestinationAddress() {
+        return org.aion.types.Address.wrap(to);
     }
 
     @Override

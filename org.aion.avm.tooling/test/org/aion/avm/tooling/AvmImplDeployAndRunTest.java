@@ -5,7 +5,6 @@ import legacy_examples.helloworld.HelloWorld;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -142,22 +141,22 @@ public class AvmImplDeployAndRunTest {
 
     @Test
     public void testBalanceTransfer() {
-        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT, avmRule.kernel.getBalance(AvmAddress.wrap(from.unwrap())));
+        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT, avmRule.kernel.getBalance(org.aion.types.Address.wrap(from.unwrap())));
 
         // account1 get 10000
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
         TransactionResult result = avmRule.balanceTransfer(from, account1, BigInteger.valueOf(100000L), 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(AvmAddress.wrap(account1.unwrap())));
+        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
 
         // account1 transfers 1000 to account2
         Address account2 = avmRule.getRandomAddress(BigInteger.ZERO);
         result = avmRule.balanceTransfer(account1, account2, BigInteger.valueOf(1000L), 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(BigInteger.valueOf(100000L - 1000L - energyPrice * 21000L), avmRule.kernel.getBalance(AvmAddress.wrap(account1.unwrap())));
-        assertEquals(BigInteger.valueOf(1000L), avmRule.kernel.getBalance(AvmAddress.wrap(account2.unwrap())));
+        assertEquals(BigInteger.valueOf(100000L - 1000L - energyPrice * 21000L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
+        assertEquals(BigInteger.valueOf(1000L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(account2.unwrap())));
     }
 
     @Test
@@ -166,7 +165,7 @@ public class AvmImplDeployAndRunTest {
         byte[] txData = avmRule.getDappBytes(DeployAndRunTarget.class, null);
         TransactionResult deployResult = avmRule.deploy(from, BigInteger.valueOf(100000L), txData, energyLimit, energyPrice).getTransactionResult();
         assertEquals(AvmTransactionResult.Code.SUCCESS, deployResult.getResultCode());
-        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(AvmAddress.wrap(deployResult.getReturnData())));
+        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(deployResult.getReturnData())));
 
         // account1 get 300000; pure balance transfer
         BigInteger accountBalance = BigInteger.valueOf(300000L);
@@ -175,7 +174,7 @@ public class AvmImplDeployAndRunTest {
         TransactionResult result = avmRule.balanceTransfer(from, account1, accountBalance, 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(accountBalance, avmRule.kernel.getBalance(AvmAddress.wrap(account1.unwrap())));
+        assertEquals(accountBalance, avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
 
         // account1 to call the Dapp and transfer 50000 to it; call with balance transfer
         long energyLimit = 200000L;
@@ -188,8 +187,8 @@ public class AvmImplDeployAndRunTest {
         BigInteger accountBalanceAfterValueTransfer = accountBalance.subtract(value);
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(BigInteger.valueOf(150000L), avmRule.kernel.getBalance(AvmAddress.wrap(deployResult.getReturnData())));
-        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(((AvmTransactionResult) result).getEnergyUsed())), avmRule.kernel.getBalance(AvmAddress.wrap(account1.unwrap())));
-        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(energyLimit - result.getEnergyRemaining())), avmRule.kernel.getBalance(AvmAddress.wrap(account1.unwrap())));
+        assertEquals(BigInteger.valueOf(150000L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(deployResult.getReturnData())));
+        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(((AvmTransactionResult) result).getEnergyUsed())), avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
+        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(energyLimit - result.getEnergyRemaining())), avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
     }
 }

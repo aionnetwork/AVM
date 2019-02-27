@@ -1,9 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.persistence.ISuspendableInstanceLoader;
-import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.AvmAddress;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -127,6 +125,6 @@ public class ReentrantDAppStackTest {
     private static Address getNewAddress(int leadingByte) {
         byte[] address = new byte[Address.SIZE];
         address[0] = (byte) leadingByte;
-        return AvmAddress.wrap(address);
+        return Address.wrap(address);
     }
 }

@@ -3,7 +3,7 @@ package org.aion.kernel;
 import java.math.BigInteger;
 
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionInterface;
 import org.aion.vm.api.interfaces.TransactionSideEffects;

@@ -52,8 +52,8 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     private long energyPrice = 1L;
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private org.aion.vm.api.interfaces.Address dappAddress;
+    private org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address dappAddress;
 
     private KernelInterfaceImpl kernel;
     private AvmImpl avm;
@@ -93,7 +93,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
-        dappAddress = AvmAddress.wrap(avm.run(this.kernel, new TransactionContext[] {context})[0].get().getReturnData());
+        dappAddress = org.aion.types.Address.wrap(avm.run(this.kernel, new TransactionContext[] {context})[0].get().getReturnData());
     }
 
     @After

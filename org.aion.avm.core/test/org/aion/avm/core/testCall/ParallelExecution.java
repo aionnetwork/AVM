@@ -11,7 +11,6 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,7 +150,7 @@ public class ParallelExecution {
                     InternalTransaction internalTx = new InternalTransaction(
                             Transaction.Type.CALL,
                             tx.getDestinationAddress(),
-                            AvmAddress.wrap(targetAddress.unwrap()),
+                            org.aion.types.Address.wrap(targetAddress.unwrap()),
                             BigInteger.ZERO,
                             value.getUnderlying(),
                             payload.getUnderlying(),

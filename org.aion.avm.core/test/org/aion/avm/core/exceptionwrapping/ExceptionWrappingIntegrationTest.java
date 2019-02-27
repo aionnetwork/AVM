@@ -188,12 +188,12 @@ public class ExceptionWrappingIntegrationTest {
     }
 
     private TransactionResult commonCallStatic(Block block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
-        org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+        org.aion.types.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
         byte[] argData = (null != methodName)
                 ? ABIEncoder.encodeMethodArguments(methodName)
                 : new byte[0];
-        Transaction call = Transaction.call(from, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
+        Transaction call = Transaction.call(from, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
         return avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
     }
 }

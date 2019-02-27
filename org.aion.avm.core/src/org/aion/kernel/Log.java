@@ -2,6 +2,7 @@ package org.aion.kernel;
 
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.util.Helpers;
+import org.aion.types.Address;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,8 +25,8 @@ public class Log implements IExecutionLog {
     }
 
     @Override
-    public AvmAddress getSourceAddress() {
-        return AvmAddress.wrap(this.address);
+    public Address getSourceAddress() {
+        return Address.wrap(this.address);
     }
 
     public byte[] getAddress() {

@@ -35,7 +35,7 @@ public class PerformanceTest {
     private static long energyLimit = 1_000_000_000_000_000l;
     private static long energyPrice = 1l;
 
-    private org.aion.vm.api.interfaces.Address[] userAddrs = new org.aion.vm.api.interfaces.Address[userDappNum];
+    private org.aion.types.Address[] userAddrs = new org.aion.types.Address[userDappNum];
     private Address[] contractAddrs = new Address[userDappNum];
 
     @Before
@@ -60,7 +60,7 @@ public class PerformanceTest {
         // Deploy
         for(int i = 0; i < userDappNum; ++i) {
             //creating users
-            org.aion.vm.api.interfaces.Address userAddress = Helpers.randomAddress();
+            org.aion.types.Address userAddress = Helpers.randomAddress();
             kernel.createAccount(userAddress);
             kernel.adjustBalance(userAddress, BigInteger.TEN.pow(18));
             userAddrs[i] = userAddress;
@@ -115,9 +115,9 @@ public class PerformanceTest {
         System.out.printf("%s: %d ms\n", testName, timeElapsed);
     }
 
-    private void callSingle(org.aion.vm.api.interfaces.Address sender, Block block, Address contractAddr, String methodName) {
+    private void callSingle(org.aion.types.Address sender, Block block, Address contractAddr, String methodName) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
-        Transaction call = Transaction.call(sender, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+        Transaction call = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
@@ -160,9 +160,9 @@ public class PerformanceTest {
         for(int j = 0; j < contextNum; ++j) {
             TransactionContext[] transactionContext = new TransactionContext[transactionBlockSize];
             for (int i = 0; i < transactionBlockSize; ++i) {
-                org.aion.vm.api.interfaces.Address sender = userAddrs[i];
+                org.aion.types.Address sender = userAddrs[i];
                 Address contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];
-                Transaction call = Transaction.call(sender, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+                Transaction call = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
                 transactionContext[i] = TransactionContextImpl.forExternalTransaction(call, block);
             }
             SimpleFuture<TransactionResult>[] futures = avm.run(this.kernel, transactionContext);

@@ -11,7 +11,6 @@ import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.math.BigInteger;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.KernelInterfaceImpl;
 
 import java.nio.charset.StandardCharsets;
@@ -29,9 +28,9 @@ import org.aion.vm.api.interfaces.TransactionContext;
  */
 public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private final IExternalCapabilities capabilities;
-    private org.aion.vm.api.interfaces.Address address = Helpers.address(1);
-    private org.aion.vm.api.interfaces.Address caller = Helpers.address(2);
-    private org.aion.vm.api.interfaces.Address origin = Helpers.address(2);
+    private org.aion.types.Address address = Helpers.address(1);
+    private org.aion.types.Address caller = Helpers.address(2);
+    private org.aion.types.Address origin = Helpers.address(2);
     private BigInteger value = BigInteger.avm_ZERO;
     private byte[] data = new byte[0];
     private long energyLimit = 1_000_000L;
@@ -39,7 +38,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     private long blockNumber = 1;
     private long blockTimstamp = System.currentTimeMillis();
-    private org.aion.vm.api.interfaces.Address blockCoinbase = Helpers.address(3);
+    private org.aion.types.Address blockCoinbase = Helpers.address(3);
     private long blockEnergyLimit = 10_000_000L;
     private java.math.BigInteger blockDifficulty = java.math.BigInteger.valueOf(1000L);
 
@@ -68,12 +67,12 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     public TestingBlockchainRuntime withAddress(byte[] address) {
-        this.address = AvmAddress.wrap(address);
+        this.address = org.aion.types.Address.wrap(address);
         return this;
     }
 
     public TestingBlockchainRuntime withCaller(byte[] caller) {
-        this.caller = AvmAddress.wrap(caller);
+        this.caller = org.aion.types.Address.wrap(caller);
         return this;
     }
 
@@ -160,7 +159,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public BigInteger avm_getBalance(Address address) {
         Objects.requireNonNull(address);
-        return new BigInteger(kernel.getBalance(AvmAddress.wrap(address.unwrap())));
+        return new BigInteger(kernel.getBalance(org.aion.types.Address.wrap(address.unwrap())));
     }
 
     @Override
@@ -171,7 +170,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public int avm_getCodeSize(Address address) {
         Objects.requireNonNull(address);
-        byte[] vc = kernel.getCode(AvmAddress.wrap(address.unwrap()));
+        byte[] vc = kernel.getCode(org.aion.types.Address.wrap(address.unwrap()));
         return vc == null ? 0 : vc.length;
     }
 

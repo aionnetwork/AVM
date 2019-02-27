@@ -1,7 +1,9 @@
 package org.aion.kernel;
 
 import java.math.BigInteger;
-import org.aion.vm.api.interfaces.Address;
+
+import org.aion.types.Address;
+
 
 public class Block {
 

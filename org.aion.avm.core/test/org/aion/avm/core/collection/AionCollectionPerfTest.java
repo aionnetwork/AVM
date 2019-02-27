@@ -19,7 +19,7 @@ import org.junit.Test;
 
 public class AionCollectionPerfTest {
 
-    private org.aion.vm.api.interfaces.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 100_000_000_000L;
     private long energyPrice = 1;
@@ -66,7 +66,7 @@ public class AionCollectionPerfTest {
     }
 
 
-    private TransactionResult call(KernelInterface kernel, AvmImpl avm, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, byte[] args) {
+    private TransactionResult call(KernelInterface kernel, AvmImpl avm, org.aion.types.Address contract, org.aion.types.Address sender, byte[] args) {
         Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
         TransactionContext callContext = TransactionContextImpl.forExternalTransaction(callTransaction, block);
         TransactionResult callResult = avm.run(kernel, new TransactionContext[] {callContext})[0].get();
@@ -83,7 +83,7 @@ public class AionCollectionPerfTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(kernel, avm, buildListPerfJar());
-        org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
+        org.aion.types.Address contract = org.aion.types.Address.wrap(deployRes.getReturnData());
 
         args = ABIEncoder.encodeMethodArguments("callInit");
         AvmTransactionResult initResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
@@ -118,7 +118,7 @@ public class AionCollectionPerfTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(kernel, avm, buildSetPerfJar());
-        org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
+        org.aion.types.Address contract = org.aion.types.Address.wrap(deployRes.getReturnData());
 
         args = ABIEncoder.encodeMethodArguments("callInit");
         AvmTransactionResult initResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
@@ -169,7 +169,7 @@ public class AionCollectionPerfTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(kernel, avm, buildMapPerfJar());
-        org.aion.vm.api.interfaces.Address contract = AvmAddress.wrap(deployRes.getReturnData());
+        org.aion.types.Address contract = org.aion.types.Address.wrap(deployRes.getReturnData());
 
         args = ABIEncoder.encodeMethodArguments("callInit");
         AvmTransactionResult initResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);

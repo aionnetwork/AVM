@@ -29,7 +29,7 @@ import org.aion.vm.api.interfaces.TransactionResult;
 public class AvmCLI {
     static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    public static TransactionContext setupOneDeploy(IEnvironment env, String storagePath, String jarPath, org.aion.vm.api.interfaces.Address sender, long energyLimit, BigInteger balance) {
+    public static TransactionContext setupOneDeploy(IEnvironment env, String storagePath, String jarPath, org.aion.types.Address sender, long energyLimit, BigInteger balance) {
 
         reportDeployRequest(env, storagePath, jarPath, sender);
 
@@ -54,7 +54,7 @@ public class AvmCLI {
         return TransactionContextImpl.forExternalTransaction(createTransaction, AvmCLI.block);
     }
 
-    public static void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, org.aion.vm.api.interfaces.Address sender) {
+    public static void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, org.aion.types.Address sender) {
         lineSeparator(env);
         env.logLine("DApp deployment request");
         env.logLine("Storage      : " + storagePath);
@@ -73,20 +73,20 @@ public class AvmCLI {
         env.logLine("Energy cost  : " + ((AvmTransactionResult) createResult).getEnergyUsed());
     }
 
-    public static TransactionContext setupOneCall(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
+    public static TransactionContext setupOneCall(IEnvironment env, String storagePath, org.aion.types.Address contract, org.aion.types.Address sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
         byte[] arguments = ABIEncoder.encodeMethodArguments(method, args);
         return commonSetupTransaction(env, storagePath, contract, sender, arguments, energyLimit, nonceBias, balance);
     }
 
-    public static TransactionContext setupOneTransfer(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address recipient, org.aion.vm.api.interfaces.Address sender, long energyLimit, long nonceBias, BigInteger balance) {
+    public static TransactionContext setupOneTransfer(IEnvironment env, String storagePath, org.aion.types.Address recipient, org.aion.types.Address sender, long energyLimit, long nonceBias, BigInteger balance) {
         reportTransferRequest(env, storagePath, recipient, sender, balance);
 
         return commonSetupTransaction(env, storagePath, recipient, sender, new byte[0], energyLimit, nonceBias, balance);
     }
 
-    private static TransactionContext commonSetupTransaction(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address target, org.aion.vm.api.interfaces.Address sender, byte[] data, long energyLimit, long nonceBias, BigInteger balance) {
+    private static TransactionContext commonSetupTransaction(IEnvironment env, String storagePath, org.aion.types.Address target, org.aion.types.Address sender, byte[] data, long energyLimit, long nonceBias, BigInteger balance) {
 
         if (target.toBytes().length != Address.LENGTH){
             throw env.fail("call : Invalid Dapp address ");
@@ -106,7 +106,7 @@ public class AvmCLI {
         return TransactionContextImpl.forExternalTransaction(callTransaction, block);
     }
 
-    private static void reportCallRequest(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address contract, org.aion.vm.api.interfaces.Address sender, String method, Object[] args){
+    private static void reportCallRequest(IEnvironment env, String storagePath, org.aion.types.Address contract, org.aion.types.Address sender, String method, Object[] args){
         lineSeparator(env);
         env.logLine("DApp call request");
         env.logLine("Storage      : " + storagePath);
@@ -131,7 +131,7 @@ public class AvmCLI {
         }
     }
 
-    private static void reportTransferRequest(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address address, org.aion.vm.api.interfaces.Address sender, BigInteger balance){
+    private static void reportTransferRequest(IEnvironment env, String storagePath, org.aion.types.Address address, org.aion.types.Address sender, BigInteger balance){
         lineSeparator(env);
         env.logLine("Balance transfer request");
         env.logLine("Storage      : " + storagePath);
@@ -160,7 +160,7 @@ public class AvmCLI {
         env.logLine("*******************************************************************************************");
     }
 
-    public static void openAccount(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address toOpen){
+    public static void openAccount(IEnvironment env, String storagePath, org.aion.types.Address toOpen){
         lineSeparator(env);
 
         if (toOpen.toBytes().length != Address.LENGTH){
@@ -178,7 +178,7 @@ public class AvmCLI {
         env.logLine("Account Balance : " + kernel.getBalance(toOpen));
     }
 
-    public static void exploreStorage(IEnvironment env, String storagePath, org.aion.vm.api.interfaces.Address dappAddress) {
+    public static void exploreStorage(IEnvironment env, String storagePath, org.aion.types.Address dappAddress) {
         // Create the PrintStream abstraction that walkAllStaticsForDapp expects.
         // (ideally, we would incrementally filter this but that could be a later improvement - current Dapps are very small).
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -260,10 +260,10 @@ public class AvmCLI {
                     RuntimeAssertionError.unreachable("This should be in the batching path");
                     break;
                 case EXPLORE:
-                    exploreStorage(env, invocation.storagePath, AvmAddress.wrap(Helpers.hexStringToBytes(command.contractAddress)));
+                    exploreStorage(env, invocation.storagePath, org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.contractAddress)));
                     break;
                 case OPEN:
-                    openAccount(env, invocation.storagePath, AvmAddress.wrap(Helpers.hexStringToBytes(command.contractAddress)));
+                    openAccount(env, invocation.storagePath, org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.contractAddress)));
                     break;
                 case BYTES:
                     try {
@@ -296,8 +296,8 @@ public class AvmCLI {
                         transactions[i] = setupOneCall(
                             env,
                             invocation.storagePath,
-                            AvmAddress.wrap(Helpers.hexStringToBytes(command.contractAddress)),
-                            AvmAddress.wrap(Helpers.hexStringToBytes(command.senderAddress)),
+                            org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.contractAddress)),
+                            org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.senderAddress)),
                             command.method, callArgs,
                             command.energyLimit,
                             i,
@@ -308,7 +308,7 @@ public class AvmCLI {
                             env,
                             invocation.storagePath,
                             command.jarPath,
-                            AvmAddress.wrap(Helpers.hexStringToBytes(command.senderAddress)),
+                            org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.senderAddress)),
                             command.energyLimit,
                             command.balance);
                         break;
@@ -318,8 +318,8 @@ public class AvmCLI {
                         transactions[i] = setupOneTransfer(
                                 env,
                                 invocation.storagePath,
-                                AvmAddress.wrap(Helpers.hexStringToBytes(command.contractAddress)),
-                                AvmAddress.wrap(Helpers.hexStringToBytes(command.senderAddress)),
+                                org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.contractAddress)),
+                                org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.senderAddress)),
                                 command.energyLimit,
                                 i,
                                 command.balance);

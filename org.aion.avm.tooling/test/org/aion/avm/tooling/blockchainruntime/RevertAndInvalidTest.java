@@ -2,7 +2,6 @@ package org.aion.avm.tooling.blockchainruntime;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,7 +42,7 @@ public class RevertAndInvalidTest {
         assertTrue(energyLimit > txResult.getEnergyUsed());
         assertTrue(0 < txResult.getEnergyRemaining());
 
-        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, avmRule.kernel.getStorage(AvmAddress.wrap(dappAddress.unwrap()), StorageKeys.CLASS_STATICS));
+        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, avmRule.kernel.getStorage(org.aion.types.Address.wrap(dappAddress.unwrap()), StorageKeys.CLASS_STATICS));
     }
 
     @Test
@@ -54,7 +53,7 @@ public class RevertAndInvalidTest {
         assertEquals(energyLimit, txResult.getEnergyUsed());
         assertEquals(0, txResult.getEnergyRemaining());
 
-        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, avmRule.kernel.getStorage(AvmAddress.wrap(dappAddress.unwrap()), StorageKeys.CLASS_STATICS));
+        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, avmRule.kernel.getStorage(org.aion.types.Address.wrap(dappAddress.unwrap()), StorageKeys.CLASS_STATICS));
     }
 
     /**

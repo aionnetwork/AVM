@@ -5,8 +5,7 @@ import java.nio.ByteBuffer;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.tooling.hash.HashUtils;
-import org.aion.kernel.AvmAddress;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 
@@ -21,6 +20,6 @@ public class AddressUtil {
         ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(sender.toBytes()).putLong(nonce);
         byte[] hash = HashUtils.sha256(buffer.array());
         hash[0] = NodeEnvironment.CONTRACT_PREFIX;
-        return AvmAddress.wrap(hash);
+        return Address.wrap(hash);
     }
 }

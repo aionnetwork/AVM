@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.ByteArrayWrapper;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 
 

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 public class EnergyUsageDebugModeTest {
     private Block block;
     private KernelInterfaceImpl kernel;
-    private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
 
 
     @Before
@@ -72,7 +72,7 @@ public class EnergyUsageDebugModeTest {
 
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
-        Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddressDebug.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddressDebug.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         TransactionResult result = avmDebugMode.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
 
         long energyUsed = energyLimit - result.getEnergyRemaining();
@@ -98,7 +98,7 @@ public class EnergyUsageDebugModeTest {
         Address contractAddressNormal = new Address(createResult.getReturnData());
 
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
-        Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddressNormal.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddressNormal.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         TransactionResult result = avmNormalMode.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         long energyUsed = energyLimit - result.getEnergyRemaining();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());

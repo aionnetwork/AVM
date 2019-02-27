@@ -10,7 +10,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
@@ -35,8 +34,8 @@ public class StrictFPVisitorTest {
     // block
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private org.aion.vm.api.interfaces.Address dappAddress;
+    private org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address dappAddress;
 
     private KernelInterfaceImpl kernel;
     private AvmImpl avm;
@@ -52,7 +51,7 @@ public class StrictFPVisitorTest {
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         TransactionResult txResult = avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
 
-        dappAddress = AvmAddress.wrap(txResult.getReturnData());
+        dappAddress = org.aion.types.Address.wrap(txResult.getReturnData());
         assertTrue(null != dappAddress);
     }
 

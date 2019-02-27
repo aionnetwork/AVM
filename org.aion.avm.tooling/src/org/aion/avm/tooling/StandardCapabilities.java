@@ -3,7 +3,7 @@ package org.aion.avm.tooling;
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.tooling.crypto.CryptoUtil;
 import org.aion.avm.tooling.hash.HashUtils;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 

@@ -134,7 +134,7 @@ public final class AvmRule implements TestRule {
      * @return Result of the operation
      */
     public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyLimit, long energyPrice) {
-        Transaction tx = Transaction.call(AvmAddress.wrap(from.unwrap()), AvmAddress.wrap(to.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, new byte[0], energyLimit, energyPrice);
+        Transaction tx = Transaction.call(org.aion.types.Address.wrap(from.unwrap()), org.aion.types.Address.wrap(to.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, new byte[0], energyLimit, energyPrice);
 
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
         return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
@@ -146,7 +146,7 @@ public final class AvmRule implements TestRule {
      * @return Address of the newly created account
      */
     public Address getRandomAddress(BigInteger initialBalance) {
-        org.aion.vm.api.interfaces.Address account = Helpers.randomAddress();
+        org.aion.types.Address account = Helpers.randomAddress();
         kernel.adjustBalance(account, initialBalance);
         return new Address(account.toBytes());
     }
@@ -159,13 +159,13 @@ public final class AvmRule implements TestRule {
     }
 
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {
-        Transaction tx = Transaction.call(AvmAddress.wrap(from.unwrap()), AvmAddress.wrap(dappAddress.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, transactionData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(org.aion.types.Address.wrap(from.unwrap()), org.aion.types.Address.wrap(dappAddress.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, transactionData, energyLimit, energyPrice);
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
         return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
-        Transaction tx = Transaction.create(AvmAddress.wrap(from.unwrap()), kernel.getNonce(AvmAddress.wrap(from.unwrap())), value, dappBytes, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(org.aion.types.Address.wrap(from.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, dappBytes, energyLimit, energyPrice);
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
         return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
     }

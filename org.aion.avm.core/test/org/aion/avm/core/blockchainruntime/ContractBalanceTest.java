@@ -14,12 +14,11 @@ import org.aion.avm.core.RedirectContract;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -111,7 +110,7 @@ public class ContractBalanceTest {
         TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TransactionContext[] {context})[0].get();
         assertTrue(result.getResultCode().isSuccess());
-        return AvmAddress.wrap(result.getReturnData());
+        return Address.wrap(result.getReturnData());
     }
 
     private BigInteger callContractToGetItsBalance(Address contract) {
@@ -140,7 +139,7 @@ public class ContractBalanceTest {
         TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TransactionContext[] {context})[0].get();
         assertTrue(result.getResultCode().isSuccess());
-        return AvmAddress.wrap(result.getReturnData());
+        return Address.wrap(result.getReturnData());
     }
 
     private BigInteger callContractToGetItsBalanceViaRedirectContract(Address redirectContract, Address balanceContract) {

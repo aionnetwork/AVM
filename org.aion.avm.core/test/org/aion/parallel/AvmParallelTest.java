@@ -18,7 +18,7 @@ import org.junit.Test;
 
 public class AvmParallelTest {
 
-    private org.aion.vm.api.interfaces.Address preminedAddress = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address preminedAddress = KernelInterfaceImpl.PREMINED_ADDRESS;
 
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
@@ -37,7 +37,7 @@ public class AvmParallelTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
-        org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
+        org.aion.types.Address usr1 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
         BigInteger expected1 = BigInteger.ZERO;
 
         Transaction t0 = Transaction.call(preminedAddress, usr1, BigInteger.ZERO, BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
@@ -56,7 +56,7 @@ public class AvmParallelTest {
 
         Assert.assertEquals(expected1, kernel.getBalance(usr1));
 
-        org.aion.vm.api.interfaces.Address usr2 = AvmAddress.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
+        org.aion.types.Address usr2 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
         BigInteger expected2 = BigInteger.ZERO;
 
         t0 = Transaction.call(usr1, usr2, BigInteger.ZERO, BigInteger.valueOf(100_000), new byte[0], 100000L, 1);
@@ -107,10 +107,10 @@ public class AvmParallelTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
-        org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
-        org.aion.vm.api.interfaces.Address usr2 = AvmAddress.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
-        org.aion.vm.api.interfaces.Address usr3 = AvmAddress.wrap(Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333"));
-        org.aion.vm.api.interfaces.Address usr4 = AvmAddress.wrap(Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444"));
+        org.aion.types.Address usr1 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
+        org.aion.types.Address usr2 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
+        org.aion.types.Address usr3 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333"));
+        org.aion.types.Address usr4 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444"));
 
         Transaction t0 = Transaction.call(preminedAddress, usr1, BigInteger.ZERO, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
         Transaction t1 = Transaction.call(usr1, usr2, BigInteger.ZERO, BigInteger.valueOf(4_000_000), new byte[0], 100000L, 1);
@@ -136,10 +136,10 @@ public class AvmParallelTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
 
-        org.aion.vm.api.interfaces.Address usr1 = AvmAddress.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
-        org.aion.vm.api.interfaces.Address usr2 = AvmAddress.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
-        org.aion.vm.api.interfaces.Address usr3 = AvmAddress.wrap(Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333"));
-        org.aion.vm.api.interfaces.Address usr4 = AvmAddress.wrap(Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444"));
+        org.aion.types.Address usr1 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
+        org.aion.types.Address usr2 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222"));
+        org.aion.types.Address usr3 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333"));
+        org.aion.types.Address usr4 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444"));
 
         Transaction t0 = Transaction.call(preminedAddress, usr1, BigInteger.ZERO, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
         Transaction t1 = Transaction.call(preminedAddress, usr2, BigInteger.ONE, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
@@ -154,7 +154,7 @@ public class AvmParallelTest {
         }
 
         TransactionResult res = results[4].get();
-        org.aion.vm.api.interfaces.Address contractAddr = AvmAddress.wrap(res.getReturnData());
+        org.aion.types.Address contractAddr = org.aion.types.Address.wrap(res.getReturnData());
 
         byte[] args = ABIEncoder.encodeMethodArguments("doTransfer");
         byte[] args2 = ABIEncoder.encodeMethodArguments("addValue");
@@ -185,13 +185,13 @@ public class AvmParallelTest {
         // We will send 2x the value to these accounts, initially, and they will send 1x to the target.
         int iterations = 100;
         long valueToSend = 1_000_000L;
-        org.aion.vm.api.interfaces.Address targetUser = AvmAddress.wrap(Helpers.randomBytes(org.aion.vm.api.interfaces.Address.SIZE));
-        org.aion.vm.api.interfaces.Address[] tempUsers = new org.aion.vm.api.interfaces.Address[iterations];
+        org.aion.types.Address targetUser = org.aion.types.Address.wrap(Helpers.randomBytes(org.aion.types.Address.SIZE));
+        org.aion.types.Address[] tempUsers = new org.aion.types.Address[iterations];
         
         // First batch - disperse funds.
         Transaction[] firstBatch = new Transaction[iterations];
         for (int i = 0; i < iterations; ++i) {
-            tempUsers[i] = AvmAddress.wrap(Helpers.randomBytes(org.aion.vm.api.interfaces.Address.SIZE));
+            tempUsers[i] = org.aion.types.Address.wrap(Helpers.randomBytes(org.aion.types.Address.SIZE));
             firstBatch[i] = Transaction.call(preminedAddress, tempUsers[i], BigInteger.valueOf(i), BigInteger.valueOf(2L * valueToSend), new byte[0], 100_000L, 1L);
         }
         SimpleFuture<TransactionResult>[] results = avm.run(kernel, generateCTXBatch(firstBatch));

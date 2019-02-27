@@ -3,7 +3,7 @@ package org.aion.avm.kernel;
 import java.math.BigInteger;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.KernelInterfaceImpl;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.Test;
 

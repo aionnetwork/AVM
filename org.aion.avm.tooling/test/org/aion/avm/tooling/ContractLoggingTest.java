@@ -16,12 +16,11 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.LogSizeUtils;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.IExecutionLog;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -168,7 +167,7 @@ public class ContractLoggingTest {
         TransactionResult result = avm.run(ContractLoggingTest.kernel, new TransactionContext[] {context})[0].get();
 
         assertTrue(result.getResultCode().isSuccess());
-        contract = AvmAddress.wrap(result.getReturnData());
+        contract = Address.wrap(result.getReturnData());
     }
 
     private TransactionResult runTransaction(TransactionContext context) {

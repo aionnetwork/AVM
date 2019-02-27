@@ -3,8 +3,7 @@ package org.aion.avm.core.blockchainruntime;
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.AvmAddress;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 
@@ -45,6 +44,6 @@ public class EmptyCapabilities implements IExternalCapabilities {
             raw[i] = (byte) (one + two);
         }
         raw[0] = NodeEnvironment.CONTRACT_PREFIX;
-        return AvmAddress.wrap(raw);
+        return Address.wrap(raw);
     }
 }

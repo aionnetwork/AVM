@@ -42,7 +42,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Address avm_getAddress() {
-        org.aion.vm.api.interfaces.Address address = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(this.ctx.getTransaction()) : ctx.getDestinationAddress();
+        org.aion.types.Address address = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(this.ctx.getTransaction()) : ctx.getDestinationAddress();
         return new Address(address.toBytes());
     }
 
@@ -110,13 +110,13 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(address.unwrap(), this.task);
-        return new org.aion.avm.shadow.java.math.BigInteger(this.kernel.getBalance(AvmAddress.wrap(address.unwrap())));
+        return new org.aion.avm.shadow.java.math.BigInteger(this.kernel.getBalance(org.aion.types.Address.wrap(address.unwrap())));
     }
 
     @Override
     public org.aion.avm.shadow.java.math.BigInteger avm_getBalanceOfThisContract() {
         // This method can be called inside clinit so CREATE is a valid context.
-        org.aion.vm.api.interfaces.Address contractAddress = (ctx.getTransaction().isContractCreationTransaction())
+        org.aion.types.Address contractAddress = (ctx.getTransaction().isContractCreationTransaction())
             ? this.capabilities.generateContractAddress(this.ctx.getTransaction())
             : ctx.getDestinationAddress();
 
@@ -131,7 +131,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(address.unwrap(), this.task);
-        byte[] vc = this.kernel.getCode(AvmAddress.wrap(address.unwrap()));
+        byte[] vc = this.kernel.getCode(org.aion.types.Address.wrap(address.unwrap()));
         return vc == null ? 0 : vc.length;
     }
 
@@ -142,7 +142,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Result avm_call(Address targetAddress, org.aion.avm.shadow.java.math.BigInteger value, ByteArray data, long energyLimit) {
-        org.aion.vm.api.interfaces.Address internalSender = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(this.ctx.getTransaction()) : ctx.getDestinationAddress();
+        org.aion.types.Address internalSender = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(this.ctx.getTransaction()) : ctx.getDestinationAddress();
 
         java.math.BigInteger underlyingValue = value.getUnderlying();
         require(targetAddress != null, "Destination can't be NULL");
@@ -155,7 +155,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
             throw new CallDepthLimitExceededException("Internal call depth cannot be more than 10");
         }
 
-        AvmAddress target = AvmAddress.wrap(targetAddress.unwrap());
+        org.aion.types.Address target = org.aion.types.Address.wrap(targetAddress.unwrap());
         if (!kernel.destinationAddressIsSafeForThisVM(target)) {
             throw new IllegalArgumentException("Attempt to execute code using a foreign virtual machine");
         }
@@ -176,7 +176,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Result avm_create(org.aion.avm.shadow.java.math.BigInteger value, ByteArray data, long energyLimit) {
-        org.aion.vm.api.interfaces.Address internalSender = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(this.ctx.getTransaction()) : ctx.getDestinationAddress();
+        org.aion.types.Address internalSender = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(this.ctx.getTransaction()) : ctx.getDestinationAddress();
 
         java.math.BigInteger underlyingValue = value.getUnderlying();
         require(underlyingValue.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
@@ -212,7 +212,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     public void avm_selfDestruct(Address beneficiary) {
         require(null != beneficiary, "Beneficiary can't be NULL");
 
-        org.aion.vm.api.interfaces.Address contractAddr = (ctx.getTransactionKind() == Type.CREATE.toInt())
+        org.aion.types.Address contractAddr = (ctx.getTransactionKind() == Type.CREATE.toInt())
             ? this.capabilities.generateContractAddress(this.ctx.getTransaction())
             : ctx.getDestinationAddress();
 
@@ -222,7 +222,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // Value transfer
         java.math.BigInteger balanceToTransfer = this.kernel.getBalance(contractAddr);
         this.kernel.adjustBalance(contractAddr, balanceToTransfer.negate());
-        this.kernel.adjustBalance(AvmAddress.wrap(beneficiary.unwrap()), balanceToTransfer);
+        this.kernel.adjustBalance(org.aion.types.Address.wrap(beneficiary.unwrap()), balanceToTransfer);
 
         // Delete Account
         // Note that the account being deleted means it will still run but no DApp which sees this delete
@@ -375,7 +375,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         TransactionContext internalCTX = TransactionContextImpl.forInternalTransaction(this.ctx, internalTx);
 
         // Acquire the target of the internal transaction
-        org.aion.vm.api.interfaces.Address target = (internalCTX.getTransactionKind() == Type.CREATE.toInt())
+        org.aion.types.Address target = (internalCTX.getTransactionKind() == Type.CREATE.toInt())
             ? this.capabilities.generateContractAddress(internalCTX.getTransaction())
             : internalCTX.getDestinationAddress();
         avm.getResourceMonitor().acquire(target.toBytes(), task);

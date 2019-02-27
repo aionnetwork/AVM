@@ -38,7 +38,7 @@ import org.aion.avm.core.verification.Verifier;
 import org.aion.avm.internal.*;
 import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.objectweb.asm.ClassReader;

@@ -8,7 +8,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -27,7 +26,7 @@ import org.junit.Test;
  * Tests the hashCode behaviour of the contract code, when invoked within independent transactions.
  */
 public class HashCodeIntegrationTest {
-    private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private KernelInterfaceImpl kernel;
     private AvmImpl avm;
 
@@ -75,7 +74,7 @@ public class HashCodeIntegrationTest {
     private Object callStatic(Block block, Address contractAddr, String methodName) {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
-        Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.

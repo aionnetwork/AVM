@@ -2,7 +2,6 @@ package org.aion.avm.core.types;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.file.attribute.FileTime;
 import java.util.Map;
 import java.util.jar.Attributes;
@@ -13,7 +12,7 @@ import java.util.jar.Manifest;
 
 import java.util.zip.ZipEntry;
 import org.aion.avm.core.dappreading.LoadedJar;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionContext;
 
 

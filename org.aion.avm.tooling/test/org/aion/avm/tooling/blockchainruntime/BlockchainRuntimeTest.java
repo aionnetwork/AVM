@@ -32,7 +32,7 @@ public class BlockchainRuntimeTest {
     private KernelInterfaceImpl kernel;
     private AvmImpl avm;
 
-    private org.aion.vm.api.interfaces.Address premined = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address premined = KernelInterfaceImpl.PREMINED_ADDRESS;
 
     @Before
     public void setup() {
@@ -48,10 +48,10 @@ public class BlockchainRuntimeTest {
     @Test
     public void testBlockchainRuntime() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class, AionBuffer.class);
-        org.aion.vm.api.interfaces.Address dappAddress = installJarAsDApp(jar);
+        org.aion.types.Address dappAddress = installJarAsDApp(jar);
         
-        org.aion.vm.api.interfaces.Address from = premined;
-        org.aion.vm.api.interfaces.Address to = dappAddress;
+        org.aion.types.Address from = premined;
+        org.aion.types.Address to = dappAddress;
         BigInteger value = BigInteger.ONE;
         byte[] txData = "tx_data".getBytes();
         long energyLimit = 2_000_000;
@@ -59,7 +59,7 @@ public class BlockchainRuntimeTest {
 
         byte[] blockPrevHash = Helpers.randomBytes(32);
         long blockNumber = 4;
-        org.aion.vm.api.interfaces.Address blockCoinbase = address(5);
+        org.aion.types.Address blockCoinbase = address(5);
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
@@ -83,7 +83,7 @@ public class BlockchainRuntimeTest {
         buffer.put(blockCoinbase.toBytes());
         buffer.put(block.getDifficulty().toByteArray());
         buffer.put("value".getBytes());
-        buffer.putLong(kernel.getBalance(AvmAddress.wrap(new byte[32])).longValue());
+        buffer.putLong(kernel.getBalance(org.aion.types.Address.wrap(new byte[32])).longValue());
         buffer.putLong(kernel.getCode(dappAddress).length);
         buffer.put(HashUtils.blake2b("blake2b-message".getBytes()));
         buffer.put(HashUtils.sha256("sha256-message".getBytes()));
@@ -96,10 +96,10 @@ public class BlockchainRuntimeTest {
     @Test
     public void testIncorrectParameters() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestFailingResource.class);
-        org.aion.vm.api.interfaces.Address dappAddress = installJarAsDApp(jar);
+        org.aion.types.Address dappAddress = installJarAsDApp(jar);
         
-        org.aion.vm.api.interfaces.Address from = premined;
-        org.aion.vm.api.interfaces.Address to = dappAddress;
+        org.aion.types.Address from = premined;
+        org.aion.types.Address to = dappAddress;
         BigInteger value = BigInteger.ONE;
         byte[] txData = "expectFailure".getBytes();
         long energyLimit = 2_000_000;
@@ -107,7 +107,7 @@ public class BlockchainRuntimeTest {
 
         byte[] blockPrevHash = Helpers.randomBytes(32);
         long blockNumber = 4;
-        org.aion.vm.api.interfaces.Address blockCoinbase = address(5);
+        org.aion.types.Address blockCoinbase = address(5);
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
@@ -124,10 +124,10 @@ public class BlockchainRuntimeTest {
     @Test
     public void testInvalidAbiInput() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ABIFailureTestResource.class);
-        org.aion.vm.api.interfaces.Address dappAddress = installJarAsDApp(jar);
+        org.aion.types.Address dappAddress = installJarAsDApp(jar);
         
-        org.aion.vm.api.interfaces.Address from = premined;
-        org.aion.vm.api.interfaces.Address to = dappAddress;
+        org.aion.types.Address from = premined;
+        org.aion.types.Address to = dappAddress;
         BigInteger value = BigInteger.ONE;
         byte[] txData = "not encoded for ABI usage".getBytes();
         long energyLimit = 2_000_000;
@@ -135,7 +135,7 @@ public class BlockchainRuntimeTest {
 
         byte[] blockPrevHash = Helpers.randomBytes(32);
         long blockNumber = 4;
-        org.aion.vm.api.interfaces.Address blockCoinbase = address(5);
+        org.aion.types.Address blockCoinbase = address(5);
         long blockTimestamp = 6;
         byte[] blockData = "block_data".getBytes();
 
@@ -149,13 +149,13 @@ public class BlockchainRuntimeTest {
     }
 
 
-    private org.aion.vm.api.interfaces.Address installJarAsDApp(byte[] jar) {
+    private org.aion.types.Address installJarAsDApp(byte[] jar) {
         byte[] arguments = null;
         Transaction tx = Transaction.create(premined, kernel.getNonce(premined), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), 2_000_000L, 1L);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]));
         TransactionResult txResult = avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
 
-        return AvmAddress.wrap(txResult.getReturnData());
+        return org.aion.types.Address.wrap(txResult.getReturnData());
     }
 }

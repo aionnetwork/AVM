@@ -7,73 +7,72 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.AvmAddress;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 import org.junit.Test;
 
 public class AddressTest {
 
     @Test(expected = NullPointerException.class)
     public void testUnderlyingByteArrayIsNull() {
-        new AvmAddress(null);
+        new Address((byte[])null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testWrappingNullByteArray() {
-        AvmAddress.wrap(null);
+        Address.wrap((byte[])null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUnderlyingByteArrayIsLengthZero() {
-        new AvmAddress(new byte[0]);
+        new Address(new byte[0]);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWrappingZeroLengthByteArray() {
-        AvmAddress.wrap(new byte[0]);
+        Address.wrap(new byte[0]);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUnderlyingByteArrayLessThanRequiredSize() {
-        new AvmAddress(Helpers.randomBytes(Address.SIZE - 1));
+        new Address(Helpers.randomBytes(Address.SIZE - 1));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWrappingTooShortByteArray() {
-        AvmAddress.wrap(Helpers.randomBytes(Address.SIZE - 1));
+        Address.wrap(Helpers.randomBytes(Address.SIZE - 1));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUnderlyingByteArrayLargerThanRequiredSize() {
-        new AvmAddress(Helpers.randomBytes(Address.SIZE + 1));
+        new Address(Helpers.randomBytes(Address.SIZE + 1));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWrappingTooLargeByteArray() {
-        AvmAddress.wrap(Helpers.randomBytes(Address.SIZE + 1));
+        Address.wrap(Helpers.randomBytes(Address.SIZE + 1));
     }
 
     @Test
     public void testIsZero() {
         byte[] zeroBytes = new byte[Address.SIZE];
-        assertTrue(new AvmAddress(zeroBytes).isZeroAddress());
+        assertTrue(new Address(zeroBytes).isZeroAddress());
         zeroBytes[0] = 0x1;
-        assertFalse(new AvmAddress(zeroBytes).isZeroAddress());
+        assertFalse(new Address(zeroBytes).isZeroAddress());
     }
 
     @Test
     public void testEquivalenceOfConstructorAndWrap() {
         byte[] underlying = Helpers.randomBytes(Address.SIZE);
-        Address addressByConstructor = new AvmAddress(underlying);
-        Address addressByWrap = AvmAddress.wrap(underlying);
+        Address addressByConstructor = new Address(underlying);
+        Address addressByWrap = Address.wrap(underlying);
         assertEquals(addressByConstructor, addressByWrap);
     }
 
     @Test
     public void testEquivalenceOfToBytes() {
         byte[] underlying = Helpers.randomBytes(Address.SIZE);
-        AvmAddress address = new AvmAddress(underlying);
-        Address addressFromToBytes = AvmAddress.wrap(address.toBytes());
+        Address address = new Address(underlying);
+        Address addressFromToBytes = Address.wrap(address.toBytes());
         assertEquals(address, addressFromToBytes);
     }
 
@@ -82,8 +81,8 @@ public class AddressTest {
         byte[] underlying1 = Helpers.randomBytes(Address.SIZE);
         byte[] underlying2 = Arrays.copyOf(underlying1, underlying1.length);
         underlying2[0] = (byte) (((int) underlying2[0]) + 1);
-        Address address1 = new AvmAddress(underlying1);
-        AvmAddress address2 = new AvmAddress(underlying2);
+        Address address1 = new Address(underlying1);
+        Address address2 = new Address(underlying2);
         assertNotEquals(address1, address2);
     }
 

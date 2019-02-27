@@ -1,14 +1,13 @@
 package org.aion.avm.core;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.ISuspendableInstanceLoader;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.vm.api.interfaces.Address;
+import org.aion.types.Address;
 
 
 /**

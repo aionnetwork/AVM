@@ -3,7 +3,8 @@ package org.aion.kernel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.aion.vm.api.interfaces.Address;
+
+import org.aion.types.Address;
 import org.aion.vm.api.interfaces.IExecutionLog;
 import org.aion.vm.api.interfaces.InternalTransactionInterface;
 import org.aion.vm.api.interfaces.TransactionSideEffects;

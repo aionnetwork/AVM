@@ -19,7 +19,6 @@ import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyException;
-import org.aion.kernel.AvmAddress;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.KernelInterfaceImpl;
@@ -48,7 +47,7 @@ import static org.junit.Assert.assertTrue;
 
 
 public class AvmImplTest {
-    private static org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
     private static Block block;
 
     @Rule
@@ -64,8 +63,8 @@ public class AvmImplTest {
         KernelInterfaceImpl kernel = new KernelInterfaceImpl();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
-        org.aion.vm.api.interfaces.Address from = deployer;
-        org.aion.vm.api.interfaces.Address to = AvmAddress.wrap(new byte[32]);
+        org.aion.types.Address from = deployer;
+        org.aion.types.Address to = org.aion.types.Address.wrap(new byte[32]);
         BigInteger value = BigInteger.valueOf(1000L);
         byte[] data = "data".getBytes();
         long energyLimit = 50_000L;
@@ -187,7 +186,7 @@ public class AvmImplTest {
 
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
-        Transaction tx2 = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, contractAddr.unwrap(), transaction2EnergyLimit, energyPrice);
+        Transaction tx2 = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, contractAddr.unwrap(), transaction2EnergyLimit, energyPrice);
         TransactionResult result2 = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx2, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
@@ -338,7 +337,7 @@ public class AvmImplTest {
         
         // Cause the failure.
         byte[] nearData = ABIEncoder.encodeMethodArguments("localFailAfterReentrant");
-        Transaction tx = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, nearData, energyLimit, 1L);
+        Transaction tx = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, nearData, energyLimit, 1L);
         TransactionResult result2 = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, result2.getResultCode());
         
@@ -419,7 +418,7 @@ public class AvmImplTest {
 
         // Verify the internal call depth limit is in effect.
         byte[] callData = ABIEncoder.encodeMethodArguments("recursiveChangeNested", 0, 10);
-        Transaction tx = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        Transaction tx = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, callData, 20_000_000l, 1L);
         TransactionResult result2 = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result2.getResultCode());
 
@@ -509,7 +508,7 @@ public class AvmImplTest {
         boolean shouldFail = true;
         byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
         long energyLimit = 1_000_000l;
-        Transaction tx = Transaction.call(KernelInterfaceImpl.PREMINED_ADDRESS, AvmAddress.wrap(spawnerAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, spawnerCallData, energyLimit, 1L);
+        Transaction tx = Transaction.call(KernelInterfaceImpl.PREMINED_ADDRESS, org.aion.types.Address.wrap(spawnerAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, spawnerCallData, energyLimit, 1L);
         TransactionResult result2 = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.FAILED_INVALID, result2.getResultCode());
         avm.shutdown();
@@ -608,7 +607,7 @@ public class AvmImplTest {
 
     private int callRecursiveHash(KernelInterface kernel, AvmImpl avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);
-        Transaction call = Transaction.call(deployer, AvmAddress.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
+        Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
         TransactionResult result = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return ((Integer) ABIDecoder.decodeOneObject(result.getReturnData())).intValue();
@@ -636,7 +635,7 @@ public class AvmImplTest {
 
     private Object callDApp(KernelInterface kernel, AvmImpl avm, Address dAppAddress, byte[] argData) {
         long energyLimit = 2_000_000l;
-        Transaction tx = Transaction.call(deployer, AvmAddress.wrap(dAppAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
+        Transaction tx = Transaction.call(deployer, org.aion.types.Address.wrap(dAppAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
         TransactionResult result2 = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
         return ABIDecoder.decodeOneObject(result2.getReturnData());

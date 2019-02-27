@@ -25,8 +25,8 @@ public class Blake2bTest {
     private long energyPrice = 1L;
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private org.aion.vm.api.interfaces.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private org.aion.vm.api.interfaces.Address dappAddress;
+    private org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address dappAddress;
 
     private KernelInterfaceImpl kernel;
     private AvmImpl avm;
@@ -43,7 +43,7 @@ public class Blake2bTest {
         TransactionResult txResult = avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
         System.out.println(txResult);
 
-        dappAddress = AvmAddress.wrap(txResult.getReturnData());
+        dappAddress = org.aion.types.Address.wrap(txResult.getReturnData());
         assertNotNull(dappAddress);
     }
 
