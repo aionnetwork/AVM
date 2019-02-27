@@ -4,8 +4,21 @@ import java.math.BigInteger;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.core.AvmConfiguration;
+import org.aion.avm.core.AvmImpl;
+import org.aion.avm.core.CommonAvmFactory;
+import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.testWallet.*;
+import org.aion.avm.core.testWallet.ByteArrayHelpers;
+import org.aion.avm.core.testWallet.ByteArrayWrapper;
+import org.aion.avm.core.testWallet.BytesKey;
+import org.aion.avm.core.testWallet.CallEncoder;
+import org.aion.avm.core.testWallet.Daylimit;
+import org.aion.avm.core.testWallet.EventLogger;
+import org.aion.avm.core.testWallet.Multiowned;
+import org.aion.avm.core.testWallet.Operation;
+import org.aion.avm.core.testWallet.RequireFailedException;
+import org.aion.avm.core.testWallet.Wallet;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
@@ -40,7 +53,13 @@ public class PocWalletTest {
     @Before
     public void setup() {
         this.kernel = new KernelInterfaceImpl();
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
+        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities() {
+            @Override
+            public byte[] blake2b(byte[] data) {
+                // NOTE:  This test relies on calling blake2b but doesn't rely on the answer being correct so just return the input.
+                return data;
+            }
+        }, new AvmConfiguration());
     }
 
     @After

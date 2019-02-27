@@ -4,7 +4,7 @@ import org.aion.avm.shadowapi.org.aion.avm.api.Address;
 import org.aion.avm.shadowapi.org.aion.avm.api.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
-import org.aion.avm.core.StandardCapabilities;
+import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.blockchainruntime.TestingBlockchainRuntime;
 import org.aion.avm.core.SuspendedInstrumentation;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -31,7 +31,7 @@ public class CallTest {
         long energyLimit = 5000000;
 
         SimpleAvm avm = new SimpleAvm(energyLimit, this.preserveDebuggability, Caller.class);
-        avm.attachBlockchainRuntime(new TestingBlockchainRuntime(new StandardCapabilities()) {
+        avm.attachBlockchainRuntime(new TestingBlockchainRuntime(new EmptyCapabilities()) {
             @Override
             public Result avm_call(Address targetAddress, BigInteger value, ByteArray data, long energyLimit) {
                 callbackReceived = true;
@@ -62,7 +62,7 @@ public class CallTest {
         long energyLimit = 5000000;
 
         SimpleAvm avm = new SimpleAvm(energyLimit, this.preserveDebuggability, Caller.class);
-        avm.attachBlockchainRuntime(new TestingBlockchainRuntime(new StandardCapabilities()) {
+        avm.attachBlockchainRuntime(new TestingBlockchainRuntime(new EmptyCapabilities()) {
             @Override
             public Result avm_call(Address a, BigInteger v, ByteArray d, long e) {
                 // We want to suspend the outer IInstrumentation for the sub-call (they are supposed to be distinct).
@@ -73,7 +73,7 @@ public class CallTest {
                 SimpleAvm avm2 = null;
                 try {
                     avm2 = new SimpleAvm(e, CallTest.this.preserveDebuggability, Callee.class);
-                    avm2.attachBlockchainRuntime(new TestingBlockchainRuntime(new StandardCapabilities()).withCaller(to).withAddress(a.unwrap()).withData(d.getUnderlying()));
+                    avm2.attachBlockchainRuntime(new TestingBlockchainRuntime(new EmptyCapabilities()).withCaller(to).withAddress(a.unwrap()).withData(d.getUnderlying()));
                     Class<?> clazz = avm2.getClassLoader().loadUserClassByOriginalName(Callee.class.getName(), CallTest.this.preserveDebuggability);
                     Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
 

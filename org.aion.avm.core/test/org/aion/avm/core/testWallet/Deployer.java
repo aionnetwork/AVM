@@ -6,7 +6,7 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.DAppCreator;
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.StandardCapabilities;
+import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.blockchainruntime.TestingBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -42,7 +42,13 @@ import java.util.function.Supplier;
  * as that implementation becomes fleshed out.
  */
 public class Deployer {
-    private static final IExternalCapabilities CAPABILITIES = new StandardCapabilities();
+    private static final IExternalCapabilities CAPABILITIES = new EmptyCapabilities() {
+        @Override
+        public byte[] blake2b(byte[] data) {
+            // NOTE:  This test relies on calling blake2b but doesn't rely on the answer being correct so just return the input.
+            return data;
+        }
+    };
 
     static Map<String, Integer> eventCounts = new HashMap<>();
 

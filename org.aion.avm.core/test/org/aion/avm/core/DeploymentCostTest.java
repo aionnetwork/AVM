@@ -1,29 +1,43 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.api.Address;
+import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.poc.AionBufferPerfContract;
-import org.aion.avm.core.poc.TRS;
 import org.aion.avm.core.testBlake2b.Blake2b;
 import org.aion.avm.core.testBlake2b.Main;
-import org.aion.avm.core.testExchange.*;
-import org.aion.avm.core.testWallet.*;
-import org.aion.avm.core.util.AvmRule;
+import org.aion.avm.core.testWallet.ByteArrayHelpers;
+import org.aion.avm.core.testWallet.ByteArrayWrapper;
+import org.aion.avm.core.testWallet.BytesKey;
+import org.aion.avm.core.testWallet.Daylimit;
+import org.aion.avm.core.testWallet.EventLogger;
+import org.aion.avm.core.testWallet.Multiowned;
+import org.aion.avm.core.testWallet.Operation;
+import org.aion.avm.core.testWallet.RequireFailedException;
+import org.aion.avm.core.testWallet.Wallet;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.AvmTransactionResult;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.aion.kernel.Block;
+import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.Transaction;
+import org.aion.kernel.TransactionContextImpl;
+import org.aion.vm.api.interfaces.Address;
+import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
 
 import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 
 /**
  * This suite is really just for viewing the deployment costs of some of our various Dapp examples.
@@ -31,12 +45,25 @@ import java.util.Map;
  * The purpose is more to give us an idea about how our deployment costs look for different Dapps.
  */
 public class DeploymentCostTest {
-    @ClassRule
-    public static AvmRule avmRule = new AvmRule(false);
-
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1L;
-    private static final Address DEPLOYER = avmRule.getPreminedAccount();
+    private static final Address DEPLOYER = KernelInterfaceImpl.PREMINED_ADDRESS;
+
+    private Block block;
+    private KernelInterfaceImpl kernel;
+    private AvmImpl avm;
+
+    @Before
+    public void setup() {
+        this.block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        this.kernel = new KernelInterfaceImpl();
+        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+    }
+
+    @After
+    public void tearDown() {
+        this.avm.shutdown();
+    }
 
 
     // NOTE: To add a new dApp to this test simply do the following:
@@ -49,19 +76,15 @@ public class DeploymentCostTest {
      * The contracts/dApps we use in the deployment cost test.
      */
     private enum Contract {
-        BLAKE2B, AION_BUFFER_PERF, POC_WALLET, BASIC_PERF, POC_EXCHANGE, ERC20, BASIC_APP, TRS;
+        BLAKE2B,
+        POC_WALLET,
+        ;
 
         private static Map<Contract, String> contractsAsStrings = new HashMap<>();
 
         static {
             contractsAsStrings.put(BLAKE2B, "Blake2b");
-            contractsAsStrings.put(AION_BUFFER_PERF, "AionBufferPerfContract");
             contractsAsStrings.put(POC_WALLET, "PocWallet");
-            contractsAsStrings.put(BASIC_PERF, "BasicPerfContract");
-            contractsAsStrings.put(POC_EXCHANGE, "PocExchange");
-            contractsAsStrings.put(ERC20, "ERC20");
-            contractsAsStrings.put(BASIC_APP, "BasicAppTestTarget");
-            contractsAsStrings.put(TRS, "TRS");
         }
 
         @Override
@@ -100,11 +123,6 @@ public class DeploymentCostTest {
                     Main.class,
                     Blake2b.class);
                 break;
-            case AION_BUFFER_PERF:
-                jarBytes = classesToJarBytes(
-                    AionBufferPerfContract.class,
-                    AionBuffer.class);
-                break;
             case POC_WALLET:
                 jarBytes = classesToJarBytes(
                     Wallet.class,
@@ -120,48 +138,6 @@ public class DeploymentCostTest {
                     Daylimit.class,
                     EventLogger.class);
                 break;
-            case BASIC_PERF:
-                jarBytes = classesToJarBytes(
-                    BasicPerfContract.class,
-                    AionList.class,
-                    AionMap.class,
-                    AionSet.class);
-                break;
-            case POC_EXCHANGE:
-                jarBytes = classesToJarBytes(
-                    ExchangeController.class,
-                    Exchange.class,
-                    ExchangeTransaction.class,
-                    ByteArrayHelpers.class,
-                    ERC20.class,
-                    ERC20Token.class,
-                    AionList.class,
-                    AionSet.class,
-                    AionMap.class);
-                break;
-            case ERC20:
-                byte[] clinitArgs = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
-                jarBytes = classesToJarBytesWithClinitArgs(
-                    clinitArgs,
-                    CoinController.class,
-                    ERC20.class,
-                    ERC20Token.class,
-                    AionList.class,
-                    AionSet.class,
-                    AionMap.class);
-                break;
-            case BASIC_APP:
-                jarBytes = classesToJarBytes(
-                    BasicAppTestTarget.class,
-                    AionMap.class,
-                    AionSet.class,
-                    AionList.class);
-                break;
-            case TRS:
-                jarBytes = classesToJarBytes(
-                    TRS.class,
-                    AionMap.class);
-                break;
             default: RuntimeAssertionError.unreachable("This should never be reached.");
         }
 
@@ -171,15 +147,15 @@ public class DeploymentCostTest {
 
     private AvmTransactionResult deployContract(Contract contract) {
         byte[] jar = getDeploymentJarBytesForContract(contract);
-        return (AvmTransactionResult) avmRule.deploy(DEPLOYER, BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+
+        //deploy in normal Mode
+        Transaction create = Transaction.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult createResult = this.avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, this.block)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
+        return (AvmTransactionResult)createResult;
     }
 
     private byte[] classesToJarBytes(Class<?> main, Class<?>... others) {
         return new CodeAndArguments(JarBuilder.buildJarForMainAndClasses(main, others), null).encodeToBytes();
     }
-
-    private byte[] classesToJarBytesWithClinitArgs(byte[] clinitArgs, Class<?> main, Class<?>... others) {
-        return new CodeAndArguments(JarBuilder.buildJarForMainAndClasses(main, others), clinitArgs).encodeToBytes();
-    }
-
 }

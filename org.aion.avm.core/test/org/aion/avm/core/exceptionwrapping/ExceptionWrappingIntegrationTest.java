@@ -9,7 +9,7 @@ import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.MockFailureInstrumentationFactory;
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.StandardCapabilities;
+import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -29,7 +29,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 1_000_000l;
@@ -61,7 +61,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(10, () -> {throw new OutOfEnergyException();}), new StandardCapabilities(), new AvmConfiguration());
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(10, () -> {throw new OutOfEnergyException();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 1_000_000l;
@@ -83,7 +83,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(10, () -> {throw new NullPointerException();}), new StandardCapabilities(), new AvmConfiguration());
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(10, () -> {throw new NullPointerException();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 1_000_000l;
@@ -105,7 +105,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(100, () -> {throw new OutOfMemoryError();}), new StandardCapabilities(), new AvmConfiguration());
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(100, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 1_000_000l;
@@ -143,7 +143,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new KernelInterfaceImpl();
-        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(200, () -> {throw new OutOfMemoryError();}), new StandardCapabilities(), new AvmConfiguration());
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(200, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 1_000_000l;

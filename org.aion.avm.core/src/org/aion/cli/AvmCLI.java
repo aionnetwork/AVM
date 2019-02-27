@@ -6,11 +6,11 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
-import org.aion.avm.core.StandardCapabilities;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.StorageWalker;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.tooling.StandardCapabilities;
 import org.aion.cli.ArgumentParser.Action;
 import org.aion.kernel.*;
 

@@ -2,8 +2,8 @@ package org.aion.rules;
 
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.core.util.AvmRule;
 import org.aion.avm.core.util.LogSizeUtils;
+import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.AvmAddress;
 import org.aion.vm.api.interfaces.ResultCode;
