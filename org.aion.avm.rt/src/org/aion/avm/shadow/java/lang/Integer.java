@@ -245,7 +245,7 @@ public class Integer extends Number implements Comparable<Integer> {
         return java.lang.Integer.bitCount(i);
     }
 
-    public static long avm_reverse(int i) {
+    public static int avm_reverse(int i) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_reverse);
         return java.lang.Integer.reverse(i);
     }

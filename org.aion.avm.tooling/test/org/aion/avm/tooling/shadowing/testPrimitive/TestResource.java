@@ -760,12 +760,21 @@ public class TestResource {
                 }
             }
         }
+
+        public static void reverse(){
+            int value = 168;
+            int reversed = Integer.reverse(value);
+            if(reversed!= 352321536 || Integer.reverse(reversed)!=value){
+                throw new RuntimeException("Reverse of " + value + ",was equal to " + reversed);
+            }
+        }
     }
 
     public boolean testInteger() throws Exception{
         IntegerTest.Decode.main(null);
         IntegerTest.ParsingTest.main(null);
         IntegerTest.ToString.main(null);
+        IntegerTest.reverse();
         return true;
     }
 
