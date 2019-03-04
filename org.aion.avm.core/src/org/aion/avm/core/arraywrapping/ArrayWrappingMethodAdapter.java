@@ -201,9 +201,9 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
                 // allows us to continue to do invokestatic but then return in terms of unifying type.
                 if (type.startsWith("[")){
-                    wName = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor("[" + type);
+                    wName = ArrayNameMapper.getPreciseArrayWrapperDescriptor("[" + type);
                 }else{
-                    wName = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor("[L" + type);
+                    wName = ArrayNameMapper.getPreciseArrayWrapperDescriptor("[L" + type);
                 }
 
                 this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", "(I)L" + wName + ";", false);
@@ -212,7 +212,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             case Opcodes.CHECKCAST: {
                 wName = type;
                 if (type.startsWith("[")) {
-                    wName = ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(type);
+                    wName = ArrayNameMapper.getUnifyingArrayWrapperDescriptor(type);
                 }
                 this.mv.visitTypeInsn(opcode, wName);
                 break;
@@ -220,7 +220,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             case Opcodes.INSTANCEOF: {
                 wName = type;
                 if (type.startsWith("[")) {
-                    wName = ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(type);
+                    wName = ArrayNameMapper.getUnifyingArrayWrapperDescriptor(type);
                 }
                 this.mv.visitTypeInsn(opcode, wName);
                 break;
@@ -240,8 +240,8 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             isInterface = true;
         }
 
-        desc = ArrayWrappingClassGenerator.updateMethodDesc(desc);
-        String newOwner = ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(owner);
+        desc = ArrayNameMapper.updateMethodDesc(desc);
+        String newOwner = ArrayNameMapper.getUnifyingArrayWrapperDescriptor(owner);
         this.mv.visitMethodInsn(opcode, newOwner, name, desc, isInterface);
     }
 
@@ -255,7 +255,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     {
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(descriptor) + ";";
+            desc = "L" + ArrayNameMapper.getUnifyingArrayWrapperDescriptor(descriptor) + ";";
         }
 
         this.mv.visitLocalVariable(name, desc, signature, start, end, index);
@@ -269,7 +269,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     {
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(descriptor) + ";";
+            desc = "L" + ArrayNameMapper.getUnifyingArrayWrapperDescriptor(descriptor) + ";";
         }
 
         this.mv.visitFieldInsn(opcode, owner, name, desc);
@@ -278,13 +278,13 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     @Override
     public void visitMultiANewArrayInsn(java.lang.String descriptor, int d)
     {
-        int sd = ArrayWrappingClassGenerator.getDimension(descriptor);
+        int sd = ArrayNameMapper.getDimension(descriptor);
         while (d < sd){
             this.mv.visitIntInsn(Opcodes.BIPUSH, 0);
             d++;
         }
-        String wName = ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(descriptor);
-        String facDesc = ArrayWrappingClassGenerator.getFactoryDescriptor(wName, sd);
+        String wName = ArrayNameMapper.getPreciseArrayWrapperDescriptor(descriptor);
+        String facDesc = ArrayNameMapper.getFactoryDescriptor(wName, sd);
 
         this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc, false);
     }

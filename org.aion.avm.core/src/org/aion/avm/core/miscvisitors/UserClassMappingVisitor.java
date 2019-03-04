@@ -1,7 +1,7 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
+import org.aion.avm.core.arraywrapping.ArrayNameMapper;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
@@ -137,7 +137,7 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
                     if(((Type) value).getSort() == Type.OBJECT){
                         valueToWrite = Type.getType(UserClassMappingVisitor.this.mapper.mapDescriptor(((Type) value).getDescriptor(), UserClassMappingVisitor.this.preserveDebuggability));
                     }else if (((Type) value).getSort() == Type.ARRAY){
-                        valueToWrite = Type.getType("L" + ArrayWrappingClassGenerator.getPreciseArrayWrapperDescriptor(UserClassMappingVisitor.this.mapper.mapDescriptor((((Type) value).getDescriptor()), UserClassMappingVisitor.this.preserveDebuggability)) + ";");
+                        valueToWrite = Type.getType("L" + ArrayNameMapper.getPreciseArrayWrapperDescriptor(UserClassMappingVisitor.this.mapper.mapDescriptor((((Type) value).getDescriptor()), UserClassMappingVisitor.this.preserveDebuggability)) + ";");
                     }
                 }
                 super.visitLdcInsn(valueToWrite);

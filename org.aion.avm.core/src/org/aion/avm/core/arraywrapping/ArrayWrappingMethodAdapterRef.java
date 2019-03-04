@@ -82,7 +82,7 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 f.pop();
                 BasicValue t = (BasicValue) (f.pop());
                 String targetDesc = t.toString();
-                String elementType = ArrayWrappingClassGenerator.getElementType(targetDesc);
+                String elementType = ArrayNameMapper.getElementType(targetDesc);
 
                 MethodInsnNode invokeVNode =
                     new MethodInsnNode(Opcodes.INVOKEINTERFACE,
@@ -108,7 +108,7 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 f.pop();
                 BasicValue t = (BasicValue) (f.pop());
                 String targetDesc = t.toString();
-                String elementType = ArrayWrappingClassGenerator.getElementType(targetDesc);
+                String elementType = ArrayNameMapper.getElementType(targetDesc);
 
                 MethodInsnNode invokeVNode =
                         new MethodInsnNode(Opcodes.INVOKEINTERFACE,

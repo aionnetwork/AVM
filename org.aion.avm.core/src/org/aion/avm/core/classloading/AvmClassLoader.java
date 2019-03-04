@@ -3,6 +3,7 @@ package org.aion.avm.core.classloading;
 import java.util.*;
 import java.util.function.Function;
 
+import org.aion.avm.core.arraywrapping.ArrayNameMapper;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.internal.PackageConstants;
@@ -128,9 +129,9 @@ public class AvmClassLoader extends ClassLoader {
 
     private boolean isUserArrayWrapper(String className) {
         if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "interface")) {
-            return this.bytecodeMap.containsKey(ArrayWrappingClassGenerator.getElementInterfaceName(className));
+            return this.bytecodeMap.containsKey(ArrayNameMapper.getElementInterfaceName(className));
         } else if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$")) {
-            return this.bytecodeMap.containsKey(ArrayWrappingClassGenerator.getClassWrapperElementName(className));
+            return this.bytecodeMap.containsKey(ArrayNameMapper.getClassWrapperElementName(className));
         }
         // since it is not an array wrapper
         return false;

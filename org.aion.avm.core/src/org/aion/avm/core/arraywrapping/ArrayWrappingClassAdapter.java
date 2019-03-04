@@ -25,7 +25,7 @@ public class ArrayWrappingClassAdapter extends ClassToolchain.ToolChainClassVisi
         // Convert array field to wrapper
         String desc = descriptor;
         if (descriptor.startsWith("[")) {
-            desc = "L" + ArrayWrappingClassGenerator.getUnifyingArrayWrapperDescriptor(descriptor) + ";";
+            desc = "L" + ArrayNameMapper.getUnifyingArrayWrapperDescriptor(descriptor) + ";";
         }
 
         return super.visitField(access, name, desc, signature, value);
@@ -40,7 +40,7 @@ public class ArrayWrappingClassAdapter extends ClassToolchain.ToolChainClassVisi
             final String[] exceptions)
     {
 
-        String desc = ArrayWrappingClassGenerator.updateMethodDesc(descriptor);
+        String desc = ArrayNameMapper.updateMethodDesc(descriptor);
 
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 
