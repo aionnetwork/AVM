@@ -109,15 +109,6 @@ public class Throwable extends Object {
 //    public void avm_setStackTrace(StackTraceElement[] stackTrace) {
 //    }
 
-    public void avm_addSuppressed(Throwable exception) {
-        // TODO:  Does suppression make sense for this?
-    }
-
-    public Throwable[] avm_getSuppressed() {
-        // TODO:  Does suppression make sense for this?
-        return null;
-    }
-
     //=======================================================
     // Methods below are used by runtime and test code only!
     //========================================================
