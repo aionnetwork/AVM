@@ -9,6 +9,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -318,7 +319,12 @@ public class GraphReachabilityIntegrationTest {
 
 
     private Address doInitialDeploymentAndSetup(Block block) {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(GraphReachabilityIntegrationTestTarget.class);
+        // The assertions in this method depends on the gas charged, which in turn depends on the exact size of the jar file.
+        // The AvmRule invokes the ABICompiler on all input jars.
+        // As a result, we have to run the ABICompiler on the input jar to get the correct expected gas values.
+        ABICompiler compiler = new ABICompiler();
+        compiler.compile(JarBuilder.buildJarForMainAndClasses(GraphReachabilityIntegrationTestTarget.class));
+        byte[] jar = compiler.getJarFileBytes();
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         // Deploy.

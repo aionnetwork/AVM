@@ -9,7 +9,6 @@ import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.objectweb.asm.AnnotationVisitor;
@@ -17,7 +16,6 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
-import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.util.HashMap;
 
@@ -29,24 +27,11 @@ public class RandomTest {
     @Rule
     public AvmRule avmRule = new AvmRule(true);
 
-    private static ABICompiler compiler;
-
     private static final long ENERGY_LIMIT = 10_000_000L;
     private static final long ENERGY_PRICE = 1L;
 
+    private Address installTestDApp(byte[] jar) {
 
-    @Before
-    public void setup() {
-        compiler = new ABICompiler();
-    }
-
-    private Address installTestDApp() {
-
-        byte[] jar =
-                JarBuilder.buildJarForExplicitClassNamesAndBytecode(
-                        compiler.getMainClassName(),
-                        compiler.getMainClassBytes(),
-                        compiler.getClassMap());
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         // Deploy.
@@ -91,9 +76,8 @@ public class RandomTest {
 //                        RandomTest.getMethodDescriptor(String.join("", argsGenerator.getArgDescriptors())), argsGenerator.getNumberOfArgs()));
 
         byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode(className, createClass(methodName, argsGenerator), new HashMap<>());
-        compiler.compile(new ByteArrayInputStream(jar));
 
-        Address dapp = installTestDApp();
+        Address dapp = installTestDApp(jar);
 
         byte[] result = (byte[]) callStatic(dapp, methodName, argsGenerator.getVarArgs());
         byte[] expected = ABIEncoder.encodeMethodArguments("",argsGenerator.getVarArgs());
@@ -120,9 +104,8 @@ public class RandomTest {
 //                RandomTest.getMethodDescriptor(String.join("", argsGenerator.getArgDescriptors())), argsGenerator.getNumberOfArgs()));
 
         byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode(className, createClass(methodName, argsGenerator), new HashMap<>());
-        compiler.compile(new ByteArrayInputStream(jar));
 
-        Address dapp = installTestDApp();
+        Address dapp = installTestDApp(jar);
 
         byte[] result = (byte[]) callStatic(dapp, methodName, argsGenerator.getVarArgs());
         byte[] expected = ABIEncoder.encodeMethodArguments("",argsGenerator.getVarArgs());

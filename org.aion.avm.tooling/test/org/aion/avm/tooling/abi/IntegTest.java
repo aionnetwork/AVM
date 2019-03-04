@@ -1,5 +1,11 @@
 package org.aion.avm.tooling.abi;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.math.BigInteger;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
@@ -8,37 +14,19 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
-import java.math.BigInteger;
-
-import static org.junit.Assert.*;
 
 public class IntegTest {
 
     @Rule
     public AvmRule avmRule = new AvmRule(true);
 
-    private static ABICompiler compiler;
-
     private static final long ENERGY_LIMIT = 10_000_000L;
     private static final long ENERGY_PRICE = 1L;
 
-    @Before
-    public void setup() {
-        compiler = new ABICompiler();
-    }
+    private Address installTestDApp(byte[] jar) {
 
-    private Address installTestDApp() {
-
-        byte[] jar =
-                JarBuilder.buildJarForExplicitClassNamesAndBytecode(
-                        compiler.getMainClassName(),
-                        compiler.getMainClassBytes(),
-                        compiler.getClassMap());
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         // Deploy.
@@ -78,8 +66,7 @@ public class IntegTest {
     public void testSimpleDApp() {
 
         byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppNoMainWithFallbackTarget.class);
-        compiler.compile(new ByteArrayInputStream(jar));
-        Address dapp = installTestDApp();
+        Address dapp = installTestDApp(jar);
 
         boolean ret = (Boolean) callStatic(dapp, "test1", true);
         assertTrue(ret);
@@ -94,8 +81,7 @@ public class IntegTest {
 
         byte[] jar =
                 JarBuilder.buildJarForMainAndClasses(ChattyCalculatorTarget.class, SilentCalculatorTarget.class);
-        compiler.compile(new ByteArrayInputStream(jar));
-        Address dapp = installTestDApp();
+        Address dapp = installTestDApp(jar);
 
         String ret = (String) callStatic(dapp, "amIGreater", 3, 4);
         assertEquals("No, 3, you are NOT greater than 4", ret);
@@ -108,13 +94,8 @@ public class IntegTest {
     public void testComplicatedDApp() {
 
         byte[] jar = JarBuilder.buildJarForMainAndClasses(TestDAppTarget.class);
-        compiler.compile(new ByteArrayInputStream(jar));
 
-        TestHelpers.saveMainClassInABICompiler(compiler);
-
-
-
-        Address dapp = installTestDApp();
+        Address dapp = installTestDApp(jar);
 
         String ret = (String) callStatic(dapp, "returnHelloWorld");
         assertEquals("Hello world", ret);
@@ -142,8 +123,8 @@ public class IntegTest {
     public void testFallbackSuccess() {
         byte[] jar =
             JarBuilder.buildJarForMainAndClasses(DAppNoMainWithFallbackTarget.class);
-        compiler.compile(new ByteArrayInputStream(jar));
-        Address dapp = installTestDApp();
+
+        Address dapp = installTestDApp(jar);
 
         int oldVal = (Integer) callStatic(dapp, "getValue");
         callStatic(dapp, "garbageMethod", 7);
@@ -160,8 +141,7 @@ public class IntegTest {
     public void testFallbackFail() {
         byte[] jar =
             JarBuilder.buildJarForMainAndClasses(DAppNoMainNoFallbackTarget.class);
-        compiler.compile(new ByteArrayInputStream(jar));
-        Address dapp = installTestDApp();
+        Address dapp = installTestDApp(jar);
 
         assertNull(callStatic(dapp, "noSuchMethod"));
 

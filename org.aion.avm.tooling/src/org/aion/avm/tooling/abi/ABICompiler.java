@@ -1,5 +1,6 @@
 package org.aion.avm.tooling.abi;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -67,6 +68,10 @@ public class ABICompiler {
         System.out.println("Usage: ABICompiler <DApp jar path>");
     }
 
+    public void compile(byte[] jarBytes) {
+        compile(new ByteArrayInputStream(jarBytes));
+    }
+
     public void compile(InputStream byteReader) {
         try {
             safeLoadFromBytes(byteReader);
@@ -87,6 +92,16 @@ public class ABICompiler {
         outputJarFile =
                 JarBuilder.buildJarForExplicitClassNamesAndBytecode(
                         mainClassName, mainClassBytes, classMap);
+
+//        DataOutputStream dout = null;
+//        try {
+//            dout = new DataOutputStream(
+//                new FileOutputStream(getMainClassName() + ".class"));
+//            dout.write(getMainClassBytes());
+//            dout.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     private void safeLoadFromBytes(InputStream byteReader) throws Exception {

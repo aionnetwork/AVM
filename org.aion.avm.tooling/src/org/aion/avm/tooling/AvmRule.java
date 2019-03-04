@@ -8,6 +8,7 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.*;
 import org.junit.rules.TestRule;
@@ -25,6 +26,7 @@ import java.util.List;
 public final class AvmRule implements TestRule {
 
     private boolean debugMode;
+    private final ABICompiler compiler;
     public final KernelInterfaceImpl kernel;
     public AvmImpl avm;
     public Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
@@ -35,6 +37,7 @@ public final class AvmRule implements TestRule {
     public AvmRule(boolean debugMode) {
         this.debugMode = debugMode;
         this.kernel = new KernelInterfaceImpl();
+        compiler = new ABICompiler();
     }
 
     @Override
@@ -165,7 +168,14 @@ public final class AvmRule implements TestRule {
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
-        Transaction tx = Transaction.create(org.aion.types.Address.wrap(from.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, dappBytes, energyLimit, energyPrice);
+
+        CodeAndArguments oldCodeAndArguments = CodeAndArguments.decodeFromBytes(dappBytes);
+        compiler.compile(oldCodeAndArguments.code);
+        CodeAndArguments newCodeAndArguments = new CodeAndArguments(compiler.getJarFileBytes(),
+            oldCodeAndArguments.arguments);
+        byte[] deployBytes = newCodeAndArguments.encodeToBytes();
+
+        Transaction tx = Transaction.create(org.aion.types.Address.wrap(from.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, deployBytes, energyLimit, energyPrice);
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
         return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
     }
