@@ -163,6 +163,7 @@ public class RuntimeMethodFeeSchedule {
     public static final long Double_avm_max = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
     public static final long Double_avm_min = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
     public static final long Double_avm_compareTo_1 = RT_METHOD_FEE_LEVEL_1; // totalCost - 124;
+    public static final long Double_avm_equals = RT_METHOD_FEE_LEVEL_2;
 
     public static final long FloatArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 562; // byte code cost - 362; invoked methods cost - 200;
     public static final long FloatArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;

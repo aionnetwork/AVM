@@ -213,6 +213,16 @@ public class Double extends Number implements Comparable<Double>{
         return (v == avm_POSITIVE_INFINITY) || (v == avm_NEGATIVE_INFINITY);
     }
 
+    public boolean avm_equals(IObject obj) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_equals);
+        if (obj instanceof Double) {
+            Double other = (Double) obj;
+            lazyLoad();
+            other.lazyLoad();
+            return java.lang.Double.doubleToLongBits(this.v) == java.lang.Double.doubleToLongBits(other.v);
+        }
+        return false;
+    }
     //========================================================
     // Methods below are used by runtime and test code only!
     //========================================================

@@ -314,7 +314,16 @@ public class TestResource {
                 if (!Double.toString(0.001).equals("0.001"))
                     throw new RuntimeException("Double.toString(0.001) is not \"0.001\"");
                 if (!Double.toString(0.002).equals("0.002"))
-                    throw new RuntimeException("Double.toString(0.001) is not \"0.002\"");
+                    throw new RuntimeException("Double.toString(0.002) is not \"0.002\"");
+            }
+        }
+
+        static class Equals {
+
+            public static void main(String args[]){
+                Double double1 = 1.0d;
+                if (!double1.equals(1.0d))
+                    throw new RuntimeException("Double 1.0 does not equal 1.0d");
             }
         }
     }
@@ -324,6 +333,7 @@ public class TestResource {
         DoubleTest.Extrema.main(null);
         DoubleTest.NaNInfinityParsing.main(null);
         DoubleTest.ToString.main(null);
+        DoubleTest.Equals.main(null);
         return true;
     }
 
