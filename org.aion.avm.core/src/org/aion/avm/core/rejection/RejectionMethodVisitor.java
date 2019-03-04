@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.arraywrapping.ArrayNameMapper;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.util.DescriptorParser;
@@ -248,14 +249,11 @@ public class RejectionMethodVisitor extends MethodVisitor {
             builder.append(DescriptorParser.ARRAY);
             writeClass(builder, clazz.getComponentType());
         } else if (!clazz.isPrimitive()) {
-            // TODO:  Remove these primitive array special-cases once we integrate the array wrapping mapping logic into the NamespaceMapper.
             // TODO:  Move the explicit IObject->Object special-case into the NamespaceMapper if we can generalize the descriptor case (since,
             // in general, this mapping should not be applied but it is something we need to do for method descriptors, specifically).
             String className = clazz.getName();
-            if ((PackageConstants.kArrayWrapperDotPrefix + "ByteArray").equals(className)) {
-                builder.append("[B");
-            } else if ((PackageConstants.kArrayWrapperDotPrefix + "CharArray").equals(className)) {
-                builder.append("[C");
+            if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix )) {
+                builder.append( ArrayNameMapper.getElementNameFromWrapper(Helpers.fulllyQualifiedNameToInternalName(className)));
             } else if ((PackageConstants.kInternalDotPrefix + "IObject").equals(className)) {
                 builder.append(DescriptorParser.OBJECT_START);
                 builder.append(PackageConstants.kShadowSlashPrefix + "java/lang/Object");

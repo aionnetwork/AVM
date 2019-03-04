@@ -56,4 +56,9 @@ public class TestResource {
         String str1 = new String("abc");
         return str1.toUpperCase();
     }
+
+    public String stringFromCodePoints(){
+        String str1 = new String(new int[]{104, 101, 108, 108, 111, 1593}, 0, 5);
+        return str1;
+    }
 }

@@ -73,6 +73,12 @@ public class StringShadowingTest {
         context = TransactionContextImpl.forExternalTransaction(tx, block);
         result = avm.run(kernel, new TransactionContext[] {context})[0].get();
         Assert.assertEquals("ABC", ABIDecoder.decodeOneObject(result.getReturnData()));
+
+        txData = ABIEncoder.encodeMethodArguments("stringFromCodePoints");
+        tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        context = TransactionContextImpl.forExternalTransaction(tx, block);
+        result = avm.run(kernel, new TransactionContext[] {context})[0].get();
+        Assert.assertEquals("hello", ABIDecoder.decodeOneObject(result.getReturnData()));
         avm.shutdown();
     }
 
