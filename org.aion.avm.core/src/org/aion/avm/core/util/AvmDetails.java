@@ -6,6 +6,7 @@ import org.aion.avm.internal.PackageConstants;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -92,8 +93,12 @@ public class AvmDetails {
             if (!isShadowClass(c.getName()) &&
                     !isArrayWrapperClass(c.getName()) &&
                     !isPrimitive(c) &&
-                    !isSupportedInternalType(c.getName()))
+                    !isSupportedInternalType(c.getName())) {
+                if (method instanceof Method) {
+                    throw new AssertionError("transformed method " + method.getDeclaringClass() + "." + method.getName() + " should not have an unsupported parameter type: " + c.getName());
+                }
                 return false;
+            }
         }
         return true;
     }

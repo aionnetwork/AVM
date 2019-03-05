@@ -761,6 +761,14 @@ public class TestResource {
             }
         }
 
+        public static void comparableTest() {
+            Comparable<Object> c = o -> 0;
+            int result = c.compareTo(1);
+            if (result != 0) {
+                throw new RuntimeException("Expected " + 0 + ", but got " + result);
+            }
+        }
+
         public static void reverse(){
             int value = 168;
             int reversed = Integer.reverse(value);
@@ -775,6 +783,7 @@ public class TestResource {
         IntegerTest.ParsingTest.main(null);
         IntegerTest.ToString.main(null);
         IntegerTest.reverse();
+        IntegerTest.comparableTest();
         return true;
     }
 
