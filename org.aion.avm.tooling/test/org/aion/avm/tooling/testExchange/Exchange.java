@@ -9,22 +9,22 @@ import org.aion.avm.userlib.AionMap;
 
 public class Exchange {
 
-    private AionMap<String, Address> coinListing;
+    private static AionMap<String, Address> coinListing;
 
-    private ExchangeTransaction toProcess;
+    private static ExchangeTransaction toProcess;
 
-    private Address owner;
+    private static Address owner;
 
-    public Exchange(){
+    public static void init(){
         owner = BlockchainRuntime.getCaller();
         coinListing = new AionMap<>();
     }
 
-    private boolean verifyContractAddress(char[] name, Address contract){
+    private static boolean verifyContractAddress(char[] name, Address contract){
         return true;
     }
 
-    public boolean listCoin(char[] name, Address contractAddr){
+    public static boolean listCoin(char[] name, Address contractAddr){
         if (coinListing.containsKey(String.valueOf(name))){
             return false;
         }
@@ -45,7 +45,7 @@ public class Exchange {
         return true;
     }
 
-    public boolean requestTransfer(char[] coin, Address to, long amount){
+    public static boolean requestTransfer(char[] coin, Address to, long amount){
         if (!coinListing.containsKey(String.valueOf(coin))){
             return false;
         }
@@ -65,7 +65,7 @@ public class Exchange {
         return false;
     }
 
-    public boolean processExchangeTransaction(){
+    public static boolean processExchangeTransaction(){
         if (!BlockchainRuntime.getCaller().equals(owner)){
             return false;
         }

@@ -11,7 +11,7 @@ import org.aion.avm.api.BlockchainRuntime;
 public class MakeConcatTarget {
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new MakeConcatTarget(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(MakeConcatTarget.class, BlockchainRuntime.getData());
     }
 
     public static void call() {

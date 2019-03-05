@@ -19,41 +19,41 @@ public class DeployAndRunTarget {
         return a[0] + a[1] + b;
     }
 
-    public int addArray2(int[][] a) {
+    public static int addArray2(int[][] a) {
         return a[0][0] + a[1][0];
     }
 
-    public char[] concatenate(char[][] s) {
+    public static char[] concatenate(char[][] s) {
         char[] res = new char[6];
         System.arraycopy(s[0], 0, res, 0, s[0].length);
         System.arraycopy(s[1], 0, res, s[0].length, s[1].length);
         return res;
     }
 
-    public String concatString(String s1, String s2) {
+    public static String concatString(String s1, String s2) {
         return s1 + s2;
     }
 
-    public String[] concatStringArray(String[] s) {
+    public static String[] concatStringArray(String[] s) {
         return new String[]{s[0] + s[1], "perfect"};
     }
 
-    public char[][] swap(char[][] s) {
+    public static char[][] swap(char[][] s) {
         char[][] res = new char[2][2];
         res[0] = s[1];
         res[1] = s[0];
         return res;
     }
 
-    public void setBar(int bar) {
+    public static void setBar(int bar) {
         DeployAndRunTarget.bar = bar;
     }
 
-    public byte[] run() {
+    public static byte[] run() {
         return "Hello, world!".getBytes();
     }
 
-    public byte[] encodeArgs(){
+    public static byte[] encodeArgs(){
         String methodName = "addArray";
         int[] a = new int[]{123, 1};
         int b = 5;
@@ -63,9 +63,6 @@ public class DeployAndRunTarget {
     public static byte[] main() {
         String methodName = ABIDecoder.decodeMethodName(BlockchainRuntime.getData());
         // We verify that we can both decode the method name and that we correctly handle both static and instance calls.
-        if (methodName.equals("addArray")) {
-            return ABIDecoder.decodeAndRunWithClass(DeployAndRunTarget.class, BlockchainRuntime.getData());
-        }
-        return ABIDecoder.decodeAndRunWithObject(new DeployAndRunTarget(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(DeployAndRunTarget.class, BlockchainRuntime.getData());
     }
 }

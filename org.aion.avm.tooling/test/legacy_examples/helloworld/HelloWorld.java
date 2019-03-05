@@ -17,15 +17,15 @@ public class HelloWorld {
         }
     }
 
-    public int add(int a, int b) {
+    public static int add(int a, int b) {
         return a + b;
     }
 
-    public byte[] run() {
+    public static byte[] run() {
         return "Hello, world!".getBytes();
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new HelloWorld(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(HelloWorld.class, BlockchainRuntime.getData());
     }
 }

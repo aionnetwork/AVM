@@ -6,8 +6,6 @@ import org.aion.avm.api.BlockchainRuntime;
 
 public class CoinController {
 
-    private static ERC20 token;
-
     /**
      * Initialization code executed once at the Dapp deployment.
      * Read the transaction data, decode it and construct the token instance with the decoded arguments.
@@ -20,7 +18,7 @@ public class CoinController {
         int decimals = (int) arguments[2];
         Address minter = BlockchainRuntime.getCaller();
 
-        token = new ERC20Token(name, symbol, decimals, minter);
+        ERC20Token.init(name, symbol, decimals, minter);
     }
 
     /**
@@ -30,6 +28,6 @@ public class CoinController {
      * @return the encoded return data of the method being called.
      */
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(token, BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(ERC20Token.class, BlockchainRuntime.getData());
     }
 }

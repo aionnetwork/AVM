@@ -6,15 +6,15 @@ import org.aion.avm.api.BlockchainRuntime;
 import java.math.RoundingMode;
 
 public class TestResource {
-    TestEnum earth = TestEnum.EARTH;
-    TestEnum jupiter = TestEnum.JUPITER;
-    TestEnum mars = TestEnum.MARS;
+    static TestEnum earth = TestEnum.EARTH;
+    static TestEnum jupiter = TestEnum.JUPITER;
+    static TestEnum mars = TestEnum.MARS;
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(TestResource.class, BlockchainRuntime.getData());
     }
 
-    public boolean testEnumAccess(){
+    public static boolean testEnumAccess(){
         boolean ret = true;
         ret = ret && (earth == TestEnum.EARTH);
         ret = ret && (earth == TestEnum.valueOf("EARTH"));
@@ -23,7 +23,7 @@ public class TestResource {
         return ret;
     }
 
-    public boolean testEnumValues(){
+    public static boolean testEnumValues(){
         boolean ret = true;
 
         TestEnum[] es = TestEnum.values();
@@ -40,7 +40,7 @@ public class TestResource {
     }
 
 
-    public boolean testShadowJDKEnum(){
+    public static boolean testShadowJDKEnum(){
         boolean ret = true;
         ret = ret && (RoundingMode.HALF_UP == RoundingMode.valueOf("HALF_UP"));
         ret = ret && (RoundingMode.CEILING instanceof Object);

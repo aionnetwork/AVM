@@ -36,20 +36,10 @@ public class CryptoUtilMethodFeeBenchmarkTestTargetClass {
         }
     }
 
-
-    private static org.aion.avm.tooling.CryptoUtilMethodFeeBenchmarkTestTargetClass testTarget;
-
-    /**
-     * Initialization code executed once at the Dapp deployment.
-     */
-    static {
-        testTarget = new org.aion.avm.tooling.CryptoUtilMethodFeeBenchmarkTestTargetClass();
-    }
-
     /**
      * Entry point at a transaction call.
      */
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(testTarget, BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(CryptoUtilMethodFeeBenchmarkTestTargetClass.class, BlockchainRuntime.getData());
     }
 }

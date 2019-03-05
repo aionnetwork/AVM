@@ -113,7 +113,6 @@ public class DeploymentCostTest {
                     Exchange.class,
                     ExchangeTransaction.class,
                     ByteArrayHelpers.class,
-                    ERC20.class,
                     ERC20Token.class,
                     AionList.class,
                     AionSet.class,
@@ -124,7 +123,6 @@ public class DeploymentCostTest {
                 jarBytes = classesToJarBytesWithClinitArgs(
                     clinitArgs,
                     CoinController.class,
-                    ERC20.class,
                     ERC20Token.class,
                     AionList.class,
                     AionSet.class,

@@ -36,8 +36,8 @@ public class PocExchangeTest {
         this.kernel = new KernelInterfaceImpl();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
-        testERC20Jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
-        testExchangeJar = JarBuilder.buildJarForMainAndClasses(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
+        testERC20Jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
+        testExchangeJar = JarBuilder.buildJarForMainAndClasses(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
     }
 
     @After

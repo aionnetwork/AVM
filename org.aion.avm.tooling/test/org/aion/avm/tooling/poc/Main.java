@@ -6,8 +6,6 @@ import org.aion.avm.api.BlockchainRuntime;
 
 public class Main {
 
-    private static Wallet wallet;
-
     /**
      * Initialization code executed once at the Dapp deployment.
      * Read the transaction data, decode it and construct the wallet instance with the decoded arguments.
@@ -24,7 +22,7 @@ public class Main {
                 owner2
         };
 
-        wallet = new Wallet(owners, confirmationsRequired);
+        Wallet.init(owners, confirmationsRequired);
     }
 
     /**
@@ -34,6 +32,6 @@ public class Main {
      * @return the encoded return data of the method being called.
      */
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(wallet, BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(Wallet.class, BlockchainRuntime.getData());
     }
 }

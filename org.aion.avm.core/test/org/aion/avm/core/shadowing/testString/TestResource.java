@@ -5,10 +5,10 @@ import org.aion.avm.api.BlockchainRuntime;
 
 public class TestResource {
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(TestResource.class, BlockchainRuntime.getData());
     }
 
-    public int[] singleStringReturnInt() {
+    public static int[] singleStringReturnInt() {
         int[] results = new int[4];
         int i = 0;
 
@@ -21,7 +21,7 @@ public class TestResource {
         return results;
     }
 
-    public boolean[] singleStringReturnBoolean() {
+    public static boolean[] singleStringReturnBoolean() {
         boolean[] results = new boolean[7];
         int i = 0;
 
@@ -37,27 +37,27 @@ public class TestResource {
         return results;
     }
 
-    public char singleStringReturnChar() {
+    public static char singleStringReturnChar() {
         String str1 = new String("abc");
         return str1.charAt(0);
     }
 
-    public byte[] singleStringReturnBytes() {
+    public static byte[] singleStringReturnBytes() {
         String str1 = new String("abc");
         return str1.getBytes();
     }
 
-    public String singleStringReturnLowerCase() {
+    public static String singleStringReturnLowerCase() {
         String str1 = new String("abc");
         return str1.toLowerCase();
     }
 
-    public String singleStringReturnUpperCase() {
+    public static String singleStringReturnUpperCase() {
         String str1 = new String("abc");
         return str1.toUpperCase();
     }
 
-    public String stringFromCodePoints(){
+    public static String stringFromCodePoints(){
         String str1 = new String(new int[]{104, 101, 108, 108, 111, 1593}, 0, 5);
         return str1;
     }

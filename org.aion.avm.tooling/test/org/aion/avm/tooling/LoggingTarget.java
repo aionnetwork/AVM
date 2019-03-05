@@ -18,10 +18,10 @@ public class LoggingTarget {
     public static final byte[] DATA5 = new byte[]{ 0x5 };
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new LoggingTarget(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(LoggingTarget.class, BlockchainRuntime.getData());
     }
 
-    public void spawnInternalTransactionsAndHitLogsAtEachLevel(int numInternals) {
+    public static void spawnInternalTransactionsAndHitLogsAtEachLevel(int numInternals) {
         hitLogs();
         if (numInternals > 0) {
             byte[] data = ABIEncoder.encodeMethodArguments("spawnInternalTransactionsAndHitLogsAtEachLevel", numInternals - 1);
@@ -29,7 +29,7 @@ public class LoggingTarget {
         }
     }
 
-    public void spawnInternalTransactionsAndHitLogsAtBottomLevel(int numInternals) {
+    public static void spawnInternalTransactionsAndHitLogsAtBottomLevel(int numInternals) {
         if (numInternals > 0) {
             byte[] data = ABIEncoder.encodeMethodArguments("spawnInternalTransactionsAndHitLogsAtBottomLevel", numInternals - 1);
             BlockchainRuntime.call(BlockchainRuntime.getAddress(), BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy());
@@ -38,7 +38,7 @@ public class LoggingTarget {
         }
     }
 
-    public void hitLogs() {
+    public static void hitLogs() {
         hitLog1();
         hitLog2();
         hitLog3();
@@ -46,23 +46,23 @@ public class LoggingTarget {
         hitLog5();
     }
 
-    private void hitLog1() {
+    private static void hitLog1() {
         BlockchainRuntime.log(DATA1);
     }
 
-    private void hitLog2() {
+    private static void hitLog2() {
         BlockchainRuntime.log(TOPIC1, DATA2);
     }
 
-    private void hitLog3() {
+    private static void hitLog3() {
         BlockchainRuntime.log(TOPIC1, TOPIC2, DATA3);
     }
 
-    private void hitLog4() {
+    private static void hitLog4() {
         BlockchainRuntime.log(TOPIC1, TOPIC2, TOPIC3, DATA4);
     }
 
-    private void hitLog5() {
+    private static void hitLog5() {
         BlockchainRuntime.log(TOPIC1, TOPIC2, TOPIC3, TOPIC4, DATA5);
     }
 

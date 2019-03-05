@@ -272,14 +272,14 @@ public class ABIEncoderTest {
         Assert.assertNotNull(caught);
         caught = null;
         try {
-            org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.decodeAndRunWithObject(new Object(), null);
+            org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.decodeAndRunWithClass(Object.class, null);
         } catch (NullPointerException e) {
             caught = e;
         }
         Assert.assertNotNull(caught);
         caught = null;
         try {
-            org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.decodeAndRunWithObject(null, new byte[0]);
+            org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.decodeAndRunWithClass(null, new byte[0]);
         } catch (NullPointerException e) {
             caught = e;
         }

@@ -27,16 +27,6 @@ public final class ABIDecoder {
     }
 
     /**
-     * Decode the transaction data and invoke the corresponding method of the object's class.
-     * @param object the user space class object.
-     * @param txData the transaction data that is encoded with the method name and arguments to call with.
-     * @return the encoded return data from the method call.
-     */
-    public static byte[] decodeAndRunWithObject(Object object, byte[] txData) {
-        return null;
-    }
-
-    /**
      * Decode the transaction data and return the method name.
      * @param txData the transaction data that has the encoded method name to call with.
      * @return the decoded method name.

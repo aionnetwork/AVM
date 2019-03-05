@@ -11,7 +11,7 @@ import org.aion.avm.api.BlockchainRuntime;
 public class MetaFactoryTarget {
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new MetaFactoryTarget(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(MetaFactoryTarget.class, BlockchainRuntime.getData());
     }
 
     public static void call() {

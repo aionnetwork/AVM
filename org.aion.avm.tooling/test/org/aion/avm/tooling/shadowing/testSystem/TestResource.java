@@ -5,10 +5,10 @@ import org.aion.avm.api.BlockchainRuntime;
 
 public class TestResource {
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(TestResource.class, BlockchainRuntime.getData());
     }
 
-    public boolean testArrayCopy(){
+    public static boolean testArrayCopy(){
         boolean ret = true;
 
         boolean[]   a = {true, false, true, false, true, false};

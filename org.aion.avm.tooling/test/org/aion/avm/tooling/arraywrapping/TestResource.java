@@ -14,13 +14,13 @@ public class TestResource {
     public static class C extends B {}
 
     private Object[] oa;
-    private int[] oi;
+    private static int[] oi;
     public static int[] ois;
-    public String[][][] fieldMDString;
-    public int[][][] fieldMDInt;
+    public static String[][][] fieldMDString;
+    public static int[][][] fieldMDInt;
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(TestResource.class, BlockchainRuntime.getData());
     }
 
     public boolean testBasic(){
@@ -31,7 +31,7 @@ public class TestResource {
         return res;
     }
 
-    public boolean testSignature(){
+    public static boolean testSignature(){
         boolean[]   a = new boolean[42];
         byte[]      b = new byte[42];
         char[]      c = new char[42];
@@ -44,10 +44,10 @@ public class TestResource {
         String[]    j = new String[42];
         String[][]          k = new String[42][1];
         char[][][][][]    l = new char[42][1][1][1][1];
-        return a == this.testMixedSignature(a, b, c, d, e, f, g, h, i, j, k, l);
+        return a == testMixedSignature(a, b, c, d, e, f, g, h, i, j, k, l);
     }
 
-    public boolean[] testMixedSignature(boolean[] in1, byte[] in2, char[] in3,
+    public static boolean[] testMixedSignature(boolean[] in1, byte[] in2, char[] in3,
                                         double[] in4, float[] in5, int[] in6,
                                         long[] in7, short[] in8, Object[] in9,
                                         String[] in10, String[][] in11, char[][][][][] in12)
@@ -93,7 +93,7 @@ public class TestResource {
 
 
 
-    public boolean testBooleanArray(){
+    public static boolean testBooleanArray(){
         boolean res = true;
         int i = 0;
 
@@ -114,7 +114,7 @@ public class TestResource {
         return res;
     }
 
-    public boolean testByteArray(){
+    public static boolean testByteArray(){
         boolean res = true;
         int i = 0;
 
@@ -135,7 +135,7 @@ public class TestResource {
         return res;
     }
 
-    public boolean testCharArray(){
+    public static boolean testCharArray(){
         boolean res = true;
         int i = 0;
 
@@ -156,7 +156,7 @@ public class TestResource {
         return res;
     }
 
-    public boolean testDoubleArray(){
+    public static boolean testDoubleArray(){
         boolean res = true;
         int i = 0;
 
@@ -177,7 +177,7 @@ public class TestResource {
         return res;
     }
 
-    public boolean testFloatArray(){
+    public static boolean testFloatArray(){
         boolean res = true;
         int i = 0;
 
@@ -198,7 +198,7 @@ public class TestResource {
         return res;
     }
 
-    public boolean testIntArray(){
+    public static boolean testIntArray(){
         boolean res = true;
         int i = 0;
 
@@ -219,7 +219,7 @@ public class TestResource {
         return res;
     }
 
-    public boolean testLongArray(){
+    public static boolean testLongArray(){
         boolean res = true;
         int i = 0;
 
@@ -240,7 +240,7 @@ public class TestResource {
         return res;
     }
 
-    public boolean testShortArray(){
+    public static boolean testShortArray(){
         boolean res = true;
         int i = 0;
 
@@ -261,7 +261,7 @@ public class TestResource {
         return res;
     }
 
-    public boolean testObjectArray(){
+    public static boolean testObjectArray(){
         boolean res = true;
         int count = 0;
         int i = 0;
@@ -286,7 +286,7 @@ public class TestResource {
         return res;
     }
 
-     public boolean testStringArray(){
+     public static boolean testStringArray(){
          boolean res = true;
          int count = 0;
          int i = 0;
@@ -314,7 +314,7 @@ public class TestResource {
      }
 
 
-    public boolean testVarargs(){
+    public static boolean testVarargs(){
         int a = varargsHelper(1);
         int b = varargsHelper(1,2,3,4,5,6,7,8,9,10);
         int c = varargsHelper();
@@ -323,7 +323,7 @@ public class TestResource {
         return res;
     }
 
-    private int varargsHelper(int ...a){
+    private static int varargsHelper(int ...a){
         int c = 0;
         for (int i:a){
             c = c + i;
@@ -331,7 +331,7 @@ public class TestResource {
         return c;
     }
 
-    public boolean testTypeChecking(){
+    public static boolean testTypeChecking(){
         int[] a = new int[10];
         Object b = (Object) a;
         int[] c = (int[]) b;
@@ -339,7 +339,7 @@ public class TestResource {
         return (c instanceof int[]) && (c instanceof java.lang.Object);
     }
 
-    public boolean testClassField(){
+    public static boolean testClassField(){
         oi = new int[50];
         oi[20] = 1;
         int a = oi[20];
@@ -359,7 +359,7 @@ public class TestResource {
         return (a == 1) && (oi instanceof int[]) && (b == 1) && (ois instanceof int[]) && (c == 10) && (d.equals("Bomb"));
     }
 
-    public boolean testMultiInt(){
+    public static boolean testMultiInt(){
         boolean ret = true;
 
         int[][][] i3 = new int[3][3][3];
@@ -377,7 +377,7 @@ public class TestResource {
         return ret;
     }
 
-    public boolean testMultiByte(){
+    public static boolean testMultiByte(){
         boolean ret = true;
 
         byte[][][] i3 = new byte[3][3][3];
@@ -395,7 +395,7 @@ public class TestResource {
         return ret;
     }
 
-    public boolean testMultiChar(){
+    public static boolean testMultiChar(){
         boolean ret = true;
 
         char[][][] i3 = new char[3][3][3];
@@ -413,7 +413,7 @@ public class TestResource {
         return ret;
     }
 
-    public boolean testMultiDouble(){
+    public static boolean testMultiDouble(){
         boolean ret = true;
 
         double[][][] i3 = new double[3][3][3];
@@ -431,7 +431,7 @@ public class TestResource {
         return ret;
     }
 
-    public boolean testMultiFloat(){
+    public static boolean testMultiFloat(){
         boolean ret = true;
 
         float[][][] i3 = new float[3][3][3];
@@ -449,7 +449,7 @@ public class TestResource {
         return ret;
     }
 
-    public boolean testMultiLong(){
+    public static boolean testMultiLong(){
         boolean ret = true;
 
         long[][][] i3 = new long[3][3][3];
@@ -485,7 +485,7 @@ public class TestResource {
         return ret;
     }
 
-    public boolean testMultiRef(){
+    public static boolean testMultiRef(){
         boolean ret = true;
 
         String[][][] s3 = new String[3][3][3];
@@ -503,7 +503,7 @@ public class TestResource {
         return ret;
     }
 
-    public boolean testHierarachy(){
+    public static boolean testHierarachy(){
         boolean ret = true;
 
         A[][][] a = new A[5][5][5];
@@ -541,12 +541,12 @@ public class TestResource {
         return ret;
     }
 
-    public boolean testArrayEnergy(){
+    public static boolean testArrayEnergy(){
         int[][][][] s = new int[10][10][10][10];
         return true;
     }
 
-    public boolean testIncompleteArrayIni(){
+    public static boolean testIncompleteArrayIni(){
         int[][][][] s;
         s = new int[10][10][10][];
         s = new int[10][10][][];
@@ -560,7 +560,7 @@ public class TestResource {
         return true;
     }
 
-    public boolean testInterfaceArray(){
+    public static boolean testInterfaceArray(){
         X[][][] xxx = new X[5][5][5];
         Y[][][] yyy = new Y[5][5][5];
         Z[][][] zzz = new Z[5][5][5];
@@ -587,7 +587,7 @@ public class TestResource {
         return true;
     }
 
-    public boolean testArrayClone(){
+    public static boolean testArrayClone(){
         byte[] ba = new byte[10];
         byte[] bcp = ba.clone();
 

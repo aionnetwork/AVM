@@ -5,7 +5,7 @@ import org.aion.avm.api.BlockchainRuntime;
 
 public class TestResource {
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(new TestResource(), BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(TestResource.class, BlockchainRuntime.getData());
     }
 
     //========================================================
@@ -47,7 +47,7 @@ public class TestResource {
         }
     }
 
-    public boolean testBoolean() throws Exception{
+    public static boolean testBoolean() throws Exception{
         BooleanTest.Factory.main(null);
         BooleanTest.ParseBoolean.main(null);
         return true;
@@ -113,7 +113,7 @@ public class TestResource {
         }
     }
 
-    public boolean testByte() throws Exception{
+    public static boolean testByte() throws Exception{
         ByteTest.Decode.main(null);
         return true;
     }
@@ -328,7 +328,7 @@ public class TestResource {
         }
     }
 
-    public boolean testDouble() throws Exception{
+    public static boolean testDouble() throws Exception{
         DoubleTest.Constants.main(null);
         DoubleTest.Extrema.main(null);
         DoubleTest.NaNInfinityParsing.main(null);
@@ -518,7 +518,7 @@ public class TestResource {
         }
     }
 
-    public boolean testFloat() throws Exception{
+    public static boolean testFloat() throws Exception{
         FloatTest.Constants.main(null);
         FloatTest.Extrema.main(null);
         FloatTest.NaNInfinityParsing.main(null);
@@ -778,7 +778,7 @@ public class TestResource {
         }
     }
 
-    public boolean testInteger() throws Exception{
+    public static boolean testInteger() throws Exception{
         IntegerTest.Decode.main(null);
         IntegerTest.ParsingTest.main(null);
         IntegerTest.ToString.main(null);
@@ -1026,7 +1026,7 @@ public class TestResource {
 
     }
 
-    public boolean testLong() throws Exception{
+    public static boolean testLong() throws Exception{
         LongTest.Decode.main(null);
         LongTest.ParsingTest.main(null);
         LongTest.ToString.main(null);
@@ -1103,7 +1103,7 @@ public class TestResource {
         }
     }
 
-    public boolean testShort() throws Exception{
+    public static boolean testShort() throws Exception{
         ShortTest.Decode.main(null);
         ShortTest.ByteSwap.main(null);
         return true;
@@ -1113,7 +1113,7 @@ public class TestResource {
     //========================================================
     // Misc Test
     //========================================================
-    public boolean testAutoboxing(){
+    public static boolean testAutoboxing(){
         boolean ret = true;
 
         Boolean     a = true;

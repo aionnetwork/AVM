@@ -126,7 +126,6 @@ public class RuntimeMethodFeeSchedule {
     public static final long ByteOrder_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 131;
 
     public static final long ABIDecoder_avm_decodeAndRunWithClass = 37234; // totalCost - 37234; //maximum cost of multiple blocks; // byte code cost - 520; invoked methods cost - 36714;
-    public static final long ABIDecoder_avm_decodeAndRunWithObject = 37112; // totalCost - 37112; //maximum cost of multiple blocks; // byte code cost - 460; invoked methods cost - 36652;
     public static final long ABIDecoder_avm_decodeMethodName = RT_METHOD_FEE_LEVEL_4; // totalCost - 1161; // byte code cost - 336; invoked methods cost - 825;
     public static final long ABIDecoder_avm_decodeArguments = RT_METHOD_FEE_LEVEL_4; // totalCost - 2600; //maximum cost of multiple blocks; // byte code cost - 448; invoked methods cost - 2152;
     public static final long ABIDecoder_avm_decodeOneObject = 232718; // totalCost - 232718; // byte code cost - 335; invoked methods cost - 232383;

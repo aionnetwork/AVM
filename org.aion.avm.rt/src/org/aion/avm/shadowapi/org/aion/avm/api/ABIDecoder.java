@@ -37,26 +37,7 @@ public final class ABIDecoder {
 
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithClass);
 
-        return internalDecodeAndRun(clazz.getRealClass(), null, txData.getUnderlying());
-    }
-
-    /**
-     * Decode the transaction data and invoke the corresponding method of the object's class.
-     * @param obj the user space class object.
-     * @param txData the transaction data that is encoded with the method name and arguments to call with.
-     * @return the encoded return data from the method call.
-     * @throws NullPointerException If given null obj or txData.
-     */
-    public static ByteArray avm_decodeAndRunWithObject(IObject obj, ByteArray txData) {
-        if ((null == obj) || (null == txData)) {
-            throw new NullPointerException();
-        }
-        if (txData.getUnderlying().length == 0) {
-            return null;
-        } // do not charge in case of early exit, since the fee is quite high
-
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithObject);
-        return internalDecodeAndRun(obj.getClass(), obj, txData.getUnderlying());
+        return internalDecodeAndRun(clazz.getRealClass(), txData.getUnderlying());
     }
 
     /**
@@ -170,16 +151,10 @@ public final class ABIDecoder {
 
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeAndRunWithClass);
 
-        ByteArray result = internalDecodeAndRun(clazz, null, txData);
+        ByteArray result = internalDecodeAndRun(clazz, txData);
         return (null != result)
                 ? result.getUnderlying()
                 : null;
-    }
-    public static byte[] decodeAndRunWithObject(Object obj, byte[] txData) {
-        if ((null == obj) || (null == txData)) {
-            throw new NullPointerException();
-        }
-        throw RuntimeAssertionError.unimplemented("Method for compilation only!");
     }
 
     public static Object[] decodeArguments(byte[] data) {
@@ -197,7 +172,8 @@ public final class ABIDecoder {
     }
 
 
-    public static ByteArray internalDecodeAndRun(Class<?> clazz, IObject targetInstance, byte[] inputBytes) throws ABICodecException {
+    public static ByteArray
+    internalDecodeAndRun(Class<?> clazz, byte[] inputBytes) throws ABICodecException {
         List<ABICodec.Tuple> parsed;
         try {
             parsed = ABICodec.parseEverything(inputBytes);
@@ -226,11 +202,13 @@ public final class ABIDecoder {
         Method targetMethod = null;
         try {
             targetMethod = clazz.getMethod(methodName, argTypes);
-            // Make sure that our static modifier is consistent with how we were used.
-            boolean mustBeStatic = (null == targetInstance);
             boolean isStatic = (0 != (Modifier.STATIC & targetMethod.getModifiers()));
-            if (mustBeStatic != isStatic) {
-                throw new ABICodecException("Invalid static modifier");
+            if (!isStatic) {
+                throw new ABICodecException("ABIDecoder should only be used with static methods");
+            }
+            boolean isPublic = (0 != (Modifier.PUBLIC & targetMethod.getModifiers()));
+            if (!isPublic) {
+                throw new ABICodecException("Non-public method cannot be accessed");
             }
         } catch (NoSuchMethodException | SecurityException e) {
             throw new ABICodecException("Method not found", e);
@@ -252,7 +230,8 @@ public final class ABIDecoder {
         // Note that the result of the invoke should be a shadow object but may be a box type if reflection generated that due to the user returning a primitive.
         Object result = null;
         try {
-            result = targetMethod.invoke(targetInstance, argValues);
+            // The first parameter is null because we only invoke static methods
+            result = targetMethod.invoke(null, argValues);
         } catch (InvocationTargetException e) {
             // The case of InvocationTargetException is just a normal exception in the user code so we need to decode it.
             Throwable cause = e.getTargetException();

@@ -64,7 +64,7 @@ public class HashCodeIntegrationTest {
         // Store an object.
         int systemHash = ((Integer)callStatic(block, contractAddr, "persistNewObject")).intValue();
         // We know that this is currently 3 but that may change in the future.
-        Assert.assertEquals(3, systemHash);
+        Assert.assertEquals(2, systemHash);
         // Fetch it and verify the hashCode is loaded.
         int loadSystemHash = ((Integer)callStatic(block, contractAddr, "readPersistentHashCode")).intValue();
         Assert.assertEquals(systemHash, loadSystemHash);

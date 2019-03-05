@@ -13,23 +13,24 @@ import org.aion.avm.userlib.AionSet;
  */
 public class Wallet {
 
-    private AionMap<Bytes32, PendingTransaction> pendingTxs = new AionMap<>();
+    private static AionMap<Bytes32, PendingTransaction> pendingTxs = new AionMap<>();
 
-    private AionSet<Address> owners = new AionSet<>();
+    private static AionSet<Address> owners = new AionSet<>();
 
-    private int confirmationsRequired;
+    private static int confirmationsRequired;
 
     /**
-     * Creates a wallet instance.
+     * Initiates a wallet instance
      *
      * @param owners                The initial owners
      * @param confirmationsRequired The number of confirmations required
      */
-    public Wallet(Address[] owners, int confirmationsRequired) {
+
+    public static void init(Address[] owners, int confirmationsRequired) {
         for (Address owner : owners) {
-            this.owners.add(owner);
+            Wallet.owners.add(owner);
         }
-        this.confirmationsRequired = confirmationsRequired;
+        Wallet.confirmationsRequired = confirmationsRequired;
     }
 
     /**
@@ -41,7 +42,7 @@ public class Wallet {
      * @param energyLimit The energy limit
      * @return an unique identifier of the pending transaction
      */
-    public byte[] propose(Address to, long value, byte[] data, long energyLimit) {
+    public static byte[] propose(Address to, long value, byte[] data, long energyLimit) {
         PendingTransaction pendingTx = new PendingTransaction(to, value, data, energyLimit);
         byte[] id = pendingTx.getId();
 
@@ -54,7 +55,7 @@ public class Wallet {
      *
      * @param id The transaction id.
      */
-    public boolean confirm(byte[] id) {
+    public static boolean confirm(byte[] id) {
         // check access
         Address sender = BlockchainRuntime.getCaller();
         if (!owners.contains(sender)) {

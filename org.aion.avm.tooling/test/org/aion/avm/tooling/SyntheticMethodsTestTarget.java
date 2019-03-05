@@ -9,20 +9,15 @@ import java.math.BigInteger;
 
 public class SyntheticMethodsTestTarget{
 
-    private static int COMPARISION_RESULT;
+    private static int COMPARISION_RESULT = 100;
     public static final int DEFAULT_VALUE = 100;
-    private TargetInterface currentTargetClass;
+    private static TargetInterface currentTargetClass;
 
-    private Gen<Integer> intGen;
-    private GenSub intGenSub;
-    private Gen<Integer> subCopy;
+    private static Gen<Integer> intGen;
+    private static GenSub intGenSub;
+    private static Gen<Integer> subCopy;
 
-    private SyntheticMethodsTestTarget(){
-        // initialize to default
-        COMPARISION_RESULT = 100;
-    }
-
-    public void compareSomething(int typeInput){
+    public static void compareSomething(int typeInput){
         if(typeInput == 1) {
             compare(BigInteger.ONE, BigInteger.ZERO, "BigInteger"); // should be 1
         } else if(typeInput == 2) {
@@ -34,7 +29,7 @@ public class SyntheticMethodsTestTarget{
         }
     }
 
-    public int getCompareResult(){
+    public static int getCompareResult(){
         return COMPARISION_RESULT;
     }
 
@@ -45,7 +40,7 @@ public class SyntheticMethodsTestTarget{
      *
      * returns an int [-1, 0, or 1]
      */
-    private void compare(Object obj1, Object obj2, String objectsType){
+    private static void compare(Object obj1, Object obj2, String objectsType){
         switch (objectsType) {
             case "BigInteger":
                 COMPARISION_RESULT = ((BigInteger) obj1).compareTo((BigInteger) obj2);
@@ -61,7 +56,7 @@ public class SyntheticMethodsTestTarget{
         }
     }
 
-    public void pickTarget(int targetNum){
+    public static void pickTarget(int targetNum){
         if (targetNum == 1){
             currentTargetClass = new TargetClassImplOne();
             currentTargetClass.play();
@@ -71,46 +66,36 @@ public class SyntheticMethodsTestTarget{
         }
     }
 
-    public String getName(){
+    public static String getName(){
         return currentTargetClass.getName();
     }
 
     /**
      * A demo on overriding generic method.
      */
-    public void setGenerics(int input1, int input2){
+    public static void setGenerics(int input1, int input2){
         intGen = new Gen<>(input1);
         intGenSub = new GenSub(input2);
         subCopy = intGenSub;
     }
 
-    public int getIntGen(){
+    public static int getIntGen(){
         return intGen.getObject(1);
     }
 
-    public int getIntGenSub(){
+    public static int getIntGenSub(){
         return intGenSub.getObject(1);
     }
 
-    public int getSubCopy(){
+    public static int getSubCopy(){
         return subCopy.getObject(1);
-    }
-
-
-    private static SyntheticMethodsTestTarget syntheticMethodsTestTargetInstance;
-
-    /**
-     * Initialization code executed once at the Dapp deployment.
-     */
-    static {
-        syntheticMethodsTestTargetInstance = new SyntheticMethodsTestTarget();
     }
 
     /**
      * Entry point at a transaction call.
      */
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithObject(syntheticMethodsTestTargetInstance, BlockchainRuntime.getData());
+        return ABIDecoder.decodeAndRunWithClass(SyntheticMethodsTestTarget.class, BlockchainRuntime.getData());
     }
 
     /**
@@ -130,7 +115,7 @@ public class SyntheticMethodsTestTarget{
         String getName();
     }
 
-    private abstract class TargetAbstractClass implements TargetInterface{
+    private static abstract class TargetAbstractClass implements TargetInterface{
 
         protected String name;
         protected int playNum;
@@ -172,7 +157,7 @@ public class SyntheticMethodsTestTarget{
         }
     }
 
-    private class TargetClassImplOne extends TargetAbstractClass {
+    private static class TargetClassImplOne extends TargetAbstractClass {
 
         TargetClassImplOne(){
             super.name = "TargetClassImplOne";
@@ -199,7 +184,7 @@ public class SyntheticMethodsTestTarget{
         }
     }
 
-    private class TargetClassImplTwo extends TargetAbstractClass {
+    private static class TargetClassImplTwo extends TargetAbstractClass {
 
         TargetClassImplTwo(){
             super(); // uses parent name
@@ -216,7 +201,7 @@ public class SyntheticMethodsTestTarget{
     }
 
     // A simple generic class
-    class Gen<T> {
+    static class Gen<T> {
         T obj; // declare an object of type T
 
         Gen(T o) {
@@ -230,7 +215,7 @@ public class SyntheticMethodsTestTarget{
     }
 
     // A subclass of Gen that overrides getObject().
-    class GenSub extends Gen<Integer> {
+    static class GenSub extends Gen<Integer> {
 
         GenSub(Integer obj) {
             super(obj);

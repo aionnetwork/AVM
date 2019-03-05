@@ -9,7 +9,6 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.StandardCapabilities;
 import org.aion.avm.tooling.testExchange.CoinController;
-import org.aion.avm.tooling.testExchange.ERC20;
 import org.aion.avm.tooling.testExchange.ERC20Token;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -54,7 +53,7 @@ public class DemoTest {
         //================
 
         System.out.println(">> Deploy \"PEPE\" ERC20 token Dapp...");
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
         Transaction createTransaction = Transaction.create(pepeMinter, kernel.getNonce(pepeMinter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
