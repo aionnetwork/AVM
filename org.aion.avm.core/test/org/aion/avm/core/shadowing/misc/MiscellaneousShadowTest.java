@@ -2,6 +2,7 @@ package org.aion.avm.core.shadowing.misc;
 
 import java.lang.reflect.Method;
 
+import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.After;
@@ -100,5 +101,11 @@ public class MiscellaneousShadowTest {
         int valueOfLength = (Integer) this.clazz.getMethod(NamespaceMapper.mapMethodName("checkNullStringBuilderAppend")).invoke(null);
         // We wrote 7 nulls, and only 2 caused NPE.  Of those 5 writes, 4 were "null" but 1 was "n".
         Assert.assertEquals(17, valueOfLength);
+    }
+
+    @Test
+    public void testStringBufferGetChars() throws Exception {
+        CharArray result = (CharArray) this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBufferGetChars")).invoke(null);
+        Assert.assertEquals("tester", String.valueOf(result.getUnderlying()));
     }
 }

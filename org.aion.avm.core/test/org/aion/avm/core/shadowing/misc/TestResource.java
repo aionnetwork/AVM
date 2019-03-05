@@ -81,4 +81,11 @@ public class TestResource {
         // Return an empty string (since the default clearly doesn't do that).
         return "";
     }
+
+    public static char[] stringBufferGetChars(){
+        StringBuffer buff = new StringBuffer("testing");
+        char[] chArr = new char[]{'b','u','f','f','e','r'};
+        buff.getChars(0, 4, chArr, 0);
+        return chArr;
+    }
 }

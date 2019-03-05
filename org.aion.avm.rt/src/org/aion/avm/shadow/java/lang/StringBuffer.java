@@ -89,11 +89,11 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
         return this.v.offsetByCodePoints(index, codePointOffset);
     }
 
-    public void avm_getChars(int srcBegin, int srcEnd, char[] dst,
-                                      int dstBegin)
+    public void avm_getChars(int srcBegin, int srcEnd, CharArray dst,
+                             int dstBegin)
     {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_getChars + java.lang.Math.max(srcEnd - srcBegin, 0));
-        this.v.getChars(srcBegin, srcEnd, dst, dstBegin);
+        this.v.getChars(srcBegin, srcEnd, dst.getUnderlying(), dstBegin);
     }
 
     public void avm_setCharAt(int index, char ch) {
