@@ -1,7 +1,5 @@
 package org.aion.avm.tooling.abi;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -12,8 +10,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
 
 public class MainTest {
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -47,11 +47,12 @@ public class MainTest {
         }
 
         ABICompiler.main(new String[] {tempDir.toString() + "/dapp.jar"});
-        assertEquals(
+        Assert.assertEquals(
                 ABICompiler.getVersionNumber()
                         + "\norg/aion/avm/tooling/abi/ChattyCalculatorTarget: public static java.lang.String amIGreater(int, int)\n",
                 outContent.toString());
         File outputJar = new File(System.getProperty("user.dir") + "/outputJar.jar");
-        assert(outputJar.delete());
+        boolean didDelete = outputJar.delete();
+        Assert.assertTrue(didDelete);
     }
 }
