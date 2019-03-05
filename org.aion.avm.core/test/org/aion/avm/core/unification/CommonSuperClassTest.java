@@ -63,18 +63,15 @@ public class CommonSuperClassTest {
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, deploymentResult.getResultCode());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void combineClassAndJclInterface() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineClassAndJclInterface.class, CommonSuperClassTypes.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
         
-        // TODO (issue-362): Remove this once we fix the handling of JCL interface supertypes (NullPointerException).
         Transaction deployment = Transaction.create(DEPLOYER, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult deploymentResult = avm.run(KERNEL, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(deployment, BLOCK)})[0].get();
-        // TODO (issue-362): Change this to expect SUCCESS once we fix this bug (VerifyError):
-        // -interfaces implicitly descend from shadow.Object in ParentPointers but interfaces cannot descend from a concrete type other than java.lang.Object.
-        Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, deploymentResult.getResultCode());
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, deploymentResult.getResultCode());
     }
 
     @Test

@@ -107,7 +107,12 @@ public class TypeAwareClassWriter extends ClassWriter {
         String superName = null;
         try {
             Class<?> clazz = NodeEnvironment.singleton.loadSharedClass(name);
-            superName = clazz.getSuperclass().getName();
+            // issue-362: temporarily, force interfaces to drop directly to java.lang.Object (interface relationships will be fleshed out later under this item).
+            if (clazz.isInterface()) {
+                superName = "java.lang.Object";
+            } else {
+                superName = clazz.getSuperclass().getName();
+            }
         } catch (ClassNotFoundException e) {
             // We can return null, in this case.
         }
