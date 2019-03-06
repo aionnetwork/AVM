@@ -95,11 +95,11 @@ public class Object extends java.lang.Object implements IObject {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait);
     }
 
-    public final void avm_wait​(long timeout) throws InterruptedException {
+    public final void avm_wait(long timeout) throws InterruptedException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait_1);
     }
 
-    public final void avm_wait​(long timeout, int nanos) throws InterruptedException {
+    public final void avm_wait(long timeout, int nanos) throws InterruptedException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait_2);
     }
 
