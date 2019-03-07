@@ -11,6 +11,7 @@ import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -106,14 +107,29 @@ public class IntegTest {
         ret = (String) callStatic(dapp, "returnEcho", "Code meets world");
         assertEquals("Code meets world", ret);
 
+        Address addr = new Address(Helpers.randomAddress().toBytes());
+
+        Address retAddr = (Address) callStatic(dapp, "returnEchoAddress", addr);
+        assertEquals(addr, retAddr);
+
         ret = (String) callStatic(dapp, "returnAppended", "alpha", "bet");
         assertEquals("alphabet", ret);
 
         ret = (String) callStatic(dapp, "returnAppendedMultiTypes", "alpha", "bet", false, 123);
         assertEquals("alphabetfalse123", ret);
 
+        int[] expectedArray = new int[] {1,2,3};
+
         int[] intArray = (int[]) callStatic(dapp, "returnArrayOfInt", 1, 2, 3);
-        assertArrayEquals(new int[]{1, 2, 3}, intArray);
+        assertArrayEquals(expectedArray, intArray);
+
+        intArray = (int[]) callStatic(dapp, "returnArrayOfIntEcho", expectedArray);
+        assertArrayEquals(expectedArray, intArray);
+
+        int[][] expectedArray2D = new int[][]{{1, 2},{3, 4}};
+
+        int[][] intArray2D = (int[][]) callStatic(dapp, "returnArrayOfInt2D", 1, 2, 3, 4);
+        assertArrayEquals(expectedArray2D, intArray2D);
 
         String[] strArray = (String[]) callStatic(dapp, "returnArrayOfString", "hello", "world", "!");
         assertArrayEquals(new String[]{"hello", "world", "!"}, strArray);

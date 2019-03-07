@@ -1,5 +1,6 @@
 package org.aion.avm.tooling.abi;
 
+import org.aion.avm.api.Address;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -54,6 +55,7 @@ public class ABICompilerMethodVisitor extends MethodVisitor {
             if (!isStatic) {
                 throw new ABICompilerException("@Callable methods must be public", methodName);
             }
+            checkArgumentsAndReturnType();
             isCallable = true;
             return null;
         } else if (Type.getType(descriptor).getClassName().equals(Fallback.class.getName())) {
@@ -74,6 +76,59 @@ public class ABICompilerMethodVisitor extends MethodVisitor {
         else {
             return super.visitAnnotation(descriptor, visible);
         }
+    }
+
+    private void checkArgumentsAndReturnType() {
+        for (Type type : Type.getArgumentTypes(this.methodDescriptor)) {
+            if(!isAllowedType(type)) {
+                throw new ABICompilerException(
+                    type.getClassName() + " is not an allowed parameter type", methodName);
+            }
+        }
+        Type returnType = Type.getReturnType(methodDescriptor);
+        if(!isAllowedType(returnType)) {
+            throw new ABICompilerException(
+                returnType.getClassName() + " is not an allowed return type", methodName);
+        }
+    }
+
+    private boolean isAllowedType(Type type) {
+        if(isPrimitiveType(type) || isAllowedObject(type)) {
+            return true;
+        }
+        if (type.getSort() == Type.ARRAY) {
+            switch(type.getDimensions()) {
+                case 1:
+                    return isAllowedType(type.getElementType());
+                case 2:
+                    // We do not allow 2-dimensional arrays of Strings and Addresses
+                    return isPrimitiveType(type.getElementType());
+                default:
+                    return false;
+            }
+        }
+        return false;
+    }
+
+    private boolean isPrimitiveType(Type type) {
+        switch (type.getSort()) {
+            case Type.BYTE:
+            case Type.BOOLEAN:
+            case Type.CHAR:
+            case Type.SHORT:
+            case Type.INT:
+            case Type.FLOAT:
+            case Type.LONG:
+            case Type.DOUBLE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private boolean isAllowedObject(Type type) {
+        return type.getClassName().equals(String.class.getName())
+            || type.getClassName().equals(Address.class.getName());
     }
 
     public boolean isFallback() {

@@ -30,21 +30,49 @@ public class MainTest {
     }
 
     @Test
-    public void testMainMethodCalculator() {
+    public void testMainMethod() throws IOException {
 
         byte[] jar =
             JarBuilder
-                .buildJarForMainAndClasses(ChattyCalculatorTarget.class, SilentCalculatorTarget.class);
-        Path tempDir = null;
-        try {
-            tempDir = Files.createTempDirectory("tempResources");
+                .buildJarForMainAndClasses(TestDAppTarget.class);
+        Path tempDir = Files.createTempDirectory("tempResources");
             DataOutputStream dout =
                 new DataOutputStream(new FileOutputStream(tempDir.toString() + "/dapp.jar"));
             dout.write(jar);
             dout.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        ABICompiler.main(new String[] {tempDir.toString() + "/dapp.jar"});
+        Assert.assertEquals(
+            ABICompiler.getVersionNumber()
+                + "\norg.aion.avm.tooling.abi.TestDAppTarget"
+                + "\npublic static java.lang.String returnHelloWorld()"
+                + "\npublic static java.lang.String returnGoodbyeWorld()"
+                + "\npublic static java.lang.String returnEcho(java.lang.String)"
+                + "\npublic static org.aion.avm.api.Address returnEchoAddress(org.aion.avm.api.Address)"
+                + "\npublic static java.lang.String returnAppended(java.lang.String, java.lang.String)"
+                + "\npublic static java.lang.String returnAppendedMultiTypes(java.lang.String, java.lang.String, boolean, int)"
+                + "\npublic static int[] returnArrayOfInt(int, int, int)"
+                + "\npublic static java.lang.String[] returnArrayOfString(java.lang.String, java.lang.String, java.lang.String)"
+                + "\npublic static int[] returnArrayOfIntEcho(int[])"
+                + "\npublic static int[][] returnArrayOfInt2D(int, int, int, int)\n",
+            outContent.toString());
+        File outputJar = new File(System.getProperty("user.dir") + "/outputJar.jar");
+        boolean didDelete = outputJar.delete();
+        Assert.assertTrue(didDelete);
+    }
+
+    @Test
+    public void testMainMethodCalculator() throws IOException {
+
+        byte[] jar =
+            JarBuilder
+                .buildJarForMainAndClasses(ChattyCalculatorTarget.class, SilentCalculatorTarget.class);
+        Path tempDir = Files.createTempDirectory("tempResources");
+            DataOutputStream dout =
+                new DataOutputStream(new FileOutputStream(tempDir.toString() + "/dapp.jar"));
+            dout.write(jar);
+            dout.close();
+
 
         ABICompiler.main(new String[] {tempDir.toString() + "/dapp.jar"});
         Assert.assertEquals(
