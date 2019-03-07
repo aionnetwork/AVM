@@ -50,9 +50,11 @@ public class ABICompiler {
 
         compiler.compile(fileInputStream);
 
-        List<String> callables = compiler.getCallables();
         System.out.println(VERSION_NUMBER);
-        for (String s : callables) System.out.println(s);
+        System.out.println(compiler.mainClassName);
+        for (String s : compiler.callables) {
+            System.out.println(s);
+        }
 
         try {
             DataOutputStream dout =

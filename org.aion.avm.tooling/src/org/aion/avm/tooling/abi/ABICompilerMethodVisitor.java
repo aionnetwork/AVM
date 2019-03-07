@@ -19,7 +19,7 @@ public class ABICompilerMethodVisitor extends MethodVisitor {
     }
 
     // Should only be called on public static methods
-    public String getSignature() {
+    public String getPublicStaticMethodSignature() {
         String signature = "";
 
         StringJoiner arguments = new StringJoiner(", ");
@@ -49,23 +49,23 @@ public class ABICompilerMethodVisitor extends MethodVisitor {
         boolean isStatic = (this.access & Opcodes.ACC_STATIC) != 0;
         if(Type.getType(descriptor).getClassName().equals(Callable.class.getName())) {
             if (!isPublic) {
-                throw new AnnotationException("@Callable methods must be public", methodName);
+                throw new ABICompilerException("@Callable methods must be public", methodName);
             }
             if (!isStatic) {
-                throw new AnnotationException("@Callable methods must be public", methodName);
+                throw new ABICompilerException("@Callable methods must be public", methodName);
             }
             isCallable = true;
             return null;
         } else if (Type.getType(descriptor).getClassName().equals(Fallback.class.getName())) {
             if (!isStatic) {
-                throw new AnnotationException("Fallback function must be static", methodName);
+                throw new ABICompilerException("Fallback function must be static", methodName);
             }
             if (Type.getReturnType(methodDescriptor) != Type.VOID_TYPE) {
-                throw new AnnotationException(
+                throw new ABICompilerException(
                     "Function annotated @Fallback must have void return type", methodName);
             }
             if (Type.getArgumentTypes(methodDescriptor).length != 0) {
-                throw new AnnotationException(
+                throw new ABICompilerException(
                     "Function annotated @Fallback cannot take arguments", methodName);
             }
             isFallback = true;

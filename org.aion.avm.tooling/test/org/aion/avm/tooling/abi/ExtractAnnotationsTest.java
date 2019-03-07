@@ -34,28 +34,28 @@ public class ExtractAnnotationsTest {
         }
         assertEquals(2, callables.size());
         assertEquals(
-            "org/aion/avm/tooling/abi/DAppWithMainNoFallbackTarget: public static boolean test1(boolean)",
+            "public static boolean test1(boolean)",
             callables.get(0));
-        assertEquals(callables.get(1), "org/aion/avm/tooling/abi/DAppWithMainNoFallbackTarget: public static boolean test2(int, java.lang.String, long[])");
+        assertEquals(callables.get(1), "public static boolean test2(int, java.lang.String, long[])");
     }
 
-    @Test(expected = AnnotationException.class)
+    @Test(expected = ABICompilerException.class)
     public void testNonPublicCallable() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppProtectedCallableTarget.class);
         try {
             compiler.compile(new ByteArrayInputStream(jar));
-        } catch(AnnotationException e) {
+        } catch(ABICompilerException e) {
             assertTrue(e.getMessage().contains("test4"));
             throw e;
         }
     }
 
-    @Test(expected = AnnotationException.class)
+    @Test(expected = ABICompilerException.class)
         public void testNonStaticCallable() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppNonstaticCallableTarget.class);
         try {
             compiler.compile(new ByteArrayInputStream(jar));
-        } catch(AnnotationException e) {
+        } catch(ABICompilerException e) {
             assertTrue(e.getMessage().contains("test2"));
             throw e;
         }

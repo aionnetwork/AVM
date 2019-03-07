@@ -38,7 +38,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
 
         for (ABICompilerMethodVisitor mv : methodVisitors) {
             if (mv.isCallable()) {
-                callableSignatures.add(this.className + ": " + mv.getSignature());
+                callableSignatures.add(mv.getPublicStaticMethodSignature());
                 callableMethodVisitors.add(mv);
             }
             if (mv.isFallback()) {
@@ -47,7 +47,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                     foundFallback = true;
                 }
                 else {
-                    throw new AnnotationException("Only one function can be marked @Fallback", mv.getMethodName());
+                    throw new ABICompilerException("Only one function can be marked @Fallback", mv.getMethodName());
                 }
             }
         }

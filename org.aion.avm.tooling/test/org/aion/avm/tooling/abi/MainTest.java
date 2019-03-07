@@ -30,7 +30,7 @@ public class MainTest {
     }
 
     @Test
-    public void testMainMethodOfABICompiler() {
+    public void testMainMethodCalculator() {
 
         byte[] jar =
             JarBuilder
@@ -48,9 +48,10 @@ public class MainTest {
 
         ABICompiler.main(new String[] {tempDir.toString() + "/dapp.jar"});
         Assert.assertEquals(
-                ABICompiler.getVersionNumber()
-                        + "\norg/aion/avm/tooling/abi/ChattyCalculatorTarget: public static java.lang.String amIGreater(int, int)\n",
-                outContent.toString());
+            ABICompiler.getVersionNumber()
+                + "\norg.aion.avm.tooling.abi.ChattyCalculatorTarget"
+                + "\npublic static java.lang.String amIGreater(int, int)\n",
+            outContent.toString());
         File outputJar = new File(System.getProperty("user.dir") + "/outputJar.jar");
         boolean didDelete = outputJar.delete();
         Assert.assertTrue(didDelete);

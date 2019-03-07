@@ -1,0 +1,7 @@
+package org.aion.avm.tooling.abi;
+
+public class ABICompilerException extends RuntimeException {
+    public ABICompilerException(String exceptionString, String methodName) {
+        super("Exception in method " + methodName + ": " + exceptionString);
+    }
+}
