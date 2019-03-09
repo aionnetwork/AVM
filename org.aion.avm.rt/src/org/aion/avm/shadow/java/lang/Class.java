@@ -4,7 +4,8 @@ import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,17 +83,17 @@ public class Class<T> extends Object {
         ObjectArray constants = enumConstants;
         if (constants == null) {
             try {
-                Field f = v.getDeclaredField("avm_$VALUES");
-                f.setAccessible(true);
+                Method m = v.getDeclaredMethod("avm_values");
+                java.lang.Object value = m.invoke(null);
 
-                java.lang.Object value = f.get(v);
                 ObjectArray temporaryConstants = (ObjectArray) value;
                 enumConstants = constants = temporaryConstants;
             }
             // These can happen when users concoct enum-like classes
             // that don't comply with the enum spec.
-            catch (NoSuchFieldException |
-                    IllegalAccessException ex) {
+            catch (NoSuchMethodException |
+                    IllegalAccessException |
+                    InvocationTargetException ex) {
                 java.lang.System.out.println(ex.toString());
                 return null; }
         }
