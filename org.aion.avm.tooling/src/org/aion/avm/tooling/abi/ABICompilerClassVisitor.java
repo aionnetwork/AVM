@@ -1,7 +1,9 @@
 package org.aion.avm.tooling.abi;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -35,11 +37,16 @@ public class ABICompilerClassVisitor extends ClassVisitor {
         boolean foundFallback = false;
 
         // We have to make a second pass to create the list of callables
-
+        Set<String> callableNames = new HashSet<String>();
         for (ABICompilerMethodVisitor mv : methodVisitors) {
             if (mv.isCallable()) {
                 callableSignatures.add(mv.getPublicStaticMethodSignature());
                 callableMethodVisitors.add(mv);
+                if(callableNames.contains(mv.getMethodName())) {
+                    throw new ABICompilerException("Multiple @Callable methods with the same name", mv.getMethodName());
+                } else {
+                    callableNames.add(mv.getMethodName());
+                }
             }
             if (mv.isFallback()) {
                 if(!foundFallback) {
