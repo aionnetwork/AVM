@@ -58,4 +58,8 @@ public class TestDAppTarget {
         ret[1][1] = i4;
         return ret;
     }
+
+    @Callable
+    public static void doNothing() {
+    }
 }

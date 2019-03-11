@@ -86,7 +86,7 @@ public class ABICompilerMethodVisitor extends MethodVisitor {
             }
         }
         Type returnType = Type.getReturnType(methodDescriptor);
-        if(!isAllowedType(returnType)) {
+        if(!isAllowedType(returnType) && returnType != Type.VOID_TYPE) {
             throw new ABICompilerException(
                 returnType.getClassName() + " is not an allowed return type", methodName);
         }

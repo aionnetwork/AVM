@@ -133,6 +133,8 @@ public class IntegTest {
 
         String[] strArray = (String[]) callStatic(dapp, "returnArrayOfString", "hello", "world", "!");
         assertArrayEquals(new String[]{"hello", "world", "!"}, strArray);
+
+        callStatic(dapp, "doNothing");
     }
 
     @Test

@@ -134,10 +134,18 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                 castArgumentType(methodVisitor, argTypes[i]);
             }
 
-            // return ABIEncoder.encodeOneObject(<methodName>(<arguments>));
+            // if void return type, invoke function and return null,
+            // else return ABIEncoder.encodeOneObject(<methodName>(<arguments>));
             methodVisitor.visitMethodInsn(INVOKESTATIC, className, callableMethod.getMethodName(), callableMethod.getDescriptor(), false);
-            castReturnType(methodVisitor, Type.getReturnType(callableMethod.getDescriptor()));
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/ABIEncoder", "encodeOneObject", "(Ljava/lang/Object;)[B", false);
+            Type returnType = Type.getReturnType(callableMethod.getDescriptor());
+            if (returnType != Type.VOID_TYPE) {
+                castReturnType(methodVisitor, returnType);
+                methodVisitor
+                    .visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/ABIEncoder", "encodeOneObject",
+                        "(Ljava/lang/Object;)[B", false);
+            } else {
+                methodVisitor.visitInsn(ACONST_NULL);
+            }
             methodVisitor.visitInsn(ARETURN);
         }
 
