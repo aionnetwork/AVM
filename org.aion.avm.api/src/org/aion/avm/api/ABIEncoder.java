@@ -30,7 +30,9 @@ public final class ABIEncoder {
     }
 
     /**
-     * An utility method to encode the method name and method arguments to call with, according to Aion ABI format. Both method name and the arguments can be null if needed.
+     * A utility method to encode the method name and method arguments to call with, according to Aion ABI format. Both method name and the arguments can be null if needed.
+     * <br>
+     * The arguments parameter can behave unexpectedly when receiving multi-dimensional primitive arrays and arrays of objects. In these cases, it is recommended to explicitly cast the arguments into an Object[].
      * @param methodName the method name of the Dapp main class to call with
      * @param arguments the arguments of the corresponding method of Dapp main class to call with
      * @return the encoded byte array that contains the method descriptor, followed by the argument descriptor and encoded arguments, according the Aion ABI format.

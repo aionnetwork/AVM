@@ -55,6 +55,7 @@ public class MainTest {
                 + "\npublic static java.lang.String[] returnArrayOfString(java.lang.String, java.lang.String, java.lang.String)"
                 + "\npublic static int[] returnArrayOfIntEcho(int[])"
                 + "\npublic static int[][] returnArrayOfInt2D(int, int, int, int)"
+                + "\npublic static int[][] returnArrayOfInt2DEcho(int[][])"
                 + "\npublic static void doNothing()\n",
             outContent.toString());
         File outputJar = new File(System.getProperty("user.dir") + "/outputJar.jar");

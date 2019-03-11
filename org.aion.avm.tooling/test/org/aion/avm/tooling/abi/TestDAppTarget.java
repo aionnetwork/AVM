@@ -60,6 +60,11 @@ public class TestDAppTarget {
     }
 
     @Callable
+    public static int[][] returnArrayOfInt2DEcho(int[][] arr2D) {
+        return arr2D;
+    }
+
+    @Callable
     public static void doNothing() {
     }
 }

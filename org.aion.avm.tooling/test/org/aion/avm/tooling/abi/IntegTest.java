@@ -131,6 +131,9 @@ public class IntegTest {
         int[][] intArray2D = (int[][]) callStatic(dapp, "returnArrayOfInt2D", 1, 2, 3, 4);
         assertArrayEquals(expectedArray2D, intArray2D);
 
+        intArray2D = (int[][]) callStatic(dapp, "returnArrayOfInt2DEcho", new Object[]{intArray2D});
+        assertArrayEquals(expectedArray2D, intArray2D);
+
         String[] strArray = (String[]) callStatic(dapp, "returnArrayOfString", "hello", "world", "!");
         assertArrayEquals(new String[]{"hello", "world", "!"}, strArray);
 
