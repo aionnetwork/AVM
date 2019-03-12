@@ -1,11 +1,10 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.ArrayClassNameMapper;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,27 +18,6 @@ public class ArrayNameMapper {
     static private Pattern PRIMITIVE_ARRAY_FORMAT = Pattern.compile("[$\\[]+[IJZBSDFC]");
     static private Pattern OBJECT_INTERFACE_FORMAT = Pattern.compile("[_\\[]{2,}Lorg/aion/avm/shadow/java/lang/Object");
 
-    static private HashMap<String, String> CLASS_WRAPPER_MAP = new HashMap<>();
-    static private HashMap<String, String> INTERFACE_WRAPPER_MAP = new HashMap<>();
-
-    static{
-        CLASS_WRAPPER_MAP.put("[I", PackageConstants.kArrayWrapperSlashPrefix + "IntArray");
-        CLASS_WRAPPER_MAP.put("[B", PackageConstants.kArrayWrapperSlashPrefix + "ByteArray");
-        CLASS_WRAPPER_MAP.put("[Z", PackageConstants.kArrayWrapperSlashPrefix + "BooleanArray");
-        CLASS_WRAPPER_MAP.put("[C", PackageConstants.kArrayWrapperSlashPrefix + "CharArray");
-        CLASS_WRAPPER_MAP.put("[F", PackageConstants.kArrayWrapperSlashPrefix + "FloatArray");
-        CLASS_WRAPPER_MAP.put("[S", PackageConstants.kArrayWrapperSlashPrefix + "ShortArray");
-        CLASS_WRAPPER_MAP.put("[J", PackageConstants.kArrayWrapperSlashPrefix + "LongArray");
-        CLASS_WRAPPER_MAP.put("[D", PackageConstants.kArrayWrapperSlashPrefix + "DoubleArray");
-        CLASS_WRAPPER_MAP.put("[Ljava/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
-        CLASS_WRAPPER_MAP.put("[L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
-        CLASS_WRAPPER_MAP.put("[L" + PackageConstants.kInternalSlashPrefix + "IObject", PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray");
-
-        // some special-case unifications to IObjectArray.
-        INTERFACE_WRAPPER_MAP.put("[L" + PackageConstants.kInternalSlashPrefix + "IObject", PackageConstants.kInternalSlashPrefix + "IObjectArray");
-        INTERFACE_WRAPPER_MAP.put("L" + PackageConstants.kArrayWrapperSlashPrefix + "ObjectArray", PackageConstants.kInternalSlashPrefix + "IObjectArray");
-        INTERFACE_WRAPPER_MAP.put("[L" + PackageConstants.kShadowSlashPrefix + "java/lang/Object", PackageConstants.kInternalSlashPrefix + "IObjectArray");
-    }
 
     static java.lang.String updateMethodDesc(java.lang.String desc) {
         return mapDescriptor(desc);
@@ -59,11 +37,11 @@ public class ArrayNameMapper {
         java.lang.String ret;
         if (desc.charAt(0) != '['){
             ret = desc;
-        }else if (CLASS_WRAPPER_MAP.containsKey(desc)){
-            ret = CLASS_WRAPPER_MAP.get(desc);
-        }else{
-            CLASS_WRAPPER_MAP.put(desc, newClassWrapper(desc));
-            ret = CLASS_WRAPPER_MAP.get(desc);
+        } else {
+            ret = ArrayClassNameMapper.getClassWrapper(desc);
+            if (ret == null) {
+                ret = ArrayClassNameMapper.addClassWrapperDescriptor(desc, newClassWrapper(desc));
+            }
         }
         return ret;
     }
@@ -78,11 +56,11 @@ public class ArrayNameMapper {
 
         if (desc.charAt(0) != '[') {
             ret = desc;
-        } else if (INTERFACE_WRAPPER_MAP.containsKey(desc)) {
-            ret = INTERFACE_WRAPPER_MAP.get(desc);
         } else {
-            INTERFACE_WRAPPER_MAP.put(desc, newInterfaceWrapper(desc));
-            ret = INTERFACE_WRAPPER_MAP.get(desc);
+            ret = ArrayClassNameMapper.getInterfaceWrapper(desc);
+            if (ret == null) {
+                ret = ArrayClassNameMapper.addInterfaceWrapperDescriptor(desc, newInterfaceWrapper(desc));
+            }
         }
         return ret;
     }
@@ -217,15 +195,6 @@ public class ArrayNameMapper {
         return isPrimitiveArray
                 ? getClassWrapperDescriptor(desc)
                 : getInterfaceWrapper(desc);
-    }
-
-    public static String getElementNameFromWrapper(String wrapperClassName) {
-        for(Map.Entry entry : CLASS_WRAPPER_MAP.entrySet()){
-            if(entry.getValue().equals(wrapperClassName)){
-                return entry.getKey().toString();
-            }
-        }
-        return null;
     }
 
     public static String getElementInterfaceName(String interfaceClassName){

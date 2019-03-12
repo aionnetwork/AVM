@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.ClassNameExtractor;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
@@ -21,12 +22,13 @@ public class Class<T> extends Object {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Class_avm_getName);
         // Note that we actively try not to give the same instance of the name wrapper back (since the user could see implementation details of our
         // contract life-cycle or the underlying JVM/ClassLoader.
-        return new org.aion.avm.shadow.java.lang.String(v.getName());
+        return getName();
     }
 
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Class_avm_toString);
-        return null;
+        return new String((this.v.isInterface() ? "interface " : (this.v.isPrimitive() ? "" : "class "))
+                + getName());
     }
 
     public IObject avm_cast(IObject obj) {
@@ -116,5 +118,9 @@ public class Class<T> extends Object {
     @Override
     public java.lang.String toString() {
         return this.v.toString();
+    }
+
+    public String getName() {
+        return new org.aion.avm.shadow.java.lang.String(ClassNameExtractor.getOriginalClassName(v.getName()));
     }
 }

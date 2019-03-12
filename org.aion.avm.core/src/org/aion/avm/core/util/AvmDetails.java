@@ -1,7 +1,7 @@
 package org.aion.avm.core.util;
 
+import org.aion.avm.ArrayClassNameMapper;
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.arraywrapping.ArrayNameMapper;
 import org.aion.avm.internal.PackageConstants;
 
 import java.lang.reflect.Constructor;
@@ -48,7 +48,7 @@ public class AvmDetails {
         if (isShadowClass(className)) {
             return className.substring(PackageConstants.kShadowDotPrefix.length());
         } else if (isArrayWrapperClass(className)) {
-            return ArrayNameMapper.getElementNameFromWrapper(Helpers.fulllyQualifiedNameToInternalName(className));
+            return ArrayClassNameMapper.getElementNameFromWrapper(Helpers.fulllyQualifiedNameToInternalName(className));
         } else if (isSupportedInternalType(className)) {
             return "java.lang.Object";
         } else {

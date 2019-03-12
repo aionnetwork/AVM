@@ -3,8 +3,8 @@ package org.aion.avm.core.rejection;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import org.aion.avm.ArrayClassNameMapper;
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.arraywrapping.ArrayNameMapper;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.util.DescriptorParser;
@@ -253,7 +253,7 @@ public class RejectionMethodVisitor extends MethodVisitor {
             // in general, this mapping should not be applied but it is something we need to do for method descriptors, specifically).
             String className = clazz.getName();
             if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix )) {
-                builder.append( ArrayNameMapper.getElementNameFromWrapper(Helpers.fulllyQualifiedNameToInternalName(className)));
+                builder.append(ArrayClassNameMapper.getElementNameFromWrapper(Helpers.fulllyQualifiedNameToInternalName(className)));
             } else if ((PackageConstants.kInternalDotPrefix + "IObject").equals(className)) {
                 builder.append(DescriptorParser.OBJECT_START);
                 builder.append(PackageConstants.kShadowSlashPrefix + "java/lang/Object");
