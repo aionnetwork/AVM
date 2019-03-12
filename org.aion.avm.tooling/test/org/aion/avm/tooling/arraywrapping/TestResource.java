@@ -55,42 +55,39 @@ public class TestResource {
         return in1;
     }
 
-    public boolean[] testBooleanSignature(boolean[] in){
+    public static boolean[] testBooleanSignature(boolean[] in){
         return in;
     }
 
-    public byte[] testByteSignature(byte[] in){
+    public static byte[] testByteSignature(byte[] in){
         return in;
     }
 
-    public char[] testCharSignature(char[] in){
+    public static char[] testCharSignature(char[] in){
         return in;
     }
 
-    public double[] testDoubleSignature(double[] in){
+    public static double[] testDoubleSignature(double[] in){
         return in;
     }
 
-    public float[] testFloatSignature(float[] in){
+    public static float[] testFloatSignature(float[] in){
         return in;
     }
 
-    public int[] testIntSignature(int[] in){
+    public static int[] testIntSignature(int[] in){
         return in;
     }
 
-    public long[] testLongSignature(long[] in){
+    public static long[] testLongSignature(long[] in){
         return in;
     }
 
-    public Object[] testObjectSignature(Object[] in){
-         return in;
-    }
-
-    public short[] testShortSignature(short[] in){
+    public static short[] testShortSignature(short[] in){
         return in;
     }
 
+    public static int[][] testInt2DArray(){ return new int[][] {{1, 2}, {3, 4}}; }
 
 
     public static boolean testBooleanArray(){

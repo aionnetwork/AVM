@@ -195,7 +195,7 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
             case Opcodes.ANEWARRAY:
                 // handle the case of a 2D primitive array specially.
                 if (type.startsWith("[") && (type.length() == 2)) {
-                    visitMultiANewArrayInsn("[" + type, 0);
+                    visitMultiANewArrayInsn("[" + type, 1);
                     break;
                 }
 
