@@ -36,7 +36,7 @@ public class ExtractAnnotationsTest {
         assertEquals(
             "public static boolean test1(boolean)",
             callables.get(0));
-        assertEquals(callables.get(1), "public static boolean test2(int, java.lang.String, long[])");
+        assertEquals("public static boolean test2(int, String, long[])", callables.get(1));
     }
 
     @Test(expected = ABICompilerException.class)

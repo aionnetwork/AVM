@@ -25,12 +25,12 @@ public class ABICompilerMethodVisitor extends MethodVisitor {
 
         StringJoiner arguments = new StringJoiner(", ");
         for (Type type : Type.getArgumentTypes(this.methodDescriptor)) {
-            arguments.add(type.getClassName());
+            arguments.add(shortenClassName(type.getClassName()));
         }
         String returnType = Type.getReturnType(this.methodDescriptor).getClassName();
         signature = ("public ")
                 + ("static ")
-                + returnType + " "
+                + shortenClassName(returnType) + " "
                 + this.methodName + "("
                 + arguments.toString()
                 + ")";
@@ -129,6 +129,14 @@ public class ABICompilerMethodVisitor extends MethodVisitor {
     private boolean isAllowedObject(Type type) {
         return type.getClassName().equals(String.class.getName())
             || type.getClassName().equals(Address.class.getName());
+    }
+
+    private String shortenClassName(String s) {
+        if(s.contains(".")) {
+            return s.substring(s.lastIndexOf('.') + 1);
+        } else {
+            return s;
+        }
     }
 
     public boolean isFallback() {

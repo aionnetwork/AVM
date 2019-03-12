@@ -45,14 +45,14 @@ public class MainTest {
         Assert.assertEquals(
             ABICompiler.getVersionNumber()
                 + "\norg.aion.avm.tooling.abi.TestDAppTarget"
-                + "\npublic static java.lang.String returnHelloWorld()"
-                + "\npublic static java.lang.String returnGoodbyeWorld()"
-                + "\npublic static java.lang.String returnEcho(java.lang.String)"
-                + "\npublic static org.aion.avm.api.Address returnEchoAddress(org.aion.avm.api.Address)"
-                + "\npublic static java.lang.String returnAppended(java.lang.String, java.lang.String)"
-                + "\npublic static java.lang.String returnAppendedMultiTypes(java.lang.String, java.lang.String, boolean, int)"
+                + "\npublic static String returnHelloWorld()"
+                + "\npublic static String returnGoodbyeWorld()"
+                + "\npublic static String returnEcho(String)"
+                + "\npublic static Address returnEchoAddress(Address)"
+                + "\npublic static String returnAppended(String, String)"
+                + "\npublic static String returnAppendedMultiTypes(String, String, boolean, int)"
                 + "\npublic static int[] returnArrayOfInt(int, int, int)"
-                + "\npublic static java.lang.String[] returnArrayOfString(java.lang.String, java.lang.String, java.lang.String)"
+                + "\npublic static String[] returnArrayOfString(String, String, String)"
                 + "\npublic static int[] returnArrayOfIntEcho(int[])"
                 + "\npublic static int[][] returnArrayOfInt2D(int, int, int, int)"
                 + "\npublic static int[][] returnArrayOfInt2DEcho(int[][])"
@@ -80,7 +80,7 @@ public class MainTest {
         Assert.assertEquals(
             ABICompiler.getVersionNumber()
                 + "\norg.aion.avm.tooling.abi.ChattyCalculatorTarget"
-                + "\npublic static java.lang.String amIGreater(int, int)\n",
+                + "\npublic static String amIGreater(int, int)\n",
             outContent.toString());
         File outputJar = new File(System.getProperty("user.dir") + "/outputJar.jar");
         boolean didDelete = outputJar.delete();
