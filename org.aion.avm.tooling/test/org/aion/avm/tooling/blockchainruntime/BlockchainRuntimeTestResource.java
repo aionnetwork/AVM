@@ -49,6 +49,6 @@ public class BlockchainRuntimeTestResource {
 
         print("message");
 
-        return Arrays.copyOfRange(buffer.array(), 0, buffer.size());
+        return Arrays.copyOfRange(buffer.getArray(), 0, buffer.getPosition());
     }
 }

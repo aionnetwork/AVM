@@ -106,7 +106,7 @@ public class Wallet {
             buffer.put(data);
             buffer.putLong(energyLimit);
 
-            return BlockchainRuntime.blake2b(buffer.array());
+            return BlockchainRuntime.blake2b(buffer.getArray());
         }
     }
 }

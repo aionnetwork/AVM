@@ -29,7 +29,7 @@ public class AionBufferPerfContract {
         targetHasFloats = fillWithFloats(AionBuffer.allocate(NUM_ELEMENTS * 4));
         targetHasLongs = fillWithLongs(AionBuffer.allocate(NUM_ELEMENTS * 8));
         targetHasDoubles = fillWithDoubles(AionBuffer.allocate(NUM_ELEMENTS * 8));
-        targetHasIntsCopy = AionBuffer.wrap(targetHasInts.array());
+        targetHasIntsCopy = AionBuffer.wrap(targetHasInts.getArray());
         targetNothingTransferred = produceEmptyBuffers(NUM_ELEMENTS);
         targetFullForTransfer = produceFullBuffers(NUM_ELEMENTS);
     }
@@ -79,43 +79,52 @@ public class AionBufferPerfContract {
     }
 
     public static void callGetByte() {
+        targetHasBytes.flip();
         for (int i = 0; i < NUM_ELEMENTS; i++)
             targetHasBytes.getByte();
     }
 
     public static void callGetChar() {
+        targetHasChars.flip();
         for (int i = 0; i < NUM_ELEMENTS; i++)
             targetHasChars.getChar();
     }
 
     public static void callGetShort() {
+        targetHasShorts.flip();
         for (int i = 0; i < NUM_ELEMENTS; i++)
             targetHasShorts.getShort();
     }
 
     public static void callGetInt() {
+        targetHasInts.flip();
         for (int i = 0; i < NUM_ELEMENTS; i++)
             targetHasInts.getInt();
     }
 
     public static void callGetFloat() {
+        targetHasFloats.flip();
         for (int i = 0; i < NUM_ELEMENTS; i++)
             targetHasFloats.getFloat();
     }
 
     public static void callGetLong() {
+        targetHasLongs.flip();
         for (int i = 0; i < NUM_ELEMENTS; i++)
             targetHasLongs.getLong();
     }
 
     public static void callGetDouble() {
+        targetHasDoubles.flip();
         for (int i = 0; i < NUM_ELEMENTS; i++)
             targetHasDoubles.getDouble();
     }
 
     public static void callTransferBytesFromBuffer() {
-        for (int i = 0; i < NUM_ELEMENTS; i++)
+        for (int i = 0; i < NUM_ELEMENTS; i++) {
+            targetFullForTransfer[i].flip();
             targetFullForTransfer[i].get(BYTES);
+        }
     }
 
     public static void callEquals() {
@@ -126,7 +135,7 @@ public class AionBufferPerfContract {
     // <------------------------------------------------------------------------------------------->
 
     private static AionBuffer fill(AionBuffer buffer) {
-        int space = buffer.capacity() - buffer.size();
+        int space = buffer.getLimit() - buffer.getPosition();
         for (int i = 0; i < space; i++)
             buffer.putByte((byte) i);
         return buffer;

@@ -8,13 +8,13 @@ public class AionBuffer {
     private static final int BYTE_MASK = 0xff;
     private static final int BYTE_SIZE = Byte.SIZE;
     private final byte[] buffer;
-    private final int capacity;
-    private int size;
+    private int position;
+    private int limit;
 
     private AionBuffer(byte[] array) {
         this.buffer = array;
-        this.capacity = array.length;
-        this.size = 0;
+        this.position = 0;
+        this.limit = array.length;
     }
 
     public static AionBuffer allocate(int capacity) {
@@ -42,20 +42,22 @@ public class AionBuffer {
         if (dst == null) {
             throw new NullPointerException();
         }
-        if (this.size - dst.length < 0) {
+        int remaining = this.limit - this.position;
+        if (remaining < dst.length) {
             throw new BufferUnderflowException();
         }
-        System.arraycopy(this.buffer, this.size - dst.length, dst, 0, dst.length);
-        this.size -= dst.length;
+        System.arraycopy(this.buffer, this.position, dst, 0, dst.length);
+        this.position += dst.length;
         return this;
     }
 
     public byte getByte() {
-        if (this.size == 0) {
+        int remaining = this.limit - this.position;
+        if (remaining < Byte.BYTES) {
             throw new BufferUnderflowException();
         }
-        byte b = this.buffer[this.size - 1];
-        this.size--;
+        byte b = this.buffer[this.position];
+        this.position += Byte.BYTES;
         return b;
     }
 
@@ -72,40 +74,43 @@ public class AionBuffer {
     }
 
     public int getInt() {
-        if (this.size < 4) {
+        int remaining = this.limit - this.position;
+        if (remaining < Integer.BYTES) {
             throw new BufferUnderflowException();
         }
-        int i = this.buffer[this.size - 4] << BYTE_SIZE;
-        i = (i | (this.buffer[this.size - 3] & BYTE_MASK)) << BYTE_SIZE;
-        i = (i | (this.buffer[this.size - 2] & BYTE_MASK)) << BYTE_SIZE;
-        i |= (this.buffer[this.size - 1] & BYTE_MASK);
-        this.size -= 4;
+        int i = this.buffer[this.position] << BYTE_SIZE;
+        i = (i | (this.buffer[this.position + 1] & BYTE_MASK)) << BYTE_SIZE;
+        i = (i | (this.buffer[this.position + 2] & BYTE_MASK)) << BYTE_SIZE;
+        i |= (this.buffer[this.position + 3] & BYTE_MASK);
+        this.position += Integer.BYTES;
         return i;
     }
 
     public long getLong() {
-        if (this.size < 8) {
+        int remaining = this.limit - this.position;
+        if (remaining < Long.BYTES) {
             throw new BufferUnderflowException();
         }
-        long l = this.buffer[this.size - 8] << BYTE_SIZE;
-        l = (l | (this.buffer[this.size - 7] & BYTE_MASK)) << BYTE_SIZE;
-        l = (l | (this.buffer[this.size - 6] & BYTE_MASK)) << BYTE_SIZE;
-        l = (l | (this.buffer[this.size - 5] & BYTE_MASK)) << BYTE_SIZE;
-        l = (l | (this.buffer[this.size - 4] & BYTE_MASK)) << BYTE_SIZE;
-        l = (l | (this.buffer[this.size - 3] & BYTE_MASK)) << BYTE_SIZE;
-        l = (l | (this.buffer[this.size - 2] & BYTE_MASK)) << BYTE_SIZE;
-        l |= this.buffer[this.size - 1] & BYTE_MASK;
-        this.size -= 8;
+        long l = this.buffer[this.position] << BYTE_SIZE;
+        l = (l | (this.buffer[this.position + 1] & BYTE_MASK)) << BYTE_SIZE;
+        l = (l | (this.buffer[this.position + 2] & BYTE_MASK)) << BYTE_SIZE;
+        l = (l | (this.buffer[this.position + 3] & BYTE_MASK)) << BYTE_SIZE;
+        l = (l | (this.buffer[this.position + 4] & BYTE_MASK)) << BYTE_SIZE;
+        l = (l | (this.buffer[this.position + 5] & BYTE_MASK)) << BYTE_SIZE;
+        l = (l | (this.buffer[this.position + 6] & BYTE_MASK)) << BYTE_SIZE;
+        l |= this.buffer[this.position + 7] & BYTE_MASK;
+        this.position += Long.BYTES;
         return l;
     }
 
     public short getShort() {
-        if (this.size < 2) {
+        int remaining = this.limit - this.position;
+        if (remaining < Short.BYTES) {
             throw new BufferUnderflowException();
         }
-        short s = (short) (this.buffer[this.size - 2] << BYTE_SIZE);
-        s |= (this.buffer[this.size - 1] & BYTE_MASK);
-        this.size -= 2;
+        short s = (short) (this.buffer[this.position] << BYTE_SIZE);
+        s |= (this.buffer[this.position + 1] & BYTE_MASK);
+        this.position += Short.BYTES;
         return s;
     }
 
@@ -117,20 +122,22 @@ public class AionBuffer {
         if (src == null) {
             throw new NullPointerException();
         }
-        if (this.size + src.length > this.capacity) {
+        int remaining = this.limit - this.position;
+        if (remaining < src.length) {
             throw new BufferOverflowException();
         }
-        System.arraycopy(src, 0, this.buffer, this.size, src.length);
-        this.size += src.length;
+        System.arraycopy(src, 0, this.buffer, this.position, src.length);
+        this.position += src.length;
         return this;
     }
 
     public AionBuffer putByte(byte b) {
-        if (this.size == this.capacity) {
+        int remaining = this.limit - this.position;
+        if (remaining < Byte.BYTES) {
             throw new BufferOverflowException();
         }
-        this.buffer[this.size] = b;
-        this.size++;
+        this.buffer[this.position] = b;
+        this.position += Byte.BYTES;
         return this;
     }
 
@@ -147,40 +154,43 @@ public class AionBuffer {
     }
 
     public AionBuffer putInt(int value) {
-        if (this.size + 4 > this.capacity) {
+        int remaining = this.limit - this.position;
+        if (remaining < Integer.BYTES) {
             throw new BufferOverflowException();
         }
-        this.buffer[this.size] = (byte) ((value >> 24) & BYTE_MASK);
-        this.buffer[this.size + 1] = (byte) ((value >> 16) & BYTE_MASK);
-        this.buffer[this.size + 2] = (byte) ((value >> 8) & BYTE_MASK);
-        this.buffer[this.size + 3] = (byte) (value & BYTE_MASK);
-        this.size += 4;
+        this.buffer[this.position] = (byte) ((value >> 24) & BYTE_MASK);
+        this.buffer[this.position + 1] = (byte) ((value >> 16) & BYTE_MASK);
+        this.buffer[this.position + 2] = (byte) ((value >> 8) & BYTE_MASK);
+        this.buffer[this.position + 3] = (byte) (value & BYTE_MASK);
+        this.position += Integer.BYTES;
         return this;
     }
 
     public AionBuffer putLong(long value) {
-        if (this.size + 8 > this.capacity) {
+        int remaining = this.limit - this.position;
+        if (remaining < Long.BYTES) {
             throw new BufferOverflowException();
         }
-        this.buffer[this.size] = (byte) ((value >> 56) & BYTE_MASK);
-        this.buffer[this.size + 1] = (byte) ((value >> 48) & BYTE_MASK);
-        this.buffer[this.size + 2] = (byte) ((value >> 40) & BYTE_MASK);
-        this.buffer[this.size + 3] = (byte) ((value >> 32) & BYTE_MASK);
-        this.buffer[this.size + 4] = (byte) ((value >> 24) & BYTE_MASK);
-        this.buffer[this.size + 5] = (byte) ((value >> 16) & BYTE_MASK);
-        this.buffer[this.size + 6] = (byte) ((value >> 8) & BYTE_MASK);
-        this.buffer[this.size + 7] = (byte) (value & BYTE_MASK);
-        this.size += 8;
+        this.buffer[this.position] = (byte) ((value >> 56) & BYTE_MASK);
+        this.buffer[this.position + 1] = (byte) ((value >> 48) & BYTE_MASK);
+        this.buffer[this.position + 2] = (byte) ((value >> 40) & BYTE_MASK);
+        this.buffer[this.position + 3] = (byte) ((value >> 32) & BYTE_MASK);
+        this.buffer[this.position + 4] = (byte) ((value >> 24) & BYTE_MASK);
+        this.buffer[this.position + 5] = (byte) ((value >> 16) & BYTE_MASK);
+        this.buffer[this.position + 6] = (byte) ((value >> 8) & BYTE_MASK);
+        this.buffer[this.position + 7] = (byte) (value & BYTE_MASK);
+        this.position += Long.BYTES;
         return this;
     }
 
     public AionBuffer putShort(short value) {
-        if (this.size + 2 > this.capacity) {
+        int remaining = this.limit - this.position;
+        if (remaining < Short.BYTES) {
             throw new BufferOverflowException();
         }
-        this.buffer[this.size] = (byte) ((value >> 8) & BYTE_MASK);
-        this.buffer[this.size + 1] = (byte) (value & BYTE_MASK);
-        this.size += 2;
+        this.buffer[this.position] = (byte) ((value >> 8) & BYTE_MASK);
+        this.buffer[this.position + 1] = (byte) (value & BYTE_MASK);
+        this.position += Short.BYTES;
         return this;
     }
 
@@ -188,32 +198,61 @@ public class AionBuffer {
     // query & misc. methods
     // =====================
 
-    public byte[] array() {
+    public byte[] getArray() {
         return this.buffer;
     }
 
-    public int capacity() {
-        return this.capacity;
+    public int getCapacity() {
+        return this.buffer.length;
     }
 
-    public int size() {
-        return this.size;
+    public int getPosition() {
+        return this.position;
     }
 
-    public boolean isEmpty() {
-        return this.size == 0;
+    public int getLimit() {
+        return this.limit;
     }
 
-    public boolean isFull() {
-        return this.size == this.capacity;
+    /**
+     * Resets the position to 0 and the limit to the full capacity of the buffer.
+     * Used when discarding state associated with a previous use of the buffer.
+     * 
+     * @return The receiver (for call chaining).
+     */
+    public AionBuffer clear() {
+        this.position = 0;
+        this.limit = this.buffer.length;
+        return this;
     }
 
-    public void clear() {
-        this.size = 0;
+    /**
+     * Sets the limit to the current position and resets the position to 0.
+     * Primarily used when switching between writing and reading modes:
+     *  write(X), write(Y), write(Z), flip(), read(X), read(Y), read(Z).
+     * 
+     * @return The receiver (for call chaining).
+     */
+    public AionBuffer flip() {
+        this.limit = this.position;
+        this.position = 0;
+        return this;
+    }
+
+    /**
+     * Sets the position back to 0.
+     * Useful for cases where the previously processed contents want to be reprocessed.
+     * 
+     * @return The receiver (for call chaining).
+     */
+    public AionBuffer rewind() {
+        this.position = 0;
+        return this;
     }
 
     @Override
     public boolean equals(Object ob) {
+        // The standard JCL ByteBuffer derives its equality from its state and internal data so do the same, here.
         if (this == ob) {
             return true;
         }
@@ -221,13 +260,17 @@ public class AionBuffer {
             return false;
         }
         AionBuffer other = (AionBuffer) ob;
-        if (this.capacity != other.capacity) {
+        if (this.buffer.length != other.buffer.length) {
             return false;
         }
-        if (this.size != other.size) {
+        if (this.position != other.position) {
             return false;
         }
-        for (int i = 0; i < this.size; i++) {
+        if (this.limit != other.limit) {
+            return false;
+        }
+        // The comparison is not the full buffer, only up to the limit.
+        for (int i = 0; i < this.limit; i++) {
             if (this.buffer[i] != other.buffer[i]) {
                 return false;
             }
@@ -237,8 +280,10 @@ public class AionBuffer {
 
     @Override
     public int hashCode() {
+        // The standard JCL ByteBuffer derives its hash code from its internal data so do the same, here.
         int h = 1;
-        for (int i = this.size - 1; i >= 0; i--) {
+        // The comparison is not the full buffer, only up to the limit.
+        for (int i = this.limit - 1; i >= 0; i--) {
             h = 31 * h + (int) this.buffer[i];
         }
         return h;
@@ -246,6 +291,6 @@ public class AionBuffer {
 
     @Override
     public String toString() {
-        return "AionBuffer [capacity = " + this.capacity + ", size = " + this.size + "]";
+        return "AionBuffer [capacity = " + this.buffer.length + ", position = " + this.position + ", limit = " + this.limit + " ]";
     }
 }
