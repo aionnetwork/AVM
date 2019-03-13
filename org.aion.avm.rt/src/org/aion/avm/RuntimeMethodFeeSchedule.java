@@ -421,13 +421,7 @@ public class RuntimeMethodFeeSchedule {
     public static final long Object_avm_hashCode = RT_METHOD_FEE_LEVEL_1; // totalCost - 128;
     public static final long Object_avm_equals = RT_METHOD_FEE_LEVEL_1; // totalCost - 159; //maximum cost of multiple blocks;
     public static final long Object_avm_clone = RT_METHOD_FEE_LEVEL_2; // totalCost - 263; // byte code cost - 163; invoked methods cost - 100;
-    public static final long Object_avm_toString = RT_METHOD_FEE_LEVEL_1; // totalCost - 56;
-    public static final long Object_avm_notify = RT_METHOD_FEE_LEVEL_1; // totalCost - 50;
-    public static final long Object_avm_notifyAll = RT_METHOD_FEE_LEVEL_1; // totalCost - 50;
-    public static final long Object_avm_wait = RT_METHOD_FEE_LEVEL_1; // totalCost - 50;
-    public static final long Object_avm_wait_1 = RT_METHOD_FEE_LEVEL_1; // totalCost - 50;
-    public static final long Object_avm_wait_2 = RT_METHOD_FEE_LEVEL_1; // totalCost - 50;
-    public static final long Object_avm_finalize = RT_METHOD_FEE_LEVEL_1; // totalCost - 50;
+    public static final long Object_avm_toString = RT_METHOD_FEE_LEVEL_3; // totalCost - 56; // this was increased due to multiple operations being done for getting the class name
 
     public static final long MathContext_avm_constructor = RT_METHOD_FEE_LEVEL_3; // totalCost - 487; // byte code cost - 387; invoked methods cost - 100;
     public static final long MathContext_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 615; // byte code cost - 453; invoked methods cost - 162;

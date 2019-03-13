@@ -61,6 +61,11 @@ public class ClassNameTest {
     }
 
     @Test
+    public void getObjectToString(){
+        assertEquals("org.aion.avm.tooling.shadowing.testClass.TestResource$Child@14", callStatic("getObjectToString"));
+    }
+
+    @Test
     public void getClassNameThrowableArray() {
         Throwable[] t = new Throwable[10];
         assertEquals(t.getClass().getName(), callStatic("getClassNameThrowableArray"));

@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.ClassNameExtractor;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
@@ -80,31 +81,8 @@ public class Object extends java.lang.Object implements IObject {
     @Override
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_toString);
-        return null;
-    }
-
-    public final void avm_notify() {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_notify);
-    }
-
-    public final void avm_notifyAll() {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_notifyAll);
-    }
-
-    public final void avm_wait() throws InterruptedException {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait);
-    }
-
-    public final void avm_wait(long timeout) throws InterruptedException {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait_1);
-    }
-
-    public final void avm_wait(long timeout, int nanos) throws InterruptedException {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_wait_2);
-    }
-
-    protected void avm_finalize() throws java.lang.Throwable {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_finalize);
+        //using the public facing method since the user can override this
+        return new String(ClassNameExtractor.getOriginalClassName(getClass().getName()) + "@" + java.lang.Integer.toHexString(avm_hashCode()));
     }
 
     @Override

@@ -79,6 +79,11 @@ public class TestResource {
         return b.getClass().getName();
     }
 
+    public static String getObjectToString(){
+        Child o = new Child();
+        return o.toString();
+    }
+
     public static String getInterfaceName(){
         return MyInterface.class.getName();
     }
@@ -102,6 +107,10 @@ public class TestResource {
     }
 
     public static class Child {
+        @Override
+        public int hashCode() {
+            return 20;
+        }
     }
 
     public interface MyInterface{}

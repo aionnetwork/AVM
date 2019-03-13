@@ -151,7 +151,7 @@ public class ClassShadowingTest {
         Method method = clazz.getMethod(NamespaceMapper.mapMethodName("getStringForNull"));
         Object ret = method.invoke(null);
         // Note that we can't yet override methods in our contracts so the toString returns false, from Object.
-        Assert.assertEquals(null, ret);
+        Assert.assertEquals("org.aion.avm.core.shadowing.TestResourceInterface$1@1", ret.toString());
 
         InstrumentationHelpers.popExistingStackFrame(runtime);
         InstrumentationHelpers.detachThread(instrumentation);
