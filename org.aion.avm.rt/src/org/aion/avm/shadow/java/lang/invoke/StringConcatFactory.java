@@ -37,53 +37,46 @@ public final class StringConcatFactory extends org.aion.avm.shadow.java.lang.Obj
         for (int idx = 0; idx < recipe.length(); idx++) {
             char ch = recipe.charAt(idx);
             if (ch == RECIPE_DYNAMIC_ARGUMENT_FLAG) {
-                org.aion.avm.shadow.java.lang.Object arg = mapBoxedType(dynamicArgs[dynamicArgsIdx++]);
+                org.aion.avm.shadow.java.lang.Object arg = mapBoxedType(dynamicArgs[dynamicArgsIdx++], false);
                 builder.avm_append(arg);
             } else if (ch == RECIPE_STATIC_ARGUMENT_FLAG) {
-                org.aion.avm.shadow.java.lang.Object arg = mapBoxedType(staticArgs[staticArgsIdx++]);
+                org.aion.avm.shadow.java.lang.Object arg = mapBoxedType(staticArgs[staticArgsIdx++], true);
                 builder.avm_append(arg);
             } else {
                 builder.avm_append(ch);
             }
         }
-        return new String(builder.avm_toString());
+        return builder.avm_toString();
     }
 
-    private static org.aion.avm.shadow.java.lang.Object mapBoxedType(Object obj){
+    private static org.aion.avm.shadow.java.lang.Object mapBoxedType(Object obj, boolean isStaticArg){
         org.aion.avm.shadow.java.lang.Object ret = null;
         if (null == obj){
             ret = null;
         }else if (obj instanceof org.aion.avm.shadow.java.lang.Object){
             ret = (org.aion.avm.shadow.java.lang.Object)obj;
         }else {
-            java.lang.String name = obj.getClass().getSimpleName();
-            switch (name) {
-                case "Short":
-                    ret = Short.avm_valueOf(((java.lang.Short)obj));
-                    break;
-                case "Integer":
-                    ret = Integer.avm_valueOf(((java.lang.Integer)obj));
-                    break;
-                case "Long":
-                    ret = Long.avm_valueOf(((java.lang.Long)obj));
-                    break;
-                case "Float":
-                    ret = Float.avm_valueOf(((java.lang.Float)obj));
-                    break;
-                case "Double":
-                    ret = Double.avm_valueOf(((java.lang.Double)obj));
-                    break;
-                case "Boolean":
-                    ret = Boolean.avm_valueOf(((java.lang.Boolean)obj));
-                    break;
-                case "Byte":
-                    ret = Byte.avm_valueOf(((java.lang.Byte)obj));
-                    break;
-                case "Character":
-                    ret = Character.avm_valueOf(((java.lang.Character)obj));
-                    break;
-                default:
-                    RuntimeAssertionError.unreachable("String concat receives unexpected type " + name);
+            Class argClass = obj.getClass();
+            if(argClass.equals(java.lang.Short.class)) {
+                ret = Short.avm_valueOf(((java.lang.Short) obj));
+            } else if(argClass.equals(java.lang.Integer.class)) {
+                ret = Integer.avm_valueOf(((java.lang.Integer) obj));
+            }else if(argClass.equals(java.lang.Long.class)) {
+                ret = Long.avm_valueOf(((java.lang.Long) obj));
+            }else if(argClass.equals(java.lang.Float.class)) {
+                ret = Float.avm_valueOf(((java.lang.Float) obj));
+            }else if(argClass.equals(java.lang.Double.class)) {
+                ret = Double.avm_valueOf(((java.lang.Double) obj));
+            }else if(argClass.equals(java.lang.Boolean.class)) {
+                ret = Boolean.avm_valueOf(((java.lang.Boolean) obj));
+            }else if(argClass.equals(java.lang.Byte.class)) {
+                ret = Byte.avm_valueOf(((java.lang.Byte) obj));
+            }else if(argClass.equals(java.lang.Character.class)) {
+                ret = Character.avm_valueOf(((java.lang.Character) obj));
+            }else if(isStaticArg && argClass.equals(java.lang.String.class)) {
+                ret = String.avm_valueOf(new String((java.lang.String)obj));
+            }else {
+                RuntimeAssertionError.unreachable("String concat receives unexpected type " + argClass.getName());
             }
         }
         return ret;

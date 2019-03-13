@@ -1,12 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
-import org.aion.avm.internal.CodecIdioms;
-import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.IPersistenceToken;
+import org.aion.avm.internal.*;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 /**
@@ -101,10 +96,10 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
         this.v.setCharAt(index, ch);
     }
 
-    //TODO: IOBJECT?
-    public StringBuffer avm_append(Object obj) {
+    public StringBuffer avm_append(IObject obj) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append);
-        this.v = this.v.append(obj);
+        // using public method to stay consistent with jcl implementation
+        this.v = this.v.append(String.avm_valueOf(obj).getUnderlying());
         return this;
     }
 

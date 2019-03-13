@@ -2,6 +2,7 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
+import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
@@ -44,7 +45,7 @@ public abstract class Enum<E extends Enum<E>> extends Object {
         return name;
     }
 
-    public final boolean avm_equals(Object other) {
+    public final boolean avm_equals(IObject other) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Enum_avm_equals);
         lazyLoad();
         return this == other;

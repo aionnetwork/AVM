@@ -59,4 +59,42 @@ public class TestResource {
 
         return ret;
     }
+
+    public static boolean testArrayCopyNullPointerException(){
+        int[] src = { 0, 1, 2, 3, 4, 5 };
+        int[] dest = null;
+        boolean didMatch = false;
+        try {
+            System.arraycopy(src, 1, dest, 0, 1);
+        } catch (NullPointerException e){
+            didMatch = true;
+        }
+        return didMatch;
+    }
+
+    public static boolean testArrayCopyIndexOutOfBoundsException(){
+        int[] src = {0, 1, 2, 3, 4, 5};
+        int[] dest = {10, 20, 30};
+
+        boolean didMatch = false;
+        try {
+            System.arraycopy(src, 1, dest, 0, 5);
+        } catch (IndexOutOfBoundsException e){
+            didMatch = true;
+        }
+        return didMatch;
+    }
+
+    public static boolean testArrayCopyArrayStoreException(){
+        int[] src = {0, 1, 2, 3, 4, 5};
+        String[] dest = {"str1", "str2"};
+
+        boolean didMatch = false;
+        try {
+            System.arraycopy(src, 1, dest, 0, 5);
+        } catch (ArrayStoreException e){
+            didMatch = true;
+        }
+        return didMatch;
+    }
 }

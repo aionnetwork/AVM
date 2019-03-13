@@ -245,7 +245,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     public int avm_bitCount() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_bitCount);
         lazyLoad();
-        return v.bitLength();
+        return v.bitCount();
     }
 
     public int avm_compareTo(BigInteger val) {

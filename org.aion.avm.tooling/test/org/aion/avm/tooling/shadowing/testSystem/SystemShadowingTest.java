@@ -28,4 +28,25 @@ public class SystemShadowingTest {
         Object result = avmRule.call(avmRule.getPreminedAccount(), dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals(true, result);
     }
+
+    @Test
+    public void testArrayCopyNullPointerException() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayCopyNullPointerException");
+        Object result = avmRule.call(avmRule.getPreminedAccount(), dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
+        Assert.assertEquals(true, result);
+    }
+
+    @Test
+    public void testArrayCopyIndexOutOfBoundsException() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayCopyIndexOutOfBoundsException");
+        Object result = avmRule.call(avmRule.getPreminedAccount(), dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
+        Assert.assertEquals(true, result);
+    }
+
+    @Test
+    public void testArrayCopyArrayStoreException() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayCopyArrayStoreException");
+        Object result = avmRule.call(avmRule.getPreminedAccount(), dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
+        Assert.assertEquals(true, result);
+    }
 }

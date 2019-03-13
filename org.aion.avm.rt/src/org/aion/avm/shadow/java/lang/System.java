@@ -20,7 +20,9 @@ public final class System extends Object{
                                      int length)
     {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.System_avm_arraycopy + length);
-        if (!((src instanceof Array) && (dest instanceof Array))){
+        if(src == null || dest == null){
+            throw new NullPointerException();
+        } else if (!((src instanceof Array) && (dest instanceof Array))){
             throw new ArrayStoreException();
         }else{
             java.lang.Object asrc = ((Array) src).getUnderlyingAsObject();

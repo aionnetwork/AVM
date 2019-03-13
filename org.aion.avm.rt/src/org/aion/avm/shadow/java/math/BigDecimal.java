@@ -129,7 +129,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
         return new BigDecimal(v.add(augend.v));
     }
 
-    public BigDecimal add(BigDecimal augend, MathContext mc) {
+    public BigDecimal avm_add(BigDecimal augend, MathContext mc) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_add_1);
         lazyLoad();
         augend.lazyLoad();
