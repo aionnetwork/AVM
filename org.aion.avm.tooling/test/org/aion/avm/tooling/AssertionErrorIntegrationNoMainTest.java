@@ -37,8 +37,8 @@ public class AssertionErrorIntegrationNoMainTest {
         Address dapp = installTestDApp(AssertionErrorIntegrationNoMainTestTarget.class);
 
         // Do the call.
-        String result = callStaticString(dapp, "throwableError", Code.FAILED_EXCEPTION);
-        Assert.assertEquals(null, result);
+        String result = callStaticString(dapp, "throwableError", Code.SUCCESS);
+        Assert.assertEquals(AssertionError.class.getName(), result);
     }
 
     @Test

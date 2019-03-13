@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.ClassNameExtractor;
 import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IPersistenceToken;
@@ -41,7 +42,8 @@ public class Throwable extends Object {
     }
 
     public Throwable(Throwable cause) {
-        this(null, cause);
+        this.message = (cause == null ? null : cause.avm_toString());
+        this.cause = cause;
     }
 
     // Deserializer support.
@@ -72,7 +74,8 @@ public class Throwable extends Object {
 
     public String avm_toString() {
         lazyLoad();
-        return this.message;
+        String s = new String(ClassNameExtractor.getOriginalClassName(getClass().getName()));
+        return (this.message != null) ? new String(s + ": " + this.message) : s;
     }
 
     // TODO:  Determine if we should throw/fail when something calls a method which doesn't make sense in this environment.

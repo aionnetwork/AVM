@@ -37,7 +37,7 @@ public class AssertionErrorIntegrationTest {
         
         // Do the call.
         String result = callStaticString(dapp, "throwableError");
-        Assert.assertEquals(null, result);
+        Assert.assertEquals(AssertionError.class.getName(), result);
     }
 
     @Test
