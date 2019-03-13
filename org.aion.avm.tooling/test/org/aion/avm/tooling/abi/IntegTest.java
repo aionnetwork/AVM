@@ -14,6 +14,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
+import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,6 +63,20 @@ public class IntegTest {
         }
     }
 
+    private void balanceTransfer(Address dapp) {
+        TransactionResult result =
+            avmRule.call(
+                avmRule.getPreminedAccount(),
+                dapp,
+                BigInteger.ZERO,
+                new byte[0],
+                ENERGY_LIMIT,
+                ENERGY_PRICE)
+                .getTransactionResult();
+        assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        assertArrayEquals(new byte[0], result.getReturnData());
+    }
+
     //Simplest case.
     @Test
     public void testSimpleDApp() {
@@ -74,6 +89,8 @@ public class IntegTest {
 
         ret = (Boolean) callStatic(dapp, "test2", 1, "test2", new long[]{1, 2, 3});
         assertTrue(ret);
+
+        balanceTransfer(dapp);
     }
 
     //Multiple classes. One class is imported.
@@ -164,8 +181,18 @@ public class IntegTest {
             JarBuilder.buildJarForMainAndClasses(DAppNoMainNoFallbackTarget.class);
         Address dapp = installTestDApp(jar);
 
-        assertNull(callStatic(dapp, "noSuchMethod"));
 
+        byte[] argData = ABIEncoder.encodeMethodArguments("noSuchMethod");
+        TransactionResult result =
+            avmRule.call(
+                avmRule.getPreminedAccount(),
+                dapp,
+                BigInteger.ZERO,
+                argData,
+                ENERGY_LIMIT,
+                ENERGY_PRICE)
+                .getTransactionResult();
+        assertEquals(Code.FAILED_REVERT, result.getResultCode());
+        assertNull(result.getReturnData());
     }
-
 }

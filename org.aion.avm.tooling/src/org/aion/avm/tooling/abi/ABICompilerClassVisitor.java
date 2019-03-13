@@ -87,6 +87,10 @@ public class ABICompilerClassVisitor extends ClassVisitor {
         super.visitEnd();
     }
 
+    private boolean hasFallback() {
+        return !fallbackMethodName.isEmpty();
+    }
+
     private void addMainMethod() {
         // write function signature
         MethodVisitor methodVisitor =
@@ -104,10 +108,22 @@ public class ABICompilerClassVisitor extends ClassVisitor {
         methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/ABIDecoder", "decodeMethodName", "([B)Ljava/lang/String;", false);
         methodVisitor.visitVarInsn(ASTORE, 1);
         Label label2 = new Label();
-        methodVisitor.visitLabel(label2);
 
+        // if methodName is null, call fallback(), or return empty byte array
+
+        methodVisitor.visitVarInsn(ALOAD, 1);
+        methodVisitor.visitJumpInsn(IFNONNULL, label2);
+        if(hasFallback()) {
+            methodVisitor.visitMethodInsn(
+                INVOKESTATIC, className, fallbackMethodName, "()V", false);
+        }
+        methodVisitor.visitInsn(ICONST_0);
+        methodVisitor.visitIntInsn(NEWARRAY, T_BYTE);
+        methodVisitor.visitInsn(ARETURN);
+
+        methodVisitor.visitLabel(label2);
         // set argValues = ABIDecoder.decodeArguments(BlockchainRuntime.getData());
-        methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/BlockchainRuntime", "getData", "()[B", false);
+        methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/ABIDecoder", "decodeArguments", "([B)[Ljava/lang/Object;", false);
         methodVisitor.visitVarInsn(ASTORE, 2);
 
@@ -134,7 +150,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                 castArgumentType(methodVisitor, argTypes[i]);
             }
 
-            // if void return type, invoke function and return null,
+            // if void return type, invoke function and return empty byte array,
             // else return ABIEncoder.encodeOneObject(<methodName>(<arguments>));
             methodVisitor.visitMethodInsn(INVOKESTATIC, className, callableMethod.getMethodName(), callableMethod.getDescriptor(), false);
             Type returnType = Type.getReturnType(callableMethod.getDescriptor());
@@ -144,20 +160,28 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                     .visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/ABIEncoder", "encodeOneObject",
                         "(Ljava/lang/Object;)[B", false);
             } else {
-                methodVisitor.visitInsn(ACONST_NULL);
+                methodVisitor.visitInsn(ICONST_0);
+                methodVisitor.visitIntInsn(NEWARRAY, T_BYTE);
             }
             methodVisitor.visitInsn(ARETURN);
         }
 
-        // this latestLabel is the catch-all else, we just return null
+        // this latestLabel is the catch-all else, we call the fallback() if it exists,
+        // else we revert the transaction
         methodVisitor.visitLabel(latestLabel);
         methodVisitor.visitFrame(Opcodes.F_APPEND, 3, new Object[]{"[B", "java/lang/String", "[Ljava/lang/Object;"}, 0, null);
-        if (!fallbackMethodName.isEmpty()) {
+        if (hasFallback()) {
             methodVisitor.visitMethodInsn(
                     INVOKESTATIC, className, fallbackMethodName, "()V", false);
+            methodVisitor.visitInsn(ICONST_0);
+            methodVisitor.visitIntInsn(NEWARRAY, T_BYTE);
+            methodVisitor.visitInsn(ARETURN);
+        } else {
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/BlockchainRuntime", "revert", "()V", false);
+            methodVisitor.visitInsn(ACONST_NULL);
+            methodVisitor.visitInsn(ARETURN);
         }
-        methodVisitor.visitInsn(ACONST_NULL);
-        methodVisitor.visitInsn(ARETURN);
+
         Label lastLabel = new Label();
         methodVisitor.visitLabel(lastLabel);
         methodVisitor.visitLocalVariable("inputBytes", "[B", null, label1, lastLabel, 0);
