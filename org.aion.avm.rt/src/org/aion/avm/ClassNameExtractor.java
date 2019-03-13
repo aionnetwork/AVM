@@ -12,7 +12,7 @@ public class ClassNameExtractor {
         }
     }
 
-    public static String removeInternalPrefix(String className) {
+    private static String removeInternalPrefix(String className) {
         if (className.startsWith(PackageConstants.kShadowDotPrefix)) {
             return className.substring(PackageConstants.kShadowDotPrefix.length());
         } else if (className.startsWith(PackageConstants.kUserDotPrefix)) {
@@ -24,7 +24,7 @@ public class ClassNameExtractor {
         }
     }
 
-    public static String getArrayClassFromWrapper(String className) {
+    private static String getArrayClassFromWrapper(String className) {
         String arrayName = ArrayClassNameMapper.getElementNameFromWrapper(className.replaceAll("\\.", "/"));
         String name;
         int dimension = 0;
