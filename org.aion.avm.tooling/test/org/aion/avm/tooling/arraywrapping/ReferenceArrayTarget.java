@@ -101,8 +101,64 @@ public class ReferenceArrayTarget {
         // to create a new code block
         validate(1,1);
     }
+
+    public static void InterfaceArraySize(){
+        ChildInterfaceOne[][] childInterfacesOne = new ChildInterfaceOne[10][];
+        CommonInterface[][] childInterfacesTwo = new ChildInterfaceTwo[10][];
+
+        validate(childInterfacesOne.length, 10);
+        validate(childInterfacesTwo.length, 10);
+
+        childInterfacesTwo[0] = new ChildInterfaceTwo[20];
+        validate(childInterfacesTwo[0].length, 20);
+    }
+
+    public static void InterfaceArrayAccess(){
+        ChildInterfaceOne[][] childInterfacesOne = new ChildInterfaceOne[10][];
+        CommonInterface[][] childInterfacesTwo = new ChildInterfaceTwo[10][20];
+
+        if (childInterfacesOne[0] != null) {
+            throw new RuntimeException("interface[10][] array initialization values are not null.");
+        }
+
+        if (childInterfacesTwo[0][0] != null) {
+            throw new RuntimeException("interface[10][20] array initialization values are not 0.");
+        }
+    }
+
+    public static void ObjectArraySize(){
+        ConcreteChildOne[][] childOne = new ConcreteChildOne[10][];
+        ChildInterfaceTwo[][] childTwo = new ConcreteChildTwo[10][];
+
+        validate(childOne.length, 10);
+        validate(childTwo.length, 10);
+
+        childTwo[0] = new ConcreteChildTwo[20];
+        validate(childTwo[0].length, 20);
+    }
+
+    public static void ObjectArrayAccess(){
+        ConcreteChildOne[][] childOne = new ConcreteChildOne[10][];
+        ChildInterfaceTwo[][] childTwo = new ConcreteChildTwo[10][10];
+
+        if (childOne[0] != null) {
+            throw new RuntimeException("object[10][] array initialization values are not null.");
+        }
+
+        if (childTwo[0][0] != null) {
+            throw new RuntimeException("object[10][20] array initialization values are not 0.");
+        }
+    }
+
     private static void validate(int expected, int actual) {
         if (expected != actual)
             throw new RuntimeException(expected + " was not equal to " + actual);
     }
+
+    public interface CommonInterface{}
+    public interface ChildInterfaceOne extends CommonInterface{}
+    public interface ChildInterfaceTwo extends CommonInterface{}
+    public static class ConcreteChildOne implements ChildInterfaceOne {}
+    public static class ConcreteChildTwo implements ChildInterfaceTwo {}
+
 }

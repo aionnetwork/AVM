@@ -193,12 +193,6 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
 
         switch(opcode){
             case Opcodes.ANEWARRAY:
-                // handle the case of a 2D primitive array specially.
-                if (type.startsWith("[") && (type.length() == 2)) {
-                    visitMultiANewArrayInsn("[" + type, 1);
-                    break;
-                }
-
                 // allows us to continue to do invokestatic but then return in terms of unifying type.
                 if (type.startsWith("[")){
                     wName = ArrayNameMapper.getPreciseArrayWrapperDescriptor("[" + type);
@@ -278,13 +272,8 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     @Override
     public void visitMultiANewArrayInsn(java.lang.String descriptor, int d)
     {
-        int sd = ArrayNameMapper.getDimension(descriptor);
-        while (d < sd){
-            this.mv.visitIntInsn(Opcodes.BIPUSH, 0);
-            d++;
-        }
         String wName = ArrayNameMapper.getPreciseArrayWrapperDescriptor(descriptor);
-        String facDesc = ArrayNameMapper.getFactoryDescriptor(wName, sd);
+        String facDesc = ArrayNameMapper.getFactoryDescriptor(wName, d);
 
         this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, wName, "initArray", facDesc, false);
     }

@@ -221,7 +221,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         mv.visitEnd();
     }
 
-    private static void genMultiDimensionFactory(ClassWriter cw, String wrapper, int d){
+    private static void genMultiDimensionFactory(ClassWriter cw, String wrapper, int dim) {
         // Code template for $$$MyObject.initArray (3D array of MyObject)
         // Note that for D = n array, n dimension parameter will be passed into initArray
         //
@@ -233,15 +233,16 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         //    return ret;
         // }
 
-        String facDesc = ArrayNameMapper.getFactoryDescriptor(wrapper, d);
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC | ACC_STATIC, "initArray", facDesc, null, null);
-        mv.visitCode();
+        for (int d = 2; d <= dim; d++) {
+            String facDesc = ArrayNameMapper.getFactoryDescriptor(wrapper, d);
+            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC | ACC_STATIC, "initArray", facDesc, null, null);
+            mv.visitCode();
 
-        // Create new wrapper object with d0 LVT[0]
-        mv.visitTypeInsn(NEW, wrapper);
-        mv.visitInsn(DUP);
-        mv.visitVarInsn(ILOAD, 0);
-        mv.visitMethodInsn(INVOKESPECIAL, wrapper, "<init>", "(I)V", false);
+            // Create new wrapper object with d0 LVT[0]
+            mv.visitTypeInsn(NEW, wrapper);
+            mv.visitInsn(DUP);
+            mv.visitVarInsn(ILOAD, 0);
+            mv.visitMethodInsn(INVOKESPECIAL, wrapper, "<init>", "(I)V", false);
 
         if (ENERGY_METERING) {
             // Charge energy
@@ -252,77 +253,79 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             mv.visitMethodInsn(INVOKESTATIC, SHADOW_ARRAY, "chargeEnergy", "(J)V", false);
         }
 
-        // Wrapper OBJ to return
-        // Now LVT[0] ~ LVT[d-1] hold all dimension data, LVT[d] hold wrapper object.
-        mv.visitVarInsn(ASTORE, d);
+            // Wrapper OBJ to return
+            // Now LVT[0] ~ LVT[d-1] hold all dimension data, LVT[d] hold wrapper object.
+            mv.visitVarInsn(ASTORE, d);
 
-        // Initialize counter to LVT[d+1]
-        mv.visitInsn(ICONST_0);
-        mv.visitVarInsn(ISTORE, d + 1);
+            // Initialize counter to LVT[d+1]
+            mv.visitInsn(ICONST_0);
+            mv.visitVarInsn(ISTORE, d + 1);
 
-        // For loop head label
-        Label forLoopHead = new Label();
-        mv.visitLabel(forLoopHead);
+            // For loop head label
+            Label forLoopHead = new Label();
+            mv.visitLabel(forLoopHead);
 
-        // Stack map frame for for loop
-        // Append [wrapper, int] to current frame
-        mv.visitFrame(Opcodes.F_APPEND,2, new Object[] {wrapper, Opcodes.INTEGER}, 0, null);
+            // Stack map frame for for loop
+            // Append [wrapper, int] to current frame
+            mv.visitFrame(Opcodes.F_APPEND, 2, new Object[]{wrapper, Opcodes.INTEGER}, 0, null);
 
-        // Load counter LVT[d + 1]
-        // Load current dimension LVT[0]
-        mv.visitVarInsn(ILOAD, d + 1);
-        mv.visitVarInsn(ILOAD, 0);
+            // Load counter LVT[d + 1]
+            // Load current dimension LVT[0]
+            mv.visitVarInsn(ILOAD, d + 1);
+            mv.visitVarInsn(ILOAD, 0);
 
-        // compare counter to current dimension
-        Label forLoopTail = new Label();
-        mv.visitJumpInsn(IF_ICMPGE, forLoopTail);
+            // compare counter to current dimension
+            Label forLoopTail = new Label();
+            mv.visitJumpInsn(IF_ICMPGE, forLoopTail);
 
-        // Load wrapper object LVT[d]
-        mv.visitVarInsn(ALOAD, d);
-        // Load counter LVT[d+1]
-        mv.visitVarInsn(ILOAD, d + 1);
-        // Load rest of the dimension data LVT[1] ~ LVT[d-1]
-        for (int j = 1; j < d; j++) {
-            mv.visitVarInsn(ILOAD, j);
+            // Load wrapper object LVT[d]
+            mv.visitVarInsn(ALOAD, d);
+            // Load counter LVT[d+1]
+            mv.visitVarInsn(ILOAD, d + 1);
+            // Load rest of the dimension data LVT[1] ~ LVT[d-1]
+            for (int j = 1; j < d; j++) {
+                mv.visitVarInsn(ILOAD, j);
+            }
+
+            // Call child wrapper factory, child wrapper will pop last d - 1 stack slot as argument.
+            // Child wrapper factory descriptor will be constructed here.
+            String childWrapper;
+            String childFacDesc;
+            childWrapper = wrapper.substring((PackageConstants.kArrayWrapperSlashPrefix + "$").length());
+            RuntimeAssertionError.assertTrue(childWrapper.startsWith("$"));
+            char[] childArray = childWrapper.toCharArray();
+            for (int i = 0; childArray[i] == '$'; i++) {
+                childArray[i] = '[';
+            }
+            childWrapper = new String(childArray);
+            childWrapper = ArrayNameMapper.getPreciseArrayWrapperDescriptor(childWrapper);
+            childFacDesc = ArrayNameMapper.getFactoryDescriptor(childWrapper, d - 1);
+
+            mv.visitMethodInsn(INVOKESTATIC, childWrapper, "initArray", childFacDesc, false);
+
+            // Call set
+            mv.visitMethodInsn(INVOKEVIRTUAL, wrapper, "set", "(ILjava/lang/Object;)V", false);
+
+            // Increase counter LVT[d+1]
+            mv.visitIincInsn(d + 1, 1);
+
+            mv.visitJumpInsn(GOTO, forLoopHead);
+            mv.visitLabel(forLoopTail);
+
+            // Chop off the counter from stack map frame
+            mv.visitFrame(Opcodes.F_CHOP, 1, null, 0, null);
+
+            // Load wrapper object LVT[d]
+            mv.visitVarInsn(ALOAD, d);
+
+            mv.visitInsn(ARETURN);
+
+            // maxStack is d + 1
+            // maxLVT is d + 2
+            // We can use class writer to calculate them anyway
+            mv.visitMaxs(d + 1, d + 2);
+            mv.visitEnd();
         }
-
-        // Call child wrapper factory, child wrapper will pop last d - 1 stack slot as argument.
-        // Child wrapper factory descriptor will be constructed here.
-        String childWrapper;
-        String childFacDesc;
-        childWrapper = wrapper.substring((PackageConstants.kArrayWrapperSlashPrefix + "$").length());
-        RuntimeAssertionError.assertTrue(childWrapper.startsWith("$"));
-        char[] childArray = childWrapper.toCharArray();
-        for(int i = 0; childArray[i] == '$' ; i++){
-            childArray[i] = '[';
-        }
-        childWrapper = new String(childArray);
-        childWrapper = ArrayNameMapper.getPreciseArrayWrapperDescriptor(childWrapper);
-        childFacDesc = ArrayNameMapper.getFactoryDescriptor(childWrapper, d - 1);
-
-        mv.visitMethodInsn(INVOKESTATIC, childWrapper, "initArray", childFacDesc, false);
-
-        // Call set
-        mv.visitMethodInsn(INVOKEVIRTUAL, wrapper, "set", "(ILjava/lang/Object;)V", false);
-
-        // Increase counter LVT[d+1]
-        mv.visitIincInsn(d+1, 1);
-
-        mv.visitJumpInsn(GOTO, forLoopHead);
-        mv.visitLabel(forLoopTail);
-
-        // Chop off the counter from stack map frame
-        mv.visitFrame(Opcodes.F_CHOP,1, null, 0, null);
-
-        // Load wrapper object LVT[d]
-        mv.visitVarInsn(ALOAD, d);
-        mv.visitInsn(ARETURN);
-
-        // maxStack is d + 1
-        // maxLVT is d + 2
-        // We can use class writer to calculate them anyway
-        mv.visitMaxs(d + 1, d + 2);
-        mv.visitEnd();
     }
 
     private static void genConstructor(ClassWriter cw, String superName){
