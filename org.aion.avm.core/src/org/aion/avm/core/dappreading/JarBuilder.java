@@ -72,12 +72,15 @@ public class JarBuilder {
      * Creates the in-memory representation of a JAR with the given class names and direct bytes.
      * @return The bytes representing this JAR.
      */
-    public static byte[] buildJarForExplicitClassNamesAndBytecode(String mainClassName, byte[] mainClassBytes, Map<String, byte[]> classMap) {
+    public static byte[] buildJarForExplicitClassNamesAndBytecode(String mainClassName, byte[] mainClassBytes, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
         JarBuilder builder = new JarBuilder(null, mainClassName);
         try {
             builder.saveClassToStream(mainClassName, mainClassBytes);
             for (Map.Entry<String, byte[]> entry : classMap.entrySet()) {
                 builder.saveClassToStream(entry.getKey(), entry.getValue());
+            }
+            for (Class<?> clazz : otherClasses) {
+                builder.addClassAndInners(clazz);
             }
         } catch (IOException e) {
             // Can't happen - in-memory.

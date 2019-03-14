@@ -105,7 +105,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
 
         // set methodName = ABIDecoder.decodeMethodName(inputBytes);
         methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/ABIDecoder", "decodeMethodName", "([B)Ljava/lang/String;", false);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIDecoder", "decodeMethodName", "([B)Ljava/lang/String;", false);
         methodVisitor.visitVarInsn(ASTORE, 1);
         Label label2 = new Label();
 
@@ -123,8 +123,9 @@ public class ABICompilerClassVisitor extends ClassVisitor {
 
         methodVisitor.visitLabel(label2);
         // set argValues = ABIDecoder.decodeArguments(BlockchainRuntime.getData());
+
         methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/ABIDecoder", "decodeArguments", "([B)[Ljava/lang/Object;", false);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIDecoder", "decodeArguments", "([B)[Ljava/lang/Object;", false);
         methodVisitor.visitVarInsn(ASTORE, 2);
 
         Label latestLabel = new Label();
@@ -157,7 +158,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
             if (returnType != Type.VOID_TYPE) {
                 castReturnType(methodVisitor, returnType);
                 methodVisitor
-                    .visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/ABIEncoder", "encodeOneObject",
+                    .visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneObject",
                         "(Ljava/lang/Object;)[B", false);
             } else {
                 methodVisitor.visitInsn(ICONST_0);
@@ -262,5 +263,9 @@ public class ABICompilerClassVisitor extends ClassVisitor {
             case Type.ARRAY:
                 break;
         }
+    }
+
+    public boolean addedMainMethod() {
+        return !hasMainMethod;
     }
 }

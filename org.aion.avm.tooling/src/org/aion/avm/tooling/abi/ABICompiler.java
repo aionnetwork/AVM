@@ -7,7 +7,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.AionBuffer;
+import org.aion.avm.userlib.AionList;
+import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.AionSet;
+import org.aion.avm.userlib.abi.ABICodec;
+import org.aion.avm.userlib.abi.ABIException;
+import org.aion.avm.userlib.abi.ABIToken;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -20,10 +29,15 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
+import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
+
 public class ABICompiler {
 
     private static final int MAX_CLASS_BYTES = 1024 * 1024;
     private static final float VERSION_NUMBER = 0.0F;
+    private static Class[] requiredUserlibClasses = new Class[] {ABICodec.class, ABIDecoder.class, ABIEncoder.class, ABIException.class, ABIToken.class,
+        AionBuffer.class, AionList.class, AionMap.class, AionSet.class};
 
     private String mainClassName;
     private byte[] mainClassBytes;
@@ -84,17 +98,16 @@ public class ABICompiler {
         ClassReader reader = new ClassReader(mainClassBytes);
         ClassWriter classWriter = new ClassWriter(0);
         ABICompilerClassVisitor classVisitor = new ABICompilerClassVisitor(classWriter) {};
-        try {
-            reader.accept(classVisitor, 0);
-        } catch (Exception e) {
-            throw e;
-        }
+        reader.accept(classVisitor, 0);
+
         callables = classVisitor.getCallableSignatures();
         mainClassBytes = classWriter.toByteArray();
-        outputJarFile =
-                JarBuilder.buildJarForExplicitClassNamesAndBytecode(
-                        mainClassName, mainClassBytes, classMap);
 
+        if(classVisitor.addedMainMethod()) {
+            outputJarFile = JarBuilder.buildJarForExplicitClassNamesAndBytecode(mainClassName, mainClassBytes, classMap, getMissingUserlibClasses());
+        } else {
+            outputJarFile = JarBuilder.buildJarForExplicitClassNamesAndBytecode(mainClassName, mainClassBytes, classMap);
+        }
 //        DataOutputStream dout = null;
 //        try {
 //            dout = new DataOutputStream(
@@ -143,8 +156,11 @@ public class ABICompiler {
                         throw new Exception("Class file too big: " + name);
                     }
                     System.arraycopy(tempReadingBuffer, 0, classBytes, 0, readSize);
-                    if (qualifiedClassName.equals(mainClassName)) mainClassBytes = classBytes;
-                    else classMap.put(qualifiedClassName, classBytes);
+                    if (qualifiedClassName.equals(mainClassName)) {
+                        mainClassBytes = classBytes;
+                    } else {
+                        classMap.put(qualifiedClassName, classBytes);
+                    }
                 }
             }
         }
@@ -152,6 +168,21 @@ public class ABICompiler {
 
     private static String internalNameToFulllyQualifiedName(String internalName) {
         return internalName.replaceAll("/", ".");
+    }
+
+    protected Class[] getMissingUserlibClasses() {
+        List<Class> classesToAdd = new ArrayList<>();
+        for (Class clazz: requiredUserlibClasses) {
+            byte[] expectedBytes = Helpers.loadRequiredResourceAsBytes(clazz.getName().replaceAll("\\.", "/") + ".class");
+            if (classMap.containsKey(clazz.getName())) {
+                if (!Arrays.equals(expectedBytes, classMap.get(clazz.getName()))) {
+                    throw new ABICompilerException("Input jar contains class " + clazz.getName() + " but does not have expect contents");
+                }
+            } else {
+                classesToAdd.add(clazz);
+            }
+        }
+        return classesToAdd.toArray(new Class[0]);
     }
 
     public List<String> getCallables() {

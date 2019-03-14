@@ -1,11 +1,11 @@
 package org.aion.avm.tooling.abi;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.AvmRule;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
@@ -27,7 +27,7 @@ public class RandomTest {
     @Rule
     public AvmRule avmRule = new AvmRule(true);
 
-    private static final long ENERGY_LIMIT = 10_000_000L;
+    private static final long ENERGY_LIMIT = 50_000_000L;
     private static final long ENERGY_PRICE = 1L;
 
     private Address installTestDApp(byte[] jar) {
