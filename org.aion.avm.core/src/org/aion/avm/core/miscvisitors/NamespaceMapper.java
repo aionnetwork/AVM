@@ -82,6 +82,7 @@ public class NamespaceMapper {
     /**
      * @param descriptor The pre-transform descriptor.
      * @return The post-transform descriptor.
+     * @note This does not map array types in the descriptor.
      */
     public String mapDescriptor(String descriptor, boolean preserveDebuggability) {
         StringBuilder builder = DescriptorParser.parse(descriptor, new DescriptorParser.Callbacks<>() {
