@@ -58,4 +58,23 @@ public class Address {
         }
         return isEqual;
     }
+
+    @Override
+    public java.lang.String toString() {
+        return toHexStringForAPI(this.raw);
+    }
+
+    private static java.lang.String toHexStringForAPI(byte[] bytes) {
+        int length = bytes.length;
+
+        char[] hexChars = new char[length * 2];
+        for (int i = 0; i < length; i++) {
+            int v = bytes[i] & 0xFF;
+            hexChars[i * 2] = hexArray[v >>> 4];
+            hexChars[i * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new java.lang.String(hexChars);
+    }
+
+    private static final char[] hexArray = "0123456789abcdef".toCharArray();
 }

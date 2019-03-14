@@ -75,6 +75,9 @@ public class RuntimeMethodFeeSchedule {
     public static final long Result_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 146;
     public static final long Result_avm_isSuccess = RT_METHOD_FEE_LEVEL_1; // totalCost - 62;
     public static final long Result_avm_getReturnData = RT_METHOD_FEE_LEVEL_1; // totalCost - 190; // byte code cost - 62; invoked methods cost - 128;
+    public static final long Result_avm_hashCode = RT_METHOD_FEE_LEVEL_3;
+    public static final long Result_avm_equals = RT_METHOD_FEE_LEVEL_4;
+    public static final long Result_avm_toString = RT_METHOD_FEE_LEVEL_4;
 
     public static final long Integer_avm_toString = RT_METHOD_FEE_LEVEL_3; // totalCost - 582; // byte code cost - 282; invoked methods cost - 300;
     public static final long Integer_avm_toUnsignedString = RT_METHOD_FEE_LEVEL_3; // totalCost - 582; // byte code cost - 282; invoked methods cost - 300;
