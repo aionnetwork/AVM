@@ -2,8 +2,6 @@ package org.aion.avm.core;
 
 import java.util.Stack;
 
-import org.aion.avm.core.types.ClassInfo;
-import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -18,13 +16,10 @@ public class TypeAwareClassWriter extends ClassWriter {
     private static final String IOBJECT_SLASH_NAME = PackageConstants.kInternalSlashPrefix + "IObject";
 
     private final ParentPointers staticClassHierarchy;
-    // WARNING:  This dynamicHierarchyBuilder is changing, externally, while we hold a reference to it.
-    private final HierarchyTreeBuilder dynamicHierarchyBuilder;
 
-    public TypeAwareClassWriter(int flags, ParentPointers parentClassResolver, HierarchyTreeBuilder dynamicHierarchyBuilder) {
+    public TypeAwareClassWriter(int flags, ParentPointers parentClassResolver) {
         super(flags);
         this.staticClassHierarchy = parentClassResolver;
-        this.dynamicHierarchyBuilder = dynamicHierarchyBuilder;
     }
 
     @Override
@@ -67,9 +62,6 @@ public class TypeAwareClassWriter extends ClassWriter {
             String nextDotType = Helpers.internalNameToFulllyQualifiedName(nextType);
             String superDotName = this.staticClassHierarchy.getSuperClassName(nextDotType);
             if (null == superDotName) {
-                superDotName = getSuper(this.dynamicHierarchyBuilder.asMutableForest(), nextDotType);
-            }
-            if (null == superDotName) {
                 superDotName = getSuperAsJdkType(nextDotType);
             }
             
@@ -83,18 +75,6 @@ public class TypeAwareClassWriter extends ClassWriter {
         }
         stack.push(nextType);
         return stack;
-    }
-
-    private String getSuper(Forest<String, ClassInfo> forest, String name) {
-        String superName = null;
-        Forest.Node<String, ClassInfo> node = forest.getNodeById(name);
-        if (null != node) {
-            Forest.Node<String, ClassInfo> superNode = node.getParent();
-            if (null != superNode) {
-                superName = superNode.getId();
-            }
-        }
-        return superName;
     }
 
     /**

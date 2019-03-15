@@ -88,8 +88,7 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(className), classHierarchy, this.preserveDebuggability),
-                        new HierarchyTreeBuilder()))
+                        new ParentPointers(Collections.singleton(className), classHierarchy, this.preserveDebuggability)))
                 .build()
                 .runAndGetBytecode();
     }
@@ -116,8 +115,7 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(classDotName), classHierarchy, this.preserveDebuggability),
-                        new HierarchyTreeBuilder()))
+                        new ParentPointers(Collections.singleton(classDotName), classHierarchy, this.preserveDebuggability)))
                 .build()
                 .runAndGetBytecode();
     }
@@ -158,14 +156,14 @@ public class InvokedynamicTransformationTest {
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addNextVisitor(new StackWatcherClassAdapter())
-                .addNextVisitor(new ExceptionWrapping(parentPointers, generatedClassConsumer, this.preserveDebuggability))
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers, dynamicHierarchyBuilder))
+                .addNextVisitor(new ExceptionWrapping(parentPointers, generatedClassConsumer))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers))
                 .build()
                 .runAndGetBytecode();
         bytecode = new ClassToolchain.Builder(bytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new ArrayWrappingClassAdapterRef())
                 .addNextVisitor(new ArrayWrappingClassAdapter())
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers, dynamicHierarchyBuilder))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers))
                 .build()
                 .runAndGetBytecode();
         return bytecode;

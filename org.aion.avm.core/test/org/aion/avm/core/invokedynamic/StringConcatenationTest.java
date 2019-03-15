@@ -143,8 +143,7 @@ public class StringConcatenationTest {
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(className), classHierarchy, StringConcatenationTest.preserveDebuggability),
-                        new HierarchyTreeBuilder()))
+                        new ParentPointers(Collections.singleton(className), classHierarchy, StringConcatenationTest.preserveDebuggability)))
                 .build()
                 .runAndGetBytecode();
     }

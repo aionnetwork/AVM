@@ -107,16 +107,12 @@ public class DAppCreator {
         
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
-        // WARNING:  This dynamicHierarchyBuilder is both mutable and shared by TypeAwareClassWriter instances.
-        HierarchyTreeBuilder dynamicHierarchyBuilder = new HierarchyTreeBuilder();
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         // We also want to expose this type to the class writer so it can compute common superclasses.
         GeneratedClassConsumer generatedClassesSink = (superClassSlashName, classSlashName, bytecode) -> {
             // Note that the processed classes are expected to use .-style names.
             String classDotName = Helpers.internalNameToFulllyQualifiedName(classSlashName);
             processedClasses.put(classDotName, bytecode);
-            String superClassDotName = Helpers.internalNameToFulllyQualifiedName(superClassSlashName);
-            dynamicHierarchyBuilder.addClass(classDotName, superClassDotName, false, bytecode);
         };
         Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy, preserveDebuggability);
 
@@ -138,16 +134,16 @@ public class DAppCreator {
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new StackWatcherClassAdapter())
-                    .addNextVisitor(new ExceptionWrapping(parentClassResolver, generatedClassesSink, preserveDebuggability))
+                    .addNextVisitor(new ExceptionWrapping(parentClassResolver, generatedClassesSink))
                     .addNextVisitor(new AutomaticGraphVisitor())
                     .addNextVisitor(new StrictFPVisitor())
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver))
                     .build()
                     .runAndGetBytecode();
             bytecode = new ClassToolchain.Builder(bytecode, parsingOptions)
                     .addNextVisitor(new ArrayWrappingClassAdapterRef())
                     .addNextVisitor(new ArrayWrappingClassAdapter())
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver))
                     .build()
                     .runAndGetBytecode();
             transformedClasses.put(name, bytecode);
@@ -172,7 +168,7 @@ public class DAppCreator {
         for (String name : transformedClasses.keySet()) {
             byte[] bytecode = new ClassToolchain.Builder(transformedClasses.get(name), parsingOptions)
                     .addNextVisitor(new InterfaceFieldMappingVisitor(consumer, userInterfaceSlashNames, javaLangObjectSlashName))
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, dynamicHierarchyBuilder))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver))
                     .build()
                     .runAndGetBytecode();
             processedClasses.put(name, bytecode);
@@ -352,7 +348,7 @@ public class DAppCreator {
                     .addNextVisitor(new LoopingExceptionStrippingVisitor())
                     .addNextVisitor(new UserClassMappingVisitor(namespaceMapper, preserveDebuggability))
                     // (note that we need to pass a bogus HierarchyTreeBuilder into the class writer - can be empty, but not null)
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver, new HierarchyTreeBuilder()))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver))
                     .build()
                     .runAndGetBytecode();
             String mappedName = DebugNameResolver.getUserPackageDotPrefix(name, preserveDebuggability);

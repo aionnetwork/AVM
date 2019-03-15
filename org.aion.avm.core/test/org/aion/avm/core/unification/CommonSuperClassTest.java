@@ -101,4 +101,15 @@ public class CommonSuperClassTest {
         // -this should be explicitly rejected as it contains an ambiguous type unification
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, deploymentResult.getResultCode());
     }
+
+    @Test
+    public void combineWithExceptions() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithExceptions.class);
+        byte[] arguments = new byte[0];
+        byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
+        
+        Transaction deployment = Transaction.create(DEPLOYER, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult deploymentResult = avm.run(KERNEL, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(deployment, BLOCK)})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, deploymentResult.getResultCode());
+    }
 }
