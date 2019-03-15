@@ -240,7 +240,7 @@ public final class ABIDecoder {
                 throw (AvmThrowable) cause;
             } else if (cause instanceof RuntimeException) {
                 throw new UncaughtException(cause);
-            } else if (cause instanceof org.aion.avm.exceptionwrapper.java.lang.Throwable) {
+            } else if (cause instanceof org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable) {
                 throw new UncaughtException(cause);
             } else {
                 RuntimeAssertionError.unexpected(cause);

@@ -77,21 +77,21 @@ public class StubGeneratorTest {
         ClassLoader parent = StubGeneratorTest.class.getClassLoader();
         // We specifically want to look at the hierarchy of java.lang.ArrayIndexOutOfBoundsException, since it is deep and a good test.
         AvmClassLoader loader = generateExceptionShadowsAndWrappers(parent);
-        Class<?> aioobe = loader.loadClass(PackageConstants.kExceptionWrapperDotPrefix + "java.lang.ArrayIndexOutOfBoundsException");
+        Class<?> aioobe = loader.loadClass(PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + "java.lang.ArrayIndexOutOfBoundsException");
         
         // The interesting thing about the wrappers is that they are actually real Throwables.
         Assert.assertNotNull(aioobe);
-        Assert.assertEquals(PackageConstants.kExceptionWrapperDotPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getName());
-        Assert.assertEquals(PackageConstants.kExceptionWrapperDotPrefix + "java.lang.RuntimeException", aioobe.getSuperclass().getSuperclass().getName());
-        Assert.assertEquals(PackageConstants.kExceptionWrapperDotPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getName());
-        Assert.assertEquals(PackageConstants.kExceptionWrapperDotPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getName());
+        Assert.assertEquals(PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + "java.lang.IndexOutOfBoundsException", aioobe.getSuperclass().getName());
+        Assert.assertEquals(PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + "java.lang.RuntimeException", aioobe.getSuperclass().getSuperclass().getName());
+        Assert.assertEquals(PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + "java.lang.Exception", aioobe.getSuperclass().getSuperclass().getSuperclass().getName());
+        Assert.assertEquals(PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + "java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getName());
         Assert.assertEquals("java.lang.Throwable", aioobe.getSuperclass().getSuperclass().getSuperclass().getSuperclass().getSuperclass().getName());
         
         // Create an instance and prove that we can interact with it.
         Constructor<?> con = aioobe.getConstructor(Object.class);
         String contents = "one";
         Object instance = con.newInstance(contents);
-        org.aion.avm.exceptionwrapper.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.java.lang.Throwable)instance;
+        org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable)instance;
         // We can just unwrap this one.
         Assert.assertEquals(wrapper.unwrap(), contents);
         // Also, make sure that it is safe to cast this to the actual Throwable.
@@ -201,7 +201,7 @@ public class StubGeneratorTest {
                 Assert.assertEquals(parent, shadowClass.getClassLoader());
             }
             
-            String wrapperName = PackageConstants.kExceptionWrapperDotPrefix + name;
+            String wrapperName = PackageConstants.kExceptionWrapperDotPrefix + shadowName;
             byte[] wrapperBytes = allGenerated.get(wrapperName);
             Assert.assertNotNull(wrapperBytes);
             Class<?> wrapperClass = loader.loadClass(wrapperName);

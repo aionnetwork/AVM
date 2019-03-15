@@ -1,6 +1,6 @@
 module org.aion.avm.rt {
     exports org.aion.avm.arraywrapper;
-    exports org.aion.avm.exceptionwrapper.java.lang;
+    exports org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang;
     exports org.aion.avm.internal;
     exports org.aion.avm.shadow.java.lang;
     exports org.aion.avm.shadow.java.lang.invoke;

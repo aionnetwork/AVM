@@ -139,7 +139,7 @@ public class CommonInstrumentation implements IInstrumentation {
                 exceptionToRethrow = (AvmThrowable)t;
             } else {
                 // This is one of our wrappers.
-                org.aion.avm.exceptionwrapper.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.java.lang.Throwable)t;
+                org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable)t;
                 shadow = (org.aion.avm.shadow.java.lang.Object)wrapper.unwrap();
             }
         } catch (Throwable err) {
@@ -166,13 +166,7 @@ public class CommonInstrumentation implements IInstrumentation {
             RuntimeAssertionError.assertTrue(isLoadedByCurrentClassLoader(arg.getClass()) || objectClass.startsWith(PackageConstants.kShadowDotPrefix));
 
             // Note that, since we currently declare the "java.lang." inside the constant for JDK shadows, we need to avoid curring that off.
-            int lengthToCut = 0;
-            if(objectClass.startsWith(PackageConstants.kShadowDotPrefix) || objectClass.startsWith(PackageConstants.kUserDotPrefix)) {
-                lengthToCut = objectClass.startsWith(PackageConstants.kShadowDotPrefix)
-                        ? PackageConstants.kShadowDotPrefix.length()
-                        : PackageConstants.kUserDotPrefix.length();
-            }
-            String wrapperClassName = PackageConstants.kExceptionWrapperDotPrefix + objectClass.substring(lengthToCut);
+            String wrapperClassName = PackageConstants.kExceptionWrapperDotPrefix + objectClass;
             Class<?> wrapperClass = this.currentFrame.lateLoader.loadClass(wrapperClassName);
             result = (Throwable)wrapperClass.getConstructor(Object.class).newInstance(arg);
         } catch (Throwable err) {

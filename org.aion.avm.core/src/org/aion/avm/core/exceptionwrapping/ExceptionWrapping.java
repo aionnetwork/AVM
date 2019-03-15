@@ -16,6 +16,13 @@ import java.util.Set;
 
 
 public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
+    /**
+     * We need to handle the case of how to unify exceptions originating directly from the JVM, so we check the "java/lang/" prefix.
+     * NOTE: This prefix handles all the cases which are thrown asynchronously from the JVM.
+     * TODO: Detect this case by looking for a non-match with any of our prefixes.
+     */
+    private static final String SYSTEM_EXCEPTION_DETECTION_PREFIX = "java/lang/";
+
     private final ParentPointers pointers;
     private final GeneratedClassConsumer generatedClassesSink;
     private final boolean preserveDebuggability;
@@ -116,7 +123,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     // (without this, the verifier will complain about the operand stack containing the wrong type when used).
                     // Note that this type also needs to be translated into our namespace, since we won't be giving the user direct access to
                     // real exceptions.
-                    String mappedCastType = castType.startsWith("java/lang/") // TODO: check this condition
+                    String mappedCastType = castType.startsWith(SYSTEM_EXCEPTION_DETECTION_PREFIX)
                             ? PackageConstants.kShadowSlashPrefix + castType
                             : castType;
                     super.visitTypeInsn(Opcodes.CHECKCAST, mappedCastType);
@@ -127,9 +134,10 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
             public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
                 // Our special-handling is only for non-finally blocks.
                 if (null != type) {
-                    if (type.startsWith(PackageConstants.kShadowSlashPrefix + "java/lang/")) {
-                        // If this was trying to catch anything in "java/lang/*", then duplicate it for our wrapper type.
-                        String strippedClass = getStrippedClassSlashName(type, ExceptionWrapping.this.preserveDebuggability);
+                    if (type.startsWith(PackageConstants.kShadowSlashPrefix)) {
+                        // If this was trying to catch anything the shadow space, catch the underlying type (since the JVM might generate it)
+                        // as well as our wrapper of this type (in case the user threw it from their code).
+                        String strippedClass = type.substring(PackageConstants.kShadowSlashPrefix.length());
                         super.visitTryCatchBlock(start, end, handler, strippedClass);
                         String wrapperType = prependExceptionWrapperSlashPrefix(type, ExceptionWrapping.this.preserveDebuggability);
                         super.visitTryCatchBlock(start, end, handler, wrapperType);
@@ -168,28 +176,8 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         };
     }
 
-    private static String getStrippedClassSlashName(String className, boolean preserveDebuggability) {
-        if (className.startsWith(PackageConstants.kUserSlashPrefix)) {
-            return className.substring(PackageConstants.kUserSlashPrefix.length());
-
-        } else if (className.startsWith(PackageConstants.kShadowSlashPrefix)) {
-            return className.substring(PackageConstants.kShadowSlashPrefix.length());
-
-        } else if (className.startsWith(PackageConstants.kShadowApiSlashPrefix)) {
-            throw RuntimeAssertionError.unimplemented("Stripping name for API classes not implemented");
-
-        } else if(preserveDebuggability) {
-            return className;
-
-        } else {
-            throw RuntimeAssertionError.unreachable("Unknown class prefix: " + className);
-        }
-    }
-
     private static String prependExceptionWrapperSlashPrefix(String className, boolean preserveDebuggability) {
-        // It is possible that the name could have the user prefix, or a java.lang shadow prefix, so remove that before prepending the wrapper.
-        String strippedClassName = getStrippedClassSlashName(className, preserveDebuggability);
-        return PackageConstants.kExceptionWrapperSlashPrefix + strippedClassName;
+        return PackageConstants.kExceptionWrapperSlashPrefix + className;
     }
 
 

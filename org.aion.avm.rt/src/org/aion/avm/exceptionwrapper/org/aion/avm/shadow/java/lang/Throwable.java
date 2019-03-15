@@ -1,5 +1,6 @@
-package org.aion.avm.exceptionwrapper.java.lang;
+package org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.RuntimeAssertionError;
 
 /**
  * All the exceptions in the guest environment need to be wrapped by something which is _actually_ a java.lang.Throwable.
@@ -22,9 +23,7 @@ public class Throwable extends java.lang.Throwable {
 
     public Throwable(Object wrapped) {
         // There is no way that this should be created with a null.
-        if (null == wrapped) {
-            throw new AssertionError("Cannot wrap null exception");
-        }
+        RuntimeAssertionError.assertTrue(null != wrapped);
         this.wrapped = wrapped;
     }
 

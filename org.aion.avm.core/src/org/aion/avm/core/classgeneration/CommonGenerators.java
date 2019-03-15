@@ -154,8 +154,8 @@ public class CommonGenerators {
             }
             
             // Generate the wrapper.
-            String wrapperName = PackageConstants.kExceptionWrapperDotPrefix + className;
-            String wrapperSuperName = PackageConstants.kExceptionWrapperDotPrefix + superclassName;
+            String wrapperName = PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + className;
+            String wrapperSuperName = PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + superclassName;
             byte[] wrapperBytes = generateWrapperClass(wrapperName, wrapperSuperName);
             generatedClasses.put(wrapperName, wrapperBytes);
         }

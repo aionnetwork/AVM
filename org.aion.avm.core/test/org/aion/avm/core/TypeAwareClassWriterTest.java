@@ -30,14 +30,14 @@ public class TypeAwareClassWriterTest {
     @Test
     public void testWrappers_generated() throws Exception {
         TestClass clazz = new TestClass(new HierarchyTreeBuilder());
-        String common = clazz.testing_getCommonSuperClass(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/AssertionError", PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/Error");
-        Assert.assertEquals(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/Error", common);
+        String common = clazz.testing_getCommonSuperClass(PackageConstants.kExceptionWrapperSlashPrefix + PackageConstants.kShadowSlashPrefix + "java/lang/AssertionError", PackageConstants.kExceptionWrapperSlashPrefix + PackageConstants.kShadowSlashPrefix + "java/lang/Error");
+        Assert.assertEquals(PackageConstants.kExceptionWrapperSlashPrefix + PackageConstants.kShadowSlashPrefix + "java/lang/Error", common);
     }
 
     @Test
     public void testWrappers_generatedAndreal() throws Exception {
         TestClass clazz = new TestClass(new HierarchyTreeBuilder());
-        String common = clazz.testing_getCommonSuperClass(PackageConstants.kExceptionWrapperSlashPrefix + "java/lang/AssertionError", "java/lang/AssertionError");
+        String common = clazz.testing_getCommonSuperClass(PackageConstants.kExceptionWrapperSlashPrefix + PackageConstants.kShadowSlashPrefix + "java/lang/AssertionError", "java/lang/AssertionError");
         Assert.assertEquals("java/lang/Throwable", common);
     }
 
