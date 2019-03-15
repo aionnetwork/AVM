@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import java.util.Stack;
 
+import org.aion.avm.core.exceptionwrapping.ExceptionWrapperNameMapper;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -14,6 +15,8 @@ import org.objectweb.asm.ClassWriter;
  */
 public class TypeAwareClassWriter extends ClassWriter {
     private static final String IOBJECT_SLASH_NAME = PackageConstants.kInternalSlashPrefix + "IObject";
+    // Note that we handle the wrapper of shadow "java.lang.Throwable" as a special-case, since that one is our manually-implemented root.
+    private static final Class<?> WRAPPER_ROOT_THROWABLE = org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable.class;
 
     private final ParentPointers staticClassHierarchy;
 
@@ -59,8 +62,22 @@ public class TypeAwareClassWriter extends ClassWriter {
         while (!"java/lang/Object".equals(nextType)) {
             stack.push(nextType);
             
+            // Exception wrappers work the same as their underlying type, but all relationships are mapped into the wrapper space.
+            boolean isWrapper = ExceptionWrapperNameMapper.isExceptionWrapper(nextType);
+            // The rest of the generated wrappers may not yet have been generated when we need to unify the types but they do have a very simple
+            // structure, so we can infer their relationships from the original underlying types.
+            // The hand-written root must be handled differently, and its superclass read directly (since, being the root, it has this special
+            // relationship with java.lang.Throwable).
+            boolean isThrowableWrapper = false;
+            if (isWrapper) {
+                isThrowableWrapper = WRAPPER_ROOT_THROWABLE.getName().equals(Helpers.internalNameToFulllyQualifiedName(nextType));
+                nextType = ExceptionWrapperNameMapper.slashClassNameForWrapperName(nextType);
+            }
             String nextDotType = Helpers.internalNameToFulllyQualifiedName(nextType);
-            String superDotName = this.staticClassHierarchy.getSuperClassName(nextDotType);
+            // The manual throwable wrapper should be asked for its superclass, directly, instead of inferring it from the underlying type.
+            String superDotName = isThrowableWrapper
+                    ? WRAPPER_ROOT_THROWABLE.getSuperclass().getName()
+                    : this.staticClassHierarchy.getSuperClassName(nextDotType);
             if (null == superDotName) {
                 superDotName = getSuperAsJdkType(nextDotType);
             }
@@ -70,6 +87,10 @@ public class TypeAwareClassWriter extends ClassWriter {
             RuntimeAssertionError.assertTrue(-1 == superDotName.indexOf("/"));
             
             String superName = Helpers.fulllyQualifiedNameToInternalName(superDotName);
+            // We now wrap the super-class, if we started with a wrapper and this is NOT the shadow throwable wrapper.
+            if (isWrapper && !isThrowableWrapper) {
+                superName = ExceptionWrapperNameMapper.slashWrapperNameForClassName(superName);
+            }
             RuntimeAssertionError.assertTrue(-1 == superName.indexOf("."));
             nextType = superName;
         }
