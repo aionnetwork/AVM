@@ -28,7 +28,7 @@ public class AssertionErrorIntegrationNoMainTest {
         Address dapp = installTestDApp(AssertionErrorIntegrationNoMainTestTarget.class);
 
         // Do the call.
-        String result = callStaticString(dapp, "emptyError", Code.FAILED_EXCEPTION);
+        String result = callStaticString(dapp, "emptyError");
         Assert.assertEquals(null, result);
     }
 
@@ -37,7 +37,7 @@ public class AssertionErrorIntegrationNoMainTest {
         Address dapp = installTestDApp(AssertionErrorIntegrationNoMainTestTarget.class);
 
         // Do the call.
-        String result = callStaticString(dapp, "throwableError", Code.SUCCESS);
+        String result = callStaticString(dapp, "throwableError");
         Assert.assertEquals(AssertionError.class.getName(), result);
     }
 
@@ -46,7 +46,7 @@ public class AssertionErrorIntegrationNoMainTest {
         Address dapp = installTestDApp(AssertionErrorIntegrationNoMainTestTarget.class);
 
         // Do the call.
-        String result = callStaticString(dapp, "boolError", Code.SUCCESS,true);
+        String result = callStaticString(dapp, "boolError", true);
         Assert.assertEquals("true", result);
     }
 
@@ -55,7 +55,7 @@ public class AssertionErrorIntegrationNoMainTest {
         Address dapp = installTestDApp(AssertionErrorIntegrationNoMainTestTarget.class);
 
         // Do the call.
-        String result = callStaticString(dapp, "charError", Code.SUCCESS,'a');
+        String result = callStaticString(dapp, "charError", 'a');
         Assert.assertEquals("a", result);
     }
 
@@ -64,7 +64,7 @@ public class AssertionErrorIntegrationNoMainTest {
         Address dapp = installTestDApp(AssertionErrorIntegrationNoMainTestTarget.class);
 
         // Do the call.
-        String result = callStaticString(dapp, "intError", Code.SUCCESS, 5);
+        String result = callStaticString(dapp, "intError", 5);
         Assert.assertEquals("5", result);
     }
 
@@ -73,7 +73,7 @@ public class AssertionErrorIntegrationNoMainTest {
         Address dapp = installTestDApp(AssertionErrorIntegrationNoMainTestTarget.class);
 
         // Do the call.
-        String result = callStaticString(dapp, "longError", Code.SUCCESS, 5L);
+        String result = callStaticString(dapp, "longError", 5L);
         Assert.assertEquals("5", result);
     }
 
@@ -82,7 +82,7 @@ public class AssertionErrorIntegrationNoMainTest {
         Address dapp = installTestDApp(AssertionErrorIntegrationNoMainTestTarget.class);
 
         // Do the call.
-        String result = callStaticString(dapp, "floatError", Code.SUCCESS,5.0f);
+        String result = callStaticString(dapp, "floatError", 5.0f);
         Assert.assertEquals("5.0", result);
     }
 
@@ -91,7 +91,7 @@ public class AssertionErrorIntegrationNoMainTest {
         Address dapp = installTestDApp(AssertionErrorIntegrationNoMainTestTarget.class);
 
         // Do the call.
-        String result = callStaticString(dapp, "doubleError",Code.SUCCESS,5.0d);
+        String result = callStaticString(dapp, "doubleError", 5.0d);
         Assert.assertEquals("5.0", result);
     }
 
@@ -100,7 +100,7 @@ public class AssertionErrorIntegrationNoMainTest {
         Address dapp = installTestDApp(AssertionErrorIntegrationNoMainTestTarget.class);
 
         // Do the call.
-        String result = callStaticString(dapp, "normalError",Code.SUCCESS,
+        String result = callStaticString(dapp, "normalError",
             new String("test").getBytes());
         Assert.assertEquals("test", result);
     }
@@ -116,10 +116,10 @@ public class AssertionErrorIntegrationNoMainTest {
     }
 
     private String callStaticString(Address dapp, String methodName,
-        AvmTransactionResult.Code expectedCode, Object... arguments) {
+        Object... arguments) {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, arguments);
         TransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(expectedCode, result.getResultCode());
+        Assert.assertEquals(Code.SUCCESS, result.getResultCode());
         if(result.getReturnData() != null) {
             byte[] utf8 = (byte[]) ABIDecoder.decodeOneObject(result.getReturnData());
             return (null != utf8)

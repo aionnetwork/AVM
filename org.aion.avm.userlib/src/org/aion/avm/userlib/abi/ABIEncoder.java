@@ -15,14 +15,15 @@ public final class ABIEncoder {
     private ABIEncoder(){}
 
     /**
-     * Encode one object of any type that Aion ABI allows; generate the byte array that contains the descriptor and the encoded data.
+     * Encode one object of any type that Aion ABI allows; generate the byte array that contains the descriptor and the encoded data. Null data is encoded as null.
      * @param data one object of any type that Aion ABI allows
      * @return the byte array that contains the argument descriptor and the encoded data.
      * @throws NullPointerException If data is null.
      */
     public static byte[] encodeOneObject(Object data) {
+        // temporary: will be changed to encoding NULL of the appropriate type
         if (null == data) {
-            throw new NullPointerException();
+            return null;
         }
         List<Tuple> list = new AionList<>();
         list.add(new ABICodec.Tuple(data.getClass(), data));
@@ -30,7 +31,7 @@ public final class ABIEncoder {
     }
 
     /**
-     * A utility method to encode the method name and method arguments to call with, according to Aion ABI format. Both method name and the arguments can be null if needed.
+     * A utility method to encode the method name and method arguments to call with, according to Aion ABI format.
      * <br>
      * The arguments parameter can behave unexpectedly when receiving multi-dimensional primitive arrays and arrays of objects. In these cases, it is recommended to explicitly cast the arguments into an Object[].
      * @param methodName the method name of the Dapp main class to call with

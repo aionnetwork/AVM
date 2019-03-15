@@ -223,13 +223,8 @@ public class ABIEncoderTest {
             caught = e;
         }
         Assert.assertNotNull(caught);
-        caught = null;
-        try {
-            ABIEncoder.encodeOneObject(null);
-        } catch (NullPointerException e) {
-            caught = e;
-        }
-        Assert.assertNotNull(caught);
+
+        Assert.assertNull(ABIEncoder.encodeOneObject(null));
 
         caught = null;
         try {
