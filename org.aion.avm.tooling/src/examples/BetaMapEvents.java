@@ -1,7 +1,7 @@
 package examples;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.AionMap;
 
 
@@ -32,17 +32,7 @@ public class BetaMapEvents {
         BlockchainRuntime.println("Deployed BetaMapEvents");
     }
 
-    /**
-     * This static main() MUST be provided in the main class of a DApp.  This is where every non-deploy transaction begins.
-     * 
-     * @return The data to return (only relevant if this called by another DApp - this will be returned to the caller).
-     */
-    public static byte[] main() {
-        // The ABI is technically optional.  Any interpretation of the incoming data is permitted but the ABI is what we use, internally.
-        byte[] inputData = BlockchainRuntime.getData();
-        return ABIDecoder.decodeAndRunWithClass(BetaMapEvents.class, inputData);
-    }
-
+    @Callable
     public static void put(String key, String value) {
         String oldValue = map.put(key, value);
         BlockchainRuntime.println("PUT(\"" + key + "\", \"" + value + "\") -> " + oldValue);
@@ -52,6 +42,7 @@ public class BetaMapEvents {
         }
     }
 
+    @Callable
     public static void get(String key) {
         String value = map.get(key);
         BlockchainRuntime.println("GET(\"" + key + "\") -> " + value);

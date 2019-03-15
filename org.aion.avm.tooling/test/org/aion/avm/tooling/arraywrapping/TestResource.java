@@ -1,7 +1,6 @@
 package org.aion.avm.tooling.arraywrapping;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 public class TestResource {
 
@@ -19,10 +18,6 @@ public class TestResource {
     public static String[][][] fieldMDString;
     public static int[][][] fieldMDInt;
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(TestResource.class, BlockchainRuntime.getData());
-    }
-
     public boolean testBasic(){
         boolean res = true;
         int[] arr = new int[20];
@@ -31,6 +26,7 @@ public class TestResource {
         return res;
     }
 
+    @Callable
     public static boolean testSignature(){
         boolean[]   a = new boolean[42];
         byte[]      b = new byte[42];
@@ -55,41 +51,51 @@ public class TestResource {
         return in1;
     }
 
+    @Callable
     public static boolean[] testBooleanSignature(boolean[] in){
         return in;
     }
 
+    @Callable
     public static byte[] testByteSignature(byte[] in){
         return in;
     }
 
+    @Callable
     public static char[] testCharSignature(char[] in){
         return in;
     }
 
+    @Callable
     public static double[] testDoubleSignature(double[] in){
         return in;
     }
 
+    @Callable
     public static float[] testFloatSignature(float[] in){
         return in;
     }
 
+    @Callable
     public static int[] testIntSignature(int[] in){
         return in;
     }
 
+    @Callable
     public static long[] testLongSignature(long[] in){
         return in;
     }
 
+    @Callable
     public static short[] testShortSignature(short[] in){
         return in;
     }
 
+    @Callable
     public static int[][] testInt2DArray(){ return new int[][] {{1, 2}, {3, 4}}; }
 
 
+    @Callable
     public static boolean testBooleanArray(){
         boolean res = true;
         int i = 0;
@@ -111,6 +117,7 @@ public class TestResource {
         return res;
     }
 
+    @Callable
     public static boolean testByteArray(){
         boolean res = true;
         int i = 0;
@@ -132,6 +139,7 @@ public class TestResource {
         return res;
     }
 
+    @Callable
     public static boolean testCharArray(){
         boolean res = true;
         int i = 0;
@@ -153,6 +161,7 @@ public class TestResource {
         return res;
     }
 
+    @Callable
     public static boolean testDoubleArray(){
         boolean res = true;
         int i = 0;
@@ -174,6 +183,7 @@ public class TestResource {
         return res;
     }
 
+    @Callable
     public static boolean testFloatArray(){
         boolean res = true;
         int i = 0;
@@ -195,6 +205,7 @@ public class TestResource {
         return res;
     }
 
+    @Callable
     public static boolean testIntArray(){
         boolean res = true;
         int i = 0;
@@ -216,6 +227,7 @@ public class TestResource {
         return res;
     }
 
+    @Callable
     public static boolean testLongArray(){
         boolean res = true;
         int i = 0;
@@ -237,6 +249,7 @@ public class TestResource {
         return res;
     }
 
+    @Callable
     public static boolean testShortArray(){
         boolean res = true;
         int i = 0;
@@ -258,6 +271,7 @@ public class TestResource {
         return res;
     }
 
+    @Callable
     public static boolean testObjectArray(){
         boolean res = true;
         int count = 0;
@@ -283,6 +297,7 @@ public class TestResource {
         return res;
     }
 
+    @Callable
      public static boolean testStringArray(){
          boolean res = true;
          int count = 0;
@@ -311,6 +326,7 @@ public class TestResource {
      }
 
 
+    @Callable
     public static boolean testVarargs(){
         int a = varargsHelper(1);
         int b = varargsHelper(1,2,3,4,5,6,7,8,9,10);
@@ -328,6 +344,7 @@ public class TestResource {
         return c;
     }
 
+    @Callable
     public static boolean testTypeChecking(){
         int[] a = new int[10];
         Object b = (Object) a;
@@ -336,6 +353,7 @@ public class TestResource {
         return (c instanceof int[]) && (c instanceof java.lang.Object);
     }
 
+    @Callable
     public static boolean testClassField(){
         oi = new int[50];
         oi[20] = 1;
@@ -356,6 +374,7 @@ public class TestResource {
         return (a == 1) && (oi instanceof int[]) && (b == 1) && (ois instanceof int[]) && (c == 10) && (d.equals("Bomb"));
     }
 
+    @Callable
     public static boolean testMultiInt(){
         boolean ret = true;
 
@@ -374,6 +393,7 @@ public class TestResource {
         return ret;
     }
 
+    @Callable
     public static boolean testMultiByte(){
         boolean ret = true;
 
@@ -392,6 +412,7 @@ public class TestResource {
         return ret;
     }
 
+    @Callable
     public static boolean testMultiChar(){
         boolean ret = true;
 
@@ -410,6 +431,7 @@ public class TestResource {
         return ret;
     }
 
+    @Callable
     public static boolean testMultiDouble(){
         boolean ret = true;
 
@@ -428,6 +450,7 @@ public class TestResource {
         return ret;
     }
 
+    @Callable
     public static boolean testMultiFloat(){
         boolean ret = true;
 
@@ -446,6 +469,7 @@ public class TestResource {
         return ret;
     }
 
+    @Callable
     public static boolean testMultiLong(){
         boolean ret = true;
 
@@ -482,6 +506,7 @@ public class TestResource {
         return ret;
     }
 
+    @Callable
     public static boolean testMultiRef(){
         boolean ret = true;
 
@@ -500,6 +525,7 @@ public class TestResource {
         return ret;
     }
 
+    @Callable
     public static boolean testHierarachy(){
         boolean ret = true;
 
@@ -538,11 +564,13 @@ public class TestResource {
         return ret;
     }
 
+    @Callable
     public static boolean testArrayEnergy(){
         int[][][][] s = new int[10][10][10][10];
         return true;
     }
 
+    @Callable
     public static boolean testIncompleteArrayIni(){
         int[][][][] s;
         s = new int[10][10][10][];
@@ -557,6 +585,7 @@ public class TestResource {
         return true;
     }
 
+    @Callable
     public static boolean testInterfaceArray(){
         X[][][] xxx = new X[5][5][5];
         Y[][][] yyy = new Y[5][5][5];
@@ -584,6 +613,7 @@ public class TestResource {
         return true;
     }
 
+    @Callable
     public static boolean testArrayClone(){
         byte[] ba = new byte[10];
         byte[] bcp = ba.clone();

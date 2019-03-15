@@ -1,14 +1,11 @@
 package org.aion.avm.tooling.bootstrapmethods;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 public class EnergyChargeConsistencyTarget {
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(EnergyChargeConsistencyTarget.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static void run() {
         Runnable runnable = () -> {
             String hello = "Hello";

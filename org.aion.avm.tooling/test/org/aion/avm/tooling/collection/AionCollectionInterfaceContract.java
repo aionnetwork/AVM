@@ -1,7 +1,6 @@
 package org.aion.avm.tooling.collection;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -24,10 +23,7 @@ public class AionCollectionInterfaceContract {
         targetMap = new AionMap<>();
     }
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(AionCollectionInterfaceContract.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static void testList(){
         targetList.add(Integer.valueOf(1));
         targetList.add(Integer.valueOf(1));
@@ -47,6 +43,7 @@ public class AionCollectionInterfaceContract {
         targetList.lastIndexOf(Integer.valueOf(1));
     }
 
+    @Callable
     public static void testSet(){
         targetSet.add(Integer.valueOf(1));
         targetSet.add(Integer.valueOf(1));
@@ -59,6 +56,7 @@ public class AionCollectionInterfaceContract {
         targetSet.remove(Integer.valueOf(1));
     }
 
+    @Callable
     public static void testMap(){
         targetMap.put(Integer.valueOf(1), Integer.valueOf(1));
         targetMap.put(Integer.valueOf(2), Integer.valueOf(1));

@@ -1,19 +1,14 @@
 package org.aion.avm.tooling.shadowing.testEnum;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
-
 import java.math.RoundingMode;
+import org.aion.avm.tooling.abi.Callable;
 
 public class TestResource {
     static TestEnum earth = TestEnum.EARTH;
     static TestEnum jupiter = TestEnum.JUPITER;
     static TestEnum mars = TestEnum.MARS;
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(TestResource.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static boolean testEnumAccess(){
         boolean ret = true;
         ret = ret && (earth == TestEnum.EARTH);
@@ -23,6 +18,7 @@ public class TestResource {
         return ret;
     }
 
+    @Callable
     public static boolean testEnumValues(){
         boolean ret = true;
 
@@ -40,6 +36,7 @@ public class TestResource {
     }
 
 
+    @Callable
     public static boolean testShadowJDKEnum(){
         boolean ret = true;
         ret = ret && (RoundingMode.HALF_UP == RoundingMode.valueOf("HALF_UP"));

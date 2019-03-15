@@ -1,9 +1,7 @@
 package legacy_examples.deployAndRunTest;
 
 import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
-
+import org.aion.avm.tooling.abi.Callable;
 
 public class DeployAndRunTarget {
 
@@ -15,14 +13,17 @@ public class DeployAndRunTarget {
         return a + b;
     }
 
+    @Callable
     public static int addArray(int[] a, int b) {
         return a[0] + a[1] + b;
     }
 
+    @Callable
     public static int addArray2(int[][] a) {
         return a[0][0] + a[1][0];
     }
 
+    @Callable
     public static char[] concatenate(char[][] s) {
         char[] res = new char[6];
         System.arraycopy(s[0], 0, res, 0, s[0].length);
@@ -30,14 +31,17 @@ public class DeployAndRunTarget {
         return res;
     }
 
+    @Callable
     public static String concatString(String s1, String s2) {
         return s1 + s2;
     }
 
+    @Callable
     public static String[] concatStringArray(String[] s) {
         return new String[]{s[0] + s[1], "perfect"};
     }
 
+    @Callable
     public static char[][] swap(char[][] s) {
         char[][] res = new char[2][2];
         res[0] = s[1];
@@ -45,6 +49,7 @@ public class DeployAndRunTarget {
         return res;
     }
 
+    @Callable
     public static void setBar(int bar) {
         DeployAndRunTarget.bar = bar;
     }
@@ -53,16 +58,11 @@ public class DeployAndRunTarget {
         return "Hello, world!".getBytes();
     }
 
+    @Callable
     public static byte[] encodeArgs(){
         String methodName = "addArray";
         int[] a = new int[]{123, 1};
         int b = 5;
         return ABIEncoder.encodeMethodArguments(methodName, a, b);
-    }
-
-    public static byte[] main() {
-        String methodName = ABIDecoder.decodeMethodName(BlockchainRuntime.getData());
-        // We verify that we can both decode the method name and that we correctly handle both static and instance calls.
-        return ABIDecoder.decodeAndRunWithClass(DeployAndRunTarget.class, BlockchainRuntime.getData());
     }
 }

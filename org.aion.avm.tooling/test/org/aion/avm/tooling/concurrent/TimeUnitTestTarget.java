@@ -1,15 +1,11 @@
 package org.aion.avm.tooling.concurrent;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
-
 import java.util.concurrent.TimeUnit;
+import org.aion.avm.tooling.abi.Callable;
 
 public class TimeUnitTestTarget {
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(TimeUnitTestTarget.class, BlockchainRuntime.getData());
-    }
 
+    @Callable
     public static boolean testavm_convert() {
         return 2 ==  TimeUnit.DAYS.convert(48, TimeUnit.HOURS) &&
                 2 == TimeUnit.DAYS.convert(2880 , TimeUnit.MINUTES) &&
@@ -82,6 +78,7 @@ public class TimeUnitTestTarget {
                 2 == TimeUnit.MICROSECONDS.convert(2001, TimeUnit.NANOSECONDS);
     }
 
+    @Callable
     public static boolean testavm_toX() {
          return 48 ==           TimeUnit.DAYS.toHours(2) &&
                  120 == TimeUnit.HOURS.toMinutes(2) &&
@@ -93,6 +90,7 @@ public class TimeUnitTestTarget {
                  1 ==           TimeUnit.SECONDS.toHours(3603);
     }
 
+    @Callable
     public static boolean testavm_values() {
         TimeUnit[] values =  (TimeUnit[]) TimeUnit.values();
         return TimeUnit.DAYS == values[0] &&
@@ -104,6 +102,7 @@ public class TimeUnitTestTarget {
                 TimeUnit.NANOSECONDS == values[6];
     }
 
+    @Callable
     public static boolean testavm_valueOf() {
         return TimeUnit.DAYS == TimeUnit.valueOf(new String("DAYS")) &&
                 TimeUnit.HOURS == TimeUnit.valueOf(new String("HOURS")) &&

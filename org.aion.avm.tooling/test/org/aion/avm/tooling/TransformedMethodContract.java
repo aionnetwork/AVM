@@ -1,7 +1,6 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 /**
  * Simple contract that explores different method signatures etc. for testing to ensure that our
@@ -9,96 +8,114 @@ import org.aion.avm.api.BlockchainRuntime;
  */
 public class TransformedMethodContract {
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(TransformedMethodContract.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static boolean tryPrimitiveBool(boolean b) {
         return getBool(b);
     }
 
+    @Callable
     public static byte tryPrimitiveByte(byte b) {
         return getByte(b);
     }
 
+    @Callable
     public static char tryPrimitiveChar(char c) {
         return getChar(c);
     }
 
+    @Callable
     public static short tryPrimitiveShort(short s) {
         return getShort(s);
     }
 
+    @Callable
     public static int tryPrimitiveInt(int i) {
         return getInt(i);
     }
 
+    @Callable
     public static long tryPrimitiveLong(long l) {
         return getLong(l);
     }
 
+    @Callable
     public static float tryPrimitiveFloat(float f) {
         return getFloat(f);
     }
 
+    @Callable
     public static double tryPrimitiveDouble(double d) {
         return getDouble(d);
     }
 
+    @Callable
     public static int triggerOverloadedF1() {
         return overloaded(new F[]{});
     }
 
+    @Callable
     public static int triggerOverloadedF2() {
         return overloaded((F[]) new D[]{});
     }
 
+    @Callable
     public static int triggerOverloadedF3() {
         return overloaded((F[]) new C[]{});
     }
 
+    @Callable
     public static int triggerOverloadedF4() {
         return overloaded((F[]) new E[]{});
     }
 
+    @Callable
     public static int triggerOverloadedD1() {
         return overloaded(new D[]{});
     }
 
+    @Callable
     public static int triggerOverloadedD2() {
         return overloaded((D[]) new C[]{});
     }
 
+    @Callable
     public static int triggerOverloadedD3() {
         return overloaded(new E[]{});
     }
 
+    @Callable
     public static int triggerOverloadedC1() {
         return overloaded(new C[]{});
     }
 
+    @Callable
     public static int triggerOverloadedC2() {
         return overloaded((C[]) new A[]{});
     }
 
+    @Callable
     public static int triggerOverloadedB1() {
         return overloaded(new B[]{});
     }
 
+    @Callable
     public static int triggerOverloadedB2() {
         return overloaded((B[]) new A[]{});
     }
 
+    @Callable
     public static int triggerDistill() {
         return overloaded(distill(new F[]{ new A() }))
             + overloaded(distill(new F[]{ new E() }))
             + overloaded(distill(new F[]{ new A(), new E() }));
     }
 
+    @Callable
     public static int triggerUpcast() {
         return overloaded(upcast(new A[]{}));
     }
 
+    @Callable
     public static int triggerMixedTypes() {
         F[] f = new C[]{ new A() };
         int i = 89;
@@ -112,12 +129,14 @@ public class TransformedMethodContract {
         return overloaded(mixedTypes(f, i, c1, c2, l, b1, b2, b3, d));
     }
 
+    @Callable
     public static int trigger2Darrays() {
         F[][] receive = arrays2D(new C[][]{});
 //        fails --> overloaded(arrays2D(new C[][]{new C[]{}})[0]);
         return 0;
     }
 
+    @Callable
     public static int trigger3Darrays() {
         F[][][] receive = arrays3D(new C[][][]{});
         return 0;
@@ -126,6 +145,7 @@ public class TransformedMethodContract {
     /**
      * Ensure that these multi-dimensional type conversions are legal.
      */
+    @Callable
     public static int triggerMultiDimPrimitiveToObjectArray() {
         byte[][][] b = new byte[][][]{};
         tryAsMultiDimObjectArray(b);
@@ -150,6 +170,7 @@ public class TransformedMethodContract {
 
     private static void tryAsMultiDimObjectArray(Object[][] o) {}
 
+    @Callable
     public static void nothing() {}
 
     // booleans
@@ -158,6 +179,7 @@ public class TransformedMethodContract {
         return b;
     }
 
+    @Callable
     public static boolean collapseBools(boolean b1, boolean b2, boolean b3, boolean b4) {
         return b1 ^ b2 ^ b3 ^ b4;
     }
@@ -168,7 +190,8 @@ public class TransformedMethodContract {
         return b;
     }
 
-    public static Byte collapseBytes(byte b1, byte b2, byte b3, byte b4) {
+    @Callable
+    public static byte collapseBytes(byte b1, byte b2, byte b3, byte b4) {
         return (byte) (b1 + b2 + b3 + b4);
     }
 
@@ -178,6 +201,7 @@ public class TransformedMethodContract {
         return c;
     }
 
+    @Callable
     public static char collapseChars(char c1, char c2, char c3, char c4) {
         return (char) (c1 ^ c2 ^ c3 ^ c4);
     }
@@ -188,7 +212,8 @@ public class TransformedMethodContract {
         return s;
     }
 
-    public static Short collapseShorts(short s1, short s2, short s3, short s4) {
+    @Callable
+    public static short collapseShorts(short s1, short s2, short s3, short s4) {
         return (short) (s1 + s2 + s3 + s4);
     }
 
@@ -198,6 +223,7 @@ public class TransformedMethodContract {
         return i;
     }
 
+    @Callable
     public static int collapseInts(int i1, int i2, int i3, int i4) {
         return i1 + i2 + i3 + i4;
     }
@@ -208,7 +234,8 @@ public class TransformedMethodContract {
         return l;
     }
 
-    public static Long collapseLongs(long l1, long l2, long l3, long l4) {
+    @Callable
+    public static long collapseLongs(long l1, long l2, long l3, long l4) {
         return l1 + l2 + l3 + l4;
     }
 
@@ -224,7 +251,8 @@ public class TransformedMethodContract {
         return d;
     }
 
-    public static Double collapseDoubles(double d1, double d2, double d3, double d4) {
+    @Callable
+    public static double collapseDoubles(double d1, double d2, double d3, double d4) {
         return d1 + d2 + d3 + d4;
     }
 

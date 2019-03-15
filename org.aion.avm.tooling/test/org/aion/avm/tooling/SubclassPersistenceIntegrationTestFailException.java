@@ -1,6 +1,5 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
 
 
@@ -10,10 +9,6 @@ import org.aion.avm.api.BlockchainRuntime;
  */
 public class SubclassPersistenceIntegrationTestFailException {
     private static SubNullPointerException npe;
-
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(SubclassPersistenceIntegrationTestFailException.class, BlockchainRuntime.getData());
-    }
 
     public static int setup_nep() {
         // We just need some kind of random number.

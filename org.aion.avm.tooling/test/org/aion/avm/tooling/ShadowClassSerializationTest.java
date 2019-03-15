@@ -28,9 +28,9 @@ public class ShadowClassSerializationTest {
     @Before
     public void setup() {
         byte[] data = avmRule.getDappBytes(ShadowClassSerializationTarget.class, null);
-        ResultWrapper deployResult = avmRule.deploy(sender, value, data, 5_000_000, 1);
+        ResultWrapper deployResult = avmRule.deploy(sender, value, data);
         assertTrue(deployResult.getTransactionResult().getResultCode().isSuccess());
-        contract = avmRule.deploy(sender, value, data, 5_000_000, 1).getDappAddress();
+        contract = deployResult.getDappAddress();
     }
 
     @Test

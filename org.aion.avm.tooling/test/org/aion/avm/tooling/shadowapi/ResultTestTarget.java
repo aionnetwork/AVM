@@ -1,16 +1,11 @@
 package org.aion.avm.tooling.shadowapi;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
-
+import org.aion.avm.tooling.abi.Callable;
 
 public class ResultTestTarget {
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(ResultTestTarget.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static String getToStringSuccessTrue() {
         Result result = new Result(true,
                 new byte[]{
@@ -23,6 +18,7 @@ public class ResultTestTarget {
         return result.toString();
     }
 
+    @Callable
     public static String getToStringSuccessFalse() {
         Result result = new Result(false,
                 new byte[]{
@@ -35,6 +31,7 @@ public class ResultTestTarget {
         return result.toString();
     }
 
+    @Callable
     public static boolean getEquals() {
         Result result = new Result(true,
                 new byte[]{
@@ -55,6 +52,7 @@ public class ResultTestTarget {
         return result.equals(result1);
     }
 
+    @Callable
     public static boolean getUnequalsSameSuccessDiffData() {
         Result result = new Result(true,
                 new byte[]{
@@ -75,6 +73,7 @@ public class ResultTestTarget {
         return result.equals(result1);
     }
 
+    @Callable
     public static boolean getUnequalsDiffSuccessSameData() {
         Result result = new Result(false,
                 new byte[]{
@@ -95,6 +94,7 @@ public class ResultTestTarget {
         return result.equals(result1);
     }
 
+    @Callable
     public static int getHashCodeSuccessTrue() {
         Result result = new Result(true,
                 new byte[]{
@@ -107,6 +107,7 @@ public class ResultTestTarget {
         return result.hashCode();
     }
 
+    @Callable
     public static int getHashCodeSuccessFalse() {
         Result result = new Result(false,
                 new byte[]{

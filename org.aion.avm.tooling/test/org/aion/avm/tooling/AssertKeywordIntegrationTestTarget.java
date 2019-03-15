@@ -1,8 +1,6 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
-
+import org.aion.avm.tooling.abi.Callable;
 
 /**
  * The test class loaded by AssertKeywordIntegrationTest.
@@ -11,16 +9,14 @@ public class AssertKeywordIntegrationTestTarget {
     private static boolean didCheck;
     private static boolean shouldFail;
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(AssertKeywordIntegrationTestTarget.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static boolean getAndClearState() {
         boolean val = didCheck;
         didCheck = false;
         return val;
     }
 
+    @Callable
     public static boolean setShouldFail(boolean fail) {
         boolean previous = shouldFail;
         shouldFail = fail;
@@ -32,6 +28,7 @@ public class AssertKeywordIntegrationTestTarget {
         return !shouldFail;
     }
 
+    @Callable
     public static int runEmptyCheck() {
         try {
             assert doRunCheck();
@@ -44,6 +41,7 @@ public class AssertKeywordIntegrationTestTarget {
         }
     }
 
+    @Callable
     public static int runIntCheck(int value) {
         try {
             assert doRunCheck() : value;

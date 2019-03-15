@@ -1,12 +1,8 @@
 package org.aion.avm.tooling.shadowing.testPrimitive;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 public class TestResource {
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(TestResource.class, BlockchainRuntime.getData());
-    }
 
     //========================================================
     // Test for java.lang.Boolean
@@ -47,6 +43,7 @@ public class TestResource {
         }
     }
 
+    @Callable
     public static boolean testBoolean() throws Exception{
         BooleanTest.Factory.main(null);
         BooleanTest.ParseBoolean.main(null);
@@ -113,6 +110,7 @@ public class TestResource {
         }
     }
 
+    @Callable
     public static boolean testByte() throws Exception{
         ByteTest.Decode.main(null);
         return true;
@@ -328,6 +326,7 @@ public class TestResource {
         }
     }
 
+    @Callable
     public static boolean testDouble() throws Exception{
         DoubleTest.Constants.main(null);
         DoubleTest.Extrema.main(null);
@@ -518,6 +517,7 @@ public class TestResource {
         }
     }
 
+    @Callable
     public static boolean testFloat() throws Exception{
         FloatTest.Constants.main(null);
         FloatTest.Extrema.main(null);
@@ -778,6 +778,7 @@ public class TestResource {
         }
     }
 
+    @Callable
     public static boolean testInteger() throws Exception{
         IntegerTest.Decode.main(null);
         IntegerTest.ParsingTest.main(null);
@@ -1026,6 +1027,7 @@ public class TestResource {
 
     }
 
+    @Callable
     public static boolean testLong() throws Exception{
         LongTest.Decode.main(null);
         LongTest.ParsingTest.main(null);
@@ -1103,6 +1105,7 @@ public class TestResource {
         }
     }
 
+    @Callable
     public static boolean testShort() throws Exception{
         ShortTest.Decode.main(null);
         ShortTest.ByteSwap.main(null);
@@ -1113,6 +1116,7 @@ public class TestResource {
     //========================================================
     // Misc Test
     //========================================================
+    @Callable
     public static boolean testAutoboxing(){
         boolean ret = true;
 

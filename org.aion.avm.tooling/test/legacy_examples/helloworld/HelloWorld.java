@@ -2,6 +2,7 @@ package legacy_examples.helloworld;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 
 public class HelloWorld {
@@ -17,15 +18,13 @@ public class HelloWorld {
         }
     }
 
+    @Callable
     public static int add(int a, int b) {
         return a + b;
     }
 
+    @Callable
     public static byte[] run() {
         return "Hello, world!".getBytes();
-    }
-
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(HelloWorld.class, BlockchainRuntime.getData());
     }
 }

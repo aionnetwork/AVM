@@ -117,6 +117,10 @@ public class AssertionErrorIntegrationTest {
         byte[] argData = ABIEncoder.encodeMethodArguments(methodName, arguments);
         TransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        byte[] resultData = result.getReturnData();
+        if(null == resultData) {
+            return null;
+        }
         byte[] utf8 = (byte[])ABIDecoder.decodeOneObject(result.getReturnData());
         return (null != utf8)
                 ? new String(utf8)

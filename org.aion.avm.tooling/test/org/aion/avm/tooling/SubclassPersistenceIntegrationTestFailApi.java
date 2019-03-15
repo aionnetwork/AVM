@@ -1,6 +1,5 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 
@@ -11,10 +10,6 @@ import org.aion.avm.api.BlockchainRuntime;
  */
 public class SubclassPersistenceIntegrationTestFailApi {
     private static SubAddress address;
-
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(SubclassPersistenceIntegrationTestFailApi.class, BlockchainRuntime.getData());
-    }
 
     public static int setup_api() {
         // We just need some kind of random number.

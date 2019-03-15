@@ -19,9 +19,6 @@ public class EnumValuesTest {
 
     private Address from = avmRule.getPreminedAccount();
 
-    private long energyLimit = 5_000_000L;
-    private long energyPrice = 1;
-
     @Test
     public void testEnumAccessForJavac() {
         byte[] clazz = TestEnumForJavacDump.generateBytecode();
@@ -42,15 +39,15 @@ public class EnumValuesTest {
 
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        Address dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getDappAddress();
+        Address dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData).getDappAddress();
 
         byte[] txDataMethodArguments = ABIEncoder.encodeMethodArguments("testEnumAccess");
-        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice).getDecodedReturnData();
+        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
 
         txDataMethodArguments = ABIEncoder.encodeMethodArguments("testEnumAccessNotExist");
-        AvmRule.ResultWrapper resultWrapper = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice);
+        AvmRule.ResultWrapper resultWrapper = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments);
 
         Assert.assertTrue(resultWrapper.getTransactionResult().getResultCode().isFailed());
     }

@@ -1,14 +1,10 @@
 package org.aion.avm.tooling.arraywrapping;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 public class ReferenceArrayTarget {
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(ReferenceArrayTarget.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static void twoDimArraySize() {
         int[][] a = new int[10][];
         a[0] = new int[3];
@@ -24,6 +20,7 @@ public class ReferenceArrayTarget {
         validate(1,1);
     }
 
+    @Callable
     public static void twoDimArraySize2() {
         int[][] a = new int[10][5];
 
@@ -37,6 +34,7 @@ public class ReferenceArrayTarget {
         validate(1,1);
     }
 
+    @Callable
     public static void multiDimArraySize() {
         int[][][] a = new int[10][][];
         a[0] = new int[3][];
@@ -65,6 +63,7 @@ public class ReferenceArrayTarget {
         validate(1,1);
     }
 
+    @Callable
     public static void twoDimArrayAccess() {
         int[][] a = new int[10][];
         int[][] b = new int[10][10];
@@ -81,6 +80,7 @@ public class ReferenceArrayTarget {
         validate(1,1);
     }
 
+    @Callable
     public static void multiDimArrayAccess() {
         int[][][] a = new int[10][][];
         int[][][] b = new int[10][20][];
@@ -102,6 +102,7 @@ public class ReferenceArrayTarget {
         validate(1,1);
     }
 
+    @Callable
     public static void InterfaceArraySize(){
         ChildInterfaceOne[][] childInterfacesOne = new ChildInterfaceOne[10][];
         CommonInterface[][] childInterfacesTwo = new ChildInterfaceTwo[10][];
@@ -113,6 +114,7 @@ public class ReferenceArrayTarget {
         validate(childInterfacesTwo[0].length, 20);
     }
 
+    @Callable
     public static void InterfaceArrayAccess(){
         ChildInterfaceOne[][] childInterfacesOne = new ChildInterfaceOne[10][];
         CommonInterface[][] childInterfacesTwo = new ChildInterfaceTwo[10][20];
@@ -126,6 +128,7 @@ public class ReferenceArrayTarget {
         }
     }
 
+    @Callable
     public static void ObjectArraySize(){
         ConcreteChildOne[][] childOne = new ConcreteChildOne[10][];
         ChildInterfaceTwo[][] childTwo = new ConcreteChildTwo[10][];
@@ -137,6 +140,7 @@ public class ReferenceArrayTarget {
         validate(childTwo[0].length, 20);
     }
 
+    @Callable
     public static void ObjectArrayAccess(){
         ConcreteChildOne[][] childOne = new ConcreteChildOne[10][];
         ChildInterfaceTwo[][] childTwo = new ConcreteChildTwo[10][10];

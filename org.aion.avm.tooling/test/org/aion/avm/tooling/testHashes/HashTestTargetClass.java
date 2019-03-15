@@ -1,13 +1,14 @@
 package org.aion.avm.tooling.testHashes;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 public class HashTestTargetClass {
 
     private static byte[] hashedVal = null;
     private static final int LENGTH_LIMIT = 256;
 
+    @Callable
     public static boolean callBlake2b(byte[] input){
         if (input.length > LENGTH_LIMIT){
             return false;
@@ -22,6 +23,7 @@ public class HashTestTargetClass {
         }
     }
 
+    @Callable
     public static boolean callSha(byte[] input){
         if (input.length > LENGTH_LIMIT){
             return false;
@@ -36,6 +38,7 @@ public class HashTestTargetClass {
         }
     }
 
+    @Callable
     public static boolean callKeccak(byte[] input){
         if (input.length > LENGTH_LIMIT){
             return false;
@@ -50,6 +53,7 @@ public class HashTestTargetClass {
         }
     }
 
+    @Callable
     public static byte[] getHashedVal() {
         return hashedVal;
     }
@@ -61,12 +65,5 @@ public class HashTestTargetClass {
      */
     static {
         hashTestTarget = new HashTestTargetClass();
-    }
-
-    /**
-     * Entry point at a transaction call.
-     */
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(HashTestTargetClass.class, BlockchainRuntime.getData());
     }
 }

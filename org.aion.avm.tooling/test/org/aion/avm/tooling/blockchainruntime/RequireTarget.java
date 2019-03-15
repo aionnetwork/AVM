@@ -2,6 +2,7 @@ package org.aion.avm.tooling.blockchainruntime;
 
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 public class RequireTarget {
 
@@ -13,10 +14,7 @@ public class RequireTarget {
         }
     }
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(RequireTarget.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static void require(boolean condition) {
         BlockchainRuntime.require(condition);
 
@@ -26,6 +24,7 @@ public class RequireTarget {
 
     }
 
+    @Callable
     public static void requireAndTryToCatch() {
         try {
             BlockchainRuntime.require(false);

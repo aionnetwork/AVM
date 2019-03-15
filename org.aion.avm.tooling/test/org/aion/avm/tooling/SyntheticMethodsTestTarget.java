@@ -1,8 +1,7 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Address;
+import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.AionMap;
 
 import java.math.BigInteger;
@@ -17,6 +16,7 @@ public class SyntheticMethodsTestTarget{
     private static GenSub intGenSub;
     private static Gen<Integer> subCopy;
 
+    @Callable
     public static void compareSomething(int typeInput){
         if(typeInput == 1) {
             compare(BigInteger.ONE, BigInteger.ZERO, "BigInteger"); // should be 1
@@ -29,6 +29,7 @@ public class SyntheticMethodsTestTarget{
         }
     }
 
+    @Callable
     public static int getCompareResult(){
         return COMPARISION_RESULT;
     }
@@ -56,6 +57,7 @@ public class SyntheticMethodsTestTarget{
         }
     }
 
+    @Callable
     public static void pickTarget(int targetNum){
         if (targetNum == 1){
             currentTargetClass = new TargetClassImplOne();
@@ -66,6 +68,7 @@ public class SyntheticMethodsTestTarget{
         }
     }
 
+    @Callable
     public static String getName(){
         return currentTargetClass.getName();
     }
@@ -73,29 +76,26 @@ public class SyntheticMethodsTestTarget{
     /**
      * A demo on overriding generic method.
      */
+    @Callable
     public static void setGenerics(int input1, int input2){
         intGen = new Gen<>(input1);
         intGenSub = new GenSub(input2);
         subCopy = intGenSub;
     }
 
+    @Callable
     public static int getIntGen(){
         return intGen.getObject(1);
     }
 
+    @Callable
     public static int getIntGenSub(){
         return intGenSub.getObject(1);
     }
 
+    @Callable
     public static int getSubCopy(){
         return subCopy.getObject(1);
-    }
-
-    /**
-     * Entry point at a transaction call.
-     */
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(SyntheticMethodsTestTarget.class, BlockchainRuntime.getData());
     }
 
     /**

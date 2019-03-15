@@ -22,7 +22,7 @@ public class AvmImplDeployAndRunTest {
     public AvmRule avmRule = new AvmRule(false);
 
     private Address from = avmRule.getPreminedAccount();
-    private long energyLimit = 5000000;
+    private long energyLimit = 10_000_000L;
     private long energyPrice = 1;
 
     public TransactionResult deployHelloWorld() {
@@ -167,8 +167,8 @@ public class AvmImplDeployAndRunTest {
         assertEquals(AvmTransactionResult.Code.SUCCESS, deployResult.getResultCode());
         assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(deployResult.getReturnData())));
 
-        // account1 get 300000; pure balance transfer
-        BigInteger accountBalance = BigInteger.valueOf(300000L);
+        // account1 get 1000000; pure balance transfer
+        BigInteger accountBalance = BigInteger.valueOf(1000000L);
 
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
         TransactionResult result = avmRule.balanceTransfer(from, account1, accountBalance, 21000, energyPrice).getTransactionResult();
@@ -177,7 +177,7 @@ public class AvmImplDeployAndRunTest {
         assertEquals(accountBalance, avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
 
         // account1 to call the Dapp and transfer 50000 to it; call with balance transfer
-        long energyLimit = 200000L;
+        long energyLimit = 500000L;
         BigInteger value = BigInteger.valueOf(50000L);
 
         txData = ABIEncoder.encodeMethodArguments("encodeArgs");

@@ -1,13 +1,10 @@
 package org.aion.avm.tooling.shadowing.testSystem;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 public class TestResource {
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(TestResource.class, BlockchainRuntime.getData());
-    }
 
+    @Callable
     public static boolean testArrayCopy(){
         boolean ret = true;
 
@@ -60,6 +57,7 @@ public class TestResource {
         return ret;
     }
 
+    @Callable
     public static boolean testArrayCopyNullPointerException(){
         int[] src = { 0, 1, 2, 3, 4, 5 };
         int[] dest = null;
@@ -72,6 +70,7 @@ public class TestResource {
         return didMatch;
     }
 
+    @Callable
     public static boolean testArrayCopyIndexOutOfBoundsException(){
         int[] src = {0, 1, 2, 3, 4, 5};
         int[] dest = {10, 20, 30};
@@ -85,6 +84,7 @@ public class TestResource {
         return didMatch;
     }
 
+    @Callable
     public static boolean testArrayCopyArrayStoreException(){
         int[] src = {0, 1, 2, 3, 4, 5};
         String[] dest = {"str1", "str2"};

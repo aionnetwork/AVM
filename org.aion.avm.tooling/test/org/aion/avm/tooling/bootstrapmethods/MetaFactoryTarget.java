@@ -1,7 +1,6 @@
 package org.aion.avm.tooling.bootstrapmethods;
 
 import java.lang.invoke.LambdaMetafactory;
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
 
 /**
@@ -9,10 +8,6 @@ import org.aion.avm.api.BlockchainRuntime;
  * This should be illegal.
  */
 public class MetaFactoryTarget {
-
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(MetaFactoryTarget.class, BlockchainRuntime.getData());
-    }
 
     public static void call() {
         try {

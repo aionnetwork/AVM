@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 public class ShadowClassConstantsTarget {
     private static BigInteger bigZero = BigInteger.ZERO;
@@ -39,10 +39,7 @@ public class ShadowClassConstantsTarget {
     private static Class<Double> doubleClass = Double.TYPE;
     private static Class<Float> floatClass = Float.TYPE;
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(ShadowClassConstantsTarget.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static void checkBigIntegerConstants() {
         BlockchainRuntime.require(bigZero == BigInteger.ZERO);
         BlockchainRuntime.require(bigZero.equals(BigInteger.ZERO));
@@ -65,6 +62,7 @@ public class ShadowClassConstantsTarget {
         BlockchainRuntime.require(bigTen.equals(BigInteger.valueOf(10)));
     }
 
+    @Callable
     public static void checkBigDecimalConstants() {
         BlockchainRuntime.require(bigZeroDecimal == BigDecimal.ZERO);
         BlockchainRuntime.require(bigZeroDecimal.equals(BigDecimal.ZERO));
@@ -82,6 +80,7 @@ public class ShadowClassConstantsTarget {
         BlockchainRuntime.require(bigTenDecimal.equals(BigDecimal.valueOf(10)));
     }
 
+    @Callable
     public static void checkRoundingModeConstants() {
         BlockchainRuntime.require(roundUp == RoundingMode.UP);
         BlockchainRuntime.require(roundDown == RoundingMode.DOWN);
@@ -93,6 +92,7 @@ public class ShadowClassConstantsTarget {
         BlockchainRuntime.require(roundUnnecessary == RoundingMode.UNNECESSARY);
     }
 
+    @Callable
     public static void checkMathContextConstants() {
         BlockchainRuntime.require(unlimitedMath == MathContext.UNLIMITED);
         BlockchainRuntime.require(unlimitedMath.equals(new MathContext(0, RoundingMode.HALF_UP)));
@@ -107,6 +107,7 @@ public class ShadowClassConstantsTarget {
         BlockchainRuntime.require(decimal128Math.equals(new MathContext(34, RoundingMode.HALF_EVEN)));
     }
 
+    @Callable
     public static void checkBooleanConstants() {
         BlockchainRuntime.require(trueBool == Boolean.TRUE);
         BlockchainRuntime.require(trueBool.equals(Boolean.TRUE));
@@ -121,6 +122,7 @@ public class ShadowClassConstantsTarget {
         BlockchainRuntime.require(falseBool == Boolean.valueOf(false));
     }
 
+    @Callable
     public static void checkPrimitiveTypeConstants() {
         // These are all consistent with Java identities.
         BlockchainRuntime.require(boolClass != Boolean.class);

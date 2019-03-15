@@ -302,9 +302,9 @@ public class TransformedMethodTest {
         return (Byte) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
-    private Byte callMultipleBytesMethod(Byte b1, Byte b2, byte b3, byte b4) {
+    private byte callMultipleBytesMethod(Byte b1, Byte b2, byte b3, byte b4) {
         byte[] argData = ABIEncoder.encodeMethodArguments("collapseBytes", b1, b2, b3, b4);
-        return (Byte) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (byte) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private boolean callBooleanMethod(String methodName, boolean b) {

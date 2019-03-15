@@ -25,7 +25,7 @@ public class RequireTest {
     public static AvmRule avmRule = new AvmRule(false);
 
     private static Address from = avmRule.getPreminedAccount();
-    private static long energyLimit = 5_000_000L;
+    private static long energyLimit = 10_000_000L;
     private static long energyPrice = 5;
     private static Address contract;
 

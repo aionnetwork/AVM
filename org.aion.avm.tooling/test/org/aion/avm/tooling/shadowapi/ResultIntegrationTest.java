@@ -19,15 +19,13 @@ public class ResultIntegrationTest {
     public AvmRule avmRule = new AvmRule(false);
 
     private Address from = avmRule.getPreminedAccount();
-    private long energyLimit = 5_000_000L;
-    private long energyPrice = 1;
     private Address dappAddr;
 
     @Before
     public void setUp() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ResultTestTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getDappAddress();
+        dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData).getDappAddress();
     }
 
     @Test
@@ -66,6 +64,6 @@ public class ResultIntegrationTest {
 
     private Object call(String methodName, Result ...results) {
         byte[] txDataMethodArguments = ABIEncoder.encodeMethodArguments(methodName, (Object[]) results);
-        return avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice).getDecodedReturnData();
+        return avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments).getDecodedReturnData();
     }
 }

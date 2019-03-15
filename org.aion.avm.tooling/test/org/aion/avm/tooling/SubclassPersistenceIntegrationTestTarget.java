@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 
 
 /**
@@ -17,59 +17,73 @@ public class SubclassPersistenceIntegrationTestTarget {
     private static SubRuntimeException runtimeException;
     private static SubThrowable throwable;
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(SubclassPersistenceIntegrationTestTarget.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static int setup_user() {
         // We just need some kind of random number.
         user = new SubUser((int)BlockchainRuntime.getBlockTimestamp());
         return user.number2;
     }
+
+    @Callable
     public static int check_user() {
         return user.number2;
     }
 
+    @Callable
     public static int setup_enum() {
         anEnum = SubEnum.ONE;
         return anEnum.hashCode();
     }
+
+    @Callable
     public static int check_enum() {
         return anEnum.hashCode();
     }
 
+    @Callable
     public static int setup_exception() {
         // We just need some kind of random number.
         exception = new SubException((int)BlockchainRuntime.getBlockTimestamp() + 1);
         return exception.number;
     }
+
+    @Callable
     public static int check_exception() {
         return exception.number;
     }
 
+    @Callable
     public static int setup_object() {
         // We just need some kind of random number.
         object = new SubObject((int)BlockchainRuntime.getBlockTimestamp() + 2);
         return object.number;
     }
+
+    @Callable
     public static int check_object() {
         return object.number;
     }
 
+    @Callable
     public static int setup_runtimeException() {
         // We just need some kind of random number.
         runtimeException = new SubRuntimeException((int)BlockchainRuntime.getBlockTimestamp() + 3);
         return runtimeException.number;
     }
+
+    @Callable
     public static int check_runtimeException() {
         return runtimeException.number;
     }
 
+    @Callable
     public static int setup_throwable() {
         // We just need some kind of random number.
         throwable = new SubThrowable((int)BlockchainRuntime.getBlockTimestamp() + 4);
         return throwable.number;
     }
+
+    @Callable
     public static int check_throwable() {
         return throwable.number;
     }

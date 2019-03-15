@@ -3,6 +3,7 @@ package org.aion.rules;
 import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.AionMap;
 
 public class JUnitRuleTestTarget {
@@ -20,14 +21,12 @@ public class JUnitRuleTestTarget {
         owner = BlockchainRuntime.getCaller();
     }
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(JUnitRuleTestTarget.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static int sum(int a, int b) {
         return a + b;
     }
 
+    @Callable
     public static boolean increaseNumber(int input) {
         if (input > number) {
             number = input;
@@ -36,14 +35,17 @@ public class JUnitRuleTestTarget {
             return false;
     }
 
+    @Callable
     public static void mapPut(int key, String value) {
         map1.put(key, value);
     }
 
+    @Callable
     public static String mapGet(int key) {
         return map1.get(key);
     }
 
+    @Callable
     public static void logEvent(){
         BlockchainRuntime.log(DATA1);
         BlockchainRuntime.log(TOPIC1, DATA1);
