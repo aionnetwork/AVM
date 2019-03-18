@@ -27,9 +27,6 @@ import org.aion.avm.internal.ABIStaticState;
  * eagerly loading the shadow JDK in order to run their <clinit> methods.
  */
 public class NodeEnvironment {
-    // See issue #300: the location of this constant still to be determined, here temporarily.
-    public static final byte CONTRACT_PREFIX = 0x0f;
-
     // NOTE:  This is only temporarily a singleton and will probably see its relationship inverted, in the future:  becoming the Avm factory.
     public static final NodeEnvironment singleton = new NodeEnvironment();
 

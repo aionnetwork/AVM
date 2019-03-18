@@ -1,8 +1,6 @@
 package org.aion.kernel;
 
 import java.math.BigInteger;
-
-import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.Helpers;
 import org.aion.data.DirectoryBackedDataStore;
 import org.aion.data.IAccountStore;
@@ -15,11 +13,13 @@ import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
- * Mostly just a high-level wrapper around and underlying IDataStore.
- * Note that this implementation implicitly creates accounts in response to mutative operations.  They are not explicitly created.
- * Likewise, reading data from a non-existent account safely returns null or 0L, rather than failing.
+ * A modified version of CachingKernel to support more general usage so it can be used as the kernel underlying tests.
  */
 public class TestingKernel implements KernelInterface {
+    /**
+     * For testing purposes, we will give every contract address this prefix.
+     */
+    public static final byte AVM_CONTRACT_PREFIX = 0x0b;
 
     public static final Address PREMINED_ADDRESS = Address.wrap(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
     public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(18);
@@ -92,10 +92,7 @@ public class TestingKernel implements KernelInterface {
 
     @Override
     public byte[] getCode(Address address) {
-        IAccountStore account = this.dataStore.openAccount(address.toBytes());
-        return (null != account)
-                ? account.getCode()
-                : null;
+        return internalGetCode(address);
     }
 
     @Override
@@ -126,9 +123,7 @@ public class TestingKernel implements KernelInterface {
 
     @Override
     public void adjustBalance(Address address, BigInteger delta) {
-        IAccountStore account = lazyCreateAccount(address.toBytes());
-        BigInteger start = account.getBalance();
-        account.setBalance(start.add(delta));
+        internalAdjustBalance(address, delta);
     }
 
     @Override
@@ -174,35 +169,43 @@ public class TestingKernel implements KernelInterface {
         return account;
     }
 
-    /**
-     * Returns {@code true} if, and only if, address is an Avm contract address (that is, it begins
-     * with the Avm prefix byte) OR address is a regular address and not a contract address.
-     *
-     * @param address The address whose safety is to be determined.
-     * @return True if address is safe to call into.
-     */
     @Override
     public boolean destinationAddressIsSafeForThisVM(Address address) {
-        byte[] code = getCode(address);
-        return (code == null) || (code.length == 0) || (address.toBytes()[0] == NodeEnvironment.CONTRACT_PREFIX);
+        // This implementation knows about contract address prefixes (just used by tests - real kernel stores out-of-band meta-data).
+        // So, it is valid to use any regular address or AVM contract address.
+        byte[] code = internalGetCode(address);
+        return (code == null) || (address.toBytes()[0] == TestingKernel.AVM_CONTRACT_PREFIX);
     }
 
     @Override
     public void refundAccount(Address address, BigInteger amount) {
         // This method may have special logic in the kernel. Here it is just adjustBalance.
-        adjustBalance(address, amount);
+        internalAdjustBalance(address, amount);
     }
 
     @Override
     public void deductEnergyCost(Address address, BigInteger cost) {
         // This method may have special logic in the kernel. Here it is just adjustBalance.
-        adjustBalance(address, cost);
+        internalAdjustBalance(address, cost);
     }
 
     @Override
     public void payMiningFee(Address address, BigInteger fee) {
         // This method may have special logic in the kernel. Here it is just adjustBalance.
-        adjustBalance(address, fee);
+        internalAdjustBalance(address, fee);
     }
 
+
+    private void internalAdjustBalance(Address address, BigInteger delta) {
+        IAccountStore account = lazyCreateAccount(address.toBytes());
+        BigInteger start = account.getBalance();
+        account.setBalance(start.add(delta));
+    }
+
+    private byte[] internalGetCode(Address address) {
+        IAccountStore account = this.dataStore.openAccount(address.toBytes());
+        return (null != account)
+                ? account.getCode()
+                : null;
+    }
 }

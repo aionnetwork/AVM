@@ -3,8 +3,8 @@ package org.aion.avm.tooling;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
-import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.tooling.hash.HashUtils;
+import org.aion.kernel.TestingKernel;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
@@ -19,7 +19,8 @@ public class AddressUtil {
         long nonce = new BigInteger(tx.getNonce()).longValue();
         ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(sender.toBytes()).putLong(nonce);
         byte[] hash = HashUtils.sha256(buffer.array());
-        hash[0] = NodeEnvironment.CONTRACT_PREFIX;
+        // NOTE: This implemenation assumes are being used on the testing kernel.
+        hash[0] = TestingKernel.AVM_CONTRACT_PREFIX;
         return Address.wrap(hash);
     }
 }

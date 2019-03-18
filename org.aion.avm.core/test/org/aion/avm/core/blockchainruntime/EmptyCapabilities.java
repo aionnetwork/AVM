@@ -1,8 +1,8 @@
 package org.aion.avm.core.blockchainruntime;
 
 import org.aion.avm.core.IExternalCapabilities;
-import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.kernel.TestingKernel;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
@@ -43,7 +43,7 @@ public class EmptyCapabilities implements IExternalCapabilities {
             byte two = (i < nonce.length) ? nonce[i] : (byte)i;
             raw[i] = (byte) (one + two);
         }
-        raw[0] = NodeEnvironment.CONTRACT_PREFIX;
+        raw[0] = TestingKernel.AVM_CONTRACT_PREFIX;
         return Address.wrap(raw);
     }
 }

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
@@ -251,17 +250,10 @@ public class TransactionalKernel implements KernelInterface {
         throw new AssertionError("This class does not implement this method.");
     }
 
-    /**
-     * Returns {@code true} if, and only if, address is an Avm contract address (that is, it begins
-     * with the Avm prefix byte) OR address is a regular address and not a contract address.
-     *
-     * @param address The address whose safety is to be determined.
-     * @return True if address is safe to call into.
-     */
     @Override
     public boolean destinationAddressIsSafeForThisVM(Address address) {
-        byte[] code = getCode(address);
-        return (code == null) || (code.length == 0) || (address.toBytes()[0] == NodeEnvironment.CONTRACT_PREFIX);
+        // We need to delegate to our parent kernel to apply whatever logic is defined there.
+        // The only exception to this is cases where we already stored code in our cache so see if that is there.
+        return (null != this.writeCache.getCode(address)) || this.parent.destinationAddressIsSafeForThisVM(address);
     }
-
 }
