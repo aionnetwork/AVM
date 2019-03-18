@@ -11,7 +11,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.types.Address;
 import org.aion.kernel.Transaction;
@@ -30,9 +30,9 @@ import org.junit.Test;
 public class CommonSuperClassTest {
     private static long ENERGY_LIMIT = 10_000_000L;
     private static long ENERGY_PRICE = 1L;
-    private static Address DEPLOYER = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
     private static Block BLOCK = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-    private static KernelInterfaceImpl KERNEL = new KernelInterfaceImpl();
+    private static TestingKernel KERNEL = new TestingKernel();
     private AvmImpl avm;
 
     @Before

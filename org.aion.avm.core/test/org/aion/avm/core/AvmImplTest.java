@@ -21,7 +21,7 @@ import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.kernel.Transaction;
 import org.aion.vm.api.interfaces.KernelInterface;
@@ -47,7 +47,7 @@ import static org.junit.Assert.assertTrue;
 
 
 public class AvmImplTest {
-    private static org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
     private static Block block;
 
     @Rule
@@ -60,7 +60,7 @@ public class AvmImplTest {
 
     @Test
     public void testStateUpdates() {
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         org.aion.types.Address from = deployer;
@@ -83,7 +83,7 @@ public class AvmImplTest {
 
         // verify state change
         assertEquals(1, kernel.getNonce(from).intValue());
-        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT.subtract(value).subtract(BigInteger.valueOf(tx.getTransactionCost() * energyPrice)), kernel.getBalance(deployer));
+        assertEquals(TestingKernel.PREMINED_AMOUNT.subtract(value).subtract(BigInteger.valueOf(tx.getTransactionCost() * energyPrice)), kernel.getBalance(deployer));
         assertEquals(0, kernel.getNonce(to).intValue());
         assertEquals(value, kernel.getBalance(to));
         avm.shutdown();
@@ -157,7 +157,7 @@ public class AvmImplTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmImplTestResource.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         // deploy
@@ -228,7 +228,7 @@ public class AvmImplTest {
     public void testNullReturnCrossCall() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // deploy
@@ -245,7 +245,7 @@ public class AvmImplTest {
     public void testRecursiveHashCode() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // deploy
@@ -278,7 +278,7 @@ public class AvmImplTest {
         boolean shouldFail = false;
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // deploy
@@ -306,7 +306,7 @@ public class AvmImplTest {
         boolean shouldFail = true;
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // deploy
@@ -328,7 +328,7 @@ public class AvmImplTest {
         boolean shouldFail = true;
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // deploy
@@ -357,7 +357,7 @@ public class AvmImplTest {
     public void testReentrantRollbackDuringCommit() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // deploy
@@ -384,7 +384,7 @@ public class AvmImplTest {
     public void testReentrantRecursiveNested() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // deploy
@@ -410,7 +410,7 @@ public class AvmImplTest {
     public void testCallDepthLimit() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         // deploy
@@ -435,7 +435,7 @@ public class AvmImplTest {
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // CREATE the spawner.
@@ -465,7 +465,7 @@ public class AvmImplTest {
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // CREATE the spawner.
@@ -498,7 +498,7 @@ public class AvmImplTest {
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // CREATE the spawner.
@@ -508,7 +508,7 @@ public class AvmImplTest {
         boolean shouldFail = true;
         byte[] spawnerCallData = ABIEncoder.encodeMethodArguments("spawnOnly", shouldFail);
         long energyLimit = 1_000_000l;
-        Transaction tx = Transaction.call(KernelInterfaceImpl.PREMINED_ADDRESS, org.aion.types.Address.wrap(spawnerAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, spawnerCallData, energyLimit, 1L);
+        Transaction tx = Transaction.call(TestingKernel.PREMINED_ADDRESS, org.aion.types.Address.wrap(spawnerAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, spawnerCallData, energyLimit, 1L);
         TransactionResult result2 = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.FAILED_INVALID, result2.getResultCode());
         avm.shutdown();
@@ -526,7 +526,7 @@ public class AvmImplTest {
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
         byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl(directory);
+        TestingKernel kernel = new TestingKernel(directory);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // We always start out with the PREMINE account, but that should be the only one.
@@ -544,7 +544,7 @@ public class AvmImplTest {
         
         // Restart the AVM.
         avm.shutdown();
-        kernel = new KernelInterfaceImpl(directory);
+        kernel = new TestingKernel(directory);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // Call the incrementor, directly.
@@ -643,7 +643,7 @@ public class AvmImplTest {
 
     private void deployInvalidJar(byte[] jar) {
         byte[] deployment = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;

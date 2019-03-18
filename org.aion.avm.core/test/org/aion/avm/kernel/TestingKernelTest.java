@@ -2,24 +2,24 @@ package org.aion.avm.kernel;
 
 import java.math.BigInteger;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class KernelInterfaceImplTest {
+public class TestingKernelTest {
 
     @Test
     public void testPremine() {
-        KernelInterface kernel = new KernelInterfaceImpl();
+        KernelInterface kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         BigInteger delta = BigInteger.valueOf(10);
-        kernel.adjustBalance(KernelInterfaceImpl.PREMINED_ADDRESS, delta.negate());
+        kernel.adjustBalance(TestingKernel.PREMINED_ADDRESS, delta.negate());
         kernel.adjustBalance(address, delta);
 
-        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT.subtract(delta), kernel.getBalance(KernelInterfaceImpl.PREMINED_ADDRESS));
+        assertEquals(TestingKernel.PREMINED_AMOUNT.subtract(delta), kernel.getBalance(TestingKernel.PREMINED_ADDRESS));
         assertEquals(delta, kernel.getBalance(address));
     }
 }

@@ -11,7 +11,7 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 
@@ -63,14 +63,14 @@ public class BasicPerfTest {
 
 
     private static class TestRunnable extends Thread {
-        private org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+        private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
         private KernelInterface kernel;
         private AvmImpl avm;
         private org.aion.types.Address contractAddress;
         private Throwable backgroundThrowable;
         public void deploy(byte[] jar, byte[] arguments) {
             // Deploy.
-            this.kernel = new KernelInterfaceImpl();
+            this.kernel = new TestingKernel();
             this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
             Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
             long transaction1EnergyLimit = 1_000_000_000l;

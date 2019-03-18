@@ -17,7 +17,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.types.Address;
@@ -33,7 +33,7 @@ import org.junit.Test;
 public class ContractLoggingTest {
     private static final int NUM_LOGS = 5;
 
-    private static Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static Address from = TestingKernel.PREMINED_ADDRESS;
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 1;
     private static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
@@ -46,7 +46,7 @@ public class ContractLoggingTest {
 
     @BeforeClass
     public static void setup() {
-        kernel = new KernelInterfaceImpl();
+        kernel = new TestingKernel();
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         deployContract();
     }

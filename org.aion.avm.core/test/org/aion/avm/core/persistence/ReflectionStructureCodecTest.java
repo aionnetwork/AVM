@@ -14,7 +14,7 @@ import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.types.Address;
 import org.junit.After;
 import org.junit.Assert;
@@ -66,7 +66,7 @@ public class ReflectionStructureCodecTest {
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph);
@@ -111,7 +111,7 @@ public class ReflectionStructureCodecTest {
         target.i_eight = 5.0d;
         target.i_nine = new ReflectionStructureCodecTarget();
         
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph);
@@ -160,7 +160,7 @@ public class ReflectionStructureCodecTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //i_seven
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //i_eight
         };
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         SerializedRepresentation extent = KeyValueCodec.decode(graph, expected);
@@ -194,7 +194,7 @@ public class ReflectionStructureCodecTest {
         root.i_nine = one;
         one.i_nine = two;
         
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
@@ -241,7 +241,7 @@ public class ReflectionStructureCodecTest {
         root1.i_nine = overlap;
         root2.i_nine = overlap;
         
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
@@ -293,7 +293,7 @@ public class ReflectionStructureCodecTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //i_seven
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //i_eight
         };
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         SerializedRepresentation extent1 = KeyValueCodec.decode(graph, expected1);

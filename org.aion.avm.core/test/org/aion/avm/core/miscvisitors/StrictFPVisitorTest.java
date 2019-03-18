@@ -11,7 +11,7 @@ import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -34,15 +34,15 @@ public class StrictFPVisitorTest {
     // block
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
     private org.aion.types.Address dappAddress;
 
-    private KernelInterfaceImpl kernel;
+    private TestingKernel kernel;
     private AvmImpl avm;
 
     @Before
     public void setup() {
-        this.kernel = new KernelInterfaceImpl();
+        this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(StrictFPVisitorTestResource.class);

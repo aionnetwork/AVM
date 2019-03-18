@@ -22,13 +22,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class EnergyUsageDebugModeTest {
     private Block block;
-    private KernelInterfaceImpl kernel;
-    private org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private TestingKernel kernel;
+    private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
 
 
     @Before
     public void setup (){
-        this.kernel = new KernelInterfaceImpl();
+        this.kernel = new TestingKernel();
         block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     }
 

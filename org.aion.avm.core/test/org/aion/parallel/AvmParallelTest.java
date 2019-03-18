@@ -18,7 +18,7 @@ import org.junit.Test;
 
 public class AvmParallelTest {
 
-    private org.aion.types.Address preminedAddress = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address preminedAddress = TestingKernel.PREMINED_ADDRESS;
 
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
@@ -34,7 +34,7 @@ public class AvmParallelTest {
 
     @Test
     public void basicConcurrencyTest(){
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         org.aion.types.Address usr1 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
@@ -104,7 +104,7 @@ public class AvmParallelTest {
     @Test
     public void cyclicWaitTest(){
 
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         org.aion.types.Address usr1 = org.aion.types.Address.wrap(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
@@ -132,7 +132,7 @@ public class AvmParallelTest {
 
         byte[] code = JarBuilder.buildJarForMainAndClasses(TestContract.class);
 
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
 
@@ -179,7 +179,7 @@ public class AvmParallelTest {
      */
     @Test
     public void heavyAbortTest(){
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // We will send 2x the value to these accounts, initially, and they will send 1x to the target.

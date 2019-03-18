@@ -41,7 +41,7 @@ public class DemoTest {
 
     @Test
     public void testWallet() {
-        KernelInterface kernel = new KernelInterfaceImpl();
+        KernelInterface kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         kernel.adjustBalance(pepeMinter, BigInteger.valueOf(1_000_000_000L));
         kernel.adjustBalance(deployer, BigInteger.valueOf(1_000_000_000L));

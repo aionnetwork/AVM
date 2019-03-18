@@ -8,7 +8,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.types.Address;
@@ -33,15 +33,15 @@ public class AvmFailureTest {
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     // kernel & vm
-    private KernelInterfaceImpl kernel;
+    private TestingKernel kernel;
     private AvmImpl avm;
 
-    private Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private Address deployer = TestingKernel.PREMINED_ADDRESS;
     private Address dappAddress;
 
     @Before
     public void setup() {
-        this.kernel = new KernelInterfaceImpl();
+        this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmFailureTestResource.class);

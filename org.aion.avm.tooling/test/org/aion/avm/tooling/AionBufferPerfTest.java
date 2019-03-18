@@ -12,7 +12,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.vm.api.interfaces.KernelInterface;
@@ -23,7 +23,7 @@ import org.junit.Test;
 
 
 public class AionBufferPerfTest {
-    private org.aion.types.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
     private long energyLimit = 100_000_000_000L;
     private long energyPrice = 1;
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(),
@@ -57,7 +57,7 @@ public class AionBufferPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurements for AionBuffer\n>>");
         byte[] args;
-        KernelInterface kernel = new KernelInterfaceImpl();
+        KernelInterface kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
         TransactionResult deployRes = deploy(kernel, avm, buildBufferPerfJar());

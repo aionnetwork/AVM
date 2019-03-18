@@ -7,7 +7,7 @@ import org.aion.avm.api.Address;
 import org.aion.avm.tooling.ShadowCoverageTarget;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -234,7 +234,7 @@ public class AvmCLIIntegrationTest {
         final int transferBalance = 5000;
         String storagePath = "./storage";
         File storageFile = new File(storagePath);
-        KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
+        TestingKernel kernelInterface = new TestingKernel(storageFile);
         java.math.BigInteger contractBalance;
 
         //deploy a contract first
@@ -269,7 +269,7 @@ public class AvmCLIIntegrationTest {
     public void testDeployAndCallWithNoTransfer() throws IOException {
         String storagePath = "./storage";
         File storageFile = new File(storagePath);
-        KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
+        TestingKernel kernelInterface = new TestingKernel(storageFile);
 
         byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
         File temp = this.folder.newFile();
@@ -303,7 +303,7 @@ public class AvmCLIIntegrationTest {
     public void testDeployTransfer() throws IOException {
         final int deployBalance = 100000;
         File storageFile = this.folder.newFolder();
-        KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
+        TestingKernel kernelInterface = new TestingKernel(storageFile);
 
         byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
         File temp = this.folder.newFile();
@@ -339,7 +339,7 @@ public class AvmCLIIntegrationTest {
         final int transferBalance = 20000;
         String storagePath = "./storage";
         File storageFile = new File(storagePath);
-        KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
+        TestingKernel kernelInterface = new TestingKernel(storageFile);
 
         byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
         File temp = this.folder.newFile();
@@ -373,7 +373,7 @@ public class AvmCLIIntegrationTest {
         final int transferBalance = 20000;
         String storagePath = "./storage";
         File storageFile = new File(storagePath);
-        KernelInterfaceImpl kernelInterface = new KernelInterfaceImpl(storageFile);
+        TestingKernel kernelInterface = new TestingKernel(storageFile);
 
         org.aion.types.Address address = Helpers.randomAddress();
         kernelInterface.createAccount(address);

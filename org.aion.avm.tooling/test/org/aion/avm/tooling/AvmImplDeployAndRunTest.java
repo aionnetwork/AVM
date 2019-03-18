@@ -6,7 +6,7 @@ import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Rule;
 import org.junit.Test;
@@ -141,7 +141,7 @@ public class AvmImplDeployAndRunTest {
 
     @Test
     public void testBalanceTransfer() {
-        assertEquals(KernelInterfaceImpl.PREMINED_AMOUNT, avmRule.kernel.getBalance(org.aion.types.Address.wrap(from.unwrap())));
+        assertEquals(TestingKernel.PREMINED_AMOUNT, avmRule.kernel.getBalance(org.aion.types.Address.wrap(from.unwrap())));
 
         // account1 get 10000
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);

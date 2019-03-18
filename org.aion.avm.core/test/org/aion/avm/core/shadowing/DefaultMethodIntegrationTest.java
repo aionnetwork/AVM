@@ -23,13 +23,13 @@ import java.math.BigInteger;
  * Tests that we fail in a meaningful way when a DApp throws an exception due to a missing method.
  */
 public class DefaultMethodIntegrationTest {
-    private org.aion.types.Address deployer = KernelInterfaceImpl.PREMINED_ADDRESS;
-    private KernelInterfaceImpl kernel;
+    private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
+    private TestingKernel kernel;
     private AvmImpl avm;
 
     @Before
     public void setup() {
-        this.kernel = new KernelInterfaceImpl();
+        this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

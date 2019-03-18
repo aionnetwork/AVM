@@ -24,20 +24,20 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 public class TrsTest {
-    private static final Address DEPLOYER = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static final Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1;
     private static final int NUM_PERIODS = 12;
 
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private KernelInterfaceImpl kernel;
+    private TestingKernel kernel;
     private AvmImpl avm;
     private Address contract;
 
     @Before
     public void setup() {
-        this.kernel = new KernelInterfaceImpl();
+        this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
     }
 

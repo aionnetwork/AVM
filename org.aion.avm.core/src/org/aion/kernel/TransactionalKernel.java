@@ -22,14 +22,14 @@ import org.aion.vm.api.interfaces.KernelInterface;
  */
 public class TransactionalKernel implements KernelInterface {
     private final KernelInterface parent;
-    private final KernelInterfaceImpl writeCache;
+    private final CachingKernel writeCache;
     private final List<Consumer<KernelInterface>> writeLog;
     private final Set<ByteArrayWrapper> deletedAccountProjection;
     private final Set<ByteArrayWrapper> cachedAccountBalances;
 
     public TransactionalKernel(KernelInterface parent) {
         this.parent = parent;
-        this.writeCache = new KernelInterfaceImpl();
+        this.writeCache = new CachingKernel();
         this.writeLog = new ArrayList<>();
         this.deletedAccountProjection = new HashSet<>();
         this.cachedAccountBalances = new HashSet<>();

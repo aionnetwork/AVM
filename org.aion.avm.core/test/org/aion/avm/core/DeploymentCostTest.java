@@ -21,7 +21,7 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.types.Address;
@@ -47,16 +47,16 @@ import org.junit.Test;
 public class DeploymentCostTest {
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1L;
-    private static final Address DEPLOYER = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static final Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
 
     private Block block;
-    private KernelInterfaceImpl kernel;
+    private TestingKernel kernel;
     private AvmImpl avm;
 
     @Before
     public void setup() {
         this.block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        this.kernel = new KernelInterfaceImpl();
+        this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

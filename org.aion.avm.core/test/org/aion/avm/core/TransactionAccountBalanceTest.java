@@ -14,7 +14,7 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.types.Address;
@@ -30,7 +30,7 @@ import org.junit.Test;
  * after a transaction has been sent.
  */
 public class TransactionAccountBalanceTest {
-    private static Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static Address from = TestingKernel.PREMINED_ADDRESS;
     private static long energyLimit = 5_000_000L;
     private static long energyLimitForValueTransfer = 21_000L;
     private static long energyPrice = 5;
@@ -41,7 +41,7 @@ public class TransactionAccountBalanceTest {
 
     @BeforeClass
     public static void setup() {
-        kernel = new KernelInterfaceImpl();
+        kernel = new TestingKernel();
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

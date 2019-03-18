@@ -29,14 +29,14 @@ import static org.junit.Assert.assertTrue;
 
 public class BlockchainRuntimeTest {
     // kernel & vm
-    private KernelInterfaceImpl kernel;
+    private TestingKernel kernel;
     private AvmImpl avm;
 
-    private org.aion.types.Address premined = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address premined = TestingKernel.PREMINED_ADDRESS;
 
     @Before
     public void setup() {
-        this.kernel = new KernelInterfaceImpl();
+        this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
     }
 

@@ -15,7 +15,7 @@ import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.types.Address;
 import org.junit.After;
 import org.junit.Assert;
@@ -77,7 +77,7 @@ public class LoadedDAppTest {
         LoadedDAppTarget.s_seven = 5;
         LoadedDAppTarget.s_eight = 5.0d;
 
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
@@ -150,7 +150,7 @@ public class LoadedDAppTest {
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //s_seven
                 0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
         };
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         kernel.putStorage(address, StorageKeys.CLASS_STATICS, expected);
         
@@ -192,7 +192,7 @@ public class LoadedDAppTest {
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
@@ -268,7 +268,7 @@ public class LoadedDAppTest {
         ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_five = 42;
         ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine = ReflectionStructureCodecTarget.s_nine;
         
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
@@ -340,7 +340,7 @@ public class LoadedDAppTest {
     public void serializeDeserializeReferenceToJdkConstant() {
         LoadedDAppTarget.s_nine = org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN;
         
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
@@ -380,7 +380,7 @@ public class LoadedDAppTest {
         org.aion.avm.shadow.java.lang.Class<?> originalClassRef = IInstrumentation.attachedThreadInstrumentation.get().wrapAsClass(String.class);
         LoadedDAppTarget.s_nine = originalClassRef;
         
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
@@ -420,7 +420,7 @@ public class LoadedDAppTest {
     public void serializeDeserializeReferenceToConstantClass() {
         LoadedDAppTarget.s_nine = org.aion.avm.shadow.java.lang.Byte.avm_TYPE;
         
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
@@ -459,7 +459,7 @@ public class LoadedDAppTest {
     public void memoryAndDiskSerializersSameCost() {
         // Create the DApp.
         Address address = Helpers.randomAddress();
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl();
+        TestingKernel kernel = new TestingKernel();
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
         

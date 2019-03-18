@@ -39,7 +39,7 @@ public class AvmCLI {
 
         File storageFile = new File(storagePath);
 
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
+        TestingKernel kernel = new TestingKernel(storageFile);
 
         Path path = Paths.get(jarPath);
         byte[] jar;
@@ -98,7 +98,7 @@ public class AvmCLI {
 
         File storageFile = new File(storagePath);
 
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
+        TestingKernel kernel = new TestingKernel(storageFile);
 
         // TODO:  Remove this bias when/if we change this to no longer send all transactions from the same account.
         BigInteger biasedNonce = kernel.getNonce(sender).add(BigInteger.valueOf(nonceBias));
@@ -170,7 +170,7 @@ public class AvmCLI {
         env.logLine("Creating Account " + toOpen);
 
         File storageFile = new File(storagePath);
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
+        TestingKernel kernel = new TestingKernel(storageFile);
 
         kernel.createAccount(toOpen);
         kernel.adjustBalance(toOpen, BigInteger.valueOf(100000000000L));
@@ -185,7 +185,7 @@ public class AvmCLI {
         PrintStream printer = new PrintStream(stream);
         
         // Create the directory-backed kernel.
-        KernelInterfaceImpl kernel = new KernelInterfaceImpl(new File(storagePath));
+        TestingKernel kernel = new TestingKernel(new File(storagePath));
         
         // Walk everything, treating unexpected exceptions as fatal.
         try {
@@ -336,7 +336,7 @@ public class AvmCLI {
                 
                 // Run them in a single batch.
                 File storageFile = new File(invocation.storagePath);
-                KernelInterfaceImpl kernel = new KernelInterfaceImpl(storageFile);
+                TestingKernel kernel = new TestingKernel(storageFile);
                 AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
                 SimpleFuture<TransactionResult>[] futures = avm.run(kernel, transactions);
                 TransactionResult[] results = new AvmTransactionResult[futures.length];

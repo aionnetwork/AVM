@@ -19,7 +19,7 @@ import org.junit.Test;
 
 public class AionCollectionPerfTest {
 
-    private org.aion.types.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 100_000_000_000L;
     private long energyPrice = 1;
@@ -79,7 +79,7 @@ public class AionCollectionPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurement for AionList");
         byte[] args;
-        KernelInterface kernel = new KernelInterfaceImpl();
+        KernelInterface kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(kernel, avm, buildListPerfJar());
@@ -114,7 +114,7 @@ public class AionCollectionPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurement for AionSet");
         byte[] args;
-        KernelInterface kernel = new KernelInterfaceImpl();
+        KernelInterface kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(kernel, avm, buildSetPerfJar());
@@ -165,7 +165,7 @@ public class AionCollectionPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurement for AionMap");
         byte[] args;
-        KernelInterface kernel = new KernelInterfaceImpl();
+        KernelInterface kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(kernel, avm, buildMapPerfJar());

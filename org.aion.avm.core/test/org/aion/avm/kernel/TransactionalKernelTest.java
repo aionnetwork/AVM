@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TransactionalKernel;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
@@ -15,7 +15,7 @@ import org.junit.Test;
 public class TransactionalKernelTest {
     @Test
     public void testCommitDataOntoEmpty() {
-        KernelInterface base = new KernelInterfaceImpl();
+        KernelInterface base = new TestingKernel();
         TransactionalKernel transaction = new TransactionalKernel(base);
         Address address = Helpers.randomAddress();
         transaction.putCode(address, new byte[0]);
@@ -44,7 +44,7 @@ public class TransactionalKernelTest {
 
     @Test
     public void testCommitDataOntoPartial() {
-        KernelInterface base = new KernelInterfaceImpl();
+        KernelInterface base = new TestingKernel();
         Address address = Helpers.randomAddress();
         byte[] key1 = Helpers.randomBytes(32);
         byte[] value1_1 = Helpers.randomBytes(32);
@@ -68,7 +68,7 @@ public class TransactionalKernelTest {
 
     @Test
     public void testCommitAdjustment() {
-        KernelInterface base = new KernelInterfaceImpl();
+        KernelInterface base = new TestingKernel();
         Address address = Helpers.randomAddress();
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
@@ -89,7 +89,7 @@ public class TransactionalKernelTest {
 
     @Test
     public void testCommitDelete() {
-        KernelInterface base = new KernelInterfaceImpl();
+        KernelInterface base = new TestingKernel();
         Address address = Helpers.randomAddress();
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
@@ -110,7 +110,7 @@ public class TransactionalKernelTest {
     @Test
     public void testCommitDeleteRecreate() {
         // This probably can't happen, in reality, but this test at least shows it is possible.
-        KernelInterface base = new KernelInterfaceImpl();
+        KernelInterface base = new TestingKernel();
         Address address = Helpers.randomAddress();
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);

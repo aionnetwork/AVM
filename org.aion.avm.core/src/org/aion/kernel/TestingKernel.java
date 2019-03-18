@@ -1,6 +1,7 @@
 package org.aion.kernel;
 
 import java.math.BigInteger;
+
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.Helpers;
 import org.aion.data.DirectoryBackedDataStore;
@@ -18,7 +19,7 @@ import org.aion.vm.api.interfaces.KernelInterface;
  * Note that this implementation implicitly creates accounts in response to mutative operations.  They are not explicitly created.
  * Likewise, reading data from a non-existent account safely returns null or 0L, rather than failing.
  */
-public class KernelInterfaceImpl implements KernelInterface {
+public class TestingKernel implements KernelInterface {
 
     public static final Address PREMINED_ADDRESS = Address.wrap(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
     public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(18);
@@ -28,7 +29,7 @@ public class KernelInterfaceImpl implements KernelInterface {
     /**
      * Creates an instance of the interface which is backed by in-memory structures, only.
      */
-    public KernelInterfaceImpl() {
+    public TestingKernel() {
         this.dataStore = new MemoryBackedDataStore();
         IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toBytes());
         premined.setBalance(PREMINED_AMOUNT);
@@ -39,7 +40,7 @@ public class KernelInterfaceImpl implements KernelInterface {
      * 
      * @param onDiskRoot The root directory which this implementation will use for persistence.
      */
-    public KernelInterfaceImpl(File onDiskRoot) {
+    public TestingKernel(File onDiskRoot) {
         this.dataStore = new DirectoryBackedDataStore(onDiskRoot);
         // Try to open the account, creating it if doesn't exist.
         IAccountStore premined = this.dataStore.openAccount(PREMINED_ADDRESS.toBytes());

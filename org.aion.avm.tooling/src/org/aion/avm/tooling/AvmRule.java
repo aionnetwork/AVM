@@ -27,7 +27,7 @@ public final class AvmRule implements TestRule {
 
     private boolean debugMode;
     private final ABICompiler compiler;
-    public final KernelInterfaceImpl kernel;
+    public final TestingKernel kernel;
     public AvmImpl avm;
     public Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
@@ -36,7 +36,7 @@ public final class AvmRule implements TestRule {
      */
     public AvmRule(boolean debugMode) {
         this.debugMode = debugMode;
-        this.kernel = new KernelInterfaceImpl();
+        this.kernel = new TestingKernel();
         compiler = new ABICompiler();
     }
 
@@ -158,7 +158,7 @@ public final class AvmRule implements TestRule {
      * @return Address of the account with initial (pre-mined) balance in the kernel
      */
     public Address getPreminedAccount() {
-        return new Address(KernelInterfaceImpl.PREMINED_ADDRESS.toBytes());
+        return new Address(TestingKernel.PREMINED_ADDRESS.toBytes());
     }
 
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {

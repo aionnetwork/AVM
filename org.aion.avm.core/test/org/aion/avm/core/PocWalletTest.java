@@ -42,7 +42,7 @@ public class PocWalletTest {
     private static final int ADDRESS_SIZE = org.aion.types.Address.SIZE;
 
     // For now, we will just reuse the from, to, and block for each call (in the future, this will change).
-    private org.aion.types.Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 10_000_000_000L;
     private long energyPrice = 1;
@@ -52,7 +52,7 @@ public class PocWalletTest {
 
     @Before
     public void setup() {
-        this.kernel = new KernelInterfaceImpl();
+        this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities() {
             @Override
             public byte[] blake2b(byte[] data) {

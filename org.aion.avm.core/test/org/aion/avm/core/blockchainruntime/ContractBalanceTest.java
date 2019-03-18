@@ -15,7 +15,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.Block;
-import org.aion.kernel.KernelInterfaceImpl;
+import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
 import org.aion.types.Address;
@@ -31,7 +31,7 @@ import org.junit.Test;
  * of a deployed contract from within that contract.
  */
 public class ContractBalanceTest {
-    private static Address from = KernelInterfaceImpl.PREMINED_ADDRESS;
+    private static Address from = TestingKernel.PREMINED_ADDRESS;
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 5;
     private static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
@@ -41,7 +41,7 @@ public class ContractBalanceTest {
 
     @BeforeClass
     public static void setup() {
-        kernel = new KernelInterfaceImpl();
+        kernel = new TestingKernel();
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 
