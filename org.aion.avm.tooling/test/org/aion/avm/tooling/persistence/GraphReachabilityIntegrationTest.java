@@ -81,7 +81,7 @@ public class GraphReachabilityIntegrationTest {
         long run_basicCost = 22796L;
         long run_miscCharges = 0L
                 + 236L + 300L + 100L + 600L + 37234L + 135L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
-                + 236L + 300L + 100L + 600L + 37234L + 75L + 55L + 98L
+                + 236L + 100L + 600L + 37234L + 75L + 55L + 98L
                 + 100L + 108L + 100L + 50L + 55L + 50L
                 ;
         long run_storageCharges = 0L
@@ -131,7 +131,7 @@ public class GraphReachabilityIntegrationTest {
         long run_basicCost = 22604L;
         long run_miscCharges = 0L
             + 236L + 300L + 100L + 600L + 37234L + 75L + 55L + 135L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
-            + 236L + 300L + 100L + 600L + 37234L + 75L + 55L + 98L
+            + 236L + 100L + 600L + 37234L + 75L + 55L + 98L
             + 100L + 108L + 100L + 50L + 55L + 50L
             ;
         long run_storageCharges = 0L
@@ -176,7 +176,7 @@ public class GraphReachabilityIntegrationTest {
         long run_basicCost = 22668L;
         long run_miscCharges = 0L
                 + 236L + 300L + 100L + 600L + 37234L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
-                + 236L + 300L + 100L + 600L + 37234L + 252L + 131L
+                + 236L + 100L + 600L + 37234L + 252L + 131L
                 + 100L + 108L + 100L + 50L
                 ;
         long run_storageCharges = 0L
@@ -230,8 +230,8 @@ public class GraphReachabilityIntegrationTest {
         long run_basicCost = 22732L;
         long run_miscCharges = 0L
                 + 236L + 300L + 100L + 600L + 37234L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
-                + 236L + 300L + 100L + 600L + 37234L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
-                + 236L + 300L + 100L + 600L + 37234L + 252L + 131L
+                + 236L + 100L + 600L + 37234L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
+                + 236L + 100L + 600L + 37234L + 252L + 131L
                 + 100L + 108L + 100L + 50L
                 + 100L + 108L + 100L + 50L
                 ;

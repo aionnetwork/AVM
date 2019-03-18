@@ -31,16 +31,20 @@ public class DAppExecutor {
         ContractEnvironmentState initialState = (null != stateToResume)
                 ? stateToResume.getEnvironment()
                 : ContractEnvironmentState.loadFromGraph(graphStore);
-        
+
+        IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> initialClassWrappers = (null != stateToResume)
+            ? stateToResume.getInternedClassWrappers()
+            : new IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>>();
+
         // Note that we need to store the state of this invocation on the reentrant stack in case there is another call into the same app.
         // This is required so that the call() mechanism can access it to save/reload its ContractEnvironmentState and so that the underlying
         // instance loader (ReentrantGraphProcessor/ReflectionStructureCodec) can be notified when it becomes active/inactive (since it needs
         // to know if it is loading an instance
-        ReentrantDAppStack.ReentrantState thisState = new ReentrantDAppStack.ReentrantState(dappAddress, dapp, initialState, null);
+        ReentrantDAppStack.ReentrantState thisState = new ReentrantDAppStack.ReentrantState(dappAddress, dapp, initialState, initialClassWrappers);
         task.getReentrantDAppStack().pushState(thisState);
         
         IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
-        InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getTransaction().getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode, null);
+        InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getTransaction().getEnergyLimit() - result.getEnergyUsed(), initialState.nextHashCode, initialClassWrappers);
         IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, kernel, avm, thisState, task, ctx, ctx.getTransactionData(), dapp.runtimeSetup));
         InstrumentationBasedStorageFees feeProcessor = new InstrumentationBasedStorageFees(threadInstrumentation);
 

@@ -43,7 +43,7 @@ public class CommonInstrumentation implements IInstrumentation {
             newFrame.internedStringWrappers = new IdentityHashMap<String, org.aion.avm.shadow.java.lang.String>();
         }
 
-        newFrame.internedClassWrappers = new IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>>();
+        newFrame.internedClassWrappers = classWrappers;
 
         // setting up a default stack watcher.
         newFrame.stackWatcher = new StackWatcher();
