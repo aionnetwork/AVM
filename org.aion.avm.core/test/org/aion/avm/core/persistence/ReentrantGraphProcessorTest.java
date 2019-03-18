@@ -36,7 +36,7 @@ public class ReentrantGraphProcessorTest {
         this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
         this.runtimeSetup = new Helper();
-        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1, null);
     }
 
     @After

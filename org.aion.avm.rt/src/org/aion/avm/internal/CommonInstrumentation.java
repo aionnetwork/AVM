@@ -28,7 +28,7 @@ public class CommonInstrumentation implements IInstrumentation {
         this.persistenceTokenField.setAccessible(true);
     }
 
-    public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
+    public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> classWrappers) {
         RuntimeAssertionError.assertTrue(null != contractLoader);
         FrameState newFrame = new FrameState();
         newFrame.lateLoader = contractLoader;
@@ -42,6 +42,7 @@ public class CommonInstrumentation implements IInstrumentation {
         if (1 == nextHashCode) {
             newFrame.internedStringWrappers = new IdentityHashMap<String, org.aion.avm.shadow.java.lang.String>();
         }
+
         newFrame.internedClassWrappers = new IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>>();
 
         // setting up a default stack watcher.

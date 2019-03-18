@@ -75,7 +75,7 @@ public class StorageWalker {
         CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
         IRuntimeSetup runtime = new Helper();
-        InstrumentationHelpers.pushNewStackFrame(runtime, avmClassLoader, 1_000_000L, 1);
+        InstrumentationHelpers.pushNewStackFrame(runtime, avmClassLoader, 1_000_000L, 1, null);
         KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, dappAddress);
         doReadEntireStorage(output, classLoader, objectGraph, alphabeticalContractClasses);
         InstrumentationHelpers.popExistingStackFrame(runtime);

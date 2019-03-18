@@ -156,7 +156,7 @@ public class SingleInstanceDeserializerTest {
         CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
         Helper runtimeSetup = new Helper();
-        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, SingleInstanceDeserializerTest.class.getClassLoader(), 1_000_000L, 1);
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, SingleInstanceDeserializerTest.class.getClassLoader(), 1_000_000L, 1, null);
         
         byte[] expected = {
                 0x0, 0x0, 0x0, 0x1, //hashcode

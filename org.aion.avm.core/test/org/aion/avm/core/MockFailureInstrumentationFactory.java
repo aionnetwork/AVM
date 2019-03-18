@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.util.IdentityHashMap;
 import org.aion.avm.internal.*;
 
 
@@ -24,8 +25,8 @@ public class MockFailureInstrumentationFactory implements IInstrumentationFactor
         return new IInstrumentation() {
             private int count;
             @Override
-            public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
-                underlying.enterNewFrame(contractLoader, energyLeft, nextHashCode);
+            public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> classWrappers) {
+                underlying.enterNewFrame(contractLoader, energyLeft, nextHashCode, classWrappers);
             }
             @Override
             public void exitCurrentFrame() {

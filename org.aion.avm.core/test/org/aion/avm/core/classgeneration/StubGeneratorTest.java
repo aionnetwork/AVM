@@ -55,7 +55,7 @@ public class StubGeneratorTest {
         IRuntimeSetup runtimeSetup = new Helper();
         IInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
-        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, loader, 5L, 1);
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, loader, 5L, 1, null);
         
         // Create an instance and prove that we can interact with it.
         Constructor<?> con = aioobe.getConstructor(org.aion.avm.shadow.java.lang.String.class);
@@ -152,7 +152,7 @@ public class StubGeneratorTest {
         IRuntimeSetup runtimeSetup = new Helper();
         IInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
-        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, generated, 5L, 1);
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, generated, 5L, 1, null);
         
         // Create an instance and prove that we can interact with it.
         Constructor<?> con = notFound.getConstructor(org.aion.avm.shadow.java.lang.String.class, org.aion.avm.shadow.java.lang.Throwable.class);

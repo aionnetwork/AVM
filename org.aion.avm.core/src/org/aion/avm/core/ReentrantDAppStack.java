@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import java.util.IdentityHashMap;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.ISuspendableInstanceLoader;
 import org.aion.avm.core.persistence.LoadedDApp;
@@ -77,17 +78,23 @@ public class ReentrantDAppStack {
         public final LoadedDApp dApp;
         private ISuspendableInstanceLoader instanceLoader;
         private ContractEnvironmentState environment;
-        
-        public ReentrantState(Address address, LoadedDApp dApp, ContractEnvironmentState environment) {
+        private IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers;
+
+        public ReentrantState(Address address, LoadedDApp dApp, ContractEnvironmentState environment, IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers) {
             this.address = address;
             this.dApp = dApp;
             this.environment = environment;
+            this.internedClassWrappers = internedClassWrappers;
         }
         
         public ContractEnvironmentState getEnvironment() {
             return this.environment;
         }
-        
+
+        public IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> getInternedClassWrappers() {
+            return this.internedClassWrappers;
+        }
+
         public void updateEnvironment(int nextHashCode) {
             this.environment = new ContractEnvironmentState(nextHashCode);
         }

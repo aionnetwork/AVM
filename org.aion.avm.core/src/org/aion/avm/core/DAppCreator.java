@@ -225,7 +225,7 @@ public class DAppCreator {
             
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
-            InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getTransaction().getEnergyLimit() - result.getEnergyUsed(), nextHashCode);
+            InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, ctx.getTransaction().getEnergyLimit() - result.getEnergyUsed(), nextHashCode, new IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>>());
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
             IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, kernel, avm, null, task, ctx, codeAndArguments.arguments, dapp.runtimeSetup));
 

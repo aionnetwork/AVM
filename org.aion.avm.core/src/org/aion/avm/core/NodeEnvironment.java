@@ -333,7 +333,7 @@ public class NodeEnvironment {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
-            public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
+            public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> classWrappers) {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override

@@ -55,7 +55,7 @@ public class StackWatcherTest {
         this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
         this.runtimeSetup = Helpers.getSetupForLoader(classLoader);
-        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, SingleInstanceSerializerTest.class.getClassLoader(), 1_000_000L, 1);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, SingleInstanceSerializerTest.class.getClassLoader(), 1_000_000L, 1, null);
     }
 
     @After
@@ -120,7 +120,7 @@ public class StackWatcherTest {
         for (int i = 0; i < 50; i++){
             sw.reset();
             IRuntimeSetup frame = new Helper();
-            InstrumentationHelpers.pushNewStackFrame(frame, classLoader, 1_000_000L, 1);
+            InstrumentationHelpers.pushNewStackFrame(frame, classLoader, 1_000_000L, 1, null);
             Helpers.attachStackWatcher(classLoader, sw);
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");
@@ -145,7 +145,7 @@ public class StackWatcherTest {
         for (int i = 0; i < 50; i++){
             sw.reset();
             IRuntimeSetup frame = new Helper();
-            InstrumentationHelpers.pushNewStackFrame(frame, classLoader, 1_000_000L, 1);
+            InstrumentationHelpers.pushNewStackFrame(frame, classLoader, 1_000_000L, 1, null);
             Helpers.attachStackWatcher(classLoader, sw);
             obj = clazz.getConstructor().newInstance();
             method = clazz.getMethod("testStackOverflowConsistency");

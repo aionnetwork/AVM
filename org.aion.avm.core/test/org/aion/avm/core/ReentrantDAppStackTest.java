@@ -13,9 +13,9 @@ public class ReentrantDAppStackTest {
     @Test
     public void commonPushAndPop() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null);
-        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, null);
-        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, null);
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null, null);
+        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, null, null);
+        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, null, null);
         FlagInstanceLoader flag1 = new FlagInstanceLoader();
         FlagInstanceLoader flag2 = new FlagInstanceLoader();
         FlagInstanceLoader flag3 = new FlagInstanceLoader();
@@ -39,7 +39,7 @@ public class ReentrantDAppStackTest {
     @Test
     public void popEmptyAsNull() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null);
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null, null);
         
         stack.pushState(state1);
         Assert.assertEquals(state1, stack.popState());
@@ -49,9 +49,9 @@ public class ReentrantDAppStackTest {
     @Test
     public void basicSearch() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null);
-        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, null);
-        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, null);
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null, null);
+        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, null, null);
+        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, null, null);
         state1.setInstanceLoader(new FlagInstanceLoader());
         state2.setInstanceLoader(new FlagInstanceLoader());
         state3.setInstanceLoader(new FlagInstanceLoader());
@@ -77,10 +77,10 @@ public class ReentrantDAppStackTest {
     @Test
     public void shadowedSearch() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null);
-        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, null);
-        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, null);
-        ReentrantDAppStack.ReentrantState state1_again = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null);
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null, null);
+        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, null, null);
+        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, null, null);
+        ReentrantDAppStack.ReentrantState state1_again = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null, null);
         state1.setInstanceLoader(new FlagInstanceLoader());
         state2.setInstanceLoader(new FlagInstanceLoader());
         state3.setInstanceLoader(new FlagInstanceLoader());

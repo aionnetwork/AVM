@@ -128,7 +128,7 @@ public class StringConcatenationTest {
         AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
         
         this.runtimeSetup = Helpers.getSetupForLoader(dappLoader);
-        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, dappLoader, 1_000_000L, 1);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, dappLoader, 1_000_000L, 1, null);
         return dappLoader.loadClass(mappedClassName);
     }
 

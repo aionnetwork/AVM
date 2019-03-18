@@ -1,5 +1,6 @@
 package org.aion.avm.core.miscvisitors;
 
+import java.util.IdentityHashMap;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -55,7 +56,7 @@ public class StringConstantVisitorTest {
         this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
         this.runtimeSetup = Helpers.getSetupForLoader(loader);
-        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, loader, 1_000_000L, 1);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, loader, 1_000_000L, 1, new IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>>());
         
         this.clazz = loader.loadUserClassByOriginalName(targetTestName, false);
         this.clazzNoStatic = loader.loadUserClassByOriginalName(targetNoStaticName, false);

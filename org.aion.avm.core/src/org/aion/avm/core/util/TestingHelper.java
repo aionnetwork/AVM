@@ -1,5 +1,6 @@
 package org.aion.avm.core.util;
 
+import java.util.IdentityHashMap;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.OutOfEnergyException;
@@ -84,7 +85,7 @@ public class TestingHelper implements IInstrumentation {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
     @Override
-    public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
+    public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>> classWrappers) {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
     @Override

@@ -218,7 +218,7 @@ public class HashCodeTest {
         
         // First, run some tests in helper1.
         IRuntimeSetup setup1 = Helpers.getSetupForLoader(loader1);
-        InstrumentationHelpers.pushNewStackFrame(setup1, loader1, 1_000_000L, 1);
+        InstrumentationHelpers.pushNewStackFrame(setup1, loader1, 1_000_000L, 1, null);
         Class<?> clazz1 = loader1.loadUserClassByOriginalName(targetClassName, false);
         Method getOneHashCode1 = clazz1.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
         Object result = getOneHashCode1.invoke(null);
@@ -230,7 +230,7 @@ public class HashCodeTest {
         
         // Now, create the helper2, show that it is independent, and run a test in that.
         IRuntimeSetup setup2 = Helpers.getSetupForLoader(loader2);
-        InstrumentationHelpers.pushNewStackFrame(setup2, loader2, 1_000_000L, 1);
+        InstrumentationHelpers.pushNewStackFrame(setup2, loader2, 1_000_000L, 1, null);
         Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName, false);
         Method getOneHashCode2 = clazz2.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
         Assert.assertEquals(1, instrumentation.peekNextHashCode());

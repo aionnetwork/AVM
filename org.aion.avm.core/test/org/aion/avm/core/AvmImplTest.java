@@ -124,7 +124,7 @@ public class AvmImplTest {
         IRuntimeSetup runtimeSetup = new Helper();
         IInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
-        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, avmClassLoader, 5L, 1);
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, avmClassLoader, 5L, 1, null);
 
         // Prove that we can charge 0 without issue.
         instrumentation.chargeEnergy(0);

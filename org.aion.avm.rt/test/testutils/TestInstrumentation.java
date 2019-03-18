@@ -1,5 +1,6 @@
 package testutils;
 
+import java.util.IdentityHashMap;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -12,7 +13,7 @@ import org.aion.avm.shadow.java.lang.Object;
  */
 public class TestInstrumentation implements IInstrumentation {
     @Override
-    public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode) {
+    public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, IdentityHashMap<java.lang.Class<?>, Class<?>> classWrappers) {
         throw RuntimeAssertionError.unreachable("Not expected in this test");
     }
     @Override
