@@ -24,7 +24,7 @@ public class FailedInternalCallClinitAddressesTest {
 
     private static final int MAX_CALL_DEPTH = 10;
     private static Address from =avmRule.getPreminedAccount();
-    private static long energyLimit = 5_000_000L;
+    private static long energyLimit = 6_000_000L;
     private static long energyPrice = 5;
 
     // All of the print calls become active when this is set true. By default this is false to speed

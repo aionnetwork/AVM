@@ -172,7 +172,6 @@ public class AvmImplTest {
         // Account for the cost:  deployment, clinit, init call.
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(1, jar.length);
-        long codeStorageOfDeploymentFee = BillingRules.getCodeStorageFee(jar.length);
         long clinitCost = 188l;
         // Storage:  static 64 bytes (2 references) +  the 2 strings (hash code and string length: "CALL" + "NORMAL").
         long initialStorageCost = (3 * InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW)
@@ -180,7 +179,7 @@ public class AvmImplTest {
                 + (byteSizeOfSerializedString("CALL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
                 + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
                 ;
-        long transactionCost = basicCost + codeInstantiationOfDeploymentFee + codeStorageOfDeploymentFee + clinitCost + initialStorageCost;
+        long transactionCost = basicCost + codeInstantiationOfDeploymentFee + clinitCost + initialStorageCost;
         assertEquals(transactionCost, ((AvmTransactionResult) result1).getEnergyUsed());
         assertEquals(energyLimit - transactionCost, result1.getEnergyRemaining());
 

@@ -21,7 +21,7 @@ public class Transaction implements TransactionInterface {
     }
 
     public static Transaction balanceTransfer(Address from, Address to, BigInteger nonce, BigInteger value, long energyPrice) {
-        return new Transaction(Type.BALANCE_TRANSFER, from, to, nonce, value, new byte[0], BillingRules.BASIC_COST, energyPrice);
+        return new Transaction(Type.BALANCE_TRANSFER, from, to, nonce, value, new byte[0], BillingRules.BASIC_TRANSACTION_COST, energyPrice);
     }
 
     public static Transaction garbageCollect(Address target, BigInteger nonce, long energyLimit, long energyPrice) {

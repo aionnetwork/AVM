@@ -339,8 +339,7 @@ public class GraphReachabilityIntegrationTest {
         // The first three numbers here are: basic cost of tx, processing cost and storage cost
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(1, jar.length);
-        long codeStorageOfDeploymentFee = BillingRules.getCodeStorageFee(jar.length);
-        long miscCharges = basicCost + codeInstantiationOfDeploymentFee + codeStorageOfDeploymentFee + 375L + 300L + 1500L + 6L + 53L;
+        long miscCharges = basicCost + codeInstantiationOfDeploymentFee + 375L + 300L + 1500L + 6L + 53L;
         long storageCharges = 0L
                 // static
                     + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 161L

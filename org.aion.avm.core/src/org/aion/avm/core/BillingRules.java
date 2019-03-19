@@ -1,14 +1,30 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.instrument.BytecodeFeeScheduler;
-
 
 /**
  * A container class which includes static routines to calculate more complex fees based on multiple factors.
  * This makes these easier to scrutinize, test, and update.
  */
 public class BillingRules {
-    public static final int BASIC_COST = 21_000;
+    /**
+     * The minimum cost of ANY transaction, applied no matter whether it is a deployment or just a normal call (balance transfers are also calls).
+     */
+    public static final int BASIC_TRANSACTION_COST = 21_000;
+    
+    /**
+     * The minimum cost of a deployment, applied on top of deployment expenses related to code size of class count.
+     */
+    public static final int DEPLOYMENT_BASE_COST = 200_000;
+    
+    /**
+     * The cost, per byte, of a deployment (specifically, the JAR).
+     */
+    public static final int DEPLOYMENT_PER_BYTE_JAR_COST = 1;
+    
+    /**
+     * The cost, per class, of a deployment.
+     */
+    public static final int DEPLOYMENT_PER_CLASS_COST = 1000;
     
     
     /**
@@ -19,21 +35,14 @@ public class BillingRules {
      * @return The total fee for such a deployment.
      */
     public static long getDeploymentFee(long numberOfClassesProvided, long sizeOfJarInBytes) {
-        // This logic was extracted directly from DAppCreator.
-        return BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESS.getVal()
-                + BytecodeFeeScheduler.BytecodeEnergyLevels.PROCESSDATA.getVal() * sizeOfJarInBytes
-                * (1 + numberOfClassesProvided) / 10;
-    }
-    
-    /**
-     * The cost of storing a program with the given code size.
-     * 
-     * @param sizeOfJarInBytes The physical size of the jar (its compressed size).
-     * @return The total fee for storing this code.
-     */
-    public static long getCodeStorageFee(long sizeOfJarInBytes) {
-        // This logic was extracted directly from DAppCreator.
-        return BytecodeFeeScheduler.BytecodeEnergyLevels.CODEDEPOSIT.getVal() * sizeOfJarInBytes;
+        return 0L
+        // All deployments have the base cost.
+                + DEPLOYMENT_BASE_COST
+        // A per-byte JAR code cost.
+                + (sizeOfJarInBytes * DEPLOYMENT_PER_BYTE_JAR_COST)
+        // A per-class code cost.
+                + (numberOfClassesProvided * DEPLOYMENT_PER_CLASS_COST)
+                ;
     }
     
     /**
@@ -42,7 +51,7 @@ public class BillingRules {
      * @return The basic cost, in energy, of a transaction with this data.
      */
     public static long getBasicTransactionCost(byte[] transactionData) {
-        int cost = BASIC_COST;
+        int cost = BASIC_TRANSACTION_COST;
         for (byte b : transactionData) {
             cost += (b == 0) ? 4 : 64;
         }

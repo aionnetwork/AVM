@@ -253,15 +253,12 @@ public class DAppCreator {
             byte[] immortalDappJar = immortalDapp.createJar(dappAddress, ctx);
             kernel.putCode(dappAddress, immortalDappJar);
 
-            // We want to bill the storage cost associated with the code, so use the jar size (since we don't save the initialization data).
-            threadInstrumentation.chargeEnergy(BillingRules.getCodeStorageFee(rawDapp.bytecodeSize));
-            InstrumentationBasedStorageFees feeProcessor = new InstrumentationBasedStorageFees(threadInstrumentation);
-
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).
             dapp.forceInitializeAllClasses();
 
             // Save back the state before we return.
             // -first, save out the classes
+            InstrumentationBasedStorageFees feeProcessor = new InstrumentationBasedStorageFees(threadInstrumentation);
             ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(feeProcessor, graphStore);
             dapp.saveClassStaticsToStorage(feeProcessor, directGraphData, graphStore);
             // -finally, save back the final state of the environment so we restore it on the next invocation.
