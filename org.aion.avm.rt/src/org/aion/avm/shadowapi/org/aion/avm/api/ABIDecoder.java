@@ -298,6 +298,29 @@ public final class ABIDecoder {
         return argValues;
     }
 
+    public static IObjectArray avm_decodeDeploymentArguments(ByteArray txData) {
+        if (null == txData) {
+            throw new NullPointerException();
+        }
+        // NOTE:  We charge the same thing we would for method argument decoding since this method is just temporary and is almost identical.
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ABIDecoder_avm_decodeArguments);
+
+        List<ABICodec.Tuple> parsed;
+        try {
+            parsed = ABICodec.parseEverything(txData.getUnderlying());
+        } catch (ABIException e) {
+            throw new ABICodecException(e.getMessage());
+        }
+        Object[] argValues = new Object[parsed.size()];
+        for (int i = 0; i < parsed.size(); ++i) {
+            Object publicValue = parsed.get(i).value;
+            // Note that we are returning these objects so we don't do any box-type identity-mapping.
+            argValues[i] = ABIStaticState.getSupport().convertToShadowValue(publicValue);
+        }
+        return new ObjectArray(argValues);
+    }
+
+
     private static Class<?> getPrimitiveType(Class<?> boxedType) {
         Class<?> primitive = null;
         if (Byte.class == boxedType) {

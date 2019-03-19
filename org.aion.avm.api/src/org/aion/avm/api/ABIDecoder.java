@@ -59,4 +59,14 @@ public final class ABIDecoder {
         }
         return result;
     }
+
+    /**
+     * Decode the transaction data, returning the entire list of deployment arguments it defines.
+     * 
+     * @param txData The transaction data to decode as the deployment arguments, according to the ABI.
+     * @return an object array that contains all of the deployment arguments.
+     */
+    public static Object[] decodeDeploymentArguments(byte[] txData) {
+        return null;
+    }
 }
