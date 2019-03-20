@@ -55,6 +55,11 @@ public class ABICodec {
         }
         try {
             List<Tuple> processedTuples = new AionList<>();
+
+            if (0 == data.length) {
+                return processedTuples;
+            }
+
             AionBuffer buffer = AionBuffer.wrap(data);
             // This loop is the top-level, so it can see leaf types, array modifiers, and null modifiers.
             while (buffer.getPosition() != buffer.getLimit()) {

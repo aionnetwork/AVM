@@ -289,6 +289,13 @@ public class ABICodecTest {
         Assert.assertEquals(int[].class, list.get(3).standardType);
     }
 
+    @Test
+    public void testParseEmpty() {
+        byte[] emptyArray = new byte[0];
+        List result = ABICodec.parseEverything(emptyArray);
+        Assert.assertTrue(result.isEmpty());
+    }
+
 
     private byte[] bytesOfLength(int length) {
         byte[] data = new byte[length];
