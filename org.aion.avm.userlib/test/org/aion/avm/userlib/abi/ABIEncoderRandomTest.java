@@ -287,7 +287,7 @@ public class ABIEncoderRandomTest {
     }
 
     @Test
-    public void testRandom() {
+    public void testRandomMethodArgs() {
         String methodName = getRandomString(9);
 
         for (int i = 0; i < numberOfArgs; i++) {
@@ -304,6 +304,26 @@ public class ABIEncoderRandomTest {
                 assertArray(list.get(i + 1).value, i);
             } else {
                 Assert.assertEquals(argTuples[i].value, list.get(i + 1).value);
+            }
+
+        }
+    }
+
+    @Test
+    public void testRandomDeploymentArgs() {
+        for (int i = 0; i < numberOfArgs; i++) {
+            addRandomType(random.nextInt(18) + 1, i);
+        }
+
+        byte[] encoded = ABIEncoder.encodeDeploymentArguments(varArgs);
+        List<ABICodec.Tuple> list = ABICodec.parseEverything(encoded);
+        Assert.assertEquals(numberOfArgs, list.size());
+        for (int i = 0; i < numberOfArgs; i++) {
+            Assert.assertEquals(argTuples[i].standardType, list.get(i).standardType);
+            if (argTuples[i].standardType.isArray()) {
+                assertArray(list.get(i).value, i);
+            } else {
+                Assert.assertEquals(argTuples[i].value, list.get(i).value);
             }
 
         }

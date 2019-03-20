@@ -207,6 +207,17 @@ public class ABIEncoderTest {
     }
 
     @Test
+    public void testDeploymentArgsEncoding() {
+        byte[] encoded = ABIEncoder.encodeDeploymentArguments(123, (byte)-1, "hello");
+        byte[] expected = new byte[] {
+            ABIToken.INT.identifier, 0x00, 0x00, 0x00, 0x7b,
+            ABIToken.BYTE.identifier, (byte)0xff,
+            ABIToken.STRING.identifier, 0, 5, 0x68, 0x65, 0x6c, 0x6c, 0x6f,
+        };
+        Assert.assertArrayEquals(expected, encoded);
+    }
+
+    @Test
     public void testNullArguments() {
         NullPointerException caught = null;
         try {

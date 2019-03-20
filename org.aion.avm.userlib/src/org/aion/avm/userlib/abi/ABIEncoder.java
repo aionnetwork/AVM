@@ -46,6 +46,27 @@ public final class ABIEncoder {
 
         List<ABICodec.Tuple> tuplesToEncode = new AionList<>();
         tuplesToEncode.add(new ABICodec.Tuple(String.class, methodName));
+        return encodeArgumentsInList(tuplesToEncode, arguments);
+    }
+
+    /**
+     * A utility method to encode a list of arguments for deployment.
+     * Note that encoding no arguments will return an empty byte[].
+     *
+     * @param arguments the arguments in the order they should be decoded during deployment
+     * @return the encoded byte array that contains the encoded arguments, according the Aion ABI format.
+     * @throws NullPointerException If arguments are null (either the array or any specific elements).
+     */
+    public static byte[] encodeDeploymentArguments(Object... arguments) {
+        if (null == arguments) {
+            throw new NullPointerException();
+        }
+
+        List<ABICodec.Tuple> tuplesToEncode = new AionList<>();
+        return encodeArgumentsInList(tuplesToEncode, arguments);
+    }
+
+    private static byte[] encodeArgumentsInList(List<ABICodec.Tuple> tuplesToEncode, Object... arguments) {
         for (Object arg : arguments) {
             // We sniff the type, directly, since there are no nulls in this path.
             tuplesToEncode.add(new ABICodec.Tuple(arg.getClass(), arg));

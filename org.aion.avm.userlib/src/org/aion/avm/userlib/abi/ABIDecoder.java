@@ -81,4 +81,26 @@ public class ABIDecoder {
         }
         return result;
     }
+
+    /**
+     * Decode the transaction data, returning the entire list of deployment arguments it defines.
+     *
+     * @param txData The transaction data to decode as the deployment arguments, according to the ABI.
+     * @return an object array that contains all of the deployment arguments.
+     */
+    public static Object[] decodeDeploymentArguments(byte[] txData) {
+        if (null == txData) {
+            throw new NullPointerException();
+        }
+
+        List<ABICodec.Tuple> parsed;
+
+        parsed = ABICodec.parseEverything(txData);
+
+        Object[] argValues = new Object[parsed.size()];
+        for (int i = 0; i < parsed.size(); ++i) {
+            argValues[i] = parsed.get(i).value;
+        }
+        return argValues;
+    }
 }
