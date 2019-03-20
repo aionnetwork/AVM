@@ -29,6 +29,7 @@ public class LoopbackCodec implements IObjectSerializer, IObjectDeserializer {
      * @param deserializer Consulted to invoke partial-automatic deserialization on objects for which this is requested.
      * @param deserializeHelper Given to the deserializer to assist with partial deserialization.  This exists because symmetric codec uses (from
      * space A to B and back to A) typically want the same core deserializer implementation, just using a slightly different mapping function.
+     * This must be non-null if we expect to do any deserializing.
      */
     public LoopbackCodec(AutomaticSerializer serializer, AutomaticDeserializer deserializer, Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper) {
         this.serializer = serializer;
@@ -81,7 +82,8 @@ public class LoopbackCodec implements IObjectSerializer, IObjectDeserializer {
 
     @Override
     public org.aion.avm.shadow.java.lang.Object readStub() {
-        return this.decoder.decodeReference();
+        // We assume that if we have a non-null decoder object, we must have a non-null deserializeHelper object
+        return this.deserializeHelper.apply(this.decoder.decodeReference());
     }
 
     @Override

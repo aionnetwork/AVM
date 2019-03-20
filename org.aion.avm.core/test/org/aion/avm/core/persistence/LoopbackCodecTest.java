@@ -85,7 +85,8 @@ public class LoopbackCodecTest {
     @Test
     public void objectIdentitySerialization() {
         LoopbackCodec.AutomaticDeserializer deserializer = new IdentityDeserializer();
-        LoopbackCodec codec = new LoopbackCodec(null, deserializer, null);
+        Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper = (callerField) -> (callerField);
+        LoopbackCodec codec = new LoopbackCodec(null, deserializer, deserializeHelper);
         org.aion.avm.shadow.java.lang.Object shadow = new org.aion.avm.shadow.java.lang.Object();
         codec.writeStub(shadow);
         codec.switchToDecode();
@@ -96,7 +97,8 @@ public class LoopbackCodecTest {
     @Test
     public void mixedSerialization() {
         LoopbackCodec.AutomaticDeserializer deserializer = new IdentityDeserializer();
-        LoopbackCodec codec = new LoopbackCodec(null, deserializer, null);
+        Function<org.aion.avm.shadow.java.lang.Object, org.aion.avm.shadow.java.lang.Object> deserializeHelper = (callerField) -> (callerField);
+        LoopbackCodec codec = new LoopbackCodec(null, deserializer, deserializeHelper);
         org.aion.avm.shadow.java.lang.Object shadow = new org.aion.avm.shadow.java.lang.Object();
         codec.writeInt(1);
         codec.writeStub(shadow);
