@@ -76,6 +76,17 @@ public class TestResource {
         return builder.toString().length();
     }
 
+    public static void stringBuilderInsertObject(){
+        StringBuilder builder = new StringBuilder("testing");
+        builder.insert(1, (Object) 10);
+    }
+
+    public static String stringBuilderInsertString(){
+        StringBuilder builder = new StringBuilder("Testing");
+        builder.insert(0, "Insert");
+        return builder.toString();
+    }
+
     @Override
     public String toString() {
         // Return an empty string (since the default clearly doesn't do that).
@@ -87,5 +98,27 @@ public class TestResource {
         char[] chArr = new char[]{'b','u','f','f','e','r'};
         buff.getChars(0, 4, chArr, 0);
         return chArr;
+    }
+
+    public static void stringBufferInsert(){
+        StringBuffer buff = new StringBuffer("testing");
+        buff.insert(1, (Object) 10);
+    }
+
+    public static String stringBuilderAppend(){
+        StringBuilder builder1 = new StringBuilder("Testing");
+        StringBuilder builder2 = new StringBuilder("Builder");
+        builder1.append(builder2);
+        return builder1.toString();
+    }
+
+    public static int lastIndexOfStringBuilder(){
+        StringBuilder builder1 = new StringBuilder("Testing");
+        return builder1.lastIndexOf("t");
+    }
+
+    public static int stringBufferLength(){
+        StringBuffer buffer = new StringBuffer("Testing");
+        return buffer.length();
     }
 }

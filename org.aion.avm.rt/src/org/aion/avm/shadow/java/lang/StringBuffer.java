@@ -36,7 +36,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
 
     public int avm_length() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_length);
-        return this.v.length();
+        return internalLength();
     }
 
     public int avm_capacity() {
@@ -50,7 +50,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public void avm_trimToSize() {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_trimToSize + avm_length());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_trimToSize + internalLength());
         this.v.trimToSize();
     }
 
@@ -99,18 +99,18 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     public StringBuffer avm_append(IObject obj) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append);
         // using public method to stay consistent with jcl implementation
-        this.v = this.v.append(String.avm_valueOf(obj).getUnderlying());
+        this.v = this.v.append(String.internalValueOfObject(obj).getUnderlying());
         return this;
     }
 
     public StringBuffer avm_append(String str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * str.avm_length());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * str.internalLength());
         this.v = this.v.append(str);
         return this;
     }
 
     public StringBuffer avm_append(StringBuffer sb) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * sb.avm_length());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * sb.internalLength());
         this.v = this.v.append(sb.v);
         return this;
     }
@@ -182,25 +182,25 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public StringBuffer avm_delete(int start, int end) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_delete + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - start, 0));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_delete + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(internalLength() - start, 0));
         this.v = this.v.delete(start, end);
         return this;
     }
 
     public StringBuffer avm_deleteCharAt(int index) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_deleteCharAt + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - index, 0));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_deleteCharAt + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(internalLength() - index, 0));
         this.v = this.v.deleteCharAt(index);
         return this;
     }
 
     public StringBuffer avm_replace(int start, int end, String str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_replace + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - start, 0));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_replace + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(internalLength() - start, 0));
         this.v = this.v.replace(start, end, str.getUnderlying());
         return this;
     }
 
     public String avm_substring(int start) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_substring + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - start, 0));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_substring + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(internalLength() - start, 0));
         return new String(this.v.substring(start));
     }
 
@@ -217,38 +217,37 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     public StringBuffer avm_insert(int index, CharArray str, int offset,
                                             int len)
     {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - index, 0));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(internalLength() - index, 0));
         this.v.insert(index, str.getUnderlying(), offset, len);
         return this;
     }
 
-    //TODO: IOBJECT?
-    public StringBuffer avm_insert(int offset, Object obj) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - offset, 0));
+    public StringBuffer avm_insert(int offset, IObject obj) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(internalLength() - offset, 0));
         this.v.insert(offset, obj);
         return this;
     }
 
     public StringBuffer avm_insert(int offset, String str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (str.avm_length() + java.lang.Math.max(avm_length() - offset, 0)));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (str.internalLength() + java.lang.Math.max(internalLength() - offset, 0)));
         this.v.insert(offset, str.getUnderlying());
         return this;
     }
 
     public StringBuffer avm_insert(int offset, CharArray str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (str.length() + java.lang.Math.max(avm_length() - offset, 0)));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (str.length() + java.lang.Math.max(internalLength() - offset, 0)));
         this.v.insert(offset, str.getUnderlying());
         return this;
     }
 
     public StringBuffer avm_insert(int dstOffset, CharSequence s){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (s.avm_length() + java.lang.Math.max(avm_length() - dstOffset, 0)));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (s.avm_length() + java.lang.Math.max(internalLength() - dstOffset, 0)));
         this.v.insert(dstOffset, s.avm_toString());
         return this;
     }
 
     public StringBuffer avm_insert(int dstOffset, CharSequence s, int start, int end) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_5 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (java.lang.Math.max(end - start, 0) + java.lang.Math.max(avm_length() - dstOffset, 0)));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_5 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (java.lang.Math.max(end - start, 0) + java.lang.Math.max(internalLength() - dstOffset, 0)));
         this.v.insert(dstOffset, s.avm_subSequence(start, end));
         return this;
     }
@@ -290,27 +289,27 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public int avm_indexOf(String str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_indexOf + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * avm_length());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_indexOf + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * internalLength());
         return this.v.indexOf(str.getUnderlying());
     }
 
     public int avm_indexOf(String str, int fromIndex) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_indexOf_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - fromIndex, 0));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_indexOf_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(internalLength() - fromIndex, 0));
         return this.v.indexOf(str.getUnderlying(), fromIndex);
     }
 
     public int avm_lastIndexOf(String str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_lastIndexOf + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * avm_length());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_lastIndexOf + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * internalLength());
         return this.v.lastIndexOf(str.getUnderlying());
     }
 
     public int avm_lastIndexOf(String str, int fromIndex) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_lastIndexOf_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(avm_length() - fromIndex, 0));
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_lastIndexOf_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(internalLength() - fromIndex, 0));
         return this.v.lastIndexOf(str.getUnderlying(), fromIndex);
     }
 
     public StringBuffer avm_reverse() {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_reverse + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * avm_length());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_reverse + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * internalLength());
         this.v.reverse();
         return this;
     }
@@ -349,7 +348,9 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
         CodecIdioms.serializeString(serializer, this.v.toString());
     }
 
-
+    public int internalLength(){
+        return this.v.length();
+    }
     //========================================================
     // Methods below are deprecated
     //========================================================

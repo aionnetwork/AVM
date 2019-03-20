@@ -108,4 +108,38 @@ public class MiscellaneousShadowTest {
         CharArray result = (CharArray) this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBufferGetChars")).invoke(null);
         Assert.assertEquals("tester", String.valueOf(result.getUnderlying()));
     }
+
+    @Test
+    public void testStringBufferInsert() throws Exception {
+        this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBufferInsert")).invoke(null);
+    }
+
+    @Test
+    public void testStringBuilderInsertObject() throws Exception {
+        this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBuilderInsertObject")).invoke(null);
+    }
+
+    @Test
+    public void testStringBuilderInsertString() throws Exception {
+        org.aion.avm.shadow.java.lang.String result = (org.aion.avm.shadow.java.lang.String) this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBuilderInsertString")).invoke(null);
+        Assert.assertEquals("InsertTesting", result.getUnderlying());
+    }
+
+    @Test
+    public void testStringBuilderAppendStringBuilder() throws Exception {
+        org.aion.avm.shadow.java.lang.String result = (org.aion.avm.shadow.java.lang.String) this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBuilderAppend")).invoke(null);
+        Assert.assertEquals("TestingBuilder", result.getUnderlying());
+    }
+
+    @Test
+    public void testlastIndexOfStringBuilder() throws Exception{
+        int result = (int) this.clazz.getMethod(NamespaceMapper.mapMethodName("lastIndexOfStringBuilder")).invoke(null);
+        Assert.assertEquals(3, result);
+    }
+
+    @Test
+    public void teststringBufferLength() throws Exception{
+        int result = (int) this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBufferLength")).invoke(null);
+        Assert.assertEquals(7, result);
+    }
 }
