@@ -255,7 +255,7 @@ public class TransactionAccountBalanceTest {
     }
 
     private TransactionResult transferValue(Address recipient, BigInteger value) {
-        Transaction transaction = Transaction.balanceTransfer(from, recipient, kernel.getNonce(from), value, energyPrice);
+        Transaction transaction = Transaction.call(from, recipient, kernel.getNonce(from), value, new byte[0], BillingRules.BASIC_TRANSACTION_COST, energyPrice);
         TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         return avm.run(TransactionAccountBalanceTest.kernel, new TransactionContext[] {context})[0].get();
     }

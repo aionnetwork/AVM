@@ -352,47 +352,43 @@ public class AvmImpl implements AvmInternal {
         task.getThisTransactionalKernel().incrementNonce(ctx.getSenderAddress());
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
-        if (!((ctx.getTransactionKind() == Type.BALANCE_TRANSFER.toInt()) &&
-                (null == thisTransactionKernel.getCode(recipient)
-                || (null != thisTransactionKernel.getCode(recipient) && 0 == thisTransactionKernel.getCode(recipient).length)))) {
-            if (ctx.getTransactionKind() == Type.CREATE.toInt()) { // create
-                DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, ctx, result, this.preserveDebuggability, this.enableVerboseContractErrors);
-            } else { // call
-                // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
-                ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
+        if (ctx.getTransactionKind() == Type.CREATE.toInt()) { // create
+            DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, ctx, result, this.preserveDebuggability, this.enableVerboseContractErrors);
+        } else { // call
+            // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
+            ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
 
-                LoadedDApp dapp;
-                // The reentrant cache is obviously the first priority.
-                // (note that we also want to check the kernel we were given to make sure that this DApp hasn't been deleted since we put it in the cache.
-                if ((null != stateToResume) && (null != thisTransactionKernel.getCode(recipient))) {
-                    dapp = stateToResume.dApp;
-                    // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
-                    DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
-                } else {
-                    // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
-                    ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toBytes());
-                    dapp = this.hotCache.checkout(addressWrapper);
-                    if (null == dapp) {
-                        // If we didn't find it there, just load it.
-                        try {
-                            dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, recipient).getCode(), this.preserveDebuggability);
+            LoadedDApp dapp;
+            // The reentrant cache is obviously the first priority.
+            // (note that we also want to check the kernel we were given to make sure that this DApp hasn't been deleted since we put it in the cache.
+            if ((null != stateToResume) && (null != thisTransactionKernel.getCode(recipient))) {
+                dapp = stateToResume.dApp;
+                // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
+                DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
+            } else {
+                // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
+                ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toBytes());
+                dapp = this.hotCache.checkout(addressWrapper);
+                if (null == dapp) {
+                    // If we didn't find it there, just load it.
+                    try {
+                        dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, recipient).getCode(), this.preserveDebuggability);
 
-                            // If the dapp is freshly loaded, we set the block num
-                            if (null != dapp){
-                                dapp.setLoadedBlockNum(ctx.getBlockNumber());
-                            }
-
-                        } catch (IOException e) {
-                            unexpected(e); // the jar was created by AVM; IOException is unexpected
+                        // If the dapp is freshly loaded, we set the block num
+                        if (null != dapp){
+                            dapp.setLoadedBlockNum(ctx.getBlockNumber());
                         }
+
+                    } catch (IOException e) {
+                        unexpected(e); // the jar was created by AVM; IOException is unexpected
                     }
-                    // Run the call and, if successful, check this into the hot DApp cache.
-                    if (null != dapp) {
-                        DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
-                        if (AvmTransactionResult.Code.SUCCESS == result.getResultCode()) {
-                            dapp.cleanForCache();
-                            this.hotCache.checkin(addressWrapper, dapp);
-                        }
+                }
+                // Run the call and, if successful, check this into the hot DApp cache.
+                if (null != dapp) {
+                    DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
+                    if (AvmTransactionResult.Code.SUCCESS == result.getResultCode()) {
+                        dapp.cleanForCache();
+                        this.hotCache.checkin(addressWrapper, dapp);
                     }
                 }
             }
