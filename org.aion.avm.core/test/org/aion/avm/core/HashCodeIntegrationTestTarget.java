@@ -1,7 +1,8 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 
 /**
@@ -11,8 +12,19 @@ public class HashCodeIntegrationTestTarget {
     private static Object persistentObject;
 
     public static byte[] main() {
-        // We use an instance target since that lets us advance the hashcode based on how many calls we receive.
-        return ABIDecoder.decodeAndRunWithClass(HashCodeIntegrationTestTarget.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("persistNewObject")) {
+                return ABIEncoder.encodeOneObject(persistNewObject());
+            } else if (methodName.equals("readPersistentHashCode")) {
+                return ABIEncoder.encodeOneObject(readPersistentHashCode());
+            } else {
+                return new byte[0];
+            }
+        }
     }
     
     public static int persistNewObject() {

@@ -1,12 +1,9 @@
 package org.aion.avm.core.unification;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
-
-
 public class CommonSuperClassTarget_combineOverlappingInterfacesA {
+    // The associated test only checks that deployment succeeds, so main() can return null
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(CommonSuperClassTarget_combineOverlappingInterfacesA.class, BlockchainRuntime.getData());
+        return null;
     }
 
     // Fails (verify error) since we don't handle ambiguous coalescing types.

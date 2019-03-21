@@ -1,10 +1,10 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 
 /**
@@ -21,8 +21,39 @@ public class ReentrantCrossCallResource {
 
 
     public static byte[] main() {
-        byte[] input = BlockchainRuntime.getData();
-        return ABIDecoder.decodeAndRunWithClass(ReentrantCrossCallResource.class, input);
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
+            if (methodName.equals("getNear")) {
+                return ABIEncoder.encodeOneObject(getNear((Boolean) argValues[0]));
+            } else if (methodName.equals("getFar")) {
+                return ABIEncoder.encodeOneObject(getFar((Boolean) argValues[0]));
+            } else if (methodName.equals("getDirect")) {
+                return ABIEncoder.encodeOneObject(getDirect((Boolean) argValues[0]));
+            } else if (methodName.equals("localFailAfterReentrant")) {
+                return ABIEncoder.encodeOneObject(localFailAfterReentrant());
+            } else if (methodName.equals("getFarWithEnergy")) {
+                return ABIEncoder.encodeOneObject(getFarWithEnergy((Long) argValues[0]));
+            } else if (methodName.equals("recursiveChangeNested")) {
+                return ABIEncoder.encodeOneObject(recursiveChangeNested((Integer) argValues[0], (Integer) argValues[1]));
+            } else if (methodName.equals("getRecursiveHashCode")) {
+                return ABIEncoder.encodeOneObject(getRecursiveHashCode((Integer) argValues[0]));
+            } else if (methodName.equals("incFar")) {
+                incFar((Boolean) argValues[0]);
+                return new byte[0];
+            } else if (methodName.equals("incNear")) {
+                incNear((Boolean) argValues[0]);
+                return new byte[0];
+            } else if (methodName.equals("incDirect")) {
+                incDirect((Boolean) argValues[0]);
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static Object callSelfForNull() {
@@ -194,7 +225,7 @@ public class ReentrantCrossCallResource {
             // Make the reentrant call.
             BigInteger value = BigInteger.ZERO;
             byte[] data = ABIEncoder.encodeMethodArguments("recursiveChangeNested", ourState.hashCode(), iterationsToCall - 1);
-            long energyLimit = 2_000_000L;
+            long energyLimit = 5_000_000L;
             Result txResult = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
             byte[] result = txResult.getReturnData();
             if (txResult.isSuccess()) {
@@ -227,7 +258,7 @@ public class ReentrantCrossCallResource {
         BigInteger value = BigInteger.ZERO;
         byte[] data = ABIEncoder.encodeMethodArguments(methodName, shouldFail);
         // WARNING:  This number is finicky since some tests want to barely pass and others barely fail.
-        long energyLimit = 100_000L;
+        long energyLimit = 1_000_000L;
         BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
     }
 

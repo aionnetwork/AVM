@@ -127,9 +127,6 @@ public class DeploymentCostTest {
                 jarBytes = classesToJarBytes(
                     Wallet.class,
                     Multiowned.class,
-                    AionMap.class,
-                    AionSet.class,
-                    AionList.class,
                     ByteArrayWrapper.class,
                     Operation.class,
                     ByteArrayHelpers.class,
@@ -156,6 +153,6 @@ public class DeploymentCostTest {
     }
 
     private byte[] classesToJarBytes(Class<?> main, Class<?>... others) {
-        return new CodeAndArguments(JarBuilder.buildJarForMainAndClasses(main, others), null).encodeToBytes();
+        return new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(main, others), null).encodeToBytes();
     }
 }

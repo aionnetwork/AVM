@@ -1,9 +1,9 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 public class ReentrantObjectArrayTestResource {
 
@@ -19,6 +19,20 @@ public class ReentrantObjectArrayTestResource {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(ReentrantObjectArrayTestResource.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("testString")) {
+                testString();
+                return new byte[0];
+            } else if (methodName.equals("setString")) {
+                testString();
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 }

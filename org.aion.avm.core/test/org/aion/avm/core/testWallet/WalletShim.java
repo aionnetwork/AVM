@@ -1,9 +1,10 @@
 package org.aion.avm.core.testWallet;
 
-import org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 
 /**
@@ -13,8 +14,39 @@ import org.aion.avm.arraywrapper.ByteArray;
  */
 public class WalletShim {
     public static byte[] main() {
-        byte[] input = BlockchainRuntime.getData();
-        return ABIDecoder.decodeAndRunWithClass(WalletShim.class, input);
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
+            if (methodName.equals("revoke")) {
+                revoke((byte[]) argValues[0]);
+                return new byte[0];
+            } else if (methodName.equals("initWrapper")) {
+                initWrapper((Address) argValues[0], (Address) argValues[1], (Integer) argValues[2], (Long) argValues[3]);
+                return new byte[0];
+            } else if (methodName.equals("payable")) {
+                payable((Address) argValues[0], (Long)argValues[1]);
+                return new byte[0];
+            } else if (methodName.equals("addOwner")) {
+                return ABIEncoder.encodeOneObject(addOwner((Address) argValues[0]));
+            } else if (methodName.equals("execute")) {
+                return ABIEncoder.encodeOneObject(execute((Address) argValues[0], (Long) argValues[1], (byte[]) argValues[2]));
+            } else if (methodName.equals("confirm")) {
+                return ABIEncoder.encodeOneObject(confirm((byte[]) argValues[0]));
+            } else if (methodName.equals("changeRequirement")) {
+                return ABIEncoder.encodeOneObject(changeRequirement((Integer) argValues[0]));
+            } else if (methodName.equals("getOwner")) {
+                return ABIEncoder.encodeOneObject(getOwner((Integer) argValues[0]));
+            } else if (methodName.equals("changeOwner")) {
+                return ABIEncoder.encodeOneObject(changeOwner((Address) argValues[0], (Address) argValues[1]));
+            } else if (methodName.equals("removeOwner")) {
+                return ABIEncoder.encodeOneObject(removeOwner((Address) argValues[0]));
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static void initWrapper(Address extra1, Address extra2, int requiredVotes, long dailyLimit) {

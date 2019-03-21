@@ -1,8 +1,8 @@
 package org.aion.avm.core.performance;
 
 import java.lang.Math;
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIDecoder;
 
 public class PerformanceTestTarget {
     private static final int heavyLevel;
@@ -15,7 +15,21 @@ public class PerformanceTestTarget {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(PerformanceTestTarget.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("memoryHeavy")) {
+                memoryHeavy();
+                return new byte[0];
+            } else if (methodName.equals("cpuHeavy")) {
+                cpuHeavy();
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static void cpuHeavy() {

@@ -1,7 +1,7 @@
 package org.aion.avm.core.testWallet;
 
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 
 /**

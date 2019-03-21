@@ -2,8 +2,6 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -19,6 +17,8 @@ import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyException;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
@@ -228,7 +228,7 @@ public class AvmImplTest {
 
     @Test
     public void testNullReturnCrossCall() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -245,13 +245,13 @@ public class AvmImplTest {
 
     @Test
     public void testRecursiveHashCode() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // deploy
-        long energyLimit = 1_000_000l;
+        long energyLimit = 10_000_000l;
         Address contractAddr = createDApp(kernel, avm, txData);
         
         // Try a few invocations of different depths, bearing in mind the change of nextHashCode between each invocation.
@@ -278,7 +278,7 @@ public class AvmImplTest {
     @Test
     public void testCommitReentrantCalls() {
         boolean shouldFail = false;
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -306,7 +306,7 @@ public class AvmImplTest {
     @Test
     public void testRollbackReentrantCalls() {
         boolean shouldFail = true;
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -328,7 +328,7 @@ public class AvmImplTest {
     @Test
     public void testRollbackAfterReentrantSuccess() {
         boolean shouldFail = true;
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -357,7 +357,7 @@ public class AvmImplTest {
      */
     @Test
     public void testReentrantRollbackDuringCommit() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -384,7 +384,7 @@ public class AvmImplTest {
      */
     @Test
     public void testReentrantRecursiveNested() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -410,7 +410,7 @@ public class AvmImplTest {
     */
     @Test
     public void testCallDepthLimit() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantCrossCallResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantCrossCallResource.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -433,9 +433,9 @@ public class AvmImplTest {
     @Test
     public void testCreateAndCallSubApp() {
         byte incrementBy = 2;
-        byte[] incrementorJar = JarBuilder.buildJarForMainAndClasses(IncrementorDApp.class);
+        byte[] incrementorJar = JarBuilder.buildJarForMainAndClassesAndUserlib(IncrementorDApp.class);
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
-        byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
+        byte[] spawnerJar = JarBuilder.buildJarForMainAndClassesAndUserlib(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -463,9 +463,9 @@ public class AvmImplTest {
     @Test
     public void testCreateSubAppCall() {
         byte incrementBy = 3;
-        byte[] incrementorJar = JarBuilder.buildJarForMainAndClasses(IncrementorDApp.class);
+        byte[] incrementorJar = JarBuilder.buildJarForMainAndClassesAndUserlib(IncrementorDApp.class);
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
-        byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
+        byte[] spawnerJar = JarBuilder.buildJarForMainAndClassesAndUserlib(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -496,9 +496,9 @@ public class AvmImplTest {
     @Test
     public void testCreateSubAppCallFailure() {
         byte incrementBy = 3;
-        byte[] incrementorJar = JarBuilder.buildJarForMainAndClasses(IncrementorDApp.class);
+        byte[] incrementorJar = JarBuilder.buildJarForMainAndClassesAndUserlib(IncrementorDApp.class);
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
-        byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
+        byte[] spawnerJar = JarBuilder.buildJarForMainAndClassesAndUserlib(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -524,9 +524,9 @@ public class AvmImplTest {
     public void testCreateSubAppCallOnDirectory() throws Exception {
         File directory = folder.newFolder();
         byte incrementBy = 3;
-        byte[] incrementorJar = JarBuilder.buildJarForMainAndClasses(IncrementorDApp.class);
+        byte[] incrementorJar = JarBuilder.buildJarForMainAndClassesAndUserlib(IncrementorDApp.class);
         byte[] incrementorCreateData = new CodeAndArguments(incrementorJar, new byte[] {incrementBy}).encodeToBytes();
-        byte[] spawnerJar = JarBuilder.buildJarForMainAndClasses(SpawnerDApp.class);
+        byte[] spawnerJar = JarBuilder.buildJarForMainAndClassesAndUserlib(SpawnerDApp.class);
         byte[] spanerCreateData = new CodeAndArguments(spawnerJar, incrementorCreateData).encodeToBytes();
         TestingKernel kernel = new TestingKernel(directory);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -636,7 +636,7 @@ public class AvmImplTest {
     }
 
     private Object callDApp(KernelInterface kernel, AvmImpl avm, Address dAppAddress, byte[] argData) {
-        long energyLimit = 2_000_000l;
+        long energyLimit = 5_000_000l;
         Transaction tx = Transaction.call(deployer, org.aion.types.Address.wrap(dAppAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
         TransactionResult result2 = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());

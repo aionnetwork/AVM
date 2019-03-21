@@ -1,10 +1,11 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 /**
  * A contract whose sole purpose is to re-direct the call (that is, make an internal transaction
@@ -17,7 +18,18 @@ import org.aion.avm.api.Result;
 public class RedirectContract {
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(RedirectContract.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
+            if (methodName.equals("callOtherContractAndRequireItIsSuccess")) {
+                return ABIEncoder.encodeOneObject(callOtherContractAndRequireItIsSuccess((Address)argValues[0], (Long)argValues[1], (byte[])argValues[2]));
+            } {
+                return new byte[0];
+            }
+        }
     }
 
     /**

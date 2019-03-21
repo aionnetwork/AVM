@@ -1,7 +1,8 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 
 /**
@@ -16,7 +17,18 @@ public class IncrementorDApp {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(IncrementorDApp.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
+            if (methodName.equals("incrementArray")) {
+                return ABIEncoder.encodeOneObject(incrementArray((byte[]) argValues[0]));
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static byte[] incrementArray(byte[] array) {

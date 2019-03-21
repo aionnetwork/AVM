@@ -1,17 +1,15 @@
 package org.aion.avm.core.unification;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
-
-
 /**
  * This test verifies that there are no unification problems around exceptions, since they represent another case of unification.
  * Note that the main distinction of exceptions is in the exception wrappers, which are not visible to the user code, but only
  * appear as a result of instrumented exception handlers.
  */
 public class CommonSuperClassTarget_combineWithExceptions {
+
+    // The associated test only checks that deployment succeeds, so main() can return null
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(CommonSuperClassTarget_combineWithExceptions.class, BlockchainRuntime.getData());
+        return null;
     }
 
     public static ParentException combineRelatedUserExceptions(boolean flag, Child1Exception a, Child2Exception b) {

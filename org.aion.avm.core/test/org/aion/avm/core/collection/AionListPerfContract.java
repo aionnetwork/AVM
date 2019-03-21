@@ -1,8 +1,8 @@
 package org.aion.avm.core.collection;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionList;
+import org.aion.avm.userlib.abi.ABIDecoder;
 
 
 public class AionListPerfContract {
@@ -16,7 +16,27 @@ public class AionListPerfContract {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(AionListPerfContract.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("callInit")) {
+                callInit();
+                return new byte[0];
+            } else if (methodName.equals("callAppend")) {
+                callAppend();
+                return new byte[0];
+            } else if (methodName.equals("callInsertHead")) {
+                callInsertHead();
+                return new byte[0];
+            } else if (methodName.equals("callInsertMiddle")) {
+                callInsertMiddle();
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static void callInit(){

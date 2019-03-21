@@ -1,10 +1,10 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 public class ReentrantClassWrapperTestResource {
 
@@ -28,6 +28,20 @@ public class ReentrantClassWrapperTestResource {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(ReentrantClassWrapperTestResource.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("recursiveStringClassCheck")) {
+                recursiveStringClassCheck();
+                return new byte[0];
+            } else if (methodName.equals("testStringClass")) {
+                testStringClass();
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 }

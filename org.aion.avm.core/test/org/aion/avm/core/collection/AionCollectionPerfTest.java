@@ -1,7 +1,6 @@
 package org.aion.avm.core.collection;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -9,7 +8,9 @@ import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.*;
+import org.aion.avm.userlib.AionPlainMap;
+import org.aion.avm.userlib.AionPlainSet;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -25,31 +26,19 @@ public class AionCollectionPerfTest {
     private long energyPrice = 1;
 
     private byte[] buildListPerfJar() {
-        return JarBuilder.buildJarForMainAndClasses(AionListPerfContract.class,
-                AionList.class,
-                AionSet.class,
-                AionMap.class
-        );
+        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionListPerfContract.class);
     }
 
     private byte[] buildSetPerfJar() {
-        return JarBuilder.buildJarForMainAndClasses(AionSetPerfContract.class,
-                AionList.class,
-                AionSet.class,
-                AionMap.class,
-                AionPlainSet.class,
-                AionPlainMap.class
-        );
+        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionSetPerfContract.class,
+            AionPlainSet.class,
+            AionPlainMap.class);
     }
 
     private byte[] buildMapPerfJar() {
-        return JarBuilder.buildJarForMainAndClasses(AionMapPerfContract.class,
-                AionList.class,
-                AionSet.class,
-                AionMap.class,
-                AionPlainSet.class,
-                AionPlainMap.class
-        );
+        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionMapPerfContract.class,
+            AionPlainSet.class,
+            AionPlainMap.class);
     }
 
     private TransactionResult deploy(KernelInterface kernel, AvmImpl avm, byte[] testJar){

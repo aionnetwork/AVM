@@ -1,8 +1,9 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 
 /**
@@ -17,7 +18,17 @@ public class BasicAppTestTarget {
     private static AionMap<Byte, Byte> longLivedMap = new AionMap<>();
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(BasicAppTestTarget.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("allocateObjectArray")) {
+                return ABIEncoder.encodeOneObject(allocateObjectArray());
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static byte[] identity(byte[] input) {

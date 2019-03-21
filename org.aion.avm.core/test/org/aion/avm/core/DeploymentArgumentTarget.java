@@ -2,12 +2,12 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
 import org.aion.avm.userlib.AionBuffer;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 
 public class DeploymentArgumentTarget {
@@ -15,7 +15,7 @@ public class DeploymentArgumentTarget {
     private static Address[] arg1;
     private static int arg2;
     private static double arg3;
-    private static byte[] copyOfSelf;
+    private static byte[] smallJar;
 
     static {
         Object[] args = ABIDecoder.decodeDeploymentArguments(BlockchainRuntime.getData());
@@ -23,15 +23,29 @@ public class DeploymentArgumentTarget {
         arg1 = (Address[])args[1];
         arg2 = (Integer)args[2];
         arg3 = (Double)args[3];
-        copyOfSelf = (byte[]) args[4];
+        smallJar = (byte[]) args[4];
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(DeploymentArgumentTarget.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("correctDeployment")) {
+                correctDeployment();
+                return new byte[0];
+            } else if (methodName.equals("incorrectDeployment")) {
+                incorrectDeployment();
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static void correctDeployment() {
-        byte[] deploymentArgs = ABIEncoder.encodeDeploymentArguments(arg0, arg1, arg2, arg3, copyOfSelf);
+        byte[] deploymentArgs = ABIEncoder.encodeDeploymentArguments(arg0, arg1, arg2, arg3, smallJar);
         byte[] codeAndArguments = encodeCodeAndArguments(deploymentArgs);
         Result createResult = BlockchainRuntime.create(BigInteger.ZERO, codeAndArguments, BlockchainRuntime.getEnergyLimit());
         BlockchainRuntime.require(createResult.isSuccess());
@@ -50,10 +64,10 @@ public class DeploymentArgumentTarget {
     // Note that we currently don't have a way to encode the CodeAndArguments from inside a contract.
     // TODO:  This capability should be added to the new user-space ABI.
     private static byte[] encodeCodeAndArguments(byte[] deploymentArgs) {
-        byte[] codeAndArguments = new byte[Integer.BYTES + copyOfSelf.length + Integer.BYTES + deploymentArgs.length];
+        byte[] codeAndArguments = new byte[Integer.BYTES + smallJar.length + Integer.BYTES + deploymentArgs.length];
         AionBuffer codeAndArgumentsBuffer = AionBuffer.wrap(codeAndArguments);
-        codeAndArgumentsBuffer.putInt(copyOfSelf.length);
-        codeAndArgumentsBuffer.put(copyOfSelf);
+        codeAndArgumentsBuffer.putInt(smallJar.length);
+        codeAndArgumentsBuffer.put(smallJar);
         codeAndArgumentsBuffer.putInt(deploymentArgs.length);
         codeAndArgumentsBuffer.put(deploymentArgs);
         return codeAndArguments;

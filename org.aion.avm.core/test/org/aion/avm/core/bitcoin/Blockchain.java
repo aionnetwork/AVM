@@ -7,13 +7,13 @@ import java.math.BigInteger;
 
 public class Blockchain {
 
-    private AionMap<ByteArrayWrapper, AionList<Block>> orphanBlocks = new AionMap<>();
+    private static AionMap<ByteArrayWrapper, AionList<Block>> orphanBlocks = new AionMap<>();
 
-    private AionMap<ByteArrayWrapper, BlockInfo> importedBlocks = new AionMap<>();
+    private static AionMap<ByteArrayWrapper, BlockInfo> importedBlocks = new AionMap<>();
 
     private Genesis genesisBlock;
 
-    private BlockInfo latestBlock;
+    private static BlockInfo latestBlock;
 
     public Blockchain(Genesis genesisBlock) {
         this.genesisBlock = genesisBlock;
@@ -21,7 +21,7 @@ public class Blockchain {
         this.importedBlocks.put(new ByteArrayWrapper(genesisBlock.getHash()), latestBlock);
     }
 
-    public boolean addBlock(byte[] blockToImport) {
+    public static boolean addBlock(byte[] blockToImport) {
         // validate block
         Block block = Block.fromBytes(blockToImport);
         if (!block.isValid()) {
@@ -93,7 +93,7 @@ public class Blockchain {
         return 0;
     }
 
-    private BlockInfo getBlockInfo(byte[] hash) {
+    private static BlockInfo getBlockInfo(byte[] hash) {
         return importedBlocks.get(new ByteArrayWrapper(hash));
     }
 }

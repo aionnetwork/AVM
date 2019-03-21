@@ -53,8 +53,6 @@ public class NodeEnvironment {
             this.shadowApiClasses = new Class<?>[] {
                 org.aion.avm.shadowapi.org.aion.avm.api.Address.class,
                 org.aion.avm.shadowapi.org.aion.avm.api.BlockchainRuntime.class,
-                org.aion.avm.shadowapi.org.aion.avm.api.ABIDecoder.class,
-                org.aion.avm.shadowapi.org.aion.avm.api.ABIEncoder.class,
                 org.aion.avm.shadowapi.org.aion.avm.api.Result.class,
             };
 

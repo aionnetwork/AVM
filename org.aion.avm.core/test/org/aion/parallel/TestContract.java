@@ -1,9 +1,9 @@
 package org.aion.parallel;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIDecoder;
 
 public class TestContract {
 
@@ -14,8 +14,21 @@ public class TestContract {
     }
 
     public static byte[] main() {
-
-        return ABIDecoder.decodeAndRunWithClass(TestContract.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("doTransfer")) {
+                doTransfer();
+                return new byte[0];
+            } else if (methodName.equals("addValue")) {
+                addValue();
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static void doTransfer() {

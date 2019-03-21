@@ -3,11 +3,11 @@ package org.aion.avm.core;
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.kernel.Block;
@@ -42,7 +42,7 @@ public class ReentrantObjectArrayTest {
         this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ReentrantObjectArrayTestResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantObjectArrayTestResource.class);
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         TransactionResult txResult = avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();

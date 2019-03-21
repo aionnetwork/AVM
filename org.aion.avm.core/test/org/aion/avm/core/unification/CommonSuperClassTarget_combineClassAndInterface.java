@@ -1,12 +1,9 @@
 package org.aion.avm.core.unification;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
-
-
 public class CommonSuperClassTarget_combineClassAndInterface {
+    // The associated test only checks that deployment succeeds, so main() can return null
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(CommonSuperClassTarget_combineClassAndInterface.class, BlockchainRuntime.getData());
+        return null;
     }
 
     // Fails (verify error) since we don't currently handle coalescing paths between classes and non-IObject interfaces.

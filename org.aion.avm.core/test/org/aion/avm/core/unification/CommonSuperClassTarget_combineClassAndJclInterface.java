@@ -2,13 +2,10 @@ package org.aion.avm.core.unification;
 
 import java.util.Iterator;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
-
-
 public class CommonSuperClassTarget_combineClassAndJclInterface {
+    // The associated test only checks that deployment succeeds, so main() can return null
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(CommonSuperClassTarget_combineClassAndJclInterface.class, BlockchainRuntime.getData());
+        return null;
     }
 
     // Fails (NPE) since we don't properly describe JCL interfaces.

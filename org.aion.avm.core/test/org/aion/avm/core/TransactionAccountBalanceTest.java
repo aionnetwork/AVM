@@ -4,14 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
@@ -31,7 +28,8 @@ import org.junit.Test;
  */
 public class TransactionAccountBalanceTest {
     private static Address from = TestingKernel.PREMINED_ADDRESS;
-    private static long energyLimit = 5_000_000L;
+    private static long energyLimit = 10_000_000L;
+
     private static long energyLimitForValueTransfer = 21_000L;
     private static long energyPrice = 5;
     private static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
@@ -233,7 +231,7 @@ public class TransactionAccountBalanceTest {
     }
 
     private TransactionResult deployContract(BigInteger value) {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(BasicAppTestTarget.class, AionMap.class, AionSet.class, AionList.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(BasicAppTestTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = Transaction.create(from, kernel.getNonce(from), value, jar, energyLimit, energyPrice);

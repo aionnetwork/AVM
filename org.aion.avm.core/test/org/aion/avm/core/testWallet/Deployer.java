@@ -247,11 +247,8 @@ public class Deployer {
     private static void invokeTransformed() throws Throwable {
         Map<String, Integer> eventCounts = new HashMap<>();
 
-        byte[] jarBytes = JarBuilder.buildJarForMainAndClasses(Wallet.class
+        byte[] jarBytes = JarBuilder.buildJarForMainAndClassesAndUserlib(Wallet.class
                 , Multiowned.class
-                , AionMap.class
-                , AionSet.class
-                , AionList.class
                 , ByteArrayWrapper.class
                 , Operation.class
                 , ByteArrayHelpers.class
@@ -270,7 +267,7 @@ public class Deployer {
         CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
         IRuntimeSetup runtimeSetup = Helpers.getSetupForLoader(loader);
-        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, loader, 6_000_000L, 1, new IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>>());
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, loader, 10_000_000L, 1, new IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>>());
         // Note that this single externalRuntime instance doesn't really make sense - it is only useful in the cases where we aren't using
         // it for invocation context, just environment (energy counter, event logging, etc).
         TestingBlockchainRuntime externalRuntime = new TestingBlockchainRuntime(CAPABILITIES).withEventCounter(eventCounts);

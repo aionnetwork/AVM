@@ -1,12 +1,11 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.AionBuffer;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
@@ -31,7 +30,8 @@ public class DeploymentArgumentTest {
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1L;
     private static final org.aion.types.Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
-    private static final byte[] JAR = JarBuilder.buildJarForMainAndClasses(DeploymentArgumentTarget.class, AionBuffer.class);
+    private static final byte[] JAR = JarBuilder.buildJarForMainAndClassesAndUserlib(DeploymentArgumentTarget.class);
+    private static final byte[] SMALL_JAR = JarBuilder.buildJarForMainAndClasses(DeploymentArgumentSmallTarget.class);
 
     private Block block;
     private TestingKernel kernel;
@@ -51,7 +51,7 @@ public class DeploymentArgumentTest {
 
     @Test
     public void testCorrectArguments() {
-        AvmTransactionResult result = deployContract("string", new Address[] {new Address(DEPLOYER.toBytes())}, (int)5, (double)6.7, JAR);
+        AvmTransactionResult result = deployContract("string", new Address[] {new Address(DEPLOYER.toBytes())}, (int)5, (double)6.7, SMALL_JAR);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 
@@ -69,7 +69,7 @@ public class DeploymentArgumentTest {
 
     @Test
     public void testCorrectSubDeployment() {
-        AvmTransactionResult result = deployContract("string", new Address[] {new Address(DEPLOYER.toBytes())}, (int)5, (double)6.7, JAR);
+        AvmTransactionResult result = deployContract("string", new Address[] {new Address(DEPLOYER.toBytes())}, (int)5, (double)6.7, SMALL_JAR);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         
         org.aion.types.Address target = new org.aion.types.Address(result.getReturnData());
@@ -79,7 +79,7 @@ public class DeploymentArgumentTest {
 
     @Test
     public void testIncorrectSubDeployment() {
-        AvmTransactionResult result = deployContract("string", new Address[] {new Address(DEPLOYER.toBytes())}, (int)5, (double)6.7, JAR);
+        AvmTransactionResult result = deployContract("string", new Address[] {new Address(DEPLOYER.toBytes())}, (int)5, (double)6.7, SMALL_JAR);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         
         org.aion.types.Address target = new org.aion.types.Address(result.getReturnData());

@@ -2,11 +2,7 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
@@ -21,9 +17,7 @@ import org.aion.avm.core.testWallet.RequireFailedException;
 import org.aion.avm.core.testWallet.Wallet;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -68,11 +62,8 @@ public class PocWalletTest {
     }
 
     private byte[] buildTestWalletJar() {
-        return JarBuilder.buildJarForMainAndClasses(Wallet.class
+        return JarBuilder.buildJarForMainAndClassesAndUserlib(Wallet.class
                 , Multiowned.class
-                , AionMap.class
-                , AionSet.class
-                , AionList.class
                 , ByteArrayWrapper.class
                 , Operation.class
                 , ByteArrayHelpers.class

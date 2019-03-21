@@ -1,6 +1,5 @@
 package org.aion.avm.core.performance;
 
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 
@@ -18,6 +17,7 @@ import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 public class TestNetCli {
     private static final int maxValueForParam = 10000;

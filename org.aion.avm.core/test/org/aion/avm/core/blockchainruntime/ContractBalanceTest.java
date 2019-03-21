@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -14,6 +12,8 @@ import org.aion.avm.core.RedirectContract;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
@@ -32,7 +32,7 @@ import org.junit.Test;
  */
 public class ContractBalanceTest {
     private static Address from = TestingKernel.PREMINED_ADDRESS;
-    private static long energyLimit = 5_000_000L;
+    private static long energyLimit = 10_000_000L;
     private static long energyPrice = 5;
     private static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
@@ -103,7 +103,7 @@ public class ContractBalanceTest {
      * Deploys the contract and transfers value amount of Aion into it.
      */
     private Address deployContract(BigInteger value) {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ContractBalanceTarget.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ContractBalanceTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = Transaction.create(from, kernel.getNonce(from), value, jar, energyLimit, energyPrice);
@@ -132,7 +132,7 @@ public class ContractBalanceTest {
     }
 
     private Address deployRedirectContract() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(RedirectContract.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(RedirectContract.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);

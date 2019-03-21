@@ -1,9 +1,9 @@
 package org.aion.avm.core.collection;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionPlainMap;
+import org.aion.avm.userlib.abi.ABIDecoder;
 
 public class AionMapPerfContract {
 
@@ -19,7 +19,39 @@ public class AionMapPerfContract {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(AionMapPerfContract.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("callInit")) {
+                callInit();
+                return new byte[0];
+            } else if (methodName.equals("callPut")) {
+                callPut();
+                return new byte[0];
+            } else if (methodName.equals("callGet")) {
+                callGet();
+                return new byte[0];
+            } else if (methodName.equals("callRemove")) {
+                callRemove();
+                return new byte[0];
+            } else if (methodName.equals("callInitB")) {
+                callInitB();
+                return new byte[0];
+            } else if (methodName.equals("callPutB")) {
+                callPutB();
+                return new byte[0];
+            } else if (methodName.equals("callGetB")) {
+                callGetB();
+                return new byte[0];
+            } else if (methodName.equals("callRemoveB")) {
+                callRemoveB();
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static void callInit(){

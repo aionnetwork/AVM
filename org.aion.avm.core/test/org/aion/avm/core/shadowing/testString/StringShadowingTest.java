@@ -2,8 +2,6 @@ package org.aion.avm.core.shadowing.testString;
 
 import java.math.BigInteger;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -11,6 +9,8 @@ import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -30,7 +30,7 @@ public class StringShadowingTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         // deploy it
-        byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
+        byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
@@ -96,7 +96,7 @@ public class StringShadowingTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         // We do the deployment, first, since we need the resultant DApp address for the other calls.
-        byte[] testJar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
+        byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);

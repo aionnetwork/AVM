@@ -1,7 +1,6 @@
 package org.aion.parallel;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -9,6 +8,7 @@ import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -130,7 +130,7 @@ public class AvmParallelTest {
     @Test
     public void internalTransactionTest(){
 
-        byte[] code = JarBuilder.buildJarForMainAndClasses(TestContract.class);
+        byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
 
         TestingKernel kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -144,8 +144,8 @@ public class AvmParallelTest {
         Transaction t0 = Transaction.call(preminedAddress, usr1, BigInteger.ZERO, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
         Transaction t1 = Transaction.call(preminedAddress, usr2, BigInteger.ONE, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
         Transaction t2 = Transaction.call(preminedAddress, usr3, BigInteger.TWO, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
-        Transaction t3 = Transaction.call(preminedAddress, usr4, BigInteger.valueOf(3), BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
-        Transaction t4 = Transaction.create(usr4, BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 3_000_000L, 1);
+        Transaction t3 = Transaction.call(preminedAddress, usr4, BigInteger.valueOf(3), BigInteger.valueOf(15_000_000), new byte[0], 100000L, 1);
+        Transaction t4 = Transaction.create(usr4, BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 10_000_000L, 1);
 
         Transaction[] batch = new Transaction[]{t0, t1, t2, t3, t4};
         SimpleFuture<TransactionResult>[] results = avm.run(kernel, generateCTXBatch(batch));

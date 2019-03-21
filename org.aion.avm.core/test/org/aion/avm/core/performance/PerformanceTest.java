@@ -1,7 +1,5 @@
 package org.aion.avm.core.performance;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -10,6 +8,8 @@ import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -52,7 +52,7 @@ public class PerformanceTest {
     public void deploy() {
         long startTime = System.currentTimeMillis();
 
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(PerformanceTestTarget.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PerformanceTestTarget.class);
 
         byte[] args = ABIEncoder.encodeOneObject(new int[] { heavyLevel, allocSize });
         byte[] txData = new CodeAndArguments(jar, args).encodeToBytes();

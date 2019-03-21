@@ -1,11 +1,11 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 public class AvmFailureTest {
     // transaction
-    private long energyLimit = 1_000_000L;
+    private long energyLimit = 10_000_000L;
     private long energyPrice = 1L;
 
     // block
@@ -44,7 +44,7 @@ public class AvmFailureTest {
         this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(AvmFailureTestResource.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AvmFailureTestResource.class);
         byte[] arguments = null;
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, block);

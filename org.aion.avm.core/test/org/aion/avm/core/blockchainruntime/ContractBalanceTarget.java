@@ -1,8 +1,9 @@
 package org.aion.avm.core.blockchainruntime;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 public class ContractBalanceTarget {
     private static BigInteger balanceDuringClinit;
@@ -12,7 +13,19 @@ public class ContractBalanceTarget {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(ContractBalanceTarget.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("getBalanceOfThisContract")) {
+                return ABIEncoder.encodeOneObject(getBalanceOfThisContract());
+            } else if(methodName.equals("getBalanceOfThisContractDuringClinit")) {
+                return ABIEncoder.encodeOneObject(getBalanceOfThisContractDuringClinit());
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     /**
