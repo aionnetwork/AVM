@@ -46,7 +46,7 @@ public class GraphReachabilityIntegrationTest {
         callStatic(block, contractAddr, getCost_check249(true), "check249", 4);
         
         // Run test.
-        long modify_basicCost = 21708L;
+        long modify_basicCost = adjustBasicCost(21708L);
         long modify_miscCharges = 236L + 300L + 100L + 600L + 37234L + 75L + 55L + 98L;
         long modify_storageCharges = 0L
                 // read static
@@ -78,7 +78,7 @@ public class GraphReachabilityIntegrationTest {
         callStatic(block, contractAddr, getCost_check249(true), "check249", 4);
         
         // Run test.
-        long run_basicCost = 22796L;
+        long run_basicCost = adjustBasicCost(22796L);
         long run_miscCharges = 0L
                 + 236L + 300L + 100L + 600L + 37234L + 135L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
                 + 236L + 100L + 600L + 37234L + 75L + 55L + 98L
@@ -128,7 +128,7 @@ public class GraphReachabilityIntegrationTest {
         callStatic(block, contractAddr, getCost_check249(true), "check249", 4);
         
         // Run test.
-        long run_basicCost = 22604L;
+        long run_basicCost = adjustBasicCost(22604L);
         long run_miscCharges = 0L
             + 236L + 300L + 100L + 600L + 37234L + 75L + 55L + 135L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
             + 236L + 100L + 600L + 37234L + 75L + 55L + 98L
@@ -173,7 +173,7 @@ public class GraphReachabilityIntegrationTest {
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Run test.
-        long run_basicCost = 22668L;
+        long run_basicCost = adjustBasicCost(22668L);
         long run_miscCharges = 0L
                 + 236L + 300L + 100L + 600L + 37234L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
                 + 236L + 100L + 600L + 37234L + 252L + 131L
@@ -202,7 +202,7 @@ public class GraphReachabilityIntegrationTest {
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + byteArrayReturnCost * 3, "runNewInstance_reentrant");
         
         // Verify result.
-        long check_basicCost = 22156L;
+        long check_basicCost = adjustBasicCost(22156L);
         long check_miscCharges = 0L + 236L + 300L + 100L + 600L + 37234L + 80L + 600L;
         long check_storageCharges = 0L
                 // read static
@@ -227,7 +227,7 @@ public class GraphReachabilityIntegrationTest {
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Run test.
-        long run_basicCost = 22732L;
+        long run_basicCost = adjustBasicCost(22732L);
         long run_miscCharges = 0L
                 + 236L + 300L + 100L + 600L + 37234L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
                 + 236L + 100L + 600L + 37234L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
@@ -266,7 +266,7 @@ public class GraphReachabilityIntegrationTest {
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + byteArrayReturnCost * 5, "runNewInstance_reentrant2");
         
         // Verify result.
-        long check_basicCost = 22156L;
+        long check_basicCost = adjustBasicCost(22156L);
         long check_miscCharges = 236L + 300L + 100L + 600L + 37234L + 80L + 600L;
         long check_storageCharges = 0L
                 // read static
@@ -369,7 +369,7 @@ public class GraphReachabilityIntegrationTest {
     }
 
     private static long getCost_check249(boolean before) {
-        long basicCost = 21784L;
+        long basicCost = adjustBasicCost(21784L);
         long miscCharges = 236L + 300L + 100L + 600L + 37234L + 75L + 55L + 67L;
         // We end up with a slightly different cost before/after changes.
         if (before) {
@@ -391,7 +391,7 @@ public class GraphReachabilityIntegrationTest {
     }
 
     private static long getCost_setup249() {
-        long basicCost = 21644L;
+        long basicCost = adjustBasicCost(21644L);
         long miscCharges = 236L + 300L + 100L + 600L + 37234L + 973L + 131L + 131L + 131L + 131L + 131L;
         long storageCharges = 0L
                 // read static
@@ -418,5 +418,11 @@ public class GraphReachabilityIntegrationTest {
         Transaction gc = Transaction.garbageCollect(org.aion.types.Address.wrap(contractAddr.unwrap()), avmRule.kernel.getNonce(org.aion.types.Address.wrap(contractAddr.unwrap())), energyLimit, energyPrice);
         TransactionResult gcResult = avmRule.avm.run(avmRule.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(gc, block)})[0].get();
         return gcResult;
+    }
+
+    private static long adjustBasicCost(long cost) {
+        // AKI-33: Our userlib is receiving a lot of changes while our tooling to prune on deployment is not yet ready so we
+        // TEMPORARILY reduce this cost in order to improve testability.
+        return cost / 10L;
     }
 }

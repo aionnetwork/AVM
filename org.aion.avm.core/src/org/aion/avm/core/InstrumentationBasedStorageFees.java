@@ -19,9 +19,12 @@ import org.aion.avm.internal.IInstrumentation;
  */
 public class InstrumentationBasedStorageFees implements IStorageFeeProcessor {
     // (these are only public so that tests can access them)
-    public static final long FIXED_READ_COST = 1_000L;
-    public static final long SPENT_WRITE_COST = 1_000L;
-    public static final long DEPOSIT_WRITE_COST = 9_000L;
+    // AKI-33: Our userlib is receiving a lot of changes while our tooling to prune on deployment is not yet ready so we
+    // TEMPORARILY reduce this cost in order to improve testability.  This cost is largely for constant instances in all
+    // the userlib classes.
+    public static final long FIXED_READ_COST = 1_000L / 10L;
+    public static final long SPENT_WRITE_COST = 1_000L / 10L;
+    public static final long DEPOSIT_WRITE_COST = 9_000L / 10L;
     public static final long BYTE_READ_COST = 1L;
     public static final long BYTE_WRITE_COST = 1L;
 

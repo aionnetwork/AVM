@@ -155,7 +155,10 @@ public class AvmImplDeployAndRunTest {
         result = avmRule.balanceTransfer(account1, account2, BigInteger.valueOf(1000L), 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(BigInteger.valueOf(100000L - 1000L - energyPrice * 21000L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
+        // AKI-33: Our userlib is receiving a lot of changes while our tooling to prune on deployment is not yet ready so we
+        // TEMPORARILY reduce this cost in order to improve testability.
+        long basicCost = 21000L / 10L;
+        assertEquals(BigInteger.valueOf(100000L - 1000L - energyPrice * basicCost), avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
         assertEquals(BigInteger.valueOf(1000L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(account2.unwrap())));
     }
 

@@ -24,7 +24,7 @@ public class IntegTest {
     @Rule
     public AvmRule avmRule = new AvmRule(true);
 
-    private static final long ENERGY_LIMIT = 10_000_000L;
+    private static final long ENERGY_LIMIT = 2_000_000L;
     private static final long ENERGY_PRICE = 1L;
 
     private Address installTestDApp(byte[] jar) {
