@@ -2,6 +2,8 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.ClassNameExtractor;
 import org.aion.avm.arraywrapper.ObjectArray;
+import org.aion.avm.internal.AvmException;
+import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 
@@ -88,16 +90,22 @@ public class Class<T> extends Object {
                 Method m = v.getDeclaredMethod("avm_values");
                 java.lang.Object value = m.invoke(null);
 
-                ObjectArray temporaryConstants = (ObjectArray) value;
-                enumConstants = constants = temporaryConstants;
+                constants = (ObjectArray) value;
+                enumConstants = constants;
+            } catch (InvocationTargetException e) {
+                // This can happen as a result of an out-of-energy exception - throw back any of our types.
+                if (e.getCause() instanceof AvmThrowable) {
+                    throw (AvmThrowable) e.getCause();
+                } else {
+                    // This is unexpected, but the user should be able to craft an attempt to call this so just log it, in case this is a cause for concern.
+                    e.printStackTrace();
+                    constants = null;
+                }
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                // This is unexpected, but the user should be able to craft an attempt to call this so just log it, in case this is a cause for concern.
+                e.printStackTrace();
+                constants = null;
             }
-            // These can happen when users concoct enum-like classes
-            // that don't comply with the enum spec.
-            catch (NoSuchMethodException |
-                    IllegalAccessException |
-                    InvocationTargetException ex) {
-                java.lang.System.out.println(ex.toString());
-                return null; }
         }
         return constants;
     }
