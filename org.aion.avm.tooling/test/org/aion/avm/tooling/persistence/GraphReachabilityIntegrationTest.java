@@ -47,7 +47,7 @@ public class GraphReachabilityIntegrationTest {
         
         // Run test.
         long modify_basicCost = adjustBasicCost(21708L);
-        long modify_miscCharges = 236L + 300L + 100L + 600L + 37234L + 75L + 55L + 98L;
+        long modify_miscCharges = 95L + 300L + 100L + 600L + 37234L + 65L + 29L + 85L;
         long modify_storageCharges = 0L
                 // read static
                     + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
@@ -80,9 +80,9 @@ public class GraphReachabilityIntegrationTest {
         // Run test.
         long run_basicCost = adjustBasicCost(22796L);
         long run_miscCharges = 0L
-                + 236L + 300L + 100L + 600L + 37234L + 135L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
-                + 236L + 100L + 600L + 37234L + 75L + 55L + 98L
-                + 100L + 108L + 100L + 50L + 55L + 50L
+                + 95L + 300L + 100L + 600L + 37234L + 88L + 187L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
+                + 95L + 100L + 600L + 37234L + 65L + 29L + 85L
+                + 100L + 60L + 100L + 23L + 29L + 23L
                 ;
         long run_storageCharges = 0L
                 // read static
@@ -130,9 +130,9 @@ public class GraphReachabilityIntegrationTest {
         // Run test.
         long run_basicCost = adjustBasicCost(22604L);
         long run_miscCharges = 0L
-            + 236L + 300L + 100L + 600L + 37234L + 75L + 55L + 135L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
-            + 236L + 100L + 600L + 37234L + 75L + 55L + 98L
-            + 100L + 108L + 100L + 50L + 55L + 50L
+            + 95L + 300L + 100L + 600L + 37234L + 65L + 29L + 88L + 187L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
+            + 95L + 100L + 600L + 37234L + 65L + 29L + 85L
+            + 100L + 60L + 100L + 23L + 29L + 23L
             ;
         long run_storageCharges = 0L
                 // read static
@@ -175,9 +175,9 @@ public class GraphReachabilityIntegrationTest {
         // Run test.
         long run_basicCost = adjustBasicCost(22668L);
         long run_miscCharges = 0L
-                + 236L + 300L + 100L + 600L + 37234L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
-                + 236L + 100L + 600L + 37234L + 252L + 131L
-                + 100L + 108L + 100L + 50L
+                + 95L + 300L + 100L + 600L + 37234L + 187L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
+                + 95L + 100L + 600L + 37234L + 194L + 63L
+                + 100L + 60L + 100L + 23L
                 ;
         long run_storageCharges = 0L
                 // read static
@@ -203,7 +203,7 @@ public class GraphReachabilityIntegrationTest {
         
         // Verify result.
         long check_basicCost = adjustBasicCost(22156L);
-        long check_miscCharges = 0L + 236L + 300L + 100L + 600L + 37234L + 80L + 600L;
+        long check_miscCharges = 0L + 95L + 300L + 100L + 600L + 37234L + 63L + 600L;
         long check_storageCharges = 0L
                 // read static
                     + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
@@ -229,11 +229,11 @@ public class GraphReachabilityIntegrationTest {
         // Run test.
         long run_basicCost = adjustBasicCost(22732L);
         long run_miscCharges = 0L
-                + 236L + 300L + 100L + 600L + 37234L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
-                + 236L + 100L + 600L + 37234L + 327L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
-                + 236L + 100L + 600L + 37234L + 252L + 131L
-                + 100L + 108L + 100L + 50L
-                + 100L + 108L + 100L + 50L
+                + 95L + 300L + 100L + 600L + 37234L + 187L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
+                + 95L + 100L + 600L + 37234L + 187L + 100L + 17372L + 600L + 100L + 600L + 600L + 100L
+                + 95L + 100L + 600L + 37234L + 194L + 63L
+                + 100L + 60L + 100L + 23L
+                + 100L + 60L + 100L + 23L
                 ;
         long run_storageCharges = 0L
                 // read static
@@ -267,7 +267,7 @@ public class GraphReachabilityIntegrationTest {
         
         // Verify result.
         long check_basicCost = adjustBasicCost(22156L);
-        long check_miscCharges = 236L + 300L + 100L + 600L + 37234L + 80L + 600L;
+        long check_miscCharges = 95L + 300L + 100L + 600L + 37234L + 63L + 600L;
         long check_storageCharges = 0L
                 // read static
                     + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
@@ -339,7 +339,7 @@ public class GraphReachabilityIntegrationTest {
         // The first three numbers here are: basic cost of tx, processing cost and storage cost
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(1, jar.length);
-        long miscCharges = basicCost + codeInstantiationOfDeploymentFee + 375L + 300L + 1500L + 6L + 53L;
+        long miscCharges = basicCost + codeInstantiationOfDeploymentFee + 185L + 300L + 1500L + 3L + 31L;
         long storageCharges = 0L
                 // static
                     + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 161L
@@ -370,12 +370,12 @@ public class GraphReachabilityIntegrationTest {
 
     private static long getCost_check249(boolean before) {
         long basicCost = adjustBasicCost(21784L);
-        long miscCharges = 236L + 300L + 100L + 600L + 37234L + 75L + 55L + 67L;
+        long miscCharges = 95L + 300L + 100L + 600L + 37234L + 65L + 29L + 50L;
         // We end up with a slightly different cost before/after changes.
         if (before) {
-            miscCharges += 48L + 79L + 50L;
+            miscCharges += 30L + 71L + 23L;
         } else {
-            miscCharges += 50L;
+            miscCharges += 23L;
         }
         long storageCharges = 0L
                 // read static
@@ -392,7 +392,7 @@ public class GraphReachabilityIntegrationTest {
 
     private static long getCost_setup249() {
         long basicCost = adjustBasicCost(21644L);
-        long miscCharges = 236L + 300L + 100L + 600L + 37234L + 973L + 131L + 131L + 131L + 131L + 131L;
+        long miscCharges = 95L + 300L + 100L + 600L + 37234L + 716L + 63L + 63L + 63L + 63L + 63L;
         long storageCharges = 0L
                 // read static
                     + InstrumentationBasedStorageFees.FIXED_READ_COST + 161L

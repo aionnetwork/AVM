@@ -172,7 +172,7 @@ public class AvmImplTest {
         // Account for the cost:  deployment, clinit, init call.
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(1, jar.length);
-        long clinitCost = 188l;
+        long clinitCost = 91l;
         // Storage:  static 64 bytes (2 references) +  the 2 strings (hash code and string length: "CALL" + "NORMAL").
         long initialStorageCost = (3 * InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW)
                 + (64 * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
@@ -191,9 +191,9 @@ public class AvmImplTest {
         assertArrayEquals("CALL".getBytes(), result2.getReturnData());
         // Account for the cost:  (blocks in call method) + runtime.call
         //code block cost for initial call
-        long costOfBlocks = 111l + 57l + 509l;
+        long costOfBlocks = 51l + 31l + 326l;
         //reentrant call cost including code block cost
-        long costOfRuntimeCall = 111l + 57l + 116l + (100 + 600 + 630 + 600);
+        long costOfRuntimeCall = 51l + 31l + 66l + (100 + 600 + 630 + 600);
         // All persistence load/store cost (note that this is a reentrant call):
         long runStorageCost = 0L
         // -read statics (outer)

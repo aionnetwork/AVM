@@ -21,12 +21,14 @@ public class BytecodeFeeScheduler {
         VERYLOW     (3),
         LOW         (5),
         MID         (8),
-        HIGH        (10),
-        INVOKE      (20),
+        HIGH        (15),
+        VERYHIGH    (30),
 
-        // Extra Energy Levels
-        MACCESS     (20),
-        FLOWCONTROL (40),
+        // Extra Energy Levels based on the gas cost in solidity.
+        // Memory access in AVM is slightly more expensive
+        MACCESS     (5),
+        // based on the cost for (EQ/LT/GT + ISZERO + JUMPI + JUMPDEST + PUSH)
+        FLOWCONTROL (20),
         CREATION    (40),
 
         // Memory Usage Energy Level
@@ -231,17 +233,17 @@ public class BytecodeFeeScheduler {
             put(Opcodes.I2S,    new BytecodeFeeInfo(BytecodeEnergyLevels.BASE,    BytecodeEnergyLevels.ZERO, 1, 1, 0));
 
             // Object Creation and Manipulation
-            put(Opcodes.GETSTATIC,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
-            put(Opcodes.PUTSTATIC,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 1, 0, 0));
-            put(Opcodes.GETFIELD,       new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 0, 1, 0));
-            put(Opcodes.PUTFIELD,       new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 2, 0, 0));
+            put(Opcodes.GETSTATIC,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
+            put(Opcodes.PUTSTATIC,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 1, 0, 0));
+            put(Opcodes.GETFIELD,       new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 0, 1, 0));
+            put(Opcodes.PUTFIELD,       new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.MACCESS, 2, 0, 0));
             put(Opcodes.NEW,            new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.CREATION, 0, 1, 0));
             put(Opcodes.NEWARRAY,       new BytecodeFeeInfo(BytecodeEnergyLevels.LOW,     BytecodeEnergyLevels.CREATION, 1, 1, 0));
             put(Opcodes.ANEWARRAY,      new BytecodeFeeInfo(BytecodeEnergyLevels.LOW,     BytecodeEnergyLevels.CREATION, 1, 1, 0));
             put(Opcodes.ARRAYLENGTH,    new BytecodeFeeInfo(BytecodeEnergyLevels.BASE,    BytecodeEnergyLevels.ZERO, 1, 1, 0));
             put(Opcodes.CHECKCAST,      new BytecodeFeeInfo(BytecodeEnergyLevels.BASE,    BytecodeEnergyLevels.ZERO, 1, 1, 0));
             put(Opcodes.INSTANCEOF,     new BytecodeFeeInfo(BytecodeEnergyLevels.BASE,    BytecodeEnergyLevels.ZERO, 1, 1, 0));
-            put(Opcodes.MULTIANEWARRAY, new BytecodeFeeInfo(BytecodeEnergyLevels.LOW,     BytecodeEnergyLevels.ZERO, 5, 1, 0)); // delta of 5 is not accurate but bigger than alpha, so the value does not matter.
+            put(Opcodes.MULTIANEWARRAY, new BytecodeFeeInfo(BytecodeEnergyLevels.LOW,     BytecodeEnergyLevels.CREATION, 5, 1, 0)); // delta of 5 is not accurate but bigger than alpha, so the value does not matter.
 
             // Operand Stack Management
             // Not in ASM Opcodes but Contants: LDC_W and LDC2_w -- visitor of LDC
@@ -297,20 +299,20 @@ public class BytecodeFeeScheduler {
             put(Opcodes.IFNONNULL,    new BytecodeFeeInfo(BytecodeEnergyLevels.BASE, BytecodeEnergyLevels.FLOWCONTROL,    1, 0, 0));
 
             // Method Invocation and Return
-            put(Opcodes.IRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.LRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.FRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.DRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.ARETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.RETURN,             new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 0, 0));
-            put(Opcodes.INVOKEVIRTUAL,      new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.INVOKESPECIAL,      new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.INVOKESTATIC,       new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.INVOKEINTERFACE,    new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
-            put(Opcodes.INVOKEDYNAMIC,    new BytecodeFeeInfo(BytecodeEnergyLevels.INVOKE, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.IRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.LRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.FRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.DRETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.ARETURN,            new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.RETURN,             new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.FLOWCONTROL, 5, 0, 0));
+            put(Opcodes.INVOKEVIRTUAL,      new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.INVOKESPECIAL,      new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.INVOKESTATIC,       new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.INVOKEINTERFACE,    new BytecodeFeeInfo(BytecodeEnergyLevels.HIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
+            put(Opcodes.INVOKEDYNAMIC,    new BytecodeFeeInfo(BytecodeEnergyLevels.VERYHIGH, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
 
             // Throwing Exceptions
-            put(Opcodes.ATHROW,    new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.ZERO, 5, 1, 0));
+            put(Opcodes.ATHROW,    new BytecodeFeeInfo(BytecodeEnergyLevels.VERYLOW, BytecodeEnergyLevels.FLOWCONTROL, 5, 1, 0));
 
             // AVM to reject: MONITORENTER, MONITOREXIT
         }};
@@ -320,8 +322,7 @@ public class BytecodeFeeScheduler {
             BytecodeFeeInfo feeInfo = feeScheduleMap.get(op);
 
             // believing no overflow here so no need to cast from int to long during the calculation
-            long fee = feeInfo.getNrgLvl().getVal() + feeInfo.getExtraNrgLvl().getVal()
-                    + BytecodeEnergyLevels.MEMORY.getVal() * Math.max((feeInfo.getAlpha() - feeInfo.getDelta()), 0);
+            long fee = feeInfo.getNrgLvl().getVal() + feeInfo.getExtraNrgLvl().getVal();
 
             feeInfo.setFee(fee);
         }
