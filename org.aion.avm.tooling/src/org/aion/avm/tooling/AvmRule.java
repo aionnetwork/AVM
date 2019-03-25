@@ -71,6 +71,18 @@ public final class AvmRule implements TestRule {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
         return new CodeAndArguments(jar, arguments).encodeToBytes();
     }
+    /**
+     * Retrieves bytes corresponding to the in-memory representation of Dapp jar.
+     * @param mainClass Main class of the Dapp to include and list in manifest (can be null).
+     * @param arguments Constructor arguments
+     * @param otherClasses Other classes to include (main is already included).
+     * @return Byte array corresponding to the deployable Dapp jar and arguments.
+     */
+    public byte[] getDappBytesWithUserlib(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(mainClass, otherClasses);
+        return new CodeAndArguments(jar, arguments).encodeToBytes();
+    }
+
 
     /**
      * Deploys the Dapp.
@@ -212,6 +224,13 @@ public final class AvmRule implements TestRule {
          */
         public Object getDecodedReturnData() {
             return ABIDecoder.decodeOneObject(result.getReturnData());
+        }
+
+        /**
+         * @return Returned data of the call
+         */
+        public byte[] getReturnData() {
+            return result.getReturnData();
         }
 
         /**
