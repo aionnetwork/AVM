@@ -12,13 +12,16 @@ public class TRS {
 
     private static int periods, t0special;
     private static long startBlockTimestamp = 0;
-    private static boolean isDeployed = false, inited = false, locked = false, nullified = false;
+    private static boolean inited = false, locked = false, nullified = false;
     private static AionMap<Address, BigInteger> deposited = new AionMap<>(), withdrawn = new AionMap<>();
     private static Address owner, newOwner;
     private static BigInteger precision = BigInteger.TEN.pow(18), totalfv, remainder, total;
 
+    static {
+        owner = BlockchainRuntime.getCaller();
+    }
+
     public static byte[] main() {
-        initOwner();
         return ABIDecoder.decodeAndRunWithClass(TRS.class, BlockchainRuntime.getData());
     }
 
@@ -167,13 +170,6 @@ public class TRS {
 
     private static boolean isPreLock() {
         return !locked && (startBlockTimestamp == 0);
-    }
-
-    private static void initOwner() {
-        if (!isDeployed) {
-            owner = BlockchainRuntime.getCaller();
-            isDeployed = true;
-        }
     }
 
     private static void changeOwner(Address nextOwner) {
