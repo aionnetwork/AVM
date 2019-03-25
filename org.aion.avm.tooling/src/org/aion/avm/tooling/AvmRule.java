@@ -227,13 +227,6 @@ public final class AvmRule implements TestRule {
         }
 
         /**
-         * @return Returned data of the call
-         */
-        public byte[] getReturnData() {
-            return result.getReturnData();
-        }
-
-        /**
          * @return Transaction execution result code, which can be SUCCESS, REJECTED, or FAILED.
          */
         public ResultCode getReceiptStatus() {
