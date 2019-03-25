@@ -6,7 +6,6 @@ import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
-import org.aion.avm.core.util.GeneratedClassesFactory;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
 
@@ -15,9 +14,6 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.aion.avm.internal.ABIStaticState;
-
 
 /**
  * Represents the long-lived global state of a specific "node" instance.
@@ -160,9 +156,6 @@ public class NodeEnvironment {
             // This would be a fatal startup error.
             throw RuntimeAssertionError.unexpected(e);
         }
-
-        // Give the ABI the knowledge of how to name/resolve our internal and shadow classes.
-        ABIStaticState.initializeSupport(new GeneratedClassesFactory(this.sharedClassLoader));
 
         // Create the constant map.
         this.constantMap = Collections.unmodifiableMap(initializeConstantState());

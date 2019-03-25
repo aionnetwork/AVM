@@ -18,9 +18,6 @@ import org.aion.avm.core.util.BlockchainRuntime;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
 import org.aion.avm.internal.*;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -84,36 +81,7 @@ public class Deployer {
 
 
     private static void invokeDirect() {
-        IABISupport standardWrapperFactory = ABIStaticState.testingSecondaryInitialization(new IABISupport() {
-            public String convertToShadowMethodName(String original) {
-                return original;
-            }
-            @Override
-            public Object convertToStandardValue(Object shadowValue) {
-                return shadowValue;
-            }
-            @Override
-            public Object convertToShadowValue(Object standardValue) {
-                return standardValue;
-            }
-            @Override
-            public Class<?> convertConcreteShadowToStandardType(Class<?> shadowType) {
-                return shadowType;
-            }
-            @Override
-            public Class<?> convertToConcreteShadowType(Class<?> standardType) {
-                return standardType;
-            }
-            @Override
-            public Class<?> convertToBindingShadowType(Class<?> standardType) {
-                return standardType;
-            }
-            @Override
-            public Class<?> mapFromBindingTypeToConcreteType(Class<?> bindingShadowType) {
-                return bindingShadowType;
-            }
-        });
-        
+
         // Note that this loggingRuntime is just to give us a consistent interface for reading the eventCounts.
         TestingBlockchainRuntime loggingRuntime = new TestingBlockchainRuntime(CAPABILITIES).withEventCounter(eventCounts);
 
@@ -236,8 +204,6 @@ public class Deployer {
             // We should have seen 13 confirmations over the course of the test run.
             RuntimeAssertionError.assertTrue(13 == loggingRuntime.getEventCount(EventLogger.kConfirmation));
 
-            // Restore the original.
-            ABIStaticState.testingSecondaryInitialization(standardWrapperFactory);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }

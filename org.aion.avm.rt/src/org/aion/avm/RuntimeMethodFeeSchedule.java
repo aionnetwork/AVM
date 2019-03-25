@@ -63,9 +63,6 @@ public class RuntimeMethodFeeSchedule {
     public static final long BigInteger_avm_constructor_6 = RT_METHOD_FEE_LEVEL_1; // totalCost - 131;
     public static final long BigInteger_avm_compareTo_1 = RT_METHOD_FEE_LEVEL_1; // totalCost - 124;
 
-    public static final long ABIEncoder_avm_encodeMethodArguments = 17372; // totalCost - 17372; // byte code cost - 402; invoked methods cost - 16970;
-    public static final long ABIEncoder_avm_encodeOneObject = 58151; // totalCost - 58151; // byte code cost - 276; invoked methods cost - 57875;
-
     public static final long Number_avm_byteValue = RT_METHOD_FEE_LEVEL_1; // totalCost - 118;
     public static final long Number_avm_shortValue = RT_METHOD_FEE_LEVEL_1; // totalCost - 118;
 
@@ -127,11 +124,6 @@ public class RuntimeMethodFeeSchedule {
 
     public static final long ByteOrder_avm_toString = RT_METHOD_FEE_LEVEL_2; // totalCost - 382; // byte code cost - 282; invoked methods cost - 100;
     public static final long ByteOrder_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 131;
-
-    public static final long ABIDecoder_avm_decodeAndRunWithClass = 37234; // totalCost - 37234; //maximum cost of multiple blocks; // byte code cost - 520; invoked methods cost - 36714;
-    public static final long ABIDecoder_avm_decodeMethodName = RT_METHOD_FEE_LEVEL_4; // totalCost - 1161; // byte code cost - 336; invoked methods cost - 825;
-    public static final long ABIDecoder_avm_decodeArguments = RT_METHOD_FEE_LEVEL_4; // totalCost - 2600; //maximum cost of multiple blocks; // byte code cost - 448; invoked methods cost - 2152;
-    public static final long ABIDecoder_avm_decodeOneObject = 232718; // totalCost - 232718; // byte code cost - 335; invoked methods cost - 232383;
 
     public static final long ByteArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 762; // byte code cost - 362; invoked methods cost - 400;
     public static final long ByteArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;
