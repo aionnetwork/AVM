@@ -558,7 +558,7 @@ public class Character extends Object {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Character_avm_compareTo);
         lazyLoad();
         anotherCharacter.lazyLoad();
-        return avm_compare(this.v, anotherCharacter.v);
+        return this.v - anotherCharacter.v;
     }
 
     public static int avm_compare(char x, char y) {
