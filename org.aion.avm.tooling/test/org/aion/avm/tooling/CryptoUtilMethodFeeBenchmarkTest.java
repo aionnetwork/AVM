@@ -1,6 +1,6 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -8,8 +8,11 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
+import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,7 +51,7 @@ import java.math.BigInteger;
 
 public class CryptoUtilMethodFeeBenchmarkTest {
 
-    private long energyLimit = 10_000_000L;
+    private long energyLimit = 100_000_000_000L;
     private long energyPrice = 1L;
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
@@ -85,7 +88,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
 
     @Before
     public void setup() {
-        byte[] basicAppTestJar = JarBuilder.buildJarForMainAndClasses(CryptoUtilMethodFeeBenchmarkTestTargetClass.class);
+        byte[] basicAppTestJar = JarBuilder.buildJarForMainAndClassesAndUserlib(CryptoUtilMethodFeeBenchmarkTestTargetClass.class);
 
         byte[] txData = new CodeAndArguments(basicAppTestJar, null).encodeToBytes();
 
@@ -94,6 +97,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
         dappAddress = org.aion.types.Address.wrap(avm.run(this.kernel, new TransactionContext[] {context})[0].get().getReturnData());
+        Assert.assertNotNull(dappAddress);
     }
 
     @After
@@ -145,7 +149,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         // call method and record result, measure average call time
         long recordSum = 0;
         for (int i = 0; i < LOOP_COUNT; i++){
-           recordSum = recordSum + getCallTime(keccakMethodName, hashMessage, 1);
+            recordSum = recordSum + getCallTime(keccakMethodName, hashMessage, 1);
         }
         System.out.println("Average time per api call for keccak hashing: " + recordSum/LOOP_COUNT + "ns");
     }
@@ -286,8 +290,10 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         TransactionContextImpl context = setupTransactionContext(methodName,count, message);
 
         st = System.nanoTime();
-        avm.run(this.kernel, new TransactionContext[]{context})[0].get();
+        TransactionResult result = avm.run(this.kernel, new TransactionContext[]{context})[0].get();
         et = System.nanoTime();
+
+        Assert.assertEquals(result.getResultCode(), Code.SUCCESS);
 
         return et - st;
     }
