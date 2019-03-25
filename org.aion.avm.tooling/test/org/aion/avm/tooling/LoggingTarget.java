@@ -1,8 +1,8 @@
 package org.aion.avm.tooling;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
 
 public class LoggingTarget {
@@ -18,7 +18,25 @@ public class LoggingTarget {
     public static final byte[] DATA5 = new byte[]{ 0x5 };
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(LoggingTarget.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
+            if (methodName.equals("spawnInternalTransactionsAndHitLogsAtEachLevel")) {
+                spawnInternalTransactionsAndHitLogsAtEachLevel((Integer) argValues[0]);
+                return new byte[0];
+            } else if (methodName.equals("spawnInternalTransactionsAndHitLogsAtBottomLevel")) {
+                spawnInternalTransactionsAndHitLogsAtBottomLevel((Integer) argValues[0]);
+                return new byte[0];
+            } else if (methodName.equals("hitLogs")) {
+                hitLogs();
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static void spawnInternalTransactionsAndHitLogsAtEachLevel(int numInternals) {

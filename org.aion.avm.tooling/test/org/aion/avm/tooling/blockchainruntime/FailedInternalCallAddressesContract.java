@@ -1,26 +1,26 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
+import org.aion.avm.tooling.abi.Callable;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 public class FailedInternalCallAddressesContract {
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(FailedInternalCallAddressesContract.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static Address[] runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(Address[] otherContracts) {
         return recurseAndTrackAddresses(otherContracts, 0, true);
     }
 
+    @Callable
     public static Address[] runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(Address[] otherContracts) {
         return recurseAndTrackAddresses(otherContracts, 0, false);
     }
 
+    @Callable
     public static Address[] recurseAndTrackAddresses(Address[] otherContracts, int currentDepth, boolean recurseFirst) {
         if (currentDepth < otherContracts.length) {
             Address[] reportForThisContract = null;

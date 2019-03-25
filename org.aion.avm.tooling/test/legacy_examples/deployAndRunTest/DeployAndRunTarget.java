@@ -1,7 +1,7 @@
 package legacy_examples.deployAndRunTest;
 
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.tooling.abi.Callable;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 public class DeployAndRunTarget {
 

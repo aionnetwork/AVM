@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.poc;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -53,7 +53,7 @@ public class DemoTest {
         //================
 
         System.out.println(">> Deploy \"PEPE\" ERC20 token Dapp...");
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(CoinController.class, ERC20Token.class);
         byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
         Transaction createTransaction = Transaction.create(pepeMinter, kernel.getNonce(pepeMinter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
@@ -64,7 +64,7 @@ public class DemoTest {
         System.out.println(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.getReturnData()) + ")");
 
         System.out.println("\n>> Deploy the Multi-sig Wallet Dapp...");
-        jar = JarBuilder.buildJarForMainAndClasses(Main.class, Wallet.class, Bytes32.class, AionList.class, AionSet.class, AionMap.class, AionBuffer.class);
+        jar = JarBuilder.buildJarForMainAndClassesAndUserlib(Main.class, Wallet.class, Bytes32.class);
         int confirmationsRequired = 2;
         arguments = ABIEncoder.encodeMethodArguments("", new Address(owner1.toBytes()), new Address(owner2.toBytes()), confirmationsRequired);
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);

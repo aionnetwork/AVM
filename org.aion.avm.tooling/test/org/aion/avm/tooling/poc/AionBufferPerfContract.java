@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.poc;
 
-import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.AionBuffer;
 
@@ -35,7 +35,66 @@ public class AionBufferPerfContract {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(AionBufferPerfContract.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("callPutByte")) {
+                callPutByte();
+                return new byte[0];
+            } else if (methodName.equals("callPutChar")) {
+                callPutChar();
+                return new byte[0];
+            } else if (methodName.equals("callPutShort")) {
+                callPutShort();
+                return new byte[0];
+            } else if (methodName.equals("callPutInt")) {
+                callPutInt();
+                return new byte[0];
+            } else if (methodName.equals("callPutFloat")) {
+                callPutFloat();
+                return new byte[0];
+            } else if (methodName.equals("callPutLong")) {
+                callPutLong();
+                return new byte[0];
+            } else if (methodName.equals("callPutDouble")) {
+                callPutDouble();
+                return new byte[0];
+            } else if (methodName.equals("callTransferBytesToBuffer")) {
+                callTransferBytesToBuffer();
+                return new byte[0];
+            } else if (methodName.equals("callGetByte")) {
+                callGetByte();
+                return new byte[0];
+            } else if (methodName.equals("callGetChar")) {
+                callGetChar();
+                return new byte[0];
+            } else if (methodName.equals("callGetShort")) {
+                callGetShort();
+                return new byte[0];
+            } else if (methodName.equals("callGetInt")) {
+                callGetInt();
+                return new byte[0];
+            } else if (methodName.equals("callGetFloat")) {
+                callGetFloat();
+                return new byte[0];
+            } else if (methodName.equals("callGetLong")) {
+                callGetLong();
+                return new byte[0];
+            } else if (methodName.equals("callGetDouble")) {
+                callGetDouble();
+                return new byte[0];
+            } else if (methodName.equals("callTransferBytesFromBuffer")) {
+                callTransferBytesFromBuffer();
+                return new byte[0];
+            } else if (methodName.equals("callEquals")) {
+                callEquals();
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static void callPutByte() {

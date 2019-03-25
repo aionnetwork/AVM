@@ -1,7 +1,5 @@
 package org.aion.avm.tooling.persistence;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.InstrumentationBasedStorageFees;
@@ -10,6 +8,8 @@ import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -58,7 +58,9 @@ public class GraphReachabilityIntegrationTest {
                 // write instances (3 - only 2 were actually modified)
                     + (2 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
-        callStatic(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges + byteArrayReturnCost, "modify249");
+
+        long userlibCost = 4586L;
+        callStatic(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges + userlibCost + byteArrayReturnCost, "modify249");
         
         // Verify after.
         callStatic(block, contractAddr, getCost_check249(false), "check249", 5);
@@ -108,7 +110,10 @@ public class GraphReachabilityIntegrationTest {
                 //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 17L)
                 ;
         // added byteArrayReturnCost cost for 3 methods with void return type
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + byteArrayReturnCost * 3, "run249_reentrant_notLoaded");
+
+        long userlibCost = 208962L;
+
+        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost + byteArrayReturnCost * 3, "run249_reentrant_notLoaded");
         
         // Verify after.
         callStatic(block, contractAddr, getCost_check249(false), "check249", 5);
@@ -157,7 +162,10 @@ public class GraphReachabilityIntegrationTest {
                 // write instance
                 //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 17L)
                 ;
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + byteArrayReturnCost * 3, "run249_reentrant_loaded");
+
+        long userlibCost = 209807L;
+
+        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost + byteArrayReturnCost * 3, "run249_reentrant_loaded");
         
         // Verify after.
         callStatic(block, contractAddr, getCost_check249(false), "check249", 5);
@@ -199,7 +207,9 @@ public class GraphReachabilityIntegrationTest {
                 // write instance
                 //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 25L)
                 ;
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + byteArrayReturnCost * 3, "runNewInstance_reentrant");
+        long run_userlibCost = 212097L;
+
+        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost + byteArrayReturnCost * 3, "runNewInstance_reentrant");
         
         // Verify result.
         long check_basicCost = adjustBasicCost(22156L);
@@ -214,7 +224,9 @@ public class GraphReachabilityIntegrationTest {
                 // write instances (4)
                 //    + (4 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
-        int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges, "checkNewInstance");
+        long check_userlibCost = 221944L;
+
+        int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
         Assert.assertEquals(5, value);
     }
 
@@ -263,7 +275,10 @@ public class GraphReachabilityIntegrationTest {
                 // write instance
                 //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 32L)
                 ;
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + byteArrayReturnCost * 5, "runNewInstance_reentrant2");
+
+        long run_userlibCost = 411431L;
+
+        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost + byteArrayReturnCost * 5, "runNewInstance_reentrant2");
         
         // Verify result.
         long check_basicCost = adjustBasicCost(22156L);
@@ -278,7 +293,10 @@ public class GraphReachabilityIntegrationTest {
                 // write instances (4)
                 //    + (4 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
-        int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges, "checkNewInstance");
+
+        long check_userlibCost = 221944L;
+
+        int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
         Assert.assertEquals(5, value);
     }
 
@@ -328,7 +346,7 @@ public class GraphReachabilityIntegrationTest {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         // Deploy.
-        long energyLimit = 1_000_000l;
+        long energyLimit = 10_000_000l;
         long energyPrice = 1l;
 
         AvmTransactionResult createResult = (AvmTransactionResult) avmRule.deploy(deployer, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
@@ -338,7 +356,7 @@ public class GraphReachabilityIntegrationTest {
         // Check that the deployment cost is what we expected.
         // The first three numbers here are: basic cost of tx, processing cost and storage cost
         long basicCost = BillingRules.getBasicTransactionCost(txData);
-        long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(1, jar.length);
+        long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(25, jar.length);
         long miscCharges = basicCost + codeInstantiationOfDeploymentFee + 185L + 300L + 1500L + 3L + 31L;
         long storageCharges = 0L
                 // static
@@ -350,8 +368,14 @@ public class GraphReachabilityIntegrationTest {
                 // instance
                     + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 25L
                 ;
-        Assert.assertEquals(miscCharges + storageCharges, createResult.getEnergyUsed());
-        Assert.assertEquals(energyLimit - (miscCharges + storageCharges), createResult.getEnergyRemaining());
+
+        long userlibMiscCost = 307444L;
+        long userlibStorageCost = 157394L;
+
+        long totalExpectedCost = miscCharges + storageCharges + userlibMiscCost + userlibStorageCost;
+
+        Assert.assertEquals(totalExpectedCost, createResult.getEnergyUsed());
+        Assert.assertEquals(energyLimit - totalExpectedCost, createResult.getEnergyRemaining());
         
         // Setup test.
         callStatic(block, contractAddr, getCost_setup249(), "setup249");
@@ -387,10 +411,13 @@ public class GraphReachabilityIntegrationTest {
                 // write instances (5)
                 //    + (5 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
                 ;
-        return basicCost + miscCharges + storageCharges + byteArrayReturnCost;
+
+        long userlibCost = 23969L;
+        return basicCost + miscCharges + storageCharges + userlibCost + byteArrayReturnCost;
     }
 
     private static long getCost_setup249() {
+
         long basicCost = adjustBasicCost(21644L);
         long miscCharges = 95L + 300L + 100L + 600L + 37234L + 716L + 63L + 63L + 63L + 63L + 63L;
         long storageCharges = 0L
@@ -409,7 +436,9 @@ public class GraphReachabilityIntegrationTest {
                 // instance
                     + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
                 ;
-        return basicCost + miscCharges + storageCharges + byteArrayReturnCost;
+        long userlibCost = 771L;
+
+        return basicCost + miscCharges + storageCharges + userlibCost + byteArrayReturnCost;
     }
 
     private TransactionResult runGc(Block block, Address contractAddr) {

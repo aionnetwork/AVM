@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;

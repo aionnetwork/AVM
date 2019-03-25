@@ -1,8 +1,8 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
@@ -15,7 +15,24 @@ public class InternalCallContractBalanceTarget {
     }
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(InternalCallContractBalanceTarget.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
+            if (methodName.equals("getBalanceOfDappViaInternalCall")) {
+                return ABIEncoder.encodeOneObject(getBalanceOfDappViaInternalCall((Address[]) argValues[0], (Integer) argValues[1]));
+            } else if (methodName.equals("createNewContractWithValue")) {
+                return ABIEncoder.encodeOneObject(createNewContractWithValue((byte[]) argValues[0], (byte[]) argValues[1], (Long) argValues[2]));
+            } else if (methodName.equals("recurseAndGetBalance")) {
+                return ABIEncoder.encodeOneObject(recurseAndGetBalance((Address[]) argValues[0], (Integer)argValues[1], (Integer) argValues[2]));
+            } else if (methodName.equals("getBalanceOfThisContractDuringClinit")) {
+                return ABIEncoder.encodeOneObject(getBalanceOfThisContractDuringClinit());
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     /**
@@ -31,8 +48,17 @@ public class InternalCallContractBalanceTarget {
      *
      * Returns the address of the newly created contract.
      */
-    public static byte[] createNewContractWithValue(byte[] dappCode, long amountToTransfer) {
+    public static byte[] createNewContractWithValue(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, long amountToTransfer) {
         // Create the child contract.
+
+        byte[] dappCode = new byte[dappBytesFirstHalf.length + dappBytesSecondHalf.length];
+        for(int i = 0; i < dappBytesFirstHalf.length; i++) {
+            dappCode[i] = dappBytesFirstHalf[i];
+        }
+        for(int i = 0, j = dappBytesFirstHalf.length; i < dappBytesSecondHalf.length; i++, j++) {
+            dappCode[j] = dappBytesSecondHalf[i];
+        }
+
         Result result = BlockchainRuntime.create(BigInteger.valueOf(amountToTransfer), dappCode, BlockchainRuntime.getRemainingEnergy());
 
         // If the create failed then we revert to propagate this failure upwards.

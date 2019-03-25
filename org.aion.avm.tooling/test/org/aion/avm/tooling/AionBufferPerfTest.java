@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -30,8 +30,7 @@ public class AionBufferPerfTest {
         System.currentTimeMillis(), new byte[0]);
 
     private byte[] buildBufferPerfJar() {
-        return JarBuilder.buildJarForMainAndClasses(AionBufferPerfContract.class,
-            AionBuffer.class);
+        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionBufferPerfContract.class);
     }
 
     private TransactionResult deploy(KernelInterface kernel, AvmImpl avm, byte[] testJar){

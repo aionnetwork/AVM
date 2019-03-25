@@ -49,7 +49,7 @@ public class AvmCLIIntegrationTest {
     @Test
     public void exploreShadowCoverageTarget() throws Exception {
         // Create the JAR and write it to a location we can parse from the command-line.
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ShadowCoverageTarget.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ShadowCoverageTarget.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 
@@ -67,7 +67,7 @@ public class AvmCLIIntegrationTest {
 
         // Now, check the storage.
         // (note that this NPE is just something in an instance field, as an example of deep data).
-        TestEnvironment exploreEnv = new TestEnvironment("NullPointerException(27):");
+        TestEnvironment exploreEnv = new TestEnvironment("NullPointerException(166):");
         AvmCLI.testingMain(exploreEnv, new String[] {"explore", dappAddress});
         Assert.assertTrue(exploreEnv.didScrapeString);
     }
@@ -75,7 +75,7 @@ public class AvmCLIIntegrationTest {
     @Test
     public void callWithAddressArgument() throws Exception {
         // Create the JAR and write it to a location we can parse from the command-line.
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(LengthOfAddressTarget.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(LengthOfAddressTarget.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
         
@@ -95,7 +95,7 @@ public class AvmCLIIntegrationTest {
 
     @Test
     public void callSimpleStackDemo() throws Exception {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
         
@@ -132,7 +132,7 @@ public class AvmCLIIntegrationTest {
 
     @Test
     public void multiSimpleStackDemo() throws Exception {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
         
@@ -238,7 +238,7 @@ public class AvmCLIIntegrationTest {
         java.math.BigInteger contractBalance;
 
         //deploy a contract first
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 
@@ -271,7 +271,7 @@ public class AvmCLIIntegrationTest {
         File storageFile = new File(storagePath);
         TestingKernel kernelInterface = new TestingKernel(storageFile);
 
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 
@@ -305,7 +305,7 @@ public class AvmCLIIntegrationTest {
         File storageFile = this.folder.newFolder();
         TestingKernel kernelInterface = new TestingKernel(storageFile);
 
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 
@@ -341,7 +341,7 @@ public class AvmCLIIntegrationTest {
         File storageFile = new File(storagePath);
         TestingKernel kernelInterface = new TestingKernel(storageFile);
 
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 

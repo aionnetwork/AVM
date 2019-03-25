@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -10,9 +10,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.testExchange.*;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -36,8 +33,8 @@ public class PocExchangeTest {
         this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
-        testERC20Jar = JarBuilder.buildJarForMainAndClasses(CoinController.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);
-        testExchangeJar = JarBuilder.buildJarForMainAndClasses(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ERC20Token.class, AionList.class, AionSet.class, AionMap.class);;
+        testERC20Jar = JarBuilder.buildJarForMainAndClassesAndUserlib(CoinController.class, ERC20Token.class);
+        testExchangeJar = JarBuilder.buildJarForMainAndClassesAndUserlib(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ERC20Token.class);
     }
 
     @After

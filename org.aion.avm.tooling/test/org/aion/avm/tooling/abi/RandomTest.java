@@ -161,7 +161,7 @@ public class RandomTest {
 
         // Finally,
         // return ABIEncoder.encodeMethodArguments("", new Object[]{v1, v2, v3, v4, v5, ...})
-        methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/ABIEncoder", "encodeMethodArguments", "(Ljava/lang/String;[Ljava/lang/Object;)[B", false);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeMethodArguments", "(Ljava/lang/String;[Ljava/lang/Object;)[B", false);
         methodVisitor.visitInsn(ARETURN);
 
         Label label1 = new Label();

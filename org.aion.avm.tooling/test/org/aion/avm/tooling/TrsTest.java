@@ -1,21 +1,17 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.types.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.poc.TRS;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.*;
-import org.aion.types.Address;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -24,29 +20,25 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 public class TrsTest {
-    private static final Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(true);
+
+    private static Address DEPLOYER;
+    private static org.aion.avm.api.Address DEPLOYER_API;
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1;
     private static final int NUM_PERIODS = 12;
 
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private static TestingKernel kernel;
 
-    private TestingKernel kernel;
-    private AvmImpl avm;
+    @BeforeClass
+    public static void setup() {
+        DEPLOYER_API = avmRule.getPreminedAccount();
+        DEPLOYER = new Address(DEPLOYER_API.unwrap());
+        kernel = avmRule.kernel;
+    }
+
     private Address contract;
-
-    @Before
-    public void setup() {
-        this.kernel = new TestingKernel();
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
-    }
-
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
-        this.avm = null;
-        this.kernel = null;
-    }
 
     @Test
     public void testDeployTrs() {
@@ -119,11 +111,11 @@ public class TrsTest {
      * new block whose timestamp has been moved ahead in time so that it is now in the next period.
      */
     private void moveIntoNextPeriod() {
-        long previousBlockTime = block.getTimestamp();
+        long previousBlockTime = avmRule.block.getTimestamp();
         long secondsPerPeriod = TRS.intervalSecs;
         long blocktimeForNextPeriod = previousBlockTime + secondsPerPeriod;
 
-        block = new Block(block.getPrevHash(), block.getNumber(), block.getCoinbase(), blocktimeForNextPeriod, block.getData());
+        avmRule.block = new Block(avmRule.block.getPrevHash(), avmRule.block.getNumber(), avmRule.block.getCoinbase(), blocktimeForNextPeriod, avmRule.block.getData());
     }
 
     private TransactionResult sendFundsToTrs(BigInteger amount) {
@@ -131,9 +123,9 @@ public class TrsTest {
     }
 
     private TransactionResult sendFundsTo(Address recipient, BigInteger amount) {
-        Transaction callTransaction = Transaction.call(DEPLOYER, recipient, kernel.getNonce(DEPLOYER), amount, new byte[0], ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionContext callContext = TransactionContextImpl.forExternalTransaction(callTransaction, block);
-        return avm.run(this.kernel, new TransactionContext[] {callContext})[0].get();
+        org.aion.avm.api.Address recipientAddress = new org.aion.avm.api.Address(recipient.toBytes());
+        AvmRule.ResultWrapper result = avmRule.balanceTransfer(DEPLOYER_API, recipientAddress, amount, ENERGY_LIMIT, ENERGY_PRICE);
+        return result.getTransactionResult();
     }
 
     private TransactionResult mintAccountToTrs(Address account, BigInteger amount) {
@@ -145,7 +137,7 @@ public class TrsTest {
     }
 
     private TransactionResult startTrs() {
-        return callContract("start", block.getTimestamp());
+        return callContract("start", avmRule.block.getTimestamp());
     }
 
     private TransactionResult lockTrs() {
@@ -162,18 +154,21 @@ public class TrsTest {
 
     private TransactionResult callContract(Address sender, String method, Object... parameters) {
         byte[] callData = ABIEncoder.encodeMethodArguments(method, parameters);
-        Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, callData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionContext callContext = TransactionContextImpl.forExternalTransaction(callTransaction, block);
-        return avm.run(this.kernel, new TransactionContext[] {callContext})[0].get();
+        org.aion.avm.api.Address contractAddress = new org.aion.avm.api.Address(contract.toBytes());
+        org.aion.avm.api.Address senderAddress = new org.aion.avm.api.Address(sender.toBytes());
+        AvmRule.ResultWrapper result = avmRule.call(senderAddress, contractAddress, BigInteger.ZERO, callData, ENERGY_LIMIT, ENERGY_PRICE);
+        assertTrue(result.getReceiptStatus().isSuccess());
+        return result.getTransactionResult();
+
     }
 
     private TransactionResult deployContract() {
         byte[] jarBytes = new CodeAndArguments(JarBuilder.buildJarForMainAndClasses(TRS.class, AionMap.class), null).encodeToBytes();
-        Transaction transaction = Transaction.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
-        TransactionResult result = avm.run(this.kernel, new TransactionContext[] {context})[0].get();
-        contract = Address.wrap(result.getReturnData());
-        return result;
+
+        AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);
+        assertTrue(result.getReceiptStatus().isSuccess());
+        contract = new Address(result.getDappAddress().unwrap());
+        return result.getTransactionResult();
     }
 
 }

@@ -1,8 +1,9 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.tooling.abi.Callable;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
@@ -11,10 +12,6 @@ import org.aion.avm.api.Result;
  * A contract that tracks the following addresses in internal calls: origin, caller, contract
  */
 public class InternalCallAddressesContract {
-
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(InternalCallAddressesContract.class, BlockchainRuntime.getData());
-    }
 
     /**
      * Triggers a chain of internal transactions such that this contract will call into contract
@@ -37,6 +34,7 @@ public class InternalCallAddressesContract {
      *
      *   ASSUMPTION: all of the other contracts are instance of InternalCallAddressTrackerContract!
      */
+    @Callable
     public static Address[] runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(Address[] otherContracts) {
         return recurseAndTrackAddressesByRecursingFirst(otherContracts, 0);
     }
@@ -62,6 +60,7 @@ public class InternalCallAddressesContract {
      *
      *   ASSUMPTION: all of the other contracts are instance of InternalCallAddressTrackerContract!
      */
+    @Callable
     public static Address[] runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(Address[] otherContracts) {
         return recurseAndTrackAddressesByRecursingLast(otherContracts, 0);
     }
@@ -74,6 +73,7 @@ public class InternalCallAddressesContract {
         return recurseAndTrackAddresses(otherContracts, currentDepth, true);
     }
 
+    @Callable
     public static Address[] recurseAndTrackAddresses(Address[] otherContracts, int currentDepth, boolean recurseFirst) {
         if (currentDepth < otherContracts.length) {
             Address[] reportForThisContract = null;

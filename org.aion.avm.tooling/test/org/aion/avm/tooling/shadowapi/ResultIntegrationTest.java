@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.shadowapi;
 
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.Result;
 import org.aion.avm.core.dappreading.JarBuilder;

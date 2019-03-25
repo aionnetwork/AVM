@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.abi;
 
-import org.aion.avm.abi.internal.ABICodec;
+import org.aion.avm.userlib.abi.ABICodec;
 import org.junit.Assert;
 
 import java.util.Arrays;

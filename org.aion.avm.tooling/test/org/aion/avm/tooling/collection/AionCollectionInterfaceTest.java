@@ -2,7 +2,7 @@ package org.aion.avm.tooling.collection;
 
 import java.math.BigInteger;
 
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.AionList;

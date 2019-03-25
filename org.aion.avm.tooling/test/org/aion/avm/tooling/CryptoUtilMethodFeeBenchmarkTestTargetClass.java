@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIDecoder;
 
 public class CryptoUtilMethodFeeBenchmarkTestTargetClass {
 
@@ -40,6 +40,27 @@ public class CryptoUtilMethodFeeBenchmarkTestTargetClass {
      * Entry point at a transaction call.
      */
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(CryptoUtilMethodFeeBenchmarkTestTargetClass.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
+            if (methodName.equals("callBlake2b")) {
+                callBlake2b((Integer) argValues[0], (byte[]) argValues[1]);
+                return new byte[0];
+            } else if (methodName.equals("callSha")) {
+                callSha((Integer) argValues[0], (byte[]) argValues[1]);
+                return new byte[0];
+            } else if (methodName.equals("callKeccak")) {
+                callKeccak((Integer) argValues[0], (byte[]) argValues[1]);
+                return new byte[0];
+            } else if (methodName.equals("callEdverify")) {
+                callEdverify((Integer) argValues[0], (byte[]) argValues[1]);
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 }

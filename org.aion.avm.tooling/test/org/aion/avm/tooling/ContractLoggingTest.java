@@ -8,7 +8,7 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -159,7 +159,7 @@ public class ContractLoggingTest {
     }
 
     private static void deployContract() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(LoggingTarget.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(LoggingTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);

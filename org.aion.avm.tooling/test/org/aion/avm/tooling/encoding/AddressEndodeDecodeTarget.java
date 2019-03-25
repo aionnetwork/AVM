@@ -1,10 +1,10 @@
 package org.aion.avm.tooling.encoding;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.tooling.abi.Callable;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 public class AddressEndodeDecodeTarget {
 

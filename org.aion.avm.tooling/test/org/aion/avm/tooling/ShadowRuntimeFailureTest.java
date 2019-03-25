@@ -1,6 +1,6 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
@@ -28,20 +28,20 @@ public class ShadowRuntimeFailureTest {
     public void testFailuresInDeployment() {
         // 0-7 are failures and 8 is a success.
         for (int i = 0; i < 8; ++i) {
-            byte[] data = avmRule.getDappBytes(ShadowRuntimeFailureTarget.class, new byte[] {(byte)i});
+            byte[] data = avmRule.getDappBytesWithUserlib(ShadowRuntimeFailureTarget.class, new byte[] {(byte)i});
             
             // deploy
             TransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
             Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         }
-        byte[] data = avmRule.getDappBytes(ShadowRuntimeFailureTarget.class, new byte[] {(byte)8});
+        byte[] data = avmRule.getDappBytesWithUserlib(ShadowRuntimeFailureTarget.class, new byte[] {(byte)8});
         TransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 
     @Test
     public void testFailuresInCall() {
-        byte[] txData = avmRule.getDappBytes(ShadowRuntimeFailureTarget.class, new byte[0]);
+        byte[] txData = avmRule.getDappBytesWithUserlib(ShadowRuntimeFailureTarget.class, new byte[0]);
         TransactionResult result1 = avmRule.deploy(deployer, BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
         Address contractAddr = new Address(result1.getReturnData());

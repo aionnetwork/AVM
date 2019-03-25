@@ -2,9 +2,9 @@ package org.aion.avm.tooling;
 
 import legacy_examples.deployAndRunTest.DeployAndRunTarget;
 import legacy_examples.helloworld.HelloWorld;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingKernel;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -32,7 +32,7 @@ public class AvmImplDeployAndRunTest {
 
     @Test
     public void testDeployWithClinitCall() {
-        byte[] arguments = ABIEncoder.encodeMethodArguments("", 100);
+        byte[] arguments = ABIEncoder.encodeDeploymentArguments(100);
         byte[] txData = avmRule.getDappBytes(HelloWorld.class, arguments);
 
         TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
@@ -180,11 +180,10 @@ public class AvmImplDeployAndRunTest {
         assertEquals(accountBalance, avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
 
         // account1 to call the Dapp and transfer 50000 to it; call with balance transfer
-        long energyLimit = 500000L;
+        long energyLimit = 500_000L;
         BigInteger value = BigInteger.valueOf(50000L);
 
-        txData = ABIEncoder.encodeMethodArguments("encodeArgs");
-        result = avmRule.call(account1, new Address(deployResult.getReturnData()), value, txData, energyLimit, energyPrice).getTransactionResult();
+        result = avmRule.balanceTransfer(account1, new Address(deployResult.getReturnData()), value, energyLimit, energyPrice).getTransactionResult();
 
 
         BigInteger accountBalanceAfterValueTransfer = accountBalance.subtract(value);

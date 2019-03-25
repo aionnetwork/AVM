@@ -1,8 +1,9 @@
 package org.aion.avm.tooling.poc;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 public class Main {
 
@@ -32,6 +33,19 @@ public class Main {
      * @return the encoded return data of the method being called.
      */
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(Wallet.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
+            if (methodName.equals("propose")) {
+                return ABIEncoder.encodeOneObject(Wallet.propose((Address) argValues[0], (Long) argValues[1], (byte[]) argValues[2], (Long) argValues[3]));
+            } else if (methodName.equals("confirm")) {
+                return ABIEncoder.encodeOneObject(Wallet.confirm((byte[]) argValues[0]));
+            } else {
+                return new byte[0];
+            }
+        }
     }
 }

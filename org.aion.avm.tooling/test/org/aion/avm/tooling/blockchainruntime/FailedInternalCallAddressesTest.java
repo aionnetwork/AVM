@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -33,7 +33,7 @@ public class FailedInternalCallAddressesTest {
     public static AvmRule avmRule = new AvmRule(false);
     private static final int MAX_CALL_DEPTH = 10;
     private static Address from = avmRule.getPreminedAccount();
-    private static long energyLimit = 5_000_000L;
+    private static long energyLimit = 50_000_000L;
     private static long energyPrice = 5;
 
 

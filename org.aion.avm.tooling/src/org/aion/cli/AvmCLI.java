@@ -1,7 +1,7 @@
 package org.aion.cli;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;

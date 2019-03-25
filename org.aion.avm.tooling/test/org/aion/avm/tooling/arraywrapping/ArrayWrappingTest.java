@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.arraywrapping;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.*;

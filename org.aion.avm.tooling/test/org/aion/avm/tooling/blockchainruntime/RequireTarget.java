@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.tooling.abi.Callable;
 

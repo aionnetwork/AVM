@@ -1,8 +1,9 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.tooling.abi.Callable;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
@@ -13,7 +14,22 @@ public class FailedInternalCallClinitAddressesContract {
     private static final Address CONTRACT = BlockchainRuntime.getAddress();
 
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(FailedInternalCallClinitAddressesContract.class, BlockchainRuntime.getData());
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
+            if (methodName.equals("runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress")) {
+                return ABIEncoder.encodeOneObject(runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress((byte[]) argValues[0], (byte[]) argValues[1], (Integer) argValues[2]));
+            } else if (methodName.equals("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse")) {
+                return ABIEncoder.encodeOneObject(runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse((byte[]) argValues[0], (byte[]) argValues[1], (Integer) argValues[2]));
+            } else if (methodName.equals("recurseAndTrackAddresses")) {
+                return ABIEncoder.encodeOneObject(recurseAndTrackAddresses((byte[]) argValues[0], (byte[]) argValues[1], (Integer) argValues[2], (Integer) argValues[3], (Boolean) argValues[4]));
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     /**
@@ -39,8 +55,9 @@ public class FailedInternalCallClinitAddressesContract {
      *
      *   NOTE: the deepest call in this chain will do a REVERT.
      */
-    public static Address[] runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(byte[] dappBytes, int numOtherContracts) {
-        return recurseAndTrackAddressesByRecursingFirst(dappBytes, numOtherContracts, 0);
+    @Callable
+    public static Address[] runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, int numOtherContracts) {
+        return recurseAndTrackAddressesByRecursingFirst(dappBytesFirstHalf, dappBytesSecondHalf, numOtherContracts, 0);
     }
 
     /**
@@ -62,23 +79,25 @@ public class FailedInternalCallClinitAddressesContract {
      *   index (N * 3) + 2: address for contract at depth N
      *
      *
-     *   ASSUMPTION: dappBytes are the bytes of THIS dapp.
+     *   ASSUMPTION: dappBytesFirstHalf and dappBytesSecondHalf when concatenated are the bytes of THIS dapp.
      *
      *   NOTE: the deepest call in this chain will do a REVERT.
      */
-    public static Address[] runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(byte[] dappBytes, int numOtherContracts) {
-        return recurseAndTrackAddressesByRecursingLast(dappBytes, numOtherContracts, 0);
+    @Callable
+    public static Address[] runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, int numOtherContracts) {
+        return recurseAndTrackAddressesByRecursingLast(dappBytesFirstHalf, dappBytesSecondHalf, numOtherContracts, 0);
     }
 
-    public static Address[] recurseAndTrackAddressesByRecursingFirst(byte[] dappBytes, int numOtherContracts, int currentDepth) {
-        return recurseAndTrackAddresses(dappBytes, numOtherContracts, currentDepth, true);
+    public static Address[] recurseAndTrackAddressesByRecursingFirst(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, int numOtherContracts, int currentDepth) {
+        return recurseAndTrackAddresses(dappBytesFirstHalf, dappBytesSecondHalf, numOtherContracts, currentDepth, true);
     }
 
-    public static Address[] recurseAndTrackAddressesByRecursingLast(byte[] dappBytes, int numOtherContracts, int currentDepth) {
-        return recurseAndTrackAddresses(dappBytes, numOtherContracts, currentDepth, false);
+    public static Address[] recurseAndTrackAddressesByRecursingLast(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, int numOtherContracts, int currentDepth) {
+        return recurseAndTrackAddresses(dappBytesFirstHalf, dappBytesSecondHalf, numOtherContracts, currentDepth, false);
     }
 
-    public static Address[] recurseAndTrackAddresses(byte[] dappBytes, int numOtherContracts, int currentDepth, boolean recurseFirst) {
+    @Callable
+    public static Address[] recurseAndTrackAddresses(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, int numOtherContracts, int currentDepth, boolean recurseFirst) {
         if (currentDepth < numOtherContracts) {
             Address[] reportForThisContract = null;
 
@@ -87,6 +106,15 @@ public class FailedInternalCallClinitAddressesContract {
             }
 
             // First, we create the dapp we are going to call into.
+
+            byte[] dappBytes = new byte[dappBytesFirstHalf.length + dappBytesSecondHalf.length];
+            for(int i = 0; i < dappBytesFirstHalf.length; i++) {
+                dappBytes[i] = dappBytesFirstHalf[i];
+            }
+            for(int i = 0, j = dappBytesFirstHalf.length; i < dappBytesSecondHalf.length; i++, j++) {
+                dappBytes[j] = dappBytesSecondHalf[i];
+            }
+
             Result createResult = BlockchainRuntime.create(BigInteger.ZERO, dappBytes, BlockchainRuntime.getRemainingEnergy());
 
             // This way we actually know if something went wrong...
@@ -98,7 +126,7 @@ public class FailedInternalCallClinitAddressesContract {
             Address newDappAddress = new Address(createResult.getReturnData());
 
             // Now call into the dapp. We assume its code is this same class, so this is 'recursive'.
-            byte[] callData = ABIEncoder.encodeMethodArguments("recurseAndTrackAddresses", dappBytes, numOtherContracts, currentDepth + 1, recurseFirst);
+            byte[] callData = ABIEncoder.encodeMethodArguments("recurseAndTrackAddresses", dappBytesFirstHalf, dappBytesSecondHalf, numOtherContracts, currentDepth + 1, recurseFirst);
             Result callResult = BlockchainRuntime.call(newDappAddress, BigInteger.ZERO, callData, BlockchainRuntime.getRemainingEnergy());
 
             // check the revert on the deepest child.

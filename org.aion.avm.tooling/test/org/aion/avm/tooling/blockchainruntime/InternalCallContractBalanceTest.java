@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -24,7 +24,7 @@ public class InternalCallContractBalanceTest {
     public static AvmRule avmRule = new AvmRule(false);
     private static final int MAX_CALL_DEPTH = 10;
     private static Address from = avmRule.getPreminedAccount();
-    private static long energyLimit = 5_000_000L;
+    private static long energyLimit = 50_000_000L;
     private static long energyPrice = 5;
 
     /**
@@ -151,7 +151,15 @@ public class InternalCallContractBalanceTest {
     }
 
     private Address callContractDoCreateAndTransferValueAtDeployTime(Address contract, long amountToTransfer) {
-        byte[] callData = ABIEncoder.encodeMethodArguments("createNewContractWithValue", getDappBytes(), amountToTransfer);
+        byte[] dappBytes = getDappBytes();
+
+        byte[] dappBytesFirstHalf = new byte[dappBytes.length / 2];
+        byte[] dappBytesSecondHalf = new byte[dappBytes.length - dappBytesFirstHalf.length];
+        System.arraycopy(dappBytes, 0, dappBytesFirstHalf, 0, dappBytesFirstHalf.length);
+        System.arraycopy(dappBytes, dappBytesFirstHalf.length, dappBytesSecondHalf, 0, dappBytesSecondHalf.length);
+
+        byte[] callData = ABIEncoder.encodeMethodArguments("createNewContractWithValue", dappBytesFirstHalf, dappBytesSecondHalf, amountToTransfer);
+
         AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
         assertTrue(result.getTransactionResult().getResultCode().isSuccess());
         return new Address((byte[]) result.getDecodedReturnData());
@@ -195,7 +203,7 @@ public class InternalCallContractBalanceTest {
     }
 
     private static byte[] getDappBytes() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(InternalCallContractBalanceTarget.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(InternalCallContractBalanceTarget.class);
         return new CodeAndArguments(jar, new byte[0]).encodeToBytes();
     }
 

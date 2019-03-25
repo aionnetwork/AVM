@@ -1,10 +1,10 @@
 package org.aion.avm.tooling.persistence;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
+import org.aion.avm.tooling.abi.Callable;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 
 /**
@@ -20,11 +20,7 @@ public class GraphReachabilityIntegrationTestTarget {
     public GraphReachabilityIntegrationTestTarget(int value) {
         this.value = value;
     }
-    
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(GraphReachabilityIntegrationTestTarget.class, BlockchainRuntime.getData());
-    }
-    
+
     /**
      * Create the graph which would otherwise demonstrate problems:
      * R -> (A, B)
@@ -35,6 +31,7 @@ public class GraphReachabilityIntegrationTestTarget {
      * E -> (null, 4)
      * (E is reachable through 2 totally distinct paths)
      */
+    @Callable
     public static void setup249() {
         GraphReachabilityIntegrationTestTarget a = new GraphReachabilityIntegrationTestTarget(0);
         GraphReachabilityIntegrationTestTarget b = new GraphReachabilityIntegrationTestTarget(1);
@@ -52,6 +49,7 @@ public class GraphReachabilityIntegrationTestTarget {
     /**
      * Check that the value is what is provided, in both directions (unless the left is broken, since that is part of the test).
      */
+    @Callable
     public static void check249(int value) {
         // Check the value.
         int left = rootRight.next.next.value;
@@ -66,6 +64,7 @@ public class GraphReachabilityIntegrationTestTarget {
     /**
      * Modify the graph, on the left, via a reentrant call, then verify the modification, on the right.
      */
+    @Callable
     public static void run249_reentrant_notLoaded() {
         reentrantCallModify();
         
@@ -78,6 +77,7 @@ public class GraphReachabilityIntegrationTestTarget {
      * Check the state of the graph, on the right, modify the graph, on the left, via a reentrant call,
      * then verify the modification, on the right.
      */
+    @Callable
     public static void run249_reentrant_loaded() {
         int initial = rootRight.next.next.value;
         assert 4 == initial;
@@ -92,6 +92,7 @@ public class GraphReachabilityIntegrationTestTarget {
     /**
      * Make the reentrant call to create the new instance.
      */
+    @Callable
     public static void runNewInstance_reentrant() {
         // Make the call to change it.
         BigInteger value = BigInteger.ZERO;
@@ -104,6 +105,7 @@ public class GraphReachabilityIntegrationTestTarget {
     /**
      * Make the reentrant call to runNewInstance_reentrant.
      */
+    @Callable
     public static void runNewInstance_reentrant2() {
         // Make the call to change it.
         BigInteger value = BigInteger.ZERO;
@@ -116,6 +118,7 @@ public class GraphReachabilityIntegrationTestTarget {
     /**
      * Checks the new instance, on the right, and returns its value.
      */
+    @Callable
     public static int checkNewInstance() {
         return rootRight.next.next.next.value;
     }
@@ -123,6 +126,7 @@ public class GraphReachabilityIntegrationTestTarget {
     /**
      * Modify the E value to 5, on the left.
      */
+    @Callable
     public static void modify249() {
         // Make sure it is its initial value.
         int initial = rootLeft.next.next.value;
@@ -138,6 +142,7 @@ public class GraphReachabilityIntegrationTestTarget {
     /**
      * Add a link with the value 5 to E, on the left, then sever that connection.
      */
+    @Callable
     public static void modifyNewInstance() {
         // Make sure it is its initial value.
         rootLeft.next.next.next = new GraphReachabilityIntegrationTestTarget(5);

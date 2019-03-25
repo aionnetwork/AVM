@@ -2,7 +2,7 @@ package org.aion.avm.tooling;
 
 import examples.BetaMapEvents;
 import examples.HelloWorld;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.AionMap;
@@ -43,7 +43,7 @@ public class ExamplesIntegrationTest {
 
     @Test
     public void test_HelloWorld() throws Exception {
-        byte[] txData = avmRule.getDappBytes(HelloWorld.class, new byte[0]);
+        byte[] txData = avmRule.getDappBytesWithUserlib(HelloWorld.class, new byte[0]);
 
         // Deploy.
         long energyLimit = 10_000_000l;

@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.AvmRule;

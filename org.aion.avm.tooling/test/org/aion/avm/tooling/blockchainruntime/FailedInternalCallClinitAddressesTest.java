@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.AvmRule;
@@ -24,7 +24,7 @@ public class FailedInternalCallClinitAddressesTest {
 
     private static final int MAX_CALL_DEPTH = 10;
     private static Address from =avmRule.getPreminedAccount();
-    private static long energyLimit = 6_000_000L;
+    private static long energyLimit = 600_000_000L;
     private static long energyPrice = 5;
 
     // All of the print calls become active when this is set true. By default this is false to speed
@@ -150,11 +150,16 @@ public class FailedInternalCallClinitAddressesTest {
     private Address[] callFailedInternalCallClinitAddressesContract(Address contract, int numInternalCalls, boolean recurseFirst) {
         byte[] dappBytes = getDappBytes();
 
+        byte[] dappBytesFirstHalf = new byte[dappBytes.length / 2];
+        byte[] dappBytesSecondHalf = new byte[dappBytes.length - dappBytesFirstHalf.length];
+        System.arraycopy(dappBytes, 0, dappBytesFirstHalf, 0, dappBytesFirstHalf.length);
+        System.arraycopy(dappBytes, dappBytesFirstHalf.length, dappBytesSecondHalf, 0, dappBytesSecondHalf.length);
+
         byte[] callData;
         if (recurseFirst) {
-            callData = ABIEncoder.encodeMethodArguments("runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress", dappBytes, numInternalCalls);
+            callData = ABIEncoder.encodeMethodArguments("runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress", dappBytesFirstHalf, dappBytesSecondHalf, numInternalCalls);
         } else {
-            callData = ABIEncoder.encodeMethodArguments("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse", dappBytes, numInternalCalls);
+            callData = ABIEncoder.encodeMethodArguments("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse", dappBytesFirstHalf, dappBytesSecondHalf, numInternalCalls);
         }
 
         TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
@@ -163,7 +168,7 @@ public class FailedInternalCallClinitAddressesTest {
     }
 
     private static byte[] getDappBytes() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(FailedInternalCallClinitAddressesContract.class);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(FailedInternalCallClinitAddressesContract.class);
         return new CodeAndArguments(jar, new byte[0]).encodeToBytes();
     }
 

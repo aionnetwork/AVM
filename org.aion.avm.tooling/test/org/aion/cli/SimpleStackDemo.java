@@ -1,8 +1,8 @@
 package org.aion.cli;
 
-import org.aion.avm.api.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIDecoder;
 
 
 /**
@@ -16,8 +16,19 @@ public class SimpleStackDemo {
     private static SimpleStackDemo topOfStack;
 
     public static byte[] main() {
-        byte[] input = BlockchainRuntime.getData();
-        return ABIDecoder.decodeAndRunWithClass(SimpleStackDemo.class, input);
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
+            if (methodName.equals("addNewTuple")) {
+                addNewTuple((String) argValues[0]);
+                return new byte[0];
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static void addNewTuple(String name) {

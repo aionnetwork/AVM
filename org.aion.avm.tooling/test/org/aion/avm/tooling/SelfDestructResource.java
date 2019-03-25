@@ -1,11 +1,12 @@
 package org.aion.avm.tooling;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.api.Result;
+import org.aion.avm.tooling.abi.Callable;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 
 /**
@@ -27,19 +28,13 @@ public class SelfDestructResource {
         }
     }
 
-    public static byte[] main() {
-        byte[] input = BlockchainRuntime.getData();
-        // Note that we also want to handle default actions (empty input) by doing nothing and returning empty.
-        return (input.length > 0)
-                ? ABIDecoder.decodeAndRunWithClass(SelfDestructResource.class, input)
-                : new byte[0];
-    }
-
+    @Callable
     public static int deleteAndReturn(Address beneficiary) {
         BlockchainRuntime.selfDestruct(beneficiary);
         return DELETE_AND_RETURN;
     }
 
+    @Callable
     public static int deleteCallAndReturn(Address beneficiary, Address target) {
         BlockchainRuntime.selfDestruct(beneficiary);
         BigInteger value = BigInteger.ZERO;
@@ -49,10 +44,12 @@ public class SelfDestructResource {
         return (Integer)ABIDecoder.decodeOneObject(response);
     }
 
+    @Callable
     public static int justReturn() {
         return JUST_RETURN;
     }
 
+    @Callable
     public static Address deleteDeployAndReturnAddress(Address beneficiary, byte[] data) {
         BlockchainRuntime.selfDestruct(beneficiary);
         BigInteger value = BigInteger.ZERO;
@@ -61,11 +58,13 @@ public class SelfDestructResource {
         return new Address(result.getReturnData());
     }
 
+    @Callable
     public static long deleteAndReturnBalance(Address beneficiary) {
         BlockchainRuntime.selfDestruct(beneficiary);
         return BlockchainRuntime.getBalance(BlockchainRuntime.getAddress()).longValueExact();
     }
 
+    @Callable
     public static long deleteAndReturnBalanceFromAnother(Address beneficiary, Address target) {
         BlockchainRuntime.selfDestruct(beneficiary);
         BigInteger value = BigInteger.ZERO;
@@ -75,10 +74,12 @@ public class SelfDestructResource {
         return (Long)ABIDecoder.decodeOneObject(response);
     }
 
+    @Callable
     public static long returnCallerBalance(Address caller) {
         return BlockchainRuntime.getBalance(caller).longValueExact();
     }
 
+    @Callable
     public static int deleteAndFailToCallSelf(Address beneficiary) {
         BlockchainRuntime.selfDestruct(beneficiary);
         BigInteger value = BigInteger.ZERO;
@@ -91,6 +92,7 @@ public class SelfDestructResource {
         return DELETE_AND_FAIL_TO_CALL_SELF;
     }
 
+    @Callable
     public static int callToDeleteSuccess(Address beneficiary, Address target) {
         // Call the target to get them to delete themselves.
         BigInteger value = BigInteger.ZERO;
@@ -113,6 +115,7 @@ public class SelfDestructResource {
         return CALL_TO_DELETE_SUCCESS;
     }
 
+    @Callable
     public static int callToDeleteFailure(Address beneficiary, Address target) {
         // Call the target to get them to delete themselves.
         BigInteger value = BigInteger.ZERO;
@@ -135,11 +138,13 @@ public class SelfDestructResource {
         return CALL_TO_DELETE_FAIL;
     }
 
+    @Callable
     public static int deleteAndFail(Address beneficiary) {
         BlockchainRuntime.selfDestruct(beneficiary);
         throw new AssertionError();
     }
 
+    @Callable
     public static long deleteAndReturnBeneficiaryBalance(Address beneficiary) {
         BlockchainRuntime.selfDestruct(beneficiary);
         return BlockchainRuntime.getBalance(beneficiary).longValueExact();

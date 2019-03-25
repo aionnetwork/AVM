@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.arraywrapping;
 
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.vm.api.interfaces.TransactionResult;

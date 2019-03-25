@@ -1,11 +1,9 @@
 package org.aion.avm.tooling.abi;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.BlockchainRuntime;
-
 public class DAppWithMainNoFallbackTarget {
     public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(DAppWithMainNoFallbackTarget.class, BlockchainRuntime.getData());
+        // This contract is never called, the test only checks correct annotation extraction
+        return null;
     }
 
     @Callable()

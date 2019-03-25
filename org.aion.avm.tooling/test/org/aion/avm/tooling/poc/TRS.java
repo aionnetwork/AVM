@@ -1,9 +1,10 @@
 package org.aion.avm.tooling.poc;
 
 import java.math.BigInteger;
-import org.aion.avm.api.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.AionMap;
 
 public class TRS {
@@ -21,10 +22,7 @@ public class TRS {
         owner = BlockchainRuntime.getCaller();
     }
 
-    public static byte[] main() {
-        return ABIDecoder.decodeAndRunWithClass(TRS.class, BlockchainRuntime.getData());
-    }
-
+    @Callable
     public static void init(int numPeriods, int specialValue) {
         if (!inited && callerIsOwner()) {
             assert numPeriods > 0;
@@ -34,6 +32,7 @@ public class TRS {
         }
     }
 
+    @Callable
     public static void start(long blockTimestamp) {
         if (inited && isPreStart() && callerIsOwner()) {
             startBlockTimestamp = blockTimestamp;
@@ -61,6 +60,7 @@ public class TRS {
         return (p > periods) ? periods : p;
     }
 
+    @Callable
     public static void mint(Address address, long amount) {
         if (callerIsOwner() && isPreLock() && !nullified) {
             BigInteger value = BigInteger.valueOf(amount);
@@ -132,6 +132,7 @@ public class TRS {
         return false;
     }
 
+    @Callable
     public static boolean withdraw() {
         return !nullified && withdrawTo(BlockchainRuntime.getCaller());
     }
@@ -150,6 +151,7 @@ public class TRS {
         }
     }
 
+    @Callable
     public static void lock() {
         if (callerIsOwner()) {
             locked = true;

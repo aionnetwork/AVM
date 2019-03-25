@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.AvmRule;
@@ -64,14 +64,13 @@ public class SelfDestructTest {
         Address target = deployCommonResource(new byte[0]);
         
         // Call the callSelfForNull entry-point and it should return null to us.
-        byte[] argData = ABIEncoder.encodeMethodArguments("deleteDeployAndReturnAddress", deployer, makeDeploymentData(new byte[0]));
+        byte[] argData = ABIEncoder.encodeMethodArguments("deleteDeployAndReturnAddress", deployer, makeDeploymentData(new byte[0], SelfDestructSmallResource.class));
         Object resultObject = callDApp(target, argData);
         Address newTarget = (Address)resultObject;
+        Assert.assertNotNull(newTarget);
         
-        // Verify that we can call this new DApp instance, but not the original target.
+        // Verify that we cannot call the original target.
         argData = ABIEncoder.encodeMethodArguments("justReturn");
-        resultObject = callDApp(newTarget, argData);
-        Assert.assertEquals(SelfDestructResource.JUST_RETURN, ((Integer)resultObject).intValue());
         failToCall(target);
     }
 
@@ -167,7 +166,7 @@ public class SelfDestructTest {
 
 
     private Address deployCommonResource(byte[] deployArgs) {
-        byte[] txData = makeDeploymentData(deployArgs);
+        byte[] txData = makeDeploymentData(deployArgs, SelfDestructResource.class);
 
         TransactionResult result1 = avmRule.deploy(deployer, BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
@@ -188,8 +187,8 @@ public class SelfDestructTest {
         Assert.assertEquals(null, result.getReturnData());
     }
 
-    private byte[] makeDeploymentData(byte[] deployArgs) {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(SelfDestructResource.class);
+    private byte[] makeDeploymentData(byte[] deployArgs, Class classToDeploy) {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(classToDeploy);
         return new CodeAndArguments(jar, deployArgs).encodeToBytes();
     }
 

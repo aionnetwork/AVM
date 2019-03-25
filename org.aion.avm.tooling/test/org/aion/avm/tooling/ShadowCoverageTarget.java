@@ -5,10 +5,10 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import org.aion.avm.api.ABIDecoder;
-import org.aion.avm.api.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 
 public class ShadowCoverageTarget {
@@ -22,8 +22,33 @@ public class ShadowCoverageTarget {
     }
 
     public static byte[] main() {
-        byte[] input = BlockchainRuntime.getData();
-        return ABIDecoder.decodeAndRunWithClass(ShadowCoverageTarget.class, input);
+        byte[] inputBytes = BlockchainRuntime.getData();
+        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        if (methodName == null) {
+            return new byte[0];
+        } else {
+            if (methodName.equals("populate_JavaLang")) {
+                return ABIEncoder.encodeOneObject(populate_JavaLang());
+            } else if (methodName.equals("getHash_JavaLang")) {
+                return ABIEncoder.encodeOneObject(getHash_JavaLang());
+            } else if (methodName.equals("verifyReentrantChange_JavaLang")) {
+                return ABIEncoder.encodeOneObject(verifyReentrantChange_JavaLang());
+            } else if (methodName.equals("populate_JavaMath")) {
+                return ABIEncoder.encodeOneObject(populate_JavaMath());
+            } else if (methodName.equals("getHash_JavaMath")) {
+                return ABIEncoder.encodeOneObject(getHash_JavaMath());
+            } else if (methodName.equals("verifyReentrantChange_JavaMath")) {
+                return ABIEncoder.encodeOneObject(verifyReentrantChange_JavaMath());
+            } else if (methodName.equals("populate_Api")) {
+                return ABIEncoder.encodeOneObject(populate_Api());
+            } else if (methodName.equals("getHash_Api")) {
+                return ABIEncoder.encodeOneObject(getHash_Api());
+            } else if (methodName.equals("verifyReentrantChange_Api")) {
+                return ABIEncoder.encodeOneObject(verifyReentrantChange_Api());
+            } else {
+                return new byte[0];
+            }
+        }
     }
 
     public static int populate_JavaLang() {
