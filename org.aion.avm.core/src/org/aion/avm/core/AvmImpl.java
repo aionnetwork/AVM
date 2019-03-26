@@ -210,7 +210,7 @@ public class AvmImpl implements AvmInternal {
         this.resourceMonitor.acquire(target.toBytes(), task);
 
         // nonce check
-        if (!task.getThisTransactionalKernel().accountNonceEquals(sender, new BigInteger(ctx.getTransaction().getNonce()))) {
+        if (!task.getThisTransactionalKernel().accountNonceEquals(sender, new BigInteger(1, ctx.getTransaction().getNonce()))) {
             error = AvmTransactionResult.Code.REJECTED_INVALID_NONCE;
         }
 
