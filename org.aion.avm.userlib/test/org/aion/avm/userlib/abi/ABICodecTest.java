@@ -160,7 +160,7 @@ public class ABICodecTest {
         elements = ABICodec.parseEverything(new byte[] { ABIToken.NULL.identifier, ABIToken.STRING.identifier });
         Assert.assertEquals(1, elements.size());
         Assert.assertEquals(null, elements.get(0).value);
-        Assert.assertEquals(String.class, elements.get(0).standardType);
+        Assert.assertEquals(String.class, elements.get(0).type);
     }
 
     @Test
@@ -199,7 +199,7 @@ public class ABICodecTest {
         elements = ABICodec.parseEverything(new byte[] { ABIToken.NULL.identifier, ABIToken.ARRAY.identifier, ABIToken.STRING.identifier });
         Assert.assertEquals(1, elements.size());
         Assert.assertEquals(null, elements.get(0).value);
-        Assert.assertEquals(String[].class, elements.get(0).standardType);
+        Assert.assertEquals(String[].class, elements.get(0).type);
     }
 
     @Test
@@ -284,9 +284,9 @@ public class ABICodecTest {
         List<ABICodec.Tuple> list = ABICodec.parseEverything(result);
         Assert.assertEquals(4, list.size());
         Assert.assertEquals(testString, list.get(0).value);
-        Assert.assertEquals(Byte.class, list.get(1).standardType);
+        Assert.assertEquals(Byte.class, list.get(1).type);
         Assert.assertEquals(null, list.get(2).value);
-        Assert.assertEquals(int[].class, list.get(3).standardType);
+        Assert.assertEquals(int[].class, list.get(3).type);
     }
 
     @Test

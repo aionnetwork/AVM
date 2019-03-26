@@ -25,9 +25,10 @@ import java.math.BigInteger;
 public class ExceptionWrappingIntegrationTest {
 
     // These tests work by throwing an exception after a certain number of calls to chargeEnergy
-    // Currently, deploying the test class and userlib ABI makes around 3250 calls to chargeEnergy
+    // Currently, deploying the test class and userlib ABI makes around 200 and 190 calls to chargeEnergy for the 2 targets
     // Any changes that cause the number of chargeEnergy calls to change, such as changing the ABI might cause this test to fail, in which case the number needs to be updated
-    private final int deploymentEnergyCalls = 3250;
+    private final int persistentExceptionDeploymentEnergyCalls = 200;
+    private final int attackExceptionHandlingTargetDeploymentEnergyCalls = 190;
     @Test
     public void testExceptionPersistence() throws Exception {
         Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
@@ -47,7 +48,7 @@ public class ExceptionWrappingIntegrationTest {
         // Store the exceptions.
         int systemHash = ((Integer)callStatic(block, kernel, avm, contractAddr, "storeSystem")).intValue();
         // We know that this is currently 4 but that may change in the future (was 5 when this was an instance call, for example).
-        Assert.assertEquals(155, systemHash);
+        Assert.assertEquals(72, systemHash);
         byte[] user = (byte[])callStatic(block, kernel, avm, contractAddr, "storeUser");
         Assert.assertEquals("MESSAGE", new String(user));
         byte[] second = (byte[])callStatic(block, kernel, avm, contractAddr, "getSecond");
@@ -66,7 +67,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new TestingKernel();
-        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(deploymentEnergyCalls, () -> {throw new OutOfEnergyException();}), new EmptyCapabilities(), new AvmConfiguration());
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(persistentExceptionDeploymentEnergyCalls, () -> {throw new OutOfEnergyException();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 10_000_000l;
@@ -88,7 +89,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new TestingKernel();
-        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(deploymentEnergyCalls, () -> {throw new NullPointerException();}), new EmptyCapabilities(), new AvmConfiguration());
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(persistentExceptionDeploymentEnergyCalls, () -> {throw new NullPointerException();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 10_000_000l;
@@ -110,7 +111,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new TestingKernel();
-        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(deploymentEnergyCalls, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(attackExceptionHandlingTargetDeploymentEnergyCalls, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 10_000_000l;
@@ -148,7 +149,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new TestingKernel();
-        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(deploymentEnergyCalls, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
+        AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(attackExceptionHandlingTargetDeploymentEnergyCalls, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 10_000_000l;

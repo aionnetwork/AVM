@@ -54,7 +54,7 @@ public class HashCodeIntegrationTest {
         AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         if (KeyValueObjectGraph.USE_DELTA_HASH) {
-            Assert.assertEquals(0xa42878a8, createResult.getStorageRootHash());
+            Assert.assertEquals(1279684323, createResult.getStorageRootHash());
         } else {
             Assert.assertEquals(-1540851544, createResult.getStorageRootHash());
         }
@@ -62,8 +62,8 @@ public class HashCodeIntegrationTest {
         
         // Store an object.
         int systemHash = ((Integer)callStatic(block, contractAddr, "persistNewObject")).intValue();
-        // We know that this is currently 150 but that may change in the future.
-        Assert.assertEquals(150, systemHash);
+        // We know that this is the current value, but that may change in the future.
+        Assert.assertEquals(67, systemHash);
         // Fetch it and verify the hashCode is loaded.
         int loadSystemHash = ((Integer)callStatic(block, contractAddr, "readPersistentHashCode")).intValue();
         Assert.assertEquals(systemHash, loadSystemHash);
@@ -78,7 +78,7 @@ public class HashCodeIntegrationTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.
         if (KeyValueObjectGraph.USE_DELTA_HASH) {
-            Assert.assertEquals(0xb7e7dd29, result.getStorageRootHash());
+            Assert.assertEquals(-2103722262, result.getStorageRootHash());
         } else {
             Assert.assertEquals(-1723350948, result.getStorageRootHash());
         }

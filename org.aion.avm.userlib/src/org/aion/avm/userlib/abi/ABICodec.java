@@ -3,10 +3,8 @@ package org.aion.avm.userlib.abi;
 import org.aion.avm.api.Address;
 
 import java.util.List;
-import java.util.Map;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
 
 /**
  * Note that there are at least 2 versions of the type system which need to be considered to use this and a third
@@ -31,17 +29,6 @@ public class ABICodec {
     private static final int BUFFER_SIZE = 64 * 1024;
 
     /**
-     * Used when decoding the ABI stream:  maps token identifier bytes to ABIToken instances.
-     */
-    private static final Map<Byte, ABIToken> TOKEN_MAP = new AionMap<>();
-
-    static {
-        for(ABIToken token : ABIToken.values()) {
-            TOKEN_MAP.put(token.identifier, token);
-        }
-    }
-
-    /**
      * Fully parses the given input data, returning a list of the Tuples defined by the data.
      * nre
      * @param data ABI-encoded bytes to interpret.
@@ -63,14 +50,14 @@ public class ABICodec {
             AionBuffer buffer = AionBuffer.wrap(data);
             // This loop is the top-level, so it can see leaf types, array modifiers, and null modifiers.
             while (buffer.getPosition() != buffer.getLimit()) {
-                ABIToken token = TOKEN_MAP.get(buffer.getByte());
+                ABIToken token = ABIToken.getTokenFromIdentifier(buffer.getByte());
                 if(null == token) {
                     throw new ABIException("Failed to parse serialized data");
                 }
 
                 if (ABIToken.ARRAY == token) {
                     // Pull out the type and length, since they are "part" of this token.
-                    ABIToken leafType = TOKEN_MAP.get(buffer.getByte());
+                    ABIToken leafType = ABIToken.getTokenFromIdentifier(buffer.getByte());
                     if(!leafType.isLeafType) {
                         throw new ABIException("Array component type must be a leaf type");
                     }
@@ -123,7 +110,7 @@ public class ABICodec {
         Object[] array = initArray(leafToken, arrayLength);
         // Now, populate the required length.
         for (int i = 0; i < arrayLength; i++) {
-            ABIToken token = TOKEN_MAP.get(buffer.getByte());
+            ABIToken token = ABIToken.getTokenFromIdentifier(buffer.getByte());
             Tuple object = parseNonArray(token, buffer);
             array[i] = object.value;
         }
@@ -161,11 +148,11 @@ public class ABICodec {
         Tuple result = null;
         // This CANNOT be an array but MAY still be null.
         if (ABIToken.NULL == token) {
-            ABIToken targetToken = TOKEN_MAP.get(buffer.getByte());
+            ABIToken targetToken = ABIToken.getTokenFromIdentifier(buffer.getByte());
             // Note that the only token types which can be null are the ones which DON'T have a primitive ABI type so verify that here.
             // (this null might actually be an array, so check that case, too).
             if (ABIToken.ARRAY == targetToken) {
-                ABIToken trueTargetToken = TOKEN_MAP.get(buffer.getByte());
+                ABIToken trueTargetToken = ABIToken.getTokenFromIdentifier(buffer.getByte());
                 // This type must NOT be primitive
                 if(isPrimitive(token)) {
                     throw new ABIException("Array has invalid component type");
@@ -179,7 +166,7 @@ public class ABICodec {
                     throw new ABIException("Null token described a primitive");
                 }
                 // Tuples, strictly speaking, should only be instantiated with the standard types (although it shouldn't make a difference, in this case).
-                result = new Tuple(targetToken.standardType, null);
+                result = new Tuple(targetToken.type, null);
             }
         } else {
             // Interpret the meaning of the token and read its data from the buffer (we just know that this can't be the ARRAY token).
@@ -304,7 +291,7 @@ public class ABICodec {
                         throw new ABIException("Unknown token: " + token);
                 }
             }
-            result = new Tuple(token.standardType, parsedData);
+            result = new Tuple(token.type, parsedData);
         }
         return result;
     }
@@ -318,17 +305,17 @@ public class ABICodec {
     private static void writeTupleToBuffer(AionBuffer buffer, Tuple elt) {
         // Note that this Tuple was built from outside so we aren't sure what this type means (leaf type, array type, unknown type, etc) but it should be a standard type.
 
-        if (ABIToken.STANDARD_LEAF_TYPE_MAP.containsKey(elt.standardType)) {
+        if (ABIToken.getIdentifierOfLeafType(elt.type) != 0x00) {
             // This is a direct leaf type (including a primitive array - they are caught here).
-            writeNonArrayToBuffer(buffer, elt.standardType, elt.value);
+            writeNonArrayToBuffer(buffer, elt.type, elt.value);
         } else {
             // This might be an array or something unknown.
-            Class<?> componentStandardType = getComponentType(elt.standardType);
-            if(componentStandardType == null) {
-                throw new ABIException("Unknown array type: " + componentStandardType.getName());
+            Class<?> componentType = getComponentType(elt.type);
+            if(componentType == null) {
+                throw new ABIException("Unknown array type: " + componentType.getName());
             }
 
-            if (ABIToken.STANDARD_LEAF_TYPE_MAP.containsKey(componentStandardType)) {
+            if (ABIToken.getIdentifierOfLeafType(componentType) != 0x00) {
                 // We can write an array token and then the elements.
                 Object[] cast = (Object[]) elt.value;
                 // (note that it is possible we are seeing a null array so handle that here).
@@ -337,14 +324,15 @@ public class ABICodec {
                 }
                 // Now, write the standard array token and leaf type identifier.
                 buffer.putByte(ABIToken.ARRAY.identifier);
-                buffer.putByte(ABIToken.STANDARD_LEAF_TYPE_MAP.get(componentStandardType).identifier);
+
+                buffer.putByte(ABIToken.getIdentifierOfLeafType(componentType));
                 // Proceed with length and contents if it was not null.
                 if (null != cast) {
                     writeLength(buffer, cast.length);
 
                     // Now, walk the elements and handle them.
                     for (Object val : cast) {
-                        writeNonArrayToBuffer(buffer, componentStandardType, val);
+                        writeNonArrayToBuffer(buffer, componentType, val);
                     }
                 }
             } else {
@@ -354,47 +342,47 @@ public class ABICodec {
         }
     }
 
-    private static void writeNonArrayToBuffer(AionBuffer buffer, Class<?> standardType, Object value) {
+    private static void writeNonArrayToBuffer(AionBuffer buffer, Class<?> type, Object value) {
         // Handle the null case, since that goes before the type.
         if (null == value) {
             buffer.putByte(ABIToken.NULL.identifier);
         }
 
         // Primitive types.
-        if (ABIToken.BYTE.standardType == standardType) {
+        if (ABIToken.BYTE.type == type) {
             buffer.putByte(ABIToken.BYTE.identifier);
             buffer.putByte((Byte) value);
-        } else if (ABIToken.BOOLEAN.standardType == standardType) {
+        } else if (ABIToken.BOOLEAN.type == type) {
             buffer.putByte(ABIToken.BOOLEAN.identifier);
             buffer.putByte((byte)((Boolean) value ? 1 : 0));
-        } else if (ABIToken.CHAR.standardType == standardType) {
+        } else if (ABIToken.CHAR.type == type) {
             buffer.putByte(ABIToken.CHAR.identifier);
             buffer.putChar((Character) value);
-        } else if (ABIToken.SHORT.standardType == standardType) {
+        } else if (ABIToken.SHORT.type == type) {
             buffer.putByte(ABIToken.SHORT.identifier);
             buffer.putShort((Short) value);
-        } else if (ABIToken.INT.standardType == standardType) {
+        } else if (ABIToken.INT.type == type) {
             buffer.putByte(ABIToken.INT.identifier);
             buffer.putInt((Integer) value);
-        } else if (ABIToken.LONG.standardType == standardType) {
+        } else if (ABIToken.LONG.type == type) {
             buffer.putByte(ABIToken.LONG.identifier);
             buffer.putLong((Long) value);
-        } else if (ABIToken.FLOAT.standardType == standardType) {
+        } else if (ABIToken.FLOAT.type == type) {
             buffer.putByte(ABIToken.FLOAT.identifier);
             buffer.putFloat((Float) value);
-        } else if (ABIToken.DOUBLE.standardType == standardType) {
+        } else if (ABIToken.DOUBLE.type == type) {
             buffer.putByte(ABIToken.DOUBLE.identifier);
             buffer.putDouble((Double) value);
 
             // Primitive array types.
-        } else if (ABIToken.A_BYTE.standardType == standardType) {
+        } else if (ABIToken.A_BYTE.type == type) {
             buffer.putByte(ABIToken.A_BYTE.identifier);
             if (null != value) {
                 byte[] cast = (byte[])value;
                 writeLength(buffer, cast.length);
                 buffer.put(cast);
             }
-        } else if (ABIToken.A_BOOLEAN.standardType == standardType) {
+        } else if (ABIToken.A_BOOLEAN.type == type) {
             buffer.putByte(ABIToken.A_BOOLEAN.identifier);
             if (null != value) {
                 boolean[] cast = (boolean[])value;
@@ -405,7 +393,7 @@ public class ABICodec {
                 }
                 buffer.put(ready);
             }
-        } else if (ABIToken.A_CHAR.standardType == standardType) {
+        } else if (ABIToken.A_CHAR.type == type) {
             buffer.putByte(ABIToken.A_CHAR.identifier);
             if (null != value) {
                 char[] cast = (char[])value;
@@ -414,7 +402,7 @@ public class ABICodec {
                     buffer.putChar(c);
                 }
             }
-        } else if (ABIToken.A_SHORT.standardType == standardType) {
+        } else if (ABIToken.A_SHORT.type == type) {
             buffer.putByte(ABIToken.A_SHORT.identifier);
             if (null != value) {
                 short[] cast = (short[])value;
@@ -423,7 +411,7 @@ public class ABICodec {
                     buffer.putShort(s);
                 }
             }
-        } else if (ABIToken.A_INT.standardType == standardType) {
+        } else if (ABIToken.A_INT.type == type) {
             buffer.putByte(ABIToken.A_INT.identifier);
             if (null != value) {
                 int[] cast = (int[])value;
@@ -432,7 +420,7 @@ public class ABICodec {
                     buffer.putInt(i);
                 }
             }
-        } else if (ABIToken.A_LONG.standardType == standardType) {
+        } else if (ABIToken.A_LONG.type == type) {
             buffer.putByte(ABIToken.A_LONG.identifier);
             if (null != value) {
                 long[] cast = (long[])value;
@@ -441,7 +429,7 @@ public class ABICodec {
                     buffer.putLong(l);
                 }
             }
-        } else if (ABIToken.A_FLOAT.standardType == standardType) {
+        } else if (ABIToken.A_FLOAT.type == type) {
             buffer.putByte(ABIToken.A_FLOAT.identifier);
             if (null != value) {
                 float[] cast = (float[])value;
@@ -450,7 +438,7 @@ public class ABICodec {
                     buffer.putFloat(f);
                 }
             }
-        } else if (ABIToken.A_DOUBLE.standardType == standardType) {
+        } else if (ABIToken.A_DOUBLE.type == type) {
             buffer.putByte(ABIToken.A_DOUBLE.identifier);
             if (null != value) {
                 double[] cast = (double[])value;
@@ -461,14 +449,14 @@ public class ABICodec {
             }
 
             // Special types
-        } else if (ABIToken.STRING.standardType == standardType) {
+        } else if (ABIToken.STRING.type == type) {
             buffer.putByte(ABIToken.STRING.identifier);
             if (null != value) {
                 byte[] cast = ((String)value).getBytes();
                 writeLength(buffer, cast.length);
                 buffer.put(cast);
             }
-        } else if (ABIToken.ADDRESS.standardType == standardType) {
+        } else if (ABIToken.ADDRESS.type == type) {
             buffer.putByte(ABIToken.ADDRESS.identifier);
             if (null != value) {
                 byte[] cast = ((org.aion.avm.api.Address)value).unwrap();
@@ -495,24 +483,24 @@ public class ABICodec {
 
     public static class Tuple {
         // We want to use the type of the value we have here, so that is always a standard type (note that this is required in the case of null).
-        public final Class<?> standardType;
+        public final Class<?> type;
         // We store the value _as_ the public type, converting it only in the decoder, if required.
         public final Object value;
-        public Tuple(Class<?> standardType, Object value) {
+        public Tuple(Class<?> type, Object value) {
             // Note that the given type MUST be one of the defined standard types (or array of one of those types) and value must be null or of that type.
-            boolean isValidType = ABIToken.STANDARD_LEAF_TYPE_MAP.containsKey(standardType)
-                || isValidArray(standardType);
-            boolean isInstanceOfType = (null == value) || (value.getClass() == standardType);
+            boolean isValidType = (ABIToken.getIdentifierOfLeafType(type) != 0x00)
+                || isValidArray(type);
+            boolean isInstanceOfType = (null == value) || (value.getClass() == type);
             if (!(isValidType && isInstanceOfType)) {
                 // No message since this part of the spec.
                 throw new IllegalArgumentException();
             }
-            this.standardType = standardType;
+            this.type = type;
             this.value = value;
         }
         @Override
         public String toString() {
-            return standardType.getName() + "(" + this.value + ")";
+            return type.getName() + "(" + this.value + ")";
         }
     }
 

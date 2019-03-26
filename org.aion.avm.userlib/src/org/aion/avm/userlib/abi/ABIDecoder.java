@@ -25,7 +25,7 @@ public class ABIDecoder {
         if (parsed.size() < 1) {
             throw new ABIException("Decoded as " + parsed.size() + " elements");
         }
-        if (String.class != parsed.get(0).standardType) {
+        if (String.class != parsed.get(0).type) {
             throw new ABIException("First parsed value not String (method name)");
         }
         return parsed;

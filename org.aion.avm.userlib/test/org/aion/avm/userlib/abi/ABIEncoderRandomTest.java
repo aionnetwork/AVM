@@ -299,8 +299,8 @@ public class ABIEncoderRandomTest {
         Assert.assertEquals(numberOfArgs + 1, list.size());
         Assert.assertEquals(methodName, list.get(0).value);
         for (int i = 0; i < numberOfArgs; i++) {
-            Assert.assertEquals(argTuples[i].standardType, list.get(i + 1).standardType);
-            if (argTuples[i].standardType.isArray()) {
+            Assert.assertEquals(argTuples[i].type, list.get(i + 1).type);
+            if (argTuples[i].type.isArray()) {
                 assertArray(list.get(i + 1).value, i);
             } else {
                 Assert.assertEquals(argTuples[i].value, list.get(i + 1).value);
@@ -319,8 +319,8 @@ public class ABIEncoderRandomTest {
         List<ABICodec.Tuple> list = ABICodec.parseEverything(encoded);
         Assert.assertEquals(numberOfArgs, list.size());
         for (int i = 0; i < numberOfArgs; i++) {
-            Assert.assertEquals(argTuples[i].standardType, list.get(i).standardType);
-            if (argTuples[i].standardType.isArray()) {
+            Assert.assertEquals(argTuples[i].type, list.get(i).type);
+            if (argTuples[i].type.isArray()) {
                 assertArray(list.get(i).value, i);
             } else {
                 Assert.assertEquals(argTuples[i].value, list.get(i).value);
@@ -360,8 +360,8 @@ public class ABIEncoderRandomTest {
         Assert.assertEquals(numberOfArgs + 1, list.size());
         Assert.assertEquals(methodName, list.get(0).value);
         for (int i = 0; i < numberOfArgs; i++) {
-            Assert.assertEquals(argTuples[i].standardType, list.get(i + 1).standardType);
-            if (argTuples[i].standardType.isArray()) {
+            Assert.assertEquals(argTuples[i].type, list.get(i + 1).type);
+            if (argTuples[i].type.isArray()) {
                 assertArray(list.get(i + 1).value, i);
             } else {
                 Assert.assertEquals(argTuples[i].value, list.get(i + 1).value);
