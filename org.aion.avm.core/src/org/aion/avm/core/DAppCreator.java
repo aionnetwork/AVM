@@ -278,6 +278,10 @@ public class DAppCreator {
             result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_STACK);
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
+        } catch (CallDepthLimitExceededException e) {
+            result.setResultCode(AvmTransactionResult.Code.FAILED_CALL_DEPTH_LIMIT_EXCEEDED);
+            result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
+
         } catch (RevertException e) {
             result.setResultCode(AvmTransactionResult.Code.FAILED_REVERT);
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());

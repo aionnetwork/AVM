@@ -42,6 +42,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -606,6 +607,37 @@ public class AvmImplTest {
         deployInvalidJar(jar);
     }
 
+    /**
+     * Tests that a DApp can CREATE from within its own CREATE, so long as we only go 10 levels down (the limit).
+     */
+    @Test
+    public void testCreateInClinit_success() {
+        byte[] spawnerCreateData = buildRecursiveCreate(10);
+        TestingKernel kernel = new TestingKernel();
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+        
+        TransactionResult createResult = createDAppCanFail(kernel, avm, spawnerCreateData);
+        assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
+        Address spawnerAddress = new Address(createResult.getReturnData());
+        assertNotNull(spawnerAddress);
+        avm.shutdown();
+    }
+
+    /**
+     * Tests that a DApp can CREATE from within its own CREATE, and fails after 11 levels down (since 10 is the limit).
+     */
+    @Test
+    public void testCreateInClinit_failure() {
+        byte[] spawnerCreateData = buildRecursiveCreate(11);
+        TestingKernel kernel = new TestingKernel();
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+        
+        TransactionResult createResult = createDAppCanFail(kernel, avm, spawnerCreateData);
+        // We are ultimately failing due to the AssertionError the class triggers if the create fails.
+        assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, createResult.getResultCode());
+        avm.shutdown();
+    }
+
 
     private int callRecursiveHash(KernelInterface kernel, AvmImpl avm, long energyLimit, Address contractAddr, int depth) {
         byte[] argData = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", depth);
@@ -627,12 +659,16 @@ public class AvmImplTest {
     }
 
     private Address createDApp(KernelInterface kernel, AvmImpl avm, byte[] createData) {
+        TransactionResult result1 = createDAppCanFail(kernel, avm, createData);
+        assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
+        return new Address(result1.getReturnData());
+    }
+
+    private TransactionResult createDAppCanFail(KernelInterface kernel, AvmImpl avm, byte[] createData) {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, createData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx1, block)})[0].get();
-        assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-        return new Address(result1.getReturnData());
+        return avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx1, block)})[0].get();
     }
 
     private Object callDApp(KernelInterface kernel, AvmImpl avm, Address dAppAddress, byte[] argData) {
@@ -653,5 +689,13 @@ public class AvmImplTest {
         TransactionResult result1 = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx1, block)})[0].get();
         avm.shutdown();
         assertEquals(AvmTransactionResult.Code.FAILED_INVALID_DATA, result1.getResultCode());
+    }
+
+    private byte[] buildRecursiveCreate(int levelsToAdd) {
+        byte[] args = (levelsToAdd > 1)
+                ? buildRecursiveCreate(levelsToAdd - 1)
+                : new byte[0];
+        byte[] recursiveSpawner = JarBuilder.buildJarForMainAndClasses(RecursiveSpawnerResource.class);
+        return new CodeAndArguments(recursiveSpawner, args).encodeToBytes();
     }
 }
