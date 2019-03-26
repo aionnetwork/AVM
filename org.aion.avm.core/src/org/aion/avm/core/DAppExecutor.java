@@ -7,6 +7,7 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReentrantGraphProcessor;
 import org.aion.avm.core.persistence.ReflectionStructureCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
@@ -88,6 +89,10 @@ public class DAppExecutor {
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit() - threadInstrumentation.energyLeft());
             result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
+            if (verboseErrors) {
+                System.err.println("DApp execution failed due to Out-of-Energy EXCEPTION: \"" + e.getMessage() + "\"");
+                e.printStackTrace(System.err);
+            }
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
@@ -95,6 +100,10 @@ public class DAppExecutor {
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (OutOfStackException e) {
+            if (verboseErrors) {
+                System.err.println("DApp execution failed due to stack overflow EXCEPTION: \"" + e.getMessage() + "\"");
+                e.printStackTrace(System.err);
+            }
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
@@ -102,6 +111,10 @@ public class DAppExecutor {
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (CallDepthLimitExceededException e) {
+            if (verboseErrors) {
+                System.err.println("DApp execution failed due to call depth limit EXCEPTION: \"" + e.getMessage() + "\"");
+                e.printStackTrace(System.err);
+            }
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
@@ -109,6 +122,10 @@ public class DAppExecutor {
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (RevertException e) {
+            if (verboseErrors) {
+                System.err.println("DApp execution to REVERT due to uncaught EXCEPTION: \"" + e.getMessage() + "\"");
+                e.printStackTrace(System.err);
+            }
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
@@ -116,6 +133,10 @@ public class DAppExecutor {
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit() - threadInstrumentation.energyLeft());
 
         } catch (InvalidException e) {
+            if (verboseErrors) {
+                System.err.println("DApp execution INVALID due to uncaught EXCEPTION: \"" + e.getMessage() + "\"");
+                e.printStackTrace(System.err);
+            }
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
@@ -123,6 +144,9 @@ public class DAppExecutor {
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit());
 
         } catch (EarlyAbortException e) {
+            if (verboseErrors) {
+                System.err.println("FYI - concurrent abort (will retry) in transaction \"" + Helpers.bytesToHexString(ctx.getTransactionHash()) + "\"");
+            }
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
@@ -132,6 +156,7 @@ public class DAppExecutor {
         } catch (UncaughtException e) {
             if (verboseErrors) {
                 System.err.println("DApp execution failed due to uncaught EXCEPTION: \"" + e.getMessage() + "\"");
+                e.printStackTrace(System.err);
             }
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
@@ -142,6 +167,10 @@ public class DAppExecutor {
             logger.debug("Uncaught exception", e.getCause());
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
+            if (verboseErrors) {
+                System.err.println("DApp execution failed due to AvmException: \"" + e.getMessage() + "\"");
+                e.printStackTrace(System.err);
+            }
             if (null != reentrantGraphData) {
                 reentrantGraphData.revertToStoredFields();
             }
@@ -150,12 +179,24 @@ public class DAppExecutor {
         } catch (JvmError e) {
             // These are cases which we know we can't handle and have decided to handle by safely stopping the AVM instance so
             // re-throw this as the AvmImpl top-level loop will commute it into an asynchronous shutdown.
+            if (verboseErrors) {
+                System.err.println("FATAL JvmError: \"" + e.getMessage() + "\"");
+                e.printStackTrace(System.err);
+            }
             throw e;
         } catch (RuntimeAssertionError e) {
             // If one of these shows up here, we are wanting to pass it back up to the top, where we can shut down.
+            if (verboseErrors) {
+                System.err.println("FATAL internal error: \"" + e.getMessage() + "\"");
+                e.printStackTrace(System.err);
+            }
             throw new AssertionError(e);
         } catch (Throwable e) {
             // Anything else we couldn't handle more specifically needs to be passed further up to the top.
+            if (verboseErrors) {
+                System.err.println("FATAL unexpected Throwable: \"" + e.getMessage() + "\"");
+                e.printStackTrace(System.err);
+            }
             throw new AssertionError(e);
         } finally {
             // Once we are done running this, no matter how it ended, we want to detach our thread from the DApp.
