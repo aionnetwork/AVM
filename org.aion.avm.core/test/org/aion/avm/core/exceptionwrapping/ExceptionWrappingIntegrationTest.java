@@ -28,7 +28,7 @@ public class ExceptionWrappingIntegrationTest {
     // Currently, deploying the test class and userlib ABI makes around 200 and 190 calls to chargeEnergy for the 2 targets
     // Any changes that cause the number of chargeEnergy calls to change, such as changing the ABI might cause this test to fail, in which case the number needs to be updated
     private final int persistentExceptionDeploymentEnergyCalls = 200;
-    private final int attackExceptionHandlingTargetDeploymentEnergyCalls = 190;
+    private final int attackExceptionHandlingTargetDeploymentEnergyCalls = 196;
     @Test
     public void testExceptionPersistence() throws Exception {
         Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
@@ -48,7 +48,7 @@ public class ExceptionWrappingIntegrationTest {
         // Store the exceptions.
         int systemHash = ((Integer)callStatic(block, kernel, avm, contractAddr, "storeSystem")).intValue();
         // We know that this is currently 4 but that may change in the future (was 5 when this was an instance call, for example).
-        Assert.assertEquals(72, systemHash);
+        Assert.assertEquals(73, systemHash);
         byte[] user = (byte[])callStatic(block, kernel, avm, contractAddr, "storeUser");
         Assert.assertEquals("MESSAGE", new String(user));
         byte[] second = (byte[])callStatic(block, kernel, avm, contractAddr, "getSecond");
@@ -158,7 +158,6 @@ public class ExceptionWrappingIntegrationTest {
         TransactionResult createResult = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
-        
         // The next call will spin in a loop, thus triggering our failure.
         // (we expect this failure to happen when we try to get() the response from the future).
         boolean didFail = false;

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.aion.avm.api.Address;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -156,10 +157,63 @@ public class ABICompilerClassVisitor extends ClassVisitor {
             methodVisitor.visitMethodInsn(INVOKESTATIC, className, callableMethod.getMethodName(), callableMethod.getDescriptor(), false);
             Type returnType = Type.getReturnType(callableMethod.getDescriptor());
             if (returnType != Type.VOID_TYPE) {
-                castReturnType(methodVisitor, returnType);
-                methodVisitor
-                    .visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneObject",
-                        "(Ljava/lang/Object;)[B", false);
+                if (returnType == Type.BYTE_TYPE) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneByte","(B)[B", false);
+                } else if (returnType == Type.BOOLEAN_TYPE) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneBoolean","(Z)[B", false);
+                } else if (returnType == Type.CHAR_TYPE) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneCharacter","(C)[B", false);
+                } else if (returnType == Type.SHORT_TYPE) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneShort","(S)[B", false);
+                } else if (returnType == Type.INT_TYPE) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneInteger","(I)[B", false);
+                } else if (returnType == Type.LONG_TYPE) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneLong","(J)[B", false);
+                } else if (returnType == Type.FLOAT_TYPE) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneFloat","(F)[B", false);
+                } else if (returnType == Type.DOUBLE_TYPE) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneDouble","(D)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.BYTE_TYPE, 1)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneByteArray","([B)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.BOOLEAN_TYPE, 1)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneBooleanArray", "([Z)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.CHAR_TYPE, 1)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneCharacterArray", "([C)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.SHORT_TYPE, 1)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneShortArray", "([S)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.INT_TYPE, 1)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneIntegerArray", "([I)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.LONG_TYPE, 1)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneLongArray", "([J)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.FLOAT_TYPE, 1)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneFloatArray", "([F)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.DOUBLE_TYPE, 1)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneDoubleArray", "([D)[B", false);
+                } else if (isString(returnType)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneString", "(Ljava/lang/String;)[B", false);
+                } else if (isAddress(returnType)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneAddress", "(Lorg/aion/avm/api/Address;)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.BYTE_TYPE, 2)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOne2DByteArray", "([[B)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.BOOLEAN_TYPE, 2)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOne2DBooleanArray", "([[Z)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.CHAR_TYPE, 2)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOne2DCharacterArray", "([[C)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.SHORT_TYPE, 2)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOne2DShortArray", "([[S)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.INT_TYPE, 2)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOne2DIntegerArray", "([[I)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.FLOAT_TYPE, 2)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOne2DFloatArray", "([[F)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.LONG_TYPE, 2)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOne2DLongArray", "([[J)[B", false);
+                } else if (isArrayOfTypeAndDimensions(returnType, Type.DOUBLE_TYPE, 2)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOne2DDoubleArray", "([[D)[B", false);
+                } else if (returnType.getSort() == Type.ARRAY && returnType.getDimensions() == 1 && isString(returnType.getElementType())) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneStringArray", "([Ljava/lang/String;)[B", false);
+                } else if (returnType.getSort() == Type.ARRAY && returnType.getDimensions() == 1 && isAddress(returnType.getElementType())) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneAddressArray", "([Lorg/aion/avm/api/Address;)[B", false);
+                }
             } else {
                 methodVisitor.visitInsn(ICONST_0);
                 methodVisitor.visitIntInsn(NEWARRAY, T_BYTE);
@@ -233,36 +287,16 @@ public class ABICompilerClassVisitor extends ClassVisitor {
         }
     }
 
-    private void castReturnType(MethodVisitor mv, Type t) {
-        switch (t.getSort()) {
-            case Type.BOOLEAN:
-                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
-                break;
-            case Type.INT:
-                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-                break;
-            case Type.BYTE:
-                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", false);
-                break;
-            case Type.CHAR:
-                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;", false);
-                break;
-            case Type.SHORT:
-                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
-                break;
-            case Type.LONG:
-                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
-                break;
-            case Type.DOUBLE:
-                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
-                break;
-            case Type.FLOAT:
-                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
-                break;
-            case Type.OBJECT:
-            case Type.ARRAY:
-                break;
-        }
+    private boolean isArrayOfTypeAndDimensions(Type arrayType, Type expectedElementType, int expectedDimensions) {
+        return arrayType.getSort() == Type.ARRAY && arrayType.getDimensions() == expectedDimensions && arrayType.getElementType() == expectedElementType;
+    }
+
+    private boolean isString(Type t) {
+        return t.getClassName().equals(String.class.getName());
+    }
+
+    private boolean isAddress(Type t) {
+        return t.getClassName().equals(Address.class.getName());
     }
 
     public boolean addedMainMethod() {
