@@ -59,7 +59,7 @@ public class ReentrantCrossCallResource {
     public static Object callSelfForNull() {
         // Call this method via the runtime.
         BigInteger value = BigInteger.ZERO;
-        byte[] data = ABIEncoder.encodeMethodArguments("returnNull");
+        byte[] data = ABIEncoder.encodeOneString("returnNull");
         long energyLimit = 500000;
         byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
         return (null != response)
@@ -79,7 +79,11 @@ public class ReentrantCrossCallResource {
         } else {
             // Call this method via the runtime.
             BigInteger value = BigInteger.ZERO;
-            byte[] data = ABIEncoder.encodeMethodArguments("getRecursiveHashCode", iterationsRemaining - 1);
+
+            byte[] methodNameBytes = ABIEncoder.encodeOneString("getRecursiveHashCode");
+            byte[] argBytes = ABIEncoder.encodeOneInteger(iterationsRemaining - 1);
+            byte[] data = concatenateArrays(methodNameBytes, argBytes);
+
             long energyLimit = 500000;
             byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
             toReturn = (Integer)ABIDecoder.decodeOneObject(response);
@@ -162,7 +166,11 @@ public class ReentrantCrossCallResource {
         // Call ourselves.
         BigInteger value = BigInteger.ZERO;
         boolean calleeShouldFail = false;
-        byte[] data = ABIEncoder.encodeMethodArguments("incFar", calleeShouldFail);
+
+        byte[] methodNameBytes = ABIEncoder.encodeOneString("incFar");
+        byte[] argBytes = ABIEncoder.encodeOneBoolean(calleeShouldFail);
+        byte[] data = concatenateArrays(methodNameBytes, argBytes);
+
         BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
         
         // Return true if this value changed.
@@ -224,7 +232,12 @@ public class ReentrantCrossCallResource {
         if (iterationsToCall > 0) {
             // Make the reentrant call.
             BigInteger value = BigInteger.ZERO;
-            byte[] data = ABIEncoder.encodeMethodArguments("recursiveChangeNested", ourState.hashCode(), iterationsToCall - 1);
+
+            byte[] methodNameBytes = ABIEncoder.encodeOneString("recursiveChangeNested");
+            byte[] argBytes1 = ABIEncoder.encodeOneInteger(ourState.hashCode());
+            byte[] argBytes2 = ABIEncoder.encodeOneInteger(iterationsToCall - 1);
+            byte[] data = concatenateArrays(methodNameBytes, argBytes1, argBytes2);
+
             long energyLimit = 5_000_000L;
             Result txResult = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
             byte[] result = txResult.getReturnData();
@@ -256,7 +269,11 @@ public class ReentrantCrossCallResource {
 
     private static void reentrantCall(String methodName, boolean shouldFail) {
         BigInteger value = BigInteger.ZERO;
-        byte[] data = ABIEncoder.encodeMethodArguments(methodName, shouldFail);
+
+        byte[] methodNameBytes = ABIEncoder.encodeOneString(methodName);
+        byte[] argBytes = ABIEncoder.encodeOneBoolean(shouldFail);
+        byte[] data = concatenateArrays(methodNameBytes, argBytes);
+
         // WARNING:  This number is finicky since some tests want to barely pass and others barely fail.
         long energyLimit = 1_000_000L;
         BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
@@ -276,5 +293,19 @@ public class ReentrantCrossCallResource {
         public Nested(Integer data) {
             this.data = data;
         }
+    }
+
+    private static byte[] concatenateArrays(byte[]... arrays) {
+        int length = 0;
+        for(byte[] array : arrays) {
+            length += array.length;
+        }
+        byte[] result = new byte[length];
+        int writtenSoFar = 0;
+        for(byte[] array : arrays) {
+            System.arraycopy(array, 0, result, writtenSoFar, array.length);
+            writtenSoFar += array.length;
+        }
+        return result;
     }
 }

@@ -10,7 +10,11 @@ public class AvmFailureTestResource {
 
     public static void reentrantCall(int n) {
         if (n > 0) {
-            byte[] data = ABIEncoder.encodeMethodArguments("reentrantCall", n - 1);
+            byte[] methodNameBytes = ABIEncoder.encodeOneString("reentrantCall");
+            byte[] argBytes = ABIEncoder.encodeOneInteger(n - 1);
+            byte[] data = new byte[methodNameBytes.length + argBytes.length];
+            System.arraycopy(methodNameBytes, 0, data, 0, methodNameBytes.length);
+            System.arraycopy(argBytes, 0, data, methodNameBytes.length, argBytes.length);
             BlockchainRuntime.call(BlockchainRuntime.getAddress(), BigInteger.ZERO, data, BlockchainRuntime.getEnergyLimit());
             BlockchainRuntime.log(new byte[]{(byte)n});
             BlockchainRuntime.revert();

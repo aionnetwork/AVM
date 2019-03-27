@@ -14,7 +14,7 @@ public class ReentrantObjectArrayTestResource {
     }
 
     public static void testString() {
-        byte[] data = ABIEncoder.encodeMethodArguments("setString");
+        byte[] data = ABIEncoder.encodeOneString("setString");
         BlockchainRuntime.call(BlockchainRuntime.getAddress(), BigInteger.ZERO, data, BlockchainRuntime.getEnergyLimit());
     }
 

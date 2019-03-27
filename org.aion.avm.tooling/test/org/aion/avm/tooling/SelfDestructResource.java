@@ -38,7 +38,7 @@ public class SelfDestructResource {
     public static int deleteCallAndReturn(Address beneficiary, Address target) {
         BlockchainRuntime.selfDestruct(beneficiary);
         BigInteger value = BigInteger.ZERO;
-        byte[] data = ABIEncoder.encodeMethodArguments("justReturn");
+        byte[] data = ABIEncoder.encodeOneString("justReturn");
         long energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         byte[] response = BlockchainRuntime.call(target, value, data, energyLimit).getReturnData();
         return (Integer)ABIDecoder.decodeOneObject(response);
@@ -68,7 +68,13 @@ public class SelfDestructResource {
     public static long deleteAndReturnBalanceFromAnother(Address beneficiary, Address target) {
         BlockchainRuntime.selfDestruct(beneficiary);
         BigInteger value = BigInteger.ZERO;
-        byte[] data = ABIEncoder.encodeMethodArguments("returnCallerBalance", BlockchainRuntime.getAddress());
+
+        byte[] methodNameBytes = ABIEncoder.encodeOneString("returnCallerBalance");
+        byte[] argBytes = ABIEncoder.encodeOneAddress(BlockchainRuntime.getAddress());
+        byte[] data = new byte[methodNameBytes.length + argBytes.length];
+        System.arraycopy(methodNameBytes, 0, data, 0, methodNameBytes.length);
+        System.arraycopy(argBytes, 0, data, methodNameBytes.length, argBytes.length);
+
         long energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         byte[] response = BlockchainRuntime.call(target, value, data, energyLimit).getReturnData();
         return (Long)ABIDecoder.decodeOneObject(response);
@@ -83,7 +89,7 @@ public class SelfDestructResource {
     public static int deleteAndFailToCallSelf(Address beneficiary) {
         BlockchainRuntime.selfDestruct(beneficiary);
         BigInteger value = BigInteger.ZERO;
-        byte[] data = ABIEncoder.encodeMethodArguments("justReturn");
+        byte[] data = ABIEncoder.encodeOneString("justReturn");
         long energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         // Calling someone deleted is always a success but we expect this to be an empty array, not the value this method would return.
         Result result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
@@ -96,19 +102,25 @@ public class SelfDestructResource {
     public static int callToDeleteSuccess(Address beneficiary, Address target) {
         // Call the target to get them to delete themselves.
         BigInteger value = BigInteger.ZERO;
-        byte[] data = ABIEncoder.encodeMethodArguments("deleteAndReturn", beneficiary);
+
+        byte[] methodNameBytes = ABIEncoder.encodeOneString("deleteAndReturn");
+        byte[] argBytes = ABIEncoder.encodeOneAddress(beneficiary);
+        byte[] data = new byte[methodNameBytes.length + argBytes.length];
+        System.arraycopy(methodNameBytes, 0, data, 0, methodNameBytes.length);
+        System.arraycopy(argBytes, 0, data, methodNameBytes.length, argBytes.length);
+
         long energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         byte[] response = BlockchainRuntime.call(target, value, data, energyLimit).getReturnData();
         assert (DELETE_AND_RETURN == (Integer)ABIDecoder.decodeOneObject(response));
         
         // Call back to ourselves, to verify that we are ok.
-        data = ABIEncoder.encodeMethodArguments("justReturn");
+        data = ABIEncoder.encodeOneString("justReturn");
         energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
         assert (JUST_RETURN == (Integer)ABIDecoder.decodeOneObject(response));
         
         // Try to call them, verifying that they are not accessible.
-        data = ABIEncoder.encodeMethodArguments("justReturn");
+        data = ABIEncoder.encodeOneString("justReturn");
         energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         response = BlockchainRuntime.call(target, value, data, energyLimit).getReturnData();
         assert (JUST_RETURN == (Integer)ABIDecoder.decodeOneObject(response));
@@ -119,19 +131,25 @@ public class SelfDestructResource {
     public static int callToDeleteFailure(Address beneficiary, Address target) {
         // Call the target to get them to delete themselves.
         BigInteger value = BigInteger.ZERO;
-        byte[] data = ABIEncoder.encodeMethodArguments("deleteAndFail", beneficiary);
+
+        byte[] methodNameBytes = ABIEncoder.encodeOneString("deleteAndFail");
+        byte[] argBytes = ABIEncoder.encodeOneAddress(beneficiary);
+        byte[] data = new byte[methodNameBytes.length + argBytes.length];
+        System.arraycopy(methodNameBytes, 0, data, 0, methodNameBytes.length);
+        System.arraycopy(argBytes, 0, data, methodNameBytes.length, argBytes.length);
+
         long energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         Result result = BlockchainRuntime.call(target, value, data, energyLimit);
         assert (!result.isSuccess());
         
         // Call back to ourselves, to verify that we are ok.
-        data = ABIEncoder.encodeMethodArguments("justReturn");
+        data = ABIEncoder.encodeOneString("justReturn");
         energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
         assert (JUST_RETURN == (Integer)ABIDecoder.decodeOneObject(response));
         
         // Try to call them, verifying that they are still accessible.
-        data = ABIEncoder.encodeMethodArguments("justReturn");
+        data = ABIEncoder.encodeOneString("justReturn");
         energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         result = BlockchainRuntime.call(target, value, data, energyLimit);
         assert (result.isSuccess());

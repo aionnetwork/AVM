@@ -20,7 +20,7 @@ public class ReentrantClassWrapperTestResource {
     public static void testStringClass() {
         stringClass = String.class;
 
-        byte[] data = ABIEncoder.encodeMethodArguments("recursiveStringClassCheck");
+        byte[] data = ABIEncoder.encodeOneString("recursiveStringClassCheck");
         Result result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), BigInteger.ZERO, data, BlockchainRuntime.getEnergyLimit());
         if(!result.isSuccess()) {
             BlockchainRuntime.revert();

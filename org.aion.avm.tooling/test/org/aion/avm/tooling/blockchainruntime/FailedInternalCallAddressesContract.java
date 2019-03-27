@@ -29,7 +29,12 @@ public class FailedInternalCallAddressesContract {
                 reportForThisContract = getAddresses();
             }
 
-            byte[] data = ABIEncoder.encodeMethodArguments("recurseAndTrackAddresses", otherContracts, currentDepth + 1, recurseFirst);
+            byte[] methodNameBytes = ABIEncoder.encodeOneString("recurseAndTrackAddresses");
+            byte[] argBytes1 = ABIEncoder.encodeOneAddressArray(otherContracts);
+            byte[] argBytes2 = ABIEncoder.encodeOneInteger(currentDepth + 1);
+            byte[] argBytes3 = ABIEncoder.encodeOneBoolean(recurseFirst);
+            byte[] data = concatenateArrays(methodNameBytes, argBytes1, argBytes2, argBytes3);
+
             Result result = BlockchainRuntime.call(otherContracts[currentDepth], BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy());
 
             // check the revert on the deepest child.
@@ -91,4 +96,17 @@ public class FailedInternalCallAddressesContract {
         return array;
     }
 
+    private static byte[] concatenateArrays(byte[]... arrays) {
+        int length = 0;
+        for(byte[] array : arrays) {
+            length += array.length;
+        }
+        byte[] result = new byte[length];
+        int writtenSoFar = 0;
+        for(byte[] array : arrays) {
+            System.arraycopy(array, 0, result, writtenSoFar, array.length);
+            writtenSoFar += array.length;
+        }
+        return result;
+    }
 }

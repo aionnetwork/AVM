@@ -115,7 +115,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = 175182L;
+        long userlibCost = -29129L;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost + byteArrayReturnCost * 3, "run249_reentrant_notLoaded");
         
@@ -169,7 +169,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = 176027L;
+        long userlibCost = -28284;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost + byteArrayReturnCost * 3, "run249_reentrant_loaded");
         
@@ -216,7 +216,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = 178317;
+        long run_userlibCost = -26002;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost + byteArrayReturnCost * 3, "runNewInstance_reentrant");
         
@@ -290,7 +290,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = 357904L;
+        long run_userlibCost = -50741;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost + byteArrayReturnCost * 5, "runNewInstance_reentrant2");
         

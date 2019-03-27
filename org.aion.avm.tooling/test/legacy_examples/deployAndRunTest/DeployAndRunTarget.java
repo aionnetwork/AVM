@@ -63,6 +63,25 @@ public class DeployAndRunTarget {
         String methodName = "addArray";
         int[] a = new int[]{123, 1};
         int b = 5;
-        return ABIEncoder.encodeMethodArguments(methodName, a, b);
+
+        byte[] methodNameBytes = ABIEncoder.encodeOneString(methodName);
+        byte[] argBytes1 = ABIEncoder.encodeOneIntegerArray(a);
+        byte[] argBytes2 = ABIEncoder.encodeOneInteger(b);
+        byte[] data = concatenateArrays(methodNameBytes, argBytes1, argBytes2);
+        return data;
+    }
+
+    private static byte[] concatenateArrays(byte[]... arrays) {
+        int length = 0;
+        for(byte[] array : arrays) {
+            length += array.length;
+        }
+        byte[] result = new byte[length];
+        int writtenSoFar = 0;
+        for(byte[] array : arrays) {
+            System.arraycopy(array, 0, result, writtenSoFar, array.length);
+            writtenSoFar += array.length;
+        }
+        return result;
     }
 }

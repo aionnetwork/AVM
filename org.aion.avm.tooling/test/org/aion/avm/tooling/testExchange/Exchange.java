@@ -53,7 +53,10 @@ public class Exchange {
 
         Address sender = BlockchainRuntime.getCaller();
 
-        byte[] args = ABIEncoder.encodeMethodArguments("allowance", sender, BlockchainRuntime.getAddress());
+        byte[] methodNameBytes = ABIEncoder.encodeOneString("allowance");
+        byte[] argBytes1 = ABIEncoder.encodeOneAddress(sender);
+        byte[] argBytes2 = ABIEncoder.encodeOneAddress(BlockchainRuntime.getAddress());
+        byte[] args = concatenateArrays(methodNameBytes, argBytes1, argBytes2);
 
         byte[] result = BlockchainRuntime.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
 
@@ -89,6 +92,20 @@ public class Exchange {
         }
 
         return (boolean)ABIDecoder.decodeOneObject(result);
+    }
+
+    private static byte[] concatenateArrays(byte[]... arrays) {
+        int length = 0;
+        for(byte[] array : arrays) {
+            length += array.length;
+        }
+        byte[] result = new byte[length];
+        int writtenSoFar = 0;
+        for(byte[] array : arrays) {
+            System.arraycopy(array, 0, result, writtenSoFar, array.length);
+            writtenSoFar += array.length;
+        }
+        return result;
     }
 
     public static class ExchangeTransaction {

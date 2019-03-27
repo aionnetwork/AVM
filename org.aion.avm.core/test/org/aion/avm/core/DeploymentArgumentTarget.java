@@ -45,7 +45,14 @@ public class DeploymentArgumentTarget {
     }
 
     public static void correctDeployment() {
-        byte[] deploymentArgs = ABIEncoder.encodeDeploymentArguments(arg0, arg1, arg2, arg3, smallJar);
+
+        byte[] arg0Bytes = ABIEncoder.encodeOneString(arg0);
+        byte[] arg1Bytes = ABIEncoder.encodeOneAddressArray(arg1);
+        byte[] arg2Bytes = ABIEncoder.encodeOneInteger(arg2);
+        byte[] arg3Bytes = ABIEncoder.encodeOneDouble(arg3);
+        byte[] smallJarBytes = ABIEncoder.encodeOneByteArray(smallJar);
+        byte[] deploymentArgs = concatenateArrays(arg0Bytes, arg1Bytes, arg2Bytes, arg3Bytes, smallJarBytes);
+
         byte[] codeAndArguments = encodeCodeAndArguments(deploymentArgs);
         Result createResult = BlockchainRuntime.create(BigInteger.ZERO, codeAndArguments, BlockchainRuntime.getEnergyLimit());
         BlockchainRuntime.require(createResult.isSuccess());
@@ -53,7 +60,13 @@ public class DeploymentArgumentTarget {
 
     public static void incorrectDeployment() {
         // For this failed attempt, we will omit the final argument, which should cause a deployment failure.
-        byte[] deploymentArgs = ABIEncoder.encodeDeploymentArguments(arg0, arg1, arg2, arg3);
+
+        byte[] arg0Bytes = ABIEncoder.encodeOneString(arg0);
+        byte[] arg1Bytes = ABIEncoder.encodeOneAddressArray(arg1);
+        byte[] arg2Bytes = ABIEncoder.encodeOneInteger(arg2);
+        byte[] arg3Bytes = ABIEncoder.encodeOneDouble(arg3);
+        byte[] deploymentArgs = concatenateArrays(arg0Bytes, arg1Bytes, arg2Bytes, arg3Bytes);
+
         byte[] codeAndArguments = encodeCodeAndArguments(deploymentArgs);
         Result createResult = BlockchainRuntime.create(BigInteger.ZERO, codeAndArguments, BlockchainRuntime.getEnergyLimit());
         // We still want to pass (to ensure this isn't a different failure) so require that the sub-deployment failed.
@@ -71,5 +84,19 @@ public class DeploymentArgumentTarget {
         codeAndArgumentsBuffer.putInt(deploymentArgs.length);
         codeAndArgumentsBuffer.put(deploymentArgs);
         return codeAndArguments;
+    }
+
+    private static byte[] concatenateArrays(byte[]... arrays) {
+        int length = 0;
+        for(byte[] array : arrays) {
+            length += array.length;
+        }
+        byte[] result = new byte[length];
+        int writtenSoFar = 0;
+        for(byte[] array : arrays) {
+            System.arraycopy(array, 0, result, writtenSoFar, array.length);
+            writtenSoFar += array.length;
+        }
+        return result;
     }
 }

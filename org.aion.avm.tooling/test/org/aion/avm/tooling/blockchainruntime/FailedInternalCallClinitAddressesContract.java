@@ -126,7 +126,15 @@ public class FailedInternalCallClinitAddressesContract {
             Address newDappAddress = new Address(createResult.getReturnData());
 
             // Now call into the dapp. We assume its code is this same class, so this is 'recursive'.
-            byte[] callData = ABIEncoder.encodeMethodArguments("recurseAndTrackAddresses", dappBytesFirstHalf, dappBytesSecondHalf, numOtherContracts, currentDepth + 1, recurseFirst);
+
+            byte[] methodNameBytes = ABIEncoder.encodeOneString("recurseAndTrackAddresses");
+            byte[] argBytes1 = ABIEncoder.encodeOneByteArray(dappBytesFirstHalf);
+            byte[] argBytes2 = ABIEncoder.encodeOneByteArray(dappBytesSecondHalf);
+            byte[] argBytes3 = ABIEncoder.encodeOneInteger(numOtherContracts);
+            byte[] argBytes4 = ABIEncoder.encodeOneInteger(currentDepth + 1);
+            byte[] argBytes5 = ABIEncoder.encodeOneBoolean(recurseFirst);
+            byte[] callData = concatenateArrays(methodNameBytes, argBytes1, argBytes2, argBytes3, argBytes4, argBytes5);
+
             Result callResult = BlockchainRuntime.call(newDappAddress, BigInteger.ZERO, callData, BlockchainRuntime.getRemainingEnergy());
 
             // check the revert on the deepest child.
@@ -186,6 +194,20 @@ public class FailedInternalCallClinitAddressesContract {
         }
 
         return array;
+    }
+
+    private static byte[] concatenateArrays(byte[]... arrays) {
+        int length = 0;
+        for(byte[] array : arrays) {
+            length += array.length;
+        }
+        byte[] result = new byte[length];
+        int writtenSoFar = 0;
+        for(byte[] array : arrays) {
+            System.arraycopy(array, 0, result, writtenSoFar, array.length);
+            writtenSoFar += array.length;
+        }
+        return result;
     }
 
 }
