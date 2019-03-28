@@ -25,10 +25,10 @@ import java.math.BigInteger;
 public class ExceptionWrappingIntegrationTest {
 
     // These tests work by throwing an exception after a certain number of calls to chargeEnergy
-    // Currently, deploying the test class and userlib ABI makes around 200 and 190 calls to chargeEnergy for the 2 targets
+    // Currently, deploying the test class and userlib ABI makes around 245 and 270 calls to chargeEnergy for the 2 targets
     // Any changes that cause the number of chargeEnergy calls to change, such as changing the ABI might cause this test to fail, in which case the number needs to be updated
-    private final int persistentExceptionDeploymentEnergyCalls = 200;
-    private final int attackExceptionHandlingTargetDeploymentEnergyCalls = 196;
+    private final int persistentExceptionDeploymentEnergyCalls = 245;
+    private final int attackExceptionHandlingTargetDeploymentEnergyCalls = 270;
     @Test
     public void testExceptionPersistence() throws Exception {
         Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
@@ -48,7 +48,7 @@ public class ExceptionWrappingIntegrationTest {
         // Store the exceptions.
         int systemHash = ((Integer)callStatic(block, kernel, avm, contractAddr, "storeSystem")).intValue();
         // We know that this is currently 4 but that may change in the future (was 5 when this was an instance call, for example).
-        Assert.assertEquals(73, systemHash);
+        Assert.assertEquals(123, systemHash);
         byte[] user = (byte[])callStatic(block, kernel, avm, contractAddr, "storeUser");
         Assert.assertEquals("MESSAGE", new String(user));
         byte[] second = (byte[])callStatic(block, kernel, avm, contractAddr, "getSecond");

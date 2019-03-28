@@ -62,7 +62,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -1735;
+        long userlibCost = -23294;
         callStatic(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges + userlibCost + byteArrayReturnCost, "modify249");
         
         // Verify after.
@@ -116,7 +116,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -29329L;
+        long userlibCost = -64915;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost + byteArrayReturnCost * 3, "run249_reentrant_notLoaded");
         
@@ -170,7 +170,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -28484;
+        long userlibCost = -64058;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost + byteArrayReturnCost * 3, "run249_reentrant_loaded");
         
@@ -217,7 +217,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = -26202;
+        long run_userlibCost = -61812;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost + byteArrayReturnCost * 3, "runNewInstance_reentrant");
         
@@ -237,7 +237,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long check_userlibCost = -2049;
+        long check_userlibCost = -22986;
 
         int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
         Assert.assertEquals(5, value);
@@ -291,7 +291,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = -51041;
+        long run_userlibCost = -100674;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost + byteArrayReturnCost * 5, "runNewInstance_reentrant2");
         
@@ -311,7 +311,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long check_userlibCost = -2049L;
+        long check_userlibCost = -22986;
 
         int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
         Assert.assertEquals(5, value);
@@ -389,7 +389,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = 85431;
+        long userlibCost = 141583;
 
         long totalExpectedCost = miscCharges + storageCharges + userlibCost;
 
@@ -433,7 +433,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -435L;
+        long userlibCost = -27087;
         return basicCost + miscCharges + storageCharges + userlibCost + byteArrayReturnCost;
     }
 
@@ -460,7 +460,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -5646;
+        long userlibCost = -25593;
 
         return basicCost + miscCharges + storageCharges + userlibCost + byteArrayReturnCost;
     }
