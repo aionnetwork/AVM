@@ -158,7 +158,8 @@ public class Transaction implements TransactionInterface {
 
     @Override
     public Address getDestinationAddress() {
-        return org.aion.types.Address.wrap(to);
+        // The destination can be null in the case of contract creation.
+        return (to == null) ? null : org.aion.types.Address.wrap(to);
     }
 
     @Override
