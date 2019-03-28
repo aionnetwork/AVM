@@ -279,7 +279,7 @@ public class AvmImpl implements AvmInternal {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
-        return commonInvoke(parentKernel, task, context);
+        return commonInvoke(parentKernel, task, context, 0);
     }
 
     private AvmTransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, TransactionContext ctx) {
@@ -310,7 +310,7 @@ public class AvmImpl implements AvmInternal {
         parentKernel.adjustBalance(sender, BigInteger.valueOf(ctx.getTransaction().getEnergyLimit() * ctx.getTransactionEnergyPrice()).negate());
 
         // Run the common logic with the parent kernel as the top-level one.
-        AvmTransactionResult result = commonInvoke(parentKernel, task, ctx);
+        AvmTransactionResult result = commonInvoke(parentKernel, task, ctx, BillingRules.getBasicTransactionCost(ctx.getTransactionData()));
 
         // Refund energy for transaction
         long energyRemaining = result.getEnergyRemaining() * ctx.getTransactionEnergyPrice();
@@ -322,7 +322,7 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private AvmTransactionResult commonInvoke(KernelInterface parentKernel, TransactionTask task, TransactionContext ctx) {
+    private AvmTransactionResult commonInvoke(KernelInterface parentKernel, TransactionTask task, TransactionContext ctx, long transactionBaseCost) {
         if (logger.isDebugEnabled()) {
             logger.debug("Transaction: address = {}, caller = {}, value = {}, data = {}, energyLimit = {}",
                     ctx.getDestinationAddress(),
@@ -338,7 +338,7 @@ public class AvmImpl implements AvmInternal {
         TransactionalKernel thisTransactionKernel = new TransactionalKernel(parentKernel);
 
         // only one result (mutable) shall be created per transaction execution
-        AvmTransactionResult result = new AvmTransactionResult(ctx.getTransaction().getEnergyLimit(), ctx.getTransaction().getTransactionCost());
+        AvmTransactionResult result = new AvmTransactionResult(ctx.getTransaction().getEnergyLimit(), transactionBaseCost);
 
         // grab the recipient address as either the new contract address or the given account address.
         Address recipient = (ctx.getTransactionKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(ctx.getTransaction()) : ctx.getDestinationAddress();
