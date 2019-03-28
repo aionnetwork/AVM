@@ -163,7 +163,7 @@ public class TrsTest {
     }
 
     private TransactionResult deployContract() {
-        byte[] jarBytes = new CodeAndArguments(JarBuilder.buildJarForMainAndClasses(TRS.class, AionMap.class), null).encodeToBytes();
+        byte[] jarBytes = avmRule.getDappBytes(TRS.class, null, AionMap.class);
 
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);
         assertTrue(result.getReceiptStatus().isSuccess());

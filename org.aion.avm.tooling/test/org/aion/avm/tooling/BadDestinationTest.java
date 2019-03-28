@@ -93,8 +93,7 @@ public class BadDestinationTest {
     }
 
     private static void deployContract() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(BadDestinationTarget.class);
-        jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        byte[] jar = avmRule.getDappBytes(BadDestinationTarget.class, new byte[0]);
 
         TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());

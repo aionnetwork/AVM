@@ -86,12 +86,12 @@ public class RequireTest {
 
     private static TransactionResult deployContractAndTriggerClinitRequire(boolean condition) {
         byte[] clinitData = ABIEncoder.encodeOneObject(condition);
-        byte[] data = new CodeAndArguments(getRawJarBytesForRequireContract(), clinitData).encodeToBytes();
+        byte[] data = getRawJarBytesForRequireContract(clinitData);
         return avmRule.deploy(from, BigInteger.ZERO, data, energyLimit, energyPrice).getTransactionResult();
     }
 
     private static void deployContract() {
-        byte[] jar = new CodeAndArguments(getRawJarBytesForRequireContract(), new byte[0]).encodeToBytes();
+        byte[] jar = getRawJarBytesForRequireContract(new byte[0]);
         TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
         contract = new Address(result.getReturnData());
@@ -108,8 +108,7 @@ public class RequireTest {
     }
 
     private static Address deployRedirectContract() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(RedirectContract.class);
-        jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        byte[] jar = avmRule.getDappBytes(RedirectContract.class, new byte[0]);
 
         TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
@@ -130,8 +129,8 @@ public class RequireTest {
         return ABIEncoder.encodeMethodArguments("require", condition);
     }
 
-    private static byte[] getRawJarBytesForRequireContract() {
-        return JarBuilder.buildJarForMainAndClasses(RequireTarget.class);
+    private static byte[] getRawJarBytesForRequireContract(byte[] args) {
+        return avmRule.getDappBytes(RequireTarget.class, args);
     }
 
 }

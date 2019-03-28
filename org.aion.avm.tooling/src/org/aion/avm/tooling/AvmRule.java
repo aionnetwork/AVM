@@ -8,6 +8,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
+import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.*;
@@ -27,6 +28,7 @@ public final class AvmRule implements TestRule {
 
     private boolean debugMode;
     private final ABICompiler compiler;
+    private final JarOptimizer jarOptimizer;
     public final TestingKernel kernel;
     public AvmImpl avm;
     public Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
@@ -38,6 +40,7 @@ public final class AvmRule implements TestRule {
         this.debugMode = debugMode;
         this.kernel = new TestingKernel();
         compiler = new ABICompiler();
+        jarOptimizer = new JarOptimizer(debugMode);
     }
 
     @Override
@@ -69,7 +72,9 @@ public final class AvmRule implements TestRule {
      */
     public byte[] getDappBytes(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
-        return new CodeAndArguments(jar, arguments).encodeToBytes();
+        compiler.compile(jar);
+        byte[] optimizedDappBytes = jarOptimizer.optimize(compiler.getJarFileBytes());
+        return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
     }
     /**
      * Retrieves bytes corresponding to the in-memory representation of Dapp jar.
@@ -80,7 +85,8 @@ public final class AvmRule implements TestRule {
      */
     public byte[] getDappBytesWithUserlib(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(mainClass, otherClasses);
-        return new CodeAndArguments(jar, arguments).encodeToBytes();
+        byte[] optimizedDappBytes = jarOptimizer.optimize(jar);
+        return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
     }
 
 
@@ -180,14 +186,7 @@ public final class AvmRule implements TestRule {
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
-
-        CodeAndArguments oldCodeAndArguments = CodeAndArguments.decodeFromBytes(dappBytes);
-        compiler.compile(oldCodeAndArguments.code);
-        CodeAndArguments newCodeAndArguments = new CodeAndArguments(compiler.getJarFileBytes(),
-            oldCodeAndArguments.arguments);
-        byte[] deployBytes = newCodeAndArguments.encodeToBytes();
-
-        Transaction tx = Transaction.create(org.aion.types.Address.wrap(from.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, deployBytes, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(org.aion.types.Address.wrap(from.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, dappBytes, energyLimit, energyPrice);
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
         return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
     }

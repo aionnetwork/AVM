@@ -188,8 +188,7 @@ public class SelfDestructTest {
     }
 
     private byte[] makeDeploymentData(byte[] deployArgs, Class classToDeploy) {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(classToDeploy);
-        return new CodeAndArguments(jar, deployArgs).encodeToBytes();
+        return avmRule.getDappBytes(classToDeploy, deployArgs);
     }
 
     private void sendMoney(Address target, BigInteger value) {

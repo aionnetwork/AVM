@@ -32,9 +32,7 @@ public class BlockchainRuntimeTest {
 
     @Test
     public void testBlockchainRuntime() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestResource.class, AionBuffer.class);
-        byte[] codeAndArgs =  new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        Address dappAddress = installJarAsDApp(codeAndArgs);
+        Address dappAddress = installJarAsDApp(avmRule.getDappBytes(BlockchainRuntimeTestResource.class, new byte[0], AionBuffer.class));
         org.aion.types.Address dappAddressApi = new org.aion.types.Address(dappAddress.unwrap());
 
         byte[] txData = "tx_data".getBytes();

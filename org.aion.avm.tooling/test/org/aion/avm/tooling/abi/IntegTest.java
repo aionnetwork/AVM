@@ -29,14 +29,12 @@ public class IntegTest {
 
     private Address installTestDApp(byte[] jar) {
 
-        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-
         // Deploy.
         TransactionResult createResult =
                 avmRule.deploy(
                         avmRule.getPreminedAccount(),
                         BigInteger.ZERO,
-                        txData,
+                        jar,
                         ENERGY_LIMIT,
                         ENERGY_PRICE)
                         .getTransactionResult();
@@ -81,7 +79,7 @@ public class IntegTest {
     @Test
     public void testSimpleDApp() {
 
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppNoMainWithFallbackTarget.class);
+        byte[] jar = avmRule.getDappBytes(DAppNoMainWithFallbackTarget.class, new byte[0]);
         Address dapp = installTestDApp(jar);
 
         boolean ret = (Boolean) callStatic(dapp, "test1", true);
@@ -98,7 +96,7 @@ public class IntegTest {
     public void testChattyCalculator() {
 
         byte[] jar =
-                JarBuilder.buildJarForMainAndClasses(ChattyCalculatorTarget.class, SilentCalculatorTarget.class);
+                avmRule.getDappBytes(ChattyCalculatorTarget.class, new byte[0], SilentCalculatorTarget.class);
         Address dapp = installTestDApp(jar);
 
         String ret = (String) callStatic(dapp, "amIGreater", 3, 4);
@@ -111,7 +109,7 @@ public class IntegTest {
     @Test
     public void testComplicatedDApp() {
 
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(TestDAppTarget.class);
+        byte[] jar = avmRule.getDappBytes(TestDAppTarget.class, new byte[0]);
 
         Address dapp = installTestDApp(jar);
 
@@ -160,7 +158,7 @@ public class IntegTest {
     @Test
     public void testFallbackSuccess() {
         byte[] jar =
-            JarBuilder.buildJarForMainAndClasses(DAppNoMainWithFallbackTarget.class);
+            avmRule.getDappBytes(DAppNoMainWithFallbackTarget.class, new byte[0]);
 
         Address dapp = installTestDApp(jar);
 
@@ -178,7 +176,7 @@ public class IntegTest {
     @Test
     public void testFallbackFail() {
         byte[] jar =
-            JarBuilder.buildJarForMainAndClasses(DAppNoMainNoFallbackTarget.class);
+            avmRule.getDappBytes(DAppNoMainNoFallbackTarget.class, new byte[0]);
         Address dapp = installTestDApp(jar);
 
 

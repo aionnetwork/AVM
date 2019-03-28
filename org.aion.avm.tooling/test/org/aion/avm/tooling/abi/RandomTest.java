@@ -26,14 +26,14 @@ import static org.objectweb.asm.Opcodes.*;
 public class RandomTest {
     @Rule
     public AvmRule avmRule = new AvmRule(true);
+    private ABICompiler compiler = new ABICompiler();
 
     private static final long ENERGY_LIMIT = 50_000_000L;
     private static final long ENERGY_PRICE = 1L;
 
     private Address installTestDApp(byte[] jar) {
-
-        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-
+        compiler.compile(jar);
+        byte[] txData = new CodeAndArguments(compiler.getJarFileBytes(), new byte[0]).encodeToBytes();
         // Deploy.
         TransactionResult createResult =
                 avmRule.deploy(

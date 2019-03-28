@@ -1,8 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.junit.*;
@@ -20,9 +18,8 @@ public class BlockchainRuntimeLogTest {
 
     @BeforeClass
     public static void setUp() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(BlockchainRuntimeLogTarget.class);
-        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getDappAddress();
+        byte[] jar = avmRule.getDappBytes(BlockchainRuntimeLogTarget.class, new byte[0]);
+        dappAddr = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getDappAddress();
     }
 
     @Test
