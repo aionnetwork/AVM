@@ -57,6 +57,6 @@ public class BillingRules {
         }
         // AKI-33: Our userlib is receiving a lot of changes while our tooling to prune on deployment is not yet ready so we
         // TEMPORARILY reduce this cost in order to improve testability.
-        return cost / 10L;
+        return cost;
     }
 }
