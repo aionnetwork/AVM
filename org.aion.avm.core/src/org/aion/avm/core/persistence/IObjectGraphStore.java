@@ -92,7 +92,7 @@ public interface IObjectGraphStore {
      * 
      * @return The hash representing the state of the storage graph.
      */
-    public int simpleHashCode();
+    public byte[] simpleHashCode();
 
     /**
      * Requests that the data store perform a deterministic garbage collection of reachable storage.

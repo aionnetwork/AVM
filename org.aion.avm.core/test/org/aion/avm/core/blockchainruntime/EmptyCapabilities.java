@@ -23,7 +23,10 @@ public class EmptyCapabilities implements IExternalCapabilities {
 
     @Override
     public byte[] keccak256(byte[] data) {
-        throw RuntimeAssertionError.unimplemented("Not called in test");
+        byte[] hash = new byte[32];
+        int u = Math.min(32, data.length);
+        System.arraycopy(data, 0, hash, 32 - u, u);
+        return hash;
     }
 
     @Override

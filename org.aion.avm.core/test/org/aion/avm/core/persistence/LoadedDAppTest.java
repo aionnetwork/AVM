@@ -6,7 +6,9 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.persistence.keyvalue.StorageKeys;
@@ -32,6 +34,7 @@ public class LoadedDAppTest {
     private AvmClassLoader loader;
     private IRuntimeSetup runtimeSetup;
     private boolean preserveDebuggability = false;
+    private IExternalCapabilities capabilities;
 
     @Before
     public void setup() {
@@ -45,7 +48,8 @@ public class LoadedDAppTest {
         InstrumentationHelpers.attachThread(this.instrumentation);
         this.runtimeSetup = Helpers.getSetupForLoader(this.loader);
         InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, this.loader, 1_000_000L, 1, new IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>>());
-        
+        this.capabilities = new EmptyCapabilities();
+
         // Clear statics, since our tests interact with them.
         clearStaticState();
     }
@@ -80,7 +84,7 @@ public class LoadedDAppTest {
 
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(capabilities, kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
@@ -156,7 +160,7 @@ public class LoadedDAppTest {
         kernel.putStorage(address, StorageKeys.CLASS_STATICS, expected);
         
         // Populate the classes.
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(capabilities, kernel, address);
         new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability).populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
         
         // Verify that their static are as we expect.
@@ -195,7 +199,7 @@ public class LoadedDAppTest {
         
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(capabilities, kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
@@ -271,7 +275,7 @@ public class LoadedDAppTest {
         
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(capabilities, kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
@@ -343,7 +347,7 @@ public class LoadedDAppTest {
         
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(capabilities, kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
@@ -383,7 +387,7 @@ public class LoadedDAppTest {
         
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(capabilities, kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
@@ -423,7 +427,7 @@ public class LoadedDAppTest {
         
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(capabilities, kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
@@ -461,7 +465,7 @@ public class LoadedDAppTest {
         // Create the DApp.
         Address address = Helpers.randomAddress();
         TestingKernel kernel = new TestingKernel();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(capabilities, kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
         
         // Set the empty state and write it to disk.

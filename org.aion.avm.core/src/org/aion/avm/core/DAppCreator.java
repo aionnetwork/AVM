@@ -216,7 +216,7 @@ public class DAppCreator {
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
             // We can now construct the abstraction of the loaded DApp which has the machinery for the rest of the initialization.
-            IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel,dappAddress);
+            IObjectGraphStore graphStore = new KeyValueObjectGraph(capabilities, kernel,dappAddress);
             dapp = DAppLoader.fromTransformed(transformedDapp, preserveDebuggability);
             
             // We start the nextHashCode at 1.

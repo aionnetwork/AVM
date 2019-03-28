@@ -1,11 +1,11 @@
 package org.aion.avm.core.persistence.keyvalue;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.persistence.ClassNode;
 import org.aion.avm.core.persistence.ConstantNode;
 import org.aion.avm.core.persistence.ConstructorCache;
@@ -26,9 +26,8 @@ import org.aion.vm.api.interfaces.KernelInterface;
  */
 public class KeyValueObjectGraph implements IObjectGraphStore {
     private static final long HIGH_RANGE_BIAS = 1_000_000_000L;
-    // We are transitioning to the delta hash but we want to preserve the Merkle tree, temporarily, while we discuss the trade-offs.
-    // (public for tests to depend on).
 
+    private final IExternalCapabilities capabilities;
     private final Map<Long, KeyValueNode> idToNodeMap;
     private final KernelInterface store;
     private final Address address;
@@ -36,33 +35,31 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     // Tells us which half of the semi-space we are in:  0L or HIGH_RANGE_BIAS.
     // Note that this instanceId is used for segmented addressing, but is not stored in the stored data.
     private long instanceIdBias;
-    // TODO:  Replace this with a properly-sized hash (or tuple of different hashes).
-    private int deltaHash;
+    private byte[] deltaHash;
     // We store the initial root we read for the delta hash computation.
     private SerializedRepresentation initialRootRepresentation;
-
     private ConstructorCache constructorCache;
     private IDeserializer logicalDeserializer;
     private Function<IRegularNode, IPersistenceToken> tokenBuilder;
 
-    public KeyValueObjectGraph(KernelInterface store, Address address) {
+    public KeyValueObjectGraph(IExternalCapabilities capabilities, KernelInterface store, Address address) {
+        this.capabilities = capabilities;
         this.idToNodeMap = new HashMap<>();
         this.store = store;
         this.address = address;
-        
+        this.deltaHash = new byte[32];
+
         // We will scoop the nextInstanceId out of our hidden key.
         byte[] rawData = this.store.getStorage(this.address, StorageKeys.INTERNAL_DATA);
         if (null != rawData) {
             StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
             this.nextInstanceId = decoder.decodeLong();
             this.instanceIdBias = decoder.decodeLong();
-            this.deltaHash = decoder.decodeInt();
+            decoder.decodeBytesInto(this.deltaHash);
         } else {
             // This must be new.
             this.nextInstanceId = 1L;
             this.instanceIdBias = 0L;
-            this.deltaHash = 0;
-
         }
     }
 
@@ -102,10 +99,17 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         RuntimeAssertionError.assertTrue(null != rootBytes);
         this.store.putStorage(this.address, StorageKeys.CLASS_STATICS, rootBytes);
 
+
         if (null != this.initialRootRepresentation) {
-            this.deltaHash ^= getConsensusHashForRepresentation(this.initialRootRepresentation);
+            byte[] initialRootHash = getConsensusHashForRepresentation(this.initialRootRepresentation);
+            for (int i = 0; i < this.deltaHash.length; ++i) {
+                this.deltaHash[i] ^= initialRootHash[i];
+            }
         }
-        this.deltaHash ^= getConsensusHashForRepresentation(root);
+        byte[] rootHash = getConsensusHashForRepresentation(root);
+        for (int i = 0; i < this.deltaHash.length; ++i) {
+            this.deltaHash[i] ^= rootHash[i];
+        }
     }
 
     @Override
@@ -151,16 +155,16 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
         encoder.encodeLong(this.nextInstanceId);
         encoder.encodeLong(this.instanceIdBias);
-
-        encoder.encodeInt(this.deltaHash);
+        encoder.encodeBytes(this.deltaHash);
         byte[] rawData = encoder.toBytes();
         this.store.putStorage(this.address, StorageKeys.INTERNAL_DATA, rawData);
     }
 
     @Override
-    public int simpleHashCode() {
+    public byte[] simpleHashCode() {
         return this.deltaHash;
     }
+
 
     @Override
     public long gc() {
@@ -180,11 +184,14 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         byte[] currentKey = StorageKeys.CLASS_STATICS;
 
         // Reset the delta hash since we will recompute the entire thing with reachable data, only.
-        this.deltaHash = 0;
+        this.deltaHash = new byte[32];
         this.idToNodeMap.clear();
         SerializedRepresentation scanningRepresentation = loadRootOnly();
         while (null != scanningRepresentation) {
-            this.deltaHash ^= getConsensusHashForRepresentation(scanningRepresentation);
+            byte[] rootHash = getConsensusHashForRepresentation(scanningRepresentation);
+            for (int i = 0; i < this.deltaHash.length; ++i) {
+                this.deltaHash[i] ^= rootHash[i];
+            }
             boolean didWrite = false;
             INode[] refs = scanningRepresentation.references;
             for (int i = 0; i < refs.length; ++i) {
@@ -273,14 +280,20 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     public void storeDataForInstance(long instanceId, SerializedRepresentation original, SerializedRepresentation updated) {
         byte[] data = KeyValueCodec.encode(updated);
         this.store.putStorage(this.address, StorageKeys.forInstance(instanceId + this.instanceIdBias), data);
-        
+
         if (null != original) {
-            this.deltaHash ^= getConsensusHashForRepresentation(original);
+            byte[] originalHash = getConsensusHashForRepresentation(original);
+            for (int i = 0; i < this.deltaHash.length; ++i) {
+                this.deltaHash[i] ^= originalHash[i];
+            }
         }
-        this.deltaHash ^= getConsensusHashForRepresentation(updated);
+        byte[] updatedHash = getConsensusHashForRepresentation(updated);
+        for (int i = 0; i < this.deltaHash.length; ++i) {
+            this.deltaHash[i] ^= updatedHash[i];
+        }
     }
 
-    private int getConsensusHashForRepresentation(SerializedRepresentation representation) {
+    private byte[] getConsensusHashForRepresentation(SerializedRepresentation representation) {
         // Serialize this to a byte array.
         byte[] dataToHash = new byte[representation.references.length * Integer.BYTES + representation.data.length];
         int index = 0;
@@ -292,9 +305,8 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
             index += Integer.BYTES;
         }
         System.arraycopy(representation.data, 0, dataToHash, index, representation.data.length);
-        
-        // TODO:  Replace this with a real cryptographic function.
-        return Arrays.hashCode(dataToHash);
+
+        return this.capabilities.keccak256(dataToHash);
     }
 
     private SerializedRepresentation loadRootOnly() {
