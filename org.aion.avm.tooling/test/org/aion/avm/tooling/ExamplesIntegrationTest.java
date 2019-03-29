@@ -2,9 +2,11 @@ package org.aion.avm.tooling;
 
 import examples.BetaMapEvents;
 import examples.HelloWorld;
+import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -19,8 +21,10 @@ import java.math.BigInteger;
  * Various tests to prove that our examples we build into our packages basically work.
  */
 public class ExamplesIntegrationTest {
+    private boolean preserveDebugInfo = false;
+
     @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    public AvmRule avmRule = new AvmRule(preserveDebugInfo);
 
     private Address deployer = avmRule.getPreminedAccount();
 
@@ -43,8 +47,10 @@ public class ExamplesIntegrationTest {
 
     @Test
     public void test_HelloWorld() throws Exception {
-        byte[] txData = avmRule.getDappBytesWithUserlib(HelloWorld.class, new byte[0]);
-
+        JarOptimizer jarOptimizer = new JarOptimizer(preserveDebugInfo);
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HelloWorld.class);
+        byte[] optimizedDappBytes = jarOptimizer.optimize(jar);
+        byte[] txData = new CodeAndArguments(optimizedDappBytes, new byte[0]).encodeToBytes();
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
