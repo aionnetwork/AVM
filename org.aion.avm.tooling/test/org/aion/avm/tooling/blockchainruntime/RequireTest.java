@@ -85,7 +85,7 @@ public class RequireTest {
     }
 
     private static TransactionResult deployContractAndTriggerClinitRequire(boolean condition) {
-        byte[] clinitData = ABIEncoder.encodeOneObject(condition);
+        byte[] clinitData = ABIEncoder.encodeOneBoolean(condition);
         byte[] data = getRawJarBytesForRequireContract(clinitData);
         return avmRule.deploy(from, BigInteger.ZERO, data, energyLimit, energyPrice).getTransactionResult();
     }

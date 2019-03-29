@@ -18,9 +18,9 @@ public class HashCodeIntegrationTestTarget {
             return new byte[0];
         } else {
             if (methodName.equals("persistNewObject")) {
-                return ABIEncoder.encodeOneObject(persistNewObject());
+                return ABIEncoder.encodeOneInteger(persistNewObject());
             } else if (methodName.equals("readPersistentHashCode")) {
-                return ABIEncoder.encodeOneObject(readPersistentHashCode());
+                return ABIEncoder.encodeOneInteger(readPersistentHashCode());
             } else {
                 return new byte[0];
             }

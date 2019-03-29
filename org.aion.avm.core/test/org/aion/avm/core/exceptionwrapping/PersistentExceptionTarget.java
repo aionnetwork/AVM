@@ -19,15 +19,15 @@ public class PersistentExceptionTarget {
             return new byte[0];
         } else {
             if (methodName.equals("storeSystem")) {
-                return ABIEncoder.encodeOneObject(storeSystem());
+                return ABIEncoder.encodeOneInteger(storeSystem());
             } else if (methodName.equals("loadSystem")) {
-                return ABIEncoder.encodeOneObject(loadSystem());
+                return ABIEncoder.encodeOneInteger(loadSystem());
             } else if (methodName.equals("storeUser")) {
-                return ABIEncoder.encodeOneObject(storeUser());
+                return ABIEncoder.encodeOneByteArray(storeUser());
             } else if (methodName.equals("loadUser")) {
-                return ABIEncoder.encodeOneObject(loadUser());
+                return ABIEncoder.encodeOneByteArray(loadUser());
             } else if (methodName.equals("getSecond")) {
-                return ABIEncoder.encodeOneObject(getSecond());
+                return ABIEncoder.encodeOneByteArray(getSecond());
             } else {
                 return new byte[0];
             }

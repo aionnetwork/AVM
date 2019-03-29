@@ -24,7 +24,7 @@ public class BasicAppTestTarget {
             return new byte[0];
         } else {
             if (methodName.equals("allocateObjectArray")) {
-                return ABIEncoder.encodeOneObject(allocateObjectArray());
+                return ABIEncoder.encodeOneInteger(allocateObjectArray());
             } else {
                 return new byte[0];
             }

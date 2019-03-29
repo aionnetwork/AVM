@@ -23,7 +23,7 @@ public class IncrementorDApp {
             return new byte[0];
         } else {
             if (methodName.equals("incrementArray")) {
-                return ABIEncoder.encodeOneObject(incrementArray(decoder.decodeOneByteArray()));
+                return ABIEncoder.encodeOneByteArray(incrementArray(decoder.decodeOneByteArray()));
             } else {
                 return new byte[0];
             }

@@ -54,7 +54,7 @@ public class PerformanceTest {
 
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PerformanceTestTarget.class);
 
-        byte[] args = ABIEncoder.encodeOneObject(new int[] { heavyLevel, allocSize });
+        byte[] args = ABIEncoder.encodeOneIntegerArray(new int[] { heavyLevel, allocSize });
         byte[] txData = new CodeAndArguments(jar, args).encodeToBytes();
 
         // Deploy

@@ -261,7 +261,7 @@ public class TestNetCli {
         try {
             Path path = Paths.get(dappPath);
             byte[] jar = Files.readAllBytes(path);
-            byte[] args = ABIEncoder.encodeOneObject(new int[] { heavyLevel, allocSize });
+            byte[] args = ABIEncoder.encodeOneIntegerArray(new int[] { heavyLevel, allocSize });
             final String codeArguments = Helpers.bytesToHexString(new CodeAndArguments(jar, args).encodeToBytes());
 
             ArrayList<Future<String>> results = new ArrayList<>();

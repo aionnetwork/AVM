@@ -17,7 +17,7 @@ public class LengthOfAddressTarget {
             return new byte[0];
         } else {
             if (methodName.equals("getAddressLength")) {
-                return ABIEncoder.encodeOneObject(getAddressLength(decoder.decodeOneAddress()));
+                return ABIEncoder.encodeOneInteger(getAddressLength(decoder.decodeOneAddress()));
             } else {
                 return new byte[0];
             }

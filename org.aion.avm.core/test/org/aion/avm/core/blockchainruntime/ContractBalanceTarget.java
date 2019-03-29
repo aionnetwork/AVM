@@ -19,9 +19,9 @@ public class ContractBalanceTarget {
             return new byte[0];
         } else {
             if (methodName.equals("getBalanceOfThisContract")) {
-                return ABIEncoder.encodeOneObject(getBalanceOfThisContract());
+                return ABIEncoder.encodeOneByteArray(getBalanceOfThisContract());
             } else if(methodName.equals("getBalanceOfThisContractDuringClinit")) {
-                return ABIEncoder.encodeOneObject(getBalanceOfThisContractDuringClinit());
+                return ABIEncoder.encodeOneByteArray(getBalanceOfThisContractDuringClinit());
             } else {
                 return new byte[0];
             }

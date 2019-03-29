@@ -27,19 +27,19 @@ public class ReentrantCrossCallResource {
             return new byte[0];
         } else {
             if (methodName.equals("getNear")) {
-                return ABIEncoder.encodeOneObject(getNear(decoder.decodeOneBoolean()));
+                return ABIEncoder.encodeOneInteger(getNear(decoder.decodeOneBoolean()));
             } else if (methodName.equals("getFar")) {
-                return ABIEncoder.encodeOneObject(getFar((decoder.decodeOneBoolean())));
+                return ABIEncoder.encodeOneInteger(getFar((decoder.decodeOneBoolean())));
             } else if (methodName.equals("getDirect")) {
-                return ABIEncoder.encodeOneObject(getDirect(decoder.decodeOneBoolean()));
+                return ABIEncoder.encodeOneInteger(getDirect(decoder.decodeOneBoolean()));
             } else if (methodName.equals("localFailAfterReentrant")) {
-                return ABIEncoder.encodeOneObject(localFailAfterReentrant());
+                return ABIEncoder.encodeOneBoolean(localFailAfterReentrant());
             } else if (methodName.equals("getFarWithEnergy")) {
-                return ABIEncoder.encodeOneObject(getFarWithEnergy(decoder.decodeOneLong()));
+                return ABIEncoder.encodeOneBoolean(getFarWithEnergy(decoder.decodeOneLong()));
             } else if (methodName.equals("recursiveChangeNested")) {
-                return ABIEncoder.encodeOneObject(recursiveChangeNested(decoder.decodeOneInteger(), decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneInteger(recursiveChangeNested(decoder.decodeOneInteger(), decoder.decodeOneInteger()));
             } else if (methodName.equals("getRecursiveHashCode")) {
-                return ABIEncoder.encodeOneObject(getRecursiveHashCode(decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneInteger(getRecursiveHashCode(decoder.decodeOneInteger()));
             } else if (methodName.equals("incFar")) {
                 incFar(decoder.decodeOneBoolean());
                 return new byte[0];

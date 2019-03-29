@@ -13,7 +13,7 @@ public class Main {
             return new byte[0];
         } else {
             if (methodName.equals("addBlock")) {
-                return ABIEncoder.encodeOneObject(Blockchain.addBlock(decoder.decodeOneByteArray()));
+                return ABIEncoder.encodeOneBoolean(Blockchain.addBlock(decoder.decodeOneByteArray()));
             } else {
                 return new byte[0];
             }

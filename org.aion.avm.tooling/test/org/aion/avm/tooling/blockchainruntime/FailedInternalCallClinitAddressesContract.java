@@ -20,11 +20,11 @@ public class FailedInternalCallClinitAddressesContract {
             return new byte[0];
         } else {
             if (methodName.equals("runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress")) {
-                return ABIEncoder.encodeOneObject(runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneAddressArray(runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger()));
             } else if (methodName.equals("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse")) {
-                return ABIEncoder.encodeOneObject(runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneAddressArray(runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger()));
             } else if (methodName.equals("recurseAndTrackAddresses")) {
-                return ABIEncoder.encodeOneObject(recurseAndTrackAddresses(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger(), decoder.decodeOneInteger(), decoder.decodeOneBoolean()));
+                return ABIEncoder.encodeOneAddressArray(recurseAndTrackAddresses(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger(), decoder.decodeOneInteger(), decoder.decodeOneBoolean()));
             } else {
                 return new byte[0];
             }

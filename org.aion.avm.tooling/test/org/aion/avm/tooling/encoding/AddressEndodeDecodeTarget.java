@@ -12,7 +12,7 @@ public class AddressEndodeDecodeTarget {
 
     @Callable
     public static boolean addressEncodeDecode() {
-        byte[] encoded = ABIEncoder.encodeOneObject(BlockchainRuntime.getAddress());
+        byte[] encoded = ABIEncoder.encodeOneAddress(BlockchainRuntime.getAddress());
         Address result = (Address) ABIDecoder.decodeOneObject(encoded);
         return result.equals(BlockchainRuntime.getAddress());
     }
@@ -20,7 +20,7 @@ public class AddressEndodeDecodeTarget {
     @Callable
     public static boolean createAddress() {
         Address tempAddress = new Address(bytesOfLength(Address.LENGTH));
-        byte[] encoded = ABIEncoder.encodeOneObject(tempAddress);
+        byte[] encoded = ABIEncoder.encodeOneAddress(tempAddress);
         Address result = (Address) ABIDecoder.decodeOneObject(encoded);
         return result.equals(BlockchainRuntime.getAddress());
     }
@@ -55,7 +55,7 @@ public class AddressEndodeDecodeTarget {
 
     @Callable
     public static Address[] addressArrayEncodeDecode(Address[] addresses) {
-        byte[] encoded = ABIEncoder.encodeOneObject(addresses);
+        byte[] encoded = ABIEncoder.encodeOneAddressArray(addresses);
         Address[] result = (Address[]) ABIDecoder.decodeOneObject(encoded);
         return result;
     }

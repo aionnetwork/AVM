@@ -24,7 +24,7 @@ public class RedirectContract {
             return new byte[0];
         } else {
             if (methodName.equals("callOtherContractAndRequireItIsSuccess")) {
-                return ABIEncoder.encodeOneObject(callOtherContractAndRequireItIsSuccess(decoder.decodeOneAddress(), decoder.decodeOneLong(), decoder.decodeOneByteArray()));
+                return ABIEncoder.encodeOneByteArray(callOtherContractAndRequireItIsSuccess(decoder.decodeOneAddress(), decoder.decodeOneLong(), decoder.decodeOneByteArray()));
             } {
                 return new byte[0];
             }

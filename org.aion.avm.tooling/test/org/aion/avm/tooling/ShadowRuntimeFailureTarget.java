@@ -52,6 +52,7 @@ public class ShadowRuntimeFailureTarget {
     }
 
     public static byte[] main() {
-        return ABIEncoder.encodeOneObject(runTest());
+        runTest();
+        return ABIEncoder.encodeOneBoolean((boolean) runTest());
     }
 }

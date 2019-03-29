@@ -13,19 +13,19 @@ public class TestResource {
             return new byte[0];
         } else {
             if (methodName.equals("singleStringReturnInt")) {
-                return ABIEncoder.encodeOneObject(singleStringReturnInt());
+                return ABIEncoder.encodeOneIntegerArray(singleStringReturnInt());
             } else if (methodName.equals("singleStringReturnBoolean")) {
-                return ABIEncoder.encodeOneObject(singleStringReturnBoolean());
+                return ABIEncoder.encodeOneBooleanArray(singleStringReturnBoolean());
             }  else if (methodName.equals("singleStringReturnChar")) {
-                return ABIEncoder.encodeOneObject(singleStringReturnChar());
+                return ABIEncoder.encodeOneCharacter(singleStringReturnChar());
             }  else if (methodName.equals("singleStringReturnBytes")) {
-                return ABIEncoder.encodeOneObject(singleStringReturnBytes());
+                return ABIEncoder.encodeOneByteArray(singleStringReturnBytes());
             }  else if (methodName.equals("singleStringReturnLowerCase")) {
-                return ABIEncoder.encodeOneObject(singleStringReturnLowerCase());
+                return ABIEncoder.encodeOneString(singleStringReturnLowerCase());
             }  else if (methodName.equals("singleStringReturnUpperCase")) {
-                return ABIEncoder.encodeOneObject(singleStringReturnUpperCase());
+                return ABIEncoder.encodeOneString(singleStringReturnUpperCase());
             }   else if (methodName.equals("stringFromCodePoints")) {
-                return ABIEncoder.encodeOneObject(stringFromCodePoints());
+                return ABIEncoder.encodeOneString(stringFromCodePoints());
             } else {
                 return new byte[0];
             }

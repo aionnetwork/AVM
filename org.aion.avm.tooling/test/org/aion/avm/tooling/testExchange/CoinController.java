@@ -35,19 +35,19 @@ public class CoinController {
             return new byte[0];
         } else {
             if (methodName.equals("balanceOf")) {
-                return ABIEncoder.encodeOneObject(ERC20Token.balanceOf(decoder.decodeOneAddress()));
+                return ABIEncoder.encodeOneLong(ERC20Token.balanceOf(decoder.decodeOneAddress()));
             } else if (methodName.equals("transfer")) {
-                return ABIEncoder.encodeOneObject(ERC20Token.transfer(decoder.decodeOneAddress(), decoder.decodeOneLong()));
+                return ABIEncoder.encodeOneBoolean(ERC20Token.transfer(decoder.decodeOneAddress(), decoder.decodeOneLong()));
             } else if (methodName.equals("approve")) {
-                return ABIEncoder.encodeOneObject(ERC20Token.approve(decoder.decodeOneAddress(), decoder.decodeOneLong()));
+                return ABIEncoder.encodeOneBoolean(ERC20Token.approve(decoder.decodeOneAddress(), decoder.decodeOneLong()));
             } else if (methodName.equals("allowance")) {
-                return ABIEncoder.encodeOneObject(ERC20Token.allowance(decoder.decodeOneAddress(), decoder.decodeOneAddress()));
+                return ABIEncoder.encodeOneLong(ERC20Token.allowance(decoder.decodeOneAddress(), decoder.decodeOneAddress()));
             } else if (methodName.equals("transferFrom")) {
-                return ABIEncoder.encodeOneObject(ERC20Token.transferFrom(decoder.decodeOneAddress(), decoder.decodeOneAddress(), decoder.decodeOneLong()));
+                return ABIEncoder.encodeOneBoolean(ERC20Token.transferFrom(decoder.decodeOneAddress(), decoder.decodeOneAddress(), decoder.decodeOneLong()));
             } else if (methodName.equals("totalSupply")) {
-                return ABIEncoder.encodeOneObject(ERC20Token.totalSupply());
+                return ABIEncoder.encodeOneLong(ERC20Token.totalSupply());
             } else if (methodName.equals("mint")) {
-                return ABIEncoder.encodeOneObject(ERC20Token.mint(decoder.decodeOneAddress(), decoder.decodeOneLong()));
+                return ABIEncoder.encodeOneBoolean(ERC20Token.mint(decoder.decodeOneAddress(), decoder.decodeOneLong()));
             } else {
                 return new byte[0];
             }

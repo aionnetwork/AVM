@@ -17,11 +17,11 @@ public class ExchangeController {
             return new byte[0];
         } else {
             if (methodName.equals("processExchangeTransaction")) {
-                return ABIEncoder.encodeOneObject(Exchange.processExchangeTransaction());
+                return ABIEncoder.encodeOneBoolean(Exchange.processExchangeTransaction());
             } else if (methodName.equals("requestTransfer")) {
-                return ABIEncoder.encodeOneObject(Exchange.requestTransfer(decoder.decodeOneCharacterArray(), decoder.decodeOneAddress(), decoder.decodeOneLong()));
+                return ABIEncoder.encodeOneBoolean(Exchange.requestTransfer(decoder.decodeOneCharacterArray(), decoder.decodeOneAddress(), decoder.decodeOneLong()));
             } else if (methodName.equals("listCoin")) {
-                return ABIEncoder.encodeOneObject(Exchange.listCoin(decoder.decodeOneCharacterArray(), decoder.decodeOneAddress()));
+                return ABIEncoder.encodeOneBoolean(Exchange.listCoin(decoder.decodeOneCharacterArray(), decoder.decodeOneAddress()));
             } else {
                 return new byte[0];
             }

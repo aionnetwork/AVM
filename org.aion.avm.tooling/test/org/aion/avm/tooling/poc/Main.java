@@ -39,9 +39,9 @@ public class Main {
             return new byte[0];
         } else {
             if (methodName.equals("propose")) {
-                return ABIEncoder.encodeOneObject(Wallet.propose(decoder.decodeOneAddress(), decoder.decodeOneLong(), decoder.decodeOneByteArray(), decoder.decodeOneLong()));
+                return ABIEncoder.encodeOneByteArray(Wallet.propose(decoder.decodeOneAddress(), decoder.decodeOneLong(), decoder.decodeOneByteArray(), decoder.decodeOneLong()));
             } else if (methodName.equals("confirm")) {
-                return ABIEncoder.encodeOneObject(Wallet.confirm(decoder.decodeOneByteArray()));
+                return ABIEncoder.encodeOneBoolean(Wallet.confirm(decoder.decodeOneByteArray()));
             } else {
                 return new byte[0];
             }

@@ -29,19 +29,19 @@ public class WalletShim {
                 payable(decoder.decodeOneAddress(), (decoder.decodeOneLong()));
                 return new byte[0];
             } else if (methodName.equals("addOwner")) {
-                return ABIEncoder.encodeOneObject(addOwner(decoder.decodeOneAddress()));
+                return ABIEncoder.encodeOneBoolean(addOwner(decoder.decodeOneAddress()));
             } else if (methodName.equals("execute")) {
-                return ABIEncoder.encodeOneObject(execute(decoder.decodeOneAddress(), decoder.decodeOneLong(), decoder.decodeOneByteArray()));
+                return ABIEncoder.encodeOneByteArray(execute(decoder.decodeOneAddress(), decoder.decodeOneLong(), decoder.decodeOneByteArray()));
             } else if (methodName.equals("confirm")) {
-                return ABIEncoder.encodeOneObject(confirm(decoder.decodeOneByteArray()));
+                return ABIEncoder.encodeOneBoolean(confirm(decoder.decodeOneByteArray()));
             } else if (methodName.equals("changeRequirement")) {
-                return ABIEncoder.encodeOneObject(changeRequirement(decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneBoolean(changeRequirement(decoder.decodeOneInteger()));
             } else if (methodName.equals("getOwner")) {
-                return ABIEncoder.encodeOneObject(getOwner(decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneAddress(getOwner(decoder.decodeOneInteger()));
             } else if (methodName.equals("changeOwner")) {
-                return ABIEncoder.encodeOneObject(changeOwner(decoder.decodeOneAddress(), decoder.decodeOneAddress()));
+                return ABIEncoder.encodeOneBoolean(changeOwner(decoder.decodeOneAddress(), decoder.decodeOneAddress()));
             } else if (methodName.equals("removeOwner")) {
-                return ABIEncoder.encodeOneObject(removeOwner(decoder.decodeOneAddress()));
+                return ABIEncoder.encodeOneBoolean(removeOwner(decoder.decodeOneAddress()));
             } else {
                 return new byte[0];
             }

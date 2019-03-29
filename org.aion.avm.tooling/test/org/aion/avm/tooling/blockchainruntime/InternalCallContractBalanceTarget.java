@@ -21,13 +21,13 @@ public class InternalCallContractBalanceTarget {
             return new byte[0];
         } else {
             if (methodName.equals("getBalanceOfDappViaInternalCall")) {
-                return ABIEncoder.encodeOneObject(getBalanceOfDappViaInternalCall(decoder.decodeOneAddressArray(), decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneByteArray(getBalanceOfDappViaInternalCall(decoder.decodeOneAddressArray(), decoder.decodeOneInteger()));
             } else if (methodName.equals("createNewContractWithValue")) {
-                return ABIEncoder.encodeOneObject(createNewContractWithValue(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneLong()));
+                return ABIEncoder.encodeOneByteArray(createNewContractWithValue(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneLong()));
             } else if (methodName.equals("recurseAndGetBalance")) {
-                return ABIEncoder.encodeOneObject(recurseAndGetBalance(decoder.decodeOneAddressArray(), decoder.decodeOneInteger(), decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneByteArray(recurseAndGetBalance(decoder.decodeOneAddressArray(), decoder.decodeOneInteger(), decoder.decodeOneInteger()));
             } else if (methodName.equals("getBalanceOfThisContractDuringClinit")) {
-                return ABIEncoder.encodeOneObject(getBalanceOfThisContractDuringClinit());
+                return ABIEncoder.encodeOneByteArray(getBalanceOfThisContractDuringClinit());
             } else {
                 return new byte[0];
             }

@@ -25,9 +25,9 @@ public class SpawnerDApp {
             return new byte[0];
         } else {
             if (methodName.equals("spawnAndCall")) {
-                return ABIEncoder.encodeOneObject(spawnAndCall(decoder.decodeOneByteArray()));
+                return ABIEncoder.encodeOneByteArray(spawnAndCall(decoder.decodeOneByteArray()));
             } else if (methodName.equals("spawnOnly")) {
-                return ABIEncoder.encodeOneObject(spawnOnly(decoder.decodeOneBoolean()));
+                return ABIEncoder.encodeOneAddress(spawnOnly(decoder.decodeOneBoolean()));
             } else {
                 return new byte[0];
             }

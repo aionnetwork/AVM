@@ -13,7 +13,7 @@ public class EnergyUsageDebugModeTarget {
             return new byte[0];
         } else {
             if (methodName.equals("tryToDivideInteger")) {
-                return ABIEncoder.encodeOneObject(tryToDivideInteger(decoder.decodeOneInteger(), decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneInteger(tryToDivideInteger(decoder.decodeOneInteger(), decoder.decodeOneInteger()));
             } else {
                 return new byte[0];
             }
