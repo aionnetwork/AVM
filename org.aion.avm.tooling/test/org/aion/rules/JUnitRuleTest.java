@@ -27,7 +27,7 @@ public class JUnitRuleTest {
 
     @Before
     public void deployDapp() {
-        byte[] arguments = ABIEncoder.encodeMethodArguments("", 8);
+        byte[] arguments = ABIEncoder.encodeDeploymentArguments(8);
         byte[] dapp = avmRule.getDappBytes(JUnitRuleTestTarget.class, arguments, AionMap.class);
         dappAddr = avmRule.deploy(preminedAccount, BigInteger.ZERO, dapp).getDappAddress();
     }

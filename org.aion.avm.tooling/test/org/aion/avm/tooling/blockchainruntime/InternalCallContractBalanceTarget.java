@@ -15,18 +15,17 @@ public class InternalCallContractBalanceTarget {
     }
 
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("getBalanceOfDappViaInternalCall")) {
-                return ABIEncoder.encodeOneObject(getBalanceOfDappViaInternalCall((Address[]) argValues[0], (Integer) argValues[1]));
+                return ABIEncoder.encodeOneObject(getBalanceOfDappViaInternalCall(decoder.decodeOneAddressArray(), decoder.decodeOneInteger()));
             } else if (methodName.equals("createNewContractWithValue")) {
-                return ABIEncoder.encodeOneObject(createNewContractWithValue((byte[]) argValues[0], (byte[]) argValues[1], (Long) argValues[2]));
+                return ABIEncoder.encodeOneObject(createNewContractWithValue(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneLong()));
             } else if (methodName.equals("recurseAndGetBalance")) {
-                return ABIEncoder.encodeOneObject(recurseAndGetBalance((Address[]) argValues[0], (Integer)argValues[1], (Integer) argValues[2]));
+                return ABIEncoder.encodeOneObject(recurseAndGetBalance(decoder.decodeOneAddressArray(), decoder.decodeOneInteger(), decoder.decodeOneInteger()));
             } else if (methodName.equals("getBalanceOfThisContractDuringClinit")) {
                 return ABIEncoder.encodeOneObject(getBalanceOfThisContractDuringClinit());
             } else {

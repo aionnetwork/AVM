@@ -60,7 +60,7 @@ public class HashCodeIntegrationTest {
         // Store an object.
         int systemHash = ((Integer)callStatic(block, contractAddr, "persistNewObject")).intValue();
         // We know that this is the current value, but that may change in the future.
-        Assert.assertEquals(118, systemHash);
+        Assert.assertEquals(115, systemHash);
         // Fetch it and verify the hashCode is loaded.
         int loadSystemHash = ((Integer)callStatic(block, contractAddr, "readPersistentHashCode")).intValue();
         Assert.assertEquals(systemHash, loadSystemHash);
@@ -74,7 +74,7 @@ public class HashCodeIntegrationTest {
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.
-        Assert.assertEquals(-963127028, result.getStorageRootHash());
+        Assert.assertEquals(-1611412224, result.getStorageRootHash());
         return ABIDecoder.decodeOneObject(result.getReturnData());
     }
 }

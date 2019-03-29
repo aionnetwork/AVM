@@ -18,14 +18,13 @@ import org.aion.avm.userlib.abi.ABIEncoder;
 public class RedirectContract {
 
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("callOtherContractAndRequireItIsSuccess")) {
-                return ABIEncoder.encodeOneObject(callOtherContractAndRequireItIsSuccess((Address)argValues[0], (Long)argValues[1], (byte[])argValues[2]));
+                return ABIEncoder.encodeOneObject(callOtherContractAndRequireItIsSuccess(decoder.decodeOneAddress(), decoder.decodeOneLong(), decoder.decodeOneByteArray()));
             } {
                 return new byte[0];
             }

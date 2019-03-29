@@ -54,7 +54,7 @@ public class DemoTest {
 
         System.out.println(">> Deploy \"PEPE\" ERC20 token Dapp...");
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(CoinController.class, ERC20Token.class);
-        byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
+        byte[] arguments = ABIEncoder.encodeDeploymentArguments("Pepe", "PEPE", 8);
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
         Transaction createTransaction = Transaction.create(pepeMinter, kernel.getNonce(pepeMinter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(createTransaction, block);
@@ -66,7 +66,7 @@ public class DemoTest {
         System.out.println("\n>> Deploy the Multi-sig Wallet Dapp...");
         jar = JarBuilder.buildJarForMainAndClassesAndUserlib(Main.class, Wallet.class, Bytes32.class);
         int confirmationsRequired = 2;
-        arguments = ABIEncoder.encodeMethodArguments("", new Address(owner1.toBytes()), new Address(owner2.toBytes()), confirmationsRequired);
+        arguments = ABIEncoder.encodeDeploymentArguments(new Address(owner1.toBytes()), new Address(owner2.toBytes()), confirmationsRequired);
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();

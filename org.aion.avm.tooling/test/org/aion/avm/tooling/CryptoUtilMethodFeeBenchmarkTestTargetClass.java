@@ -40,23 +40,22 @@ public class CryptoUtilMethodFeeBenchmarkTestTargetClass {
      * Entry point at a transaction call.
      */
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("callBlake2b")) {
-                callBlake2b((Integer) argValues[0], (byte[]) argValues[1]);
+                callBlake2b(decoder.decodeOneInteger(), decoder.decodeOneByteArray());
                 return new byte[0];
             } else if (methodName.equals("callSha")) {
-                callSha((Integer) argValues[0], (byte[]) argValues[1]);
+                callSha(decoder.decodeOneInteger(), decoder.decodeOneByteArray());
                 return new byte[0];
             } else if (methodName.equals("callKeccak")) {
-                callKeccak((Integer) argValues[0], (byte[]) argValues[1]);
+                callKeccak(decoder.decodeOneInteger(), decoder.decodeOneByteArray());
                 return new byte[0];
             } else if (methodName.equals("callEdverify")) {
-                callEdverify((Integer) argValues[0], (byte[]) argValues[1]);
+                callEdverify(decoder.decodeOneInteger(), decoder.decodeOneByteArray());
                 return new byte[0];
             } else {
                 return new byte[0];

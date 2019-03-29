@@ -21,34 +21,33 @@ public class ReentrantCrossCallResource {
 
 
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("getNear")) {
-                return ABIEncoder.encodeOneObject(getNear((Boolean) argValues[0]));
+                return ABIEncoder.encodeOneObject(getNear(decoder.decodeOneBoolean()));
             } else if (methodName.equals("getFar")) {
-                return ABIEncoder.encodeOneObject(getFar((Boolean) argValues[0]));
+                return ABIEncoder.encodeOneObject(getFar((decoder.decodeOneBoolean())));
             } else if (methodName.equals("getDirect")) {
-                return ABIEncoder.encodeOneObject(getDirect((Boolean) argValues[0]));
+                return ABIEncoder.encodeOneObject(getDirect(decoder.decodeOneBoolean()));
             } else if (methodName.equals("localFailAfterReentrant")) {
                 return ABIEncoder.encodeOneObject(localFailAfterReentrant());
             } else if (methodName.equals("getFarWithEnergy")) {
-                return ABIEncoder.encodeOneObject(getFarWithEnergy((Long) argValues[0]));
+                return ABIEncoder.encodeOneObject(getFarWithEnergy(decoder.decodeOneLong()));
             } else if (methodName.equals("recursiveChangeNested")) {
-                return ABIEncoder.encodeOneObject(recursiveChangeNested((Integer) argValues[0], (Integer) argValues[1]));
+                return ABIEncoder.encodeOneObject(recursiveChangeNested(decoder.decodeOneInteger(), decoder.decodeOneInteger()));
             } else if (methodName.equals("getRecursiveHashCode")) {
-                return ABIEncoder.encodeOneObject(getRecursiveHashCode((Integer) argValues[0]));
+                return ABIEncoder.encodeOneObject(getRecursiveHashCode(decoder.decodeOneInteger()));
             } else if (methodName.equals("incFar")) {
-                incFar((Boolean) argValues[0]);
+                incFar(decoder.decodeOneBoolean());
                 return new byte[0];
             } else if (methodName.equals("incNear")) {
-                incNear((Boolean) argValues[0]);
+                incNear(decoder.decodeOneBoolean());
                 return new byte[0];
             } else if (methodName.equals("incDirect")) {
-                incDirect((Boolean) argValues[0]);
+                incDirect(decoder.decodeOneBoolean());
                 return new byte[0];
             } else {
                 return new byte[0];

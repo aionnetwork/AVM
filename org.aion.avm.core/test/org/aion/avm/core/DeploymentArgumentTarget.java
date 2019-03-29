@@ -18,17 +18,17 @@ public class DeploymentArgumentTarget {
     private static byte[] smallJar;
 
     static {
-        Object[] args = ABIDecoder.decodeDeploymentArguments(BlockchainRuntime.getData());
-        arg0 = (String)args[0];
-        arg1 = (Address[])args[1];
-        arg2 = (Integer)args[2];
-        arg3 = (Double)args[3];
-        smallJar = (byte[]) args[4];
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        arg0 = decoder.decodeOneString();
+        arg1 = decoder.decodeOneAddressArray();
+        arg2 = decoder.decodeOneInteger();
+        arg3 = decoder.decodeOneDouble();
+        smallJar = decoder.decodeOneByteArray();
     }
 
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {

@@ -335,13 +335,6 @@ public class ABIEncoderTest {
 
         caught = null;
         try {
-            ABIDecoder.decodeArguments(null);
-        } catch (NullPointerException e) {
-            caught = e;
-        }
-        Assert.assertNotNull(caught);
-        caught = null;
-        try {
             ABIDecoder.decodeOneObject(null);
         } catch (NullPointerException e) {
             caught = e;

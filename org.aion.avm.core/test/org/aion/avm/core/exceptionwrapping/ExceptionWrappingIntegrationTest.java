@@ -48,7 +48,7 @@ public class ExceptionWrappingIntegrationTest {
         // Store the exceptions.
         int systemHash = ((Integer)callStatic(block, kernel, avm, contractAddr, "storeSystem")).intValue();
         // We know that this is currently 4 but that may change in the future (was 5 when this was an instance call, for example).
-        Assert.assertEquals(123, systemHash);
+        Assert.assertEquals(120, systemHash);
         byte[] user = (byte[])callStatic(block, kernel, avm, contractAddr, "storeUser");
         Assert.assertEquals("MESSAGE", new String(user));
         byte[] second = (byte[])callStatic(block, kernel, avm, contractAddr, "getSecond");

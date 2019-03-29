@@ -13,8 +13,8 @@ public class HelloWorld {
 
     static {
         if (BlockchainRuntime.getData() != null) {
-            Object[] arguments = ABIDecoder.decodeDeploymentArguments(BlockchainRuntime.getData());
-            bar = (int)arguments[0];
+            ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+            bar = decoder.decodeOneInteger();
         }
     }
 

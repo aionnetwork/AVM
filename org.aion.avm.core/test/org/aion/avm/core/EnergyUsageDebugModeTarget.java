@@ -7,14 +7,13 @@ import org.aion.avm.userlib.abi.ABIEncoder;
 public class EnergyUsageDebugModeTarget {
 
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("tryToDivideInteger")) {
-                return ABIEncoder.encodeOneObject(tryToDivideInteger((Integer) argValues[0], (Integer) argValues[1]));
+                return ABIEncoder.encodeOneObject(tryToDivideInteger(decoder.decodeOneInteger(), decoder.decodeOneInteger()));
             } else {
                 return new byte[0];
             }

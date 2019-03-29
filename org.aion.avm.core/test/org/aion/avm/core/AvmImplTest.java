@@ -368,8 +368,8 @@ public class AvmImplTest {
         
         // We just want to call our special getFar helper with a constrained energy.
         // WARNING:  This test is very sensitive to storage billing configuration so the energy limit likely needs to be updated when that changes.
-        // The write-back of the callee attempts to write statics and 2 instances.  We want it to fail at 1 instance (20_000L seems to do this).
-        long failingLimit = 20_000L;
+        // The write-back of the callee attempts to write statics and 2 instances.  We want it to fail at 1 instance (16_694L seems to do this).
+        long failingLimit = 16_694L;
         byte[] callData = ABIEncoder.encodeMethodArguments("getFarWithEnergy", failingLimit);
         Object resultObject = callDApp(kernel, avm, contractAddr, callData);
 

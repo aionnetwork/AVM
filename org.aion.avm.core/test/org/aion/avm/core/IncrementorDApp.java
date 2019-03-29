@@ -17,14 +17,13 @@ public class IncrementorDApp {
     }
 
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("incrementArray")) {
-                return ABIEncoder.encodeOneObject(incrementArray((byte[]) argValues[0]));
+                return ABIEncoder.encodeOneObject(incrementArray(decoder.decodeOneByteArray()));
             } else {
                 return new byte[0];
             }

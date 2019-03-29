@@ -169,7 +169,7 @@ public class PocExchangeTest {
     public void testERC20() {
         TransactionResult res;
         //System.out.println(">> Deploy \"PEPE\" token contract...");
-        byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
+        byte[] arguments = ABIEncoder.encodeDeploymentArguments("Pepe", "PEPE", 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
         //System.out.println(Helpers.bytesToHexString(pepe.addr));
 
@@ -246,11 +246,11 @@ public class PocExchangeTest {
     @Test
     public void testExchange() {
         //System.out.println(">> Deploy \"PEPE\" token contract...");
-        byte[] arguments = ABIEncoder.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
+        byte[] arguments = ABIEncoder.encodeDeploymentArguments("Pepe", "PEPE", 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
 
         //System.out.println(">> Deploy \"MEME\" token contract...");
-        arguments = ABIEncoder.encodeMethodArguments("", "Meme".toCharArray(), "MEME".toCharArray(), 8);
+        arguments = ABIEncoder.encodeDeploymentArguments("Meme", "MEME", 8);
         CoinContract meme = new CoinContract(null, memeMinter, testERC20Jar, arguments);
 
         //System.out.println(">> Deploy the Exchange contract...");

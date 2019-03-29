@@ -18,17 +18,16 @@ public class LoggingTarget {
     public static final byte[] DATA5 = new byte[]{ 0x5 };
 
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("spawnInternalTransactionsAndHitLogsAtEachLevel")) {
-                spawnInternalTransactionsAndHitLogsAtEachLevel((Integer) argValues[0]);
+                spawnInternalTransactionsAndHitLogsAtEachLevel(decoder.decodeOneInteger());
                 return new byte[0];
             } else if (methodName.equals("spawnInternalTransactionsAndHitLogsAtBottomLevel")) {
-                spawnInternalTransactionsAndHitLogsAtBottomLevel((Integer) argValues[0]);
+                spawnInternalTransactionsAndHitLogsAtBottomLevel(decoder.decodeOneInteger());
                 return new byte[0];
             } else if (methodName.equals("hitLogs")) {
                 hitLogs();

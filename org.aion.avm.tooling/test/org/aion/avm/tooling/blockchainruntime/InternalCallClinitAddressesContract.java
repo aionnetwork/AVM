@@ -14,18 +14,17 @@ public class InternalCallClinitAddressesContract {
     private static final Address CONTRACT = BlockchainRuntime.getAddress();
 
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress")) {
-                return ABIEncoder.encodeOneObject(runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress((byte[]) argValues[0], (byte[]) argValues[1], (Integer) argValues[2]));
+                return ABIEncoder.encodeOneObject(runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger()));
             } else if (methodName.equals("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse")) {
-                return ABIEncoder.encodeOneObject(runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse((byte[]) argValues[0], (byte[]) argValues[1], (Integer) argValues[2]));
+                return ABIEncoder.encodeOneObject(runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger()));
             } else if (methodName.equals("recurseAndTrackAddresses")) {
-                return ABIEncoder.encodeOneObject(recurseAndTrackAddresses((byte[]) argValues[0], (byte[]) argValues[1], (Integer) argValues[2], (Integer) argValues[3], (Boolean) argValues[4]));
+                return ABIEncoder.encodeOneObject(recurseAndTrackAddresses(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger(), decoder.decodeOneInteger(), decoder.decodeOneBoolean()));
             } else {
                 return new byte[0];
             }

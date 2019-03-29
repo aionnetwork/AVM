@@ -51,14 +51,13 @@ public class AvmFailureTestResource {
         bytes[3] = 1;
     }
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("reentrantCall")) {
-                reentrantCall((Integer)argValues[0]);
+                reentrantCall(decoder.decodeOneInteger());
                 return new byte[0];
             } else if (methodName.equals("testOutOfEnergy")) {
                 testOutOfEnergy();

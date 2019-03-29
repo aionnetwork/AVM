@@ -16,8 +16,8 @@ public class JUnitRuleTestTarget {
     public static Address owner;
 
     static {
-        Object[] arguments = ABIDecoder.decodeArguments(BlockchainRuntime.getData());
-        intVal =  (Integer) arguments[0];
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        intVal =  decoder.decodeOneInteger();
         owner = BlockchainRuntime.getCaller();
     }
 

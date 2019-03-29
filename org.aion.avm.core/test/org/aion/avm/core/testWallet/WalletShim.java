@@ -14,35 +14,34 @@ import org.aion.avm.userlib.abi.ABIEncoder;
  */
 public class WalletShim {
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("revoke")) {
-                revoke((byte[]) argValues[0]);
+                revoke(decoder.decodeOneByteArray());
                 return new byte[0];
             } else if (methodName.equals("initWrapper")) {
-                initWrapper((Address) argValues[0], (Address) argValues[1], (Integer) argValues[2], (Long) argValues[3]);
+                initWrapper(decoder.decodeOneAddress(), decoder.decodeOneAddress(), decoder.decodeOneInteger(), decoder.decodeOneLong());
                 return new byte[0];
             } else if (methodName.equals("payable")) {
-                payable((Address) argValues[0], (Long)argValues[1]);
+                payable(decoder.decodeOneAddress(), (decoder.decodeOneLong()));
                 return new byte[0];
             } else if (methodName.equals("addOwner")) {
-                return ABIEncoder.encodeOneObject(addOwner((Address) argValues[0]));
+                return ABIEncoder.encodeOneObject(addOwner(decoder.decodeOneAddress()));
             } else if (methodName.equals("execute")) {
-                return ABIEncoder.encodeOneObject(execute((Address) argValues[0], (Long) argValues[1], (byte[]) argValues[2]));
+                return ABIEncoder.encodeOneObject(execute(decoder.decodeOneAddress(), decoder.decodeOneLong(), decoder.decodeOneByteArray()));
             } else if (methodName.equals("confirm")) {
-                return ABIEncoder.encodeOneObject(confirm((byte[]) argValues[0]));
+                return ABIEncoder.encodeOneObject(confirm(decoder.decodeOneByteArray()));
             } else if (methodName.equals("changeRequirement")) {
-                return ABIEncoder.encodeOneObject(changeRequirement((Integer) argValues[0]));
+                return ABIEncoder.encodeOneObject(changeRequirement(decoder.decodeOneInteger()));
             } else if (methodName.equals("getOwner")) {
-                return ABIEncoder.encodeOneObject(getOwner((Integer) argValues[0]));
+                return ABIEncoder.encodeOneObject(getOwner(decoder.decodeOneInteger()));
             } else if (methodName.equals("changeOwner")) {
-                return ABIEncoder.encodeOneObject(changeOwner((Address) argValues[0], (Address) argValues[1]));
+                return ABIEncoder.encodeOneObject(changeOwner(decoder.decodeOneAddress(), decoder.decodeOneAddress()));
             } else if (methodName.equals("removeOwner")) {
-                return ABIEncoder.encodeOneObject(removeOwner((Address) argValues[0]));
+                return ABIEncoder.encodeOneObject(removeOwner(decoder.decodeOneAddress()));
             } else {
                 return new byte[0];
             }

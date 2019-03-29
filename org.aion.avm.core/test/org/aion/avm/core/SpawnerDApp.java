@@ -19,16 +19,15 @@ public class SpawnerDApp {
     }
 
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("spawnAndCall")) {
-                return ABIEncoder.encodeOneObject(spawnAndCall((byte[]) argValues[0]));
+                return ABIEncoder.encodeOneObject(spawnAndCall(decoder.decodeOneByteArray()));
             } else if (methodName.equals("spawnOnly")) {
-                return ABIEncoder.encodeOneObject(spawnOnly((Boolean) argValues[0]));
+                return ABIEncoder.encodeOneObject(spawnOnly(decoder.decodeOneBoolean()));
             } else {
                 return new byte[0];
             }

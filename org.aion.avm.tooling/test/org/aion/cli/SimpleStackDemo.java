@@ -16,14 +16,13 @@ public class SimpleStackDemo {
     private static SimpleStackDemo topOfStack;
 
     public static byte[] main() {
-        byte[] inputBytes = BlockchainRuntime.getData();
-        String methodName = ABIDecoder.decodeMethodName(inputBytes);
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
         } else {
-            Object[] argValues = ABIDecoder.decodeArguments(inputBytes);
             if (methodName.equals("addNewTuple")) {
-                addNewTuple((String) argValues[0]);
+                addNewTuple(decoder.decodeOneString());
                 return new byte[0];
             } else {
                 return new byte[0];
