@@ -193,4 +193,130 @@ public class AionListTest {
         }
         Assert.assertEquals(10, counted);
     }
+
+    /**
+     * Adds 10 elements, retain first 5 elements
+     */
+    @Test
+    public void checkRetainFirstHalf() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 10; ++i) {
+            list.add("int_ " + i);
+        }
+        Assert.assertEquals(10, list.size());
+
+        AionList<String> listToRetain = new AionList<>();
+        for (int i = 0; i < 5; ++i) {
+            listToRetain.add("int_ " + i);
+        }
+
+        list.retainAll(listToRetain);
+
+        Assert.assertEquals(5, list.size());
+
+        for (int i = 0; i < 5; ++i) {
+            Assert.assertEquals("int_ " + i, list.get(i));
+        }
+    }
+
+    /**
+     * Adds 10 elements, retain latter 5 elements
+     */
+    @Test
+    public void checkRetainSecondHalf() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 10; ++i) {
+            list.add("int_ " + i);
+        }
+        Assert.assertEquals(10, list.size());
+
+        AionList<String> listToRetain = new AionList<>();
+        for (int i = 5; i < 10; ++i) {
+            listToRetain.add("int_ " + i);
+        }
+
+        list.retainAll(listToRetain);
+
+        Assert.assertEquals(5, list.size());
+
+        for (int i = 0; i < 5; ++i) {
+            Assert.assertEquals("int_ " + (i + 5), list.get(i));
+        }
+    }
+
+    /**
+     * Select various elements to retain
+     */
+    @Test
+    public void checkRetainAllWithSelection() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 100; ++i) {
+            list.add("int_ " + i);
+        }
+        Assert.assertEquals(100, list.size());
+
+        int[] indexToRetain = { 5, 20, 70, 14, 35, 6};
+        AionList<String> listToRetain = new AionList<>();
+
+        for (int i: indexToRetain) {
+            listToRetain.add("int_ " + i);
+        }
+
+        listToRetain.add("int_ " + 999); // this will not be retained, subtract one from expected length after retain all
+
+        list.retainAll(listToRetain);
+
+        Assert.assertEquals(listToRetain.size() - 1, list.size());
+    }
+
+    /**
+     * Iterate front to back, and remove last element
+     */
+    @Test
+    public void checkIteratorFrontToBackRemoveLastElement() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 10; ++i) {
+            list.add("int_ " + i);
+        }
+        Assert.assertEquals(10, list.size());
+
+        Iterator iterator = list.iterator();
+        for (int i = 0; i < 10; ++i) {
+            iterator.next();
+        }
+
+        iterator.remove();
+
+        Assert.assertEquals(9, list.size());
+
+        for (int i = 0; i < 9; ++i) {
+            Assert.assertEquals("int_ " + i, list.get(i));
+        }
+    }
+
+    /**
+     * Iterate back to front, and remove first
+     */
+    @Test
+    public void checkIteratorBackToFrontRemoveFirstElement() {
+        AionList<String> list = new AionList<>();
+        for (int i = 0; i < 10; ++i) {
+            list.add("int_ " + i);
+        }
+        Assert.assertEquals(10, list.size());
+
+        AionList.AionListIterator iterator = (AionList.AionListIterator) list.listIterator(10);
+
+        for (int i = 0; i < 10; ++i) {
+            iterator.previous();
+        }
+
+        iterator.remove();
+
+        Assert.assertEquals(9, list.size());
+
+        for (int i = 0; i < 9; ++i) {
+            Assert.assertEquals("int_ " + (i + 1), list.get(i));
+        }
+    }
 }

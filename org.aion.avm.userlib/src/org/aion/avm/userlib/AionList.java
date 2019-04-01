@@ -130,7 +130,7 @@ public class AionList<E> implements List<E> {
         E oldValue = (E) this.storage[index];
         if ((size - 1) > index)
             System.arraycopy(this.storage, index + 1, this.storage, index, size - 1 - index);
-        this.storage[size] = null;
+        this.storage[size - 1] = null;
         size = size - 1;
 
         return oldValue;
@@ -265,6 +265,7 @@ public class AionList<E> implements List<E> {
      * (public only to reference it from tests when building the DApp jar)
      */
     public class AionListIterator implements ListIterator<E> {
+        private int lastReturnedIndex = -1;
         private int nextIndex;
         public AionListIterator(int nextIndex) {
             this.nextIndex = nextIndex;
@@ -279,6 +280,7 @@ public class AionList<E> implements List<E> {
             if (this.nextIndex < AionList.this.size) {
                 elt = (E) AionList.this.storage[this.nextIndex];
                 this.nextIndex += 1;
+                lastReturnedIndex = this.nextIndex - 1;
             } else {
                 throw new NoSuchElementException();
             }
@@ -294,6 +296,7 @@ public class AionList<E> implements List<E> {
             if (this.nextIndex > 0) {
                 this.nextIndex -= 1;
                 elt = (E) AionList.this.storage[this.nextIndex];
+                lastReturnedIndex = this.nextIndex;
             } else {
                 throw new NoSuchElementException();
             }
@@ -309,7 +312,13 @@ public class AionList<E> implements List<E> {
         }
         @Override
         public void remove() {
-            throw new UnsupportedOperationException();
+            if (this.lastReturnedIndex < 0) {
+                throw new IllegalStateException();
+            } else {
+                AionList.this.remove(this.lastReturnedIndex);
+                this.nextIndex = this.lastReturnedIndex;
+                this.lastReturnedIndex = -1;
+            }
         }
         @Override
         public void set(E e) {
