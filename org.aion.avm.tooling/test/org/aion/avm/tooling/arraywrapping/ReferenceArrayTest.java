@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.arraywrapping;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -29,28 +29,28 @@ public class ReferenceArrayTest {
 
     @Test
     public void test2DimArraySize() {
-        byte[] data = ABIEncoder.encodeMethodArguments("twoDimArraySize");
+        byte[] data = ABIUtil.encodeMethodArguments("twoDimArraySize");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void test2DimArraySize2() {
-        byte[] data = ABIEncoder.encodeMethodArguments("twoDimArraySize2");
+        byte[] data = ABIUtil.encodeMethodArguments("twoDimArraySize2");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void test2DimArrayAccess() {
-        byte[] data = ABIEncoder.encodeMethodArguments("twoDimArrayAccess");
+        byte[] data = ABIUtil.encodeMethodArguments("twoDimArrayAccess");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void testMultiDimArraySize() {
-        byte[] data = ABIEncoder.encodeMethodArguments("multiDimArraySize");
+        byte[] data = ABIUtil.encodeMethodArguments("multiDimArraySize");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
@@ -58,21 +58,21 @@ public class ReferenceArrayTest {
 
     @Test
     public void testMultiDimArrayAccess() {
-        byte[] data = ABIEncoder.encodeMethodArguments("multiDimArrayAccess");
+        byte[] data = ABIUtil.encodeMethodArguments("multiDimArrayAccess");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void InterfaceArrayAccess() {
-        byte[] data = ABIEncoder.encodeMethodArguments("InterfaceArrayAccess");
+        byte[] data = ABIUtil.encodeMethodArguments("InterfaceArrayAccess");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void InterfaceArraySize() {
-        byte[] data = ABIEncoder.encodeMethodArguments("InterfaceArraySize");
+        byte[] data = ABIUtil.encodeMethodArguments("InterfaceArraySize");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
@@ -80,14 +80,14 @@ public class ReferenceArrayTest {
 
     @Test
     public void ObjectArrayAccess() {
-        byte[] data = ABIEncoder.encodeMethodArguments("ObjectArrayAccess");
+        byte[] data = ABIUtil.encodeMethodArguments("ObjectArrayAccess");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void ObjectArraySize() {
-        byte[] data = ABIEncoder.encodeMethodArguments("ObjectArraySize");
+        byte[] data = ABIUtil.encodeMethodArguments("ObjectArraySize");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }

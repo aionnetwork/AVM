@@ -1,8 +1,8 @@
 package org.aion.avm.tooling.shadowapi;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -68,7 +68,7 @@ public class AddressIntegrationTest {
     }
 
     private Object call(String methodName, Address ...addresses) {
-        byte[] txDataMethodArguments = ABIEncoder.encodeMethodArguments(methodName, (Object[]) addresses);
+        byte[] txDataMethodArguments = ABIUtil.encodeMethodArguments(methodName, (Object[]) addresses);
         return avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice).getDecodedReturnData();
     }
 }

@@ -6,8 +6,8 @@ import java.math.BigInteger;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.kernel.Block;
@@ -57,7 +57,7 @@ public class ReentrantObjectArrayTest {
 
     @Test
     public void testReentrantStringArray() {
-        byte[] data = ABIEncoder.encodeMethodArguments("testString");
+        byte[] data = ABIUtil.encodeMethodArguments("testString");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();

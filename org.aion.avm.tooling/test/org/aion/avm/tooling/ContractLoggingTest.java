@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -175,7 +176,7 @@ public class ContractLoggingTest {
     }
 
     private TransactionContext generateContextForMethodCall(String methodName, Object... args) {
-        byte[] callData = ABIEncoder.encodeMethodArguments(methodName, args);
+        byte[] callData = ABIUtil.encodeMethodArguments(methodName, args);
         Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
         return TransactionContextImpl.forExternalTransaction(transaction, block);
     }

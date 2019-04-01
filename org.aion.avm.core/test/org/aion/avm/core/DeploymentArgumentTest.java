@@ -4,8 +4,8 @@ import org.aion.avm.api.Address;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
@@ -90,14 +90,14 @@ public class DeploymentArgumentTest {
 
 
     private AvmTransactionResult deployContract(Object... arguments) {
-        byte[] args = ABIEncoder.encodeDeploymentArguments(arguments);
+        byte[] args = ABIUtil.encodeDeploymentArguments(arguments);
         byte[] payload = new CodeAndArguments(JAR, args).encodeToBytes();
         Transaction create = Transaction.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, payload, ENERGY_LIMIT, ENERGY_PRICE);
         return (AvmTransactionResult)this.avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, this.block)})[0].get();
     }
 
     private AvmTransactionResult callContract(org.aion.types.Address target, String methodName) {
-        byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
+        byte[] argData = ABIUtil.encodeMethodArguments(methodName);
         Transaction call = Transaction.call(DEPLOYER, target, kernel.getNonce(DEPLOYER), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         return result;

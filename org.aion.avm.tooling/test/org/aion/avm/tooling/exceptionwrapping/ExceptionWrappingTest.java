@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.exceptionwrapping;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.internal.PackageConstants;
@@ -29,7 +29,7 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testSimpleTryMultiCatchFinally() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("tryMultiCatchFinally");
+        byte[] txData = ABIUtil.encodeMethodArguments("tryMultiCatchFinally");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals(3, result);
     }
@@ -39,7 +39,7 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testmSimpleManuallyThrowNull() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("manuallyThrowNull");
+        byte[] txData = ABIUtil.encodeMethodArguments("manuallyThrowNull");
         AvmTransactionResult result = (AvmTransactionResult) avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + NullPointerException.class.getName()).equals(result.getUncaughtException().getClass().getName()));
@@ -50,7 +50,7 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testSimpleTryMultiCatchInteraction() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("tryMultiCatch");
+        byte[] txData = ABIUtil.encodeMethodArguments("tryMultiCatch");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals(2, result);
     }
@@ -60,7 +60,7 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testRecatchCoreException() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("outerCatch");
+        byte[] txData = ABIUtil.encodeMethodArguments("outerCatch");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals(2, result);
     }
@@ -70,7 +70,7 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testUserDefinedThrowCatch_commonPipeline() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("userDefinedCatch");
+        byte[] txData = ABIUtil.encodeMethodArguments("userDefinedCatch");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals("two", result);
     }
@@ -80,7 +80,7 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testOriginalNull_commonPipeline() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("originalNull");
+        byte[] txData = ABIUtil.encodeMethodArguments("originalNull");
         AvmTransactionResult result = (AvmTransactionResult) avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         Assert.assertTrue(NullPointerException.class.getName().equals(result.getUncaughtException().getClass().getName()));
@@ -91,7 +91,7 @@ public class ExceptionWrappingTest {
      */
     @Test
     public void testInnerCatch_commonPipeline() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("innerCatch");
+        byte[] txData = ABIUtil.encodeMethodArguments("innerCatch");
         AvmTransactionResult result = (AvmTransactionResult) avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + NullPointerException.class.getName()).equals(result.getUncaughtException().getClass().getName()));

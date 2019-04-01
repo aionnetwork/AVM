@@ -1,7 +1,7 @@
 package org.aion.avm.core.testWallet;
 
 import org.aion.avm.api.Address;
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 
 
 /**
@@ -10,33 +10,33 @@ import org.aion.avm.userlib.abi.ABIEncoder;
  */
 public class CallEncoder {
     public static byte[] init(Address extra1, Address extra2, int requiredVotes, long dailyLimit) {
-        return ABIEncoder.encodeMethodArguments("initWrapper", extra1, extra2, requiredVotes, dailyLimit);
+        return ABIUtil.encodeMethodArguments("initWrapper", extra1, extra2, requiredVotes, dailyLimit);
     }
     public static byte[] payable(Address from, long value) {
-        return ABIEncoder.encodeMethodArguments("payable", from, value);
+        return ABIUtil.encodeMethodArguments("payable", from, value);
     }
     public static byte[] addOwner(Address owner) {
-        return ABIEncoder.encodeMethodArguments("addOwner", owner);
+        return ABIUtil.encodeMethodArguments("addOwner", owner);
     }
     public static byte[] execute(Address to, long value, byte[] data) {
-        return ABIEncoder.encodeMethodArguments("execute", to, value, data);
+        return ABIUtil.encodeMethodArguments("execute", to, value, data);
     }
     public static byte[] confirm(byte[] data) {
-        return ABIEncoder.encodeMethodArguments("confirm", data);
+        return ABIUtil.encodeMethodArguments("confirm", data);
     }
     public static byte[] changeRequirement(int newRequired) {
-        return ABIEncoder.encodeMethodArguments("changeRequirement", newRequired);
+        return ABIUtil.encodeMethodArguments("changeRequirement", newRequired);
     }
     public static byte[] getOwner(int ownerIndex) {
-        return ABIEncoder.encodeMethodArguments("getOwner", ownerIndex);
+        return ABIUtil.encodeMethodArguments("getOwner", ownerIndex);
     }
     public static byte[] changeOwner(Address from, Address to) {
-        return ABIEncoder.encodeMethodArguments("changeOwner", from, to);
+        return ABIUtil.encodeMethodArguments("changeOwner", from, to);
     }
     public static byte[] removeOwner(Address owner) {
-        return ABIEncoder.encodeMethodArguments("removeOwner", owner);
+        return ABIUtil.encodeMethodArguments("removeOwner", owner);
     }
     public static byte[] revoke(byte[] transactionBytes) {
-        return ABIEncoder.encodeMethodArguments("revoke", transactionBytes);
+        return ABIUtil.encodeMethodArguments("revoke", transactionBytes);
     }
 }

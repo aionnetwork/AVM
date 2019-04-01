@@ -7,12 +7,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import org.aion.avm.api.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -43,7 +41,7 @@ public class IntegTest {
     }
 
     private Object callStatic(Address dapp, String methodName, Object... arguments) {
-        byte[] argData = ABIEncoder.encodeMethodArguments(methodName, arguments);
+        byte[] argData = ABIUtil.encodeMethodArguments(methodName, arguments);
         TransactionResult result =
                 avmRule.call(
                         avmRule.getPreminedAccount(),
@@ -180,7 +178,7 @@ public class IntegTest {
         Address dapp = installTestDApp(jar);
 
 
-        byte[] argData = ABIEncoder.encodeMethodArguments("noSuchMethod");
+        byte[] argData = ABIUtil.encodeMethodArguments("noSuchMethod");
         TransactionResult result =
             avmRule.call(
                 avmRule.getPreminedAccount(),

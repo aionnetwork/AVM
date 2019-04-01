@@ -4,8 +4,8 @@ import examples.BetaMapEvents;
 import examples.HelloWorld;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.deploy.JarOptimizer;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.AvmTransactionResult;
@@ -65,7 +65,7 @@ public class ExamplesIntegrationTest {
 
     private void callStatic(Address contractAddr, String methodName, Object... args) {
         long energyLimit = 1_000_000l;
-        byte[] argData = ABIEncoder.encodeMethodArguments(methodName, args);
+        byte[] argData = ABIUtil.encodeMethodArguments(methodName, args);
         TransactionResult result = avmRule.call(deployer, contractAddr, BigInteger.ZERO, argData, energyLimit, 1l).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }

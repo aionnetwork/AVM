@@ -83,7 +83,11 @@ public class Exchange {
 
         Address coinContract = coinListing.get(String.valueOf(toProcess.getCoin()));
 
-        byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", toProcess.getFrom(), toProcess.getTo(), toProcess.getAmount());
+        byte[] methodNameBytes = ABIEncoder.encodeOneString("transferFrom");
+        byte[] argBytes1 = ABIEncoder.encodeOneAddress(toProcess.getFrom());
+        byte[] argBytes2 = ABIEncoder.encodeOneAddress(toProcess.getTo());
+        byte[] argBytes3 = ABIEncoder.encodeOneLong(toProcess.getAmount());
+        byte[] args = concatenateArrays(methodNameBytes, argBytes1, argBytes2, argBytes3);
 
         byte[] result = BlockchainRuntime.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
 

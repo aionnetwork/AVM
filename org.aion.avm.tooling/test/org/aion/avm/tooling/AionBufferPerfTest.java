@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
 import java.math.BigInteger;
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -9,7 +9,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.poc.AionBufferPerfContract;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.AionBuffer;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
@@ -62,75 +61,75 @@ public class AionBufferPerfTest {
         TransactionResult deployRes = deploy(kernel, avm, buildBufferPerfJar());
         org.aion.types.Address contract = org.aion.types.Address.wrap(deployRes.getReturnData());
 
-        args = ABIEncoder.encodeMethodArguments("callPutByte");
+        args = ABIUtil.encodeMethodArguments("callPutByte");
         AvmTransactionResult putByteResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> putByte()           : " + putByteResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callGetByte");
+        args = ABIUtil.encodeMethodArguments("callGetByte");
         AvmTransactionResult getByteResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> getByte()           : " + getByteResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callPutChar");
+        args = ABIUtil.encodeMethodArguments("callPutChar");
         AvmTransactionResult putCharResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> putChar()           : " + putCharResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callGetChar");
+        args = ABIUtil.encodeMethodArguments("callGetChar");
         AvmTransactionResult getCharResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> getChar()           : " + getCharResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callPutShort");
+        args = ABIUtil.encodeMethodArguments("callPutShort");
         AvmTransactionResult putShortResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> putShort()          : " + putShortResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callGetShort");
+        args = ABIUtil.encodeMethodArguments("callGetShort");
         AvmTransactionResult getShortResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> getShort()          : " + getShortResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callPutInt");
+        args = ABIUtil.encodeMethodArguments("callPutInt");
         AvmTransactionResult putIntResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> putInt()            : " + putIntResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callGetInt");
+        args = ABIUtil.encodeMethodArguments("callGetInt");
         AvmTransactionResult getIntResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> getInt()            : " + getIntResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callPutFloat");
+        args = ABIUtil.encodeMethodArguments("callPutFloat");
         AvmTransactionResult putFloatResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> putFloat()          : " + putFloatResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callGetFloat");
+        args = ABIUtil.encodeMethodArguments("callGetFloat");
         AvmTransactionResult getFloatResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> getFloat()          : " + getFloatResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callPutLong");
+        args = ABIUtil.encodeMethodArguments("callPutLong");
         AvmTransactionResult putLongResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> putLong()           : " + putLongResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callGetLong");
+        args = ABIUtil.encodeMethodArguments("callGetLong");
         AvmTransactionResult getLongResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> getLong()           : " + getLongResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callPutDouble");
+        args = ABIUtil.encodeMethodArguments("callPutDouble");
         AvmTransactionResult putDoubleResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> putDouble()         : " + putDoubleResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callGetDouble");
+        args = ABIUtil.encodeMethodArguments("callGetDouble");
         AvmTransactionResult getDoubleResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> getDouble()         : " + getDoubleResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
-        args = ABIEncoder.encodeMethodArguments("callTransferBytesToBuffer");
+        args = ABIUtil.encodeMethodArguments("callTransferBytesToBuffer");
         AvmTransactionResult putResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> put()               : "
             + putResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS
             + "     (for transfers of " + AionBufferPerfContract.TRANSFER_SIZE + " bytes)");
 
-        args = ABIEncoder.encodeMethodArguments("callTransferBytesFromBuffer");
+        args = ABIUtil.encodeMethodArguments("callTransferBytesFromBuffer");
         AvmTransactionResult getResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> get()               : "
             + getResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS
             + "     (for transfers of " + AionBufferPerfContract.TRANSFER_SIZE + " bytes)");
 
-        args = ABIEncoder.encodeMethodArguments("callEquals");
+        args = ABIUtil.encodeMethodArguments("callEquals");
         AvmTransactionResult equalsResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> equals()            : " + equalsResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
         avm.shutdown();

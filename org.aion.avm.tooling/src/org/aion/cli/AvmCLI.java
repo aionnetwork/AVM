@@ -1,7 +1,7 @@
 package org.aion.cli;
 
 import java.math.BigInteger;
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -77,7 +77,7 @@ public class AvmCLI {
     public static TransactionContext setupOneCall(IEnvironment env, String storagePath, org.aion.types.Address contract, org.aion.types.Address sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
-        byte[] arguments = ABIEncoder.encodeMethodArguments(method, args);
+        byte[] arguments = ABIUtil.encodeMethodArguments(method, args);
         return commonSetupTransaction(env, storagePath, contract, sender, arguments, energyLimit, nonceBias, balance);
     }
 
@@ -282,7 +282,7 @@ public class AvmCLI {
                 case ENCODE_CALL:
                     Object[] callArgs = new Object[command.args.size()];
                     command.args.toArray(callArgs);
-                    System.out.println(Helpers.bytesToHexString(ABIEncoder.encodeMethodArguments(command.method, callArgs)));
+                    System.out.println(Helpers.bytesToHexString(ABIUtil.encodeMethodArguments(command.method, callArgs)));
                     break;
                 default:
                     throw new AssertionError("Unknown option");

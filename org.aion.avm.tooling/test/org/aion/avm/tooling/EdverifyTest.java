@@ -2,8 +2,8 @@ package org.aion.avm.tooling;
 
 import net.i2p.crypto.eddsa.Utils;
 import org.aion.avm.api.Address;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
@@ -35,7 +35,7 @@ public class EdverifyTest {
 
     @Test
     public void testVerifyCorrectness(){
-        byte[] txData = ABIEncoder.encodeMethodArguments("callEdverify", testMessage, messageSignature, publicKeyBytes);
+        byte[] txData = ABIUtil.encodeMethodArguments("callEdverify", testMessage, messageSignature, publicKeyBytes);
 
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
@@ -48,7 +48,7 @@ public class EdverifyTest {
         byte[] incorrectSignature = messageSignature;
         incorrectSignature[0] = (byte) (int)(incorrectSignature[0] + 1);
 
-        byte[] txData = ABIEncoder.encodeMethodArguments("callEdverify", testMessage, incorrectSignature, publicKeyBytes);
+        byte[] txData = ABIUtil.encodeMethodArguments("callEdverify", testMessage, incorrectSignature, publicKeyBytes);
 
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
@@ -61,7 +61,7 @@ public class EdverifyTest {
         byte[] incorrectPublicKey = publicKeyBytes;
         incorrectPublicKey[1] = (byte) (int)(incorrectPublicKey[1] + 1);
 
-        byte[] txData = ABIEncoder.encodeMethodArguments("callEdverify", testMessage, messageSignature, incorrectPublicKey);
+        byte[] txData = ABIUtil.encodeMethodArguments("callEdverify", testMessage, messageSignature, incorrectPublicKey);
 
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 

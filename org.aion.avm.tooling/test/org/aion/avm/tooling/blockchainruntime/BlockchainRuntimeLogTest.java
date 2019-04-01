@@ -1,8 +1,8 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.junit.*;
 
 import java.math.BigInteger;
@@ -66,7 +66,7 @@ public class BlockchainRuntimeLogTest {
     }
 
     private Object call(String methodName, Object ...objects) {
-        byte[] txDataMethodArguments = ABIEncoder.encodeMethodArguments(methodName, objects);
+        byte[] txDataMethodArguments = ABIUtil.encodeMethodArguments(methodName, objects);
         return avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice).getDecodedReturnData();
     }
 }

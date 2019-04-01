@@ -3,9 +3,9 @@ package org.aion.avm.tooling.abi;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
@@ -48,7 +48,7 @@ public class RandomTest {
     }
 
     private Object callStatic(Address dapp, String methodName, Object... arguments) {
-        byte[] argData = ABIEncoder.encodeMethodArguments(methodName, arguments);
+        byte[] argData = ABIUtil.encodeMethodArguments(methodName, arguments);
         TransactionResult result =
                 avmRule.call(
                         avmRule.getPreminedAccount(),
@@ -80,7 +80,7 @@ public class RandomTest {
         Address dapp = installTestDApp(jar);
 
         byte[] result = (byte[]) callStatic(dapp, methodName, argsGenerator.getVarArgs());
-        byte[] expected = ABIEncoder.encodeMethodArguments("",argsGenerator.getVarArgs());
+        byte[] expected = ABIUtil.encodeMethodArguments("",argsGenerator.getVarArgs());
         Assert.assertArrayEquals(expected, result);
     }
 
@@ -108,7 +108,7 @@ public class RandomTest {
         Address dapp = installTestDApp(jar);
 
         byte[] result = (byte[]) callStatic(dapp, methodName, argsGenerator.getVarArgs());
-        byte[] expected = ABIEncoder.encodeMethodArguments("",argsGenerator.getVarArgs());
+        byte[] expected = ABIUtil.encodeMethodArguments("",argsGenerator.getVarArgs());
         Assert.assertArrayEquals(expected, result);
     }
 
@@ -117,7 +117,7 @@ public class RandomTest {
     public class RandomClass {
         @Callable
         public static byte[] nWGIW8DCM(byte v1, double[] v2, char[] v3, boolean v4, int[] v5, float v6, short v7, float[] v8, String v9, char v10) {
-            return ABIEncoder.encodeMethodArguments("", new Object[]{v1, v2, v3, v4, v5, v6, v7, v8, v9, v10});
+            return ABIUtil.encodeMethodArguments("", new Object[]{v1, v2, v3, v4, v5, v6, v7, v8, v9, v10});
         }
     }
     */
@@ -135,7 +135,7 @@ public class RandomTest {
         annotationVisitor.visitEnd();
         methodVisitor.visitCode();
 
-        // Load the first parameter of ABIEncoder.encodeMethodArguments.
+        // Load the first parameter of ABIUtil.encodeMethodArguments.
         Label label0 = new Label();
         methodVisitor.visitLabel(label0);
         methodVisitor.visitLdcInsn("");
@@ -160,7 +160,7 @@ public class RandomTest {
         }
 
         // Finally,
-        // return ABIEncoder.encodeMethodArguments("", new Object[]{v1, v2, v3, v4, v5, ...})
+        // return ABIUtil.encodeMethodArguments("", new Object[]{v1, v2, v3, v4, v5, ...})
         methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeMethodArguments", "(Ljava/lang/String;[Ljava/lang/Object;)[B", false);
         methodVisitor.visitInsn(ARETURN);
 

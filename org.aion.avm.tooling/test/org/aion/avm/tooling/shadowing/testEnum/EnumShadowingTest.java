@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.shadowing.testEnum;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;
@@ -9,8 +9,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Map;
 
 public class EnumShadowingTest {
     @Rule
@@ -30,7 +28,7 @@ public class EnumShadowingTest {
 
     @Test
     public void testEnumAccess() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testEnumAccess");
+        byte[] txData = ABIUtil.encodeMethodArguments("testEnumAccess");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -38,7 +36,7 @@ public class EnumShadowingTest {
 
     @Test
     public void testEnumValues() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testEnumValues");
+        byte[] txData = ABIUtil.encodeMethodArguments("testEnumValues");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -46,7 +44,7 @@ public class EnumShadowingTest {
 
     @Test
     public void testShadowJDKEnum() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testShadowJDKEnum");
+        byte[] txData = ABIUtil.encodeMethodArguments("testShadowJDKEnum");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -54,7 +52,7 @@ public class EnumShadowingTest {
 
     @Test
     public void testTimeUnitEnum() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testTimeUnitEnum");
+        byte[] txData = ABIUtil.encodeMethodArguments("testTimeUnitEnum");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -62,7 +60,7 @@ public class EnumShadowingTest {
 
     @Test
     public void testInvalidRoundingModeEnum() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testInvalidRoundingModeEnum");
+        byte[] txData = ABIUtil.encodeMethodArguments("testInvalidRoundingModeEnum");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -70,7 +68,7 @@ public class EnumShadowingTest {
 
     @Test
     public void EnumHashcode() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("EnumHashcode");
+        byte[] txData = ABIUtil.encodeMethodArguments("EnumHashcode");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);

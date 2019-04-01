@@ -2,8 +2,8 @@ package org.aion.avm.tooling;
 
 import java.math.BigInteger;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 public class LoggingTarget {
     public static final byte[] TOPIC1 = new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa };
@@ -41,14 +41,22 @@ public class LoggingTarget {
     public static void spawnInternalTransactionsAndHitLogsAtEachLevel(int numInternals) {
         hitLogs();
         if (numInternals > 0) {
-            byte[] data = ABIEncoder.encodeMethodArguments("spawnInternalTransactionsAndHitLogsAtEachLevel", numInternals - 1);
+            byte[] arg1 = ABIEncoder.encodeOneString("spawnInternalTransactionsAndHitLogsAtEachLevel");
+            byte[] arg2 = ABIEncoder.encodeOneInteger(numInternals  -1);
+            byte[] data = new byte[arg1.length + arg2.length];
+            System.arraycopy(arg1, 0, data, 0, arg1.length);
+            System.arraycopy(arg2, 0, data, arg1.length, arg2.length);
             BlockchainRuntime.call(BlockchainRuntime.getAddress(), BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy());
         }
     }
 
     public static void spawnInternalTransactionsAndHitLogsAtBottomLevel(int numInternals) {
         if (numInternals > 0) {
-            byte[] data = ABIEncoder.encodeMethodArguments("spawnInternalTransactionsAndHitLogsAtBottomLevel", numInternals - 1);
+            byte[] arg1 = ABIEncoder.encodeOneString("spawnInternalTransactionsAndHitLogsAtBottomLevel");
+            byte[] arg2 = ABIEncoder.encodeOneInteger(numInternals  -1);
+            byte[] data = new byte[arg1.length + arg2.length];
+            System.arraycopy(arg1, 0, data, 0, arg1.length);
+            System.arraycopy(arg2, 0, data, arg1.length, arg2.length);
             BlockchainRuntime.call(BlockchainRuntime.getAddress(), BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy());
         } else {
             hitLogs();

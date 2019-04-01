@@ -4,8 +4,8 @@ import java.math.BigInteger;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
@@ -61,7 +61,7 @@ public class AvmFailureTest {
 
     @Test
     public void testFailedTransaction() {
-        byte[] data = ABIEncoder.encodeMethodArguments("reentrantCall", 5);
+        byte[] data = ABIUtil.encodeMethodArguments("reentrantCall", 5);
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
@@ -77,7 +77,7 @@ public class AvmFailureTest {
 
     @Test
     public void testOutOfEnergy() {
-        byte[] data = ABIEncoder.encodeMethodArguments("testOutOfEnergy");
+        byte[] data = ABIUtil.encodeMethodArguments("testOutOfEnergy");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         TransactionResult txResult = avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
@@ -87,7 +87,7 @@ public class AvmFailureTest {
 
     @Test
     public void testOutOfStack() {
-        byte[] data = ABIEncoder.encodeMethodArguments("testOutOfStack");
+        byte[] data = ABIUtil.encodeMethodArguments("testOutOfStack");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         TransactionResult txResult = avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
@@ -97,7 +97,7 @@ public class AvmFailureTest {
 
     @Test
     public void testRevert() {
-        byte[] data = ABIEncoder.encodeMethodArguments("testRevert");
+        byte[] data = ABIUtil.encodeMethodArguments("testRevert");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
@@ -109,7 +109,7 @@ public class AvmFailureTest {
 
     @Test
     public void testInvalid() {
-        byte[] data = ABIEncoder.encodeMethodArguments("testInvalid");
+        byte[] data = ABIUtil.encodeMethodArguments("testInvalid");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();
@@ -121,7 +121,7 @@ public class AvmFailureTest {
 
     @Test
     public void testUncaughtException() {
-        byte[] data = ABIEncoder.encodeMethodArguments("testUncaughtException");
+        byte[] data = ABIUtil.encodeMethodArguments("testUncaughtException");
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {txContext})[0].get();

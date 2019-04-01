@@ -1,11 +1,9 @@
 package org.aion.avm.tooling;
 
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.types.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.poc.TRS;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.*;
@@ -153,7 +151,7 @@ public class TrsTest {
     }
 
     private TransactionResult callContract(Address sender, String method, Object... parameters) {
-        byte[] callData = ABIEncoder.encodeMethodArguments(method, parameters);
+        byte[] callData = ABIUtil.encodeMethodArguments(method, parameters);
         org.aion.avm.api.Address contractAddress = new org.aion.avm.api.Address(contract.toBytes());
         org.aion.avm.api.Address senderAddress = new org.aion.avm.api.Address(sender.toBytes());
         AvmRule.ResultWrapper result = avmRule.call(senderAddress, contractAddress, BigInteger.ZERO, callData, ENERGY_LIMIT, ENERGY_PRICE);

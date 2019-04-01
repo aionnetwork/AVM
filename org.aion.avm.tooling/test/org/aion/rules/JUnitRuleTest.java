@@ -1,5 +1,6 @@
 package org.aion.rules;
 
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.util.LogSizeUtils;
@@ -27,7 +28,7 @@ public class JUnitRuleTest {
 
     @Before
     public void deployDapp() {
-        byte[] arguments = ABIEncoder.encodeDeploymentArguments(8);
+        byte[] arguments = ABIUtil.encodeDeploymentArguments(8);
         byte[] dapp = avmRule.getDappBytes(JUnitRuleTestTarget.class, arguments, AionMap.class);
         dappAddr = avmRule.deploy(preminedAccount, BigInteger.ZERO, dapp).getDappAddress();
     }
@@ -36,7 +37,7 @@ public class JUnitRuleTest {
     public void testIncreaseNumber() {
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
-        byte[] txData = ABIEncoder.encodeMethodArguments("increaseNumber", 10);
+        byte[] txData = ABIUtil.encodeMethodArguments("increaseNumber", 10);
         Object result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
         Assert.assertEquals(true, result);
     }
@@ -44,25 +45,25 @@ public class JUnitRuleTest {
     @Test
     public void testSumInput() {
         Address sender = avmRule.getRandomAddress(BigInteger.valueOf(10_000_000L));
-        byte[] txData = ABIEncoder.encodeMethodArguments("sum", 15, 10);
+        byte[] txData = ABIUtil.encodeMethodArguments("sum", 15, 10);
         Object result = avmRule.call(sender, dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals(15 + 10, result);
     }
 
     @Test
     public void testMapPut() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("mapPut", "1", 42);
+        byte[] txData = ABIUtil.encodeMethodArguments("mapPut", "1", 42);
         ResultCode result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData).getReceiptStatus();
         Assert.assertTrue(result.isFailed());
     }
 
     @Test
     public void testMapGet() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("mapPut", 1, "val1");
+        byte[] txData = ABIUtil.encodeMethodArguments("mapPut", 1, "val1");
         ResultCode status = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData).getReceiptStatus();
         Assert.assertTrue(status.isSuccess());
 
-        txData = ABIEncoder.encodeMethodArguments("mapGet", 1);
+        txData = ABIUtil.encodeMethodArguments("mapGet", 1);
         AvmRule.ResultWrapper result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData);
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
         Assert.assertEquals("val1", result.getDecodedReturnData());
@@ -70,7 +71,7 @@ public class JUnitRuleTest {
 
     @Test
     public void testLogEvent() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("logEvent");
+        byte[] txData = ABIUtil.encodeMethodArguments("logEvent");
         AvmRule.ResultWrapper result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData);
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());

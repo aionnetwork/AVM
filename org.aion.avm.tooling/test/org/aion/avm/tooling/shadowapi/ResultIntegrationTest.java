@@ -2,8 +2,8 @@ package org.aion.avm.tooling.shadowapi;
 
 import org.aion.avm.api.Address;
 import org.aion.avm.api.Result;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -60,7 +60,7 @@ public class ResultIntegrationTest {
     }
 
     private Object call(String methodName, Result ...results) {
-        byte[] txDataMethodArguments = ABIEncoder.encodeMethodArguments(methodName, (Object[]) results);
+        byte[] txDataMethodArguments = ABIUtil.encodeMethodArguments(methodName, (Object[]) results);
         return avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments).getDecodedReturnData();
     }
 }

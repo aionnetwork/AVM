@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.shadowing.testEnum;
 
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.abi.ABICompiler;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -44,12 +44,12 @@ public class EnumValuesTest {
 
         Address dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData).getDappAddress();
 
-        byte[] txDataMethodArguments = ABIEncoder.encodeMethodArguments("testEnumAccess");
+        byte[] txDataMethodArguments = ABIUtil.encodeMethodArguments("testEnumAccess");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
 
-        txDataMethodArguments = ABIEncoder.encodeMethodArguments("testEnumAccessNotExist");
+        txDataMethodArguments = ABIUtil.encodeMethodArguments("testEnumAccessNotExist");
         AvmRule.ResultWrapper resultWrapper = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments);
 
         Assert.assertTrue(resultWrapper.getTransactionResult().getResultCode().isFailed());

@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.shadowing.testSystem;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;
@@ -24,28 +24,28 @@ public class SystemShadowingTest {
 
     @Test
     public void testArrayCopy() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayCopy");
+        byte[] txData = ABIUtil.encodeMethodArguments("testArrayCopy");
         Object result = avmRule.call(avmRule.getPreminedAccount(), dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals(true, result);
     }
 
     @Test
     public void testArrayCopyNullPointerException() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayCopyNullPointerException");
+        byte[] txData = ABIUtil.encodeMethodArguments("testArrayCopyNullPointerException");
         Object result = avmRule.call(avmRule.getPreminedAccount(), dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals(true, result);
     }
 
     @Test
     public void testArrayCopyIndexOutOfBoundsException() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayCopyIndexOutOfBoundsException");
+        byte[] txData = ABIUtil.encodeMethodArguments("testArrayCopyIndexOutOfBoundsException");
         Object result = avmRule.call(avmRule.getPreminedAccount(), dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals(true, result);
     }
 
     @Test
     public void testArrayCopyArrayStoreException() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayCopyArrayStoreException");
+        byte[] txData = ABIUtil.encodeMethodArguments("testArrayCopyArrayStoreException");
         Object result = avmRule.call(avmRule.getPreminedAccount(), dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals(true, result);
     }

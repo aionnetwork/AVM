@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.shadowing.testPrimitive;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;
@@ -28,7 +28,7 @@ public class PrimitiveShadowingTest {
 
     @Test
     public void testBoolean() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testBoolean");
+        byte[] txData = ABIUtil.encodeMethodArguments("testBoolean");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -36,7 +36,7 @@ public class PrimitiveShadowingTest {
 
     @Test
     public void testByte() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testByte");
+        byte[] txData = ABIUtil.encodeMethodArguments("testByte");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -44,7 +44,7 @@ public class PrimitiveShadowingTest {
 
     @Test
     public void testDouble() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testDouble");
+        byte[] txData = ABIUtil.encodeMethodArguments("testDouble");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -52,7 +52,7 @@ public class PrimitiveShadowingTest {
 
     @Test
     public void testFloat() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testFloat");
+        byte[] txData = ABIUtil.encodeMethodArguments("testFloat");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -60,7 +60,7 @@ public class PrimitiveShadowingTest {
 
     @Test
     public void testInteger() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testInteger");
+        byte[] txData = ABIUtil.encodeMethodArguments("testInteger");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -68,7 +68,7 @@ public class PrimitiveShadowingTest {
 
     @Test
     public void testLong() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testLong");
+        byte[] txData = ABIUtil.encodeMethodArguments("testLong");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -76,7 +76,7 @@ public class PrimitiveShadowingTest {
 
     @Test
     public void testShort() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testShort");
+        byte[] txData = ABIUtil.encodeMethodArguments("testShort");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -84,7 +84,7 @@ public class PrimitiveShadowingTest {
 
     @Test
     public void testAutoboxing() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testAutoboxing");
+        byte[] txData = ABIUtil.encodeMethodArguments("testAutoboxing");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);

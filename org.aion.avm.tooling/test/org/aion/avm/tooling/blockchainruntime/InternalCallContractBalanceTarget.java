@@ -76,7 +76,13 @@ public class InternalCallContractBalanceTarget {
                 return BlockchainRuntime.getBalanceOfThisContract().toByteArray();
             } else {
                 // I'm not the target, propagate whatever my child returned upwards to my caller.
-                byte[] data = ABIEncoder.encodeMethodArguments("recurseAndGetBalance", otherContracts, currentDepth + 1, targetDappDepth);
+
+                byte[] arg0Bytes = ABIEncoder.encodeOneString("recurseAndGetBalance");
+                byte[] arg1Bytes = ABIEncoder.encodeOneAddressArray(otherContracts);
+                byte[] arg2Bytes = ABIEncoder.encodeOneInteger(currentDepth + 1);
+                byte[] arg3Bytes = ABIEncoder.encodeOneInteger(targetDappDepth);
+                byte[] data = concatenateArrays(arg0Bytes, arg1Bytes, arg2Bytes, arg3Bytes);
+
                 return (byte[]) ABIDecoder.decodeOneObject(BlockchainRuntime.call(otherContracts[currentDepth], BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy()).getReturnData());
             }
 
@@ -94,4 +100,17 @@ public class InternalCallContractBalanceTarget {
         return balanceDuringClinit.toByteArray();
     }
 
+    private static byte[] concatenateArrays(byte[]... arrays) {
+        int length = 0;
+        for(byte[] array : arrays) {
+            length += array.length;
+        }
+        byte[] result = new byte[length];
+        int writtenSoFar = 0;
+        for(byte[] array : arrays) {
+            System.arraycopy(array, 0, result, writtenSoFar, array.length);
+            writtenSoFar += array.length;
+        }
+        return result;
+    }
 }

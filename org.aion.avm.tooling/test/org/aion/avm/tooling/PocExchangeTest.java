@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -80,37 +80,37 @@ public class PocExchangeTest {
         }
 
         public TransactionResult callTotalSupply() {
-            byte[] args = ABIEncoder.encodeMethodArguments("totalSupply");
+            byte[] args = ABIUtil.encodeMethodArguments("totalSupply");
             return call(minter, args);
         }
 
         private TransactionResult callBalanceOf(org.aion.types.Address toQuery) {
-            byte[] args = ABIEncoder.encodeMethodArguments("balanceOf", new Address(toQuery.toBytes()));
+            byte[] args = ABIUtil.encodeMethodArguments("balanceOf", new Address(toQuery.toBytes()));
             return call(minter, args);
         }
 
         private TransactionResult callMint(org.aion.types.Address receiver, long amount) {
-            byte[] args = ABIEncoder.encodeMethodArguments("mint", new Address(receiver.toBytes()), amount);
+            byte[] args = ABIUtil.encodeMethodArguments("mint", new Address(receiver.toBytes()), amount);
             return call(minter, args);
         }
 
         private TransactionResult callTransfer(org.aion.types.Address sender, org.aion.types.Address receiver, long amount) {
-            byte[] args = ABIEncoder.encodeMethodArguments("transfer", new Address(receiver.toBytes()), amount);
+            byte[] args = ABIUtil.encodeMethodArguments("transfer", new Address(receiver.toBytes()), amount);
             return call(sender, args);
         }
 
         private TransactionResult callAllowance(org.aion.types.Address owner, org.aion.types.Address spender) {
-            byte[] args = ABIEncoder.encodeMethodArguments("allowance", new Address(owner.toBytes()), new Address(spender.toBytes()));
+            byte[] args = ABIUtil.encodeMethodArguments("allowance", new Address(owner.toBytes()), new Address(spender.toBytes()));
             return call(minter, args);
         }
 
         private TransactionResult callApprove(org.aion.types.Address owner, org.aion.types.Address spender, long amount) {
-            byte[] args = ABIEncoder.encodeMethodArguments("approve", new Address(spender.toBytes()), amount);
+            byte[] args = ABIUtil.encodeMethodArguments("approve", new Address(spender.toBytes()), amount);
             return call(owner, args);
         }
 
         private TransactionResult callTransferFrom(org.aion.types.Address executor, org.aion.types.Address from, org.aion.types.Address to, long amount) {
-            byte[] args = ABIEncoder.encodeMethodArguments("transferFrom", new Address(from.toBytes()), new Address(to.toBytes()), amount);
+            byte[] args = ABIUtil.encodeMethodArguments("transferFrom", new Address(from.toBytes()), new Address(to.toBytes()), amount);
             return call(executor, args);
         }
 
@@ -142,17 +142,17 @@ public class PocExchangeTest {
         }
 
         public TransactionResult callListCoin(String name, org.aion.types.Address coinAddr) {
-            byte[] args = ABIEncoder.encodeMethodArguments("listCoin", name.toCharArray(), new Address(coinAddr.toBytes()));
+            byte[] args = ABIUtil.encodeMethodArguments("listCoin", name.toCharArray(), new Address(coinAddr.toBytes()));
             return call(owner,args);
         }
 
         public TransactionResult callRequestTransfer(String name, org.aion.types.Address from,  org.aion.types.Address to, long amount) {
-            byte[] args = ABIEncoder.encodeMethodArguments("requestTransfer", name.toCharArray(), new Address(to.toBytes()), amount);
+            byte[] args = ABIUtil.encodeMethodArguments("requestTransfer", name.toCharArray(), new Address(to.toBytes()), amount);
             return call(from,args);
         }
 
         public TransactionResult callProcessExchangeTransaction(org.aion.types.Address sender) {
-            byte[] args = ABIEncoder.encodeMethodArguments("processExchangeTransaction");
+            byte[] args = ABIUtil.encodeMethodArguments("processExchangeTransaction");
             return call(sender,args);
         }
 
@@ -169,7 +169,7 @@ public class PocExchangeTest {
     public void testERC20() {
         TransactionResult res;
         //System.out.println(">> Deploy \"PEPE\" token contract...");
-        byte[] arguments = ABIEncoder.encodeDeploymentArguments("Pepe", "PEPE", 8);
+        byte[] arguments = ABIUtil.encodeDeploymentArguments("Pepe", "PEPE", 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
         //System.out.println(Helpers.bytesToHexString(pepe.addr));
 
@@ -246,11 +246,11 @@ public class PocExchangeTest {
     @Test
     public void testExchange() {
         //System.out.println(">> Deploy \"PEPE\" token contract...");
-        byte[] arguments = ABIEncoder.encodeDeploymentArguments("Pepe", "PEPE", 8);
+        byte[] arguments = ABIUtil.encodeDeploymentArguments("Pepe", "PEPE", 8);
         CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
 
         //System.out.println(">> Deploy \"MEME\" token contract...");
-        arguments = ABIEncoder.encodeDeploymentArguments("Meme", "MEME", 8);
+        arguments = ABIUtil.encodeDeploymentArguments("Meme", "MEME", 8);
         CoinContract meme = new CoinContract(null, memeMinter, testERC20Jar, arguments);
 
         //System.out.println(">> Deploy the Exchange contract...");

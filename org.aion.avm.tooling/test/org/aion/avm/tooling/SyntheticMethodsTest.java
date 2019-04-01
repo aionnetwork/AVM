@@ -1,9 +1,8 @@
 package org.aion.avm.tooling;
 
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -117,7 +116,7 @@ public class SyntheticMethodsTest {
     }
 
     private TransactionResult createAndRunTransaction(String methodName, Object ... args){
-        byte[] txData = ABIEncoder.encodeMethodArguments(methodName, args);
+        byte[] txData = ABIUtil.encodeMethodArguments(methodName, args);
         return avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
     }
 }

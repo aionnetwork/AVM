@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.bootstrapmethods;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
@@ -66,7 +66,7 @@ public class BootstrappingEnergyChargeConsistencyTest {
     }
 
     private TransactionResult runContract(Address sender, Address contract) {
-        byte[] callData = ABIEncoder.encodeMethodArguments("run");
+        byte[] callData = ABIUtil.encodeMethodArguments("run");
         return avmRule.call(sender, contract, BigInteger.ZERO, callData, energyLimit, 1L).getTransactionResult();
     }
 

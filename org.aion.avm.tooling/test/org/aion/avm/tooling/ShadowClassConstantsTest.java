@@ -1,8 +1,7 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
-import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.AvmRule.ResultWrapper;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Before;
@@ -31,42 +30,42 @@ public class ShadowClassConstantsTest {
 
     @Test
     public void testIdentitiesOfBigIntegerConstants() {
-        byte[] data = ABIEncoder.encodeMethodArguments("checkBigIntegerConstants");
+        byte[] data = ABIUtil.encodeMethodArguments("checkBigIntegerConstants");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void testIdentitiesOfBigDecimalConstants() {
-        byte[] data = ABIEncoder.encodeMethodArguments("checkBigDecimalConstants");
+        byte[] data = ABIUtil.encodeMethodArguments("checkBigDecimalConstants");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void testIdentitiesOfRoundingModeConstants() {
-        byte[] data = ABIEncoder.encodeMethodArguments("checkRoundingModeConstants");
+        byte[] data = ABIUtil.encodeMethodArguments("checkRoundingModeConstants");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void testIdentitiesOfMathContextConstants() {
-        byte[] data = ABIEncoder.encodeMethodArguments("checkMathContextConstants");
+        byte[] data = ABIUtil.encodeMethodArguments("checkMathContextConstants");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void testIdentitiesOfBooleanConstants() {
-        byte[] data = ABIEncoder.encodeMethodArguments("checkBooleanConstants");
+        byte[] data = ABIUtil.encodeMethodArguments("checkBooleanConstants");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void testIdentitiesOfPrimitiveTypeConstants() {
-        byte[] data = ABIEncoder.encodeMethodArguments("checkPrimitiveTypeConstants");
+        byte[] data = ABIUtil.encodeMethodArguments("checkPrimitiveTypeConstants");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
     }

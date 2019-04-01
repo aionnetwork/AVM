@@ -1,8 +1,8 @@
 package org.aion.avm.tooling.shadowing.testClass;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -135,7 +135,7 @@ public class ClassNameTest {
 
     private String callStatic(String methodName, Object... args) {
 
-        byte[] data = ABIEncoder.encodeMethodArguments(methodName, args);
+        byte[] data = ABIUtil.encodeMethodArguments(methodName, args);
         return (String) avmRule.call(sender, contract, value, data, 2_000_000, 1).getDecodedReturnData();
     }
 

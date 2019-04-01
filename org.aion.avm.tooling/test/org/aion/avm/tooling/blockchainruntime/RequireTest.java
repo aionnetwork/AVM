@@ -1,11 +1,10 @@
 package org.aion.avm.tooling.blockchainruntime;
 
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.RedirectContract;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.BeforeClass;
@@ -103,7 +102,7 @@ public class RequireTest {
     }
 
     private TransactionResult callContractRequireAndAttemptToCatchExceptionMethod() {
-        byte[] callData = ABIEncoder.encodeMethodArguments("requireAndTryToCatch");
+        byte[] callData = ABIUtil.encodeMethodArguments("requireAndTryToCatch");
         return avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
     }
 
@@ -122,11 +121,11 @@ public class RequireTest {
 
     private byte[] encodeRedirectCallArgs(boolean condition) {
         byte[] args = getAbiEncodingOfRequireContractCall(condition);
-        return ABIEncoder.encodeMethodArguments("callOtherContractAndRequireItIsSuccess", contract, 0L, args);
+        return ABIUtil.encodeMethodArguments("callOtherContractAndRequireItIsSuccess", contract, 0L, args);
     }
 
     private byte[] getAbiEncodingOfRequireContractCall(boolean condition) {
-        return ABIEncoder.encodeMethodArguments("require", condition);
+        return ABIUtil.encodeMethodArguments("require", condition);
     }
 
     private static byte[] getRawJarBytesForRequireContract(byte[] args) {

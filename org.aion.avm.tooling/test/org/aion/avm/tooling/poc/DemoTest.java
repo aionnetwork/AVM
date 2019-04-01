@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.poc;
 
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.api.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -12,10 +12,6 @@ import org.aion.avm.tooling.testExchange.CoinController;
 import org.aion.avm.tooling.testExchange.ERC20Token;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.AionBuffer;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -54,7 +50,7 @@ public class DemoTest {
 
         System.out.println(">> Deploy \"PEPE\" ERC20 token Dapp...");
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(CoinController.class, ERC20Token.class);
-        byte[] arguments = ABIEncoder.encodeDeploymentArguments("Pepe", "PEPE", 8);
+        byte[] arguments = ABIUtil.encodeDeploymentArguments("Pepe", "PEPE", 8);
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
         Transaction createTransaction = Transaction.create(pepeMinter, kernel.getNonce(pepeMinter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionContext txContext = TransactionContextImpl.forExternalTransaction(createTransaction, block);
@@ -66,7 +62,7 @@ public class DemoTest {
         System.out.println("\n>> Deploy the Multi-sig Wallet Dapp...");
         jar = JarBuilder.buildJarForMainAndClassesAndUserlib(Main.class, Wallet.class, Bytes32.class);
         int confirmationsRequired = 2;
-        arguments = ABIEncoder.encodeDeploymentArguments(new Address(owner1.toBytes()), new Address(owner2.toBytes()), confirmationsRequired);
+        arguments = ABIUtil.encodeDeploymentArguments(new Address(owner1.toBytes()), new Address(owner2.toBytes()), confirmationsRequired);
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
@@ -82,21 +78,21 @@ public class DemoTest {
         //================
         // FUNDING and CHECK BALANCE
         //================
-        arguments = ABIEncoder.encodeMethodArguments("mint", walletDapp, 5000L);
+        arguments = ABIUtil.encodeMethodArguments("mint", walletDapp, 5000L);
         tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
-        arguments = ABIEncoder.encodeMethodArguments("balanceOf", walletDapp);
+        arguments = ABIUtil.encodeMethodArguments("balanceOf", walletDapp);
         tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println(">> balance of wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
-        arguments = ABIEncoder.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
+        arguments = ABIUtil.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
         tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
@@ -106,8 +102,8 @@ public class DemoTest {
         //================
         // PROPOSE
         //================
-        byte[] data = ABIEncoder.encodeMethodArguments("transfer", new Address(receiver.toBytes()), 3000L);
-        arguments = ABIEncoder.encodeMethodArguments("propose", tokenDapp, 0L, data, energyLimit);
+        byte[] data = ABIUtil.encodeMethodArguments("transfer", new Address(receiver.toBytes()), 3000L);
+        arguments = ABIUtil.encodeMethodArguments("propose", tokenDapp, 0L, data, energyLimit);
         tx = Transaction.call(deployer, org.aion.types.Address.wrap(walletDapp.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, arguments, 2_000_000L, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
@@ -118,7 +114,7 @@ public class DemoTest {
         //================
         // CONFIRM #1
         //================
-        arguments = ABIEncoder.encodeMethodArguments("confirm", pendingTx);
+        arguments = ABIUtil.encodeMethodArguments("confirm", pendingTx);
         tx = Transaction.call(owner1, org.aion.types.Address.wrap(walletDapp.unwrap()), kernel.getNonce(owner1), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
@@ -128,7 +124,7 @@ public class DemoTest {
         //================
         // CONFIRM #2
         //================
-        arguments = ABIEncoder.encodeMethodArguments("confirm", pendingTx);
+        arguments = ABIUtil.encodeMethodArguments("confirm", pendingTx);
         tx = Transaction.call(owner2, org.aion.types.Address.wrap(walletDapp.unwrap()), kernel.getNonce(owner2), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
@@ -140,14 +136,14 @@ public class DemoTest {
         //================
         // CHECK BALANCE
         //================
-        arguments = ABIEncoder.encodeMethodArguments("balanceOf", walletDapp);
+        arguments = ABIUtil.encodeMethodArguments("balanceOf", walletDapp);
         tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println("\n>> balance of wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
 
-        arguments = ABIEncoder.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
+        arguments = ABIUtil.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
         tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();

@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -144,7 +144,7 @@ public class InternalCallContractBalanceTest {
 
     private BigInteger callContractToGetBalanceAtDepth(Address contract, Address[] otherContracts, int depthToQuery) {
 
-        byte[] callData = ABIEncoder.encodeMethodArguments("getBalanceOfDappViaInternalCall", otherContracts, depthToQuery);
+        byte[] callData = ABIUtil.encodeMethodArguments("getBalanceOfDappViaInternalCall", otherContracts, depthToQuery);
         AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
         assertTrue(result.getTransactionResult().getResultCode().isSuccess());
         return new BigInteger((byte[]) result.getDecodedReturnData());
@@ -158,7 +158,7 @@ public class InternalCallContractBalanceTest {
         System.arraycopy(dappBytes, 0, dappBytesFirstHalf, 0, dappBytesFirstHalf.length);
         System.arraycopy(dappBytes, dappBytesFirstHalf.length, dappBytesSecondHalf, 0, dappBytesSecondHalf.length);
 
-        byte[] callData = ABIEncoder.encodeMethodArguments("createNewContractWithValue", dappBytesFirstHalf, dappBytesSecondHalf, amountToTransfer);
+        byte[] callData = ABIUtil.encodeMethodArguments("createNewContractWithValue", dappBytesFirstHalf, dappBytesSecondHalf, amountToTransfer);
 
         AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
         assertTrue(result.getTransactionResult().getResultCode().isSuccess());
@@ -166,7 +166,7 @@ public class InternalCallContractBalanceTest {
     }
 
     private BigInteger getClinitBalanceOfContract(Address contract) {
-        byte[] callData = ABIEncoder.encodeMethodArguments("getBalanceOfThisContractDuringClinit");
+        byte[] callData = ABIUtil.encodeMethodArguments("getBalanceOfThisContractDuringClinit");
         AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
         assertTrue(result.getTransactionResult().getResultCode().isSuccess());
         return new BigInteger((byte[]) result.getDecodedReturnData());

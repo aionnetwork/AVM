@@ -10,10 +10,10 @@ import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.*;
 import org.junit.Assert;
@@ -196,7 +196,7 @@ public class ExceptionWrappingIntegrationTest {
         org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
         byte[] argData = (null != methodName)
-                ? ABIEncoder.encodeMethodArguments(methodName)
+                ? ABIUtil.encodeMethodArguments(methodName)
                 : new byte[0];
         Transaction call = Transaction.call(from, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
         return avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();

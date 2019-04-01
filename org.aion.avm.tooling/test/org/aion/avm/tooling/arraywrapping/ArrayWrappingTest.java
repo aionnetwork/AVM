@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.arraywrapping;
 
 import java.math.BigInteger;
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.*;
@@ -25,7 +25,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testBooleanArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testBooleanArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testBooleanArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -33,7 +33,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testByteArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testByteArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testByteArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -41,7 +41,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testCharArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testCharArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testCharArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -49,7 +49,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testDoubleArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testDoubleArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testDoubleArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -57,7 +57,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testFloatArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testFloatArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testFloatArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -65,7 +65,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testIntArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testIntArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testIntArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -73,7 +73,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testLongArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testLongArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testLongArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -81,7 +81,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testShortArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testShortArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testShortArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -89,7 +89,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testObjectArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testObjectArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testObjectArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -97,7 +97,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testStringArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testStringArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testStringArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -105,7 +105,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testSignature() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testSignature");
+        byte[] txData = ABIUtil.encodeMethodArguments("testSignature");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -113,7 +113,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testVarargs() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testVarargs");
+        byte[] txData = ABIUtil.encodeMethodArguments("testVarargs");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -121,7 +121,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testTypeChecking() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testTypeChecking");
+        byte[] txData = ABIUtil.encodeMethodArguments("testTypeChecking");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -129,7 +129,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testClassField() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testClassField");
+        byte[] txData = ABIUtil.encodeMethodArguments("testClassField");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -137,7 +137,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testMultiInt() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiInt");
+        byte[] txData = ABIUtil.encodeMethodArguments("testMultiInt");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -145,7 +145,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testMultiByte() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiByte");
+        byte[] txData = ABIUtil.encodeMethodArguments("testMultiByte");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -153,7 +153,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testMultiChar() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiChar");
+        byte[] txData = ABIUtil.encodeMethodArguments("testMultiChar");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -161,7 +161,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testMultiFloat() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiFloat");
+        byte[] txData = ABIUtil.encodeMethodArguments("testMultiFloat");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -169,7 +169,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testMultiLong() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiLong");
+        byte[] txData = ABIUtil.encodeMethodArguments("testMultiLong");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -177,7 +177,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testMultiDouble() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiDouble");
+        byte[] txData = ABIUtil.encodeMethodArguments("testMultiDouble");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -185,7 +185,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testMultiRef() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testMultiRef");
+        byte[] txData = ABIUtil.encodeMethodArguments("testMultiRef");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -193,7 +193,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testHierarachy() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testHierarachy");
+        byte[] txData = ABIUtil.encodeMethodArguments("testHierarachy");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -201,7 +201,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testIncompleteArrayIni() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testIncompleteArrayIni");
+        byte[] txData = ABIUtil.encodeMethodArguments("testIncompleteArrayIni");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -209,7 +209,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testArrayEnergy() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayEnergy");
+        byte[] txData = ABIUtil.encodeMethodArguments("testArrayEnergy");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -217,7 +217,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testInterfaceArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testInterfaceArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testInterfaceArray");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -225,7 +225,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testArrayClone() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testArrayClone");
+        byte[] txData = ABIUtil.encodeMethodArguments("testArrayClone");
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
@@ -233,7 +233,7 @@ public class ArrayWrappingTest {
 
     @Test
     public void testInt2DArray() {
-        byte[] txData = ABIEncoder.encodeMethodArguments("testInt2DArray");
+        byte[] txData = ABIUtil.encodeMethodArguments("testInt2DArray");
         int[][] result = (int[][]) avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertArrayEquals(new int[][] {{1, 2}, {3, 4}}, result);
@@ -243,7 +243,7 @@ public class ArrayWrappingTest {
     public void testBooleanSignature(){
         boolean[] b = new boolean[10];
         b[0] = true;
-        byte[] txData = ABIEncoder.encodeMethodArguments("testBooleanSignature", b);
+        byte[] txData = ABIUtil.encodeMethodArguments("testBooleanSignature", b);
         boolean[] result = (boolean [])avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
         Assert.assertArrayEquals(b, result);
     }
@@ -251,7 +251,7 @@ public class ArrayWrappingTest {
     @Test
     public void testByteSignature(){
         byte[] b = new byte[10];
-        byte[] txData = ABIEncoder.encodeMethodArguments("testByteSignature", b);
+        byte[] txData = ABIUtil.encodeMethodArguments("testByteSignature", b);
         byte[] result = (byte[]) avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
         Assert.assertArrayEquals(b, result);
     }
@@ -260,7 +260,7 @@ public class ArrayWrappingTest {
     public void testCharSignature(){
         char[] b = new char[10];
         b[0] = 'a';
-        byte[] txData = ABIEncoder.encodeMethodArguments("testCharSignature", b);
+        byte[] txData = ABIUtil.encodeMethodArguments("testCharSignature", b);
         char[] result = (char[]) avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
         Assert.assertArrayEquals(b, result);
     }
@@ -269,7 +269,7 @@ public class ArrayWrappingTest {
     public void testDoubleSignature(){
         double[] b = new double[10];
         b[0] = 1d;
-        byte[] txData = ABIEncoder.encodeMethodArguments("testDoubleSignature", b);
+        byte[] txData = ABIUtil.encodeMethodArguments("testDoubleSignature", b);
         double[] result = (double[]) avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
         Assert.assertArrayEquals(b, result, 0);
     }
@@ -278,7 +278,7 @@ public class ArrayWrappingTest {
     public void testFloatSignature(){
         float[] b = new float[10];
         b[0] = 1.0f;
-        byte[] txData = ABIEncoder.encodeMethodArguments("testFloatSignature", b);
+        byte[] txData = ABIUtil.encodeMethodArguments("testFloatSignature", b);
         float[] result = (float[]) avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
         Assert.assertArrayEquals(b, result, 0);
     }
@@ -287,7 +287,7 @@ public class ArrayWrappingTest {
     public void testIntSignature(){
         int[] b = new int[10];
         b[0] = 1;
-        byte[] txData = ABIEncoder.encodeMethodArguments("testIntSignature", b);
+        byte[] txData = ABIUtil.encodeMethodArguments("testIntSignature", b);
         int[] result = (int[]) avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
         Assert.assertArrayEquals(b, result);
     }
@@ -296,7 +296,7 @@ public class ArrayWrappingTest {
     public void testLongSignature(){
         long[] b = new long[10];
         b[0] = 1L;
-        byte[] txData = ABIEncoder.encodeMethodArguments("testLongSignature", b);
+        byte[] txData = ABIUtil.encodeMethodArguments("testLongSignature", b);
         long[] result = (long[]) avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
         Assert.assertArrayEquals(b, result);
     }
@@ -305,7 +305,7 @@ public class ArrayWrappingTest {
     public void testShortSignature(){
         short[] b = new short[10];
         b[0] = 1;
-        byte[] txData = ABIEncoder.encodeMethodArguments("testShortSignature", b);
+        byte[] txData = ABIUtil.encodeMethodArguments("testShortSignature", b);
         short[] result = (short[]) avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
         Assert.assertArrayEquals(b, result);
     }

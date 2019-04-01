@@ -1,6 +1,6 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -299,7 +299,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     }
 
     private TransactionContextImpl setupTransactionContext(String methodName, java.lang.Object... arguments){
-        byte[] txData = ABIEncoder.encodeMethodArguments(methodName, arguments);
+        byte[] txData = ABIUtil.encodeMethodArguments(methodName, arguments);
         Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         return TransactionContextImpl.forExternalTransaction(tx, block);
     }

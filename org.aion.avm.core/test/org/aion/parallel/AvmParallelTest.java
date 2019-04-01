@@ -7,8 +7,8 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionContext;
@@ -156,8 +156,8 @@ public class AvmParallelTest {
         TransactionResult res = results[4].get();
         org.aion.types.Address contractAddr = org.aion.types.Address.wrap(res.getReturnData());
 
-        byte[] args = ABIEncoder.encodeMethodArguments("doTransfer");
-        byte[] args2 = ABIEncoder.encodeMethodArguments("addValue");
+        byte[] args = ABIUtil.encodeMethodArguments("doTransfer");
+        byte[] args2 = ABIUtil.encodeMethodArguments("addValue");
 
         t0 = Transaction.call(preminedAddress, contractAddr, BigInteger.valueOf(4), BigInteger.valueOf(5_000_000), args2, 100000L, 1);
         t1 = Transaction.call(usr1, contractAddr, BigInteger.ZERO, BigInteger.ZERO, args, 200000L, 1);

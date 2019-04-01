@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.encoding;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;
@@ -31,25 +31,25 @@ public class AddressEncodeDecodeTest {
 
     @Test
     public void testAddressEncodeDecode(){
-        byte[] data = ABIEncoder.encodeMethodArguments("addressEncodeDecode");
+        byte[] data = ABIUtil.encodeMethodArguments("addressEncodeDecode");
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
         Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
     }
 
     @Test
     public void testCreateAddress(){
-        byte[] data = ABIEncoder.encodeMethodArguments("createAddress");
+        byte[] data = ABIUtil.encodeMethodArguments("createAddress");
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
         Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
     }
 
     @Test
     public void testAddressArgumentReturn(){
-        byte[] data = ABIEncoder.encodeMethodArguments("saveAddress", randomAddress);
+        byte[] data = ABIUtil.encodeMethodArguments("saveAddress", randomAddress);
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
         Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
 
-        data = ABIEncoder.encodeMethodArguments("getStoredAddress");
+        data = ABIUtil.encodeMethodArguments("getStoredAddress");
         r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
         Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
         Assert.assertEquals(randomAddress, r.getDecodedReturnData());
@@ -61,14 +61,14 @@ public class AddressEncodeDecodeTest {
         for(int i = 0 ; i< tempArray.length; i++){
             tempArray[i] = avmRule.getRandomAddress(BigInteger.ZERO);
         }
-        byte[] data = ABIEncoder.encodeMethodArguments("checkAddressArrayArgument", (Object)tempArray);
+        byte[] data = ABIUtil.encodeMethodArguments("checkAddressArrayArgument", (Object)tempArray);
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
         Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
     }
 
     @Test
     public void testAddressArrayReturn(){
-        byte[] data = ABIEncoder.encodeMethodArguments("getAddressArray", 5);
+        byte[] data = ABIUtil.encodeMethodArguments("getAddressArray", 5);
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
         Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
         Assert.assertEquals(5, ((Address []) r.getDecodedReturnData()).length);
@@ -80,7 +80,7 @@ public class AddressEncodeDecodeTest {
         for(int i = 0 ; i< tempArray.length; i++){
             tempArray[i] = avmRule.getRandomAddress(BigInteger.ZERO);
         }
-        byte[] data = ABIEncoder.encodeMethodArguments("addressArrayEncodeDecode", (Object)tempArray);
+        byte[] data = ABIUtil.encodeMethodArguments("addressArrayEncodeDecode", (Object)tempArray);
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
         Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
         Assert.assertTrue(Arrays.equals(tempArray, (Address [])r.getDecodedReturnData()));

@@ -7,6 +7,7 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
@@ -116,7 +117,7 @@ public class PerformanceTest {
     }
 
     private void callSingle(org.aion.types.Address sender, Block block, Address contractAddr, String methodName) {
-        byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
+        byte[] argData = ABIUtil.encodeMethodArguments(methodName);
         Transaction call = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
@@ -156,7 +157,7 @@ public class PerformanceTest {
     }
 
     public void callBatch(String methodName, Block block, boolean Nto1){
-        byte[] argData = ABIEncoder.encodeMethodArguments(methodName);
+        byte[] argData = ABIUtil.encodeMethodArguments(methodName);
         for(int j = 0; j < contextNum; ++j) {
             TransactionContext[] transactionContext = new TransactionContext[transactionBlockSize];
             for (int i = 0; i < transactionBlockSize; ++i) {

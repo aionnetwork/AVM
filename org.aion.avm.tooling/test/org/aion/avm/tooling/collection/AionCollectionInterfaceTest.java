@@ -2,7 +2,7 @@ package org.aion.avm.tooling.collection;
 
 import java.math.BigInteger;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.AionList;
@@ -40,7 +40,7 @@ public class AionCollectionInterfaceTest {
         TransactionResult deployRes = deploy();
         Address contract = new Address(deployRes.getReturnData());
 
-        byte[] args = ABIEncoder.encodeMethodArguments("testList");
+        byte[] args = ABIUtil.encodeMethodArguments("testList");
         TransactionResult testResult = call(contract, args);
 	Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, testResult.getResultCode());
     }
@@ -50,7 +50,7 @@ public class AionCollectionInterfaceTest {
         TransactionResult deployRes = deploy();
         Address contract = new Address(deployRes.getReturnData());
 
-        byte[] args = ABIEncoder.encodeMethodArguments("testSet");
+        byte[] args = ABIUtil.encodeMethodArguments("testSet");
         TransactionResult testResult = call(contract, args);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, testResult.getResultCode());
     }
@@ -60,7 +60,7 @@ public class AionCollectionInterfaceTest {
         TransactionResult deployRes = deploy();
         Address contract = new Address(deployRes.getReturnData());
 
-        byte[] args = ABIEncoder.encodeMethodArguments("testMap");
+        byte[] args = ABIUtil.encodeMethodArguments("testMap");
         TransactionResult testResult = call(contract, args);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, testResult.getResultCode());
     }

@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.concurrent;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.api.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;
@@ -41,7 +41,7 @@ public class TimeUnitTest {
     public Object call(String methodName) {
         long energyLimit = 600_000_00000L;
         long energyPrice = 1L;
-        byte[] txData = ABIEncoder.encodeMethodArguments(methodName);
+        byte[] txData = ABIUtil.encodeMethodArguments(methodName);
         return avmRule.call(this.preminedAccount, this.dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
     }
 }
