@@ -83,7 +83,8 @@ public class InternalCallContractBalanceTarget {
                 byte[] arg3Bytes = ABIEncoder.encodeOneInteger(targetDappDepth);
                 byte[] data = concatenateArrays(arg0Bytes, arg1Bytes, arg2Bytes, arg3Bytes);
 
-                return (byte[]) ABIDecoder.decodeOneObject(BlockchainRuntime.call(otherContracts[currentDepth], BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy()).getReturnData());
+                ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.call(otherContracts[currentDepth], BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy()).getReturnData());
+                return decoder.decodeOneByteArray();
             }
 
         } else {

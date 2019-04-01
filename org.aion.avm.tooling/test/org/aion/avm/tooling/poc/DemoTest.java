@@ -83,21 +83,21 @@ public class DemoTest {
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
+        System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", walletDapp);
         tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> balance of wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
+        System.out.println(">> balance of wallet: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
         tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> balance of receiver: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
+        System.out.println(">> balance of receiver: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
 
         //================
         // PROPOSE
@@ -108,8 +108,8 @@ public class DemoTest {
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.bytesToHexString((byte[]) ABIDecoder.decodeOneObject(txResult.getReturnData())) + ")");
-        byte[] pendingTx = (byte[]) ABIDecoder.decodeOneObject(txResult.getReturnData());
+        System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.bytesToHexString((byte[]) ABIUtil.decodeOneObject(txResult.getReturnData())) + ")");
+        byte[] pendingTx = (byte[]) ABIUtil.decodeOneObject(txResult.getReturnData());
 
         //================
         // CONFIRM #1
@@ -119,7 +119,7 @@ public class DemoTest {
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> Transaction confirmed by Owner 1: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
+        System.out.println(">> Transaction confirmed by Owner 1: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
 
         //================
         // CONFIRM #2
@@ -129,7 +129,7 @@ public class DemoTest {
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> Transaction confirmed by Owner 2: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
+        System.out.println(">> Transaction confirmed by Owner 2: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
 
         System.out.println("\n>> Number of confirmations reach to " + confirmationsRequired + ". Transaction is processed.");
 
@@ -141,14 +141,14 @@ public class DemoTest {
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println("\n>> balance of wallet: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
+        System.out.println("\n>> balance of wallet: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
         tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txContext = TransactionContextImpl.forExternalTransaction(tx, block);
         txResult = avm.run(kernel, new TransactionContext[] {txContext})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> balance of receiver: " + ABIDecoder.decodeOneObject(txResult.getReturnData()));
+        System.out.println(">> balance of receiver: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
         avm.shutdown();
     }
 }

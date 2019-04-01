@@ -9,7 +9,8 @@ public class PerformanceTestTarget {
     private static final int allocSize;
 
     static {
-        int[] args = (int[]) ABIDecoder.decodeOneObject(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        int[] args = decoder.decodeOneIntegerArray();
         heavyLevel = args[0];
         allocSize = args[1];
     }

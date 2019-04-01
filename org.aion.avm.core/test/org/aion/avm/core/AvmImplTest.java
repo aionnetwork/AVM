@@ -450,7 +450,7 @@ public class AvmImplTest {
         byte[] spawnerCallData = ABIUtil.encodeMethodArguments("spawnAndCall", incrementorCallData);
         byte[] incrementorResult = (byte[]) callDApp(kernel, avm, spawnerAddress, spawnerCallData);
         // We double-encoded the arguments, so double-decode the response.
-        byte[] spawnerResult = (byte[]) ABIDecoder.decodeOneObject(incrementorResult);
+        byte[] spawnerResult = (byte[]) ABIUtil.decodeOneObject(incrementorResult);
         assertEquals(input.length, spawnerResult.length);
         for (int i = 0; i < input.length; ++i) {
             assertEquals(incrementBy + input[i], spawnerResult[i]);
@@ -644,7 +644,7 @@ public class AvmImplTest {
         Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
         TransactionResult result = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ((Integer) ABIDecoder.decodeOneObject(result.getReturnData())).intValue();
+        return ((Integer) ABIUtil.decodeOneObject(result.getReturnData())).intValue();
     }
 
     private int callReentrantAccess(KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName, boolean shouldFail) {
@@ -676,7 +676,7 @@ public class AvmImplTest {
         Transaction tx = Transaction.call(deployer, org.aion.types.Address.wrap(dAppAddress.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
         TransactionResult result2 = avm.run(kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx, block)})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
-        return ABIDecoder.decodeOneObject(result2.getReturnData());
+        return ABIUtil.decodeOneObject(result2.getReturnData());
     }
 
     private void deployInvalidJar(byte[] jar) {

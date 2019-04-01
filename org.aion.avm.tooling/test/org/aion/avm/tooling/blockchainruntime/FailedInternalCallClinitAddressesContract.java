@@ -157,7 +157,8 @@ public class FailedInternalCallClinitAddressesContract {
                 return reportForThisContract;
             }
 
-            Address[] reportForOtherContracts = (Address[]) ABIDecoder.decodeOneObject(callResult.getReturnData());
+            ABIDecoder decoder = new ABIDecoder(callResult.getReturnData());
+            Address[] reportForOtherContracts = decoder.decodeOneAddressArray();
             return joinArrays(reportForThisContract, reportForOtherContracts);
         } else {
             BlockchainRuntime.revert();

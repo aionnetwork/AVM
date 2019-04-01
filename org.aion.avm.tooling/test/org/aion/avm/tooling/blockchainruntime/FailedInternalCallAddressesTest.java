@@ -262,7 +262,7 @@ public class FailedInternalCallAddressesTest {
 
         TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        return (Address[]) ABIDecoder.decodeOneObject(result.getReturnData());
+        return (Address[]) ABIUtil.decodeOneObject(result.getReturnData());
     }
 
     private static Address deployFailedInternalCallAddressTrackerContract() {

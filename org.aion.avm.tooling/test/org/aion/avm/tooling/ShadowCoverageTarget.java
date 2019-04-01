@@ -127,7 +127,8 @@ public class ShadowCoverageTarget {
         byte[] data = ABIEncoder.encodeOneString(methodName);
         long energyLimit = 500000;
         byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
-        return ((Integer)ABIDecoder.decodeOneObject(response)).intValue();
+        ABIDecoder decoder = new ABIDecoder(response);
+        return decoder.decodeOneInteger();
     }
 
 

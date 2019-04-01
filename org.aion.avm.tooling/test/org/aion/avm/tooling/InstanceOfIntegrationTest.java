@@ -148,6 +148,6 @@ public class InstanceOfIntegrationTest {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
         TransactionResult result = avmRule.call(deployer, dappAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ((Boolean) ABIDecoder.decodeOneObject(result.getReturnData())).booleanValue();
+        return ((Boolean) ABIUtil.decodeOneObject(result.getReturnData())).booleanValue();
     }
 }

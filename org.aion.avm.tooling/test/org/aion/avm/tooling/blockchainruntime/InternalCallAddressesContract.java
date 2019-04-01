@@ -100,7 +100,8 @@ public class InternalCallAddressesContract {
                 reportForThisContract = getAddresses();
             }
 
-            Address[] reportForOtherContracts = (Address[]) ABIDecoder.decodeOneObject(result.getReturnData());
+            ABIDecoder decoder = new ABIDecoder(result.getReturnData());
+            Address[] reportForOtherContracts = decoder.decodeOneAddressArray();
             return joinArrays(reportForThisContract, reportForOtherContracts);
         } else {
             return getAddresses();

@@ -184,7 +184,7 @@ public class ExceptionWrappingIntegrationTest {
     private Object callStatic(Block block, KernelInterface kernel,  AvmImpl avm, Address contractAddr, String methodName) {
         TransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ABIDecoder.decodeOneObject(result.getReturnData());
+        return ABIUtil.decodeOneObject(result.getReturnData());
     }
 
     private ResultCode callStaticStatus(Block block, KernelInterface kernel,  AvmImpl avm, Address contractAddr, String methodName) {

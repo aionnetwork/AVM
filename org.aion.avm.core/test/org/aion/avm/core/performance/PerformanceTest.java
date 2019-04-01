@@ -170,7 +170,7 @@ public class PerformanceTest {
             for (SimpleFuture<TransactionResult> future : futures) {
                 AvmTransactionResult result = (AvmTransactionResult) future.get();
                 Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-                ABIDecoder.decodeOneObject(result.getReturnData());
+                ABIUtil.decodeOneObject(result.getReturnData());
             }
         }
     }

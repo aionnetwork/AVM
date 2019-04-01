@@ -49,6 +49,19 @@ public class ReentrantCrossCallResource {
             } else if (methodName.equals("incDirect")) {
                 incDirect(decoder.decodeOneBoolean());
                 return new byte[0];
+            } else if (methodName.equals("callSelfForNull")) {
+                Object obj = callSelfForNull();
+                if (null == obj) {
+                    // if the response is null, we correctly encode null as an empty byte array
+                    return new byte[0];
+                } else {
+                    BlockchainRuntime.println(obj + "");
+                    // if it is something else, something went wrong, so we fail by returning null
+                    return null;
+                }
+            } else if (methodName.equals("returnNull")) {
+                // We bypass the function call and directly return null
+                return null;
             } else {
                 return new byte[0];
             }
@@ -60,10 +73,7 @@ public class ReentrantCrossCallResource {
         BigInteger value = BigInteger.ZERO;
         byte[] data = ABIEncoder.encodeOneString("returnNull");
         long energyLimit = 500000;
-        byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
-        return (null != response)
-                ? ABIDecoder.decodeOneObject(response)
-                : response;
+        return BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
     }
 
     public static Object returnNull() {
@@ -85,7 +95,8 @@ public class ReentrantCrossCallResource {
 
             long energyLimit = 500000;
             byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
-            toReturn = (Integer)ABIDecoder.decodeOneObject(response);
+            ABIDecoder decoder = new ABIDecoder(response);
+            toReturn = decoder.decodeOneInteger();
         }
         return toReturn;
     }
@@ -241,7 +252,9 @@ public class ReentrantCrossCallResource {
             Result txResult = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
             byte[] result = txResult.getReturnData();
             if (txResult.isSuccess()) {
-                int responseHash = ((Integer) ABIDecoder.decodeOneObject(result)).intValue();
+
+                ABIDecoder decoder = new ABIDecoder(result);
+                int responseHash = decoder.decodeOneInteger();
 
                 // Verify that we see this hash for the nestedInstance.
                 if (responseHash != nestedInstance.hashCode()) {

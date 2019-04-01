@@ -41,7 +41,12 @@ public class RedirectContract {
     public static byte[] callOtherContractAndRequireItIsSuccess(Address addressOfOther, long value, byte[] args) {
         Result result = BlockchainRuntime.call(addressOfOther, BigInteger.valueOf(value), args, BlockchainRuntime.getRemainingEnergy());
         BlockchainRuntime.require(result.isSuccess());
-        return (result.getReturnData() != null) ? (byte[]) ABIDecoder.decodeOneObject(result.getReturnData()) : null;
+        if (null == result.getReturnData() || 0 == result.getReturnData().length) {
+            return null;
+        } else {
+            ABIDecoder decoder = new ABIDecoder(result.getReturnData());
+            return decoder.decodeOneByteArray();
+        }
     }
 
 }

@@ -1,8 +1,10 @@
 package org.aion.avm.core.util;
 
 import java.nio.ByteBuffer;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
+import org.aion.avm.userlib.abi.ABIToken;
 
 /**
  * A utility that helps encode method arguments that is used to call test contracts
@@ -62,6 +64,83 @@ public class ABIUtil {
         byte[] populated = new byte[length];
         System.arraycopy(encodedBytes.array(), 0, populated, 0, populated.length);
         return populated;
+    }
+
+
+    /**
+     * Decode the transaction data that has one object encoded in it.
+     * @param data the transaction data that has one object encoded in it (with the descriptor).
+     * @return the decoded object.
+     */
+    public static Object decodeOneObject(byte[] data) {
+        if (null == data) {
+            throw new NullPointerException();
+        } else if (0 == data.length) {
+            return null;
+        } else {
+            ABIDecoder decoder = new ABIDecoder(data);
+            Class clazz = decodeClass(data);
+
+            if (clazz == Byte.class) {
+                return decoder.decodeOneByte();
+            } else if (clazz == Boolean.class) {
+                return decoder.decodeOneBoolean();
+            } else if (clazz == Character.class) {
+                return decoder.decodeOneCharacter();
+            } else if (clazz == Short.class) {
+                return decoder.decodeOneShort();
+            } else if (clazz == Integer.class) {
+                return decoder.decodeOneInteger();
+            } else if (clazz == Long.class) {
+                return decoder.decodeOneLong();
+            } else if (clazz == Float.class) {
+                return decoder.decodeOneFloat();
+            } else if (clazz == Double.class) {
+                return decoder.decodeOneDouble();
+            } else if (clazz == byte[].class) {
+                return decoder.decodeOneByteArray();
+            } else if (clazz == boolean[].class) {
+                return decoder.decodeOneBooleanArray();
+            } else if (clazz == char[].class) {
+                return decoder.decodeOneCharacterArray();
+            } else if (clazz == short[].class) {
+                return decoder.decodeOneShortArray();
+            } else if (clazz == int[].class) {
+                return decoder.decodeOneIntegerArray();
+            } else if (clazz == long[].class) {
+                return decoder.decodeOneLongArray();
+            } else if (clazz == float[].class) {
+                return decoder.decodeOneFloatArray();
+            } else if (clazz == double[].class) {
+                return decoder.decodeOneDoubleArray();
+            } else if (clazz == String.class) {
+                return decoder.decodeOneString();
+            } else if (clazz == org.aion.avm.api.Address.class) {
+                return decoder.decodeOneAddress();
+            } else if (clazz == byte[][].class) {
+                return decoder.decodeOne2DByteArray();
+            } else if (clazz == boolean[][].class) {
+                return decoder.decodeOne2DBooleanArray();
+            } else if (clazz == char[][].class) {
+                return decoder.decodeOne2DCharacterArray();
+            } else if (clazz == short[][].class) {
+                return decoder.decodeOne2DShortArray();
+            } else if (clazz == int[][].class) {
+                return decoder.decodeOne2DIntegerArray();
+            } else if (clazz == long[][].class) {
+                return decoder.decodeOne2DLongArray();
+            } else if (clazz == float[][].class) {
+                return decoder.decodeOne2DFloatArray();
+            } else if (clazz == double[][].class) {
+                return decoder.decodeOne2DDoubleArray();
+            } else if (clazz == String[].class) {
+                return decoder.decodeOneStringArray();
+            } else if (clazz == org.aion.avm.api.Address[].class) {
+                return decoder.decodeOneAddressArray();
+            } else {
+                return null;
+            }
+        }
     }
 
     /**
@@ -131,6 +210,42 @@ public class ABIUtil {
             return ABIEncoder.encodeOneAddressArray((org.aion.avm.api.Address[]) data);
         } else {
             throw new ABIException("Unsupported ABI type");
+        }
+    }
+
+    private static Class decodeClass(byte[] data) {
+        ABIToken token = ABIToken.getTokenFromIdentifier(data[0]);
+        if (null == token) {
+            throw new ABIException("Unsupported ABI type");
+        } else {
+            if (ABIToken.ARRAY != token) {
+                return token.type;
+            } else {
+                Class elementType = ABIToken.getTokenFromIdentifier(data[1]).type;
+                if (elementType == byte[].class) {
+                    return byte[][].class;
+                } else if (elementType == boolean[].class) {
+                    return boolean[][].class;
+                } else if (elementType == char[].class) {
+                    return char[][].class;
+                } else if (elementType == short[].class) {
+                    return short[][].class;
+                } else if (elementType == int[].class) {
+                    return int[][].class;
+                } else if (elementType == long[].class) {
+                    return long[][].class;
+                } else if (elementType == float[].class) {
+                    return float[][].class;
+                } else if (elementType == double[].class) {
+                    return double[][].class;
+                } else if (elementType == String.class) {
+                    return String[].class;
+                } else if (elementType == org.aion.avm.api.Address.class) {
+                    return org.aion.avm.api.Address[].class;
+                } else {
+                    return null;
+                }
+            }
         }
     }
 }

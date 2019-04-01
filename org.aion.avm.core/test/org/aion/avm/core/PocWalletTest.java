@@ -15,6 +15,7 @@ import org.aion.avm.core.testWallet.Multiowned;
 import org.aion.avm.core.testWallet.Operation;
 import org.aion.avm.core.testWallet.RequireFailedException;
 import org.aion.avm.core.testWallet.Wallet;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -144,7 +145,7 @@ public class PocWalletTest {
         TransactionContext executeContext = TransactionContextImpl.forExternalTransaction(executeTransaction, block);
         TransactionResult executeResult = avm.run(this.kernel, new TransactionContext[] {executeContext})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, executeResult.getResultCode());
-        byte[] toConfirm = (byte[]) ABIDecoder.decodeOneObject(executeResult.getReturnData());
+        byte[] toConfirm = (byte[]) ABIUtil.decodeOneObject(executeResult.getReturnData());
 
         // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
         kernel.adjustBalance(extra1, BigInteger.valueOf(1_000_000_000_000L));

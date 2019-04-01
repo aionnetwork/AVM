@@ -238,82 +238,82 @@ public class TransformedMethodTest {
 
     private int callParameterlessMethod(String methodName) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
-        return (Integer) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Integer) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private double callDoubleMethod(String methodName, double d) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, d);
-        return (Double) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Double) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private double callMultipleDoublesMethod(Double d1, Double d2, double d3, double d4) {
         byte[] argData = ABIUtil.encodeMethodArguments("collapseDoubles", d1, d2, d3, d4);
-        return (Double) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Double) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private float callFloatMethod(String methodName, float f) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, f);
-        return (Float) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Float) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private long callLongMethod(String methodName, long l) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, l);
-        return (Long) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Long) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private long callMultipleLongsMethod(Long l1, Long l2, long l3, long l4) {
         byte[] argData = ABIUtil.encodeMethodArguments("collapseLongs", l1, l2, l3, l4);
-        return (Long) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Long) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private int callIntMethod(String methodName, int i) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, i);
-        return (Integer) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Integer) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private int callMultipleIntsMethod(Integer i1, Integer i2, int i3, int i4) {
         byte[] argData = ABIUtil.encodeMethodArguments("collapseInts", i1, i2, i3, i4);
-        return (Integer) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Integer) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private short callShortMethod(String methodName, short s) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, s);
-        return (Short) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Short) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private short callMultipleShortsMethod(Short s1, Short s2, short s3, short s4) {
         byte[] argData = ABIUtil.encodeMethodArguments("collapseShorts", s1, s2, s3, s4);
-        return (Short) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Short) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private char callCharMethod(String methodName, char b) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, b);
-        return (Character) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Character) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private char callMultipleCharsMethod(Character c1, Character c2, char c3, char c4) {
         byte[] argData = ABIUtil.encodeMethodArguments("collapseChars", c1, c2, c3, c4);
-        return (Character) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Character) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private byte callByteMethod(String methodName, byte b) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, b);
-        return (Byte) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Byte) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private byte callMultipleBytesMethod(Byte b1, Byte b2, byte b3, byte b4) {
         byte[] argData = ABIUtil.encodeMethodArguments("collapseBytes", b1, b2, b3, b4);
-        return (byte) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (byte) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private boolean callBooleanMethod(String methodName, boolean b) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, b);
-        return (Boolean) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Boolean) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private boolean callMultipleBooleansMethod(Boolean b1, Boolean b2, boolean b3, boolean b4) {
         byte[] argData = ABIUtil.encodeMethodArguments("collapseBools", b1, b2, b3, b4);
-        return (Boolean) ABIDecoder.decodeOneObject(runTransaction(argData).getReturnData());
+        return (Boolean) ABIUtil.decodeOneObject(runTransaction(argData).getReturnData());
     }
 
     private TransactionResult runTransaction(byte[] argData) {

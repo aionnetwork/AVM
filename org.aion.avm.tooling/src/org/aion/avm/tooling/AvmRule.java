@@ -5,6 +5,7 @@ import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
@@ -216,7 +217,7 @@ public final class AvmRule implements TestRule {
          * @return Decoded returned data of the call
          */
         public Object getDecodedReturnData() {
-            return ABIDecoder.decodeOneObject(result.getReturnData());
+            return ABIUtil.decodeOneObject(result.getReturnData());
         }
 
         /**

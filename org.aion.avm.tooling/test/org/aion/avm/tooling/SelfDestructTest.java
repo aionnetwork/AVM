@@ -173,7 +173,7 @@ public class SelfDestructTest {
     private Object callDApp(Address dAppAddress, byte[] argData) {
         TransactionResult result = avmRule.call(deployer, dAppAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ABIDecoder.decodeOneObject(result.getReturnData());
+        return ABIUtil.decodeOneObject(result.getReturnData());
     }
 
     private void failToCall(Address dAppAddress) {

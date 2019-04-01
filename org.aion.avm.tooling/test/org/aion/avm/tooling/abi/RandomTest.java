@@ -60,7 +60,7 @@ public class RandomTest {
                         .getTransactionResult();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertNotNull(result.getReturnData());
-        return ABIDecoder.decodeOneObject(result.getReturnData());
+        return ABIUtil.decodeOneObject(result.getReturnData());
     }
 
     @Test

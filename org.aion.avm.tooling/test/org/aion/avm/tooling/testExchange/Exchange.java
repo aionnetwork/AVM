@@ -60,7 +60,9 @@ public class Exchange {
 
         byte[] result = BlockchainRuntime.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
 
-        if (((long)ABIDecoder.decodeOneObject(result)) >= amount){
+        ABIDecoder decoder = new ABIDecoder(result);
+
+        if (decoder.decodeOneLong() >= amount){
             toProcess = new ExchangeTransaction(coin, sender, to, amount);
             return true;
         }
@@ -91,11 +93,14 @@ public class Exchange {
 
         byte[] result = BlockchainRuntime.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
 
-        if ((boolean)ABIDecoder.decodeOneObject(result)){
+        ABIDecoder decoder = new ABIDecoder(result);
+        boolean decodedBool = decoder.decodeOneBoolean();
+
+        if (decodedBool){
             toProcess = null;
         }
 
-        return (boolean)ABIDecoder.decodeOneObject(result);
+        return decodedBool;
     }
 
     private static byte[] concatenateArrays(byte[]... arrays) {

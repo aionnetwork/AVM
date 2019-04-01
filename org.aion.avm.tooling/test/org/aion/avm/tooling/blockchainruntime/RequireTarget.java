@@ -9,7 +9,8 @@ public class RequireTarget {
     static {
         byte[] data = BlockchainRuntime.getData();
         if ((data != null) && (data.length > 0)) {
-            boolean dataAsBoolean = (boolean) ABIDecoder.decodeOneObject(data);
+            ABIDecoder decoder = new ABIDecoder(data);
+            boolean dataAsBoolean = decoder.decodeOneBoolean();
             BlockchainRuntime.require(dataAsBoolean);
         }
     }

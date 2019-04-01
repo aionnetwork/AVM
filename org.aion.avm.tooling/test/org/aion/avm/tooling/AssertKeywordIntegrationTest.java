@@ -96,6 +96,6 @@ public class AssertKeywordIntegrationTest {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, arguments);
         TransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ABIDecoder.decodeOneObject(result.getReturnData());
+        return ABIUtil.decodeOneObject(result.getReturnData());
     }
 }

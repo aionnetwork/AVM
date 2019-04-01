@@ -40,7 +40,7 @@ public class EdverifyTest {
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertTrue((Boolean) ABIDecoder.decodeOneObject(txResult.getReturnData()));
+        Assert.assertTrue((Boolean) ABIUtil.decodeOneObject(txResult.getReturnData()));
     }
 
     @Test
@@ -53,7 +53,7 @@ public class EdverifyTest {
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertFalse((Boolean) ABIDecoder.decodeOneObject(txResult.getReturnData()));
+        Assert.assertFalse((Boolean) ABIUtil.decodeOneObject(txResult.getReturnData()));
     }
 
     @Test
@@ -66,6 +66,6 @@ public class EdverifyTest {
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertFalse((Boolean) ABIDecoder.decodeOneObject(txResult.getReturnData()));
+        Assert.assertFalse((Boolean) ABIUtil.decodeOneObject(txResult.getReturnData()));
     }
 }

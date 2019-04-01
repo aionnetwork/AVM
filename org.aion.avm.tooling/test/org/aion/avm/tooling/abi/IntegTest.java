@@ -53,7 +53,7 @@ public class IntegTest {
                         .getTransactionResult();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         if (result.getReturnData() != null) {
-            return ABIDecoder.decodeOneObject(result.getReturnData());
+            return ABIUtil.decodeOneObject(result.getReturnData());
         } else {
             return null;
         }

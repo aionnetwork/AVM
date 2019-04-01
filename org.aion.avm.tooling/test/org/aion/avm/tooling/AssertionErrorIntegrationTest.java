@@ -121,7 +121,7 @@ public class AssertionErrorIntegrationTest {
         if(null == resultData) {
             return null;
         }
-        byte[] utf8 = (byte[])ABIDecoder.decodeOneObject(result.getReturnData());
+        byte[] utf8 = (byte[])ABIUtil.decodeOneObject(result.getReturnData());
         return (null != utf8)
                 ? new String(utf8)
                 : null;

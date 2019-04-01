@@ -58,16 +58,16 @@ public class HashCodeIntegrationTest {
 
         Address contractAddr = new Address(createResult.getReturnData());
         // Store an object.
-        int systemHash = ((Integer)callStatic(block, contractAddr, "persistNewObject")).intValue();
+        int systemHash = callStatic(block, contractAddr, "persistNewObject");
         // We know that this is the current value, but that may change in the future.
         Assert.assertEquals(115, systemHash);
         // Fetch it and verify the hashCode is loaded.
-        int loadSystemHash = ((Integer)callStatic(block, contractAddr, "readPersistentHashCode")).intValue();
+        int loadSystemHash = callStatic(block, contractAddr, "readPersistentHashCode");
         Assert.assertEquals(systemHash, loadSystemHash);
     }
 
 
-    private Object callStatic(Block block, Address contractAddr, String methodName) {
+    private int callStatic(Block block, Address contractAddr, String methodName) {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
         Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
@@ -76,6 +76,7 @@ public class HashCodeIntegrationTest {
         // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.
         byte[] expStorageRootHash = Helpers.hexStringToBytes("0000000b0e0e006b0c450e25740b272f41e3cf2c431120420e556e505113006e");
         Assert.assertArrayEquals(expStorageRootHash, result.getStorageRootHash());
-        return ABIDecoder.decodeOneObject(result.getReturnData());
+        ABIDecoder decoder = new ABIDecoder(result.getReturnData());
+        return decoder.decodeOneInteger();
     }
 }

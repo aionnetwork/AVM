@@ -408,7 +408,7 @@ public class GraphReachabilityIntegrationTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(expectedCost, result.getEnergyUsed());
         Assert.assertEquals(energyLimit - expectedCost, result.getEnergyRemaining());
-        return ABIDecoder.decodeOneObject(result.getReturnData());
+        return ABIUtil.decodeOneObject(result.getReturnData());
     }
 
     private static long getCost_check249(boolean before) {

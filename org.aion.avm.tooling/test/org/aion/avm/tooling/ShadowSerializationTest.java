@@ -230,7 +230,7 @@ public class ShadowSerializationTest {
         byte[] argData = ABIUtil.encodeMethodArguments("populate_" + segmentName);
         TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ((Integer) ABIDecoder.decodeOneObject(result.getReturnData())).intValue();
+        return ((Integer) ABIUtil.decodeOneObject(result.getReturnData())).intValue();
     }
 
     private int getHash(Address contractAddr, String segmentName) {
@@ -238,14 +238,14 @@ public class ShadowSerializationTest {
         byte[] argData = ABIUtil.encodeMethodArguments("getHash_" + segmentName);
         TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ((Integer)ABIDecoder.decodeOneObject(result.getReturnData())).intValue();
+        return ((Integer)ABIUtil.decodeOneObject(result.getReturnData())).intValue();
     }
 
     private int getHashSuccessWithLimit(Address contractAddr, String segmentName, long energyLimit) {
         byte[] argData = ABIUtil.encodeMethodArguments("getHash_" + segmentName);
         TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE).getTransactionResult();
         return (AvmTransactionResult.Code.SUCCESS == result.getResultCode())
-                ? ((Integer)ABIDecoder.decodeOneObject(result.getReturnData())).intValue()
+                ? ((Integer)ABIUtil.decodeOneObject(result.getReturnData())).intValue()
                 : 0;
     }
 
@@ -254,7 +254,7 @@ public class ShadowSerializationTest {
         byte[] argData = ABIUtil.encodeMethodArguments("verifyReentrantChange_" + segmentName);
         TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        Assert.assertTrue((Boolean)ABIDecoder.decodeOneObject(result.getReturnData()));
+        Assert.assertTrue((Boolean)ABIUtil.decodeOneObject(result.getReturnData()));
     }
 
     private byte[] getDappBytesWithUserlib(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {

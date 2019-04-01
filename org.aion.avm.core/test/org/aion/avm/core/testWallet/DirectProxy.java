@@ -3,6 +3,7 @@ package org.aion.avm.core.testWallet;
 import java.util.function.Consumer;
 
 import org.aion.avm.api.Address;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
 
@@ -25,7 +26,7 @@ public class DirectProxy {
     public static boolean addOwner(Consumer<byte[]> inputConsumer, Address owner) {
         byte[] onto = CallEncoder.addOwner(owner);
         inputConsumer.accept(onto);
-        return (Boolean) ABIDecoder.decodeOneObject(WalletShim.main());
+        return (Boolean) ABIUtil.decodeOneObject(WalletShim.main());
     }
 
     public static byte[] execute(Consumer<byte[]> inputConsumer, Address to, long value, byte[] data) {
@@ -33,38 +34,38 @@ public class DirectProxy {
         inputConsumer.accept(onto);
         byte[] result = WalletShim.main();
         return (null != result)
-                ? (byte[])ABIDecoder.decodeOneObject(result)
+                ? (byte[])ABIUtil.decodeOneObject(result)
                 : null;
     }
 
     public static boolean confirm(Consumer<byte[]> inputConsumer, byte[] data) {
         byte[] onto = CallEncoder.confirm(data);
         inputConsumer.accept(onto);
-        return (Boolean) ABIDecoder.decodeOneObject(WalletShim.main());
+        return (Boolean) ABIUtil.decodeOneObject(WalletShim.main());
     }
 
     public static boolean changeRequirement(Consumer<byte[]> inputConsumer, int newRequired) {
         byte[] onto = CallEncoder.changeRequirement(newRequired);
         inputConsumer.accept(onto);
-        return (Boolean) ABIDecoder.decodeOneObject(WalletShim.main());
+        return (Boolean) ABIUtil.decodeOneObject(WalletShim.main());
     }
 
     public static Address getOwner(Consumer<byte[]> inputConsumer, int ownerIndex) {
         byte[] onto = CallEncoder.getOwner(ownerIndex);
         inputConsumer.accept(onto);
-        return (Address) ABIDecoder.decodeOneObject(WalletShim.main());
+        return (Address) ABIUtil.decodeOneObject(WalletShim.main());
     }
 
     public static boolean changeOwner(Consumer<byte[]> inputConsumer, Address from, Address to) {
         byte[] onto = CallEncoder.changeOwner(from, to);
         inputConsumer.accept(onto);
-        return (Boolean) ABIDecoder.decodeOneObject(WalletShim.main());
+        return (Boolean) ABIUtil.decodeOneObject(WalletShim.main());
     }
 
     public static boolean removeOwner(Consumer<byte[]> inputConsumer, Address owner) {
         byte[] onto = CallEncoder.removeOwner(owner);
         inputConsumer.accept(onto);
-        return (Boolean) ABIDecoder.decodeOneObject(WalletShim.main());
+        return (Boolean) ABIUtil.decodeOneObject(WalletShim.main());
     }
 
     public static void revoke(Consumer<byte[]> inputConsumer, byte[] transactionBytes) {

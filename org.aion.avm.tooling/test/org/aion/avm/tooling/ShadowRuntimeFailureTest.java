@@ -1,6 +1,7 @@
 package org.aion.avm.tooling;
 
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -60,7 +61,7 @@ public class ShadowRuntimeFailureTest {
         byte[] data = new byte[] {(byte)8};
         TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        Assert.assertEquals(Boolean.valueOf(true), ABIDecoder.decodeOneObject(result.getReturnData()));
+        Assert.assertEquals(Boolean.valueOf(true), ABIUtil.decodeOneObject(result.getReturnData()));
         
     }
 

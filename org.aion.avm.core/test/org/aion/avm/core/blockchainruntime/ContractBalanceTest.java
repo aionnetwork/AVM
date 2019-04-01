@@ -119,7 +119,7 @@ public class ContractBalanceTest {
         TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TransactionContext[] {context})[0].get();
         assertTrue(result.getResultCode().isSuccess());
-        return new BigInteger((byte[]) ABIDecoder.decodeOneObject(result.getReturnData()));
+        return new BigInteger((byte[]) ABIUtil.decodeOneObject(result.getReturnData()));
     }
 
     private BigInteger callContractToGetClinitBalance(Address contract) {
@@ -128,7 +128,7 @@ public class ContractBalanceTest {
         TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TransactionContext[] {context})[0].get();
         assertTrue(result.getResultCode().isSuccess());
-        return new BigInteger((byte[]) ABIDecoder.decodeOneObject(result.getReturnData()));
+        return new BigInteger((byte[]) ABIUtil.decodeOneObject(result.getReturnData()));
     }
 
     private Address deployRedirectContract() {
@@ -154,7 +154,7 @@ public class ContractBalanceTest {
         TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TransactionContext[] {context})[0].get();
         assertTrue(result.getResultCode().isSuccess());
-        return new BigInteger((byte[]) ABIDecoder.decodeOneObject(result.getReturnData()));
+        return new BigInteger((byte[]) ABIUtil.decodeOneObject(result.getReturnData()));
     }
 
     private org.aion.avm.api.Address getContractAsAbiAddress(Address contract) {

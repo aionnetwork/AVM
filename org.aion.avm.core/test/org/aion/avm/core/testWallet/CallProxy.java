@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import org.aion.avm.api.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
 
@@ -81,7 +82,7 @@ public class CallProxy {
             .getMethod(NamespaceMapper.mapMethodName("main"))
             .invoke(null);
         return (null != output)
-                ? ABIDecoder.decodeOneObject(output.getUnderlying())
+                ? ABIUtil.decodeOneObject(output.getUnderlying())
                 : null;
     }
 }

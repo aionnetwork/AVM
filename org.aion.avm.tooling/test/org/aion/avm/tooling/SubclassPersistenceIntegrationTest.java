@@ -117,7 +117,7 @@ public class SubclassPersistenceIntegrationTest {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
         TransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ((Integer) ABIDecoder.decodeOneObject(result.getReturnData())).intValue();
+        return ((Integer) ABIUtil.decodeOneObject(result.getReturnData())).intValue();
     }
 
     private void failedInstall(Class<?> testClass) {

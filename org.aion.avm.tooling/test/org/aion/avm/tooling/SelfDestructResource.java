@@ -41,7 +41,8 @@ public class SelfDestructResource {
         byte[] data = ABIEncoder.encodeOneString("justReturn");
         long energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         byte[] response = BlockchainRuntime.call(target, value, data, energyLimit).getReturnData();
-        return (Integer)ABIDecoder.decodeOneObject(response);
+        ABIDecoder decoder = new ABIDecoder(response);
+        return decoder.decodeOneInteger();
     }
 
     @Callable
@@ -77,7 +78,8 @@ public class SelfDestructResource {
 
         long energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         byte[] response = BlockchainRuntime.call(target, value, data, energyLimit).getReturnData();
-        return (Long)ABIDecoder.decodeOneObject(response);
+        ABIDecoder decoder = new ABIDecoder(response);
+        return decoder.decodeOneLong();
     }
 
     @Callable
@@ -111,19 +113,25 @@ public class SelfDestructResource {
 
         long energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         byte[] response = BlockchainRuntime.call(target, value, data, energyLimit).getReturnData();
-        assert (DELETE_AND_RETURN == (Integer)ABIDecoder.decodeOneObject(response));
+        ABIDecoder decoder = new ABIDecoder(response);
+        int decodedResponse = decoder.decodeOneInteger();
+        assert (DELETE_AND_RETURN == decodedResponse);
         
         // Call back to ourselves, to verify that we are ok.
         data = ABIEncoder.encodeOneString("justReturn");
         energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
-        assert (JUST_RETURN == (Integer)ABIDecoder.decodeOneObject(response));
+        decoder = new ABIDecoder(response);
+        decodedResponse = decoder.decodeOneInteger();
+        assert (JUST_RETURN == decodedResponse);
         
         // Try to call them, verifying that they are not accessible.
         data = ABIEncoder.encodeOneString("justReturn");
         energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         response = BlockchainRuntime.call(target, value, data, energyLimit).getReturnData();
-        assert (JUST_RETURN == (Integer)ABIDecoder.decodeOneObject(response));
+        decoder = new ABIDecoder(response);
+        decodedResponse = decoder.decodeOneInteger();
+        assert (JUST_RETURN == decodedResponse);
         return CALL_TO_DELETE_SUCCESS;
     }
 
@@ -146,7 +154,9 @@ public class SelfDestructResource {
         data = ABIEncoder.encodeOneString("justReturn");
         energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
         byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
-        assert (JUST_RETURN == (Integer)ABIDecoder.decodeOneObject(response));
+        ABIDecoder decoder = new ABIDecoder(response);
+        int decodedResponse = decoder.decodeOneInteger();
+        assert (JUST_RETURN == decodedResponse);
         
         // Try to call them, verifying that they are still accessible.
         data = ABIEncoder.encodeOneString("justReturn");
