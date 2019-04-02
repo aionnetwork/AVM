@@ -19,7 +19,7 @@ public class Integer extends Number implements Comparable<Integer> {
 
     public static final int avm_SIZE = java.lang.Integer.SIZE;
 
-    public static final int avm_BYTES = java.lang.Integer.SIZE;
+    public static final int avm_BYTES = java.lang.Integer.BYTES;
 
     public static final Class<Integer> avm_TYPE = new Class(java.lang.Integer.TYPE);
 
@@ -74,12 +74,12 @@ public class Integer extends Number implements Comparable<Integer> {
         return java.lang.Integer.parseInt(s.avm_toString().getUnderlying(), beginIndex, endIndex, radix);
     }
 
-    public static int avm_parseUnsignedInt(String s, int radix){
+    public static int avm_parseUnsignedInt(String s, int radix) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_parseUnsignedInt);
         return java.lang.Integer.parseUnsignedInt(s.getUnderlying(), radix);
     }
 
-    public static int avm_parseUnsignedInt(String s){
+    public static int avm_parseUnsignedInt(String s) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Integer_avm_parseUnsignedInt_1);
         return java.lang.Integer.parseUnsignedInt(s.getUnderlying());
     }

@@ -80,7 +80,7 @@ public class TimeUnit extends Enum<TimeUnit> {
 
     public static TimeUnit avm_valueOf(String request) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.TimeUnit_avm_valueOf);
-        return Enum.avm_valueOf(new Class<>(TimeUnit.class), request);
+        return Enum.internalValueOf(new Class<>(TimeUnit.class), request);
     }
 
     protected java.util.concurrent.TimeUnit getUnderlying() {

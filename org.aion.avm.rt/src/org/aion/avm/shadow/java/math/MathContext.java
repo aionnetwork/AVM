@@ -54,7 +54,7 @@ public final class MathContext extends Object {
     public RoundingMode avm_getRoundingMode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_getRoundingMode);
         lazyLoad();
-        return RoundingMode.avm_valueOf(new String(this.v.getRoundingMode().name()));
+        return RoundingMode.internalValueOf(new String(this.v.getRoundingMode().name()));
     }
 
     public boolean avm_equals(IObject x){
@@ -72,8 +72,8 @@ public final class MathContext extends Object {
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.MathContext_avm_hashCode);
         lazyLoad();
-        RoundingMode roundingMode = RoundingMode.avm_valueOf(new String(this.v.getRoundingMode().name()));
-        return this.v.getPrecision() + roundingMode.hashCode() * 59;
+        RoundingMode roundingMode = RoundingMode.internalValueOf(new String(this.v.getRoundingMode().name()));
+        return this.v.getPrecision() + roundingMode.internalHashcode() * 59;
     }
 
     public String avm_toString() {
@@ -103,7 +103,7 @@ public final class MathContext extends Object {
         // We store this as the precision (int) and the RoundingMode (stub).
         int precision = deserializer.readInt();
         RoundingMode mode = (RoundingMode)deserializer.readStub();
-        this.v = new java.math.MathContext(precision, java.math.RoundingMode.valueOf(mode.avm_name().getUnderlying()));
+        this.v = new java.math.MathContext(precision, java.math.RoundingMode.valueOf(mode.getName().getUnderlying()));
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
@@ -111,7 +111,7 @@ public final class MathContext extends Object {
         
         // We store this as the precision (int) and the RoundingMode (stub).
         serializer.writeInt(this.v.getPrecision());
-        RoundingMode roundingMode = RoundingMode.avm_valueOf(new String(this.v.getRoundingMode().name()));
+        RoundingMode roundingMode = RoundingMode.internalValueOf(new String(this.v.getRoundingMode().name()));
         serializer.writeStub(roundingMode);
     }
 

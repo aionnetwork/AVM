@@ -9,6 +9,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EnumShadowingTest {
     @Rule
@@ -49,4 +51,29 @@ public class EnumShadowingTest {
 
         Assert.assertEquals(true, result);
     }
+
+    @Test
+    public void testTimeUnitEnum() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testTimeUnitEnum");
+        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
+
+        Assert.assertEquals(true, result);
+    }
+
+    @Test
+    public void testInvalidRoundingModeEnum() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("testInvalidRoundingModeEnum");
+        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
+
+        Assert.assertEquals(true, result);
+    }
+
+    @Test
+    public void EnumHashcode() {
+        byte[] txData = ABIEncoder.encodeMethodArguments("EnumHashcode");
+        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
+
+        Assert.assertEquals(true, result);
+    }
+
 }

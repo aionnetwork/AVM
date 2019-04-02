@@ -54,7 +54,7 @@ public class RoundingMode extends Enum<RoundingMode>{
 
     public static RoundingMode avm_valueOf(String request){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.RoundingMode_avm_valueOf);
-        return (RoundingMode) Enum.avm_valueOf(new Class<>(RoundingMode.class), request);
+        return internalValueOf(request);
     }
 
     public static RoundingMode avm_valueOf(int idx){
@@ -111,4 +111,9 @@ public class RoundingMode extends Enum<RoundingMode>{
         avm_$VALUES.set(6, avm_HALF_EVEN);
         avm_$VALUES.set(7, avm_UNNECESSARY);
     }
+
+    public static RoundingMode internalValueOf(String request){
+        return (RoundingMode) Enum.internalValueOf(new Class<>(RoundingMode.class), request);
+    }
+
 }

@@ -207,7 +207,7 @@ public class Long extends Number implements Comparable<Long> {
 
     public static final int avm_SIZE = java.lang.Long.SIZE;
 
-    public static final int avm_BYTES = avm_SIZE / Byte.avm_SIZE;
+    public static final int avm_BYTES = java.lang.Long.BYTES;
 
     public static long avm_highestOneBit(long i) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Long_avm_highestOneBit);

@@ -17,7 +17,7 @@ public final class Byte extends Object implements Comparable<Byte> {
 
     public static final byte avm_MAX_VALUE = java.lang.Byte.MAX_VALUE;
 
-    public static final Class<Byte> avm_TYPE = new Class(java.lang.Byte.TYPE);;
+    public static final Class<Byte> avm_TYPE = new Class(java.lang.Byte.TYPE);
 
     public static String avm_toString(byte b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_toString);
@@ -29,7 +29,7 @@ public final class Byte extends Object implements Comparable<Byte> {
         return internalValueOf(b);
     }
 
-    public static byte avm_parseByte(String s, int radix){
+    public static byte avm_parseByte(String s, int radix) throws NumberFormatException {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_parseByte);
         return internalParseByte(s, radix);
     }

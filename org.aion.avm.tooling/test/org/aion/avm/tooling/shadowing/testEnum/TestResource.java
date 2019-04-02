@@ -1,7 +1,10 @@
 package org.aion.avm.tooling.shadowing.testEnum;
 
-import java.math.RoundingMode;
 import org.aion.avm.tooling.abi.Callable;
+
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.concurrent.TimeUnit;
 
 public class TestResource {
     static TestEnum earth = TestEnum.EARTH;
@@ -53,5 +56,58 @@ public class TestResource {
         ret = ret && (es[7] == RoundingMode.UNNECESSARY);
 
         return ret;
+    }
+
+    @Callable
+    public static boolean testTimeUnitEnum(){
+        boolean ret = true;
+        ret = ret && (TimeUnit.DAYS == TimeUnit.valueOf("DAYS"));
+        ret = ret && (TimeUnit.HOURS instanceof Object);
+
+        TimeUnit[] es = (TimeUnit[]) TimeUnit.values();
+        ret = ret && (es[0] == TimeUnit.DAYS);
+        ret = ret && (es[1] == TimeUnit.HOURS);
+        ret = ret && (es[2] == TimeUnit.MINUTES);
+        ret = ret && (es[3] == TimeUnit.SECONDS);
+        ret = ret && (es[4] == TimeUnit.MILLISECONDS);
+        ret = ret && (es[5] == TimeUnit.MICROSECONDS);
+        ret = ret && (es[6] == TimeUnit.NANOSECONDS);
+
+        return ret;
+    }
+
+    @Callable
+    public static boolean testInvalidRoundingModeEnum() {
+        try {
+            RoundingMode.valueOf("up");
+            throw new AssertionError();
+        } catch (IllegalArgumentException e){
+            // Expected
+        }
+        return true;
+    }
+
+    @Callable
+    public static boolean EnumHashcode() {
+        boolean ret = true;
+        ret = ret && (RoundingMode.UP.hashCode() == 10);
+
+        MathContext mc = new MathContext(1, RoundingMode.UP);
+        ret = ret && (mc.hashCode() == 591);
+
+        ret = ret && (Type1.NORMAL.hashCode() == 28);
+        ret = ret && (Type2.SPECIALIZED.hashCode() == 31);
+
+        return ret;
+    }
+
+    interface GeneralType {}
+
+    enum Type1 implements GeneralType {
+        NORMAL;
+    }
+
+    enum Type2 implements GeneralType {
+        SPECIALIZED;
     }
 }

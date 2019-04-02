@@ -62,8 +62,7 @@ public class Object extends java.lang.Object implements IObject {
     @Override
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Object_avm_hashCode);
-        lazyLoad();
-        return this.hashCode;
+        return internalHashcode();
     }
 
     @Override
@@ -131,5 +130,10 @@ public class Object extends java.lang.Object implements IObject {
         // since this otherwise means that we have a "real" implementation which we pretend is not "real" so we can automatically
         // serialize our sub-class.  This should improve performance, though.
         serializer.beginSerializingAutomatically(this, firstRealImplementation);
+    }
+
+    public int internalHashcode(){
+        lazyLoad();
+        return this.hashCode;
     }
 }

@@ -263,32 +263,32 @@ public final class StrictMath extends Object {
 
     public static double avm_fma(double a, double b, double c) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_fma);
-        return Math.avm_fma(a, b, c);
+        return java.lang.StrictMath.fma(a, b, c);
     }
 
     public static float avm_fma(float a, float b, float c) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_fma_1);
-        return Math.avm_fma(a, b, c);
+        return java.lang.StrictMath.fma(a, b, c);
     }
 
     public static double avm_ulp(double d) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_ulp);
-        return Math.avm_ulp(d);
+        return java.lang.StrictMath.ulp(d);
     }
 
     public static float avm_ulp(float f) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_ulp_1);
-        return Math.avm_ulp(f);
+        return java.lang.StrictMath.ulp(f);
     }
 
     public static double avm_signum(double d) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_signum);
-        return Math.avm_signum(d);
+        return java.lang.StrictMath.signum(d);
     }
 
     public static float avm_signum(float f) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_signum_1);
-        return Math.avm_signum(f);
+        return java.lang.StrictMath.signum(f);
     }
 
     public static double avm_sinh(double x){
@@ -323,62 +323,62 @@ public final class StrictMath extends Object {
 
     public static double avm_copySign(double magnitude, double sign) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_copySign);
-        return Math.avm_copySign(magnitude, (Double.avm_isNaN(sign)?1.0d:sign));
+        return java.lang.StrictMath.copySign(magnitude, sign);
     }
 
     public static float avm_copySign(float magnitude, float sign) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_copySign_1);
-        return Math.avm_copySign(magnitude, (Float.avm_isNaN(sign)?1.0f:sign));
+        return java.lang.StrictMath.copySign(magnitude, sign);
     }
 
     public static int avm_getExponent(float f) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_getExponent);
-        return Math.avm_getExponent(f);
+        return java.lang.StrictMath.getExponent(f);
     }
 
     public static int avm_getExponent(double d) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_getExponent_1);
-        return Math.avm_getExponent(d);
+        return java.lang.StrictMath.getExponent(d);
     }
 
     public static double avm_nextAfter(double start, double direction) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_nextAfter);
-        return Math.avm_nextAfter(start, direction);
+        return java.lang.StrictMath.nextAfter(start, direction);
     }
 
     public static float avm_nextAfter(float start, double direction) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_nextAfter_1);
-        return Math.avm_nextAfter(start, direction);
+        return java.lang.StrictMath.nextAfter(start, direction);
     }
 
     public static double avm_nextUp(double d) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_nextUp);
-        return Math.avm_nextUp(d);
+        return java.lang.StrictMath.nextUp(d);
     }
 
     public static float avm_nextUp(float f) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_nextUp_1);
-        return Math.avm_nextUp(f);
+        return java.lang.StrictMath.nextUp(f);
     }
 
     public static double avm_nextDown(double d) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_nextDown);
-        return Math.avm_nextDown(d);
+        return java.lang.StrictMath.nextDown(d);
     }
 
     public static float avm_nextDown(float f) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_nextDown_1);
-        return Math.avm_nextDown(f);
+        return java.lang.StrictMath.nextDown(f);
     }
 
     public static double avm_scalb(double d, int scaleFactor) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_scalb);
-        return Math.avm_scalb(d, scaleFactor);
+        return java.lang.StrictMath.scalb(d, scaleFactor);
     }
 
     public static float avm_scalb(float f, int scaleFactor) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StrictMath_avm_scalb_1);
-        return Math.avm_scalb(f, scaleFactor);
+        return java.lang.StrictMath.scalb(f, scaleFactor);
     }
 
     //========================================================

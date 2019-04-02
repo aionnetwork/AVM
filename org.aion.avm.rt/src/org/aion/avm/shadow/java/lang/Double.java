@@ -58,7 +58,7 @@ public class Double extends Number implements Comparable<Double>{
         return internalToString(a);
     }
 
-    public static Double avm_valueOf(String a)
+    public static Double avm_valueOf(String a) throws NumberFormatException
     {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_valueOf);
         return new Double(internalParseDouble(a));
@@ -69,7 +69,7 @@ public class Double extends Number implements Comparable<Double>{
         return new Double(origValue);
     }
 
-    public static double avm_parseDouble(String a)
+    public static double avm_parseDouble(String a) throws NumberFormatException
     {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_parseDouble);
         return internalParseDouble(a);
