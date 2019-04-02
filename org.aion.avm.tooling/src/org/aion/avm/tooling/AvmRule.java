@@ -166,6 +166,13 @@ public final class AvmRule implements TestRule {
         return new Address(TestingKernel.PREMINED_ADDRESS.toBytes());
     }
 
+    /**
+     * @return Address of the account with huge initial (pre-mined) balance in the kernel
+     */
+    public Address getBigPreminedAccount() {
+        return new Address(TestingKernel.BIG_PREMINED_ADDRESS.toBytes());
+    }
+
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {
         Transaction tx = Transaction.call(org.aion.types.Address.wrap(from.unwrap()), org.aion.types.Address.wrap(dappAddress.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, transactionData, energyLimit, energyPrice);
         TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);

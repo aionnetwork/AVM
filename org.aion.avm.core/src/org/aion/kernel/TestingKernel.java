@@ -22,7 +22,10 @@ public class TestingKernel implements KernelInterface {
     public static final byte AVM_CONTRACT_PREFIX = 0x0b;
 
     public static final Address PREMINED_ADDRESS = Address.wrap(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
+    public static final Address BIG_PREMINED_ADDRESS = Address.wrap(Helpers.hexStringToBytes("a035f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
     public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(18);
+    public static final BigInteger PREMINED_BIG_AMOUNT = BigInteger.valueOf(465000000).multiply(PREMINED_AMOUNT);
+
 
     private final IDataStore dataStore;
 
@@ -33,6 +36,8 @@ public class TestingKernel implements KernelInterface {
         this.dataStore = new MemoryBackedDataStore();
         IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toBytes());
         premined.setBalance(PREMINED_AMOUNT);
+        premined = this.dataStore.createAccount(BIG_PREMINED_ADDRESS.toBytes());
+        premined.setBalance(PREMINED_BIG_AMOUNT);
     }
 
     /**

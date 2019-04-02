@@ -289,8 +289,7 @@ public class AvmImpl implements AvmInternal {
         // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
         Address sender = ctx.getSenderAddress();
-
-        BigInteger transactionCost = BigInteger.valueOf(ctx.getTransaction().getEnergyLimit() * ctx.getTransactionEnergyPrice()).add(ctx.getTransferValue());
+        BigInteger transactionCost = BigInteger.valueOf(ctx.getTransaction().getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getTransactionEnergyPrice())).add(ctx.getTransferValue());
         if (!parentKernel.accountBalanceIsAtLeast(sender, transactionCost)) {
             error = AvmTransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
         }
@@ -307,17 +306,17 @@ public class AvmImpl implements AvmInternal {
          */
 
         // Deduct the total energy cost
-        parentKernel.adjustBalance(sender, BigInteger.valueOf(ctx.getTransaction().getEnergyLimit() * ctx.getTransactionEnergyPrice()).negate());
+        parentKernel.adjustBalance(sender, BigInteger.valueOf(ctx.getTransaction().getEnergyLimit()).multiply(BigInteger.valueOf(ctx.getTransactionEnergyPrice()).negate()));
 
         // Run the common logic with the parent kernel as the top-level one.
         AvmTransactionResult result = commonInvoke(parentKernel, task, ctx, BillingRules.getBasicTransactionCost(ctx.getTransactionData()));
 
         // Refund energy for transaction
-        long energyRemaining = result.getEnergyRemaining() * ctx.getTransactionEnergyPrice();
-        parentKernel.refundAccount(sender, BigInteger.valueOf(energyRemaining));
+        BigInteger refund = BigInteger.valueOf(result.getEnergyRemaining()).multiply(BigInteger.valueOf(ctx.getTransactionEnergyPrice()));
+        parentKernel.refundAccount(sender, refund);
 
         // Transfer fees to miner
-        parentKernel.adjustBalance(ctx.getMinerAddress(), BigInteger.valueOf(result.getEnergyUsed() * ctx.getTransactionEnergyPrice()));
+        parentKernel.adjustBalance(ctx.getMinerAddress(), BigInteger.valueOf(result.getEnergyUsed()).multiply(BigInteger.valueOf(ctx.getTransactionEnergyPrice())));
 
         return result;
     }

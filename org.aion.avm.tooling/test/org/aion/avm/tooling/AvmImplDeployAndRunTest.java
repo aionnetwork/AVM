@@ -161,6 +161,38 @@ public class AvmImplDeployAndRunTest {
     }
 
     @Test
+    public void testBalanceTransferUpperBound() {
+        Address from = avmRule.getBigPreminedAccount();
+        assertEquals(TestingKernel.PREMINED_BIG_AMOUNT, avmRule.kernel.getBalance(org.aion.types.Address.wrap(from.unwrap())));
+
+        Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
+        long maxEnergyPrice = Long.MAX_VALUE;
+        TransactionResult result = avmRule.balanceTransfer(from, account1, BigInteger.valueOf(100_000L), 21_000L, maxEnergyPrice).getTransactionResult();
+
+        assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
+        BigInteger preminedAmountRemained = TestingKernel.PREMINED_BIG_AMOUNT.subtract(BigInteger.valueOf(100_000L)).subtract(BigInteger.valueOf(21_000L).multiply(BigInteger.valueOf(maxEnergyPrice)));
+        assertEquals(preminedAmountRemained , avmRule.kernel.getBalance(org.aion.types.Address.wrap(from.unwrap())));
+
+    }
+
+    @Test
+    public void testBalanceTransferUpperBoundRefund() {
+        Address from = avmRule.getBigPreminedAccount();
+        assertEquals(TestingKernel.PREMINED_BIG_AMOUNT, avmRule.kernel.getBalance(org.aion.types.Address.wrap(from.unwrap())));
+
+        Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
+        long maxEnergyPrice = Long.MAX_VALUE;
+        TransactionResult result = avmRule.balanceTransfer(from, account1, BigInteger.valueOf(100_000L), 2_000_000L, maxEnergyPrice).getTransactionResult();
+
+        assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        assertEquals(BigInteger.valueOf(100_000L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(account1.unwrap())));
+        BigInteger preminedAmountRemained = TestingKernel.PREMINED_BIG_AMOUNT.subtract(BigInteger.valueOf(100_000L)).subtract(BigInteger.valueOf(21_000L).multiply(BigInteger.valueOf(maxEnergyPrice)));
+        assertEquals(preminedAmountRemained , avmRule.kernel.getBalance(org.aion.types.Address.wrap(from.unwrap())));
+
+    }
+
+    @Test
     public void testCreateAndCallWithBalanceTransfer() {
         // deploy the Dapp with 100000 value transfer; create with balance transfer
         byte[] txData = avmRule.getDappBytes(DeployAndRunTarget.class, null);
