@@ -6,8 +6,4 @@ public class ABIException extends RuntimeException {
     public ABIException(String message) {
         super(message);
     }
-
-    public ABIException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

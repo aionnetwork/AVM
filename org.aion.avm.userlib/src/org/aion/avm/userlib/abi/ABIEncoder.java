@@ -1,9 +1,6 @@
 package org.aion.avm.userlib.abi;
 
-import java.util.List;
 import org.aion.avm.api.Address;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.abi.ABICodec.Tuple;
 
 /**
  * Utility class for AVM ABI encoding. This class contains static methods
@@ -18,73 +15,13 @@ public final class ABIEncoder {
     private static final int BYTE_MASK = 0xff;
 
     /**
-     * Encode one object of any type that Aion ABI allows; generate the byte array that contains the descriptor and the encoded data. Null data is encoded as null.
-     * @param data one object of any type that Aion ABI allows
-     * @return the byte array that contains the argument descriptor and the encoded data.
-     * @throws NullPointerException If data is null.
-     */
-    public static byte[] encodeOneObject(Object data) {
-        // temporary: will be changed to encoding NULL of the appropriate type
-        if (null == data) {
-            return null;
-        }
-        List<Tuple> list = new AionList<>();
-        list.add(new ABICodec.Tuple(data.getClass(), data));
-        return ABICodec.serializeList(list);
-    }
-
-    /**
-     * A utility method to encode the method name and method arguments to call with, according to Aion ABI format.
-     * <br>
-     * The arguments parameter can behave unexpectedly when receiving multi-dimensional primitive arrays and arrays of objects. In these cases, it is recommended to explicitly cast the arguments into an Object[].
-     * @param methodName the method name of the Dapp main class to call with
-     * @param arguments the arguments of the corresponding method of Dapp main class to call with
-     * @return the encoded byte array that contains the method descriptor, followed by the argument descriptor and encoded arguments, according the Aion ABI format.
-     * @throws NullPointerException If methodName or arguments are null (note that, under normal usage, arguments will be empty instead of null).
-     */
-    public static byte[] encodeMethodArguments(String methodName, Object... arguments) {
-        if ((null == methodName) || (null == arguments)) {
-            throw new NullPointerException();
-        }
-
-        List<ABICodec.Tuple> tuplesToEncode = new AionList<>();
-        tuplesToEncode.add(new ABICodec.Tuple(String.class, methodName));
-        return encodeArgumentsInList(tuplesToEncode, arguments);
-    }
-
-    /**
-     * A utility method to encode a list of arguments for deployment.
-     * Note that encoding no arguments will return an empty byte[].
-     *
-     * @param arguments the arguments in the order they should be decoded during deployment
-     * @return the encoded byte array that contains the encoded arguments, according the Aion ABI format.
-     * @throws NullPointerException If arguments are null (either the array or any specific elements).
-     */
-    public static byte[] encodeDeploymentArguments(Object... arguments) {
-        if (null == arguments) {
-            throw new NullPointerException();
-        }
-
-        List<ABICodec.Tuple> tuplesToEncode = new AionList<>();
-        return encodeArgumentsInList(tuplesToEncode, arguments);
-    }
-
-    private static byte[] encodeArgumentsInList(List<ABICodec.Tuple> tuplesToEncode, Object... arguments) {
-        for (Object arg : arguments) {
-            // We sniff the type, directly, since there are no nulls in this path.
-            tuplesToEncode.add(new ABICodec.Tuple(arg.getClass(), arg));
-        }
-        return ABICodec.serializeList(tuplesToEncode);
-    }
-
-    /**
      * Encode one byte; generate the byte array that contains the descriptor and the encoded data.
      * @param data one byte
      * @return the byte array that contains the argument descriptor and the encoded data.
      */
     public static byte[] encodeOneByte(byte data) {
         byte[] result = new byte[Byte.BYTES + 1];
-        result[0] = ABIToken.BYTE.identifier;
+        result[0] = ABIToken.BYTE;
         result[1] = data;
         return result;
     }
@@ -96,7 +33,7 @@ public final class ABIEncoder {
      */
     public static byte[] encodeOneBoolean(boolean data) {
         byte[] result = new byte[Byte.BYTES + 1];
-        result[0] = ABIToken.BOOLEAN.identifier;
+        result[0] = ABIToken.BOOLEAN;
         result[1] = (byte)(data ? 1 : 0);
         return result;
     }
@@ -108,7 +45,7 @@ public final class ABIEncoder {
      */
     public static byte[] encodeOneCharacter(char data) {
         byte[] result = new byte[Character.BYTES + 1];
-        result[0] = ABIToken.CHAR.identifier;
+        result[0] = ABIToken.CHAR;
         result[1]  = (byte) ((data >> 8) & BYTE_MASK);
         result[2] = (byte) (data & BYTE_MASK);
         return result;
@@ -121,7 +58,7 @@ public final class ABIEncoder {
      */
     public static byte[] encodeOneShort(short data) {
         byte[] result = new byte[Short.BYTES + 1];
-        result[0] = ABIToken.SHORT.identifier;
+        result[0] = ABIToken.SHORT;
         result[1]  = (byte) ((data >> 8) & BYTE_MASK);
         result[2] = (byte) (data & BYTE_MASK);
         return result;
@@ -134,7 +71,7 @@ public final class ABIEncoder {
      */
     public static byte[] encodeOneInteger(int data) {
         byte[] result = new byte[Integer.BYTES + 1];
-        result[0] = ABIToken.INT.identifier;
+        result[0] = ABIToken.INT;
         result[1]  = (byte) ((data >> 24) & BYTE_MASK);
         result[2]  = (byte) ((data >> 16) & BYTE_MASK);
         result[3]  = (byte) ((data >> 8) & BYTE_MASK);
@@ -149,7 +86,7 @@ public final class ABIEncoder {
      */
     public static byte[] encodeOneLong(long data) {
         byte[] result = new byte[Long.BYTES + 1];
-        result[0] = ABIToken.LONG.identifier;
+        result[0] = ABIToken.LONG;
         result[1]  = (byte) ((data >> 56) & BYTE_MASK);
         result[2]  = (byte) ((data >> 48) & BYTE_MASK);
         result[3]  = (byte) ((data >> 40) & BYTE_MASK);
@@ -169,7 +106,7 @@ public final class ABIEncoder {
     public static byte[] encodeOneFloat(float data) {
         byte[] result = new byte[Float.BYTES + 1];
         int dataBits = Float.floatToRawIntBits(data);
-        result[0] = ABIToken.FLOAT.identifier;
+        result[0] = ABIToken.FLOAT;
         result[1]  = (byte) ((dataBits >> 24) & BYTE_MASK);
         result[2]  = (byte) ((dataBits >> 16) & BYTE_MASK);
         result[3]  = (byte) ((dataBits >> 8) & BYTE_MASK);
@@ -185,7 +122,7 @@ public final class ABIEncoder {
     public static byte[] encodeOneDouble(double data) {
         byte[] result = new byte[Double.BYTES + 1];
         long dataBits = Double.doubleToRawLongBits(data);
-        result[0] = ABIToken.DOUBLE.identifier;
+        result[0] = ABIToken.DOUBLE;
         result[1]  = (byte) ((dataBits >> 56) & BYTE_MASK);
         result[2]  = (byte) ((dataBits >> 48) & BYTE_MASK);
         result[3]  = (byte) ((dataBits >> 40) & BYTE_MASK);
@@ -207,14 +144,14 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[2];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.A_BYTE.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.A_BYTE;
         } else {
             if (data.length > Short.MAX_VALUE) {
                 throw new ABIException("Array length must fit in 2 bytes");
             }
             result = new byte[data.length + Short.BYTES + 1];
-            result[0] = ABIToken.A_BYTE.identifier;
+            result[0] = ABIToken.A_BYTE;
             result[1] = (byte) ((data.length >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length & BYTE_MASK);
             System.arraycopy(data, 0, result, 3, data.length);
@@ -232,14 +169,14 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[2];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.A_BOOLEAN.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.A_BOOLEAN;
         } else {
             if (data.length > Short.MAX_VALUE) {
                 throw new ABIException("Array length must fit in 2 bytes");
             }
             result = new byte[data.length + Short.BYTES + 1];
-            result[0] = ABIToken.A_BOOLEAN.identifier;
+            result[0] = ABIToken.A_BOOLEAN;
             result[1] = (byte) ((data.length >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length & BYTE_MASK);
             for (int i = 0, j = 3; i < data.length; i++, j++) {
@@ -259,14 +196,14 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[2];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.A_CHAR.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.A_CHAR;
         } else {
             if (data.length > Short.MAX_VALUE) {
                 throw new ABIException("Array length must fit in 2 bytes");
             }
             result = new byte[data.length * Character.BYTES + Short.BYTES + 1];
-            result[0] = ABIToken.A_CHAR.identifier;
+            result[0] = ABIToken.A_CHAR;
             result[1] = (byte) ((data.length >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length & BYTE_MASK);
             for (int i = 0, j = 3; i < data.length; i++, j+=Character.BYTES) {
@@ -287,14 +224,14 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[2];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.A_SHORT.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.A_SHORT;
         } else {
             if (data.length > Short.MAX_VALUE) {
                 throw new ABIException("Array length must fit in 2 bytes");
             }
             result = new byte[data.length * Short.BYTES + Short.BYTES + 1];
-            result[0] = ABIToken.A_SHORT.identifier;
+            result[0] = ABIToken.A_SHORT;
             result[1] = (byte) ((data.length >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length & BYTE_MASK);
             for (int i = 0, j = 3; i < data.length; i++, j+=Short.BYTES) {
@@ -315,14 +252,14 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[2];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.A_INT.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.A_INT;
         } else {
             if (data.length > Short.MAX_VALUE) {
                 throw new ABIException("Array length must fit in 2 bytes");
             }
             result = new byte[data.length * Integer.BYTES + Short.BYTES + 1];
-            result[0] = ABIToken.A_INT.identifier;
+            result[0] = ABIToken.A_INT;
             result[1] = (byte) ((data.length >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length & BYTE_MASK);
             for (int i = 0, j = 3; i < data.length; i++, j+=Integer.BYTES) {
@@ -345,14 +282,14 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[2];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.A_LONG.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.A_LONG;
         } else {
             if (data.length > Short.MAX_VALUE) {
                 throw new ABIException("Array length must fit in 2 bytes");
             }
             result = new byte[data.length * Long.BYTES + Short.BYTES + 1];
-            result[0] = ABIToken.A_LONG.identifier;
+            result[0] = ABIToken.A_LONG;
             result[1] = (byte) ((data.length >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length & BYTE_MASK);
             for (int i = 0, j = 3; i < data.length; i++, j+=Long.BYTES) {
@@ -379,14 +316,14 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[2];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.A_FLOAT.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.A_FLOAT;
         } else {
             if (data.length > Short.MAX_VALUE) {
                 throw new ABIException("Array length must fit in 2 bytes");
             }
             result = new byte[data.length * Float.BYTES + Short.BYTES + 1];
-            result[0] = ABIToken.A_FLOAT.identifier;
+            result[0] = ABIToken.A_FLOAT;
             result[1] = (byte) ((data.length >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length & BYTE_MASK);
             for (int i = 0, j = 3; i < data.length; i++, j+=Float.BYTES) {
@@ -410,14 +347,14 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[2];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.A_DOUBLE.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.A_DOUBLE;
         } else {
             if (data.length > Short.MAX_VALUE) {
                 throw new ABIException("Array length must fit in 2 bytes");
             }
             result = new byte[data.length * Double.BYTES + Short.BYTES + 1];
-            result[0] = ABIToken.A_DOUBLE.identifier;
+            result[0] = ABIToken.A_DOUBLE;
             result[1] = (byte) ((data.length >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length & BYTE_MASK);
             for (int i = 0, j = 3; i < data.length; i++, j+=Double.BYTES) {
@@ -445,12 +382,12 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[2];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.STRING.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.STRING;
         } else {
             byte[] stringBytes = data.getBytes();
             result = new byte[stringBytes.length + Short.BYTES + 1];
-            result[0] = ABIToken.STRING.identifier;
+            result[0] = ABIToken.STRING;
             result[1] = (byte) ((data.length() >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length() & BYTE_MASK);
             System.arraycopy(stringBytes, 0, result, 3, stringBytes.length);
@@ -468,15 +405,15 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[2];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ADDRESS.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ADDRESS;
         } else {
             byte[] addressBytes = data.unwrap();
             if(Address.LENGTH != addressBytes.length) {
                 throw new ABIException("Address was of unexpected length");
             }
             result = new byte[Address.LENGTH + 1];
-            result[0] = ABIToken.ADDRESS.identifier;
+            result[0] = ABIToken.ADDRESS;
             System.arraycopy(addressBytes, 0, result, 1, addressBytes.length);
         }
         return result;
@@ -492,9 +429,9 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[3];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ARRAY.identifier;
-            result[2] = ABIToken.A_BYTE.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ARRAY;
+            result[2] = ABIToken.A_BYTE;
         } else {
             int length = Short.BYTES + 2;
             byte[][] encodedArrays = new byte[data.length][];
@@ -502,7 +439,7 @@ public final class ABIEncoder {
                 encodedArrays[i] = encodeOneByteArray(data[i]);
                 length += encodedArrays[i].length;
             }
-            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_BYTE.identifier);
+            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_BYTE);
         }
         return result;
     }
@@ -517,9 +454,9 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[3];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ARRAY.identifier;
-            result[2] = ABIToken.A_BOOLEAN.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ARRAY;
+            result[2] = ABIToken.A_BOOLEAN;
         } else {
             int length = Short.BYTES + 2;
             byte[][] encodedArrays = new byte[data.length][];
@@ -527,7 +464,7 @@ public final class ABIEncoder {
                 encodedArrays[i] = encodeOneBooleanArray(data[i]);
                 length += encodedArrays[i].length;
             }
-            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_BOOLEAN.identifier);
+            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_BOOLEAN);
         }
         return result;
     }
@@ -542,9 +479,9 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[3];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ARRAY.identifier;
-            result[2] = ABIToken.A_CHAR.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ARRAY;
+            result[2] = ABIToken.A_CHAR;
         } else {
             int length = Short.BYTES + 2;
             byte[][] encodedArrays = new byte[data.length][];
@@ -552,7 +489,7 @@ public final class ABIEncoder {
                 encodedArrays[i] = encodeOneCharacterArray(data[i]);
                 length += encodedArrays[i].length;
             }
-            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_CHAR.identifier);
+            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_CHAR);
         }
         return result;
     }
@@ -567,9 +504,9 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[3];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ARRAY.identifier;
-            result[2] = ABIToken.A_SHORT.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ARRAY;
+            result[2] = ABIToken.A_SHORT;
         } else {
             int length = Short.BYTES + 2;
             byte[][] encodedArrays = new byte[data.length][];
@@ -577,7 +514,7 @@ public final class ABIEncoder {
                 encodedArrays[i] = encodeOneShortArray(data[i]);
                 length += encodedArrays[i].length;
             }
-            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_SHORT.identifier);
+            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_SHORT);
         }
         return result;
     }
@@ -592,9 +529,9 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[3];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ARRAY.identifier;
-            result[2] = ABIToken.A_INT.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ARRAY;
+            result[2] = ABIToken.A_INT;
         } else {
             int length = Short.BYTES + 2;
             byte[][] encodedArrays = new byte[data.length][];
@@ -602,7 +539,7 @@ public final class ABIEncoder {
                 encodedArrays[i] = encodeOneIntegerArray(data[i]);
                 length += encodedArrays[i].length;
             }
-            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_INT.identifier);
+            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_INT);
         }
         return result;
     }
@@ -617,9 +554,9 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[3];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ARRAY.identifier;
-            result[2] = ABIToken.A_FLOAT.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ARRAY;
+            result[2] = ABIToken.A_FLOAT;
         } else {
             int length = Short.BYTES + 2;
             byte[][] encodedArrays = new byte[data.length][];
@@ -627,7 +564,7 @@ public final class ABIEncoder {
                 encodedArrays[i] = encodeOneFloatArray(data[i]);
                 length += encodedArrays[i].length;
             }
-            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_FLOAT.identifier);
+            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_FLOAT);
         }
         return result;
     }
@@ -642,9 +579,9 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[3];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ARRAY.identifier;
-            result[2] = ABIToken.A_LONG.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ARRAY;
+            result[2] = ABIToken.A_LONG;
         } else {
             int length = Short.BYTES + 2;
             byte[][] encodedArrays = new byte[data.length][];
@@ -652,7 +589,7 @@ public final class ABIEncoder {
                 encodedArrays[i] = encodeOneLongArray(data[i]);
                 length += encodedArrays[i].length;
             }
-            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_LONG.identifier);
+            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_LONG);
         }
         return result;
     }
@@ -667,9 +604,9 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[3];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ARRAY.identifier;
-            result[2] = ABIToken.A_DOUBLE.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ARRAY;
+            result[2] = ABIToken.A_DOUBLE;
         } else {
             int length = Short.BYTES + 2;
             byte[][] encodedArrays = new byte[data.length][];
@@ -677,7 +614,7 @@ public final class ABIEncoder {
                 encodedArrays[i] = encodeOneDoubleArray(data[i]);
                 length += encodedArrays[i].length;
             }
-            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_DOUBLE.identifier);
+            result = flatten2DEncoding(encodedArrays, length, ABIToken.A_DOUBLE);
         }
         return result;
     }
@@ -692,9 +629,9 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[3];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ARRAY.identifier;
-            result[2] = ABIToken.STRING.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ARRAY;
+            result[2] = ABIToken.STRING;
         } else {
             int length = Short.BYTES + 2;
             byte[][] encodedArrays = new byte[data.length][];
@@ -702,7 +639,7 @@ public final class ABIEncoder {
                 encodedArrays[i] = encodeOneString(data[i]);
                 length += encodedArrays[i].length;
             }
-            result = flatten2DEncoding(encodedArrays, length, ABIToken.STRING.identifier);
+            result = flatten2DEncoding(encodedArrays, length, ABIToken.STRING);
         }
         return result;
     }
@@ -717,9 +654,9 @@ public final class ABIEncoder {
         byte[] result;
         if (null == data) {
             result = new byte[3];
-            result[0] = ABIToken.NULL.identifier;
-            result[1] = ABIToken.ARRAY.identifier;
-            result[2] = ABIToken.ADDRESS.identifier;
+            result[0] = ABIToken.NULL;
+            result[1] = ABIToken.ARRAY;
+            result[2] = ABIToken.ADDRESS;
         } else {
             int length = Short.BYTES + 2;
             byte[][] encodedArrays = new byte[data.length][];
@@ -727,14 +664,14 @@ public final class ABIEncoder {
                 encodedArrays[i] = encodeOneAddress(data[i]);
                 length += encodedArrays[i].length;
             }
-            result = flatten2DEncoding(encodedArrays, length, ABIToken.ADDRESS.identifier);
+            result = flatten2DEncoding(encodedArrays, length, ABIToken.ADDRESS);
         }
         return result;
     }
 
     private static byte[] flatten2DEncoding(byte[][] encodedArrays, int lengthOfEncodedResult, byte identifier) {
         byte[] result = new byte[lengthOfEncodedResult];
-        result[0] = ABIToken.ARRAY.identifier;
+        result[0] = ABIToken.ARRAY;
         result[1] = identifier;
         result[2] = (byte) ((encodedArrays.length >> 8) & BYTE_MASK);
         result[3] = (byte) (encodedArrays.length & BYTE_MASK);

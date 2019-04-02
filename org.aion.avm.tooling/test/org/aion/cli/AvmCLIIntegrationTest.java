@@ -67,7 +67,8 @@ public class AvmCLIIntegrationTest {
 
         // Now, check the storage.
         // (note that this NPE is just something in an instance field, as an example of deep data).
-        TestEnvironment exploreEnv = new TestEnvironment("NullPointerException(137):");
+
+        TestEnvironment exploreEnv = new TestEnvironment("NullPointerException(85):");
         AvmCLI.testingMain(exploreEnv, new String[] {"explore", dappAddress});
         Assert.assertTrue(exploreEnv.didScrapeString);
     }

@@ -79,66 +79,49 @@ public class ABIUtil {
             return null;
         } else {
             ABIDecoder decoder = new ABIDecoder(data);
-            Class clazz = decodeClass(data);
-
-            if (clazz == Byte.class) {
+            byte identifier = data[0];
+            if(identifier == ABIToken.BYTE) {
                 return decoder.decodeOneByte();
-            } else if (clazz == Boolean.class) {
+            } else if (identifier == ABIToken.BOOLEAN) {
                 return decoder.decodeOneBoolean();
-            } else if (clazz == Character.class) {
+            } else if (identifier == ABIToken.CHAR) {
                 return decoder.decodeOneCharacter();
-            } else if (clazz == Short.class) {
+            } else if (identifier == ABIToken.SHORT) {
                 return decoder.decodeOneShort();
-            } else if (clazz == Integer.class) {
+            } else if (identifier == ABIToken.INT) {
                 return decoder.decodeOneInteger();
-            } else if (clazz == Long.class) {
+            } else if (identifier == ABIToken.LONG) {
                 return decoder.decodeOneLong();
-            } else if (clazz == Float.class) {
+            } else if (identifier == ABIToken.FLOAT) {
                 return decoder.decodeOneFloat();
-            } else if (clazz == Double.class) {
+            } else if (identifier == ABIToken.DOUBLE) {
                 return decoder.decodeOneDouble();
-            } else if (clazz == byte[].class) {
+            } else if (identifier == ABIToken.A_BYTE) {
                 return decoder.decodeOneByteArray();
-            } else if (clazz == boolean[].class) {
+            } else if (identifier == ABIToken.A_BOOLEAN) {
                 return decoder.decodeOneBooleanArray();
-            } else if (clazz == char[].class) {
+            } else if (identifier == ABIToken.A_CHAR) {
                 return decoder.decodeOneCharacterArray();
-            } else if (clazz == short[].class) {
+            } else if (identifier == ABIToken.A_SHORT) {
                 return decoder.decodeOneShortArray();
-            } else if (clazz == int[].class) {
+            } else if (identifier == ABIToken.A_INT) {
                 return decoder.decodeOneIntegerArray();
-            } else if (clazz == long[].class) {
+            } else if (identifier == ABIToken.A_LONG) {
                 return decoder.decodeOneLongArray();
-            } else if (clazz == float[].class) {
+            } else if (identifier == ABIToken.A_FLOAT) {
                 return decoder.decodeOneFloatArray();
-            } else if (clazz == double[].class) {
+            } else if (identifier == ABIToken.A_DOUBLE) {
                 return decoder.decodeOneDoubleArray();
-            } else if (clazz == String.class) {
+            } else if (identifier == ABIToken.STRING) {
                 return decoder.decodeOneString();
-            } else if (clazz == org.aion.avm.api.Address.class) {
+            } else if (identifier == ABIToken.ADDRESS) {
                 return decoder.decodeOneAddress();
-            } else if (clazz == byte[][].class) {
-                return decoder.decodeOne2DByteArray();
-            } else if (clazz == boolean[][].class) {
-                return decoder.decodeOne2DBooleanArray();
-            } else if (clazz == char[][].class) {
-                return decoder.decodeOne2DCharacterArray();
-            } else if (clazz == short[][].class) {
-                return decoder.decodeOne2DShortArray();
-            } else if (clazz == int[][].class) {
-                return decoder.decodeOne2DIntegerArray();
-            } else if (clazz == long[][].class) {
-                return decoder.decodeOne2DLongArray();
-            } else if (clazz == float[][].class) {
-                return decoder.decodeOne2DFloatArray();
-            } else if (clazz == double[][].class) {
-                return decoder.decodeOne2DDoubleArray();
-            } else if (clazz == String[].class) {
-                return decoder.decodeOneStringArray();
-            } else if (clazz == org.aion.avm.api.Address[].class) {
-                return decoder.decodeOneAddressArray();
-            } else {
+            } else if (identifier == ABIToken.ARRAY) {
+                return decodeAnArray(data);
+            } else if (identifier == ABIToken.NULL) {
                 return null;
+            } else {
+                throw new ABIException("Unsupported ABI type");
             }
         }
     }
@@ -213,39 +196,34 @@ public class ABIUtil {
         }
     }
 
-    private static Class decodeClass(byte[] data) {
-        ABIToken token = ABIToken.getTokenFromIdentifier(data[0]);
-        if (null == token) {
-            throw new ABIException("Unsupported ABI type");
+    private static Object decodeAnArray(byte[] data) {
+        if (data.length < 4) {
+            throw new ABIException("Invalid array encoding");
+        }
+        byte elementIdentifier = data[1];
+        ABIDecoder decoder = new ABIDecoder(data);
+        if (elementIdentifier == ABIToken.A_BYTE) {
+            return decoder.decodeOne2DByteArray();
+        } else if (elementIdentifier == ABIToken.A_BOOLEAN) {
+            return decoder.decodeOne2DBooleanArray();
+        } else if (elementIdentifier == ABIToken.A_CHAR) {
+            return decoder.decodeOne2DCharacterArray();
+        } else if (elementIdentifier == ABIToken.A_SHORT) {
+            return decoder.decodeOne2DShortArray();
+        } else if (elementIdentifier == ABIToken.A_INT) {
+            return decoder.decodeOne2DIntegerArray();
+        } else if (elementIdentifier == ABIToken.A_LONG) {
+            return decoder.decodeOne2DLongArray();
+        } else if (elementIdentifier == ABIToken.A_FLOAT) {
+            return decoder.decodeOne2DFloatArray();
+        } else if (elementIdentifier == ABIToken.A_DOUBLE) {
+            return decoder.decodeOne2DDoubleArray();
+        } else if (elementIdentifier == ABIToken.STRING) {
+            return decoder.decodeOneStringArray();
+        } else if (elementIdentifier == ABIToken.ADDRESS) {
+            return decoder.decodeOneAddressArray();
         } else {
-            if (ABIToken.ARRAY != token) {
-                return token.type;
-            } else {
-                Class elementType = ABIToken.getTokenFromIdentifier(data[1]).type;
-                if (elementType == byte[].class) {
-                    return byte[][].class;
-                } else if (elementType == boolean[].class) {
-                    return boolean[][].class;
-                } else if (elementType == char[].class) {
-                    return char[][].class;
-                } else if (elementType == short[].class) {
-                    return short[][].class;
-                } else if (elementType == int[].class) {
-                    return int[][].class;
-                } else if (elementType == long[].class) {
-                    return long[][].class;
-                } else if (elementType == float[].class) {
-                    return float[][].class;
-                } else if (elementType == double[].class) {
-                    return double[][].class;
-                } else if (elementType == String.class) {
-                    return String[].class;
-                } else if (elementType == org.aion.avm.api.Address.class) {
-                    return org.aion.avm.api.Address[].class;
-                } else {
-                    return null;
-                }
-            }
+            throw new ABIException("Invalid array encoding");
         }
     }
 }

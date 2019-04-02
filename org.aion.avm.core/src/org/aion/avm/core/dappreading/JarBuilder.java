@@ -15,7 +15,6 @@ import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
-import org.aion.avm.userlib.abi.ABICodec;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
@@ -30,7 +29,7 @@ import org.aion.avm.userlib.abi.ABIToken;
  */
 public class JarBuilder {
 
-    private static Class[] userlibClasses = new Class[] {ABICodec.class, ABIDecoder.class, ABIEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class};
+    private static Class[] userlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class};
 
     /**
      * Creates the in-memory representation of a JAR with the given main class, other classes, and all classes in the Userlib.

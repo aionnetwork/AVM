@@ -53,14 +53,14 @@ public class HashCodeIntegrationTest {
         AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
-        byte[] expStorageRootHash = Helpers.hexStringToBytes("000000780e0e006b0c450e25740b272f41e3cf2c431120420e556e505113001d");
+        byte[] expStorageRootHash = Helpers.hexStringToBytes("000000030001006e56741711305625132b3b78387a78210956552034541b050d");
         Assert.assertArrayEquals(expStorageRootHash, createResult.getStorageRootHash());
 
         Address contractAddr = new Address(createResult.getReturnData());
         // Store an object.
         int systemHash = callStatic(block, contractAddr, "persistNewObject");
         // We know that this is the current value, but that may change in the future.
-        Assert.assertEquals(115, systemHash);
+        Assert.assertEquals(62, systemHash);
         // Fetch it and verify the hashCode is loaded.
         int loadSystemHash = callStatic(block, contractAddr, "readPersistentHashCode");
         Assert.assertEquals(systemHash, loadSystemHash);
@@ -74,7 +74,7 @@ public class HashCodeIntegrationTest {
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.
-        byte[] expStorageRootHash = Helpers.hexStringToBytes("0000000b0e0e006b0c450e25740b272f41e3cf2c431120420e556e505113006e");
+        byte[] expStorageRootHash = Helpers.hexStringToBytes("0000003d0001006e56741711305625132b3b78387a78210956552034541b0533");
         Assert.assertArrayEquals(expStorageRootHash, result.getStorageRootHash());
         ABIDecoder decoder = new ABIDecoder(result.getReturnData());
         return decoder.decodeOneInteger();

@@ -1,8 +1,6 @@
 package org.aion.avm.userlib.abi;
 
-import java.util.List;
 import org.aion.avm.api.Address;
-import org.aion.avm.userlib.abi.ABICodec.Tuple;
 
 /**
  * Utility class for AVM ABI decoding. This class contains static methods
@@ -24,37 +22,6 @@ public class ABIDecoder {
     private byte[] data;
     private int position;
 
-    private static List<ABICodec.Tuple> checkAndParse(byte[] txData) {
-        if (null == txData) {
-            throw new NullPointerException();
-        }
-        if (txData.length == 0) {
-            return null;
-        }
-        List<ABICodec.Tuple> parsed = ABICodec.parseEverything(txData);
-
-        if (parsed.size() < 1) {
-            throw new ABIException("Decoded as " + parsed.size() + " elements");
-        }
-        if (String.class != parsed.get(0).type) {
-            throw new ABIException("First parsed value not String (method name)");
-        }
-        return parsed;
-    }
-
-    /**
-     * Decode the transaction data and return the method name.
-     * @param txData the transaction data that has the encoded method name to call with.
-     * @return the decoded method name.
-     */
-    public static String decodeMethodName(byte[] txData) {
-        List<ABICodec.Tuple> parsed = checkAndParse(txData);
-        if(null == parsed) {
-            return null;
-        }
-        return (String) parsed.get(0).value;
-    }
-
     /**
      * Decode a method name from the data field. If the decoding fails, we assume no methodName was supplied,
      * such as the balance transfer case.
@@ -68,66 +35,6 @@ public class ABIDecoder {
             methodName = decodeOneString();
         }
         return methodName;
-    }
-
-    /**
-     * Decode the transaction data and return the argument list that is encoded in it.
-     * @param txData the transaction data that has the encoded arguments descriptor and arguments.
-     * @return an object array that contains all of the arguments.
-     */
-    public static Object[] decodeArguments(byte[] txData) {
-        List<ABICodec.Tuple> parsed = checkAndParse(txData);
-        if(null == parsed) {
-            return null;
-        }
-        Object[] argValues = new Object[parsed.size() - 1];
-        for (int i = 1; i < parsed.size(); ++i) {
-            argValues[i - 1] = parsed.get(i).value;
-        }
-        return argValues;
-    }
-
-    /**
-     * Decode the transaction data that has one object encoded in it.
-     * @param txData the transaction data that has one object encoded in it (with the descriptor).
-     * @return the decoded object.
-     */
-    public static Object decodeOneObject(byte[] txData) {
-        if (null == txData) {
-            throw new NullPointerException();
-        }
-        // We will handle an empty payload as a null.
-        Object result = null;
-        if (txData.length > 0) {
-            List<Tuple> parsed = ABICodec.parseEverything(txData);
-            if(1 != parsed.size()) {
-                throw new ABIException("Expected exactly one object from this decode call");
-            }
-            result = parsed.get(0).value;
-        }
-        return result;
-    }
-
-    /**
-     * Decode the transaction data, returning the entire list of deployment arguments it defines.
-     *
-     * @param txData The transaction data to decode as the deployment arguments, according to the ABI.
-     * @return an object array that contains all of the deployment arguments.
-     */
-    public static Object[] decodeDeploymentArguments(byte[] txData) {
-        if (null == txData) {
-            throw new NullPointerException();
-        }
-
-        List<ABICodec.Tuple> parsed;
-
-        parsed = ABICodec.parseEverything(txData);
-
-        Object[] argValues = new Object[parsed.size()];
-        for (int i = 0; i < parsed.size(); ++i) {
-            argValues[i] = parsed.get(i).value;
-        }
-        return argValues;
     }
 
     private short getShort() {
@@ -183,7 +90,7 @@ public class ABIDecoder {
         if (data.length - position < Byte.BYTES + 1) {
             throw new ABIException("Data field does not have enough bytes left to read a byte.");
         }
-        if (data[position++] != ABIToken.BYTE.identifier) {
+        if (data[position++] != ABIToken.BYTE) {
             throw new ABIException("Next element in data field is not a byte.");
         }
         return data[position++];
@@ -199,7 +106,7 @@ public class ABIDecoder {
         if (data.length - position < Byte.BYTES + 1) {
             throw new ABIException("Data field does not have enough bytes left to read a boolean.");
         }
-        if (data[position++] != ABIToken.BOOLEAN.identifier) {
+        if (data[position++] != ABIToken.BOOLEAN) {
             throw new ABIException("Next element in data field is not a boolean.");
         }
         return data[position++] != 0;
@@ -215,7 +122,7 @@ public class ABIDecoder {
         if (data.length - position < Character.BYTES + 1) {
             throw new ABIException("Data field does not have enough bytes left to read a short.");
         }
-        if (data[position++] != ABIToken.CHAR.identifier) {
+        if (data[position++] != ABIToken.CHAR) {
             throw new ABIException("Next element in data field is not a short.");
         }
         return (char) getShort();
@@ -231,7 +138,7 @@ public class ABIDecoder {
         if (data.length - position < Short.BYTES + 1) {
             throw new ABIException("Data field does not have enough bytes left to read a short.");
         }
-        if (data[position++] != ABIToken.SHORT.identifier) {
+        if (data[position++] != ABIToken.SHORT) {
             throw new ABIException("Next element in data field is not a short.");
         }
         return getShort();
@@ -247,7 +154,7 @@ public class ABIDecoder {
         if (data.length - position < Integer.BYTES + 1) {
             throw new ABIException("Data field does not have enough bytes left to read an integer.");
         }
-        if (data[position++] != ABIToken.INT.identifier) {
+        if (data[position++] != ABIToken.INT) {
             throw new ABIException("Next element in data field is not an integer.");
         }
         return getInt();
@@ -263,7 +170,7 @@ public class ABIDecoder {
         if (data.length - position < Long.BYTES + 1) {
             throw new ABIException("Data field does not have enough bytes left to read a long.");
         }
-        if (data[position++] != ABIToken.LONG.identifier) {
+        if (data[position++] != ABIToken.LONG) {
             throw new ABIException("Next element in data field is not a long.");
         }
         return getLong();
@@ -279,7 +186,7 @@ public class ABIDecoder {
         if (data.length - position < Float.BYTES + 1) {
             throw new ABIException("Data field does not have enough bytes left to read a float.");
         }
-        if (data[position++] != ABIToken.FLOAT.identifier) {
+        if (data[position++] != ABIToken.FLOAT) {
             throw new ABIException("Next element in data field is not a float.");
         }
         return Float.intBitsToFloat(getInt());
@@ -295,7 +202,7 @@ public class ABIDecoder {
         if (data.length - position < Double.BYTES + 1) {
             throw new ABIException("Data field does not have enough bytes left to read a double.");
         }
-        if (data[position++] != ABIToken.DOUBLE.identifier) {
+        if (data[position++] != ABIToken.DOUBLE) {
             throw new ABIException("Next element in data field is not a double.");
         }
         return Double.longBitsToDouble(getLong());
@@ -310,10 +217,10 @@ public class ABIDecoder {
         checkMinLengthForObject();
 
         byte[] byteArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.A_BYTE.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.A_BYTE) {
             position  += 2;
         } else {
-            if (data[position++] != ABIToken.A_BYTE.identifier) {
+            if (data[position++] != ABIToken.A_BYTE) {
                 throw new ABIException("Next element in data field is not a byte array.");
             }
 
@@ -335,10 +242,10 @@ public class ABIDecoder {
         checkMinLengthForObject();
 
         boolean[] booleanArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.A_BOOLEAN.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.A_BOOLEAN) {
             position  += 2;
         } else {
-            if (data[position++] != ABIToken.A_BOOLEAN.identifier) {
+            if (data[position++] != ABIToken.A_BOOLEAN) {
                 throw new ABIException("Next element in data field is not a byte array.");
             }
 
@@ -361,10 +268,10 @@ public class ABIDecoder {
         checkMinLengthForObject();
 
         char[] characterArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.A_CHAR.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.A_CHAR) {
             position  += 2;
         } else {
-            if (data[position++] != ABIToken.A_CHAR.identifier) {
+            if (data[position++] != ABIToken.A_CHAR) {
                 throw new ABIException("Next element in data field is not a character array.");
             }
 
@@ -387,10 +294,10 @@ public class ABIDecoder {
         checkMinLengthForObject();
 
         short[] shortArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.A_SHORT.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.A_SHORT) {
             position  += 2;
         } else {
-            if (data[position++] != ABIToken.A_SHORT.identifier) {
+            if (data[position++] != ABIToken.A_SHORT) {
                 throw new ABIException("Next element in data field is not a short array.");
             }
 
@@ -413,10 +320,10 @@ public class ABIDecoder {
         checkMinLengthForObject();
 
         int[] intArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.A_INT.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.A_INT) {
             position  += 2;
         } else {
-            if (data[position++] != ABIToken.A_INT.identifier) {
+            if (data[position++] != ABIToken.A_INT) {
                 throw new ABIException("Next element in data field is not an integer array.");
             }
 
@@ -439,10 +346,10 @@ public class ABIDecoder {
         checkMinLengthForObject();
 
         long[] longArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.A_LONG.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.A_LONG) {
             position  += 2;
         } else {
-            if (data[position++] != ABIToken.A_LONG.identifier) {
+            if (data[position++] != ABIToken.A_LONG) {
                 throw new ABIException("Next element in data field is not a long array.");
             }
 
@@ -465,10 +372,10 @@ public class ABIDecoder {
         checkMinLengthForObject();
 
         float[] floatArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.A_FLOAT.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.A_FLOAT) {
             position  += 2;
         } else {
-            if (data[position++] != ABIToken.A_FLOAT.identifier) {
+            if (data[position++] != ABIToken.A_FLOAT) {
                 throw new ABIException("Next element in data field is not a float array.");
             }
 
@@ -491,10 +398,10 @@ public class ABIDecoder {
         checkMinLengthForObject();
 
         double[] doubleArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.A_DOUBLE.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.A_DOUBLE) {
             position  += 2;
         } else {
-            if (data[position++] != ABIToken.A_DOUBLE.identifier) {
+            if (data[position++] != ABIToken.A_DOUBLE) {
                 throw new ABIException("Next element in data field is not a double array.");
             }
 
@@ -518,10 +425,10 @@ public class ABIDecoder {
         checkMinLengthForObject();
 
         String string = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.STRING.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.STRING) {
             position  += 2;
         } else {
-            if (data[position++] != ABIToken.STRING.identifier) {
+            if (data[position++] != ABIToken.STRING) {
                 throw new ABIException("Next element in data field is not a string.");
             }
             if (data.length - position < Short.BYTES) {
@@ -552,11 +459,11 @@ public class ABIDecoder {
         checkMinLengthForObject();
 
         Address address;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ADDRESS.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ADDRESS) {
             position  += 2;
             address = null;
         } else {
-            if (data[position++] != ABIToken.ADDRESS.identifier) {
+            if (data[position++] != ABIToken.ADDRESS) {
                 throw new ABIException("Next element in data field is not an address.");
             }
 
@@ -582,10 +489,10 @@ public class ABIDecoder {
         checkMinLengthForObjectArray();
 
         byte[][] byteArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ARRAY.identifier && data[position + 2] == ABIToken.A_BYTE.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ARRAY && data[position + 2] == ABIToken.A_BYTE) {
             position  += 3;
         } else {
-            if (data[position++] != ABIToken.ARRAY.identifier || data[position++] != ABIToken.A_BYTE.identifier) {
+            if (data[position++] != ABIToken.ARRAY || data[position++] != ABIToken.A_BYTE) {
                 throw new ABIException("Next element in data field is not a 2D byte array.");
             }
 
@@ -613,10 +520,10 @@ public class ABIDecoder {
         checkMinLengthForObjectArray();
 
         boolean[][] booleanArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ARRAY.identifier && data[position + 2] == ABIToken.A_BOOLEAN.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ARRAY && data[position + 2] == ABIToken.A_BOOLEAN) {
             position  += 3;
         } else {
-            if (data[position++] != ABIToken.ARRAY.identifier || data[position++] != ABIToken.A_BOOLEAN.identifier) {
+            if (data[position++] != ABIToken.ARRAY || data[position++] != ABIToken.A_BOOLEAN) {
                 throw new ABIException("Next element in data field is not a 2D boolean array.");
             }
 
@@ -644,10 +551,10 @@ public class ABIDecoder {
         checkMinLengthForObjectArray();
 
         char[][] charArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ARRAY.identifier && data[position + 2] == ABIToken.A_CHAR.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ARRAY && data[position + 2] == ABIToken.A_CHAR) {
             position  += 3;
         } else {
-            if (data[position++] != ABIToken.ARRAY.identifier || data[position++] != ABIToken.A_CHAR.identifier) {
+            if (data[position++] != ABIToken.ARRAY || data[position++] != ABIToken.A_CHAR) {
                 throw new ABIException("Next element in data field is not a 2D character array.");
             }
 
@@ -675,10 +582,10 @@ public class ABIDecoder {
         checkMinLengthForObjectArray();
 
         short[][] shortArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ARRAY.identifier && data[position + 2] == ABIToken.A_SHORT.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ARRAY && data[position + 2] == ABIToken.A_SHORT) {
             position  += 3;
         } else {
-            if (data[position++] != ABIToken.ARRAY.identifier || data[position++] != ABIToken.A_SHORT.identifier) {
+            if (data[position++] != ABIToken.ARRAY || data[position++] != ABIToken.A_SHORT) {
                 throw new ABIException("Next element in data field is not a 2D short array.");
             }
 
@@ -706,10 +613,10 @@ public class ABIDecoder {
         checkMinLengthForObjectArray();
 
         int[][] intArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ARRAY.identifier && data[position + 2] == ABIToken.A_INT.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ARRAY && data[position + 2] == ABIToken.A_INT) {
             position  += 3;
         } else {
-            if (data[position++] != ABIToken.ARRAY.identifier || data[position++] != ABIToken.A_INT.identifier) {
+            if (data[position++] != ABIToken.ARRAY || data[position++] != ABIToken.A_INT) {
                 throw new ABIException("Next element in data field is not a 2D integer array.");
             }
 
@@ -737,10 +644,10 @@ public class ABIDecoder {
         checkMinLengthForObjectArray();
 
         long[][] longArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ARRAY.identifier && data[position + 2] == ABIToken.A_LONG.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ARRAY && data[position + 2] == ABIToken.A_LONG) {
             position  += 3;
         } else {
-            if (data[position++] != ABIToken.ARRAY.identifier || data[position++] != ABIToken.A_LONG.identifier) {
+            if (data[position++] != ABIToken.ARRAY || data[position++] != ABIToken.A_LONG) {
                 throw new ABIException("Next element in data field is not a 2D long array.");
             }
 
@@ -768,10 +675,10 @@ public class ABIDecoder {
         checkMinLengthForObjectArray();
 
         float[][] floatArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ARRAY.identifier && data[position + 2] == ABIToken.A_FLOAT.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ARRAY && data[position + 2] == ABIToken.A_FLOAT) {
             position  += 3;
         } else {
-            if (data[position++] != ABIToken.ARRAY.identifier || data[position++] != ABIToken.A_FLOAT.identifier) {
+            if (data[position++] != ABIToken.ARRAY || data[position++] != ABIToken.A_FLOAT) {
                 throw new ABIException("Next element in data field is not a 2D float array.");
             }
 
@@ -799,10 +706,10 @@ public class ABIDecoder {
         checkMinLengthForObjectArray();
 
         double[][] doubleArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ARRAY.identifier && data[position + 2] == ABIToken.A_DOUBLE.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ARRAY && data[position + 2] == ABIToken.A_DOUBLE) {
             position  += 3;
         } else {
-            if (data[position++] != ABIToken.ARRAY.identifier || data[position++] != ABIToken.A_DOUBLE.identifier) {
+            if (data[position++] != ABIToken.ARRAY || data[position++] != ABIToken.A_DOUBLE) {
                 throw new ABIException("Next element in data field is not a 2D double array.");
             }
 
@@ -830,10 +737,10 @@ public class ABIDecoder {
         checkMinLengthForObjectArray();
 
         String[] stringArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ARRAY.identifier && data[position + 2] == ABIToken.STRING.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ARRAY && data[position + 2] == ABIToken.STRING) {
             position  += 3;
         } else {
-            if (data[position++] != ABIToken.ARRAY.identifier || data[position++] != ABIToken.STRING.identifier) {
+            if (data[position++] != ABIToken.ARRAY || data[position++] != ABIToken.STRING) {
                 throw new ABIException("Next element in data field is not a string array.");
             }
 
@@ -861,10 +768,10 @@ public class ABIDecoder {
         checkMinLengthForObjectArray();
 
         Address[] addressArray = null;
-        if (data[position] == ABIToken.NULL.identifier && data[position + 1] == ABIToken.ARRAY.identifier && data[position + 2] == ABIToken.ADDRESS.identifier) {
+        if (data[position] == ABIToken.NULL && data[position + 1] == ABIToken.ARRAY && data[position + 2] == ABIToken.ADDRESS) {
             position  += 3;
         } else {
-            if (data[position++] != ABIToken.ARRAY.identifier || data[position++] != ABIToken.ADDRESS.identifier) {
+            if (data[position++] != ABIToken.ARRAY || data[position++] != ABIToken.ADDRESS) {
                 throw new ABIException("Next element in data field is not an address array.");
             }
 

@@ -8,28 +8,28 @@ public class ABIEncoderTest {
     @Test
     public void testPrimitiveEncode() {
         byte[] encoded = ABIEncoder.encodeOneByte((byte) -1);
-        Assert.assertArrayEquals(new byte[] {ABIToken.BYTE.identifier, -1}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.BYTE, -1}, encoded);
 
         encoded = ABIEncoder.encodeOneCharacter('a');
-        Assert.assertArrayEquals(new byte[] {ABIToken.CHAR.identifier, 0, 97}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.CHAR, 0, 97}, encoded);
 
         encoded = ABIEncoder.encodeOneBoolean(true);
-        Assert.assertArrayEquals(new byte[] {ABIToken.BOOLEAN.identifier, 1}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.BOOLEAN, 1}, encoded);
 
         encoded = ABIEncoder.encodeOneShort((short) 1000);
-        Assert.assertArrayEquals(new byte[] {ABIToken.SHORT.identifier, 3, -24}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.SHORT, 3, -24}, encoded);
 
         encoded = ABIEncoder.encodeOneInteger(1000);
-        Assert.assertArrayEquals(new byte[] {ABIToken.INT.identifier, 0, 0, 3, -24}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.INT, 0, 0, 3, -24}, encoded);
 
         encoded = ABIEncoder.encodeOneFloat(1000.0F);
-        Assert.assertArrayEquals(new byte[] {ABIToken.FLOAT.identifier, 68, 122, 0, 0}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.FLOAT, 68, 122, 0, 0}, encoded);
 
         encoded = ABIEncoder.encodeOneLong(1000L);
-        Assert.assertArrayEquals(new byte[] {ABIToken.LONG.identifier, 0, 0, 0, 0, 0, 0, 3, -24}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.LONG, 0, 0, 0, 0, 0, 0, 3, -24}, encoded);
 
         encoded = ABIEncoder.encodeOneDouble(1000.0);
-        Assert.assertArrayEquals(new byte[] {ABIToken.DOUBLE.identifier, 64, -113, 64, 0, 0, 0, 0, 0}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.DOUBLE, 64, -113, 64, 0, 0, 0, 0, 0}, encoded);
     }
 
     @Test
@@ -72,119 +72,119 @@ public class ABIEncoderTest {
     @Test
     public void testPrimitiveArray1DEncode() {
         byte[] encoded = ABIEncoder.encodeOneByteArray(new byte[] { (byte)-1} );
-        Assert.assertArrayEquals(new byte[] {ABIToken.A_BYTE.identifier, 0, 1, -1}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.A_BYTE, 0, 1, -1}, encoded);
 
         encoded = ABIEncoder.encodeOneCharacterArray(new char[] { 'a' });
-        Assert.assertArrayEquals(new byte[] {ABIToken.A_CHAR.identifier, 0, 1, 0, 97}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.A_CHAR, 0, 1, 0, 97}, encoded);
 
         encoded = ABIEncoder.encodeOneBooleanArray(new boolean[] { true });
-        Assert.assertArrayEquals(new byte[] {ABIToken.A_BOOLEAN.identifier, 0, 1, 1}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.A_BOOLEAN, 0, 1, 1}, encoded);
 
         encoded = ABIEncoder.encodeOneShortArray(new short[] { (short)1000 });
-        Assert.assertArrayEquals(new byte[] {ABIToken.A_SHORT.identifier, 0, 1, 3, -24}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.A_SHORT, 0, 1, 3, -24}, encoded);
 
         encoded = ABIEncoder.encodeOneIntegerArray(new int[] { 1000 });
-        Assert.assertArrayEquals(new byte[] {ABIToken.A_INT.identifier, 0, 1, 0, 0, 3, -24}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.A_INT, 0, 1, 0, 0, 3, -24}, encoded);
 
         encoded = ABIEncoder.encodeOneFloatArray(new float[] { 1000.0F });
-        Assert.assertArrayEquals(new byte[] {ABIToken.A_FLOAT.identifier, 0, 1, 68, 122, 0, 0}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.A_FLOAT, 0, 1, 68, 122, 0, 0}, encoded);
 
         encoded = ABIEncoder.encodeOneLongArray(new long[] { 1000L });
-        Assert.assertArrayEquals(new byte[] {ABIToken.A_LONG.identifier, 0, 1, 0, 0, 0, 0, 0, 0, 3, -24}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.A_LONG, 0, 1, 0, 0, 0, 0, 0, 0, 3, -24}, encoded);
 
         encoded = ABIEncoder.encodeOneDoubleArray(new double[] { 1000.0 });
-        Assert.assertArrayEquals(new byte[] {ABIToken.A_DOUBLE.identifier, 0, 1, 64, -113, 64, 0, 0, 0, 0, 0}, encoded);
+        Assert.assertArrayEquals(new byte[] {ABIToken.A_DOUBLE, 0, 1, 64, -113, 64, 0, 0, 0, 0, 0}, encoded);
     }
 
     @Test
     public void testPrimitiveArray2DEncode() {
         byte[] encoded = ABIEncoder.encodeOne2DByteArray(new byte[][] { new byte[] { (byte)-1 }, new byte[] { (byte)-1 } } );
-        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY.identifier, ABIToken.A_BYTE.identifier, 0, 2, ABIToken.A_BYTE.identifier, 0, 1, -1, ABIToken.A_BYTE.identifier, 0, 1, -1 }, encoded);
+        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY, ABIToken.A_BYTE, 0, 2, ABIToken.A_BYTE, 0, 1, -1, ABIToken.A_BYTE, 0, 1, -1 }, encoded);
 
         encoded = ABIEncoder.encodeOne2DCharacterArray(new char[][] { new char[] { 'a' }, new char[] { 'a' } } );
-        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY.identifier, ABIToken.A_CHAR.identifier, 0, 2, ABIToken.A_CHAR.identifier, 0, 1, 0, 97, ABIToken.A_CHAR.identifier, 0, 1, 0, 97 }, encoded);
+        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY, ABIToken.A_CHAR, 0, 2, ABIToken.A_CHAR, 0, 1, 0, 97, ABIToken.A_CHAR, 0, 1, 0, 97 }, encoded);
 
         encoded = ABIEncoder.encodeOne2DBooleanArray(new boolean[][] { new boolean[] { true }, new boolean[] { true } } );
-        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY.identifier, ABIToken.A_BOOLEAN.identifier, 0, 2, ABIToken.A_BOOLEAN.identifier, 0, 1, 1, ABIToken.A_BOOLEAN.identifier, 0, 1, 1 }, encoded);
+        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY, ABIToken.A_BOOLEAN, 0, 2, ABIToken.A_BOOLEAN, 0, 1, 1, ABIToken.A_BOOLEAN, 0, 1, 1 }, encoded);
 
         encoded = ABIEncoder.encodeOne2DShortArray(new short[][] { new short[] { (short)1000 }, new short[] { (short)1000 } } );
-        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY.identifier, ABIToken.A_SHORT.identifier, 0, 2, ABIToken.A_SHORT.identifier, 0, 1, 3, -24, ABIToken.A_SHORT.identifier, 0, 1, 3, -24 }, encoded);
+        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY, ABIToken.A_SHORT, 0, 2, ABIToken.A_SHORT, 0, 1, 3, -24, ABIToken.A_SHORT, 0, 1, 3, -24 }, encoded);
 
         encoded = ABIEncoder.encodeOne2DIntegerArray(new int[][] { new int[] { 1000 }, new int[] { 1000 } } );
-        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY.identifier, ABIToken.A_INT.identifier, 0, 2, ABIToken.A_INT.identifier, 0, 1, 0, 0, 3, -24, ABIToken.A_INT.identifier, 0, 1, 0, 0, 3, -24 }, encoded);
+        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY, ABIToken.A_INT, 0, 2, ABIToken.A_INT, 0, 1, 0, 0, 3, -24, ABIToken.A_INT, 0, 1, 0, 0, 3, -24 }, encoded);
 
         encoded = ABIEncoder.encodeOne2DFloatArray(new float[][] { new float[] { 1000.0F }, new float[] { 1000.0F } } );
-        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY.identifier, ABIToken.A_FLOAT.identifier, 0, 2, ABIToken.A_FLOAT.identifier, 0, 1, 68, 122, 0, 0, ABIToken.A_FLOAT.identifier, 0, 1, 68, 122, 0, 0 }, encoded);
+        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY, ABIToken.A_FLOAT, 0, 2, ABIToken.A_FLOAT, 0, 1, 68, 122, 0, 0, ABIToken.A_FLOAT, 0, 1, 68, 122, 0, 0 }, encoded);
 
         encoded = ABIEncoder.encodeOne2DLongArray(new long[][] { new long[] { 1000L }, new long[] { 1000L } } );
-        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY.identifier, ABIToken.A_LONG.identifier, 0, 2, ABIToken.A_LONG.identifier, 0, 1, 0, 0, 0, 0, 0, 0, 3, -24, ABIToken.A_LONG.identifier, 0, 1, 0, 0, 0, 0, 0, 0, 3, -24 }, encoded);
+        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY, ABIToken.A_LONG, 0, 2, ABIToken.A_LONG, 0, 1, 0, 0, 0, 0, 0, 0, 3, -24, ABIToken.A_LONG, 0, 1, 0, 0, 0, 0, 0, 0, 3, -24 }, encoded);
 
         encoded = ABIEncoder.encodeOne2DDoubleArray(new double[][] { new double[] { 1000.0 }, new double[] { 1000.0 } } );
-        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY.identifier, ABIToken.A_DOUBLE.identifier, 0, 2, ABIToken.A_DOUBLE.identifier, 0, 1, 64, -113, 64, 0, 0, 0, 0, 0, ABIToken.A_DOUBLE.identifier, 0, 1, 64, -113, 64, 0, 0, 0, 0, 0 }, encoded);
+        Assert.assertArrayEquals(new byte[] { ABIToken.ARRAY, ABIToken.A_DOUBLE, 0, 2, ABIToken.A_DOUBLE, 0, 1, 64, -113, 64, 0, 0, 0, 0, 0, ABIToken.A_DOUBLE, 0, 1, 64, -113, 64, 0, 0, 0, 0, 0 }, encoded);
     }
 
     @Test
     public void testNullPrimitiveArray1DEncodings() {
         byte[] encoded = ABIEncoder.encodeOneByteArray(null);
         byte[] expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.A_BYTE.identifier
+            ABIToken.NULL,
+            ABIToken.A_BYTE
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOneBooleanArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.A_BOOLEAN.identifier
+            ABIToken.NULL,
+            ABIToken.A_BOOLEAN
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOneBooleanArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.A_BOOLEAN.identifier
+            ABIToken.NULL,
+            ABIToken.A_BOOLEAN
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOneCharacterArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.A_CHAR.identifier
+            ABIToken.NULL,
+            ABIToken.A_CHAR
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOneShortArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.A_SHORT.identifier
+            ABIToken.NULL,
+            ABIToken.A_SHORT
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOneIntegerArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.A_INT.identifier
+            ABIToken.NULL,
+            ABIToken.A_INT
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOneLongArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.A_LONG.identifier
+            ABIToken.NULL,
+            ABIToken.A_LONG
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOneFloatArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.A_FLOAT.identifier
+            ABIToken.NULL,
+            ABIToken.A_FLOAT
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOneDoubleArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.A_DOUBLE.identifier
+            ABIToken.NULL,
+            ABIToken.A_DOUBLE
         };
         Assert.assertArrayEquals(expected, encoded);
     }
@@ -193,15 +193,15 @@ public class ABIEncoderTest {
     public void testNullStringAddressEncodings() {
         byte[] encoded = ABIEncoder.encodeOneString(null);
         byte[] expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.STRING.identifier
+            ABIToken.NULL,
+            ABIToken.STRING
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOneAddress(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.ADDRESS.identifier
+            ABIToken.NULL,
+            ABIToken.ADDRESS
         };
         Assert.assertArrayEquals(expected, encoded);
     }
@@ -210,65 +210,65 @@ public class ABIEncoderTest {
     public void testNullPrimitiveArray2DEncodings() {
         byte[] encoded = ABIEncoder.encodeOne2DByteArray(null);
         byte[] expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.ARRAY.identifier,
-            ABIToken.A_BYTE.identifier
+            ABIToken.NULL,
+            ABIToken.ARRAY,
+            ABIToken.A_BYTE
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOne2DBooleanArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.ARRAY.identifier,
-            ABIToken.A_BOOLEAN.identifier
+            ABIToken.NULL,
+            ABIToken.ARRAY,
+            ABIToken.A_BOOLEAN
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOne2DCharacterArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.ARRAY.identifier,
-            ABIToken.A_CHAR.identifier
+            ABIToken.NULL,
+            ABIToken.ARRAY,
+            ABIToken.A_CHAR
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOne2DShortArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.ARRAY.identifier,
-            ABIToken.A_SHORT.identifier
+            ABIToken.NULL,
+            ABIToken.ARRAY,
+            ABIToken.A_SHORT
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOne2DIntegerArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.ARRAY.identifier,
-            ABIToken.A_INT.identifier
+            ABIToken.NULL,
+            ABIToken.ARRAY,
+            ABIToken.A_INT
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOne2DFloatArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.ARRAY.identifier,
-            ABIToken.A_FLOAT.identifier
+            ABIToken.NULL,
+            ABIToken.ARRAY,
+            ABIToken.A_FLOAT
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOne2DLongArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.ARRAY.identifier,
-            ABIToken.A_LONG.identifier
+            ABIToken.NULL,
+            ABIToken.ARRAY,
+            ABIToken.A_LONG
         };
         Assert.assertArrayEquals(expected, encoded);
 
         encoded = ABIEncoder.encodeOne2DDoubleArray(null);
         expected = new byte[] {
-            ABIToken.NULL.identifier,
-            ABIToken.ARRAY.identifier,
-            ABIToken.A_DOUBLE.identifier
+            ABIToken.NULL,
+            ABIToken.ARRAY,
+            ABIToken.A_DOUBLE
         };
         Assert.assertArrayEquals(expected, encoded);
     }
