@@ -107,6 +107,16 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
+    public void putObjectGraph(Address address, byte[] bytes) {
+
+    }
+
+    @Override
+    public byte[] getObjectGraph(Address address) {
+        return new byte[0];
+    }
+
+    @Override
     public void putStorage(Address address, byte[] key, byte[] value) {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.putStorage(address, key, value);
