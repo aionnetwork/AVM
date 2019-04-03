@@ -385,12 +385,6 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
         return new String(v.toString());
     }
 
-    public String avm_toEngineeringString(){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_toEngineeringString);
-        lazyLoad();
-        return new String(v.toEngineeringString());
-    }
-
     public String avm_toPlainString(){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_toPlainString);
         lazyLoad();
@@ -455,12 +449,6 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_doubleValue);
         lazyLoad();
         return v.doubleValue();
-    }
-
-    public BigDecimal avm_ulp(){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_ulp);
-        lazyLoad();
-        return new BigDecimal(v.ulp());
     }
 
     public boolean avm_equals(IObject x) {

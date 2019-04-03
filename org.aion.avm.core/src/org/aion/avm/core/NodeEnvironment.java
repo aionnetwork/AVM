@@ -88,7 +88,6 @@ public class NodeEnvironment {
                     , org.aion.avm.shadow.java.lang.Integer.class
                     , org.aion.avm.shadow.java.lang.Iterable.class
                     , org.aion.avm.shadow.java.lang.Long.class
-                    , org.aion.avm.shadow.java.lang.Math.class
                     , org.aion.avm.shadow.java.lang.Number.class
                     , org.aion.avm.shadow.java.lang.Object.class
                     , org.aion.avm.shadow.java.lang.Runnable.class

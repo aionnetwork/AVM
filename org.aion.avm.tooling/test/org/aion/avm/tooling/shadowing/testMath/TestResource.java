@@ -12,8 +12,8 @@ public class TestResource {
     public static boolean testMaxMin(){
         boolean ret = true;
 
-        ret = ret && (Math.max(1, 10) == 10);
-        ret = ret && (Math.min(1, 10) == 1);
+        ret = ret && (StrictMath.max(1, 10) == 10);
+        ret = ret && (StrictMath.min(1, 10) == 1);
 
         return ret;
     }

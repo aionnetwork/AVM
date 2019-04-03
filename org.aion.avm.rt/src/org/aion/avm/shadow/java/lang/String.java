@@ -12,6 +12,7 @@ import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.IPersistenceToken;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
@@ -39,21 +40,6 @@ public class String extends Object implements Comparable<String>, CharSequence {
     public String(CharArray value, int offset, int count) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_constructor_3);
         this.v = new java.lang.String(value.getUnderlying(), offset, count);
-    }
-
-    public String(IntArray codePoints, int offset, int count) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_constructor_4);
-        this.v = new java.lang.String(codePoints.getUnderlying(), offset, count);
-    }
-
-    public String(ByteArray bytes, int offset, int length, String charsetName) throws UnsupportedEncodingException {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_constructor_5);
-        this.v = new java.lang.String(bytes.getUnderlying(), offset, length, charsetName.v);
-    }
-
-    public String(ByteArray bytes, String charsetName) throws UnsupportedEncodingException {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_constructor_6);
-        this.v = new java.lang.String(bytes.getUnderlying(), charsetName.v);
     }
 
     public String(ByteArray bytes, int offset, int length){
@@ -93,46 +79,16 @@ public class String extends Object implements Comparable<String>, CharSequence {
         return this.v.charAt(index);
     }
 
-    public int avm_codePointAt(int index) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_codePointAt);
-        lazyLoad();
-        return this.v.codePointAt(index);
-    }
-
-    public int avm_codePointBefore(int index) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_codePointBefore);
-        lazyLoad();
-        return this.v.codePointBefore(index);
-    }
-
-    public int avm_codePointCount(int beginIndex, int endIndex) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_codePointCount + java.lang.Math.max(endIndex - beginIndex, 0));
-        lazyLoad();
-        return this.v.codePointCount(beginIndex, endIndex);
-    }
-
-    public int avm_offsetByCodePoints(int index, int codePointOffset){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_offsetByCodePoints);
-        lazyLoad();
-        return this.v.offsetByCodePoints(index, codePointOffset);
-    }
-
     public void avm_getChars(int srcBegin, int srcEnd, CharArray dst, int dstBegin) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_getChars + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(srcEnd - srcBegin, 0));
         lazyLoad();
         this.v.getChars(srcBegin, srcEnd, dst.getUnderlying(), dstBegin);
     }
 
-    public ByteArray avm_getBytes(String charsetName) throws UnsupportedEncodingException {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_getBytes + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * internalLength());
-        lazyLoad();
-        return new ByteArray(this.v.getBytes(charsetName.v));
-    }
-
     public ByteArray avm_getBytes(){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_getBytes_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * internalLength());
         lazyLoad();
-        return new ByteArray(this.v.getBytes());
+        return new ByteArray(this.v.getBytes(StandardCharsets.UTF_8));
     }
 
     public boolean avm_equals(IObject anObject) {
@@ -275,7 +231,7 @@ public class String extends Object implements Comparable<String>, CharSequence {
     public CharSequence avm_subSequence(int beginIndex, int endIndex){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_subSequence + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(endIndex - beginIndex, 0));
         lazyLoad();
-        return new String(this.v.substring(beginIndex, endIndex));
+        return new String(this.v.subSequence(beginIndex, endIndex).toString());
     }
 
     public String avm_concat(String str){

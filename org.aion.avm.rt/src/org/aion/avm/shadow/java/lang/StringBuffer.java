@@ -64,26 +64,6 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
         return this.v.charAt(index);
     }
 
-    public int avm_codePointAt(int index) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_codePointAt);
-        return this.v.codePointAt(index);
-    }
-
-    public int avm_codePointBefore(int index) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_codePointBefore);
-        return this.v.codePointBefore(index);
-    }
-
-    public int avm_codePointCount(int beginIndex, int endIndex) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_codePointCount + java.lang.Math.max(endIndex - beginIndex, 0));
-        return this.v.codePointCount(beginIndex, endIndex);
-    }
-
-    public int avm_offsetByCodePoints(int index, int codePointOffset) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_offsetByCodePoints + java.lang.Math.abs(codePointOffset));
-        return this.v.offsetByCodePoints(index, codePointOffset);
-    }
-
     public void avm_getChars(int srcBegin, int srcEnd, CharArray dst,
                              int dstBegin)
     {
@@ -154,12 +134,6 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     public StringBuffer avm_append(int i) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_9);
         this.v = this.v.append(i);
-        return this;
-    }
-
-    public StringBuffer avm_appendCodePoint(int codePoint) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_appendCodePoint);
-        this.v = this.v.appendCodePoint(codePoint);
         return this;
     }
 

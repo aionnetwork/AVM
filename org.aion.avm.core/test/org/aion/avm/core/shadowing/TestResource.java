@@ -3,11 +3,11 @@ package org.aion.avm.core.shadowing;
 
 public class TestResource {
     public int multi(int a, int b) {
-        return Math.multiplyExact(a + 1, b + 1);
+        return StrictMath.multiplyExact(a + 1, b + 1);
     }
 
     public int abs(int a) {
-        return Math.abs(a);
+        return StrictMath.abs(a);
     }
 
     public String[] newarray(int sz) {

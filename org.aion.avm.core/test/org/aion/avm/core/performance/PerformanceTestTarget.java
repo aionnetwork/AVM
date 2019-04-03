@@ -1,6 +1,6 @@
 package org.aion.avm.core.performance;
 
-import java.lang.Math;
+import java.lang.StrictMath;
 import org.aion.avm.api.BlockchainRuntime;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
@@ -36,7 +36,7 @@ public class PerformanceTestTarget {
     public static void cpuHeavy() {
         double x = 0;
         for(int k = 0; k < heavyLevel*1000; ++k) {
-            x = Math.pow(2.0, 5.4);
+            x = StrictMath.pow(2.0, 5.4);
         }
     }
 

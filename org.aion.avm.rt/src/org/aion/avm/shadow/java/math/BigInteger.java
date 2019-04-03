@@ -47,12 +47,6 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
         this(val, 10);
     }
 
-    public BigInteger avm_nextProbablePrime(){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_nextProbablePrime);
-        lazyLoad();
-        return new BigInteger(this.v.nextProbablePrime());
-    }
-
     public static BigInteger avm_valueOf(long val) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_valueOf);
         return new BigInteger(java.math.BigInteger.valueOf(val));

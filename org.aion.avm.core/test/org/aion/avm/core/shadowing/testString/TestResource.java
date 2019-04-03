@@ -24,8 +24,8 @@ public class TestResource {
                 return ABIEncoder.encodeOneString(singleStringReturnLowerCase());
             }  else if (methodName.equals("singleStringReturnUpperCase")) {
                 return ABIEncoder.encodeOneString(singleStringReturnUpperCase());
-            }   else if (methodName.equals("stringFromCodePoints")) {
-                return ABIEncoder.encodeOneString(stringFromCodePoints());
+            }   else if (methodName.equals("stringReturnSubSequence")) {
+                return ABIEncoder.encodeOneString(stringReturnSubSequence());
             } else {
                 return new byte[0];
             }
@@ -81,8 +81,8 @@ public class TestResource {
         return str1.toUpperCase();
     }
 
-    public static String stringFromCodePoints(){
-        String str1 = new String(new int[]{104, 101, 108, 108, 111, 1593}, 0, 5);
-        return str1;
+    public static String stringReturnSubSequence(){
+        String str = "ReturnSubSequence";
+        return str.subSequence(6, 9).toString();
     }
 }

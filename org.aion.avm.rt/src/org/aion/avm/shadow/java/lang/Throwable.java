@@ -7,7 +7,6 @@ import org.aion.avm.internal.IPersistenceToken;
 
 /**
  * Our shadow implementation of java.lang.Throwable.
- * TODO:  Determine how to handle the calls that don't make sense in this environment or depend on types we aren't including.
  * 
  * NOTE:  Instances of this class never actually touch the underlying VM-generated exception.
  * If we want to carry that information around, we will need a new constructor, an addition to the generated stubs, and a sense of how to use it.
@@ -77,40 +76,6 @@ public class Throwable extends Object {
         String s = new String(ClassNameExtractor.getOriginalClassName(getClass().getName()));
         return (this.message != null) ? new String(s + ": " + this.message) : s;
     }
-
-    // TODO:  Determine if we should throw/fail when something calls a method which doesn't make sense in this environment.
-    // Otherwise, these cases are commented-out since some of them would require types which can't be instantiated and this
-    // will cause these to fail in a not silent way.
-//    public void avm_printStackTrace() {
-//    }
-
-//    public void avm_printStackTrace(PrintStream s) {
-//    }
-
-//    private void avm_printStackTrace(PrintStreamOrWriter s) {
-//    }
-
-//    private void avm_printEnclosedStackTrace(PrintStreamOrWriter s,
-//                                         StackTraceElement[] enclosingTrace,
-//                                         String caption,
-//                                         String prefix,
-//                                         Set<Throwable> dejaVu) {
-//    }
-
-//    public void avm_printStackTrace(PrintWriter s) {
-//    }
-
-    public Throwable avm_fillInStackTrace() {
-        // We don't expose stack traces.
-        return this;
-    }
-
-    // TODO:  Can't implement until we wrap StackTraceElement.
-//    public StackTraceElement[] avm_getStackTrace() {
-//    }
-
-//    public void avm_setStackTrace(StackTraceElement[] stackTrace) {
-//    }
 
     //=======================================================
     // Methods below are used by runtime and test code only!

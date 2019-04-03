@@ -152,12 +152,6 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
         return this;
     }
 
-    public StringBuilder avm_appendCodePoint(int codePoint) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_appendCodePoint);
-        this.v.appendCodePoint(codePoint);
-        return this;
-    }
-
     public StringBuilder avm_delete(int start, int end) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_delete);
         this.v.delete(start, end);
@@ -289,7 +283,7 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     public CharSequence avm_subSequence(int start, int end) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_subSequence + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(end - start, 0));
         // Call substring instead of subSequence, since our String wrapper wraps a String, not a CharSequence.
-        return new String (this.getUnderlying().substring(start, end));
+        return new String (this.getUnderlying().subSequence(start, end).toString());
     }
 
     public int avm_length(){
