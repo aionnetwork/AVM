@@ -104,6 +104,8 @@ public class NodeEnvironment {
                     , org.aion.avm.shadow.java.lang.invoke.LambdaMetafactory.class
                     , org.aion.avm.shadow.java.lang.invoke.StringConcatFactory.class
 
+                    , org.aion.avm.shadow.java.lang.Void.class
+
                     , org.aion.avm.shadow.java.math.BigDecimal.class
                     , org.aion.avm.shadow.java.math.BigInteger.class
                     , org.aion.avm.shadow.java.math.MathContext.class
@@ -405,6 +407,8 @@ public class NodeEnvironment {
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MILLISECONDS, 34);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MICROSECONDS, 35);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_NANOSECONDS, 36);
+
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Void.avm_TYPE, 37);
 
         return constantMap;
     }
