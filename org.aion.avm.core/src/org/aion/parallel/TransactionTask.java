@@ -1,12 +1,13 @@
 package org.aion.parallel;
 
+import avm.Address;
 import org.aion.avm.core.ReentrantDAppStack;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionContext;
+import org.aion.vm.api.interfaces.TransactionInterface;
 
 
 /**
@@ -15,22 +16,28 @@ import org.aion.vm.api.interfaces.TransactionContext;
  */
 public class TransactionTask implements Comparable<TransactionTask>{
     private final KernelInterface parentKernel;
-    private TransactionContext externalTransactionContext;
+    private TransactionInterface externalTransaction;
     private volatile boolean abortState;
     private IInstrumentation threadOwningTask;
     private ReentrantDAppStack reentrantDAppStack;
     private int index;
     private StringBuffer outBuffer;
     private TransactionalKernel thisTransactionKernel;
+    private SideEffects sideEffects;
+    private Address origin;
+    private int depth;
 
-    public TransactionTask(KernelInterface parentKernel, TransactionContext ctx, int index){
+    public TransactionTask(KernelInterface parentKernel, TransactionInterface tx, int index, org.aion.types.Address origin){
         this.parentKernel = parentKernel;
-        this.externalTransactionContext = ctx;
+        this.externalTransaction = tx;
         this.index = index;
         this.abortState = false;
         this.threadOwningTask = null;
         this.reentrantDAppStack = new ReentrantDAppStack();
         this.outBuffer = new StringBuffer();
+        this.origin = new Address(origin.toBytes());
+        this.depth = 0;
+        this.sideEffects = new SideEffects();
     }
 
     public void startNewTransaction() {
@@ -102,12 +109,12 @@ public class TransactionTask implements Comparable<TransactionTask>{
     }
 
     /**
-     * Get the entry (external) transaction context of the current task.
+     * Get the entry (external) transaction of the current task.
      *
-     * @return The entry (external) transaction context of the task.
+     * @return The entry (external) transaction of the task.
      */
-    public TransactionContext getExternalTransactionCtx() {
-        return externalTransactionContext;
+    public TransactionInterface getExternalTransaction() {
+        return externalTransaction;
     }
 
     /**
@@ -127,9 +134,29 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.outBuffer.append(toPrint + "\n");
     }
 
+    public SideEffects getSideEffects() {
+        return sideEffects;
+    }
+
+    public Address getOriginAddress() {
+        return origin;
+    }
+
+    public int getTransactionStackDepth() {
+        return depth;
+    }
+
+    public void incrementTransactionStackDepth() {
+        depth++;
+    }
+
+    public void decrementTransactionStackDepth() {
+        depth--;
+    }
+
     void outputFlush(){
         if (this.outBuffer.length() > 0) {
-            System.out.println("Output from transaction " + Helpers.bytesToHexString(externalTransactionContext.getTransactionHash()));
+            System.out.println("Output from transaction " + Helpers.bytesToHexString(externalTransaction.getTransactionHash()));
             System.out.println(this.outBuffer);
             System.out.flush();
         }

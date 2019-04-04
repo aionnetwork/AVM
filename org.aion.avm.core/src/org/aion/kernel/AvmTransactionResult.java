@@ -168,6 +168,11 @@ public class AvmTransactionResult implements TransactionResult {
     private KernelInterface kernel;
 
     /**
+     * The side effects caused by executing the transaction.
+     */
+    private SideEffects sideEffects;
+
+    /**
      * Constructs a result whose code is SUCCESS and whose energyUsed is as specified.
      */
     public AvmTransactionResult(long energyLimit, long energyUsed) {
@@ -175,6 +180,7 @@ public class AvmTransactionResult implements TransactionResult {
         this.energyLimit = energyLimit;
         this.energyUsed = energyUsed;
         this.energyRemaining = this.energyLimit - this.energyUsed;
+        this.sideEffects = new SideEffects();
     }
 
     @Override
@@ -243,6 +249,11 @@ public class AvmTransactionResult implements TransactionResult {
                 ", returnData=" + (returnData == null ? "NULL" : Helpers.bytesToHexString(returnData)) +
                 ", energyUsed=" + energyUsed +
                 '}';
+    }
+
+    @Override
+    public SideEffects getSideEffects() {
+        return sideEffects;
     }
 
     @Override

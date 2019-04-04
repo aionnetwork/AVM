@@ -11,10 +11,8 @@ import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -43,7 +41,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
 
     @BeforeClass
     public static void setup() {
-        kernel = new TestingKernel();
+        kernel = new TestingKernel(BLOCK);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 
@@ -83,7 +81,6 @@ public class RejectVirtualMachineErrorIntegrationTest {
     private TransactionResult deployJar(byte[] jar) {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Transaction transaction = Transaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, BLOCK);
-        return avm.run(RejectVirtualMachineErrorIntegrationTest.kernel, new TransactionContext[] {context})[0].get();
+        return avm.run(RejectVirtualMachineErrorIntegrationTest.kernel, new Transaction[] {transaction})[0].get();
     }
 }

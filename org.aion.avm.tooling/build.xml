@@ -78,7 +78,7 @@
                 <pathelement location="${dir.global.lib}/asm-util-6.2.1.jar"/>
                 <pathelement location="${dir.global.lib}/asm-analysis-6.2.1.jar"/>
                 <pathelement location="${dir.global.lib}/spongycastle-1.58.0.0.jar"/>
-                <pathelement location="${dir.global.lib}/vm-api-9033989.jar"/>
+                <pathelement location="${dir.global.lib}/vm-api-d1d5e7c.jar"/>
                 <pathelement location="${dir.global.lib}/ed25519.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
@@ -103,7 +103,7 @@
                 <pathelement location="${dir.global.lib}/asm-util-6.2.1.jar"/>
                 <pathelement location="${dir.global.lib}/asm-analysis-6.2.1.jar"/>
                 <pathelement location="${dir.global.lib}/spongycastle-1.58.0.0.jar"/>
-                <pathelement location="${dir.global.lib}/vm-api-9033989.jar"/>
+                <pathelement location="${dir.global.lib}/vm-api-d1d5e7c.jar"/>
                 <pathelement location="${dir.global.lib}/ed25519.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>

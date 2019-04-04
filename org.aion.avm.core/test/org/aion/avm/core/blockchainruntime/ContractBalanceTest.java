@@ -16,10 +16,8 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -40,7 +38,7 @@ public class ContractBalanceTest {
 
     @BeforeClass
     public static void setup() {
-        kernel = new TestingKernel();
+        kernel = new TestingKernel(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 
@@ -106,8 +104,7 @@ public class ContractBalanceTest {
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = Transaction.create(from, kernel.getNonce(from), value, jar, energyLimit, energyPrice);
-        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
-        TransactionResult result = avm.run(ContractBalanceTest.kernel, new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(ContractBalanceTest.kernel, new Transaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
         return Address.wrap(result.getReturnData());
     }
@@ -115,8 +112,7 @@ public class ContractBalanceTest {
     private BigInteger callContractToGetItsBalance(Address contract) {
         byte[] callData = ABIUtil.encodeMethodArguments("getBalanceOfThisContract");
         Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
-        TransactionResult result = avm.run(ContractBalanceTest.kernel, new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(ContractBalanceTest.kernel, new Transaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
         return new BigInteger((byte[]) ABIUtil.decodeOneObject(result.getReturnData()));
     }
@@ -124,8 +120,7 @@ public class ContractBalanceTest {
     private BigInteger callContractToGetClinitBalance(Address contract) {
         byte[] callData = ABIUtil.encodeMethodArguments("getBalanceOfThisContractDuringClinit");
         Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
-        TransactionResult result = avm.run(ContractBalanceTest.kernel, new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(ContractBalanceTest.kernel, new Transaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
         return new BigInteger((byte[]) ABIUtil.decodeOneObject(result.getReturnData()));
     }
@@ -135,8 +130,7 @@ public class ContractBalanceTest {
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
-        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
-        TransactionResult result = avm.run(ContractBalanceTest.kernel, new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(ContractBalanceTest.kernel, new Transaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
         return Address.wrap(result.getReturnData());
     }
@@ -150,8 +144,7 @@ public class ContractBalanceTest {
 
     private BigInteger runTransactionAndInterpretOutputAsBigInteger(Address contract, byte[] callData) {
         Transaction transaction = Transaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        TransactionContext context = TransactionContextImpl.forExternalTransaction(transaction, block);
-        TransactionResult result = avm.run(ContractBalanceTest.kernel, new TransactionContext[] {context})[0].get();
+        TransactionResult result = avm.run(ContractBalanceTest.kernel, new Transaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
         return new BigInteger((byte[]) ABIUtil.decodeOneObject(result.getReturnData()));
     }

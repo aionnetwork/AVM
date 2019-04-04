@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,10 +8,8 @@ import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.SimpleFuture;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.aion.vm.api.interfaces.TransactionSideEffects;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -220,93 +217,76 @@ public class HandoffMonitorTest {
     /**
      * No calls on this are expected.
      */
-    private static class FakeTransaction implements TransactionContext {
+    private static class FakeTransaction implements TransactionInterface {
+
         @Override
-        public void setTransactionHash(byte[] hash) {
+        public byte[] getTransactionHash() {
             throw new AssertionError("No calls expected");
+
         }
-        @Override
-        public byte[] getHashOfOriginTransaction() {
-            throw new AssertionError("No calls expected");
-        }
-        @Override
-        public TransactionInterface getTransaction() {
-            throw new AssertionError("No calls expected");
-        }
-        @Override
-        public int getTransactionKind() {
-            throw new AssertionError("No calls expected");
-        }
-        @Override
-        public Address getDestinationAddress() {
-            throw new AssertionError("No calls expected");
-        }
-        @Override
-        public void setDestinationAddress(Address address) {
-            throw new AssertionError("No calls expected");
-        }
-        @Override
-        public Address getMinerAddress() {
-            throw new AssertionError("No calls expected");
-        }
+
         @Override
         public Address getSenderAddress() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public Address getOriginAddress() {
+        public Address getDestinationAddress() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public BigInteger getTransferValue() {
+        public Address getContractAddress() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public byte[] getTransactionData() {
+        public byte[] getNonce() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public long getTransactionEnergy() {
+        public byte[] getValue() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public long getTransactionEnergyPrice() {
+        public byte[] getData() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public byte[] getTransactionHash() {
+        public byte getTargetVM() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public long getBlockTimestamp() {
+        public long getEnergyLimit() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public long getBlockNumber() {
+        public long getEnergyPrice() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public long getBlockEnergyLimit() {
+        public long getTransactionCost() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public long getBlockDifficulty() {
+        public byte[] getTimestamp() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public int getTransactionStackDepth() {
+        public boolean isContractCreationTransaction() {
             throw new AssertionError("No calls expected");
         }
+
         @Override
-        public TransactionSideEffects getSideEffects() {
-            throw new AssertionError("No calls expected");
-        }
-        @Override
-        public int getFlags() {
-            throw new AssertionError("No calls expected");
-        }
-        @Override
-        public byte[] toBytes() {
+        public byte getKind() {
             throw new AssertionError("No calls expected");
         }
     }
@@ -314,7 +294,7 @@ public class HandoffMonitorTest {
     private static TransactionTask[] wrapTransactionInTasks(FakeTransaction[] transactions) {
         TransactionTask[] tasks = new TransactionTask[transactions.length];
         for (int i = 0; i < transactions.length; ++i) {
-            tasks[i] = new TransactionTask(null, transactions[i], i);
+            tasks[i] = new TransactionTask(null, transactions[i], i, Address.ZERO_ADDRESS());
         }
         return tasks;
     }

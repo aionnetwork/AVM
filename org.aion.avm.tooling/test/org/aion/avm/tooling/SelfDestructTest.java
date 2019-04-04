@@ -28,9 +28,10 @@ public class SelfDestructTest {
 
     @Test
     public void deleteSelfAndReturnValue() {
-        deleteSelfAndReturnValue(avmRule.block.getNumber());
-        deleteSelfAndReturnValue(avmRule.block.getNumber() + 1);
-        deleteSelfAndReturnValue(avmRule.block.getNumber() + 2);
+        Block block = avmRule.getBlock();
+        deleteSelfAndReturnValue(block.getNumber());
+        deleteSelfAndReturnValue(block.getNumber() + 1);
+        deleteSelfAndReturnValue(block.getNumber() + 2);
     }
 
     private void deleteSelfAndReturnValue(long newBlockNumber) {
@@ -40,8 +41,8 @@ public class SelfDestructTest {
         Object resultObject = callDApp(target, argData);
         Assert.assertEquals(SelfDestructResource.DELETE_AND_RETURN, ((Integer)resultObject).intValue());
 
-        if (newBlockNumber != avmRule.block.getNumber()) {
-            avmRule.block = new Block(new byte[32], newBlockNumber, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        if (newBlockNumber != avmRule.getBlock().getNumber()) {
+            avmRule.updateBlock(new Block(new byte[32], newBlockNumber, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]));
         }
 
         failToCall(target);
@@ -49,9 +50,10 @@ public class SelfDestructTest {
 
     @Test
     public void deleteSelfThenCallAnotherAndReturnValue() {
-        deleteSelfThenCallAnotherAndReturnValue(avmRule.block.getNumber());
-        deleteSelfThenCallAnotherAndReturnValue(avmRule.block.getNumber() + 1);
-        deleteSelfThenCallAnotherAndReturnValue(avmRule.block.getNumber() + 2);
+        Block block = avmRule.getBlock();
+        deleteSelfThenCallAnotherAndReturnValue(block.getNumber());
+        deleteSelfThenCallAnotherAndReturnValue(block.getNumber() + 1);
+        deleteSelfThenCallAnotherAndReturnValue(block.getNumber() + 2);
     }
 
     private void deleteSelfThenCallAnotherAndReturnValue(long newBlockNumber) {
@@ -62,8 +64,8 @@ public class SelfDestructTest {
         Object resultObject = callDApp(target, argData);
         Assert.assertEquals(SelfDestructResource.JUST_RETURN, ((Integer)resultObject).intValue());
 
-        if (newBlockNumber != avmRule.block.getNumber()) {
-            avmRule.block = new Block(new byte[32], newBlockNumber, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        if (newBlockNumber != avmRule.getBlock().getNumber()) {
+            avmRule.updateBlock(new Block(new byte[32], newBlockNumber, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]));
         }
 
         failToCall(target);

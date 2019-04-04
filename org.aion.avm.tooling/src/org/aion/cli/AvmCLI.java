@@ -20,14 +20,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.aion.vm.api.interfaces.SimpleFuture;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 
 
 public class AvmCLI {
     static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    public static TransactionContext setupOneDeploy(IEnvironment env, String storagePath, String jarPath, org.aion.types.Address sender, long energyLimit, BigInteger balance) {
+    public static Transaction setupOneDeploy(IEnvironment env, String storagePath, String jarPath, org.aion.types.Address sender, long energyLimit, BigInteger balance) {
 
         reportDeployRequest(env, storagePath, jarPath, sender);
 
@@ -37,7 +36,7 @@ public class AvmCLI {
 
         File storageFile = new File(storagePath);
 
-        TestingKernel kernel = new TestingKernel(storageFile);
+        TestingKernel kernel = new TestingKernel(storageFile, block);
 
         Path path = Paths.get(jarPath);
         byte[] jar;
@@ -47,9 +46,7 @@ public class AvmCLI {
             throw env.fail("deploy : Invalid location of Dapp jar");
         }
 
-        Transaction createTransaction = Transaction.create(sender, kernel.getNonce(sender), balance, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
-
-        return TransactionContextImpl.forExternalTransaction(createTransaction, AvmCLI.block);
+        return Transaction.create(sender, kernel.getNonce(sender), balance, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
     }
 
     public static void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, org.aion.types.Address sender) {
@@ -71,20 +68,20 @@ public class AvmCLI {
         env.logLine("Energy cost  : " + ((AvmTransactionResult) createResult).getEnergyUsed());
     }
 
-    public static TransactionContext setupOneCall(IEnvironment env, String storagePath, org.aion.types.Address contract, org.aion.types.Address sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
+    public static Transaction setupOneCall(IEnvironment env, String storagePath, org.aion.types.Address contract, org.aion.types.Address sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
         byte[] arguments = ABIUtil.encodeMethodArguments(method, args);
         return commonSetupTransaction(env, storagePath, contract, sender, arguments, energyLimit, nonceBias, balance);
     }
 
-    public static TransactionContext setupOneTransfer(IEnvironment env, String storagePath, org.aion.types.Address recipient, org.aion.types.Address sender, long energyLimit, long nonceBias, BigInteger balance) {
+    public static Transaction setupOneTransfer(IEnvironment env, String storagePath, org.aion.types.Address recipient, org.aion.types.Address sender, long energyLimit, long nonceBias, BigInteger balance) {
         reportTransferRequest(env, storagePath, recipient, sender, balance);
 
         return commonSetupTransaction(env, storagePath, recipient, sender, new byte[0], energyLimit, nonceBias, balance);
     }
 
-    private static TransactionContext commonSetupTransaction(IEnvironment env, String storagePath, org.aion.types.Address target, org.aion.types.Address sender, byte[] data, long energyLimit, long nonceBias, BigInteger balance) {
+    private static Transaction commonSetupTransaction(IEnvironment env, String storagePath, org.aion.types.Address target, org.aion.types.Address sender, byte[] data, long energyLimit, long nonceBias, BigInteger balance) {
 
         if (target.toBytes().length != Address.LENGTH){
             throw env.fail("call : Invalid Dapp address ");
@@ -96,12 +93,11 @@ public class AvmCLI {
 
         File storageFile = new File(storagePath);
 
-        TestingKernel kernel = new TestingKernel(storageFile);
+        TestingKernel kernel = new TestingKernel(storageFile, block);
 
         // TODO:  Remove this bias when/if we change this to no longer send all transactions from the same account.
         BigInteger biasedNonce = kernel.getNonce(sender).add(BigInteger.valueOf(nonceBias));
-        Transaction callTransaction = Transaction.call(sender, target, biasedNonce, balance, data, energyLimit, 1L);
-        return TransactionContextImpl.forExternalTransaction(callTransaction, block);
+        return Transaction.call(sender, target, biasedNonce, balance, data, energyLimit, 1L);
     }
 
     private static void reportCallRequest(IEnvironment env, String storagePath, org.aion.types.Address contract, org.aion.types.Address sender, String method, Object[] args){
@@ -168,7 +164,7 @@ public class AvmCLI {
         env.logLine("Creating Account " + toOpen);
 
         File storageFile = new File(storagePath);
-        TestingKernel kernel = new TestingKernel(storageFile);
+        TestingKernel kernel = new TestingKernel(storageFile, block);
 
         kernel.createAccount(toOpen);
         kernel.adjustBalance(toOpen, BigInteger.valueOf(100000000000L));
@@ -260,7 +256,7 @@ public class AvmCLI {
                 }
             } else {
                 // Setup the transactions.
-                TransactionContext[] transactions = new TransactionContext[invocation.commands.size()];
+                Transaction[] transactions = new Transaction[invocation.commands.size()];
                 for (int i = 0; i < invocation.commands.size(); ++i) {
                     ArgumentParser.Command command = invocation.commands.get(i);
                     switch (command.action) {
@@ -309,7 +305,7 @@ public class AvmCLI {
                 
                 // Run them in a single batch.
                 File storageFile = new File(invocation.storagePath);
-                TestingKernel kernel = new TestingKernel(storageFile);
+                TestingKernel kernel = new TestingKernel(storageFile, block);
                 AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(capabilities, new AvmConfiguration());
                 SimpleFuture<TransactionResult>[] futures = avm.run(kernel, transactions);
                 TransactionResult[] results = new AvmTransactionResult[futures.length];

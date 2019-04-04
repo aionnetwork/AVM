@@ -29,16 +29,16 @@ public final class AvmRule implements TestRule {
     private boolean debugMode;
     private final ABICompiler compiler;
     private final JarOptimizer jarOptimizer;
-    public final TestingKernel kernel;
+    public TestingKernel kernel;
     public AvmImpl avm;
-    public Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     /**
      * @param debugMode enable/disable the debugging features
      */
     public AvmRule(boolean debugMode) {
         this.debugMode = debugMode;
-        this.kernel = new TestingKernel();
+        this.kernel = new TestingKernel(block);
         compiler = new ABICompiler();
         jarOptimizer = new JarOptimizer(debugMode);
     }
@@ -144,8 +144,7 @@ public final class AvmRule implements TestRule {
     public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyLimit, long energyPrice) {
         Transaction tx = Transaction.call(org.aion.types.Address.wrap(from.unwrap()), org.aion.types.Address.wrap(to.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, new byte[0], energyLimit, energyPrice);
 
-        TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
-        return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
+        return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
     }
 
     /**
@@ -175,23 +174,30 @@ public final class AvmRule implements TestRule {
 
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {
         Transaction tx = Transaction.call(org.aion.types.Address.wrap(from.unwrap()), org.aion.types.Address.wrap(dappAddress.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, transactionData, energyLimit, energyPrice);
-        TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
-        return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
+        return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
         Transaction tx = Transaction.create(org.aion.types.Address.wrap(from.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, dappBytes, energyLimit, energyPrice);
-        TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
-        return new ResultWrapper(avm.run(this.kernel, new TransactionContext[]{context})[0].get(), context.getSideEffects());
+        return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void updateBlock(Block b) {
+        this.block = b;
+        this.kernel.updateBlock(b);
     }
 
     public static class ResultWrapper {
         TransactionResult result;
         TransactionSideEffects sideEffects;
 
-        ResultWrapper(TransactionResult result, TransactionSideEffects sideEffects) {
+        ResultWrapper(TransactionResult result) {
             this.result = result;
-            this.sideEffects = sideEffects;
+            this.sideEffects = result.getSideEffects();
         }
 
         /**

@@ -170,6 +170,31 @@ public class CachingKernel implements KernelInterface {
     }
 
     @Override
+    public long getBlockNumber() {
+        throw RuntimeAssertionError.unreachable("This class does not implement this method.");
+    }
+
+    @Override
+    public long getBlockTimestamp() {
+        throw RuntimeAssertionError.unreachable("This class does not implement this method.");
+    }
+
+    @Override
+    public long getBlockEnergyLimit() {
+        throw RuntimeAssertionError.unreachable("This class does not implement this method.");
+    }
+
+    @Override
+    public long getBlockDifficulty() {
+        throw RuntimeAssertionError.unreachable("This class does not implement this method.");
+    }
+
+    @Override
+    public Address getMinerAddress() {
+        throw RuntimeAssertionError.unreachable("This class does not implement this method.");
+    }
+
+    @Override
     public void refundAccount(Address address, BigInteger amount) {
         // This method may have special logic in the kernel. Here it is just adjustBalance.
         internalAdjustBalance(address, amount);

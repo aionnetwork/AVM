@@ -16,16 +16,11 @@ import org.aion.avm.core.testWallet.Wallet;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
 import org.aion.types.Address;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 
 import java.math.BigInteger;
@@ -56,7 +51,7 @@ public class DeploymentCostTest {
     @Before
     public void setup() {
         this.block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        this.kernel = new TestingKernel();
+        this.kernel = new TestingKernel(this.block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 
@@ -147,7 +142,7 @@ public class DeploymentCostTest {
 
         //deploy in normal Mode
         Transaction create = Transaction.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult createResult = this.avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, this.block)})[0].get();
+        TransactionResult createResult = this.avm.run(this.kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         return (AvmTransactionResult)createResult;
     }

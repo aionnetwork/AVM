@@ -12,10 +12,8 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.TransactionContextImpl;
 import org.aion.types.Address;
 import org.aion.kernel.Transaction;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
 import org.junit.Assert;
@@ -32,7 +30,7 @@ public class CommonSuperClassTest {
     private static long ENERGY_PRICE = 1L;
     private static Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
     private static Block BLOCK = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-    private static TestingKernel KERNEL = new TestingKernel();
+    private static TestingKernel KERNEL = new TestingKernel(BLOCK);
     private AvmImpl avm;
 
     @Before
@@ -57,7 +55,7 @@ public class CommonSuperClassTest {
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
         
         Transaction deployment = Transaction.create(DEPLOYER, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult deploymentResult = avm.run(KERNEL, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(deployment, BLOCK)})[0].get();
+        TransactionResult deploymentResult = avm.run(KERNEL, new Transaction[] {deployment})[0].get();
         // TODO (issue-362): Change this to expect SUCCESS once we fix this bug (VerifyError):
         // -interfaces implicitly descend from shadow.Object in ParentPointers but interfaces cannot descend from a concrete type other than java.lang.Object.
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, deploymentResult.getResultCode());
@@ -70,7 +68,7 @@ public class CommonSuperClassTest {
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
         
         Transaction deployment = Transaction.create(DEPLOYER, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult deploymentResult = avm.run(KERNEL, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(deployment, BLOCK)})[0].get();
+        TransactionResult deploymentResult = avm.run(KERNEL, new Transaction[] {deployment})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, deploymentResult.getResultCode());
     }
 
@@ -81,7 +79,7 @@ public class CommonSuperClassTest {
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
         
         Transaction deployment = Transaction.create(DEPLOYER, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult deploymentResult = avm.run(KERNEL, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(deployment, BLOCK)})[0].get();
+        TransactionResult deploymentResult = avm.run(KERNEL, new Transaction[] {deployment})[0].get();
         // TODO (issue-362): Change this to expect FAILED_REJECTED once we fix this bug (VerifyError):
         // -superinterface relationships are not properly consulted as common superclass
         // -this should be explicitly rejected as it contains an ambiguous type unification
@@ -95,7 +93,7 @@ public class CommonSuperClassTest {
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
         
         Transaction deployment = Transaction.create(DEPLOYER, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult deploymentResult = avm.run(KERNEL, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(deployment, BLOCK)})[0].get();
+        TransactionResult deploymentResult = avm.run(KERNEL, new Transaction[] {deployment})[0].get();
         // TODO (issue-362): Change this to expect FAILED_REJECTED once we fix this bug (VerifyError):
         // -superinterface relationships are not properly consulted as common superclass
         // -this should be explicitly rejected as it contains an ambiguous type unification
@@ -109,7 +107,7 @@ public class CommonSuperClassTest {
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
         
         Transaction deployment = Transaction.create(DEPLOYER, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult deploymentResult = avm.run(KERNEL, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(deployment, BLOCK)})[0].get();
+        TransactionResult deploymentResult = avm.run(KERNEL, new Transaction[] {deployment})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, deploymentResult.getResultCode());
     }
 }

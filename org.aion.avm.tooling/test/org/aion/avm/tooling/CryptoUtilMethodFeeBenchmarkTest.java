@@ -9,7 +9,6 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
 import org.junit.Assert;
@@ -95,8 +94,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionContextImpl context = TransactionContextImpl.forExternalTransaction(tx, block);
-        dappAddress = org.aion.types.Address.wrap(avm.run(this.kernel, new TransactionContext[] {context})[0].get().getReturnData());
+        dappAddress = org.aion.types.Address.wrap(avm.run(this.kernel, new Transaction[] {tx})[0].get().getReturnData());
         Assert.assertNotNull(dappAddress);
     }
 
@@ -290,10 +288,10 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     private long getCallTime(String methodName, byte[] message, int count){
         long st;
         long et;
-        TransactionContextImpl context = setupTransactionContext(methodName,count, message);
+        Transaction tx = setupTransaction(methodName,count, message);
 
         st = System.nanoTime();
-        TransactionResult result = avm.run(this.kernel, new TransactionContext[]{context})[0].get();
+        TransactionResult result = avm.run(this.kernel, new Transaction[]{tx})[0].get();
         et = System.nanoTime();
 
         Assert.assertEquals(result.getResultCode(), Code.SUCCESS);
@@ -301,10 +299,9 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         return et - st;
     }
 
-    private TransactionContextImpl setupTransactionContext(String methodName, java.lang.Object... arguments){
+    private Transaction setupTransaction(String methodName, java.lang.Object... arguments){
         byte[] txData = ABIUtil.encodeMethodArguments(methodName, arguments);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        return TransactionContextImpl.forExternalTransaction(tx, block);
+        return Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
     }
 
     private String[] generateListOfStrings(int count){

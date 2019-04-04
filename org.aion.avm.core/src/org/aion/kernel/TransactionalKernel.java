@@ -26,12 +26,23 @@ public class TransactionalKernel implements KernelInterface {
     private final Set<ByteArrayWrapper> deletedAccountProjection;
     private final Set<ByteArrayWrapper> cachedAccountBalances;
 
+    private long blockDifficulty;
+    private long blockNumber;
+    private long blockTimestamp;
+    private long blockNrgLimit;
+    private Address blockCoinbase;
+
     public TransactionalKernel(KernelInterface parent) {
         this.parent = parent;
         this.writeCache = new CachingKernel();
         this.writeLog = new ArrayList<>();
         this.deletedAccountProjection = new HashSet<>();
         this.cachedAccountBalances = new HashSet<>();
+        this.blockDifficulty = parent.getBlockDifficulty();
+        this.blockNumber = parent.getBlockNumber();
+        this.blockTimestamp = parent.getBlockTimestamp();
+        this.blockNrgLimit = parent.getBlockEnergyLimit();
+        this.blockCoinbase = parent.getMinerAddress();
     }
 
     @Override
@@ -288,5 +299,30 @@ public class TransactionalKernel implements KernelInterface {
         // We need to delegate to our parent kernel to apply whatever logic is defined there.
         // The only exception to this is cases where we already stored code in our cache so see if that is there.
         return (null != this.writeCache.getTransformedCode(address)) || this.parent.destinationAddressIsSafeForThisVM(address);
+    }
+
+    @Override
+    public long getBlockNumber() {
+        return blockNumber;
+    }
+
+    @Override
+    public long getBlockTimestamp() {
+        return blockTimestamp;
+    }
+
+    @Override
+    public long getBlockEnergyLimit() {
+        return blockNrgLimit;
+    }
+
+    @Override
+    public long getBlockDifficulty() {
+        return blockDifficulty;
+    }
+
+    @Override
+    public Address getMinerAddress() {
+        return blockCoinbase;
     }
 }

@@ -1,6 +1,8 @@
 package org.aion.parallel;
 
+import legacy_examples.foresttest.A;
 import org.aion.avm.core.util.Helpers;
+import org.aion.types.Address;
 import org.junit.Test;
 
 public class AddressResourceMonitorTest {
@@ -25,7 +27,7 @@ public class AddressResourceMonitorTest {
         }
 
         public void run(){
-            TransactionTask task = new TransactionTask(null, null, 0);
+            TransactionTask task = new TransactionTask(null, null, 0, Address.ZERO_ADDRESS());
 
             monitor.acquire(addr1, task);
             monitor.testReleaseResourcesForTask(task);
@@ -38,7 +40,7 @@ public class AddressResourceMonitorTest {
         }
         
         public void run(){
-            TransactionTask task = new TransactionTask(null, null, 1);
+            TransactionTask task = new TransactionTask(null, null, 1, Address.ZERO_ADDRESS());
             monitor.acquire(addr1, task);
 
             while(false == task.inAbortState()){
@@ -55,7 +57,7 @@ public class AddressResourceMonitorTest {
         }
         
         public void run(){
-            TransactionTask task = new TransactionTask(null, null, 2);
+            TransactionTask task = new TransactionTask(null, null, 2, Address.ZERO_ADDRESS());
             monitor.acquire(addr1, task);
 
             while(false == task.inAbortState()){
@@ -93,7 +95,7 @@ public class AddressResourceMonitorTest {
         }
         
         public void run(){
-            TransactionTask task = new TransactionTask(null, null, 0);
+            TransactionTask task = new TransactionTask(null, null, 0, Address.ZERO_ADDRESS());
 
             monitor.acquire(addr1, task);
             monitor.acquire(addr2, task);
@@ -109,7 +111,7 @@ public class AddressResourceMonitorTest {
         }
         
         public void run(){
-            TransactionTask task = new TransactionTask(null, null, 1);
+            TransactionTask task = new TransactionTask(null, null, 1, Address.ZERO_ADDRESS());
             monitor.acquire(addr3, task);
 
             while(false == task.inAbortState()){
@@ -126,7 +128,7 @@ public class AddressResourceMonitorTest {
         }
         
         public void run(){
-            TransactionTask task = new TransactionTask(null, null, 2);
+            TransactionTask task = new TransactionTask(null, null, 2, Address.ZERO_ADDRESS());
             monitor.acquire(addr4, task);
 
             while(false == task.inAbortState()){
@@ -163,7 +165,7 @@ public class AddressResourceMonitorTest {
         }
         
         public void run(){
-            TransactionTask task = new TransactionTask(null, null, 0);
+            TransactionTask task = new TransactionTask(null, null, 0, Address.ZERO_ADDRESS());
 
             monitor.acquire(addr1, task);
             monitor.acquire(addr2, task);
@@ -179,7 +181,7 @@ public class AddressResourceMonitorTest {
         }
 
         public void run(){
-            TransactionTask task = new TransactionTask(null, null, 1);
+            TransactionTask task = new TransactionTask(null, null, 1, Address.ZERO_ADDRESS());
             monitor.acquire(addr4, task);
             monitor.acquire(addr3, task);
             monitor.acquire(addr2, task);

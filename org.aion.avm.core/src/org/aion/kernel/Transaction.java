@@ -39,6 +39,10 @@ public class Transaction implements TransactionInterface {
         public int toInt() {
             return this.value;
         }
+
+        public byte toByte() {
+            return (byte) this.value;
+        }
     }
 
     Type type;
@@ -152,6 +156,11 @@ public class Transaction implements TransactionInterface {
     }
 
     @Override
+    public Address getContractAddress() {
+        throw new AssertionError("Did not expect this to be called.");
+    }
+
+    @Override
     public byte[] getNonce() {
         return this.nonce.toByteArray();
     }
@@ -201,6 +210,11 @@ public class Transaction implements TransactionInterface {
     @Override
     public boolean isContractCreationTransaction() {
         return this.to == null;
+    }
+
+    @Override
+    public byte getKind() {
+        return type.toByte();
     }
 
     @Override

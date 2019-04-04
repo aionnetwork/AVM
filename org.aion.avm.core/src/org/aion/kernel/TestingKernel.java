@@ -26,6 +26,11 @@ public class TestingKernel implements KernelInterface {
     public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(18);
     public static final BigInteger PREMINED_BIG_AMOUNT = BigInteger.valueOf(465000000).multiply(PREMINED_AMOUNT);
 
+    private BigInteger blockDifficulty;
+    private long blockNumber;
+    private long blockTimestamp;
+    private long blockNrgLimit;
+    private Address blockCoinbase;
 
     private final IDataStore dataStore;
 
@@ -38,14 +43,36 @@ public class TestingKernel implements KernelInterface {
         premined.setBalance(PREMINED_AMOUNT);
         premined = this.dataStore.createAccount(BIG_PREMINED_ADDRESS.toBytes());
         premined.setBalance(PREMINED_BIG_AMOUNT);
+        this.blockDifficulty = BigInteger.valueOf(10_000_000L);
+        this.blockNumber = 1;
+        this.blockTimestamp = System.currentTimeMillis();
+        this.blockNrgLimit = 10_000_000L;
+        this.blockCoinbase = Helpers.randomAddress();
+    }
+
+    /**
+     * Creates an instance of the interface which is backed by in-memory structures, only.
+     */
+    public TestingKernel(Block block) {
+        this.dataStore = new MemoryBackedDataStore();
+        IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toBytes());
+        premined.setBalance(PREMINED_AMOUNT);
+        premined = this.dataStore.createAccount(BIG_PREMINED_ADDRESS.toBytes());
+        premined.setBalance(PREMINED_BIG_AMOUNT);
+        this.blockDifficulty = block.getDifficulty();
+        this.blockNumber = block.getNumber();
+        this.blockTimestamp = block.getTimestamp();
+        this.blockNrgLimit = block.getEnergyLimit();
+        this.blockCoinbase = block.getCoinbase();
     }
 
     /**
      * Creates an instance of the interface which is backed by a directory on disk.
      * 
      * @param onDiskRoot The root directory which this implementation will use for persistence.
+     * @param block The top block of the current state of this kernel.
      */
-    public TestingKernel(File onDiskRoot) {
+    public TestingKernel(File onDiskRoot, Block block) {
         this.dataStore = new DirectoryBackedDataStore(onDiskRoot);
         // Try to open the account, creating it if doesn't exist.
         IAccountStore premined = this.dataStore.openAccount(PREMINED_ADDRESS.toBytes());
@@ -53,6 +80,11 @@ public class TestingKernel implements KernelInterface {
             premined = this.dataStore.createAccount(PREMINED_ADDRESS.toBytes());
         }
         premined.setBalance(PREMINED_AMOUNT);
+        this.blockDifficulty = block.getDifficulty();
+        this.blockNumber = block.getNumber();
+        this.blockTimestamp = block.getTimestamp();
+        this.blockNrgLimit = block.getEnergyLimit();
+        this.blockCoinbase = block.getCoinbase();
     }
 
     @Override
@@ -204,6 +236,31 @@ public class TestingKernel implements KernelInterface {
     }
 
     @Override
+    public long getBlockNumber() {
+        return blockNumber;
+    }
+
+    @Override
+    public long getBlockTimestamp() {
+        return blockTimestamp;
+    }
+
+    @Override
+    public long getBlockEnergyLimit() {
+        return blockNrgLimit;
+    }
+
+    @Override
+    public long getBlockDifficulty() {
+        return blockDifficulty.longValue();
+    }
+
+    @Override
+    public Address getMinerAddress() {
+        return blockCoinbase;
+    }
+
+    @Override
     public void refundAccount(Address address, BigInteger amount) {
         // This method may have special logic in the kernel. Here it is just adjustBalance.
         internalAdjustBalance(address, amount);
@@ -219,6 +276,14 @@ public class TestingKernel implements KernelInterface {
     public void payMiningFee(Address address, BigInteger fee) {
         // This method may have special logic in the kernel. Here it is just adjustBalance.
         internalAdjustBalance(address, fee);
+    }
+
+    public void updateBlock(Block block) {
+        this.blockDifficulty = block.getDifficulty();
+        this.blockNumber = block.getNumber();
+        this.blockTimestamp = block.getTimestamp();
+        this.blockNrgLimit = block.getEnergyLimit();
+        this.blockCoinbase = block.getCoinbase();
     }
 
 

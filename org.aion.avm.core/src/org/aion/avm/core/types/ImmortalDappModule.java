@@ -13,7 +13,6 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.types.Address;
-import org.aion.vm.api.interfaces.TransactionContext;
 
 
 /**
@@ -60,9 +59,9 @@ public class ImmortalDappModule {
     /**
      * Create the in-memory JAR containing all the classes in this module.
      */
-    public byte[] createJar(Address address, TransactionContext context) throws IOException {
+    public byte[] createJar(Address address, long blockTimeStamp) throws IOException {
         // set jar file timestamp to block timestamp so the whole network is in agreement over this.
-        FileTime timestamp = FileTime.fromMillis(context.getBlockTimestamp());
+        FileTime timestamp = FileTime.fromMillis(blockTimeStamp);
 
         // manifest, we explicitly write it so that can can control its timestamps.
         Manifest manifest = new Manifest();

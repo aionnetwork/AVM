@@ -13,9 +13,7 @@ import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
-import org.aion.kernel.TransactionContextImpl;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,8 +33,7 @@ public class AionBufferPerfTest {
     private TransactionResult deploy(KernelInterface kernel, AvmImpl avm, byte[] testJar){
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionContext createContext = TransactionContextImpl.forExternalTransaction(createTransaction, block);
-        TransactionResult createResult = avm.run(kernel, new TransactionContext[] {createContext})[0].get();
+        TransactionResult createResult = avm.run(kernel, new Transaction[] {createTransaction})[0].get();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         return createResult;
@@ -44,8 +41,7 @@ public class AionBufferPerfTest {
 
     private TransactionResult call(KernelInterface kernel, AvmImpl avm, org.aion.types.Address contract, org.aion.types.Address sender, byte[] args) {
         Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1L);
-        TransactionContext callContext = TransactionContextImpl.forExternalTransaction(callTransaction, block);
-        TransactionResult callResult = avm.run(kernel, new TransactionContext[] {callContext})[0].get();
+        TransactionResult callResult = avm.run(kernel, new Transaction[] {callTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
         return callResult;
     }
@@ -55,7 +51,7 @@ public class AionBufferPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurements for AionBuffer\n>>");
         byte[] args;
-        KernelInterface kernel = new TestingKernel();
+        KernelInterface kernel = new TestingKernel(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
         TransactionResult deployRes = deploy(kernel, avm, buildBufferPerfJar());

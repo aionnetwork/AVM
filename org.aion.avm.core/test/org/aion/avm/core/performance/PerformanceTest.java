@@ -12,7 +12,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
-import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
 import org.junit.Assert;
@@ -40,9 +39,9 @@ public class PerformanceTest {
 
     @Before
     public void setup() {
-        this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        this.kernel = new TestingKernel(block);
         deploy();
     }
 
@@ -67,7 +66,7 @@ public class PerformanceTest {
 
             //deploying dapp
             Transaction create = Transaction.create(userAddress, kernel.getNonce(userAddress), BigInteger.ZERO, txData, energyLimit, energyPrice);
-            AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[]{TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
+            AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[]{create})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             Address contractAddr = new Address(createResult.getReturnData());
             contractAddrs[i] = contractAddr;
@@ -118,7 +117,7 @@ public class PerformanceTest {
     private void callSingle(org.aion.types.Address sender, Block block, Address contractAddr, String methodName) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
         Transaction call = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 
@@ -158,14 +157,13 @@ public class PerformanceTest {
     public void callBatch(String methodName, Block block, boolean Nto1){
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
         for(int j = 0; j < contextNum; ++j) {
-            TransactionContext[] transactionContext = new TransactionContext[transactionBlockSize];
+            Transaction[] transactionArray = new Transaction[transactionBlockSize];
             for (int i = 0; i < transactionBlockSize; ++i) {
                 org.aion.types.Address sender = userAddrs[i];
                 Address contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];
-                Transaction call = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
-                transactionContext[i] = TransactionContextImpl.forExternalTransaction(call, block);
+                transactionArray[i] = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
             }
-            SimpleFuture<TransactionResult>[] futures = avm.run(this.kernel, transactionContext);
+            SimpleFuture<TransactionResult>[] futures = avm.run(this.kernel, transactionArray);
             for (SimpleFuture<TransactionResult> future : futures) {
                 AvmTransactionResult result = (AvmTransactionResult) future.get();
                 Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());

@@ -37,7 +37,7 @@ public class BlockchainTest {
 
         AvmRule.ResultWrapper result = avmRule.call(premined, dappAddress, BigInteger.ONE, txData, energyLimit, energyPrice);
 
-        Block block = avmRule.block;
+        Block block = avmRule.getBlock();
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(dappAddress.unwrap());
