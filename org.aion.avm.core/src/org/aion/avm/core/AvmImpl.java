@@ -357,7 +357,7 @@ public class AvmImpl implements AvmInternal {
             // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
             ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
 
-            LoadedDApp dapp;
+            LoadedDApp dapp = null;
             // The reentrant cache is obviously the first priority.
             // (note that we also want to check the kernel we were given to make sure that this DApp hasn't been deleted since we put it in the cache.
             if ((null != stateToResume) && (null != thisTransactionKernel.getCode(recipient))) {
@@ -367,7 +367,11 @@ public class AvmImpl implements AvmInternal {
             } else {
                 // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
                 ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toBytes());
-                dapp = this.hotCache.checkout(addressWrapper);
+                LoadedDApp dappInHotCache = this.hotCache.checkout(addressWrapper);
+                //'parentKernel.getCode(recipient) != null' means this recipient's DApp is not self-destructed.
+                if (thisTransactionKernel.getCode(recipient) != null) {
+                    dapp = dappInHotCache;
+                }
                 if (null == dapp) {
                     // If we didn't find it there, just load it.
                     try {

@@ -128,10 +128,11 @@ public class SelfDestructResource {
         // Try to call them, verifying that they are not accessible.
         data = ABIEncoder.encodeOneString("justReturn");
         energyLimit = BlockchainRuntime.getRemainingEnergy() / 2;
-        response = BlockchainRuntime.call(target, value, data, energyLimit).getReturnData();
-        decoder = new ABIDecoder(response);
-        decodedResponse = decoder.decodeOneInteger();
-        assert (JUST_RETURN == decodedResponse);
+        Result result = BlockchainRuntime.call(target, value, data, energyLimit);
+        response = result.getReturnData();
+        // Calling a deleted DApp is a success (since it is an account), but returns null (since there is no code).
+        assert (result.isSuccess());
+        assert (null == response);
         return CALL_TO_DELETE_SUCCESS;
     }
 

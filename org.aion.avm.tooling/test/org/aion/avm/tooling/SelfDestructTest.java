@@ -2,7 +2,9 @@ package org.aion.avm.tooling;
 
 import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
+import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
+import org.aion.kernel.Block;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -26,22 +28,44 @@ public class SelfDestructTest {
 
     @Test
     public void deleteSelfAndReturnValue() {
+        deleteSelfAndReturnValue(avmRule.block.getNumber());
+        deleteSelfAndReturnValue(avmRule.block.getNumber() + 1);
+        deleteSelfAndReturnValue(avmRule.block.getNumber() + 2);
+    }
+
+    private void deleteSelfAndReturnValue(long newBlockNumber) {
         Address target = deployCommonResource(new byte[0]);
         
         byte[] argData = ABIUtil.encodeMethodArguments("deleteAndReturn", deployer);
         Object resultObject = callDApp(target, argData);
         Assert.assertEquals(SelfDestructResource.DELETE_AND_RETURN, ((Integer)resultObject).intValue());
+
+        if (newBlockNumber != avmRule.block.getNumber()) {
+            avmRule.block = new Block(new byte[32], newBlockNumber, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        }
+
         failToCall(target);
     }
 
     @Test
     public void deleteSelfThenCallAnotherAndReturnValue() {
+        deleteSelfThenCallAnotherAndReturnValue(avmRule.block.getNumber());
+        deleteSelfThenCallAnotherAndReturnValue(avmRule.block.getNumber() + 1);
+        deleteSelfThenCallAnotherAndReturnValue(avmRule.block.getNumber() + 2);
+    }
+
+    private void deleteSelfThenCallAnotherAndReturnValue(long newBlockNumber) {
         Address bystander = deployCommonResource(new byte[0]);
         Address target = deployCommonResource(new byte[0]);
         
         byte[] argData = ABIUtil.encodeMethodArguments("deleteCallAndReturn", deployer, bystander);
         Object resultObject = callDApp(target, argData);
         Assert.assertEquals(SelfDestructResource.JUST_RETURN, ((Integer)resultObject).intValue());
+
+        if (newBlockNumber != avmRule.block.getNumber()) {
+            avmRule.block = new Block(new byte[32], newBlockNumber, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        }
+
         failToCall(target);
     }
 
