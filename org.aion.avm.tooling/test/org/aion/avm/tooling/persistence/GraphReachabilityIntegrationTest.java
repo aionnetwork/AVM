@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.persistence;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.InstrumentationBasedStorageFees;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -10,7 +10,6 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
-import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.aion.vm.api.interfaces.TransactionResult;

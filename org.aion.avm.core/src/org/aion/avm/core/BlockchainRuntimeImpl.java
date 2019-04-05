@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
-import org.aion.avm.shadowapi.org.aion.avm.api.Address;
-import org.aion.avm.shadowapi.org.aion.avm.api.Result;
+import org.aion.avm.shadowapi.avm.Address;
+import org.aion.avm.shadowapi.avm.Result;
 import org.aion.avm.internal.*;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;

@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;

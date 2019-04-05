@@ -1,7 +1,7 @@
 package org.aion.avm.core.util;
 
-import org.aion.avm.api.Address;
-import org.aion.avm.api.Result;
+import avm.Address;
+import avm.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.shadow.java.lang.String;
@@ -65,7 +65,7 @@ public class BlockchainRuntime {
 
 
     public static java.math.BigInteger getBalance(Address address) {
-        return blockchainRuntime.avm_getBalance(new org.aion.avm.shadowapi.org.aion.avm.api.Address(address.unwrap())).getUnderlying();
+        return blockchainRuntime.avm_getBalance(new org.aion.avm.shadowapi.avm.Address(address.unwrap())).getUnderlying();
     }
 
     public static java.math.BigInteger getBalanceOfThisContract() {
@@ -73,7 +73,7 @@ public class BlockchainRuntime {
     }
 
     public static int getCodeSize(Address address) {
-        return blockchainRuntime.avm_getCodeSize(new org.aion.avm.shadowapi.org.aion.avm.api.Address(address.unwrap()));
+        return blockchainRuntime.avm_getCodeSize(new org.aion.avm.shadowapi.avm.Address(address.unwrap()));
     }
 
 
@@ -92,7 +92,7 @@ public class BlockchainRuntime {
     }
 
     public static void selfDestruct(Address beneficiary) {
-        blockchainRuntime.avm_selfDestruct(new org.aion.avm.shadowapi.org.aion.avm.api.Address(beneficiary.unwrap()));
+        blockchainRuntime.avm_selfDestruct(new org.aion.avm.shadowapi.avm.Address(beneficiary.unwrap()));
     }
 
     public static void log(byte[] data) {

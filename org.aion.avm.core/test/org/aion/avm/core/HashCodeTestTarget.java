@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 
 
 /**

@@ -3,7 +3,7 @@ package org.aion.cli;
 import java.io.File;
 import java.io.IOException;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.tooling.ShadowCoverageTarget;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;

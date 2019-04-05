@@ -1,7 +1,7 @@
 package org.aion.avm.core.blockchainruntime;
 
 import java.math.BigInteger;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 

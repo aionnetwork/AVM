@@ -1,15 +1,13 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import java.math.BigInteger;
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.hash.HashUtils;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.kernel.*;
-import org.aion.kernel.AvmTransactionResult.Code;
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 

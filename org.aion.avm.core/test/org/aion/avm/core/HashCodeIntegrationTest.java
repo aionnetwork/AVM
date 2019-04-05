@@ -13,7 +13,7 @@ import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
 import org.aion.kernel.TransactionContextImpl;
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.vm.api.interfaces.TransactionContext;
 import org.junit.After;
 import org.junit.Assert;

@@ -1,8 +1,8 @@
 package org.aion.avm.tooling.blockchainruntime;
 
+import avm.BlockchainRuntime;
 import org.aion.avm.core.util.ABIUtil;
-import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.ClassRule;
@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the {@link org.aion.avm.api.BlockchainRuntime} functionality for getting the origin, caller
+ * Tests the {@link BlockchainRuntime} functionality for getting the origin, caller
  * and current contract addresses out on chains of dApp calls.
  *
  * The final dApp in the chain will REVERT and produce no data, so the data we validate has one entry
@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
  * report (its return data is null), so you lose all of the information of the dApps below it.
  *
  * This test is really just meant to test that the second last dApp grabs the proper data after its
- * child fails, in order to convince us that the {@link org.aion.avm.api.BlockchainRuntime} class is
+ * child fails, in order to convince us that the {@link BlockchainRuntime} class is
  * being handled correctly even when dApps fail.
  */
 public class FailedInternalCallAddressesTest {

@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
 import org.junit.Before;

@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.bootstrapmethods;
 
 import java.lang.invoke.LambdaMetafactory;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 
 /**
  * A contract that attempts to call into {@link java.lang.invoke.LambdaMetafactory#metafactory}.

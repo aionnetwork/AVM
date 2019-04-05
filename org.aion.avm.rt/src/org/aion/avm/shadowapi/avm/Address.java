@@ -1,4 +1,4 @@
-package org.aion.avm.shadowapi.org.aion.avm.api;
+package org.aion.avm.shadowapi.avm;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.CharArray;

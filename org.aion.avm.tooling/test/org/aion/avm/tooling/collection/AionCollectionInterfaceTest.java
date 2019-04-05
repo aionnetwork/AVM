@@ -3,7 +3,7 @@ package org.aion.avm.tooling.collection;
 import java.math.BigInteger;
 
 import org.aion.avm.core.util.ABIUtil;
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;

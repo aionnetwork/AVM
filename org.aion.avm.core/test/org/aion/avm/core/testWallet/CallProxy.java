@@ -3,11 +3,10 @@ package org.aion.avm.core.testWallet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.util.ABIUtil;
-import org.aion.avm.userlib.abi.ABIDecoder;
 
 
 /**

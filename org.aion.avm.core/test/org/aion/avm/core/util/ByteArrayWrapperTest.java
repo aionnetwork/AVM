@@ -1,6 +1,6 @@
 package org.aion.avm.core.util;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

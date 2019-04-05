@@ -2,9 +2,9 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 
-import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.Result;
+import avm.Address;
+import avm.BlockchainRuntime;
+import avm.Result;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;

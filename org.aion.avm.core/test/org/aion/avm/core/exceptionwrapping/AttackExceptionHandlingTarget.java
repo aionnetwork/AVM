@@ -2,7 +2,7 @@ package org.aion.avm.core.exceptionwrapping;
 
 import java.math.BigInteger;
 
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 
 
 /**

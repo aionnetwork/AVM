@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.shadowapi;
 
-import org.aion.avm.api.Result;
+import avm.Result;
 import org.aion.avm.tooling.abi.Callable;
 
 public class ResultTestTarget {

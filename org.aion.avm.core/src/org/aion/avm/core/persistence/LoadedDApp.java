@@ -13,7 +13,7 @@ import java.util.function.Function;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IBlockchainRuntime;
-import org.aion.avm.shadowapi.org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.shadowapi.avm.BlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;

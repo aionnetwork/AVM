@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.shadowapi;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;

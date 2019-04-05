@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
 import org.aion.avm.userlib.abi.ABIEncoder;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 
 
 public class ShadowRuntimeFailureTarget {

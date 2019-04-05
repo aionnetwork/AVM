@@ -1,5 +1,6 @@
 package org.aion.avm.core.util;
 
+import avm.Address;
 import java.nio.ByteBuffer;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
@@ -169,8 +170,8 @@ public class ABIUtil {
             return ABIEncoder.encodeOneDoubleArray((double[]) data);
         } else if (clazz == String.class) {
             return ABIEncoder.encodeOneString((String) data);
-        } else if (clazz == org.aion.avm.api.Address.class) {
-            return ABIEncoder.encodeOneAddress((org.aion.avm.api.Address) data);
+        } else if (clazz == Address.class) {
+            return ABIEncoder.encodeOneAddress((Address) data);
         } else if (clazz == byte[][].class) {
         return ABIEncoder.encodeOne2DByteArray((byte[][]) data);
         } else if (clazz == boolean[][].class) {
@@ -189,8 +190,8 @@ public class ABIUtil {
             return ABIEncoder.encodeOne2DDoubleArray((double[][]) data);
         } else if (clazz == String[].class) {
             return ABIEncoder.encodeOneStringArray((String[]) data);
-        } else if (clazz == org.aion.avm.api.Address[].class) {
-            return ABIEncoder.encodeOneAddressArray((org.aion.avm.api.Address[]) data);
+        } else if (clazz == Address[].class) {
+            return ABIEncoder.encodeOneAddressArray((Address[]) data);
         } else {
             throw new ABIException("Unsupported ABI type");
         }

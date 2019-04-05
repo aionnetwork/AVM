@@ -1,8 +1,8 @@
 package org.aion.avm.tooling.persistence;
 
 import java.math.BigInteger;
-import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.Result;
+import avm.BlockchainRuntime;
+import avm.Result;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIEncoder;
 

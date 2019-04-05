@@ -1,8 +1,8 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import org.aion.avm.core.util.ABIUtil;
-import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.Address;
+import avm.BlockchainRuntime;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;

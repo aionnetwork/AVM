@@ -1,8 +1,9 @@
 package org.aion.avm.tooling.blockchainruntime;
 
+import avm.BlockchainRuntime;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIEncoder;
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.RedirectContract;
 import org.aion.kernel.AvmTransactionResult.Code;
@@ -17,7 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the {@link org.aion.avm.api.BlockchainRuntime#require(boolean)} method.
+ * Tests the {@link BlockchainRuntime#require(boolean)} method.
  */
 public class RequireTest {
     @ClassRule

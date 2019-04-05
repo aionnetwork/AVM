@@ -1,6 +1,6 @@
 package org.aion.avm.core.shadowing.testString;
 
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 

@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.testExchange;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 
 public class ExchangeTransaction {
 

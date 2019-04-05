@@ -1,4 +1,4 @@
-package org.aion.avm.api;
+package avm;
 
 /**
  * Represents an address of account in the Aion Network.

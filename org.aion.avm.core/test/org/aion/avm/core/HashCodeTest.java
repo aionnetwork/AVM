@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
@@ -284,18 +284,18 @@ public class HashCodeTest {
         Address outside = new Address(data);
         // Just to make this interesting, we will see what happens if we create the Address objects from different environments.
         ByteArray wrapper = new ByteArray(data);
-        org.aion.avm.shadowapi.org.aion.avm.api.Address inside = (org.aion.avm.shadowapi.org.aion.avm.api.Address) this.clazz.getMethod(NamespaceMapper.mapMethodName("createAddress"), ByteArray.class)
+        org.aion.avm.shadowapi.avm.Address inside = (org.aion.avm.shadowapi.avm.Address) this.clazz.getMethod(NamespaceMapper.mapMethodName("createAddress"), ByteArray.class)
                 .invoke(null, wrapper);
         
         // Compare these outside.
         Assert.assertEquals(outside.hashCode(), inside.hashCode());
 
         Assert.assertEquals(outside, new Address(inside.unwrap()));
-        Assert.assertEquals(new org.aion.avm.shadowapi.org.aion.avm.api.Address(outside.unwrap()), inside);
+        Assert.assertEquals(new org.aion.avm.shadowapi.avm.Address(outside.unwrap()), inside);
 
         // Compare them insider.
-        boolean didBothMatch = (Boolean) this.clazz.getMethod(NamespaceMapper.mapMethodName("compareAddresses"), org.aion.avm.shadowapi.org.aion.avm.api.Address.class, org.aion.avm.shadowapi.org.aion.avm.api.Address.class)
-                .invoke(null, new org.aion.avm.shadowapi.org.aion.avm.api.Address(outside.unwrap()), inside);
+        boolean didBothMatch = (Boolean) this.clazz.getMethod(NamespaceMapper.mapMethodName("compareAddresses"), org.aion.avm.shadowapi.avm.Address.class, org.aion.avm.shadowapi.avm.Address.class)
+                .invoke(null, new org.aion.avm.shadowapi.avm.Address(outside.unwrap()), inside);
         Assert.assertTrue(didBothMatch);
     }
 

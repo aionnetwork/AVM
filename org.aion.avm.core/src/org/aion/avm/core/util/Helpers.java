@@ -1,6 +1,6 @@
 package org.aion.avm.core.util;
 
-import org.aion.avm.shadowapi.org.aion.avm.api.BlockchainRuntime;
+import org.aion.avm.shadowapi.avm.BlockchainRuntime;
 import org.aion.types.Address;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.internal.IRuntimeSetup;

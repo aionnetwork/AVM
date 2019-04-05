@@ -1,6 +1,6 @@
 package legacy_examples.helloworld;
 
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIDecoder;
 

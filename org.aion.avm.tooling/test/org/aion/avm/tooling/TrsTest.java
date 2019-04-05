@@ -1,7 +1,6 @@
 package org.aion.avm.tooling;
 
 import org.aion.avm.core.util.ABIUtil;
-import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.types.Address;
 import org.aion.avm.tooling.poc.TRS;
 import org.aion.avm.core.util.Helpers;
@@ -22,7 +21,7 @@ public class TrsTest {
     public static AvmRule avmRule = new AvmRule(true);
 
     private static Address DEPLOYER;
-    private static org.aion.avm.api.Address DEPLOYER_API;
+    private static avm.Address DEPLOYER_API;
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1;
     private static final int NUM_PERIODS = 12;
@@ -121,13 +120,13 @@ public class TrsTest {
     }
 
     private TransactionResult sendFundsTo(Address recipient, BigInteger amount) {
-        org.aion.avm.api.Address recipientAddress = new org.aion.avm.api.Address(recipient.toBytes());
+        avm.Address recipientAddress = new avm.Address(recipient.toBytes());
         AvmRule.ResultWrapper result = avmRule.balanceTransfer(DEPLOYER_API, recipientAddress, amount, ENERGY_LIMIT, ENERGY_PRICE);
         return result.getTransactionResult();
     }
 
     private TransactionResult mintAccountToTrs(Address account, BigInteger amount) {
-        return callContract("mint", new org.aion.avm.api.Address(account.toBytes()), amount.longValue());
+        return callContract("mint", new avm.Address(account.toBytes()), amount.longValue());
     }
 
     private TransactionResult withdrawFromTrs(Address recipient) {
@@ -152,8 +151,8 @@ public class TrsTest {
 
     private TransactionResult callContract(Address sender, String method, Object... parameters) {
         byte[] callData = ABIUtil.encodeMethodArguments(method, parameters);
-        org.aion.avm.api.Address contractAddress = new org.aion.avm.api.Address(contract.toBytes());
-        org.aion.avm.api.Address senderAddress = new org.aion.avm.api.Address(sender.toBytes());
+        avm.Address contractAddress = new avm.Address(contract.toBytes());
+        avm.Address senderAddress = new avm.Address(sender.toBytes());
         AvmRule.ResultWrapper result = avmRule.call(senderAddress, contractAddress, BigInteger.ZERO, callData, ENERGY_LIMIT, ENERGY_PRICE);
         assertTrue(result.getReceiptStatus().isSuccess());
         return result.getTransactionResult();

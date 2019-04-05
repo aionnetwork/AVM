@@ -2,7 +2,7 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -18,7 +18,6 @@ import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.OutOfEnergyException;
-import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;

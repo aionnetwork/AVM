@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import java.math.BigInteger;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 
 
 public class BlockchainRuntimeTestFailingResource {

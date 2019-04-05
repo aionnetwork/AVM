@@ -1,6 +1,6 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmFailedException;
 import org.aion.avm.core.AvmImpl;
@@ -13,7 +13,6 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.OutOfEnergyException;
-import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.*;
 import org.junit.Assert;

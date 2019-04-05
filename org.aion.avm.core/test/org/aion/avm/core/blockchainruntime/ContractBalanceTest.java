@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -13,7 +13,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
@@ -143,7 +142,7 @@ public class ContractBalanceTest {
     }
 
     private BigInteger callContractToGetItsBalanceViaRedirectContract(Address redirectContract, Address balanceContract) {
-        org.aion.avm.api.Address contract = getContractAsAbiAddress(balanceContract);
+        avm.Address contract = getContractAsAbiAddress(balanceContract);
         byte[] args = ABIUtil.encodeMethodArguments("getBalanceOfThisContract");
         byte[] callData = ABIUtil.encodeMethodArguments("callOtherContractAndRequireItIsSuccess", contract, 0L, args);
         return runTransactionAndInterpretOutputAsBigInteger(redirectContract, callData);
@@ -157,8 +156,8 @@ public class ContractBalanceTest {
         return new BigInteger((byte[]) ABIUtil.decodeOneObject(result.getReturnData()));
     }
 
-    private org.aion.avm.api.Address getContractAsAbiAddress(Address contract) {
-        return new org.aion.avm.api.Address(contract.toBytes());
+    private avm.Address getContractAsAbiAddress(Address contract) {
+        return new avm.Address(contract.toBytes());
     }
 
 }

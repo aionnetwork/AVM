@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.Address;
+import avm.BlockchainRuntime;
 
 
 /**

@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 
 
 /**

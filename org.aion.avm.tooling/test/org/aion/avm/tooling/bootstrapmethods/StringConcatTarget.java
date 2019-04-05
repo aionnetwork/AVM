@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.bootstrapmethods;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.tooling.abi.Callable;
 
 public class StringConcatTarget {

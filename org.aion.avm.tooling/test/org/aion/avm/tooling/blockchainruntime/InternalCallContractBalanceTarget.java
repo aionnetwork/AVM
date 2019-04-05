@@ -3,9 +3,9 @@ package org.aion.avm.tooling.blockchainruntime;
 import java.math.BigInteger;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
-import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.Result;
+import avm.Address;
+import avm.BlockchainRuntime;
+import avm.Result;
 
 public class InternalCallContractBalanceTarget {
     private static BigInteger balanceDuringClinit;

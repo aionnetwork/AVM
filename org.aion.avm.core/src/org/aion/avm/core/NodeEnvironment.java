@@ -14,6 +14,9 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.aion.avm.shadowapi.avm.Address;
+import org.aion.avm.shadowapi.avm.BlockchainRuntime;
+import org.aion.avm.shadowapi.avm.Result;
 
 /**
  * Represents the long-lived global state of a specific "node" instance.
@@ -47,9 +50,9 @@ public class NodeEnvironment {
         this.sharedClassLoader = new AvmSharedClassLoader(generatedShadowJDK);
         try {
             this.shadowApiClasses = new Class<?>[] {
-                org.aion.avm.shadowapi.org.aion.avm.api.Address.class,
-                org.aion.avm.shadowapi.org.aion.avm.api.BlockchainRuntime.class,
-                org.aion.avm.shadowapi.org.aion.avm.api.Result.class,
+                Address.class,
+                BlockchainRuntime.class,
+                Result.class,
             };
 
             this.arraywrapperClasses = new Class<?>[] {

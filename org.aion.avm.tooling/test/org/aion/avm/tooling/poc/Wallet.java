@@ -1,8 +1,8 @@
 package org.aion.avm.tooling.poc;
 
 import java.math.BigInteger;
-import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.Address;
+import avm.BlockchainRuntime;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;

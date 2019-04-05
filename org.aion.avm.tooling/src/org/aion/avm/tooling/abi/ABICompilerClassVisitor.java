@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -102,7 +102,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
 
         methodVisitor.visitTypeInsn(NEW, "org/aion/avm/userlib/abi/ABIDecoder");
         methodVisitor.visitInsn(DUP);
-        methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/BlockchainRuntime", "getData", "()[B", false);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "avm/BlockchainRuntime", "getData", "()[B", false);
         methodVisitor.visitMethodInsn(INVOKESPECIAL, "org/aion/avm/userlib/abi/ABIDecoder", "<init>", "([B)V", false);
         methodVisitor.visitVarInsn(ASTORE, 0);
 
@@ -185,7 +185,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                 } else if (isString(argTypes[i])) {
                     methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneString", "()Ljava/lang/String;", false);
                 } else if (isAddress(argTypes[i])) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneAddress", "()Lorg/aion/avm/api/Address;", false);
+                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneAddress", "()Lavm/Address;", false);
                 } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.BYTE_TYPE, 2)) {
                     methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DByteArray", "()[[B", false);
                 } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.BOOLEAN_TYPE, 2)) {
@@ -205,7 +205,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                 } else if (argTypes[i].getSort() == Type.ARRAY && argTypes[i].getDimensions() == 1 && isString(argTypes[i].getElementType())) {
                     methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneStringArray", "()[Ljava/lang/String;", false);
                 } else if (argTypes[i].getSort() == Type.ARRAY && argTypes[i].getDimensions() == 1 && isAddress(argTypes[i].getElementType())) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneAddressArray", "()[Lorg/aion/avm/api/Address;", false);
+                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneAddressArray", "()[Lavm/Address;", false);
                 } else {
                     throw new ABICompilerException("Need to decode an unsupported ABI type");
                 }
@@ -255,7 +255,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                 } else if (isString(returnType)) {
                     methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneString", "(Ljava/lang/String;)[B", false);
                 } else if (isAddress(returnType)) {
-                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneAddress", "(Lorg/aion/avm/api/Address;)[B", false);
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneAddress", "(Lavm/Address;)[B", false);
                 } else if (isArrayOfTypeAndDimensions(returnType, Type.BYTE_TYPE, 2)) {
                     methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOne2DByteArray", "([[B)[B", false);
                 } else if (isArrayOfTypeAndDimensions(returnType, Type.BOOLEAN_TYPE, 2)) {
@@ -275,7 +275,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                 } else if (returnType.getSort() == Type.ARRAY && returnType.getDimensions() == 1 && isString(returnType.getElementType())) {
                     methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneStringArray", "([Ljava/lang/String;)[B", false);
                 } else if (returnType.getSort() == Type.ARRAY && returnType.getDimensions() == 1 && isAddress(returnType.getElementType())) {
-                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneAddressArray", "([Lorg/aion/avm/api/Address;)[B", false);
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneAddressArray", "([Lavm/Address;)[B", false);
                 }
             } else {
                 methodVisitor.visitInsn(ICONST_0);
@@ -295,7 +295,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
             methodVisitor.visitIntInsn(NEWARRAY, T_BYTE);
             methodVisitor.visitInsn(ARETURN);
         } else {
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/api/BlockchainRuntime", "revert", "()V", false);
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "avm/BlockchainRuntime", "revert", "()V", false);
             methodVisitor.visitInsn(ACONST_NULL);
             methodVisitor.visitInsn(ARETURN);
         }

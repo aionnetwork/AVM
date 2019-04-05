@@ -5,8 +5,8 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.Address;
+import avm.BlockchainRuntime;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 

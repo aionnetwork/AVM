@@ -2,9 +2,8 @@ package org.aion.avm.core.testWallet;
 
 import java.util.function.Consumer;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.core.util.ABIUtil;
-import org.aion.avm.userlib.abi.ABIDecoder;
 
 
 /**

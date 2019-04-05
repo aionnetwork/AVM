@@ -4,9 +4,9 @@ import java.math.BigInteger;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
-import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
-import org.aion.avm.api.Result;
+import avm.Address;
+import avm.BlockchainRuntime;
+import avm.Result;
 
 /**
  * A contract that tracks the following addresses in internal calls: origin, caller, contract

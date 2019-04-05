@@ -1,6 +1,6 @@
 package org.aion.avm.userlib.abi;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 
 /**
  * Utility class for AVM ABI decoding. This class contains static methods

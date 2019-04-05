@@ -1,6 +1,6 @@
 package org.aion.avm.core.collection;
 
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionPlainMap;
 import org.aion.avm.userlib.abi.ABIDecoder;

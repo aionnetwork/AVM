@@ -1,8 +1,7 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import org.aion.avm.core.util.ABIUtil;
-import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.ClassRule;

@@ -1,6 +1,6 @@
 package examples;
 
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.AionMap;
 

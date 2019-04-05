@@ -1,5 +1,6 @@
 package org.aion.avm.core.util;
 
+import avm.Address;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -120,14 +121,14 @@ public enum ShadowTypeBridge {
             return new org.aion.avm.shadow.java.lang.String((String) standardValue);
         }
     },
-    ADDRESS(org.aion.avm.api.Address.class, org.aion.avm.shadowapi.org.aion.avm.api.Address.class.getName(), org.aion.avm.shadowapi.org.aion.avm.api.Address.class.getName()) {
+    ADDRESS(Address.class, org.aion.avm.shadowapi.avm.Address.class.getName(), org.aion.avm.shadowapi.avm.Address.class.getName()) {
         @Override
         public Object convertToStandardValue(IObject shadowValue) {
-            return new org.aion.avm.api.Address(((org.aion.avm.shadowapi.org.aion.avm.api.Address) shadowValue).unwrap());
+            return new Address(((org.aion.avm.shadowapi.avm.Address) shadowValue).unwrap());
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) {
-            return new org.aion.avm.shadowapi.org.aion.avm.api.Address(((org.aion.avm.api.Address) standardValue).unwrap());
+            return new org.aion.avm.shadowapi.avm.Address(((Address) standardValue).unwrap());
         }
     },
     
@@ -243,29 +244,29 @@ public enum ShadowTypeBridge {
             
         }
     },
-    A_ADDRESS(org.aion.avm.api.Address[].class
-            , PackageConstants.kArrayWrapperDotPrefix + "$L" + org.aion.avm.shadowapi.org.aion.avm.api.Address.class.getName()
-            , PackageConstants.kArrayWrapperDotPrefix + "interface._L" + org.aion.avm.shadowapi.org.aion.avm.api.Address.class.getName()
+    A_ADDRESS(Address[].class
+            , PackageConstants.kArrayWrapperDotPrefix + "$L" + org.aion.avm.shadowapi.avm.Address.class.getName()
+            , PackageConstants.kArrayWrapperDotPrefix + "interface._L" + org.aion.avm.shadowapi.avm.Address.class.getName()
     ) {
         @Override
         public Object convertToStandardValue(IObject shadowValue) {
             ObjectArray array = (ObjectArray)shadowValue;
             Object[] underlying = array.getUnderlying();
-            org.aion.avm.api.Address [] converted = new org.aion.avm.api.Address [underlying.length];
+            Address[] converted = new Address[underlying.length];
             for (int i = 0; i < underlying.length; ++i) {
                 // Nested elements don't need this conversion.
-                converted[i] = new org.aion.avm.api.Address(((org.aion.avm.shadowapi.org.aion.avm.api.Address) underlying[i]).unwrap());
+                converted[i] = new Address(((org.aion.avm.shadowapi.avm.Address) underlying[i]).unwrap());
             }
             return converted;
         }
         @Override
         public IObject convertToConcreteShadowValue(ClassLoader classLoader, Object standardValue) throws Exception {
-            org.aion.avm.api.Address[] array = (org.aion.avm.api.Address[]) standardValue;
+            Address[] array = (Address[]) standardValue;
             Class<?> wrapperClass = classLoader.loadClass(this.concreteShadowClassName);
             ObjectArray ret = (ObjectArray) wrapperClass.getMethod("initArray", int.class).invoke(null, array.length);
             for (int i = 0; i < array.length; ++i) {
                 // Convert these.
-                org.aion.avm.shadowapi.org.aion.avm.api.Address converted = (org.aion.avm.shadowapi.org.aion.avm.api.Address) ADDRESS.convertToConcreteShadowValue(classLoader, array[i]);
+                org.aion.avm.shadowapi.avm.Address converted = (org.aion.avm.shadowapi.avm.Address) ADDRESS.convertToConcreteShadowValue(classLoader, array[i]);
                 wrapperClass.getMethod("set", int.class, Object.class).invoke(ret, i, converted);
             }
             return ret;

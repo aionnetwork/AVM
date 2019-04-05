@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
 import org.aion.avm.core.util.ABIUtil;
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;

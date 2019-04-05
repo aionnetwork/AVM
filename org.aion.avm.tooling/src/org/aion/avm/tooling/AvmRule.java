@@ -1,6 +1,6 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -10,7 +10,6 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
-import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.*;
 import org.junit.rules.TestRule;

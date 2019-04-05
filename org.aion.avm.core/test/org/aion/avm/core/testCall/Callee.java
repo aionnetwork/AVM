@@ -1,6 +1,6 @@
 package org.aion.avm.core.testCall;
 
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 
 public class Callee {
 

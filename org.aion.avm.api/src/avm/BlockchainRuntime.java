@@ -1,4 +1,4 @@
-package org.aion.avm.api;
+package avm;
 
 import java.math.BigInteger;
 

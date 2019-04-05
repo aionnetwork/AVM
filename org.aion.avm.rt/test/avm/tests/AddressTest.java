@@ -1,6 +1,6 @@
-package org.aion.avm.api.tests;
+package avm.tests;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.junit.Assert;
 import org.junit.Test;
 

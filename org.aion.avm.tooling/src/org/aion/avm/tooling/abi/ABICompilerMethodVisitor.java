@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.abi;
 
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

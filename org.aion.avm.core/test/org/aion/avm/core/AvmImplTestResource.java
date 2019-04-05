@@ -1,8 +1,8 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import org.aion.avm.api.Address;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.Address;
+import avm.BlockchainRuntime;
 
 public class AvmImplTestResource {
 

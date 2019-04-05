@@ -1,12 +1,12 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import java.math.BigInteger;
-import org.aion.avm.api.Address;
+import avm.Address;
 import org.aion.avm.userlib.AionBuffer;
 
 import java.util.Arrays;
 
-import static org.aion.avm.api.BlockchainRuntime.*;
+import static avm.BlockchainRuntime.*;
 
 public class BlockchainRuntimeTestResource {
 

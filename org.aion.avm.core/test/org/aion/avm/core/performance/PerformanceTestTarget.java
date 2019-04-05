@@ -1,7 +1,7 @@
 package org.aion.avm.core.performance;
 
 import java.lang.StrictMath;
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
 public class PerformanceTestTarget {

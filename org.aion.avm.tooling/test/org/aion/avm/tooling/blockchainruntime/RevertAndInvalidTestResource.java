@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import org.aion.avm.api.BlockchainRuntime;
+import avm.BlockchainRuntime;
 
 public class RevertAndInvalidTestResource {
 
