@@ -98,7 +98,7 @@ public class Deployer {
         String targetTestName = BlockchainRuntime.class.getName();
         byte[] targetTestBytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(targetTestName) + ".class");
 
-        String newName = "avm/BlockchainRuntime";
+        String newName = "avm/Blockchain";
         byte[] renamedBytes = new ClassToolchain.Builder(targetTestBytes, PARSING_OPTIONS)
                 .addNextVisitor(new ClassRenameVisitor(newName))
                 .addWriter(new ClassWriter(WRITING_OPTIONS))
@@ -106,7 +106,7 @@ public class Deployer {
                 .runAndGetBytecode();
         try {
             SingleLoader loader = new SingleLoader("", new byte[0]);
-            Class<?> blockchainRuntime = loader.loadClassFromByteCode("avm.BlockchainRuntime", renamedBytes);
+            Class<?> blockchainRuntime = loader.loadClassFromByteCode("avm.Blockchain", renamedBytes);
             Class<?> directProxy = loader.loadClassFromByteCode(DirectProxy.class.getName(), Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(DirectProxy.class.getName()) + ".class"));
             Class<?> walletShim = loader.loadClassFromByteCode(WalletShim.class.getName(), Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(WalletShim.class.getName()) + ".class"));
             Class<?> multiOwned = loader.loadClassFromByteCode(Multiowned.class.getName(), Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(Multiowned.class.getName()) + ".class"));

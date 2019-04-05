@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
 public class ShadowClassConstantsTarget {
@@ -41,113 +41,113 @@ public class ShadowClassConstantsTarget {
 
     @Callable
     public static void checkBigIntegerConstants() {
-        BlockchainRuntime.require(bigZero == BigInteger.ZERO);
-        BlockchainRuntime.require(bigZero.equals(BigInteger.ZERO));
-        BlockchainRuntime.require(bigZero != BigInteger.valueOf(0));
-        BlockchainRuntime.require(bigZero.equals(BigInteger.valueOf(0)));
+        Blockchain.require(bigZero == BigInteger.ZERO);
+        Blockchain.require(bigZero.equals(BigInteger.ZERO));
+        Blockchain.require(bigZero != BigInteger.valueOf(0));
+        Blockchain.require(bigZero.equals(BigInteger.valueOf(0)));
 
-        BlockchainRuntime.require(bigOne == BigInteger.ONE);
-        BlockchainRuntime.require(bigOne.equals(BigInteger.ONE));
-        BlockchainRuntime.require(bigOne != BigInteger.valueOf(1));
-        BlockchainRuntime.require(bigOne.equals(BigInteger.valueOf(1)));
+        Blockchain.require(bigOne == BigInteger.ONE);
+        Blockchain.require(bigOne.equals(BigInteger.ONE));
+        Blockchain.require(bigOne != BigInteger.valueOf(1));
+        Blockchain.require(bigOne.equals(BigInteger.valueOf(1)));
 
-        BlockchainRuntime.require(bigTwo == BigInteger.TWO);
-        BlockchainRuntime.require(bigTwo.equals(BigInteger.TWO));
-        BlockchainRuntime.require(bigTwo != BigInteger.valueOf(2));
-        BlockchainRuntime.require(bigTwo.equals(BigInteger.valueOf(2)));
+        Blockchain.require(bigTwo == BigInteger.TWO);
+        Blockchain.require(bigTwo.equals(BigInteger.TWO));
+        Blockchain.require(bigTwo != BigInteger.valueOf(2));
+        Blockchain.require(bigTwo.equals(BigInteger.valueOf(2)));
 
-        BlockchainRuntime.require(bigTen == BigInteger.TEN);
-        BlockchainRuntime.require(bigTen.equals(BigInteger.TEN));
-        BlockchainRuntime.require(bigTen != BigInteger.valueOf(10));
-        BlockchainRuntime.require(bigTen.equals(BigInteger.valueOf(10)));
+        Blockchain.require(bigTen == BigInteger.TEN);
+        Blockchain.require(bigTen.equals(BigInteger.TEN));
+        Blockchain.require(bigTen != BigInteger.valueOf(10));
+        Blockchain.require(bigTen.equals(BigInteger.valueOf(10)));
     }
 
     @Callable
     public static void checkBigDecimalConstants() {
-        BlockchainRuntime.require(bigZeroDecimal == BigDecimal.ZERO);
-        BlockchainRuntime.require(bigZeroDecimal.equals(BigDecimal.ZERO));
-        BlockchainRuntime.require(bigZeroDecimal != BigDecimal.valueOf(0));
-        BlockchainRuntime.require(bigZeroDecimal.equals(BigDecimal.valueOf(0)));
+        Blockchain.require(bigZeroDecimal == BigDecimal.ZERO);
+        Blockchain.require(bigZeroDecimal.equals(BigDecimal.ZERO));
+        Blockchain.require(bigZeroDecimal != BigDecimal.valueOf(0));
+        Blockchain.require(bigZeroDecimal.equals(BigDecimal.valueOf(0)));
 
-        BlockchainRuntime.require(bigOneDecimal == BigDecimal.ONE);
-        BlockchainRuntime.require(bigOneDecimal.equals(BigDecimal.ONE));
-        BlockchainRuntime.require(bigOneDecimal != BigDecimal.valueOf(1));
-        BlockchainRuntime.require(bigOneDecimal.equals(BigDecimal.valueOf(1)));
+        Blockchain.require(bigOneDecimal == BigDecimal.ONE);
+        Blockchain.require(bigOneDecimal.equals(BigDecimal.ONE));
+        Blockchain.require(bigOneDecimal != BigDecimal.valueOf(1));
+        Blockchain.require(bigOneDecimal.equals(BigDecimal.valueOf(1)));
 
-        BlockchainRuntime.require(bigTenDecimal == BigDecimal.TEN);
-        BlockchainRuntime.require(bigTenDecimal.equals(BigDecimal.TEN));
-        BlockchainRuntime.require(bigTenDecimal != BigDecimal.valueOf(10));
-        BlockchainRuntime.require(bigTenDecimal.equals(BigDecimal.valueOf(10)));
+        Blockchain.require(bigTenDecimal == BigDecimal.TEN);
+        Blockchain.require(bigTenDecimal.equals(BigDecimal.TEN));
+        Blockchain.require(bigTenDecimal != BigDecimal.valueOf(10));
+        Blockchain.require(bigTenDecimal.equals(BigDecimal.valueOf(10)));
     }
 
     @Callable
     public static void checkRoundingModeConstants() {
-        BlockchainRuntime.require(roundUp == RoundingMode.UP);
-        BlockchainRuntime.require(roundDown == RoundingMode.DOWN);
-        BlockchainRuntime.require(roundHalfUp == RoundingMode.HALF_UP);
-        BlockchainRuntime.require(roundHalfDown == RoundingMode.HALF_DOWN);
-        BlockchainRuntime.require(roundHalfEven== RoundingMode.HALF_EVEN);
-        BlockchainRuntime.require(roundFloor == RoundingMode.FLOOR);
-        BlockchainRuntime.require(roundCeiling == RoundingMode.CEILING);
-        BlockchainRuntime.require(roundUnnecessary == RoundingMode.UNNECESSARY);
+        Blockchain.require(roundUp == RoundingMode.UP);
+        Blockchain.require(roundDown == RoundingMode.DOWN);
+        Blockchain.require(roundHalfUp == RoundingMode.HALF_UP);
+        Blockchain.require(roundHalfDown == RoundingMode.HALF_DOWN);
+        Blockchain.require(roundHalfEven== RoundingMode.HALF_EVEN);
+        Blockchain.require(roundFloor == RoundingMode.FLOOR);
+        Blockchain.require(roundCeiling == RoundingMode.CEILING);
+        Blockchain.require(roundUnnecessary == RoundingMode.UNNECESSARY);
     }
 
     @Callable
     public static void checkMathContextConstants() {
-        BlockchainRuntime.require(unlimitedMath == MathContext.UNLIMITED);
-        BlockchainRuntime.require(unlimitedMath.equals(new MathContext(0, RoundingMode.HALF_UP)));
+        Blockchain.require(unlimitedMath == MathContext.UNLIMITED);
+        Blockchain.require(unlimitedMath.equals(new MathContext(0, RoundingMode.HALF_UP)));
 
-        BlockchainRuntime.require(decimal32Math == MathContext.DECIMAL32);
-        BlockchainRuntime.require(decimal32Math.equals(new MathContext(7, RoundingMode.HALF_EVEN)));
+        Blockchain.require(decimal32Math == MathContext.DECIMAL32);
+        Blockchain.require(decimal32Math.equals(new MathContext(7, RoundingMode.HALF_EVEN)));
 
-        BlockchainRuntime.require(decimal64Math == MathContext.DECIMAL64);
-        BlockchainRuntime.require(decimal64Math.equals(new MathContext(16, RoundingMode.HALF_EVEN)));
+        Blockchain.require(decimal64Math == MathContext.DECIMAL64);
+        Blockchain.require(decimal64Math.equals(new MathContext(16, RoundingMode.HALF_EVEN)));
 
-        BlockchainRuntime.require(decimal128Math == MathContext.DECIMAL128);
-        BlockchainRuntime.require(decimal128Math.equals(new MathContext(34, RoundingMode.HALF_EVEN)));
+        Blockchain.require(decimal128Math == MathContext.DECIMAL128);
+        Blockchain.require(decimal128Math.equals(new MathContext(34, RoundingMode.HALF_EVEN)));
     }
 
     @Callable
     public static void checkBooleanConstants() {
-        BlockchainRuntime.require(trueBool == Boolean.TRUE);
-        BlockchainRuntime.require(trueBool.equals(Boolean.TRUE));
-        BlockchainRuntime.require(trueBool.equals(true));
+        Blockchain.require(trueBool == Boolean.TRUE);
+        Blockchain.require(trueBool.equals(Boolean.TRUE));
+        Blockchain.require(trueBool.equals(true));
 
-        BlockchainRuntime.require(falseBool == Boolean.FALSE);
-        BlockchainRuntime.require(falseBool.equals(Boolean.FALSE));
-        BlockchainRuntime.require(falseBool.equals(false));
+        Blockchain.require(falseBool == Boolean.FALSE);
+        Blockchain.require(falseBool.equals(Boolean.FALSE));
+        Blockchain.require(falseBool.equals(false));
 
         // These are surprisingly true in Java; verifying our consistency.
-        BlockchainRuntime.require(trueBool == Boolean.valueOf(true));
-        BlockchainRuntime.require(falseBool == Boolean.valueOf(false));
+        Blockchain.require(trueBool == Boolean.valueOf(true));
+        Blockchain.require(falseBool == Boolean.valueOf(false));
     }
 
     @Callable
     public static void checkPrimitiveTypeConstants() {
         // These are all consistent with Java identities.
-        BlockchainRuntime.require(boolClass != Boolean.class);
-        BlockchainRuntime.require(boolClass == boolean.class);
+        Blockchain.require(boolClass != Boolean.class);
+        Blockchain.require(boolClass == boolean.class);
 
-        BlockchainRuntime.require(byteClass != Byte.class);
-        BlockchainRuntime.require(byteClass == byte.class);
+        Blockchain.require(byteClass != Byte.class);
+        Blockchain.require(byteClass == byte.class);
 
-        BlockchainRuntime.require(charClass != Character.class);
-        BlockchainRuntime.require(charClass == char.class);
+        Blockchain.require(charClass != Character.class);
+        Blockchain.require(charClass == char.class);
 
-        BlockchainRuntime.require(shortClass != Short.class);
-        BlockchainRuntime.require(shortClass == short.class);
+        Blockchain.require(shortClass != Short.class);
+        Blockchain.require(shortClass == short.class);
 
-        BlockchainRuntime.require(intClass != Integer.class);
-        BlockchainRuntime.require(intClass == int.class);
+        Blockchain.require(intClass != Integer.class);
+        Blockchain.require(intClass == int.class);
 
-        BlockchainRuntime.require(longClass != Long.class);
-        BlockchainRuntime.require(longClass == long.class);
+        Blockchain.require(longClass != Long.class);
+        Blockchain.require(longClass == long.class);
 
-        BlockchainRuntime.require(doubleClass != Double.class);
-        BlockchainRuntime.require(doubleClass == double.class);
+        Blockchain.require(doubleClass != Double.class);
+        Blockchain.require(doubleClass == double.class);
 
-        BlockchainRuntime.require(floatClass != Float.class);
-        BlockchainRuntime.require(floatClass == float.class);
+        Blockchain.require(floatClass != Float.class);
+        Blockchain.require(floatClass == float.class);
     }
 
 }

@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.poc;
 
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 
@@ -13,12 +13,12 @@ public class Main {
      * This wallet instance is transparently put into storage.
      */
     static {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         Address owner1 = decoder.decodeOneAddress();
         Address owner2 = decoder.decodeOneAddress();
         int confirmationsRequired = decoder.decodeOneInteger();
         Address[] owners = {
-                BlockchainRuntime.getCaller(),
+                Blockchain.getCaller(),
                 owner1,
                 owner2
         };
@@ -33,7 +33,7 @@ public class Main {
      * @return the encoded return data of the method being called.
      */
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];

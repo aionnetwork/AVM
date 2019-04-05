@@ -6,7 +6,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 
@@ -22,7 +22,7 @@ public class ShadowCoverageTarget {
     }
 
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
@@ -126,7 +126,7 @@ public class ShadowCoverageTarget {
         BigInteger value = BigInteger.ZERO;
         byte[] data = ABIEncoder.encodeOneString(methodName);
         long energyLimit = 500000;
-        byte[] response = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit).getReturnData();
+        byte[] response = Blockchain.call(Blockchain.getAddress(), value, data, energyLimit).getReturnData();
         ABIDecoder decoder = new ABIDecoder(response);
         return decoder.decodeOneInteger();
     }

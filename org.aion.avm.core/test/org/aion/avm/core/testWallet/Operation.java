@@ -1,6 +1,6 @@
 package org.aion.avm.core.testWallet;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 
 /**
@@ -8,13 +8,13 @@ import avm.BlockchainRuntime;
  */
 public class Operation extends ByteArrayWrapper {
     public static Operation fromMessage() {
-        byte[] data = BlockchainRuntime.getData();
-        byte[] hash = BlockchainRuntime.blake2b(data);
+        byte[] data = Blockchain.getData();
+        byte[] hash = Blockchain.blake2b(data);
         return new Operation(hash);
     }
 
     public static Operation fromRawBytes(byte[] bytes) {
-        byte[] hash = BlockchainRuntime.blake2b(bytes);
+        byte[] hash = Blockchain.blake2b(bytes);
         return new Operation(hash);
     }
 
@@ -23,10 +23,10 @@ public class Operation extends ByteArrayWrapper {
     }
 
     public static byte[] rawOperationForCurrentMessageAndBlock() {
-        byte[] data = BlockchainRuntime.getData();
-        long blockNumber = BlockchainRuntime.getBlockNumber();
+        byte[] data = Blockchain.getData();
+        long blockNumber = Blockchain.getBlockNumber();
         byte[] fullData = ByteArrayHelpers.appendLong(data, blockNumber);
-        byte[] hash = BlockchainRuntime.blake2b(fullData);
+        byte[] hash = Blockchain.blake2b(fullData);
         return hash;
     }
 

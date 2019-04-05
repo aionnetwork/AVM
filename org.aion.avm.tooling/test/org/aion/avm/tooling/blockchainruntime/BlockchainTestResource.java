@@ -6,9 +6,9 @@ import org.aion.avm.userlib.AionBuffer;
 
 import java.util.Arrays;
 
-import static avm.BlockchainRuntime.*;
+import static avm.Blockchain.*;
 
-public class BlockchainRuntimeTestResource {
+public class BlockchainTestResource {
 
     public static byte[] main() {
         AionBuffer buffer = AionBuffer.allocate(1024);

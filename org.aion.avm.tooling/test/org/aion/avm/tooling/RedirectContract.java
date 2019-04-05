@@ -2,7 +2,7 @@ package org.aion.avm.tooling;
 
 import java.math.BigInteger;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import avm.Result;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -26,8 +26,8 @@ public class RedirectContract {
      */
     @Callable
     public static byte[] callOtherContractAndRequireItIsSuccess(Address addressOfOther, long value, byte[] args) {
-        Result result = BlockchainRuntime.call(addressOfOther, BigInteger.valueOf(value), args, BlockchainRuntime.getRemainingEnergy());
-        BlockchainRuntime.require(result.isSuccess());
+        Result result = Blockchain.call(addressOfOther, BigInteger.valueOf(value), args, Blockchain.getRemainingEnergy());
+        Blockchain.require(result.isSuccess());
         if (null == result.getReturnData() || 0 == result.getReturnData().length) {
             return null;
         } else {

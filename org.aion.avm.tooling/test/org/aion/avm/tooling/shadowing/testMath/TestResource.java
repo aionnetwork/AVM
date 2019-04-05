@@ -3,7 +3,7 @@ package org.aion.avm.tooling.shadowing.testMath;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
 public class TestResource {
@@ -30,7 +30,7 @@ public class TestResource {
         mc1 = new MathContext(4);
         mc2 = new MathContext(5, RoundingMode.CEILING);
 
-        BlockchainRuntime.require(mc1.getRoundingMode().equals(RoundingMode.HALF_UP));
-        BlockchainRuntime.require(mc2.getRoundingMode().equals(RoundingMode.CEILING));
+        Blockchain.require(mc1.getRoundingMode().equals(RoundingMode.HALF_UP));
+        Blockchain.require(mc2.getRoundingMode().equals(RoundingMode.CEILING));
     }
 }

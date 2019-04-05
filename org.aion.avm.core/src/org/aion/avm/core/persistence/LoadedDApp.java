@@ -13,7 +13,7 @@ import java.util.function.Function;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IBlockchainRuntime;
-import org.aion.avm.shadowapi.avm.BlockchainRuntime;
+import org.aion.avm.shadowapi.avm.Blockchain;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
@@ -320,7 +320,7 @@ public class LoadedDApp {
     private Class<?> loadBlockchainRuntimeClass() throws ClassNotFoundException {
         Class<?> runtimeClass = this.blockchainRuntimeClass;
         if (null == runtimeClass) {
-            String runtimeClassName = BlockchainRuntime.class.getName();
+            String runtimeClassName = Blockchain.class.getName();
             runtimeClass = this.loader.loadClass(runtimeClassName);
             RuntimeAssertionError.assertTrue(runtimeClass.getClassLoader() == this.loader);
             this.blockchainRuntimeClass = runtimeClass;

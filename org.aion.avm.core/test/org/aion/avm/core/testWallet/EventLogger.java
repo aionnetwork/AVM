@@ -1,7 +1,7 @@
 package org.aion.avm.core.testWallet;
 
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 
 /**
@@ -24,42 +24,42 @@ public class EventLogger {
         byte[] senderBytes = sender.unwrap();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] data = ByteArrayHelpers.concatenate(senderBytes, operationBytes);
-        BlockchainRuntime.log(kConfirmation.getBytes(), data);
+        Blockchain.log(kConfirmation.getBytes(), data);
     }
 
     public static void revoke(Address sender, Operation operation) {
         byte[] senderBytes = sender.unwrap();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] data = ByteArrayHelpers.concatenate(senderBytes, operationBytes);
-        BlockchainRuntime.log(kRevoke.getBytes(), data);
+        Blockchain.log(kRevoke.getBytes(), data);
     }
 
     public static void ownerChanged(Address oldOwner, Address newOwner) {
         byte[] oldBytes = oldOwner.unwrap();
         byte[] newBytes = newOwner.unwrap();
         byte[] data = ByteArrayHelpers.concatenate(oldBytes, newBytes);
-        BlockchainRuntime.log(kOwnerChanged.getBytes(), data);
+        Blockchain.log(kOwnerChanged.getBytes(), data);
     }
 
     public static void ownerAdded(Address newOwner) {
         byte[] data = newOwner.unwrap();
-        BlockchainRuntime.log(kOwnerAdded.getBytes(), data);
+        Blockchain.log(kOwnerAdded.getBytes(), data);
     }
 
     public static void ownerRemoved(Address oldOwner) {
         byte[] data = oldOwner.unwrap();
-        BlockchainRuntime.log(kOwnerRemoved.getBytes(), data);
+        Blockchain.log(kOwnerRemoved.getBytes(), data);
     }
 
     public static void requirementChanged(int newRequired) {
         byte[] data = ByteArrayHelpers.encodeInt(newRequired);
-        BlockchainRuntime.log(kRequirementChanged.getBytes(), data);
+        Blockchain.log(kRequirementChanged.getBytes(), data);
     }
 
     public static void deposit(Address from, long value) {
         byte[] fromBytes = from.unwrap();
         byte[] data = ByteArrayHelpers.appendLong(fromBytes, value);
-        BlockchainRuntime.log(kDeposit.getBytes(), data);
+        Blockchain.log(kDeposit.getBytes(), data);
     }
 
     public static void singleTransact(Address owner, long value, Address to, byte[] data) {
@@ -68,7 +68,7 @@ public class EventLogger {
         byte[] toBytes = to.unwrap();
         byte[] partial = ByteArrayHelpers.concatenate(ownerValue, toBytes);
         byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
-        BlockchainRuntime.log(kSingleTransact.getBytes(), finalData);
+        Blockchain.log(kSingleTransact.getBytes(), finalData);
     }
 
     public static void multiTransact(Address owner, Operation operation, long value, Address to, byte[] data) {
@@ -79,7 +79,7 @@ public class EventLogger {
         byte[] toBytes = to.unwrap();
         byte[] partial = ByteArrayHelpers.concatenate(ownerOperationValue, toBytes);
         byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
-        BlockchainRuntime.log(kMultiTransact.getBytes(), finalData);
+        Blockchain.log(kMultiTransact.getBytes(), finalData);
     }
 
     public static void confirmationNeeded(Operation operation, Address initiator, long value, Address to, byte[] data) {
@@ -90,6 +90,6 @@ public class EventLogger {
         byte[] toBytes = to.unwrap();
         byte[] partial = ByteArrayHelpers.concatenate(operationInitValue, toBytes);
         byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
-        BlockchainRuntime.log(kConfirmationNeeded.getBytes(), finalData);
+        Blockchain.log(kConfirmationNeeded.getBytes(), finalData);
     }
 }

@@ -2,7 +2,7 @@ package org.aion.avm.tooling.testExchange;
 
 import java.math.BigInteger;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
@@ -16,7 +16,7 @@ public class Exchange {
     private static Address owner;
 
     public static void init(){
-        owner = BlockchainRuntime.getCaller();
+        owner = Blockchain.getCaller();
         coinListing = new AionMap<>();
     }
 
@@ -29,7 +29,7 @@ public class Exchange {
             return false;
         }
 
-        if (BlockchainRuntime.getCaller().equals(owner) && verifyContractAddress(name, contractAddr)){
+        if (Blockchain.getCaller().equals(owner) && verifyContractAddress(name, contractAddr)){
             coinListing.put(String.valueOf(name), contractAddr);
             return true;
         }
@@ -51,14 +51,14 @@ public class Exchange {
         }
         Address coinContract = coinListing.get(String.valueOf(coin));
 
-        Address sender = BlockchainRuntime.getCaller();
+        Address sender = Blockchain.getCaller();
 
         byte[] methodNameBytes = ABIEncoder.encodeOneString("allowance");
         byte[] argBytes1 = ABIEncoder.encodeOneAddress(sender);
-        byte[] argBytes2 = ABIEncoder.encodeOneAddress(BlockchainRuntime.getAddress());
+        byte[] argBytes2 = ABIEncoder.encodeOneAddress(Blockchain.getAddress());
         byte[] args = concatenateArrays(methodNameBytes, argBytes1, argBytes2);
 
-        byte[] result = BlockchainRuntime.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
+        byte[] result = Blockchain.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
 
         ABIDecoder decoder = new ABIDecoder(result);
 
@@ -71,7 +71,7 @@ public class Exchange {
     }
 
     public static boolean processExchangeTransaction(){
-        if (!BlockchainRuntime.getCaller().equals(owner)){
+        if (!Blockchain.getCaller().equals(owner)){
             return false;
         }
 
@@ -91,7 +91,7 @@ public class Exchange {
         byte[] argBytes3 = ABIEncoder.encodeOneLong(toProcess.getAmount());
         byte[] args = concatenateArrays(methodNameBytes, argBytes1, argBytes2, argBytes3);
 
-        byte[] result = BlockchainRuntime.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
+        byte[] result = Blockchain.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
 
         ABIDecoder decoder = new ABIDecoder(result);
         boolean decodedBool = decoder.decodeOneBoolean();

@@ -1,7 +1,7 @@
 package org.aion.rules;
 
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -16,9 +16,9 @@ public class JUnitRuleTestTarget {
     public static Address owner;
 
     static {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         intVal =  decoder.decodeOneInteger();
-        owner = BlockchainRuntime.getCaller();
+        owner = Blockchain.getCaller();
     }
 
     @Callable
@@ -47,8 +47,8 @@ public class JUnitRuleTestTarget {
 
     @Callable
     public static void logEvent(){
-        BlockchainRuntime.log(DATA1);
-        BlockchainRuntime.log(TOPIC1, DATA1);
+        Blockchain.log(DATA1);
+        Blockchain.log(TOPIC1, DATA1);
     }
 }
 

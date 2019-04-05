@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.testExchange;
 
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 
@@ -13,11 +13,11 @@ public class CoinController {
      * This token instance is transparently put into storage.
      */
     static {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String name = decoder.decodeOneString();
         String symbol = decoder.decodeOneString();
         int decimals = decoder.decodeOneInteger();
-        Address minter = BlockchainRuntime.getCaller();
+        Address minter = Blockchain.getCaller();
 
         ERC20Token.init(name, symbol, decimals, minter);
     }
@@ -29,7 +29,7 @@ public class CoinController {
      * @return the encoded return data of the method being called.
      */
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];

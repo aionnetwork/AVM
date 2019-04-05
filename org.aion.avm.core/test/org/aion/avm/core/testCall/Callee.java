@@ -1,6 +1,6 @@
 package org.aion.avm.core.testCall;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 public class Callee {
 
@@ -17,7 +17,7 @@ public class Callee {
     }
 
     public static byte[] main() {
-        byte[] data = BlockchainRuntime.getData();
+        byte[] data = Blockchain.getData();
         return merge(data, "world".getBytes());
     }
 }

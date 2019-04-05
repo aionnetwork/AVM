@@ -1,6 +1,6 @@
 package org.aion.avm.core.collection;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
@@ -16,7 +16,7 @@ public class AionListPerfContract {
     }
 
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];

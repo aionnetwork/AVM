@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.bootstrapmethods;
 
 import java.lang.invoke.LambdaMetafactory;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 /**
  * A contract that attempts to call into {@link java.lang.invoke.LambdaMetafactory#metafactory}.
@@ -13,7 +13,7 @@ public class MetaFactoryTarget {
         try {
             LambdaMetafactory.metafactory(null, null, null, null, null, null);
         } catch (Exception e) {
-            BlockchainRuntime.println(e.toString());
+            Blockchain.println(e.toString());
         }
     }
 

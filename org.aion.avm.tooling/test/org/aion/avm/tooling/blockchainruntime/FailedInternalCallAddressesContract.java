@@ -2,7 +2,7 @@ package org.aion.avm.tooling.blockchainruntime;
 
 import java.math.BigInteger;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import avm.Result;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -35,7 +35,7 @@ public class FailedInternalCallAddressesContract {
             byte[] argBytes3 = ABIEncoder.encodeOneBoolean(recurseFirst);
             byte[] data = concatenateArrays(methodNameBytes, argBytes1, argBytes2, argBytes3);
 
-            Result result = BlockchainRuntime.call(otherContracts[currentDepth], BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy());
+            Result result = Blockchain.call(otherContracts[currentDepth], BigInteger.ZERO, data, Blockchain.getRemainingEnergy());
 
             // check the revert on the deepest child.
             if (currentDepth == otherContracts.length - 1) {
@@ -45,7 +45,7 @@ public class FailedInternalCallAddressesContract {
             } else {
                 // not the deepest child, so something actually went wrong...
                 if (!result.isSuccess()) {
-                    BlockchainRuntime.revert();
+                    Blockchain.revert();
                 }
             }
 
@@ -62,7 +62,7 @@ public class FailedInternalCallAddressesContract {
             Address[] reportForOtherContracts = decoder.decodeOneAddressArray();
             return joinArrays(reportForThisContract, reportForOtherContracts);
         } else {
-            BlockchainRuntime.revert();
+            Blockchain.revert();
             return null;
         }
     }
@@ -74,9 +74,9 @@ public class FailedInternalCallAddressesContract {
      */
     private static Address[] getAddresses() {
         Address[] addresses = new Address[3];
-        addresses[0] = BlockchainRuntime.getOrigin();
-        addresses[1] = BlockchainRuntime.getCaller();
-        addresses[2] = BlockchainRuntime.getAddress();
+        addresses[0] = Blockchain.getOrigin();
+        addresses[1] = Blockchain.getCaller();
+        addresses[2] = Blockchain.getAddress();
         return addresses;
     }
 

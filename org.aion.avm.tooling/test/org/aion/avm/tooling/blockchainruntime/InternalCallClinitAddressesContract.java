@@ -5,16 +5,16 @@ import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import avm.Result;
 
 public class InternalCallClinitAddressesContract {
-    private static final Address ORIGIN = BlockchainRuntime.getOrigin();
-    private static final Address CALLER = BlockchainRuntime.getCaller();
-    private static final Address CONTRACT = BlockchainRuntime.getAddress();
+    private static final Address ORIGIN = Blockchain.getOrigin();
+    private static final Address CALLER = Blockchain.getCaller();
+    private static final Address CONTRACT = Blockchain.getAddress();
 
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
@@ -110,11 +110,11 @@ public class InternalCallClinitAddressesContract {
                 dappBytes[j] = dappBytesSecondHalf[i];
             }
 
-            Result createResult = BlockchainRuntime.create(BigInteger.ZERO, dappBytes, BlockchainRuntime.getRemainingEnergy());
+            Result createResult = Blockchain.create(BigInteger.ZERO, dappBytes, Blockchain.getRemainingEnergy());
 
             // This way we actually know if something went wrong...
             if (!createResult.isSuccess()) {
-                BlockchainRuntime.revert();
+                Blockchain.revert();
             }
 
             // Grab the address of the newly created dapp.
@@ -130,11 +130,11 @@ public class InternalCallClinitAddressesContract {
             byte[] argBytes5 = ABIEncoder.encodeOneBoolean(recurseFirst);
             byte[] callData = concatenateArrays(methodNameBytes, argBytes1, argBytes2, argBytes3, argBytes4, argBytes5);
 
-            Result callResult = BlockchainRuntime.call(newDappAddress, BigInteger.ZERO, callData, BlockchainRuntime.getRemainingEnergy());
+            Result callResult = Blockchain.call(newDappAddress, BigInteger.ZERO, callData, Blockchain.getRemainingEnergy());
 
             // This way we actually know if something went wrong...
             if (!callResult.isSuccess()) {
-                BlockchainRuntime.revert();
+                Blockchain.revert();
             }
 
             if (recurseFirst) {

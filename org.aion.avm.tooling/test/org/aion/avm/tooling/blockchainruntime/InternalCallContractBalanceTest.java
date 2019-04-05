@@ -2,7 +2,7 @@ package org.aion.avm.tooling.blockchainruntime;
 
 import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the {@link BlockchainRuntime#getBalanceOfThisContract()} method on a contract that is at
+ * Tests the {@link Blockchain#getBalanceOfThisContract()} method on a contract that is at
  * some specified depth in a chain of internal contract calls.
  */
 public class InternalCallContractBalanceTest {

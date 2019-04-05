@@ -1,6 +1,6 @@
 package org.aion.avm.tooling;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 
 /**
@@ -12,7 +12,7 @@ public class SubclassPersistenceIntegrationTestFailException {
 
     public static int setup_nep() {
         // We just need some kind of random number.
-        npe = new SubNullPointerException((int)BlockchainRuntime.getBlockTimestamp());
+        npe = new SubNullPointerException((int)Blockchain.getBlockTimestamp());
         return npe.number;
     }
     public static int check_npe() {

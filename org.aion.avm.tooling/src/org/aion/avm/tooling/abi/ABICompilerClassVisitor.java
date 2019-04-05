@@ -98,11 +98,11 @@ public class ABICompilerClassVisitor extends ClassVisitor {
             super.visitMethod(ACC_PUBLIC | ACC_STATIC, "main", "()[B", null, null);
         methodVisitor.visitCode();
 
-        // ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData())
+        // ABIDecoder decoder = new ABIDecoder(Blockchain.getData())
 
         methodVisitor.visitTypeInsn(NEW, "org/aion/avm/userlib/abi/ABIDecoder");
         methodVisitor.visitInsn(DUP);
-        methodVisitor.visitMethodInsn(INVOKESTATIC, "avm/BlockchainRuntime", "getData", "()[B", false);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "avm/Blockchain", "getData", "()[B", false);
         methodVisitor.visitMethodInsn(INVOKESPECIAL, "org/aion/avm/userlib/abi/ABIDecoder", "<init>", "([B)V", false);
         methodVisitor.visitVarInsn(ASTORE, 0);
 
@@ -295,7 +295,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
             methodVisitor.visitIntInsn(NEWARRAY, T_BYTE);
             methodVisitor.visitInsn(ARETURN);
         } else {
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "avm/BlockchainRuntime", "revert", "()V", false);
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "avm/Blockchain", "revert", "()V", false);
             methodVisitor.visitInsn(ACONST_NULL);
             methodVisitor.visitInsn(ARETURN);
         }

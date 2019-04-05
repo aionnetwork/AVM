@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 
 /**
@@ -13,7 +13,7 @@ public class SubclassPersistenceIntegrationTestFailApi {
 
     public static int setup_api() {
         // We just need some kind of random number.
-        address = new SubAddress((int)BlockchainRuntime.getBlockTimestamp());
+        address = new SubAddress((int)Blockchain.getBlockTimestamp());
         return address.number;
     }
     public static int check_api() {

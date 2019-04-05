@@ -2,7 +2,7 @@ package org.aion.avm.tooling;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
 public class ShadowClassSerializationTarget {
@@ -19,20 +19,20 @@ public class ShadowClassSerializationTarget {
 
     @Callable
     public static void checkBigIntegerSerialization() {
-        BlockchainRuntime.require(bigNegative.equals(BigInteger.valueOf(-1)));
-        BlockchainRuntime.require(bigBigNegative.equals(BigInteger.valueOf(10).pow(10_000).multiply(BigInteger.valueOf(-1))));
-        BlockchainRuntime.require(bigNeutral.equals(BigInteger.valueOf(0)));
-        BlockchainRuntime.require(bigPositive.equals(BigInteger.valueOf(1)));
-        BlockchainRuntime.require(bigBigPositive.equals(BigInteger.valueOf(10).pow(10_000)));
+        Blockchain.require(bigNegative.equals(BigInteger.valueOf(-1)));
+        Blockchain.require(bigBigNegative.equals(BigInteger.valueOf(10).pow(10_000).multiply(BigInteger.valueOf(-1))));
+        Blockchain.require(bigNeutral.equals(BigInteger.valueOf(0)));
+        Blockchain.require(bigPositive.equals(BigInteger.valueOf(1)));
+        Blockchain.require(bigBigPositive.equals(BigInteger.valueOf(10).pow(10_000)));
     }
 
     @Callable
     public static void checkBigDecimalSerialization() {
-        BlockchainRuntime.require(bigNegativeDecimal.equals(BigDecimal.valueOf(-1)));
-        BlockchainRuntime.require(bigBigNegativeDecimal.equals(BigDecimal.valueOf(10).pow(10_000).multiply(BigDecimal.valueOf(-1))));
-        BlockchainRuntime.require(bigNeutralDecimal.equals(BigDecimal.valueOf(0)));
-        BlockchainRuntime.require(bigPositiveDecimal.equals(BigDecimal.valueOf(1)));
-        BlockchainRuntime.require(bigBigPositiveDecimal.equals(BigDecimal.valueOf(10).pow(10_000)));
+        Blockchain.require(bigNegativeDecimal.equals(BigDecimal.valueOf(-1)));
+        Blockchain.require(bigBigNegativeDecimal.equals(BigDecimal.valueOf(10).pow(10_000).multiply(BigDecimal.valueOf(-1))));
+        Blockchain.require(bigNeutralDecimal.equals(BigDecimal.valueOf(0)));
+        Blockchain.require(bigPositiveDecimal.equals(BigDecimal.valueOf(1)));
+        Blockchain.require(bigBigPositiveDecimal.equals(BigDecimal.valueOf(10).pow(10_000)));
     }
 
 }

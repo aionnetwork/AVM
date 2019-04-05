@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 
@@ -15,9 +15,9 @@ public class AvmFailureTestResource {
             byte[] data = new byte[methodNameBytes.length + argBytes.length];
             System.arraycopy(methodNameBytes, 0, data, 0, methodNameBytes.length);
             System.arraycopy(argBytes, 0, data, methodNameBytes.length, argBytes.length);
-            BlockchainRuntime.call(BlockchainRuntime.getAddress(), BigInteger.ZERO, data, BlockchainRuntime.getEnergyLimit());
-            BlockchainRuntime.log(new byte[]{(byte)n});
-            BlockchainRuntime.revert();
+            Blockchain.call(Blockchain.getAddress(), BigInteger.ZERO, data, Blockchain.getEnergyLimit());
+            Blockchain.log(new byte[]{(byte)n});
+            Blockchain.revert();
         }
     }
 
@@ -39,11 +39,11 @@ public class AvmFailureTestResource {
     }
 
     public static void testRevert() {
-        BlockchainRuntime.revert();
+        Blockchain.revert();
     }
 
     public static void testInvalid() {
-        BlockchainRuntime.invalid();
+        Blockchain.invalid();
     }
 
     public static void testUncaughtException() {
@@ -51,7 +51,7 @@ public class AvmFailureTestResource {
         bytes[3] = 1;
     }
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain  .getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];

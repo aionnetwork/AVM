@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Tests the {@link BlockchainRuntime#getBalanceOfThisContract()} method for retrieving the balance
+ * Tests the {@link Blockchain#getBalanceOfThisContract()} method for retrieving the balance
  * of a deployed contract from within that contract.
  */
 public class ContractBalanceTest {

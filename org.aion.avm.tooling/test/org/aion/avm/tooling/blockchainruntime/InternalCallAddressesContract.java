@@ -5,7 +5,7 @@ import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import avm.Result;
 
 /**
@@ -89,11 +89,11 @@ public class InternalCallAddressesContract {
             byte[] data = concatenateArrays(methodNameBytes, argBytes1, argBytes2, argBytes3);
 
 
-            Result result = BlockchainRuntime.call(otherContracts[currentDepth], BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy());
+            Result result = Blockchain.call(otherContracts[currentDepth], BigInteger.ZERO, data, Blockchain.getRemainingEnergy());
 
             // This way we actually know if something went wrong...
             if (!result.isSuccess()) {
-                BlockchainRuntime.revert();
+                Blockchain.revert();
             }
 
             if (recurseFirst) {
@@ -115,9 +115,9 @@ public class InternalCallAddressesContract {
      */
     private static Address[] getAddresses() {
         Address[] addresses = new Address[3];
-        addresses[0] = BlockchainRuntime.getOrigin();
-        addresses[1] = BlockchainRuntime.getCaller();
-        addresses[2] = BlockchainRuntime.getAddress();
+        addresses[0] = Blockchain.getOrigin();
+        addresses[1] = Blockchain.getCaller();
+        addresses[2] = Blockchain.getAddress();
         return addresses;
     }
 

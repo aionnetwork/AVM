@@ -3,7 +3,7 @@ package org.aion.avm.core;
 import java.math.BigInteger;
 
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import avm.Result;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -18,7 +18,7 @@ public class DeploymentArgumentTarget {
     private static byte[] smallJar;
 
     static {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         arg0 = decoder.decodeOneString();
         arg1 = decoder.decodeOneAddressArray();
         arg2 = decoder.decodeOneInteger();
@@ -27,7 +27,7 @@ public class DeploymentArgumentTarget {
     }
 
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
@@ -54,8 +54,8 @@ public class DeploymentArgumentTarget {
         byte[] deploymentArgs = concatenateArrays(arg0Bytes, arg1Bytes, arg2Bytes, arg3Bytes, smallJarBytes);
 
         byte[] codeAndArguments = encodeCodeAndArguments(deploymentArgs);
-        Result createResult = BlockchainRuntime.create(BigInteger.ZERO, codeAndArguments, BlockchainRuntime.getEnergyLimit());
-        BlockchainRuntime.require(createResult.isSuccess());
+        Result createResult = Blockchain.create(BigInteger.ZERO, codeAndArguments, Blockchain.getEnergyLimit());
+        Blockchain.require(createResult.isSuccess());
     }
 
     public static void incorrectDeployment() {
@@ -68,9 +68,9 @@ public class DeploymentArgumentTarget {
         byte[] deploymentArgs = concatenateArrays(arg0Bytes, arg1Bytes, arg2Bytes, arg3Bytes);
 
         byte[] codeAndArguments = encodeCodeAndArguments(deploymentArgs);
-        Result createResult = BlockchainRuntime.create(BigInteger.ZERO, codeAndArguments, BlockchainRuntime.getEnergyLimit());
+        Result createResult = Blockchain.create(BigInteger.ZERO, codeAndArguments, Blockchain.getEnergyLimit());
         // We still want to pass (to ensure this isn't a different failure) so require that the sub-deployment failed.
-        BlockchainRuntime.require(!createResult.isSuccess());
+        Blockchain.require(!createResult.isSuccess());
     }
 
 

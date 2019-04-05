@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 
@@ -13,11 +13,11 @@ import org.aion.avm.userlib.abi.ABIEncoder;
 public class IncrementorDApp {
     private static final byte INCREMENT_BY;
     static {
-        INCREMENT_BY = BlockchainRuntime.getData()[0];
+        INCREMENT_BY = Blockchain.getData()[0];
     }
 
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];

@@ -1,6 +1,6 @@
 package org.aion.avm.core.util;
 
-import org.aion.avm.shadowapi.avm.BlockchainRuntime;
+import org.aion.avm.shadowapi.avm.Blockchain;
 import org.aion.types.Address;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.internal.IRuntimeSetup;
@@ -174,7 +174,7 @@ public class Helpers {
         return internalName.replaceAll("/", ".");
     }
 
-    private static String blockchainRuntimeClassName = BlockchainRuntime.class.getName();
+    private static String blockchainRuntimeClassName = Blockchain.class.getName();
     private static byte[] blockchainRuntimeBytes = Helpers.loadRequiredResourceAsBytes(blockchainRuntimeClassName.replaceAll("\\.", "/") + ".class");
 
     /**
@@ -207,7 +207,7 @@ public class Helpers {
     }
 
     /**
-     * Attaches a BlockchainRuntime instance to the BlockchainRuntime class (per contract) so DApp can
+     * Attaches a Blockchain instance to the Blockchain class (per contract) so DApp can
      * access blockchain related methods.
      *
      * @param contractLoader
@@ -215,7 +215,7 @@ public class Helpers {
      */
     public static void attachBlockchainRuntime(AvmClassLoader contractLoader, IBlockchainRuntime rt) {
         try {
-            String runtimeClassName = BlockchainRuntime.class.getName();
+            String runtimeClassName = Blockchain.class.getName();
             Class<?> helperClass = contractLoader.loadClass(runtimeClassName);
             helperClass.getField("blockchainRuntime").set(null, rt);
         } catch (Throwable t) {

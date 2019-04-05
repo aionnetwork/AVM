@@ -1,16 +1,16 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
-public class BlockchainRuntimeLogTarget {
+public class BlockchainLogTarget {
     @Callable
     public static long testLog0Topic(int dataSize) {
         byte[] bytes = new byte[dataSize];
 
-        long remainingEnergy = BlockchainRuntime.getRemainingEnergy();
-        BlockchainRuntime.log(bytes);
-        long consumedEnergy = remainingEnergy - BlockchainRuntime.getRemainingEnergy();
+        long remainingEnergy = Blockchain.getRemainingEnergy();
+        Blockchain.log(bytes);
+        long consumedEnergy = remainingEnergy - Blockchain.getRemainingEnergy();
 
         return consumedEnergy;
     }
@@ -20,9 +20,9 @@ public class BlockchainRuntimeLogTarget {
         byte[] data = new byte[dataSize];
         byte[] topic = new byte[topicSize];
 
-        long remainingEnergy = BlockchainRuntime.getRemainingEnergy();
-        BlockchainRuntime.log(topic, data);
-        long consumedEnergy = remainingEnergy - BlockchainRuntime.getRemainingEnergy();
+        long remainingEnergy = Blockchain.getRemainingEnergy();
+        Blockchain.log(topic, data);
+        long consumedEnergy = remainingEnergy - Blockchain.getRemainingEnergy();
 
         return consumedEnergy;
     }
@@ -32,9 +32,9 @@ public class BlockchainRuntimeLogTarget {
         byte[] data = new byte[dataSize];
         byte[] topic = new byte[topicSize];
 
-        long remainingEnergy = BlockchainRuntime.getRemainingEnergy();
-        BlockchainRuntime.log(topic, topic, data);
-        long consumedEnergy = remainingEnergy - BlockchainRuntime.getRemainingEnergy();
+        long remainingEnergy = Blockchain.getRemainingEnergy();
+        Blockchain.log(topic, topic, data);
+        long consumedEnergy = remainingEnergy - Blockchain.getRemainingEnergy();
 
         return consumedEnergy;
     }
@@ -44,9 +44,9 @@ public class BlockchainRuntimeLogTarget {
         byte[] bytes = new byte[dataSize];
         byte[] topic = new byte[topicSize];
 
-        long remainingEnergy = BlockchainRuntime.getRemainingEnergy();
-        BlockchainRuntime.log(topic, topic, topic, bytes);
-        long consumedEnergy = remainingEnergy - BlockchainRuntime.getRemainingEnergy();
+        long remainingEnergy = Blockchain.getRemainingEnergy();
+        Blockchain.log(topic, topic, topic, bytes);
+        long consumedEnergy = remainingEnergy - Blockchain.getRemainingEnergy();
 
         return consumedEnergy;
     }
@@ -56,9 +56,9 @@ public class BlockchainRuntimeLogTarget {
         byte[] bytes = new byte[dataSize];
         byte[] topic = new byte[topicSize];
 
-        long remainingEnergy = BlockchainRuntime.getRemainingEnergy();
-        BlockchainRuntime.log(topic, topic, topic, topic, bytes);
-        long consumedEnergy = remainingEnergy - BlockchainRuntime.getRemainingEnergy();
+        long remainingEnergy = Blockchain.getRemainingEnergy();
+        Blockchain.log(topic, topic, topic, topic, bytes);
+        long consumedEnergy = remainingEnergy - Blockchain.getRemainingEnergy();
 
         return consumedEnergy;
     }
@@ -66,7 +66,7 @@ public class BlockchainRuntimeLogTarget {
     @Callable
     public static boolean testLog4TopicsNull() {
         try {
-            BlockchainRuntime.log(null, null, null, null, null);
+            Blockchain.log(null, null, null, null, null);
             throw new AssertionError();
         } catch (IllegalArgumentException e){
             // Expected

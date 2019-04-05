@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.bootstrapmethods;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
 public class EnergyChargeConsistencyTarget {
@@ -11,7 +11,7 @@ public class EnergyChargeConsistencyTarget {
             String hello = "Hello";
             String world = "world";
             String string = hello + " " + world + "!";
-            BlockchainRuntime.println(string);
+            Blockchain.println(string);
         };
         runnable.run();
     }

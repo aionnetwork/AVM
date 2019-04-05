@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.persistence;
 
 import java.math.BigInteger;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import avm.Result;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIEncoder;
@@ -98,7 +98,7 @@ public class GraphReachabilityIntegrationTestTarget {
         BigInteger value = BigInteger.ZERO;
         byte[] data = ABIEncoder.encodeOneString("modifyNewInstance");
         long energyLimit = 500000;
-        Result result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+        Result result = Blockchain.call(Blockchain.getAddress(), value, data, energyLimit);
         assert result.isSuccess();
     }
     
@@ -111,7 +111,7 @@ public class GraphReachabilityIntegrationTestTarget {
         BigInteger value = BigInteger.ZERO;
         byte[] data = ABIEncoder.encodeOneString("runNewInstance_reentrant");
         long energyLimit = 500000;
-        Result result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+        Result result = Blockchain.call(Blockchain.getAddress(), value, data, energyLimit);
         assert result.isSuccess();
     }
     
@@ -154,7 +154,7 @@ public class GraphReachabilityIntegrationTestTarget {
         BigInteger value = BigInteger.ZERO;
         byte[] data = ABIEncoder.encodeOneString("modify249");
         long energyLimit = 500000;
-        Result result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+        Result result = Blockchain.call(Blockchain.getAddress(), value, data, energyLimit);
         assert result.isSuccess();
     }
 }

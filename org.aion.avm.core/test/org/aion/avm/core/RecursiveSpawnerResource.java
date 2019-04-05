@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 
 /**
@@ -9,10 +9,10 @@ import avm.BlockchainRuntime;
  */
 public class RecursiveSpawnerResource {
     static {
-        byte[] data = BlockchainRuntime.getData();
+        byte[] data = Blockchain.getData();
         // If more data was provided, create another.
         if (data.length > 0) {
-            byte[] contractAddress = BlockchainRuntime.create(BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy()).getReturnData();
+            byte[] contractAddress = Blockchain.create(BigInteger.ZERO, data, Blockchain.getRemainingEnergy()).getReturnData();
             if (null == contractAddress) {
                 // We want to fail since the call depth is too deep.
                 throw new AssertionError();

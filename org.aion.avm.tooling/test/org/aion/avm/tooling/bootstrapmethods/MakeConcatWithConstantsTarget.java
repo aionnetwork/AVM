@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.bootstrapmethods;
 
 import java.lang.invoke.StringConcatFactory;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 /**
  * A contract that attempts to call into {@link java.lang.invoke.StringConcatFactory#makeConcatWithConstants}.
@@ -13,7 +13,7 @@ public class MakeConcatWithConstantsTarget {
         try {
             StringConcatFactory.makeConcatWithConstants(null, null, null, null);
         } catch (Exception e) {
-            BlockchainRuntime.println(e.toString());
+            Blockchain.println(e.toString());
         }
     }
 

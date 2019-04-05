@@ -2,7 +2,7 @@ package org.aion.avm.core.testWallet;
 
 import java.math.BigInteger;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
@@ -25,8 +25,8 @@ public class Wallet {
     // just pass as part of the deployment payload, after the code).
     public static void init(Address[] requestedOwners, int votesRequiredPerOperation, long daylimit) {
         // This is the contract entry-point so "construct" the contract fragments from which we are derived.
-        Address sender = BlockchainRuntime.getCaller();
-        long nowInSeconds = BlockchainRuntime.getBlockTimestamp();
+        Address sender = Blockchain.getCaller();
+        long nowInSeconds = Blockchain.getBlockTimestamp();
         long nowInDays = nowInSeconds / (24 * 60 * 60);
         Multiowned.init(sender, requestedOwners, votesRequiredPerOperation);
         Daylimit.init(daylimit, nowInDays);
@@ -47,7 +47,7 @@ public class Wallet {
      * @return The output of running the invoke (empty byte array for void methods).
      */
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
@@ -140,9 +140,9 @@ public class Wallet {
     // EXTERNAL
     public static void kill(Address to) {
         // (modifier)
-        Multiowned.onlyManyOwners(BlockchainRuntime.getCaller(), Operation.fromMessage());
-        
-        BlockchainRuntime.selfDestruct(to);
+        Multiowned.onlyManyOwners(Blockchain.getCaller(), Operation.fromMessage());
+
+        Blockchain.selfDestruct(to);
     }
 
     // gets called when no other function matches
@@ -159,14 +159,14 @@ public class Wallet {
     // and _data arguments). They still get the option of using them if they want, anyways.
     public static byte[] execute(Address to, long value, byte[] data) {
         // (modifier)
-        Multiowned.onlyOwner(BlockchainRuntime.getCaller());
+        Multiowned.onlyOwner(Blockchain.getCaller());
         
         byte[] result = null;
         // first, take the opportunity to check that we're under the daily limit.
         if (Daylimit.underLimit(value)) {
-            EventLogger.singleTransact(BlockchainRuntime.getCaller(), value, to, data);
+            EventLogger.singleTransact(Blockchain.getCaller(), value, to, data);
             // yes - just execute the call.
-            byte[] response = BlockchainRuntime.call(to, BigInteger.ZERO, data, value).getReturnData();
+            byte[] response = Blockchain.call(to, BigInteger.ZERO, data, value).getReturnData();
             if (null == response) {
                 throw new RequireFailedException();
             }
@@ -182,7 +182,7 @@ public class Wallet {
                 transaction.value = value;
                 transaction.data = data;
                 Wallet.transactions.put(transactionKey, transaction);
-                EventLogger.confirmationNeeded(Operation.fromHashedBytes(result), BlockchainRuntime.getCaller(), value, to, data);
+                EventLogger.confirmationNeeded(Operation.fromHashedBytes(result), Blockchain.getCaller(), value, to, data);
             }
         }
         return result;
@@ -210,16 +210,16 @@ public class Wallet {
         try {
             // (modifier)
             Operation operationToConfirm = Operation.fromRawBytes(h);
-            Multiowned.onlyManyOwners(BlockchainRuntime.getCaller(), operationToConfirm);
+            Multiowned.onlyManyOwners(Blockchain.getCaller(), operationToConfirm);
             
             BytesKey key = BytesKey.from(h);
             if (null != Wallet.transactions.get(key).to) {
                 Transaction transaction = Wallet.transactions.get(key);
-                byte[] response = BlockchainRuntime.call(transaction.to, BigInteger.ZERO, transaction.data, transaction.value).getReturnData();
+                byte[] response = Blockchain.call(transaction.to, BigInteger.ZERO, transaction.data, transaction.value).getReturnData();
                 if (null == response) {
                     throw new RequireFailedException();
                 }
-                EventLogger.multiTransact(BlockchainRuntime.getCaller(), operationToConfirm, transaction.value, transaction.to, transaction.data);
+                EventLogger.multiTransact(Blockchain.getCaller(), operationToConfirm, transaction.value, transaction.to, transaction.data);
                 Wallet.transactions.remove(BytesKey.from(h));
                 result = true;
             }

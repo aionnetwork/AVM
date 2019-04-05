@@ -3,15 +3,15 @@ package avm;
 import java.math.BigInteger;
 
 /**
- * Every DApp has an associated <code>BlockchainRuntime</code> which allows
+ * Every DApp has an associated <code>Blockchain</code> which allows
  * the application to interface with the environment teh app is running.
  * <p>
  * Typically, it includes the transaction and block context, and other blockchain
  * functionality.
  */
-public final class BlockchainRuntime {
+public final class Blockchain {
 
-    private BlockchainRuntime() {
+    private Blockchain() {
     }
 
     //===================
@@ -336,7 +336,7 @@ public final class BlockchainRuntime {
      * Checks that the provided condition is true and if it is false, triggers a revert.
      * <p>
      * In other words, if {@code condition == true} this method does nothing, otherwise it is
-     * equivalent to calling {@link BlockchainRuntime#revert()}.
+     * equivalent to calling {@link Blockchain#revert()}.
      *
      * @param condition The condition that is required to be {@code true}.
      */

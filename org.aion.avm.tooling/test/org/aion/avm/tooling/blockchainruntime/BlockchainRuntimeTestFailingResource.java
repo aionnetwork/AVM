@@ -1,80 +1,80 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import java.math.BigInteger;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 
 public class BlockchainRuntimeTestFailingResource {
     public static byte[] main() {
-        // We just want to try to misuse the BlockchainRuntime in various statically incorrect ways and verify that we see the excepted exceptions.
+        // We just want to try to misuse the Blockchain in various statically incorrect ways and verify that we see the excepted exceptions.
         try {
-            BlockchainRuntime.getBalance(null);
+            Blockchain.getBalance(null);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.getCodeSize(null);
+            Blockchain.getCodeSize(null);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.call(null, BigInteger.ONE, null, 1L);
+            Blockchain.call(null, BigInteger.ONE, null, 1L);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.create(BigInteger.ONE, null, 1L);
+            Blockchain.create(BigInteger.ONE, null, 1L);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.selfDestruct(null);
+            Blockchain.selfDestruct(null);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.log(null);
+            Blockchain.log(null);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.log(null, null);
+            Blockchain.log(null, null);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.log(null, null, null);
+            Blockchain.log(null, null, null);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.log(null, null, null, null);
+            Blockchain.log(null, null, null, null);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.log(null, null, null, null, null);
+            Blockchain.log(null, null, null, null, null);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         try {
-            BlockchainRuntime.blake2b(null);
+            Blockchain.blake2b(null);
             throw new AssertionError();
         } catch (IllegalArgumentException e) {
             // Expected.
         }
         
         // Once we handle everything, just return the input so the caller knows we at least executed.
-        return BlockchainRuntime.getData();
+        return Blockchain.getData();
     }
 }

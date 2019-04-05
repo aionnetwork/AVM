@@ -2,7 +2,7 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import avm.Result;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
@@ -18,7 +18,7 @@ import org.aion.avm.userlib.abi.ABIEncoder;
 public class RedirectContract {
 
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
@@ -39,8 +39,8 @@ public class RedirectContract {
      * Otherwise this method will succeed and will return the data outputted by the contract call.
      */
     public static byte[] callOtherContractAndRequireItIsSuccess(Address addressOfOther, long value, byte[] args) {
-        Result result = BlockchainRuntime.call(addressOfOther, BigInteger.valueOf(value), args, BlockchainRuntime.getRemainingEnergy());
-        BlockchainRuntime.require(result.isSuccess());
+        Result result = Blockchain.call(addressOfOther, BigInteger.valueOf(value), args, Blockchain.getRemainingEnergy());
+        Blockchain.require(result.isSuccess());
         if (null == result.getReturnData() || 0 == result.getReturnData().length) {
             return null;
         } else {

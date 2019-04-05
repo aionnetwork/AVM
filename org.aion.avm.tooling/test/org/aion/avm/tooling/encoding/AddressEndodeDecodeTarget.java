@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.encoding;
 
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
@@ -12,10 +12,10 @@ public class AddressEndodeDecodeTarget {
 
     @Callable
     public static boolean addressEncodeDecode() {
-        byte[] encoded = ABIEncoder.encodeOneAddress(BlockchainRuntime.getAddress());
+        byte[] encoded = ABIEncoder.encodeOneAddress(Blockchain.getAddress());
         ABIDecoder decoder = new ABIDecoder(encoded);
         Address result = decoder.decodeOneAddress();
-        return result.equals(BlockchainRuntime.getAddress());
+        return result.equals(Blockchain.getAddress());
     }
 
     @Callable
@@ -24,7 +24,7 @@ public class AddressEndodeDecodeTarget {
         byte[] encoded = ABIEncoder.encodeOneAddress(tempAddress);
         ABIDecoder decoder = new ABIDecoder(encoded);
         Address result = decoder.decodeOneAddress();
-        return result.equals(BlockchainRuntime.getAddress());
+        return result.equals(Blockchain.getAddress());
     }
 
     @Callable

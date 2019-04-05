@@ -2,16 +2,16 @@ package org.aion.avm.core.testCall;
 
 import java.math.BigInteger;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 /**
  * Demo contract.
  */
 public class Contract {
     public static byte[] main() {
-        byte[] data = BlockchainRuntime.getData();
+        byte[] data = Blockchain.getData();
         if (data != null && data.length != 0) {
-            BlockchainRuntime.call(new Address(data), BigInteger.ZERO, new byte[0], 1000);
+            Blockchain.call(new Address(data), BigInteger.ZERO, new byte[0], 1000);
         }
 
         return  "done".getBytes();

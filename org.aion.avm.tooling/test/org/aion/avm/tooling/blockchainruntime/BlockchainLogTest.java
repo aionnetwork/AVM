@@ -7,7 +7,7 @@ import org.junit.*;
 
 import java.math.BigInteger;
 
-public class BlockchainRuntimeLogTest {
+public class BlockchainLogTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(false);
 
@@ -18,7 +18,7 @@ public class BlockchainRuntimeLogTest {
 
     @BeforeClass
     public static void setUp() {
-        byte[] jar = avmRule.getDappBytes(BlockchainRuntimeLogTarget.class, new byte[0]);
+        byte[] jar = avmRule.getDappBytes(BlockchainLogTarget.class, new byte[0]);
         dappAddr = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getDappAddress();
     }
 

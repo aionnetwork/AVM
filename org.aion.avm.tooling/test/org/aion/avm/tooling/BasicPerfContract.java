@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 
@@ -32,11 +32,11 @@ import org.aion.avm.userlib.AionMap;
  */
 public class BasicPerfContract {
     private static final long CREATE_NODE_COST = 1000l;
-    private static final Node GENESIS = new Node(BlockchainRuntime.getBlockNumber());
+    private static final Node GENESIS = new Node(Blockchain.getBlockNumber());
     static {
         // We actually need a cluster of 3 "genesis" nodes, so that "movement" can be defined.
-        Node two = new Node(BlockchainRuntime.getBlockNumber());
-        Node three = new Node(BlockchainRuntime.getBlockNumber());
+        Node two = new Node(Blockchain.getBlockNumber());
+        Node three = new Node(Blockchain.getBlockNumber());
         two.attachNewNode(three);
         GENESIS.attachNewNode(two);
         GENESIS.attachNewNode(three);
@@ -47,7 +47,7 @@ public class BasicPerfContract {
 
     public static byte[] main() {
         // Look up the user (potentially creating one if they are new).
-        Address sender = BlockchainRuntime.getCaller();
+        Address sender = Blockchain.getCaller();
         User thisUser = userLocations.get(sender);
         if (null == thisUser) {
             thisUser = new User();
@@ -58,22 +58,22 @@ public class BasicPerfContract {
         boolean didTakeAction = false;
         // 1) Move.
         if (!didTakeAction) {
-            BlockchainRuntime.log("move".getBytes(), new byte[0]);
+            Blockchain.log("move".getBytes(), new byte[0]);
             didTakeAction = thisUser.tryToMove();
         }
         // 2) Create.
         if (!didTakeAction) {
-            BlockchainRuntime.log("create".getBytes(), new byte[0]);
+            Blockchain.log("create".getBytes(), new byte[0]);
             didTakeAction = thisUser.tryToCreate();
         }
         // 3) Connect.
         if (!didTakeAction) {
-            BlockchainRuntime.log("connect".getBytes(), new byte[0]);
+            Blockchain.log("connect".getBytes(), new byte[0]);
             didTakeAction = thisUser.tryToConnect();
         }
         // 4) Default to move to GENESIS.
         if (!didTakeAction) {
-            BlockchainRuntime.log("default".getBytes(), new byte[0]);
+            Blockchain.log("default".getBytes(), new byte[0]);
             thisUser.defaultToGenesis();
         }
         
@@ -113,10 +113,10 @@ public class BasicPerfContract {
         }
         
         public void updateValue() {
-            long time = BlockchainRuntime.getBlockNumber() - this.lastUpdateBlockNumber;
+            long time = Blockchain.getBlockNumber() - this.lastUpdateBlockNumber;
             long edgeCount = (long)(this.edges.size());
             this.value += (time * edgeCount);
-            this.lastUpdateBlockNumber = BlockchainRuntime.getBlockNumber();
+            this.lastUpdateBlockNumber = Blockchain.getBlockNumber();
         }
         
         public void advanceIndex() {
@@ -169,14 +169,14 @@ public class BasicPerfContract {
                 // We can afford it so make it happen.
                 this.balance -= CREATE_NODE_COST;
                 // Create the node.
-                Node newNode = new Node(BlockchainRuntime.getBlockNumber());
+                Node newNode = new Node(Blockchain.getBlockNumber());
                 nodeCount += 1;
                 // Connect the node.
                 this.currentNode.attachNewNode(newNode);
                 // Move to the node.
                 doMove(newNode);
                 didCreate = true;
-                BlockchainRuntime.log("CREATE".getBytes(), new byte[0]);
+                Blockchain.log("CREATE".getBytes(), new byte[0]);
             }
             return didCreate;
         }

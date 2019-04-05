@@ -1,6 +1,6 @@
 package org.aion.avm.tooling;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
 
@@ -12,6 +12,6 @@ public class EdverifyTestTargetClass {
 
     @Callable
     public static boolean callEdverify(byte[] message, byte[] signature, byte[]pk) throws IllegalArgumentException {
-        return BlockchainRuntime.edVerify(message, signature, pk);
+        return Blockchain.edVerify(message, signature, pk);
     }
 }

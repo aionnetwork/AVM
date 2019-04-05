@@ -9,10 +9,10 @@ import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 
-public final class BlockchainRuntime {
+public final class Blockchain {
     public static IBlockchainRuntime blockchainRuntime;
 
-    private BlockchainRuntime() {
+    private Blockchain() {
     }
 
     // Runtime-facing implementation.

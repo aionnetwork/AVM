@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 public class RevertAndInvalidTestResource {
 
@@ -8,18 +8,18 @@ public class RevertAndInvalidTestResource {
 
     private static void testRevert() {
         state = 1;
-        BlockchainRuntime.revert();
+        Blockchain.revert();
     }
 
     private static void testInvalid() {
         state = 2;
-        BlockchainRuntime.invalid();
+        Blockchain.invalid();
     }
 
     public static byte[] main() {
-        if (BlockchainRuntime.getData()[0] == 1) {
+        if (Blockchain.getData()[0] == 1) {
             testRevert();
-        } else if (BlockchainRuntime.getData()[0] == 2) {
+        } else if (Blockchain.getData()[0] == 2) {
             testInvalid();
         }
 

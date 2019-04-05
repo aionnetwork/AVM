@@ -1,6 +1,6 @@
 package org.aion.avm.tooling;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
 
@@ -20,7 +20,7 @@ public class SubclassPersistenceIntegrationTestTarget {
     @Callable
     public static int setup_user() {
         // We just need some kind of random number.
-        user = new SubUser((int)BlockchainRuntime.getBlockTimestamp());
+        user = new SubUser((int)Blockchain.getBlockTimestamp());
         return user.number2;
     }
 
@@ -43,7 +43,7 @@ public class SubclassPersistenceIntegrationTestTarget {
     @Callable
     public static int setup_exception() {
         // We just need some kind of random number.
-        exception = new SubException((int)BlockchainRuntime.getBlockTimestamp() + 1);
+        exception = new SubException((int)Blockchain.getBlockTimestamp() + 1);
         return exception.number;
     }
 
@@ -55,7 +55,7 @@ public class SubclassPersistenceIntegrationTestTarget {
     @Callable
     public static int setup_object() {
         // We just need some kind of random number.
-        object = new SubObject((int)BlockchainRuntime.getBlockTimestamp() + 2);
+        object = new SubObject((int)Blockchain.getBlockTimestamp() + 2);
         return object.number;
     }
 
@@ -67,7 +67,7 @@ public class SubclassPersistenceIntegrationTestTarget {
     @Callable
     public static int setup_runtimeException() {
         // We just need some kind of random number.
-        runtimeException = new SubRuntimeException((int)BlockchainRuntime.getBlockTimestamp() + 3);
+        runtimeException = new SubRuntimeException((int)Blockchain.getBlockTimestamp() + 3);
         return runtimeException.number;
     }
 
@@ -79,7 +79,7 @@ public class SubclassPersistenceIntegrationTestTarget {
     @Callable
     public static int setup_throwable() {
         // We just need some kind of random number.
-        throwable = new SubThrowable((int)BlockchainRuntime.getBlockTimestamp() + 4);
+        throwable = new SubThrowable((int)Blockchain.getBlockTimestamp() + 4);
         return throwable.number;
     }
 

@@ -2,7 +2,7 @@ package org.aion.avm.core.testCall;
 
 import java.math.BigInteger;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 
 public class Caller {
@@ -26,7 +26,7 @@ public class Caller {
         byte[] data = "hello".getBytes();
         long energyLimit = 10000;
 
-        return BlockchainRuntime.call(address, value, data, energyLimit).getReturnData();
+        return Blockchain.call(address, value, data, energyLimit).getReturnData();
     }
 
 }

@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.testHashes;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
 public class HashTestTargetClass {
@@ -14,7 +14,7 @@ public class HashTestTargetClass {
             return false;
         } else {
             try{
-                hashedVal = BlockchainRuntime.blake2b(input);
+                hashedVal = Blockchain.blake2b(input);
                 return true;
             } catch (Exception e){
                 hashedVal = null;
@@ -29,7 +29,7 @@ public class HashTestTargetClass {
             return false;
         } else {
             try{
-                hashedVal = BlockchainRuntime.sha256(input);
+                hashedVal = Blockchain.sha256(input);
                 return true;
             } catch (Exception e){
                 hashedVal = null;
@@ -44,7 +44,7 @@ public class HashTestTargetClass {
             return false;
         } else {
             try{
-                hashedVal = BlockchainRuntime.keccak256(input);
+                hashedVal = Blockchain.keccak256(input);
                 return true;
             } catch (Exception e){
                 hashedVal = null;

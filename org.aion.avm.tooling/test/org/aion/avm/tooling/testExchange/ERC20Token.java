@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.testExchange;
 
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.AionMap;
 
 public class ERC20Token {
@@ -56,7 +56,7 @@ public class ERC20Token {
     }
 
     public static boolean transfer(Address receiver, long tokens) {
-        Address sender = BlockchainRuntime.getCaller();
+        Address sender = Blockchain.getCaller();
 
         long senderBalance = ledger.getOrDefault(sender, 0L);
         long receiverBalance = ledger.getOrDefault(receiver, 0L);
@@ -64,7 +64,7 @@ public class ERC20Token {
         if ((senderBalance >= tokens) && (tokens > 0) && (receiverBalance + tokens > 0)) {
             ledger.put(sender, senderBalance - tokens);
             ledger.put(receiver, receiverBalance + tokens);
-            BlockchainRuntime.log("Transfer".getBytes(), sender.unwrap(), receiver.unwrap(), Long.toString(tokens).getBytes());
+            Blockchain.log("Transfer".getBytes(), sender.unwrap(), receiver.unwrap(), Long.toString(tokens).getBytes());
             return true;
         }
 
@@ -72,21 +72,21 @@ public class ERC20Token {
     }
 
     public static boolean approve(Address spender, long tokens) {
-        Address sender = BlockchainRuntime.getCaller();
+        Address sender = Blockchain.getCaller();
 
         if (!allowance.containsKey(sender)) {
             AionMap<Address, Long> newEntry = new AionMap<>();
             allowance.put(sender, newEntry);
         }
 
-        BlockchainRuntime.log("Approval".getBytes(), sender.unwrap(), spender.unwrap(), Long.toString(tokens).getBytes());
+        Blockchain.log("Approval".getBytes(), sender.unwrap(), spender.unwrap(), Long.toString(tokens).getBytes());
         allowance.get(sender).put(spender, tokens);
 
         return true;
     }
 
     public static boolean transferFrom(Address from, Address to, long tokens) {
-        Address sender = BlockchainRuntime.getCaller();
+        Address sender = Blockchain.getCaller();
 
         long fromBalance = ledger.getOrDefault(from, 0L);
         long toBalance = ledger.getOrDefault(to, 0L);
@@ -94,7 +94,7 @@ public class ERC20Token {
         long limit = allowance(from, sender);
 
         if ((fromBalance > tokens) && (limit > tokens) && (toBalance + tokens > 0)) {
-            BlockchainRuntime.log("Transfer".getBytes(), from.unwrap(), to.unwrap(), Long.toString(tokens).getBytes());
+            Blockchain.log("Transfer".getBytes(), from.unwrap(), to.unwrap(), Long.toString(tokens).getBytes());
             ledger.put(from, fromBalance - tokens);
             allowance.get(from).put(sender, limit - tokens);
             ledger.put(to, toBalance + tokens);
@@ -105,10 +105,10 @@ public class ERC20Token {
     }
 
     public static boolean mint(Address receiver, long tokens) {
-        if (BlockchainRuntime.getCaller().equals(minter)) {
+        if (Blockchain.getCaller().equals(minter)) {
             long receiverBalance = ledger.getOrDefault(receiver, 0L);
             if ((tokens > 0) && (receiverBalance + tokens > 0)) {
-                BlockchainRuntime.log("Mint".getBytes(), receiver.unwrap(), Long.toString(tokens).getBytes());
+                Blockchain.log("Mint".getBytes(), receiver.unwrap(), Long.toString(tokens).getBytes());
                 ledger.put(receiver, receiverBalance + tokens);
                 totalSupply += tokens;
                 return true;

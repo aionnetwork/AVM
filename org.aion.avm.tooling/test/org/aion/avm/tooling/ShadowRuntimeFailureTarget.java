@@ -1,12 +1,12 @@
 package org.aion.avm.tooling;
 
 import org.aion.avm.userlib.abi.ABIEncoder;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 
 public class ShadowRuntimeFailureTarget {
     static {
-        if (BlockchainRuntime.getData().length > 0) {
+        if (Blockchain.getData().length > 0) {
             runTest();
         }
     }
@@ -15,7 +15,7 @@ public class ShadowRuntimeFailureTarget {
     @SuppressWarnings("deprecation")
     private static Object runTest() {
         Object result = null;
-        byte option = BlockchainRuntime.getData()[0];
+        byte option = Blockchain.getData()[0];
         switch(option) {
             case 0:
                 result = new Boolean(true);
@@ -46,7 +46,7 @@ public class ShadowRuntimeFailureTarget {
                 result = Boolean.valueOf(true);
                 break;
             default:
-                BlockchainRuntime.invalid();
+                Blockchain.invalid();
         }
         return result;
     }

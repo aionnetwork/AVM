@@ -1,13 +1,13 @@
 package org.aion.avm.core;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 public class DeploymentArgumentSmallTarget {
 
     static {
-        byte[] data = BlockchainRuntime.getData();
+        byte[] data = Blockchain.getData();
         // This constant is the expected length of the data array containing the 5 expected deployment args
-        BlockchainRuntime.require(906 == data.length);
+        Blockchain.require(899 == data.length);
     }
 
     public static byte[] main() {

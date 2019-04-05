@@ -1,7 +1,7 @@
 package org.aion.avm.core.performance;
 
 import java.lang.StrictMath;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
 public class PerformanceTestTarget {
@@ -9,14 +9,14 @@ public class PerformanceTestTarget {
     private static final int allocSize;
 
     static {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         int[] args = decoder.decodeOneIntegerArray();
         heavyLevel = args[0];
         allocSize = args[1];
     }
 
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];

@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import avm.Result;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
@@ -13,7 +13,7 @@ public class ReentrantClassWrapperTestResource {
     public static void recursiveStringClassCheck() {
         Class secondStringClass = String.class;
         if(stringClass != secondStringClass) {
-            BlockchainRuntime.revert();
+            Blockchain.revert();
         }
     }
 
@@ -21,14 +21,14 @@ public class ReentrantClassWrapperTestResource {
         stringClass = String.class;
 
         byte[] data = ABIEncoder.encodeOneString("recursiveStringClassCheck");
-        Result result = BlockchainRuntime.call(BlockchainRuntime.getAddress(), BigInteger.ZERO, data, BlockchainRuntime.getEnergyLimit());
+        Result result = Blockchain.call(Blockchain.getAddress(), BigInteger.ZERO, data, Blockchain.getEnergyLimit());
         if(!result.isSuccess()) {
-            BlockchainRuntime.revert();
+            Blockchain.revert();
         }
     }
 
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];

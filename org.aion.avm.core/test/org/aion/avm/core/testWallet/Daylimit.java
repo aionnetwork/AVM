@@ -1,6 +1,6 @@
 package org.aion.avm.core.testWallet;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 
 /**
@@ -23,7 +23,7 @@ public class Daylimit {
     // PUBLIC INTERFACE
     public static void setDailyLimit(long value) {
         // (modifier)
-        Multiowned.onlyManyOwners(BlockchainRuntime.getCaller(), Operation.fromMessage());
+        Multiowned.onlyManyOwners(Blockchain.getCaller(), Operation.fromMessage());
         
         Daylimit.dailyLimit = value;
     }
@@ -31,7 +31,7 @@ public class Daylimit {
     // PUBLIC INTERFACE
     public static void resetSpentToday() {
         // (modifier)
-        Multiowned.onlyManyOwners(BlockchainRuntime.getCaller(), Operation.fromMessage());
+        Multiowned.onlyManyOwners(Blockchain.getCaller(), Operation.fromMessage());
         
         Daylimit.spentToday = 0;
     }
@@ -42,10 +42,10 @@ public class Daylimit {
     // public for composition.
     public static boolean underLimit(long value) {
         // (modifier)
-        Multiowned.onlyOwner(BlockchainRuntime.getCaller());
+        Multiowned.onlyOwner(Blockchain.getCaller());
         
         // reset the spend limit if we're on a different day to last time.
-        long nowInDays = BlockchainRuntime.getBlockTimestamp() / kSecondsPerDay;
+        long nowInDays = Blockchain.getBlockTimestamp() / kSecondsPerDay;
         if (nowInDays > Daylimit.lastDay) {
             Daylimit.spentToday = 0;
             Daylimit.lastDay = nowInDays;

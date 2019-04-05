@@ -2,7 +2,7 @@ package org.aion.avm.core.exceptionwrapping;
 
 import java.math.BigInteger;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 
 
 /**
@@ -11,7 +11,7 @@ import avm.BlockchainRuntime;
  */
 public class AttackExceptionHandlingTarget {
     public static byte[] main() {
-        byte[] input = BlockchainRuntime.getData();
+        byte[] input = Blockchain.getData();
         byte[] result = new byte[1];
         try {
             // See if we should invoke ourselves.
@@ -20,7 +20,7 @@ public class AttackExceptionHandlingTarget {
                 BigInteger value = BigInteger.ZERO;
                 byte[] data = new byte[0];
                 long energyLimit = 500_000L;
-                BlockchainRuntime.call(BlockchainRuntime.getAddress(), value, data, energyLimit);
+                Blockchain.call(Blockchain.getAddress(), value, data, energyLimit);
             } else {
                 // No, just run the loop, ourselves.
                 runLoopForever();

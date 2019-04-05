@@ -1,6 +1,6 @@
 package examples;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.AionMap;
 
@@ -29,26 +29,26 @@ public class BetaMapEvents {
      */
     static {
         map = new AionMap<>();
-        BlockchainRuntime.println("Deployed BetaMapEvents");
+        Blockchain.println("Deployed BetaMapEvents");
     }
 
     @Callable
     public static void put(String key, String value) {
         String oldValue = map.put(key, value);
-        BlockchainRuntime.println("PUT(\"" + key + "\", \"" + value + "\") -> " + oldValue);
-        BlockchainRuntime.log("PUT".getBytes(), key.getBytes(), value.getBytes());
+        Blockchain.println("PUT(\"" + key + "\", \"" + value + "\") -> " + oldValue);
+        Blockchain.log("PUT".getBytes(), key.getBytes(), value.getBytes());
         if (null != oldValue) {
-            BlockchainRuntime.log("REPLACE".getBytes(), key.getBytes(), oldValue.getBytes());
+            Blockchain.log("REPLACE".getBytes(), key.getBytes(), oldValue.getBytes());
         }
     }
 
     @Callable
     public static void get(String key) {
         String value = map.get(key);
-        BlockchainRuntime.println("GET(\"" + key + "\") -> " + value);
+        Blockchain.println("GET(\"" + key + "\") -> " + value);
         String reportingValue = (null != value)
                 ? value
                 : "null";
-        BlockchainRuntime.log("GET".getBytes(), key.getBytes(), reportingValue.getBytes());
+        Blockchain.log("GET".getBytes(), key.getBytes(), reportingValue.getBytes());
     }
 }

@@ -1,6 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import avm.Address;
@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the {@link BlockchainRuntime#require(boolean)} method.
+ * Tests the {@link Blockchain#require(boolean)} method.
  */
 public class RequireTest {
     @ClassRule

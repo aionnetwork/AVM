@@ -2,7 +2,7 @@ package org.aion.avm.tooling.poc;
 
 import java.math.BigInteger;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
@@ -57,7 +57,7 @@ public class Wallet {
      */
     public static boolean confirm(byte[] id) {
         // check access
-        Address sender = BlockchainRuntime.getCaller();
+        Address sender = Blockchain.getCaller();
         if (!owners.contains(sender)) {
             return false;
         }
@@ -68,14 +68,14 @@ public class Wallet {
         }
 
         pendingTx.confirmations.add(sender);
-        BlockchainRuntime.log("Confirm".getBytes(), sender.unwrap(), new byte[0]);
+        Blockchain.log("Confirm".getBytes(), sender.unwrap(), new byte[0]);
 
         if (pendingTx.confirmations.size() >= confirmationsRequired) {
             // remove the transaction
             pendingTxs.remove(new Bytes32(id));
 
             // send the transaction
-            BlockchainRuntime.call(pendingTx.to, BigInteger.valueOf(pendingTx.value), pendingTx.data, pendingTx.energyLimit);
+            Blockchain.call(pendingTx.to, BigInteger.valueOf(pendingTx.value), pendingTx.data, pendingTx.energyLimit);
         }
 
         return true;
@@ -106,7 +106,7 @@ public class Wallet {
             buffer.put(data);
             buffer.putLong(energyLimit);
 
-            return BlockchainRuntime.blake2b(buffer.getArray());
+            return Blockchain.blake2b(buffer.getArray());
         }
     }
 }

@@ -4,18 +4,18 @@ import java.math.BigInteger;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import avm.Address;
-import avm.BlockchainRuntime;
+import avm.Blockchain;
 import avm.Result;
 
 public class InternalCallContractBalanceTarget {
     private static BigInteger balanceDuringClinit;
 
     static {
-        balanceDuringClinit = BlockchainRuntime.getBalanceOfThisContract();
+        balanceDuringClinit = Blockchain.getBalanceOfThisContract();
     }
 
     public static byte[] main() {
-        ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.getData());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
         if (methodName == null) {
             return new byte[0];
@@ -58,11 +58,11 @@ public class InternalCallContractBalanceTarget {
             dappCode[j] = dappBytesSecondHalf[i];
         }
 
-        Result result = BlockchainRuntime.create(BigInteger.valueOf(amountToTransfer), dappCode, BlockchainRuntime.getRemainingEnergy());
+        Result result = Blockchain.create(BigInteger.valueOf(amountToTransfer), dappCode, Blockchain.getRemainingEnergy());
 
         // If the create failed then we revert to propagate this failure upwards.
         if (!result.isSuccess()) {
-            BlockchainRuntime.revert();
+            Blockchain.revert();
         }
 
         return result.getReturnData();
@@ -73,7 +73,7 @@ public class InternalCallContractBalanceTarget {
 
             if (currentDepth == targetDappDepth) {
                 // I'm the target, so return my balance.
-                return BlockchainRuntime.getBalanceOfThisContract().toByteArray();
+                return Blockchain.getBalanceOfThisContract().toByteArray();
             } else {
                 // I'm not the target, propagate whatever my child returned upwards to my caller.
 
@@ -83,13 +83,13 @@ public class InternalCallContractBalanceTarget {
                 byte[] arg3Bytes = ABIEncoder.encodeOneInteger(targetDappDepth);
                 byte[] data = concatenateArrays(arg0Bytes, arg1Bytes, arg2Bytes, arg3Bytes);
 
-                ABIDecoder decoder = new ABIDecoder(BlockchainRuntime.call(otherContracts[currentDepth], BigInteger.ZERO, data, BlockchainRuntime.getRemainingEnergy()).getReturnData());
+                ABIDecoder decoder = new ABIDecoder(Blockchain.call(otherContracts[currentDepth], BigInteger.ZERO, data, Blockchain.getRemainingEnergy()).getReturnData());
                 return decoder.decodeOneByteArray();
             }
 
         } else {
             // I'm the deepest call, return an empty array unless I'm the target, then return my balance.
-            return (currentDepth == targetDappDepth) ? BlockchainRuntime.getBalanceOfThisContract().toByteArray() : new byte[0];
+            return (currentDepth == targetDappDepth) ? Blockchain.getBalanceOfThisContract().toByteArray() : new byte[0];
         }
     }
 

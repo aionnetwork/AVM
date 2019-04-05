@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.aion.avm.shadowapi.avm.Address;
-import org.aion.avm.shadowapi.avm.BlockchainRuntime;
+import org.aion.avm.shadowapi.avm.Blockchain;
 import org.aion.avm.shadowapi.avm.Result;
 
 /**
@@ -51,7 +51,7 @@ public class NodeEnvironment {
         try {
             this.shadowApiClasses = new Class<?>[] {
                 Address.class,
-                BlockchainRuntime.class,
+                Blockchain.class,
                 Result.class,
             };
 

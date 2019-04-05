@@ -18,7 +18,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 
-public class BlockchainRuntimeTest {
+public class BlockchainTest {
 
     @ClassRule
     public static AvmRule avmRule = new AvmRule(true);
@@ -30,7 +30,7 @@ public class BlockchainRuntimeTest {
 
     @Test
     public void testBlockchainRuntime() {
-        Address dappAddress = installJarAsDApp(avmRule.getDappBytes(BlockchainRuntimeTestResource.class, new byte[0], AionBuffer.class));
+        Address dappAddress = installJarAsDApp(avmRule.getDappBytes(BlockchainTestResource.class, new byte[0], AionBuffer.class));
         org.aion.types.Address dappAddressApi = new org.aion.types.Address(dappAddress.unwrap());
 
         byte[] txData = "tx_data".getBytes();
