@@ -95,12 +95,6 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
         return new BigInteger(v.remainder(val.v));
     }
 
-    public BigInteger avm_pow(int exponent) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_pow);
-        lazyLoad();
-        return new BigInteger(v.pow(exponent));
-    }
-
     public BigInteger avm_sqrt() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_sqrt);
         lazyLoad();

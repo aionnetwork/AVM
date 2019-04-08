@@ -402,7 +402,7 @@ public class LoadedDAppTest {
                 //s_nine (-1 since this is a constant)
                 + "ffffffff"
                 //s_nine (constant hash code)
-                + "00000010"
+                + "0000000d"
                 // primitive size
                 + "0000001e"
                 //s_one
@@ -505,7 +505,7 @@ public class LoadedDAppTest {
                 //s_nine (-1 since this is a constant)
                 + "ffffffff"
                 //s_nine (constant hash code)
-                + "00000013"
+                + "00000010"
                 // primitive size
                 + "0000001e"
                 //s_one

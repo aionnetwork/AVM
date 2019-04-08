@@ -1,6 +1,5 @@
 package org.aion.avm.tooling;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -12,9 +11,6 @@ public class ShadowClassConstantsTarget {
     private static BigInteger bigOne = BigInteger.ONE;
     private static BigInteger bigTwo = BigInteger.TWO;
     private static BigInteger bigTen = BigInteger.TEN;
-    private static BigDecimal bigZeroDecimal = BigDecimal.ZERO;
-    private static BigDecimal bigOneDecimal = BigDecimal.ONE;
-    private static BigDecimal bigTenDecimal = BigDecimal.TEN;
     private static RoundingMode roundUp = RoundingMode.UP;
     private static RoundingMode roundDown = RoundingMode.DOWN;
     private static RoundingMode roundFloor = RoundingMode.FLOOR;
@@ -60,24 +56,6 @@ public class ShadowClassConstantsTarget {
         Blockchain.require(bigTen.equals(BigInteger.TEN));
         Blockchain.require(bigTen != BigInteger.valueOf(10));
         Blockchain.require(bigTen.equals(BigInteger.valueOf(10)));
-    }
-
-    @Callable
-    public static void checkBigDecimalConstants() {
-        Blockchain.require(bigZeroDecimal == BigDecimal.ZERO);
-        Blockchain.require(bigZeroDecimal.equals(BigDecimal.ZERO));
-        Blockchain.require(bigZeroDecimal != BigDecimal.valueOf(0));
-        Blockchain.require(bigZeroDecimal.equals(BigDecimal.valueOf(0)));
-
-        Blockchain.require(bigOneDecimal == BigDecimal.ONE);
-        Blockchain.require(bigOneDecimal.equals(BigDecimal.ONE));
-        Blockchain.require(bigOneDecimal != BigDecimal.valueOf(1));
-        Blockchain.require(bigOneDecimal.equals(BigDecimal.valueOf(1)));
-
-        Blockchain.require(bigTenDecimal == BigDecimal.TEN);
-        Blockchain.require(bigTenDecimal.equals(BigDecimal.TEN));
-        Blockchain.require(bigTenDecimal != BigDecimal.valueOf(10));
-        Blockchain.require(bigTenDecimal.equals(BigDecimal.valueOf(10)));
     }
 
     @Callable

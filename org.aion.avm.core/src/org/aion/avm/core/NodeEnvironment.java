@@ -372,46 +372,43 @@ public class NodeEnvironment {
         // NOTE:  This list needs to be manually updated and we specify it as a list since these values CANNOT change, once assigned (these represent the serialized symbolic references from contracts).
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TRUE, 1);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_FALSE, 2);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_ZERO, 3);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_ONE, 4);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigDecimal.avm_TEN, 5);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_UNLIMITED, 6);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL32, 7);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL64, 8);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL128, 9);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UP, 10);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_DOWN, 11);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_CEILING, 12);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_FLOOR, 13);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_UP, 14);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_DOWN, 15);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN, 16);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UNNECESSARY, 17);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_UNLIMITED, 3);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL32, 4);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL64, 5);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.MathContext.avm_DECIMAL128, 6);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UP, 7);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_DOWN, 8);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_CEILING, 9);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_FLOOR, 10);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_UP, 11);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_DOWN, 12);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN, 13);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UNNECESSARY, 14);
 
         // Note that (as explained in issue-146), we need to treat our primitive "TYPE" pseudo-classes as constants, not like normal Class references.
-        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TYPE, 18);
-        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Byte.avm_TYPE, 19);
-        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Character.avm_TYPE, 20);
-        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Double.avm_TYPE, 21);
-        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Float.avm_TYPE, 22);
-        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Integer.avm_TYPE, 23);
-        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Long.avm_TYPE, 24);
-        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Short.avm_TYPE, 25);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TYPE, 15);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Byte.avm_TYPE, 16);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Character.avm_TYPE, 17);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Double.avm_TYPE, 18);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Float.avm_TYPE, 19);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Integer.avm_TYPE, 20);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Long.avm_TYPE, 21);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Short.avm_TYPE, 22);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Void.avm_TYPE, 23);
 
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_ZERO, 26);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_ONE, 27);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_TWO, 28);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_TEN, 29);
 
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_DAYS, 30);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_HOURS, 31);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MINUTES, 32);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_SECONDS, 33);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MILLISECONDS, 34);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MICROSECONDS, 35);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_NANOSECONDS, 36);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_ZERO, 24);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_ONE, 25);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_TWO, 26);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_TEN, 27);
 
-        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Void.avm_TYPE, 37);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_DAYS, 28);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_HOURS, 29);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MINUTES, 30);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_SECONDS, 31);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MILLISECONDS, 32);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MICROSECONDS, 33);
+        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_NANOSECONDS, 34);
 
         return constantMap;
     }

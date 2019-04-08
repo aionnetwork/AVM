@@ -90,10 +90,11 @@ public class TestResource {
     @Callable
     public static boolean EnumHashcode() {
         boolean ret = true;
-        ret = ret && (RoundingMode.UP.hashCode() == 10);
+        //From NodeEnvironment
+        ret = ret && (RoundingMode.UP.hashCode() == 7);
 
         MathContext mc = new MathContext(1, RoundingMode.UP);
-        ret = ret && (mc.hashCode() == 591);
+        ret = ret && (mc.hashCode() == 414);
 
         ret = ret && (Type1.NORMAL.hashCode() == 28);
         ret = ret && (Type2.SPECIALIZED.hashCode() == 31);

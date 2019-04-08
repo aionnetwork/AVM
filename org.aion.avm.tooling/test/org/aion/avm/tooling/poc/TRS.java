@@ -1,5 +1,6 @@
 package org.aion.avm.tooling.poc;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import avm.Address;
 import avm.Blockchain;
@@ -15,7 +16,7 @@ public class TRS {
     private static boolean inited = false, locked = false, nullified = false;
     private static AionMap<Address, BigInteger> deposited = new AionMap<>(), withdrawn = new AionMap<>();
     private static Address owner, newOwner;
-    private static BigInteger precision = BigInteger.TEN.pow(18), totalfv, remainder, total;
+    private static BigInteger precision = BigDecimal.valueOf(StrictMath.pow(10, 18)).toBigIntegerExact(), totalfv, remainder, total;
 
     static {
         owner = Blockchain.getCaller();

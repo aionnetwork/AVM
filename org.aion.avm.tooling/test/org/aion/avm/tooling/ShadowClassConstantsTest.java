@@ -36,13 +36,6 @@ public class ShadowClassConstantsTest {
     }
 
     @Test
-    public void testIdentitiesOfBigDecimalConstants() {
-        byte[] data = ABIUtil.encodeMethodArguments("checkBigDecimalConstants");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
-    }
-
-    @Test
     public void testIdentitiesOfRoundingModeConstants() {
         byte[] data = ABIUtil.encodeMethodArguments("checkRoundingModeConstants");
         TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
