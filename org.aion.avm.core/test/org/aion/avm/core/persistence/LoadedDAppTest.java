@@ -89,35 +89,53 @@ public class LoadedDAppTest {
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
-        // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
-        byte[] expected = {
-                // refs:
-                0x0, 0x0, 0x0, 0x2, // reference list size
-                0x0, 0x0, 0x0, 0x0, //ReflectionStructureCodecTarget.s_nine (null)
-                0x0, 0x0, 0x0, 0x0, //LoadedDAppTarget.s_nine (null)
+        String expectedHex = ""
+                // reference list size
+                + "00000002"
+                //ReflectionStructureCodecTarget.s_nine (null)
+                + "00000000"
+                //LoadedDAppTarget.s_nine (null)
+                + "00000000"
                 
                 // primitives:
-                0x0, 0x0, 0x0, 0x3c, // primitive size
-                // ReflectionStructureCodecTarget
-                0x1, //s_one
-                0x5, //s_two
-                0x0, 0x5, //s_three
-                0x0, 0x5, //s_four
-                0x0, 0x0, 0x0, 0x5, //s_five
-                0x40, (byte)0xa0, 0x0, 0x0, //s_six
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //s_seven
-                0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
+                + "0000003c"
+                //s_one
+                + "01"
+                //s_two
+                + "05"
+                //s_three
+                + "0005"
+                //s_four
+                + "0005"
+                //s_five
+                + "00000005"
+                //s_six
+                + "40a00000"
+                //s_seven
+                + "0000000000000005"
+                //s_eight
+                + "4014000000000000"
+                
                 // LoadedDAppTarget
-                0x1, //s_one
-                0x5, //s_two
-                0x0, 0x5, //s_three
-                0x0, 0x5, //s_four
-                0x0, 0x0, 0x0, 0x5, //s_five
-                0x40, (byte)0xa0, 0x0, 0x0, //s_six
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //s_seven
-                0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
-        };
-        Assert.assertTrue(Arrays.equals(expected, result));
+                //s_one
+                + "01"
+                //s_two
+                + "05"
+                //s_three
+                + "0005"
+                //s_four
+                + "0005"
+                //s_five
+                + "00000005"
+                //s_six
+                + "40a00000"
+                //s_seven
+                + "0000000000000005"
+                //s_eight
+                + "4014000000000000"
+                ;
+        byte[] expected = Helpers.hexStringToBytes(expectedHex);
+        Assert.assertArrayEquals(expected, result);
     }
 
     /**
@@ -125,36 +143,52 @@ public class LoadedDAppTest {
      */
     @Test
     public void deserializeClasses() {
-        // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
-        // Note that the references for both objects are stored first since these objects are encoded, together.
-        byte[] expected = {
-                // refs:
-                0x0, 0x0, 0x0, 0x2, // reference list size
-                0x0, 0x0, 0x0, 0x0, //ReflectionStructureCodecTarget.s_nine (null)
-                0x0, 0x0, 0x0, 0x0, //LoadedDAppTarget.s_nine (null)
+        String expectedHex = ""
+                // reference list size
+                + "00000002"
+                //ReflectionStructureCodecTarget.s_nine (null)
+                + "00000000"
+                //LoadedDAppTarget.s_nine (null)
+                + "00000000"
                 
                 // primitives:
-                0x0, 0x0, 0x0, 0x3c, // primitive size
-                // ReflectionStructureCodecTarget
-                0x1, //s_one
-                0x5, //s_two
-                0x0, 0x5, //s_three
-                0x0, 0x5, //s_four
-                0x0, 0x0, 0x0, 0x5, //s_five
-                0x40, (byte)0xa0, 0x0, 0x0, //s_six
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //s_seven
-                0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
+                + "0000003c"
+                //s_one
+                + "01"
+                //s_two
+                + "05"
+                //s_three
+                + "0005"
+                //s_four
+                + "0005"
+                //s_five
+                + "00000005"
+                //s_six
+                + "40a00000"
+                //s_seven
+                + "0000000000000005"
+                //s_eight
+                + "4014000000000000"
                 
                 // LoadedDAppTarget
-                0x1, //s_one
-                0x5, //s_two
-                0x0, 0x5, //s_three
-                0x0, 0x5, //s_four
-                0x0, 0x0, 0x0, 0x5, //s_five
-                0x40, (byte)0xa0, 0x0, 0x0, //s_six
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //s_seven
-                0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
-        };
+                //s_one
+                + "01"
+                //s_two
+                + "05"
+                //s_three
+                + "0005"
+                //s_four
+                + "0005"
+                //s_five
+                + "00000005"
+                //s_six
+                + "40a00000"
+                //s_seven
+                + "0000000000000005"
+                //s_eight
+                + "4014000000000000"
+                ;
+        byte[] expected = Helpers.hexStringToBytes(expectedHex);
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
         kernel.putStorage(address, StorageKeys.CLASS_STATICS, expected);
@@ -204,27 +238,40 @@ public class LoadedDAppTest {
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
-        // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
-        byte[] expected = {
+        String expectedHex = ""
                 // ReflectionStructureCodecTarget
-                0x0, 0x0, 0x0, 0x1, // reference list size
-                //s_nine:
-                0x0, 0x0, 0x0, 0x3c, //s_nine (class name length)
-                0x6f, 0x72, 0x67, 0x2e, 0x61, 0x69, 0x6f, 0x6e, 0x2e, 0x61, 0x76, 0x6d, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x63, 0x65, 0x2e, 0x52, 0x65, 0x66, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x75, 0x72, 0x65, 0x43, 0x6f, 0x64, 0x65, 0x63, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, //s_nine (class name UTF8)
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, //s_nine (instanceId)
-                0x0, 0x0, 0x0, 0x1, //s_nine (identity hash)
-                
-                0x0, 0x0, 0x0, 0x1e, // primitive size
-                0x1, //s_one
-                0x5, //s_two
-                0x0, 0x5, //s_three
-                0x0, 0x5, //s_four
-                0x0, 0x0, 0x0, 0x5, //s_five
-                0x40, (byte)0xa0, 0x0, 0x0, //s_six
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x5, //s_seven
-                0x40, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
-        };
-        Assert.assertTrue(Arrays.equals(expected, result));
+                // reference list size
+                + "00000001"
+                //s_nine (class name length)
+                + "0000003c"
+                //s_nine (class name UTF8)
+                + "6f72672e61696f6e2e61766d2e636f72652e70657273697374656e63652e5265666c656374696f6e537472756374757265436f646563546172676574"
+                //s_nine (instanceId)
+                + "0000000000000001"
+                //s_nine (identity hash)
+                + "00000001"
+
+                // primitive size
+                + "0000001e"
+                //s_one
+                + "01"
+                //s_two
+                + "05"
+                //s_three
+                + "0005"
+                //s_four
+                + "0005"
+                //s_five
+                + "00000005"
+                //s_six
+                + "40a00000"
+                //s_seven
+                + "0000000000000005"
+                //s_eight
+                + "4014000000000000"
+                ;
+        byte[] expected = Helpers.hexStringToBytes(expectedHex);
+        Assert.assertArrayEquals(expected, result);
     }
 
     /**
@@ -352,24 +399,35 @@ public class LoadedDAppTest {
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
-        // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
-        byte[] expected = {
+        String expectedHex = ""
                 // LoadedDAppTarget
-                0x0, 0x0, 0x0, 0x1, // reference list size
-                (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, //s_nine (-1 since this is a constant)
-                (byte)0x0, (byte)0x0, (byte)0x0, (byte)0x10, //s_nine (constant hash code)
-                
-                0x0, 0x0, 0x0, 0x1e, // primitive size
-                0x0, //s_one
-                0x0, //s_two
-                0x0, 0x0, //s_three
-                0x0, 0x0, //s_four
-                0x0, 0x0, 0x0, 0x0, //s_five
-                0x0, 0x0, 0x0, 0x0, //s_six
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_seven
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
-        };
-        Assert.assertTrue(Arrays.equals(expected, result));
+                // reference list size
+                + "00000001"
+                //s_nine (-1 since this is a constant)
+                + "ffffffff"
+                //s_nine (constant hash code)
+                + "00000010"
+                // primitive size
+                + "0000001e"
+                //s_one
+                + "00"
+                //s_two
+                + "00"
+                //s_three
+                + "0000"
+                //s_four
+                + "0000"
+                //s_five
+                + "00000000"
+                //s_six
+                + "00000000"
+                //s_seven
+                + "0000000000000000"
+                //s_eight
+                + "0000000000000000"
+                ;
+        byte[] expected = Helpers.hexStringToBytes(expectedHex);
+        Assert.assertArrayEquals(expected, result);
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
@@ -392,25 +450,37 @@ public class LoadedDAppTest {
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
-        // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
-        byte[] expected = {
+        String expectedHex = ""
                 // LoadedDAppTarget
-                0x0, 0x0, 0x0, 0x1, // reference list size
-                (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xfe, //s_nine (-2 since this is a class)
-                0x0, 0x0, 0x0, 0x10, //s_nine (length)
-                0x6a, 0x61, 0x76, 0x61, 0x2e, 0x6c, 0x61, 0x6e, 0x67, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67,  //s_nine (name of "java.lang.String")
-                
-                0x0, 0x0, 0x0, 0x1e, // primitive size
-                0x0, //s_one
-                0x0, //s_two
-                0x0, 0x0, //s_three
-                0x0, 0x0, //s_four
-                0x0, 0x0, 0x0, 0x0, //s_five
-                0x0, 0x0, 0x0, 0x0, //s_six
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_seven
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
-        };
-        Assert.assertTrue(Arrays.equals(expected, result));
+                // reference list size
+                + "00000001"
+                //s_nine (-2 since this is a class)
+                + "fffffffe"
+                //s_nine (length)
+                + "00000010"
+                //s_nine (name of "java.lang.String")
+                + "6a6176612e6c616e672e537472696e67"
+                // primitive size
+                + "0000001e"
+                //s_one
+                + "00"
+                //s_two
+                + "00"
+                //s_three
+                + "0000"
+                //s_four
+                + "0000"
+                //s_five
+                + "00000000"
+                //s_six
+                + "00000000"
+                //s_seven
+                + "0000000000000000"
+                //s_eight
+                + "0000000000000000"
+                ;
+        byte[] expected = Helpers.hexStringToBytes(expectedHex);
+        Assert.assertArrayEquals(expected, result);
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
@@ -432,24 +502,35 @@ public class LoadedDAppTest {
         ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
         dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
         byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
-        // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
-        byte[] expected = {
+        String expectedHex = ""
                 // LoadedDAppTarget
-                0x0, 0x0, 0x0, 0x1, // reference list size
-                (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, //s_nine (-1 since this is a constant)
-                (byte)0x0, (byte)0x0, (byte)0x0, (byte)0x13, //s_nine (constant hash code)
-                
-                0x0, 0x0, 0x0, 0x1e, // primitive size
-                0x0, //s_one
-                0x0, //s_two
-                0x0, 0x0, //s_three
-                0x0, 0x0, //s_four
-                0x0, 0x0, 0x0, 0x0, //s_five
-                0x0, 0x0, 0x0, 0x0, //s_six
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_seven
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, //s_eight
-        };
-        Assert.assertTrue(Arrays.equals(expected, result));
+                // reference list size
+                + "00000001"
+                //s_nine (-1 since this is a constant)
+                + "ffffffff"
+                //s_nine (constant hash code)
+                + "00000013"
+                // primitive size
+                + "0000001e"
+                //s_one
+                + "00"
+                //s_two
+                + "00"
+                //s_three
+                + "0000"
+                //s_four
+                + "0000"
+                //s_five
+                + "00000000"
+                //s_six
+                + "00000000"
+                //s_seven
+                + "0000000000000000"
+                //s_eight
+                + "0000000000000000"
+                ;
+        byte[] expected = Helpers.hexStringToBytes(expectedHex);
+        Assert.assertArrayEquals(expected, result);
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
