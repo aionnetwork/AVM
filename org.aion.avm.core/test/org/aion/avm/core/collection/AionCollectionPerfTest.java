@@ -18,11 +18,12 @@ import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Test;
 
+
 public class AionCollectionPerfTest {
 
     private org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
     private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-    private long energyLimit = 100_000_000_000L;
+    private long energyLimit = 100_000_000L;
     private long energyPrice = 1;
 
     private byte[] buildListPerfJar() {

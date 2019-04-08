@@ -7,7 +7,7 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 
 public class AionSetPerfContract {
 
-    public static int SIZE = 5000;
+    public static int SIZE = 500;
 
     public static AionSet<Integer> target;
 

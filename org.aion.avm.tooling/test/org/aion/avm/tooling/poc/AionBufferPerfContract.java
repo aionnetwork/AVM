@@ -5,8 +5,8 @@ import avm.Blockchain;
 import org.aion.avm.userlib.AionBuffer;
 
 public class AionBufferPerfContract {
-    public static final int NUM_ELEMENTS = 4_000;
-    public static final int TRANSFER_SIZE = 1_000;
+    public static final int NUM_ELEMENTS = 400;
+    public static final int TRANSFER_SIZE = 100;
     private static final byte[] BYTES = new byte[TRANSFER_SIZE];
     private static AionBuffer targetNobytes, targetNoChars, targetNoShorts, targetNoInts,
         targetNoFloats, targetNoLongs, targetNoDoubles, targetHasBytes, targetHasChars,
